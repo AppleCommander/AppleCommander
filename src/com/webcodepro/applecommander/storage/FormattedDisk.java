@@ -335,4 +335,11 @@ public abstract class FormattedDisk extends Disk {
 	 * volumes to distinguish.
 	 */
 	public abstract int getLogicalDiskNumber();
+	
+	/**
+	 * Returns a valid filename for the given filename.  This does not
+	 * necessarily guarantee a unique filename - just validity of 
+	 * the filename.
+	 */
+	public abstract String getSuggestedFilename(String filename);
 }

@@ -687,4 +687,25 @@ public class ProdosFormatDisk extends FormattedDisk {
 	public int getLogicalDiskNumber() {
 		return 0;
 	}
+
+	/**
+	 * Returns a valid filename for the given filename.  ProDOS filenames
+	 * have a maximum length of 15 characters, must start with a character
+	 * and may contain characters (A-Z), digits (0-9), or the period (.).
+	 */
+	public String getSuggestedFilename(String filename) {
+		StringBuffer newName = new StringBuffer();
+		if (!Character.isLetter(filename.charAt(0))) {
+			newName.append('A');
+		}
+		int i=0;
+		while (newName.length() < 15 && i<filename.length()) {
+			char ch = filename.charAt(i);
+			if (Character.isLetterOrDigit(ch) || ch == '.') {
+				newName.append(ch);
+			}
+			i++;
+		}
+		return newName.toString().toUpperCase().trim();
+	}
 }

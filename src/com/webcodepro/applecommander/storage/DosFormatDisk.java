@@ -627,4 +627,13 @@ public class DosFormatDisk extends FormattedDisk {
 	public int getLogicalDiskNumber() {
 		return 0;
 	}
+
+	/**
+	 * Returns a valid filename for the given filename.  DOS 3.3
+	 * pretty much allows anything - so it is cut to 30 characters
+	 * and trimmed (trailing whitespace may cause confusion).
+	 */
+	public String getSuggestedFilename(String filename) {
+		return filename.toUpperCase().substring(0, 30).trim();
+	}
 }
