@@ -143,8 +143,6 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 	public byte[] compile() throws CompileException {
 		StringBuffer programCode = new StringBuffer();
 		while (hasMoreTokens()) {
-			sourceLine.setLength(0);
-			sourceAssembly.setLength(0);
 			ApplesoftToken token = nextToken();
 			if (!token.isLineNumber()) {
 				throw new CompileException("Expecting a line number.");
@@ -163,8 +161,34 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 			programCode.append("\n");
 			programCode.append(sourceAssembly);
 			programCode.append("\n");
+			sourceLine.setLength(0);
+			sourceAssembly.setLength(0);
 		}
 		programCode.insert(0, buildUsedAddresses());
+		for (int i=0; i<variables.size(); i++) {
+			if (i == 0) {
+				sourceAssembly.append("\n");
+				sourceAssembly.append("* Variables:\n");
+			}
+			Variable variable = (Variable) variables.get(i);
+			if (variable.isConstantInteger()) {
+				addAssembly(variable.getName(), "DW", variable.getValue());
+			} else if (variable.isConstantFloat()) {
+				// FIXME
+			} else if (variable.isConstantString()) {
+				addAssembly(variable.getName(), "ASC", variable.getValue());
+				addAssembly(null, "HEX", "00");
+			} else if (variable.isTypeFloat()) {
+				addAssembly(variable.getName(), "DS", "5");
+			} else if (variable.isTypeInteger()) {
+				addAssembly(variable.getName(), "DS", "2");
+			} else if (variable.isTypeString()) {
+				// FIXME
+			}
+		}
+		programCode.append(sourceAssembly);
+		sourceLine.setLength(0);
+		sourceAssembly.setLength(0);
 		return programCode.toString().getBytes();
 	}
 	
@@ -212,7 +236,15 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 	}
 	
 	protected Method getMethod(ApplesoftToken token) {
-		String tokenName = "evaluate" + token.getTokenString().trim();
+		StringBuffer buf = new StringBuffer();
+		buf.append("evaluate");
+		buf.append(token.getTokenString().trim());
+		for (int i=buf.length()-1; i>=0; i--) {
+			if (buf.charAt(i) == '=') {
+				buf.deleteCharAt(i);
+			}
+		}
+		String tokenName = buf.toString();
 		Method method = (Method) commandMethods.get(tokenName);
 		if (method == null) {
 			try {
@@ -241,7 +273,8 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 			if (parameter != null) {
 				sourceAssembly.append(" ");
 				sourceAssembly.append(parameter);
-				if (!usedAddresses.contains(parameter)) {
+				if (!usedAddresses.contains(parameter) 
+				&& knownAddresses.containsKey(parameter)) {
 					usedAddresses.add(parameter);
 				}
 			}
@@ -279,17 +312,159 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 	
 	public void evaluateINVERSE() {
 		addAssembly(null, "LDA", "#$3F");
-		addAssembly(null, "STA", "$32");
+		addAssembly(null, "STA", "INVFLAG");
 	}
 	
 	public void evaluateNORMAL() {
 		addAssembly(null, "LDA", "#$FF");
-		addAssembly(null, "STA", "$32");
+		addAssembly(null, "STA", "INVFLAG");
 	}
 	
 	public void evaluateFLASH() {
 		addAssembly(null, "LDA", "#$7F");
-		addAssembly(null, "STA", "$32");
+		addAssembly(null, "STA", "INVFLAG");
+	}
+	
+	protected Variable evaluateExpression() throws CompileException {
+		// FIXME: no type checking available
+		// FIXME: needs to evaluate all valid expressions
+		ApplesoftToken token = nextToken();
+		if (token.isString()) {
+			String value = token.getStringValue();
+			Variable variable = null;
+			for (int i=0; i<variables.size(); i++) {
+				variable = (Variable) variables.get(i);
+				if (value.equals(variable.getValue())) {
+					break;
+				}
+				variable = null;
+			}
+			if (variable == null) {
+				if (isIntegerNumber(value)) {
+					variable = new Variable("INT" + value, Variable.CONST_INTEGER, value);
+				} else if (value.startsWith("\"")) {
+					variable = new Variable("STR" + variables.size(), Variable.CONST_STRING, value);
+				} else {	// assume variable name
+					if (value.endsWith("%")) {
+						variable = new Variable("VAR" + value, Variable.TYPE_INTEGER, value);
+					} else if (value.endsWith("$")) {
+						variable = new Variable("VAR" + value, Variable.TYPE_STRING, value);
+					} else {
+						variable = new Variable("VAR" + value, Variable.TYPE_FLOAT, value);
+					}
+				}
+				variables.add(variable);
+			}
+			return variable; 
+		} else {
+			throw new CompileException("Unable to evaluate expression!");
+		}
+	}
+	
+	protected void addLoadByteValue(Variable variable, char register) throws CompileException {
+		if (variable.isConstantInteger()) {
+			addAssembly(null, "LD" + register, "#" + variable.getValue());
+		} else if(variable.isTypeInteger()) {
+			addAssembly(null, "LD" + register, variable.getName());
+		} else if (variable.isConstantFloat() || variable.isTypeFloat()) {
+			addAssembly(null, "LDY", "#>" + variable.getName());
+			addAssembly(null, "LDA", "#<" + variable.getName());
+			addAssembly(null, "JSR","MOVFM");
+			addAssembly(null, "JSR", "QINT");
+			addAssembly(null, "LD" + register, "FACLO");
+		} else {
+			throw new CompileException("Unable to convert to a byte value: "
+				+ variable.getName());
+		}
+	}
+
+	protected void addLoadWordValue(Variable variable, char registerHi, char registerLo) throws CompileException {
+		if (variable.isConstantInteger()) {
+			addAssembly(null, "LD" + registerHi, "#>" + variable.getName());
+			addAssembly(null, "LD" + registerLo, "#<" + variable.getName());
+		} else if (variable.isTypeInteger()) {
+			addAssembly(null, "LD" + registerHi, variable.getName() + "+1");
+			addAssembly(null, "LD" + registerLo, variable.getName());
+		} else if (variable.isConstantFloat() || variable.isTypeFloat()) {
+			addLoadFac(variable);
+			addAssembly(null, "JSR", "QINT");
+			addAssembly(null, "LD" + registerHi, "FACMO");
+			addAssembly(null, "LD" + registerLo, "FACLO");
+		} else {
+			throw new CompileException("Unable to convert to a word value: "
+				+ variable.getName());
+		}
+	}
+
+	protected void addLoadAddress(Variable variable, char registerHi, char registerLo) {
+		addAssembly(null, "LD" + registerHi, "#>" + variable.getName());
+		addAssembly(null, "LD" + registerLo, "#<" + variable.getName());
+	}
+	
+	protected void addLoadFac(Variable variable) throws CompileException {
+		if (variable.isConstantFloat() || variable.isTypeFloat()) {
+			addAssembly(null, "LDY", "#>" + variable.getName());
+			addAssembly(null, "LDA", "#<" + variable.getName());
+			addAssembly(null, "JSR","MOVFM");
+		} else {
+			throw new CompileException("Unable to convert to load FAC for: "
+				+ variable.getName());
+		}
+	}
+	
+	public void evaluateHTAB() throws CompileException {
+		addLoadByteValue(evaluateExpression(), 'A');
+		addAssembly(null, "STA", "CH");
+	}
+
+	public void evaluateVTAB() throws CompileException {
+		addLoadByteValue(evaluateExpression(), 'X');
+		addAssembly(null, "DEX", null);
+		addAssembly(null, "STX", "CV");
+		addAssembly(null, "JSR", "LF");
+	}
+
+	public void evaluateHCOLOR() throws CompileException {
+		addLoadByteValue(evaluateExpression(), 'X');
+		addAssembly(null, "JSR", "SETHCOL");
+	}
+	
+	public void evaluatePRINT() throws CompileException {
+		ApplesoftToken token = null;
+		do {
+			Variable variable = evaluateExpression();
+			if (variable.isConstantFloat() || variable.isTypeFloat()) {
+				addLoadFac(variable);
+				addAssembly(null, "JSR", "PRNTFAC");
+			} else if (variable.isConstantInteger() || variable.isTypeInteger()) {
+				addLoadWordValue(variable, 'X', 'A');
+				addAssembly(null, "JSR", "LINPRT");
+			} else if (variable.isConstantString()) {
+				addLoadAddress(variable, 'Y', 'A');
+				addAssembly(null, "JSR", "STROUT");
+			} else if (variable.isTypeString()) {
+				throw new CompileException("Unable to print string variables yet.");
+			}
+			// check if we have separators to skip over...
+			token = peekToken();
+			if (token != null && token.isExpressionSeparator()) {
+				nextToken();
+			}
+			// see if we should continue processing the print statement
+			token = peekToken();
+		} while (token != null && !token.isEndOfCommand());
+	}
+
+	/**
+	 * Indicates if this string is a number.
+	 */
+	protected boolean isIntegerNumber(String value) {
+		for (int i=0; i<value.length(); i++) {
+			if (!Character.isDigit(value.charAt(i))) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 
@@ -300,53 +475,6 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 //	StringBuffer sourceLine, ApplesoftToken token, ApplesoftTokenizer tokenizer) {
 //		String expr = null;
 //		switch (token.getTokenValue()) {
-//			case VTAB:	expr = evaluateExpression(sourceAssembly, sourceLine);
-//						sourceAssembly.append("\tLDA ");
-//						sourceAssembly.append(expr);
-//						sourceAssembly.append("\n");
-//						sourceAssembly.append("\tSTA $25\n");
-//						sourceAssembly.append("\tJSR $FC66\n");
-//						break;
-//			case HTAB:	expr = evaluateExpression(sourceAssembly, sourceLine);
-//						sourceAssembly.append("\tLDA ");
-//						sourceAssembly.append(expr);
-//						sourceAssembly.append("\n");
-//						sourceAssembly.append("\tSTA $24\n");
-//						break;
-//			case HCOLOR:
-//						expr = evaluateExpression(sourceAssembly, sourceLine);
-//						sourceAssembly.append("\tLDX ");
-//						sourceAssembly.append(expr);
-//						sourceAssembly.append("\n");
-//						sourceAssembly.append("\tJSR $F6F0\n");
-//						break;
-//			case PRINT:
-//						expr = evaluateExpression(sourceAssembly, sourceLine);
-//						if (isIntegerVariable(expr)) {
-//							throw new IllegalArgumentException("Integer not supported in print: " + expr);
-//						} else if (isFloatVariable(expr)) {
-//							sourceAssembly.append("\tLDY #>");
-//							sourceAssembly.append(expr);
-//							sourceAssembly.append("\n");
-//							sourceAssembly.append("\tLDA #<");
-//							sourceAssembly.append(expr);
-//							sourceAssembly.append("\n");
-//							sourceAssembly.append("\tJSR $EAF9\t; MOVFM\n");
-//							sourceAssembly.append("\tJSR $ED2E\t; PRNTFAC\n");
-//						} else if (isStringVariable(expr)) {
-//							sourceAssembly.append("\tLDY #0\n");
-//							sourceAssembly.append(":loop\tLDA ");
-//							sourceAssembly.append(expr);
-//							sourceAssembly.append(",Y\n");
-//							sourceAssembly.append("\tBEQ :end\n");
-//							sourceAssembly.append("\tJSR COUT\n");
-//							sourceAssembly.append("\tINY\n");
-//							sourceAssembly.append("\tBNE :loop\n");
-//							sourceAssembly.append(":end\n");
-//						} else {
-//							throw new IllegalArgumentException("Invalid expr in print: " + expr);
-//						}
-//						break;
 //			case FOR:
 //						String loopVariable = evaluateExpression(sourceAssembly, sourceLine);
 //						if (!isFloatVariable(loopVariable)) {
@@ -385,39 +513,6 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 //		}
 //	}
 //	
-//	/**
-//	 * Evaluate an expression and return the variable name that
-//	 * contains the value.
-//	 */
-//	protected String evaluateExpression(StringBuffer sourceAssembly, StringBuffer sourceLine) {
-//		// FIXME: no type checking available
-//		ApplesoftToken token = tokenizer.getNextToken();
-//		if (token.isString()) {
-//			String value = token.getStringValue();
-//			sourceLine.append(value);
-//			if (isIntegerNumber(value)) {
-//				return addIntegerConstant(value);
-//			} else if (value.startsWith("\"")) {
-//				return addStringConstant(value);
-//			} else {	// assume variable name
-//				return addVariable(value);
-//			}
-//		} else {
-//			throw new IllegalArgumentException("Oops!");
-//		}
-//	}
-//	
-//	/**
-//	 * Indicates if this string is a number.
-//	 */
-//	protected boolean isIntegerNumber(String value) {
-//		for (int i=0; i<value.length(); i++) {
-//			if (!Character.isDigit(value.charAt(i))) {
-//				return false;
-//			}
-//		}
-//		return true;
-//	}
 //	
 //	protected String addIntegerConstant(String value) {
 //		String name = "INT" + value;
@@ -463,17 +558,5 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 //			}
 //		}
 //		return variableName;
-//	}
-//	
-//	protected boolean isIntegerVariable(String name) {
-//		return integerVariables.contains(name) || integerConstants.containsKey(name);
-//	}
-//
-//	protected boolean isFloatVariable(String name) {
-//		return floatVariables.contains(name) || floatConstants.containsKey(name);
-//	}
-//
-//	protected boolean isStringVariable(String name) {
-//		return stringVariables.contains(name) || stringConstants.containsKey(name);
 //	}
 }
