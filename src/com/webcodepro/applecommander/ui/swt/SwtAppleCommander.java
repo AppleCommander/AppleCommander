@@ -64,17 +64,7 @@ public class SwtAppleCommander implements Listener {
 	 * Launch SwtAppleCommander.
 	 */
 	public static void main(String[] args) {
-		Display display = new Display();
-		imageManager = new ImageManager(display);
-		SwtAppleCommander application = new SwtAppleCommander();
-		Shell shell = application.open(display);
-		shell.forceActive();
-		
-		while (!shell.isDisposed()) {
-			if (!display.readAndDispatch()) display.sleep();
-		}
-		
-		UserPreferences.getInstance().save();
+		new SwtAppleCommander().launch();
 	}
 
 	/**
@@ -82,9 +72,18 @@ public class SwtAppleCommander implements Listener {
 	 */
 	public void launch() {
 		Display display = new Display();
+		launch(display);
+	}
+	
+	/**
+	 * Launch SwtAppleCommander with a given display.
+	 * Primary motivation is getting S-Leak to work!
+	 */
+	public void launch(Display display) {
 		imageManager = new ImageManager(display);
 		SwtAppleCommander application = new SwtAppleCommander();
 		Shell shell = application.open(display);
+		shell.forceActive();
 		
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) display.sleep();
