@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
+import com.webcodepro.applecommander.ui.TextBundle;
 import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
 import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 
@@ -41,6 +42,7 @@ import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
  * @author Rob Greene
  */
 public abstract class Wizard {
+	private TextBundle textBundle = TextBundle.getInstance();
 	private Shell parent;
 	private Shell dialog;
 	private Image logo;
@@ -94,46 +96,46 @@ public abstract class Wizard {
 		composite.setLayoutData(rowData);
 		composite.setLayout(new FillLayout(SWT.HORIZONTAL));
 		Button button = new Button(composite, SWT.PUSH);
-		button.setText("Cancel");
+		button.setText(textBundle.get("CancelButton")); //$NON-NLS-1$
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				wizardCompleted = false;
-				dialog.close();
+				setWizardCompleted(false);
+				getDialog().close();
 			}
 		});
 		backButton = new Button(composite, SWT.PUSH);
 		backButton.setEnabled(false);
-		backButton.setText("< Back");
+		backButton.setText(textBundle.get("BackButton")); //$NON-NLS-1$
 		backButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				WizardPane current = (WizardPane) wizardPanes.pop();
-				WizardPane previous = (WizardPane) wizardPanes.peek();
-				backButton.setEnabled(wizardPanes.size() > 1);
+				WizardPane current = (WizardPane) getWizardPanes().pop();
+				WizardPane previous = (WizardPane) getWizardPanes().peek();
+				getBackButton().setEnabled(getWizardPanes().size() > 1);
 				current.dispose();
 				previous.open();
-				dialog.pack();
+				getDialog().pack();
 			}
 		});
 		nextButton = new Button(composite, SWT.PUSH);
-		nextButton.setText("Next >");
+		nextButton.setText(textBundle.get("NextButton")); //$NON-NLS-1$
 		nextButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				WizardPane current = (WizardPane) wizardPanes.peek();
+				WizardPane current = (WizardPane) getWizardPanes().peek();
 				WizardPane next = current.getNextPane();
-				wizardPanes.add(next);
-				backButton.setEnabled(wizardPanes.size() > 1);
+				getWizardPanes().add(next);
+				getBackButton().setEnabled(getWizardPanes().size() > 1);
 				current.dispose();
 				next.open();
-				dialog.pack();
+				getDialog().pack();
 			}
 		});
 		finishButton = new Button(composite, SWT.PUSH);
 		finishButton.setEnabled(false);
-		finishButton.setText("Finish");
+		finishButton.setText(textBundle.get("FinishButton")); //$NON-NLS-1$
 		finishButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				wizardCompleted = true;
-				dialog.close();
+				setWizardCompleted(true);
+				getDialog().close();
 			}
 		});
 		
@@ -207,5 +209,23 @@ public abstract class Wizard {
 	 */
 	public Shell getDialog() {
 		return dialog;
+	}
+	/**
+	 * @return Returns the backButton.
+	 */
+	protected Button getBackButton() {
+		return backButton;
+	}
+	/**
+	 * @return Returns the wizardPanes.
+	 */
+	protected Stack getWizardPanes() {
+		return wizardPanes;
+	}
+	/**
+	 * @param wizardCompleted The wizardCompleted to set.
+	 */
+	protected void setWizardCompleted(boolean wizardCompleted) {
+		this.wizardCompleted = wizardCompleted;
 	}
 }

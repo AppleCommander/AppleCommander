@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import com.webcodepro.applecommander.ui.TextBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 
 /**
@@ -42,6 +43,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  * @author Rob Greene
  */
 public class CompileFileStartPane extends WizardPane {
+	private TextBundle textBundle = TextBundle.getInstance();
 	private Composite parent;
 	private Object layoutData;
 	private Composite control;
@@ -73,12 +75,10 @@ public class CompileFileStartPane extends WizardPane {
 		layout.spacing = 3;
 		control.setLayout(layout);
 		Label label = new Label(control, SWT.WRAP);
-		label.setText("Please note that the current compiler is \n"
-			+ "very BETA and simply builds an assembly program \n"
-			+ "and stores it on your harddisk...");
+		label.setText(textBundle.get("CompileFileWarning")); //$NON-NLS-1$
 
 		label = new Label(control, SWT.WRAP);
-		label.setText("Please indicate the destination for the files:");
+		label.setText(textBundle.get("CompileFileDestinationPrompt")); //$NON-NLS-1$
 
 		directoryText = new Text(control, SWT.WRAP | SWT.BORDER);
 		if (wizard.getDirectory() != null) directoryText.setText(wizard.getDirectory());
@@ -88,38 +88,51 @@ public class CompileFileStartPane extends WizardPane {
 		directoryText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent event) {
 				Text text = (Text) event.getSource();
-				wizard.setDirectory(text.getText());
+				getWizard().setDirectory(text.getText());
 			}
 		});
 		
 		Button button = new Button(control, SWT.PUSH);
-		button.setText("Browse...");
+		button.setText(textBundle.get("BrowseButton")); //$NON-NLS-1$
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				DirectoryDialog directoryDialog = new DirectoryDialog(control.getShell());
-				directoryDialog.setFilterPath(directoryText.getText());
-				directoryDialog.setMessage(
-					"Please choose the directory to which exported files will be written");
+				DirectoryDialog directoryDialog = new DirectoryDialog(
+						getControl().getShell());
+				directoryDialog.setFilterPath(getDirectoryText().getText());
+				directoryDialog.setMessage(TextBundle.getInstance().
+						get("CompileFileDirectoryPrompt")); //$NON-NLS-1$
 				String directory = directoryDialog.open();
 				if (directory != null) {
-					directoryText.setText(directory);
+					getDirectoryText().setText(directory);
 				}
 			}
 		});
 	}
 	/**
 	 * Get the next pane. A null return indicates the end of the wizard.
-	 * @see com.webcodepro.applecommander.gui.WizardPane#getNextPane()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
 	public WizardPane getNextPane() {
 		return null;
 	}
 	/**
 	 * Dispose of resources.
-	 * @see com.webcodepro.applecommander.gui.WizardPane#dispose()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
 	 */
 	public void dispose() {
 		control.dispose();
 		control = null;
+	}
+	
+	protected Composite getControl() {
+		return control;
+	}
+
+	protected Text getDirectoryText() {
+		return directoryText;
+	}
+
+	protected CompileWizard getWizard() {
+		return wizard;
 	}
 }

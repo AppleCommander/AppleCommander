@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Label;
 
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.ui.TextBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 import com.webcodepro.applecommander.util.AppleUtil;
 
@@ -35,6 +36,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * @author Rob Greene
  */
 public class CompareDisksResultsPane extends WizardPane {
+	private TextBundle textBundle = TextBundle.getInstance();
 	private Composite parent;
 	private Object layoutData;
 	private Composite control;
@@ -71,18 +73,18 @@ public class CompareDisksResultsPane extends WizardPane {
 		label.setText(message);
 
 		label = new Label(control, SWT.WRAP);
-		label.setText("If you wish to compare more disks, click previous and start again.");
+		label.setText(textBundle.get("CompareDisksResultsPane.RestartText")); //$NON-NLS-1$
 	}
 	/**
 	 * Get the next pane. A null return indicates the end of the wizard.
-	 * @see com.webcodepro.applecommander.gui.WizardPane#getNextPane()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
 	public WizardPane getNextPane() {
 		return null;
 	}
 	/**
 	 * Dispose of resources.
-	 * @see com.webcodepro.applecommander.gui.WizardPane#dispose()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
 	 */
 	public void dispose() {
 		control.dispose();
@@ -95,41 +97,44 @@ public class CompareDisksResultsPane extends WizardPane {
 		try {
 			disk1 = new Disk(wizard.getDiskname1()).getFormattedDisks();
 		} catch (Throwable t) {
-			errorMessages.append("Unable to load disk #1: ");
-			errorMessages.append(t.getMessage());
-			errorMessages.append("\n");
+			errorMessages.append(textBundle.
+				format("CompareDisksResultsPane.UnableToLoadDiskN", //$NON-NLS-1$
+					new Object[] { new Integer(1), t.getLocalizedMessage() }));
 		}
 		FormattedDisk[] disk2 = null;
 		try {
 			disk2 = new Disk(wizard.getDiskname2()).getFormattedDisks();
 		} catch (Throwable t) {
-			errorMessages.append("Unable to load disk #2: ");
-			errorMessages.append(t.getMessage());
-			errorMessages.append("\n");
+			errorMessages.append(textBundle.
+				format("CompareDisksResultsPane.UnableToLoadDiskN", //$NON-NLS-1$
+					new Object[] { new Integer(2), t.getLocalizedMessage() }));
 		}
 		if (disk1 != null && disk2 != null) {
 			if (disk1.length != disk2.length) {
-				errorMessages.append("The two disks are of differing formats - unable to compare.\n");
+				errorMessages.append(textBundle.get(
+						"CompareDisksResultsPane.DifferentSizeError")); //$NON-NLS-1$
 			} else {
 				boolean disk1TSformat = disk1[0].isCpmFormat() || disk1[0].isDosFormat() || disk1[0].isRdosFormat(); 
 				boolean disk2TSformat = disk2[0].isCpmFormat() || disk2[0].isDosFormat() || disk2[0].isRdosFormat();
 				if (disk1TSformat && disk2TSformat) {
 					if (!AppleUtil.disksEqualByTrackAndSector(disk1[0], disk2[0])) {
-						errorMessages.append("The two disks do not contain the same data.\n"); 
+						errorMessages.append(textBundle.get(
+								"CompareDisksResultsPane.DataDiffersMessage"));  //$NON-NLS-1$
 					}
 				} else if (!disk1TSformat && !disk2TSformat) {
 					if (!AppleUtil.disksEqualByBlock(disk1[0], disk2[0])) {
-						errorMessages.append("The two disks do not contain the same data.\n");
+						errorMessages.append(textBundle.get(
+								"CompareDisksResultsPane.DataDiffersMessage"));  //$NON-NLS-1$
 					}
 				} else {
-					errorMessages.append("The two disks are not the same data format.\n");
+					errorMessages.append(textBundle.get(
+							"CompareDisksResultsPane.DifferentDataFormatError")); //$NON-NLS-1$
 				}
 			}
 		}
 		if (errorMessages.length() == 0) {
-			return "The disk images match.";
-		} else {
-			return errorMessages.toString();
+			return textBundle.get("CompareDisksResultsPane.DisksMatch"); //$NON-NLS-1$
 		}
+		return errorMessages.toString();
 	}
 }

@@ -22,6 +22,7 @@ package com.webcodepro.applecommander.ui.swt.wizard.compilefile;
 import org.eclipse.swt.widgets.Shell;
 
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.ui.TextBundle;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 import com.webcodepro.applecommander.ui.swt.wizard.Wizard;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
@@ -39,7 +40,8 @@ public class CompileWizard extends Wizard {
 	 * Constructor for ExportWizard.
 	 */
 	public CompileWizard(Shell parent, ImageManager imageManager, FormattedDisk disk) {
-		super(parent, imageManager.get(ImageManager.LOGO_COMPILE_WIZARD), "Compile Wizard");
+		super(parent, imageManager.get(ImageManager.LOGO_COMPILE_WIZARD), 
+				TextBundle.getInstance().get("CompileWizardTitle")); //$NON-NLS-1$
 		this.disk = disk;
 	}
 	/**
@@ -50,7 +52,7 @@ public class CompileWizard extends Wizard {
 	}
 	/**
 	 * Create the initial display used in the wizard.
-	 * @see com.webcodepro.applecommander.ui.swt.Wizard#createInitialWizardPane()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.Wizard#createInitialWizardPane()
 	 */
 	public WizardPane createInitialWizardPane() {
 		return new CompileFileStartPane(getContentPane(), this, null);

@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import com.webcodepro.applecommander.ui.TextBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 
 /**
@@ -41,6 +42,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  * @author Rob Greene
  */
 public class CompareDisksStartPane extends WizardPane {
+	private TextBundle textBundle = TextBundle.getInstance();
 	private Composite parent;
 	private Object layoutData;
 	private Composite control;
@@ -73,10 +75,10 @@ public class CompareDisksStartPane extends WizardPane {
 		layout.spacing = 3;
 		control.setLayout(layout);
 		Label label = new Label(control, SWT.WRAP);
-		label.setText("This wizard will compare two disk images.  Please\n" +			"choose the images and click the next button.\n");
+		label.setText(textBundle.get("CompareDisksStartPane.Description")); //$NON-NLS-1$
 
 		label = new Label(control, SWT.WRAP);
-		label.setText("Please select disk image #1:");
+		label.setText(getDiskLabel(1));
 
 		diskname1Text = new Text(control, SWT.WRAP | SWT.BORDER);
 		if (wizard.getDiskname1() != null) diskname1Text.setText(wizard.getDiskname1());
@@ -86,27 +88,26 @@ public class CompareDisksStartPane extends WizardPane {
 		diskname1Text.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent event) {
 				Text text = (Text) event.getSource();
-				wizard.setDiskname1(text.getText());
+				getWizard().setDiskname1(text.getText());
 			}
 		});
 		
 		Button button = new Button(control, SWT.PUSH);
-		button.setText("Browse...");
+		button.setText(textBundle.get("BrowseButton")); //$NON-NLS-1$
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				FileDialog fileDialog = new FileDialog(control.getShell());
-				fileDialog.setFilterPath(diskname1Text.getText());
-				fileDialog.setText(
-					"Please disk image #1");
+				FileDialog fileDialog = new FileDialog(getControl().getShell());
+				fileDialog.setFilterPath(getDiskname1Text().getText());
+				fileDialog.setText(getDiskLabel(1));
 				String filename = fileDialog.open();
 				if (filename != null) {
-					diskname1Text.setText(filename);
+					getDiskname1Text().setText(filename);
 				}
 			}
 		});
 	
 		label = new Label(control, SWT.WRAP);
-		label.setText("Please select disk image #2:");
+		label.setText(getDiskLabel(2));
 
 		diskname2Text = new Text(control, SWT.WRAP | SWT.BORDER);
 		if (wizard.getDiskname2() != null) diskname2Text.setText(wizard.getDiskname2());
@@ -115,38 +116,53 @@ public class CompareDisksStartPane extends WizardPane {
 		diskname2Text.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent event) {
 				Text text = (Text) event.getSource();
-				wizard.setDiskname2(text.getText());
+				getWizard().setDiskname2(text.getText());
 			}
 		});
 		
 		button = new Button(control, SWT.PUSH);
-		button.setText("Browse...");
+		button.setText(textBundle.get("BrowseButton")); //$NON-NLS-1$
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				FileDialog fileDialog = new FileDialog(control.getShell());
-				fileDialog.setFilterPath(diskname2Text.getText());
-				fileDialog.setText(
-					"Please disk image #2");
+				FileDialog fileDialog = new FileDialog(getControl().getShell());
+				fileDialog.setFilterPath(getDiskname2Text().getText());
+				fileDialog.setText(getDiskLabel(2));
 				String filename = fileDialog.open();
 				if (filename != null) {
-					diskname2Text.setText(filename);
+					getDiskname2Text().setText(filename);
 				}
 			}
 		});
 	}
 	/**
 	 * Get the next pane. A null return indicates the end of the wizard.
-	 * @see com.webcodepro.applecommander.gui.WizardPane#getNextPane()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
 	public WizardPane getNextPane() {
 		return new CompareDisksResultsPane(parent, wizard, layoutData);
 	}
 	/**
 	 * Dispose of resources.
-	 * @see com.webcodepro.applecommander.gui.WizardPane#dispose()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
 	 */
 	public void dispose() {
 		control.dispose();
 		control = null;
+	}
+	protected Composite getControl() {
+		return control;
+	}
+	protected Text getDiskname1Text() {
+		return diskname1Text;
+	}
+	protected Text getDiskname2Text() {
+		return diskname2Text;
+	}
+	protected CompareDisksWizard getWizard() {
+		return wizard;
+	}
+	protected String getDiskLabel(int diskNumber) {
+		return textBundle.format("CompareDisksStartPane.DiskNLabel", //$NON-NLS-1$
+				new Object[] { new Integer(diskNumber) });
 	}
 }
