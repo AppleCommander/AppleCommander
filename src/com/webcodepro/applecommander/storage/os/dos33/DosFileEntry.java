@@ -63,6 +63,11 @@ public class DosFileEntry implements FileEntry {
 	 * Offset into sector of FileEntry location.
 	 */
 	private int offset;
+	/**
+	 * Temporary location to store the DOS address (which is stored with
+	 * the contents of the data file).
+	 */
+	private Integer address;
 
 	/**
 	 * Constructor for DosFileEntry.
@@ -354,11 +359,20 @@ public class DosFileEntry implements FileEntry {
 	 * Specifically, if the filetype is binary, the length and
 	 * address need to be set.  If the filetype is applesoft or
 	 * integer basic, the start address needs to be set.
+	 * 
+	 * Note: The address can be set before the data is saved or
+	 * after the data is saved.  This is an attempt to make the
+	 * API more easily usable.
 	 */
 	public void setFileData(byte[] data) throws DiskFullException {
 		if (isBinaryFile()) {
 			byte[] filedata = new byte[data.length + 4];
-			AppleUtil.setWordValue(filedata, 0, 0);		// Needs to be set via setAddress
+			if (address != null) {
+				AppleUtil.setWordValue(filedata, 0, address.intValue());
+				address = null;
+			} else {
+				AppleUtil.setWordValue(filedata, 0, 0);		// Needs to be set via setAddress
+			}
 			AppleUtil.setWordValue(filedata, 2, data.length);
 			System.arraycopy(data, 0, filedata, 4, data.length);
 			disk.setFileData(this, filedata);
@@ -472,8 +486,12 @@ public class DosFileEntry implements FileEntry {
 	public void setAddress(int address) {
 		try {
 			byte[] rawdata = disk.getFileData(this);
-			AppleUtil.setWordValue(rawdata, 0, address);
-			disk.setFileData(this, rawdata);
+			if (rawdata == null || rawdata.length == 0) {
+				this.address = new Integer(address);
+			} else {
+				AppleUtil.setWordValue(rawdata, 0, address);
+				disk.setFileData(this, rawdata);
+			}
 		} catch (DiskFullException e) {
 			// Should not be possible when the file isn't being modified!!
 			throw new IllegalStateException("Unable to set address for DosFileEntry [" 
