@@ -126,6 +126,14 @@ public class GraphicsFileFilter implements FileFilter {
 			return new byte[0];
 		}
 		if (isSuperHiresMode()) {
+			if (fileData.length < 32767) {	// leaves 1 byte of leeway
+				fileData = AppleUtil.unpackBytes(fileData);
+				if (fileData.length == 32767) {
+					byte[] data = new byte[32768];
+					System.arraycopy(fileData, 0, data, 0, fileData.length);
+					fileData = data;
+				}
+			}
 			int base = 0;
 			byte[] pallettes = new byte[0x200];
 			System.arraycopy(fileData, 0x7e00, pallettes, 0, pallettes.length);
