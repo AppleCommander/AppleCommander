@@ -35,6 +35,8 @@ import java.io.PrintWriter;
  * values. The category entries are in the same order that the category
  * names appear in the header record.
  * <p>
+ * See: http://www.gno.org/pub/apple2/doc/apple/filetypes/ftn.19.xxxx
+ * <p>
  * Date Created: February 15, 2003
  * @author Rob Greene
  */
