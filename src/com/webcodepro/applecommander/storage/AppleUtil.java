@@ -150,7 +150,19 @@ public class AppleUtil {
 	}
 	
 	/**
-	 * Extract a Pascal date from the buffer.
+	 * Set a Pascal string into the buffer.
+	 */
+	public static void setPascalString(byte[] buffer, int offset, String string, int maxLength) {
+		int len = Math.min(string.length(), maxLength);
+		buffer[offset] = (byte) (len & 0xff);
+		setString(buffer, offset+1, string, len);
+	}
+	
+	/**
+	 * Extract a Pascal date from the buffer.<br>
+	 * Bits 0-3: month (1-12)<br>
+     * Bits 4-8: day (1-31)<br>
+     * Bits 9-15: year (0-99)
 	 */
 	public static Date getPascalDate(byte[] buffer, int offset) {
 		int pascalDate = getWordValue(buffer, offset);
@@ -161,6 +173,24 @@ public class AppleUtil {
 		if (year < 100) year+= 1900;
 		GregorianCalendar gc = new GregorianCalendar(year, month, day);
 		return gc.getTime();
+	}
+	
+	/**
+	 * Set a Pascal data to the buffer.<br>
+	 * Bits 0-3: month (1-12)<br>
+     * Bits 4-8: day (1-31)<br>
+     * Bits 9-15: year (0-99)
+     */
+	public static void setPascalDate(byte[] buffer, int offset, Date date) {
+		GregorianCalendar gc = new GregorianCalendar();
+		gc.setTime(date);
+		int month = gc.get(GregorianCalendar.MONTH);
+		int day = gc.get(GregorianCalendar.DAY_OF_MONTH);
+		int year = gc.get(GregorianCalendar.YEAR) % 100;
+		int pascalDate = (month & 0x000f)
+			| ((day << 4) & 0x00f0)
+			| ((year << 8) & 0xff00);
+		setWordValue(buffer, offset, pascalDate);
 	}
 
 	/**
@@ -209,5 +239,27 @@ public class AppleUtil {
 
 		GregorianCalendar gc = new GregorianCalendar(year, month, day, hour, minute);
 		return gc.getTime();
+	}
+	
+	/**
+	 * Make a "nice" filename.  Some of the Apple ][ file names
+	 * have characters that are unpalatable - such as "/" or
+	 * "\" or ":" which are directory separators along with other
+	 * characters that are not allowed by various operating systems.
+	 * This method just sanitizes the filename.
+	 */
+	public static String getNiceFilename(String filename) {
+		StringBuffer buf = new StringBuffer();
+		for (int i=0; i<filename.length(); i++) {
+			char ch = filename.charAt(i);
+			if (ch == '\\' || ch == '/' || ch == '?' || ch == '*'
+				|| ch == ':' || ch == '"' || ch == '<' || ch == '>'
+				|| ch == '|') {
+				// bad characters - skip them
+			} else {
+				buf.append(ch);
+			}
+		}
+		return buf.toString();
 	}
 }
