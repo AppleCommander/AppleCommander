@@ -14,6 +14,9 @@ This is the internal list of items that need to be done.
     (dos33, prodos, cpm, rdos, pascal);
   - Filters are now in the filters package.
   - General storage classes remain under storage (Disk, FormattedDisk, etc).
+* Added formatted assembly FileFilter.  Understands Merlin format source files.
+  Need to recognize various formats - T.*, *.S, etc.  Need examples for other
+  formats (Orca, APW, etc).
 
 --- FUTURE 1.3.x ---
 o Create reusable show dialog messages (they're scattered all over right now) to clean
@@ -26,13 +29,12 @@ o Create subdirectories as appropriate (ProDOS).
 o Improve file preview for Integer BASIC files.
 o Improve file preview for AppleWorks Word Processor files (make implementation
   generic to a Word Processor).
-o Add formatted assembly FileFilter.  Needs to understand multiple assembly programs.
-  Need to recognize various formats - T.*, *.S, etc.  (Merlin, Orca, APW, etc).
 o SWT image handlers do not appear to work correctly.  BMP works - but color seems
   off.  GIF/PNG/JPEG give errors or a black image.
 o It has been reported that Apple Pascal includes extra information at the beginning
   and/or the end of a line - need to resolve this for the preview and export function.
 o Resolve OS X issues where window cannot come to the foreground.
+o Windows do not scroll an appropriate amount: PgUp/PgDn, arrows, mousewheel.
  
 --- FUTURE 1.4.x (or later) ---
 o Add RDOS writing capability.
