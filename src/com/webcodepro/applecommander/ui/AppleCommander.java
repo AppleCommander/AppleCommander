@@ -31,7 +31,7 @@ import com.webcodepro.applecommander.ui.swt.SwtAppleCommander;
  * @author: Rob Greene
  */
 public class AppleCommander {
-	public static final String VERSION = "1.2.3";
+	public static final String VERSION = "1.2.4pre";
 	public static final String COPYRIGHT = "Copyright (c) 2002-2003";
 	/**
 	 * Launch AppleCommander.
