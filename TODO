@@ -3,12 +3,17 @@ THINGS TO DO
 This is the internal list of items that need to be done.
 
 --- 1.2.1 ---
-TBD
+* Now carries margin setting through, sets font to Courier New (more
+  realistic formatting), and fixes boldface not being turned off
+  correctly when converting AWP files to RTF format.
+* Import could/should choose the filetype based upon the file extension for files
+  being imported. Mostly useful for ProDOS; unless a filetype mapping is 
+  introduced.
+* Extract AppleWorks Data Base files.
 
 --- FUTURE ---
 o Import file specification should only allow address editing if the filetype
   requires it.
-o Import from right-click menu needs to be enabled.
 o Save does not allow the disk image location to be chosen for new images. (Maybe
   the wizard should pay more attention?)
 o The information tab does not get updated.  Now that the disk can be modified,
@@ -19,14 +24,13 @@ o Add RDOS writing capability.
 o Add Apple Pascal writing capability.
 o HDV disks are not always created to their full capacity.  AppleCommander, however,
   assumes that the size of the disk on disk is the size of the disk.  (Really!)
-o Import could/should choose the filetype based upon the file extension for files
-  being imported.
-o Allow group assignments in import.
-o Provide a Swing GUI so people are not "limited" to SWT.
+o Allow group assignments in import. Not really applicable now that datatype is
+  chosen by file extension.
+o Provide a Swing GUI so people are not "limited" to SWT.  This may be tossed.
 o Provide a command-line interface (scripting - ie, mass load).
 o Add drag-and-drop capability.
 o Compile into native executable (hopefully Linux and Windows).
 o Sector/Block editor.
 o Extract various additional document types (ie, other AppleWorks files).
 o Change disk format.
-
+o Short-cut keys would be nice.
