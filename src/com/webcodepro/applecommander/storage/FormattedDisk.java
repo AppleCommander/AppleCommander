@@ -275,7 +275,7 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 				if (entry.isDirectory()) {
 					theFileEntry = getFile(
 						((DirectoryEntry)entry).getFiles(), filename);
-					break;
+					if (theFileEntry != null) break;
 				}
 				String otherFilename = entry.getFilename();
 				if (otherFilename != null) otherFilename = otherFilename.trim();
