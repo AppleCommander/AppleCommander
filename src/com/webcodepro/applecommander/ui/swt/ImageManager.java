@@ -64,6 +64,7 @@ public class ImageManager {
 	public static final String ICON_VIEW_AS_TEXTFILE = "text.gif";
 	public static final String ICON_VIEW_AS_WORDPROCESSOR = "wordprocessor.gif";
 	public static final String ICON_VIEW_AS_BASIC_PROGRAM = "appleicon.gif";
+	public static final String ICON_COPY = "copy.gif";
 
 	public static final String LOGO_EXPORT_WIZARD = "ExportWizardLogo.gif";
 	public static final String LOGO_APPLECOMMANDER = "AppleCommanderLogo.gif";
@@ -86,6 +87,7 @@ public class ImageManager {
 		ICON_PRINT_FILE,			ICON_VIEW_IN_RAW_HEX,
 		ICON_VIEW_AS_SPREADSHEET,	ICON_VIEW_AS_TEXTFILE,
 		ICON_VIEW_AS_WORDPROCESSOR,	ICON_VIEW_AS_BASIC_PROGRAM,
+		ICON_COPY,
 		// Logos:
 		LOGO_EXPORT_WIZARD,			LOGO_APPLECOMMANDER,
 		LOGO_DISK_IMAGE_WIZARD,		LOGO_IMPORT_WIZARD,
