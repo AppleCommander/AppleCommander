@@ -34,15 +34,30 @@ public interface FileEntry {
 	public String getFilename();
 	
 	/**
+	 * Set the name of this file.
+	 */
+	public void setFilename(String filename);
+	
+	/**
 	 * Return the filetype of this file.
 	 * This will be OS specific.
 	 */
 	public String getFiletype();
 	
 	/**
+	 * Set the filetype.
+	 */
+	public void setFiletype(String filetype);
+	
+	/**
 	 * Identify if this file is locked.
 	 */
 	public boolean isLocked();
+	
+	/**
+	 * Set the lock indicator.
+	 */
+	public void setLocked(boolean lock);
 	
 	/**
 	 * Compute the size of this file (in bytes).
@@ -67,6 +82,11 @@ public interface FileEntry {
 	 * Identify if this file has been deleted.
 	 */
 	public boolean isDeleted();
+	
+	/**
+	 * Delete the file.
+	 */
+	public void delete();
 
 	/**
 	 * Get the standard file column header information.
@@ -81,6 +101,12 @@ public interface FileEntry {
 	 * and length into Applesoft files.
 	 */
 	public byte[] getFileData();
+	
+	/**
+	 * Set file data.  This, essentially, is saving data to disk using this
+	 * file entry.
+	 */
+	public void setFileData(byte[] data) throws DiskFullException;
 	
 	/**
 	 * Get the suggested FileFilter.  This appears to be operating system
