@@ -34,6 +34,20 @@ import java.util.Properties;
  */
 public class ProdosFormatDisk extends FormattedDisk {
 	/**
+	 * The location of the "next block" pointer in a directory entry.
+	 * This is a 2-byte word (lo/hi) format.  $0000 is end of directory.
+	 */
+	private static final int NEXT_BLOCK_POINTER = 2;
+	/**
+	 * The location of the "previous block" pointer in a directory entry.
+	 * This is a 2-byte word (lo/hi) format.  $0000 is start of directory.
+	 */
+	private static final int PREV_BLOCK_POINTER = 0;
+	/**
+	 * The Volume Directory block number.
+	 */
+	private static final int VOLUME_DIRECTORY_BLOCK = 2;
+	/**
 	 * A complete list of all known ProDOS filetypes.  Note that this
 	 * list really cannot be complete, as there are multiple mappings per
 	 * identifier in some cases - differentiated by AUXTYPE.  This is
@@ -195,7 +209,25 @@ public class ProdosFormatDisk extends FormattedDisk {
 				}
 				offset+= ProdosCommonEntry.ENTRY_LENGTH;
 			}
-			blockNumber = AppleUtil.getWordValue(block, 2);
+			int nextBlockNumber = AppleUtil.getWordValue(block, NEXT_BLOCK_POINTER);
+			if (nextBlockNumber == 0 && directory instanceof ProdosSubdirectoryHeader) {
+				byte[] volumeBitmap = readVolumeBitMap();
+				nextBlockNumber = findFreeBlock(volumeBitmap);
+				setBlockUsed(volumeBitmap, nextBlockNumber);
+				writeVolumeBitMap(volumeBitmap);
+				byte[] oldBlock = readBlock(blockNumber);
+				AppleUtil.setWordValue(oldBlock, NEXT_BLOCK_POINTER, nextBlockNumber);
+				writeBlock(blockNumber, oldBlock);
+				byte[] nextBlock = new byte[BLOCK_SIZE];
+				AppleUtil.setWordValue(nextBlock, PREV_BLOCK_POINTER, blockNumber);
+				writeBlock(nextBlockNumber, nextBlock);
+				ProdosSubdirectoryHeader header = (ProdosSubdirectoryHeader) directory;
+				int blockCount = header.getProdosDirectoryEntry().getBlocksUsed();
+				blockCount++;
+				header.getProdosDirectoryEntry().setBlocksUsed(blockCount);
+				header.getProdosDirectoryEntry().setEofPosition(blockCount * BLOCK_SIZE);
+			}
+			blockNumber = nextBlockNumber;
 		}
 		throw new DiskFullException("Unable to allocate more space for another file!");
 	}
@@ -205,7 +237,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.Disk#getFiles()
 	 */
 	public List getFiles() {
-		return getFiles(2);
+		return getFiles(VOLUME_DIRECTORY_BLOCK);
 	}
 
 	/**
@@ -225,17 +257,19 @@ public class ProdosFormatDisk extends FormattedDisk {
 				} else if (!tester.isEmpty()) {
 					ProdosFileEntry fileEntry = 
 						new ProdosFileEntry(this, blockNumber, offset);
-					files.add(fileEntry);
 					if (fileEntry.isDirectory()) {
 						int keyPointer = fileEntry.getKeyPointer();
-						fileEntry.setSubdirectoryHeader(
-							new ProdosSubdirectoryHeader(this, keyPointer));
-						fileEntry.setFiles(getFiles(keyPointer));
+						ProdosDirectoryEntry directoryEntry =
+							new ProdosDirectoryEntry(this, blockNumber, offset,
+								new ProdosSubdirectoryHeader(this, keyPointer));
+						files.add(directoryEntry);
+					} else {
+						files.add(fileEntry);
 					}
 				}
 				offset+= ProdosCommonEntry.ENTRY_LENGTH;
 			}
-			blockNumber = AppleUtil.getWordValue(block, 2);
+			blockNumber = AppleUtil.getWordValue(block, NEXT_BLOCK_POINTER);
 		}
 		return files;
 	}
@@ -280,10 +314,21 @@ public class ProdosFormatDisk extends FormattedDisk {
 	}
 
 	/**
-	 * Identify if this disk format is capable of having directories.
-	 * @see com.webcodepro.applecommander.storage.Disk#hasDirectories()
+	 * Identify if additional directories can be created.  This
+	 * may indicate that directories are not available to this
+	 * operating system or simply that the disk image is "locked"
+	 * to writing.
 	 */
-	public boolean canHaveDirectories() {
+	public boolean canCreateDirectories() {
+		return false;
+	}
+	
+	/**
+	 * Indicates if this disk image can create a file.
+	 * If not, the reason may be as simple as it has not beem implemented
+	 * to something specific about the disk.
+	 */
+	public boolean canCreateFile() {
 		return true;
 	}
 	
@@ -414,16 +459,17 @@ public class ProdosFormatDisk extends FormattedDisk {
 	}
 	
 	/**
+	 * Identify if this disk format is capable of having directories.
+	 * @see com.webcodepro.applecommander.storage.Disk#canHaveDirectories()
+	 */
+	public boolean canHaveDirectories() {
+		return true;
+	}
+
+	/**
 	 * Indicates if this disk image can write data to a file.
 	 */
 	public boolean canWriteFileData() {
-		return true;
-	}
-	
-	/**
-	 * Indicates if this disk image can create a file.
-	 */
-	public boolean canCreateFile() {
 		return true;
 	}
 	
