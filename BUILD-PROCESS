@@ -21,15 +21,19 @@ on SourceForge.  Plan about 60 minutes for the release process.
  6. Build Javadoc using sourceZip target in build.xml.
 
  7. Make AppleCommander source build.
+ 
+ 8. Build native AppleCommander executable for Windows.
+ 
+ 9. Build native AppleCommander executable for Linux.
 
- 8. Upload web pages (including javadoc) to AppleCommander site.
+10. Upload web pages (including javadoc) to AppleCommander site.
 
- 9. Upload files to SourceForge upload site.
+11. Upload files to SourceForge upload site.
 
-10. Make release through SourceForge release system.
+12. Make release through SourceForge release system.
 
-11. Post announcement to AppleCommander project site on SourceForge.
+13. Post announcement to AppleCommander project site on SourceForge.
 
-12. Post message to news groups:
+14. Post message to news groups:
       * comp.emulators.apple2
       * comp.sys.apple2
