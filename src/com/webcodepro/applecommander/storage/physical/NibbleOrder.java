@@ -19,9 +19,9 @@
  */
 package com.webcodepro.applecommander.storage.physical;
 
-import com.webcodepro.applecommander.util.AppleUtil;
-
 import java.util.Arrays;
+
+import com.webcodepro.applecommander.util.AppleUtil;
 
 /**
  * Supports disk images stored in nibbilized DOS physical order.
@@ -101,16 +101,14 @@ public class NibbleOrder extends DosOrder {
 		int offset = 0;
 		byte[] addressField = new byte[14];
 		boolean found = false;
-		while (!found && offset < trackData.length) {
+		int attempts = getSectorsPerTrack();
+		while (!found && attempts >= 0) {
 			int nextOffset = locateField(0xd5, 0xaa, 0x96, trackData, addressField, offset);
-			if (nextOffset < offset) {	// we wrapped!
-				throw new IllegalArgumentException("Unable to locate physical sector "
-					+ sector + " on track " + track);
-			}
+			attempts--; 
 			offset = nextOffset;
 			int t = decodeOddEven(addressField, 5);
 			int s = decodeOddEven(addressField, 7);
-			found = (t == track && s == sector); 
+			found = (t == track && s == sector);
 		}
 		if (!found) {
 			throw new IllegalArgumentException("Unable to locate physical sector "
