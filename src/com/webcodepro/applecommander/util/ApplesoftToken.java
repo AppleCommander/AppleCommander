@@ -78,4 +78,16 @@ public class ApplesoftToken {
 		return tokenValue;
 	}
 
+	/**
+	 * Render the token as a useful String.
+	 */
+	public String toString() {
+		if (isLineNumber()) {
+			return Integer.toString(getLineNumber());
+		} else if (isToken()) {
+			return getTokenString() + " " + Integer.toHexString(getTokenValue());
+		} else {
+			return getStringValue();
+		}
+	}
 }
