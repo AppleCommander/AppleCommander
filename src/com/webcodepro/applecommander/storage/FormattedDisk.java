@@ -32,7 +32,7 @@ import java.util.List;
  * Date created: Oct 5, 2002 3:51:44 PM
  * @author: Rob Greene
  */
-public abstract class FormattedDisk extends Disk {
+public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	/**
 	 * Use this inner class for label/value mappings in the disk info page.
 	 */
@@ -127,25 +127,10 @@ public abstract class FormattedDisk extends Disk {
 	}
 
 	/**
-	 * Identify if this disk format is capable of having directories.
-	 */
-	public abstract boolean canHaveDirectories();
-
-	/**
 	 * Return the name of the disk.  Not the physical file name,
 	 * but "DISK VOLUME #xxx" (DOS 3.3) or "/MY.DISK" (ProDOS).
 	 */
 	public abstract String getDiskName();
-
-	/**
-	 * Retrieve a list of files.
-	 */
-	public abstract List getFiles();
-	
-	/**
-	 * Create a new FileEntry.
-	 */
-	public abstract FileEntry createFile() throws DiskFullException;
 	
 	/**
 	 * Identify the operating system format of this disk.
@@ -245,13 +230,11 @@ public abstract class FormattedDisk extends Disk {
 	 * to something specific about the disk (such as read-only image).
 	 */
 	public abstract boolean canWriteFileData();
-	
+
 	/**
-	 * Indicates if this disk image can create a file.
-	 * If not, the reason may be as simple as it has not beem implemented
-	 * to something specific about the disk.
+	 * Identify if this disk format is capable of having directories.
 	 */
-	public abstract boolean canCreateFile();
+	public abstract boolean canHaveDirectories();
 	
 	/**
 	 * Indicates if this disk image can delete a file.
@@ -290,7 +273,8 @@ public abstract class FormattedDisk extends Disk {
 			for (int i=0; i<files.size(); i++) {
 				FileEntry entry = (FileEntry) files.get(i);
 				if (entry.isDirectory()) {
-					theFileEntry = getFile(entry.getFiles(), filename);
+					theFileEntry = getFile(
+						((DirectoryEntry)entry).getFiles(), filename);
 					break;
 				}
 				String otherFilename = entry.getFilename();
@@ -361,4 +345,13 @@ public abstract class FormattedDisk extends Disk {
 	 * Indicates if this filetype requires an address component.
 	 */
 	public abstract boolean needsAddress(String filetype);
+
+	/**
+	 * Get the FormattedDisk associated with this DirectoryEntry.
+	 * This is useful to interfaces that need to retrieve the associated
+	 * disk.
+	 */
+	public FormattedDisk getFormattedDisk() {
+		return this;
+	}
 }
