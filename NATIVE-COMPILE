@@ -1,0 +1,48 @@
+Notes on attempts to compile AppleCommander natively... ultimately should
+be directions!
+
+
+Issues:
+1) Need SWT code and need to compile it for all interested platforms.
+2) Unable to handle graphics in native mode.  Need to patch code in
+   compile process for this.
+3) Main cannot reside within a package - need to patch code in compile
+   process for this.
+
+
+*********************
+**     LINUX       **
+*********************
+
+com.webcodepro.applecommander.storage:
+=====================================
+These are generated in when trying to compile test and storage package.  The
+JAR file must be valid (used by GCJ itself) and the classpath cannot use any
+shortcuts (like "~" in Linux).  Commands:
+
+	gcj --classpath=AppleCommander-1.1.1b.jar -c *.java
+	gcj -shared -o storage.so *.o
+	
+Note that graphics will be an issue.  GraphicsFileFilter needed to be patched
+to be (essentially) useless.  The SUN JPEGCodec is not available, nor is the
+ImageIO library.  GCJ uses something less than JDK 1.4, presumably as the 
+supported JDK level.
+
+com.webcodepro.applecommander.test:
+==================================
+If JUnit is not available (or wanted), remove any references to JUnit.
+(Make sure the assert statements have been removed also.)  The main method
+should execute tests directly.  This class cannot be in a package, else GCJ
+will not be happy with it.  Commands used to compile:
+
+	gcj --classpath=AppleCommander-1.1.1b.jar -c DoIt.java 
+	gcj --main=DoIt -o DoIt DoIt.o storage.so 
+	
+"DoIt" was a highly modified version of DiskHelperTest.
+
+
+**********************
+**     WINDOWS      **
+**********************
+
+Not attempted yet.  Need to get a Windows version of GCJ!
