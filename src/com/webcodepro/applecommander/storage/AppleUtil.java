@@ -31,9 +31,18 @@ import java.util.GregorianCalendar;
  * @author: Rob Greene
  */
 public class AppleUtil {
+	/**
+	 * Bit masks used for the bit shifting or testing operations.
+	 */
 	private static byte[] masks = { 
 			(byte)0x01, (byte)0x02, (byte)0x04, (byte)0x08, 
 			(byte)0x10, (byte)0x20, (byte)0x40, (byte)0x80 };
+	/**
+	 * Valid hex digits used when encuding or decoding hex.
+	 */
+	private static String[] hexDigits = { 
+			"0", "1", "2", "3", "4", "5", "6", "7", 
+			"8", "9", "A", "B", "C", "D", "E", "F" };
 
 	/**
 	 * Compute the value of a word.
@@ -238,11 +247,9 @@ public class AppleUtil {
 	 * Format a byte value as hexidecimal.
 	 */
 	public static String getFormattedByte(int byt) {
-		String[] values = { "0", "1", "2", "3", "4", "5", "6", "7", 
-			"8", "9", "A", "B", "C", "D", "E", "F" };
 		int byt1 = byt & 0x0f;
 		int byt2 = (byt & 0xf0) >> 4;
-		return values[byt2] + values[byt1];
+		return hexDigits[byt2] + hexDigits[byt1];
 	}
 	
 	/**
@@ -251,6 +258,25 @@ public class AppleUtil {
 	public static String getFormattedWord(int word) {
 		return getFormattedByte((word & 0xff00) >> 8)
 			+ getFormattedByte(word & 0x00ff);
+	}
+	
+	/**
+	 * Convert a typical Apple formatted word.  This is essentially
+	 * a hex string that may start with a '$' and has 1 - 4 digits.
+	 */
+	public static int convertFormattedWord(String word) {
+		int value = 0;
+		for (int i=0; word != null && i<word.length(); i++) {
+			char ch = word.charAt(i);
+			for (int nybble = 0; nybble < hexDigits.length; nybble++) {
+				if (ch == hexDigits[nybble].charAt(0)) {
+					value <<= 4;
+					value += nybble;
+					break;
+				}
+			}
+		}
+		return value;
 	}
 	
 	/**
