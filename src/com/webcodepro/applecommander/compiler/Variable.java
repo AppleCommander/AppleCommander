@@ -87,6 +87,14 @@ public class Variable {
 	}
 	
 	/**
+	 * Answers true if this is a number.
+	 */
+	public boolean isNumber() {
+		return isConstantFloat() || isConstantInteger()
+			|| isTypeFloat() || isTypeInteger();
+	}
+	
+	/**
 	 * Answers true if this is a string constant.
 	 */
 	public boolean isConstantString() {
