@@ -1,0 +1,244 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+	<TITLE>Apple II</TITLE>
+	<META NAME="generator" CONTENT="BBEdit 6.5">
+</HEAD>
+<BODY>
+<HR>
+<CENTER>
+<H2>John B. Matthews, M.D.</H2>
+<A HREF="index.html">Return home.</A>
+</CENTER>
+<HR>
+<BR>
+<A HREF="ac.tgz">Download ac, a command-line Apple II disk image tool.</A><BR>
+<A HREF="http://sourceforge.net/projects/applecommander/">Visit the AppleCommander home page on Source Forge.</A><BR><BR>
+<HR>
+<H3>ac, a command-line Apple II disk image tool.</H3>
+
+<B>Introduction</B><BR><BR>
+
+"ac" is a command line interface to Rob Greene's AppleCommander, a java based tool for working with Apple ][ disk images. It works with ProDOS, DOS 3.3, Pascal and other disk images. The program is ideally suited to automate the transfer of compiler/assembler output onto an Apple II disk image<BR><BR>
+
+The program is provided under the GNU Public License, a copy of which is attached. You should read the license before using ac, noting that there is NO WARRANTY OF ANY KIND. Because here is NO LIABILITY FOR DAMAGES, never use ac on an image for which you do not have a backup.<BR><BR>
+
+<B>Installing ac</B><BR><BR>
+
+After downloading the file ac.tgz, create a directory to hold the files and unpack ac.tgz with the tar command:<BR>
+<PRE>
+	mkdir ac
+	cd ac
+	tar -zxvf ac.tgz
+</PRE>
+
+<B>Using ac</B><BR><BR>
+
+The java classes for ac are in the file <TT>ac.jar</TT>.<BR><BR>
+
+The <TT>-p140</TT> command creates a blank 140K ProDOS disk image; <TT>-p800</TT> creates an 800K image. To create an image named misc.dsk having the volume name test, enter the command:<BR>
+<PRE>
+	java -jar ac.jar -p140 misc.dsk test
+</PRE>
+The <TT>-l</TT> command lists the directory of a disk image. To examine a disk image named misc.dsk, enter the command:<BR>
+<PRE>
+	java -jar ac.jar -l misc.dsk
+</PRE>
+The <TT>-e</TT> command lets you examine a file by printing a readable version to standard output. To examine a file named fred on a disk named misc.dsk, enter the command:<BR>
+<PRE>
+	java -jar ac.jar -e fred misc.dsk<BR>
+</PRE>
+Because binary files are difficult to read, you may want to send the output to a program that can show the data in hexadecimal form:<BR>
+<PRE>
+	java -jar ac.jar -e fred misc.dsk | hexdump<BR>
+</PRE>
+The <TT>-g</TT> command gets a file in its raw form. To copy a file named fred from misc.dsk to a file named ethel on your file system, enter the command:<BR>
+<PRE>
+	java -jar ac.jar -g fred misc.dsk > ethel<BR>
+</PRE>
+The <TT>-p</TT> command puts data on a disk image. Suppose ethel is a binary file meant to start at address 2048 ($800). To put the binary file named ethel back into a file named fred with starting address 1028 on the image named misc.dsk:<BR>
+<PRE>
+	cat ethel | java -jar ac.jar -p fred bin 2048 misc.dsk<BR>
+</PRE>
+The <TT>-d</TT> command deletes a file from an image:<BR>
+<PRE>
+	java -jar ac.jar -p fred misc.dsk<BR>
+</PRE>
+To copy a file from one image to another, do something like this:<BR>
+<PRE>
+	java -jar ac.jar -g fred one.dsk | java -jar ac.jar -p fred bin 2048 another.dsk<BR>
+</PRE>
+For a quick list of ac options, enter the <TT>-h</TT> command:<BR>
+<PRE>
+	java -jar ac.jar -h<BR>
+</PRE>
+The result is shown:<BR>
+<PRE>
+	AppleCommander command line options:
+	-l <imagename> list directory of image.
+	-e <filename> <imagename> export file from image to stdout.
+	-g <filename> <imagename> get raw file from image to stdout.
+	-p <destname> <type> <addr> <imagename> put stdin
+	   in destname on image, using file type and address.
+	-d <filename> <imagename> delete file from image.
+	-p140 <imagename> <volname> create a 140K ProDOS image.
+	-p800 <imagename> <volname> create a 800K ProDOS image.
+</PRE>
+
+<B>Known problems</B><BR><BR>
+
+To replace an existing file on an image, you must delete it first; ac will create as many duplicate entries as you specify, only one of which will be accessible to the operating system.<BR><BR>
+
+Getting a file from a ProDOS image will recursively search all directories, returning the first match. In contrast, files can only be put in the top level directory.<BR><BR>
+
+<B>Changes to Apple Commander v1.2.3</B><BR><BR>
+
+The following changes were made to AppleCommander v1.2.3 to make it compatible with ac:
+
+1. When compiling the package storage without swt, modify AppleWorksWordProcessorFileFilter to not import ui.AppleCommander or use AppleCommander.VERSION in the filter.<BR><BR>
+
+2. The format of Pascal dates is correct in the comments, but the shifts and mask are off. Also, Pascal months start at one. In AppleUtil<BR>
+<PRE>
+	/**
+	 * Extract a Pascal date from the buffer.<br>
+	 * Bits 0-3: month (1-12)<br>
+	 * Bits 4-8: day (1-31)<br>
+	 * Bits 9-15: year (0-99)
+	 */
+	public static Date getPascalDate(byte[] buffer, int offset) {
+		int pascalDate = getWordValue(buffer, offset);
+		int month =  pascalDate & 0x000f - 1;
+		int day =   (pascalDate & 0x01f0) >> 4;
+		int year =  (pascalDate & 0xfe00) >> 9;
+		if (year < 50) year+= 2000;
+		if (year < 100) year+= 1900;
+		GregorianCalendar gc = new GregorianCalendar(year, month, day);
+		return gc.getTime();
+	}
+	
+	/**
+	 * Set a Pascal data to the buffer.<br>
+	 * Bits 0-3: month (1-12)<br>
+	 * Bits 4-8: day (1-31)<br>
+	 * Bits 9-15: year (0-99)
+	 */
+	public static void setPascalDate(byte[] buffer, int offset, Date date) {
+		GregorianCalendar gc = new GregorianCalendar();
+		gc.setTime(date);
+		int month = gc.get(GregorianCalendar.MONTH) + 1;
+		int day = gc.get(GregorianCalendar.DAY_OF_MONTH);
+		int year = gc.get(GregorianCalendar.YEAR) % 100;
+		int pascalDate = (month & 0x000f)
+			| ((day << 4) & 0x01f0)
+			| ((year << 9) & 0xfe00);
+		setWordValue(buffer, offset, pascalDate);
+	}
+</PRE>
+3. In strage.PascalFileEntry.getFileColumnData use SimpleDateFormat("dd-MMM-yy").<BR><BR>
+
+4. In PascalFormatDisk.getDiskName add a ":" to the volume name.<BR><BR>
+
+5. Delete spurious ':' in @author tags.<BR><BR>
+
+6. Review javadoc warnings about broken @see tags.<BR><BR>
+
+7. Like Pascal, ProDOS months start at one, while Java expects zero for January. In AppleUtil.getProdosDate, subtract one from the month:<BR>
+<PRE>
+	int month = ((ymd & 0x01e0) >> 5) - 1;	// bits 5-8
+</PRE>
+In setProdosDate add one and fix the year:
+<PRE>
+	month = gc.get(GregorianCalendar.MONTH) + 1;
+	...
+	if (year >= 2000) {
+		year -= 2000;
+	} else {
+		year -= 1900;
+	}
+</PRE>
+8. In ProdosFormatDisk.createFile(), add fileEntry.setKeyPointer(0); if this is a recyled directory entry, a subsequent call to setFileData will try to free blocks that previously belonged to the deleted file. These blocks may have subsequently been allocated to another file.<BR>
+<PRE>
+	fileEntry.setKeyPointer(0); //may have been recycled
+</PRE>
+Also, call setSeedlingFile(), rather than setSaplingFile().
+
+9. A file entry needs a header pointer: In ProdosFileEntry add<BR>
+<PRE>
+	/**
+	 * Set the block number of the  block for the directory
+	 * that describes this file.
+	 */
+	public void setHeaderPointer(int headerPointer) {
+		byte[] entry = readFileEntry();
+		AppleUtil.setWordValue(entry, 0x25, headerPointer);
+		writeFileEntry(entry);
+	}
+</PRE>
+10. Initailize header pointer in ProdosFormatDisk.createFile(), add<BR>
+<PRE>
+	int headerBlock = blockNumber;
+	...
+	fileEntry.setHeaderPointer(headerBlock);
+</PRE>
+11. In ProdosFileEntry.delete(), the file count in the entry's directory header should be decremented.  [ProDOS Tech. Ref. B.2.2 B.2.3]  Also, both the storage type and the name length should be set to zero. [ProDOS Tech. Ref. B.2.4]<BR>
+<PRE>
+	/**
+	 * Delete the file.
+	 */
+	public void delete() {
+		getDisk().freeBlocks(this);
+
+		//decrement file count in header block
+		int headerBlock = getHeaderPointer();
+		byte[] data = getDisk().readBlock(headerBlock);
+		int fileCount = AppleUtil.getWordValue(data, 0x25);
+		if (fileCount != 0) fileCount--;
+		AppleUtil.setWordValue(data, 0x25, fileCount);
+		getDisk().writeBlock(headerBlock, data);
+
+		//clear storage type and name length
+		data = readFileEntry();
+		data[0] = 0;
+		writeFileEntry(data);
+	}
+</PRE>
+12. In TextFileFilter, use PrintWriter for cross-platform line endings:<BR>
+<PRE>
+	/**
+	 * Process the given FileEntry and return a byte array 
+	 * with filtered data; use PrintWriter to get platform 
+	 * agnostic line endings.
+	 */
+	public byte[] filter(FileEntry fileEntry) {
+		byte[] fileData = fileEntry.getFileData();
+		int offset = 0;
+		ByteArrayOutputStream byteArray = new
+			ByteArrayOutputStream(fileData.length);
+		PrintWriter printWriter = new PrintWriter(byteArray, true);
+		while (offset < fileData.length) {
+			char c = (char)(fileData[offset] & 0x7f);
+			if (c != 0) {
+				if (c == 0x0d) { //Apple line end
+					printWriter.println();
+				} else {
+					printWriter.print(c);
+				}
+			}
+			offset++;
+		}
+		return byteArray.toByteArray();
+	}
+</PRE>
+13. Applesoft files require a statign address, usually 2049 ($801); to Prodos FileTypes.properties add:<BR>
+<PRE>
+	filetype.fc.address=true
+</PRE>
+
+Copyright 2003 John B. Matthews<BR>
+Distribution permitted under the terms of the GPL: http://www.gnu.org/copyleft/gpl.html.<BR>
+Last updated 06-Sep-2003<BR>
+
+<A HREF="index.html">Return home.</A>
+
+</BODY>
+</HTML>
