@@ -73,7 +73,9 @@ public class DiskWindow {
 			imageManager, this);
 		diskMapTabs = new DiskMapTab[disks.length];
 		for (int i=0; i<disks.length; i++) {
-			diskMapTabs[i] = new DiskMapTab(tabFolder, disks[i]);
+			if (disks[i].supportsDiskMap()) {
+				diskMapTabs[i] = new DiskMapTab(tabFolder, disks[i]);
+			}
 		}
 		diskInfoTab = new DiskInfoTab(tabFolder, disks);
 		tabFolder.setSelection(tabFolder.getItems()[0]);
@@ -94,8 +96,8 @@ public class DiskWindow {
 	 * Dispose of all shared resources.
 	 */
 	private void dispose(DisposeEvent event) {
-		for (int i=0; i<disks.length; i++) {
-			diskMapTabs[i].dispose();
+		for (int i=0; i<diskMapTabs.length; i++) {
+			if (diskMapTabs[i] != null) diskMapTabs[i].dispose();
 		}
 		diskInfoTab.dispose();
 
