@@ -19,7 +19,8 @@
  */
 package com.webcodepro.applecommander.ui;
 
-import com.webcodepro.applecommander.ui.swt.SwtAppleCommander;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * Launch AppleCommander.
@@ -27,21 +28,26 @@ import com.webcodepro.applecommander.ui.swt.SwtAppleCommander;
  * launch.  Additionally, there are some command-line interface switches
  * available - see the about method.
  * <p>
+ * Regarding SWT, this appliation launcher tries to not be SWT dependent.
+ * That means that SwtAppleCommander is launched purely by reflection.
+ * NOTE: This may yet prove to be a worthless trick.  If it is, remove
+ * the crud.  However, as the VERION and COPYRIGHT are in this class and
+ * are referenced in various places, it may well be worth it.
+ * <p>
  * Date created: Nov 16, 2002 9:13:25 PM
  * @author: Rob Greene
  */
 public class AppleCommander {
-	public static final String VERSION = "1.3.0";
+	public static final String VERSION = "1.3.1pre";
 	public static final String COPYRIGHT = "Copyright (c) 2002-2003";
 	/**
 	 * Launch AppleCommander.
 	 */
 	public static void main(String[] args) {
 		if (args.length == 0) {
-			try {
-				Class.forName("org.eclipse.swt.SWT");
-				SwtAppleCommander.main(args);
-			} catch (ClassNotFoundException ex) {
+			if (isSwtAvailable()) {
+				launchSwtAppleCommander(args);
+			} else {
 				System.err.println("Sorry, the SWT libraries do not appear to be available (yet).");
 				//SwingAppleCommander.main(args);
 			}
@@ -49,7 +55,7 @@ public class AppleCommander {
 			String[] extraArgs = new String[args.length - 1];
 			System.arraycopy(args, 1, extraArgs, 0, extraArgs.length);
 			if ("-swt".equalsIgnoreCase(args[0])) {
-				SwtAppleCommander.main(extraArgs);
+				launchSwtAppleCommander(args);
 			} else if ("-swing".equalsIgnoreCase(args[0])) {
 				System.err.println("Sorry, the Swing GUI is not available (yet).");
 				//SwingAppleCommander.main(extraArgs);
@@ -60,6 +66,48 @@ public class AppleCommander {
 				System.err.println("Unknown user interface specified!");
 				System.err.println("Use -swt, -swing, or -command.");
 			}
+		}
+	}
+	/**
+	 * Launch the SWT version of AppleCommander.  This method
+	 * uses reflection to load SwtAppleCommander to minimize which
+	 * classes get loaded.  This is particularly important for the
+	 * command-line version.
+	 */
+	protected static void launchSwtAppleCommander(String[] args) {
+			Class swtAppleCommander;
+			try {
+				swtAppleCommander =	Class.forName(
+					"com.webcodepro.applecommander.ui.swt.SwtAppleCommander");
+				Object object = swtAppleCommander.newInstance();
+				Method launchMethod = swtAppleCommander.
+					getMethod("launch", null);
+				launchMethod.invoke(object, null);
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				e.printStackTrace();
+			} catch (NoSuchMethodException e) {
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			}
+	}
+	/**
+	 * Test to see if SWT is available.
+	 */
+	protected static boolean isSwtAvailable() {
+		try {
+			Class.forName("org.eclipse.swt.SWT");
+			return true;
+		} catch (ClassNotFoundException ex) {
+			return false;
 		}
 	}
 }
