@@ -46,20 +46,32 @@ public class DiskWriterTest extends TestCase {
 	 */
 	private static final boolean saveImage = false;
 
+	/**
+	 * Create the DiskWriterTest.
+	 */
 	public DiskWriterTest(String name) {
 		super(name);
 	}
 
+	/**
+	 * Run the test in text mode.
+	 */
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(DiskWriterTest.class);
 	}
 
+	/**
+	 * Test writing and reading random files to a DOS 3.3 140K disk.
+	 */
 	public void testWriteToDos33() throws DiskFullException, IOException {
 		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.dsk");
 		writeFiles(disks, "B", "T", false);
 		saveDisks(disks);
 	}
-	
+
+	/**
+	 * Test writing and reading random files to a ProDOS 140K disk.
+	 */	
 	public void testWriteToProdos140kDisk() throws DiskFullException, IOException {
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"write-test-prodos-140k.dsk", "TEST", ProdosFormatDisk.APPLE_140KB_DISK);
@@ -67,6 +79,9 @@ public class DiskWriterTest extends TestCase {
 		saveDisks(disks);
 	}
 
+	/**
+	 * Test writing and reading random files to a ProDOS 800K disk.
+	 */	
 	public void testWriteToProdos800kDisk() throws DiskFullException, IOException {
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"write-test-prodos-800k.po", "TEST", ProdosFormatDisk.APPLE_800KB_DISK);
@@ -74,6 +89,9 @@ public class DiskWriterTest extends TestCase {
 		saveDisks(disks);
 	}
 
+	/**
+	 * Test writing and reading random files to a ProDOS 5MB disk.
+	 */	
 	public void testWriteToProdos5mbDisk() throws DiskFullException, IOException {
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"write-test-prodos-5mb.hdv", "TEST", ProdosFormatDisk.APPLE_5MB_HARDDISK);
@@ -81,6 +99,9 @@ public class DiskWriterTest extends TestCase {
 		saveDisks(disks);
 	}
 	
+	/**
+	 * Test creating and deleting many files on a DOS 3.3 140K disk.
+	 */
 	public void testCreateAndDeleteDos33() throws IOException {
 		FormattedDisk[] disks = DosFormatDisk.create(
 			"createanddelete-test-dos33.dsk");
@@ -88,6 +109,9 @@ public class DiskWriterTest extends TestCase {
 		saveDisks(disks);
 	}
 
+	/**
+	 * Test creating and deleting many files on an OzDOS 800K disk.
+	 */
 	public void testCreateAndDeleteOzDos() throws IOException {
 		FormattedDisk[] disks = OzDosFormatDisk.create(
 			"createanddelete-test-ozdos.po");
@@ -95,6 +119,9 @@ public class DiskWriterTest extends TestCase {
 		saveDisks(disks);
 	}
 
+	/**
+	 * Test creating and deleting many files on a UniDOS 800K disk.
+	 */
 	public void testCreateAndDeleteUniDos() throws IOException {
 		FormattedDisk[] disks = UniDosFormatDisk.create(
 			"createanddelete-test-unidos.dsk");
@@ -102,6 +129,9 @@ public class DiskWriterTest extends TestCase {
 		saveDisks(disks);
 	}
 
+	/**
+	 * Test creating and deleting many files on a ProDOS 140K disk.
+	 */
 	public void testCreateAndDeleteProdos140kDisk() throws IOException {
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"createanddelete-test-prodos-140k.dsk", "TEST", 
@@ -110,6 +140,9 @@ public class DiskWriterTest extends TestCase {
 		saveDisks(disks);
 	}
 
+	/**
+	 * Test creating and deleting many files on a ProDOS 800K disk.
+	 */
 	public void testCreateAndDeleteProdos800kDisk() throws IOException {
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"createanddelete-test-prodos-800k.dsk", "TEST",
@@ -118,6 +151,61 @@ public class DiskWriterTest extends TestCase {
 		saveDisks(disks);
 	}
 	
+	/**
+	 * Test creating, deleting, and then creating another file which re-uses
+	 * the old directory entry on a DOS 3.3 140K disk.
+	 */
+	public void testCreateDeleteCreateDosDisk() 
+	throws DiskFullException, IOException {
+		FormattedDisk[] disks = DosFormatDisk.create(
+			"createdeletecreate-test-dos-140k.dsk");
+		createDeleteCreate(disks, "B");
+		saveDisks(disks);
+	}
+
+	/**
+	 * Test creating, deleting, and then creating another file which re-uses
+	 * the old directory entry on a OzDOS 800K disk.
+	 */
+	public void testCreateDeleteCreateOzdosDisk() 
+	throws DiskFullException, IOException {
+		FormattedDisk[] disks = OzDosFormatDisk.create(
+			"createdeletecreate-test-ozdos-800k.po");
+		createDeleteCreate(disks, "B");
+		saveDisks(disks);
+	}
+
+	/**
+	 * Test creating, deleting, and then creating another file which re-uses
+	 * the old directory entry on a UniDOS 800K disk.
+	 */
+	public void testCreateDeleteCreateUnidosDisk() 
+	throws DiskFullException, IOException {
+		FormattedDisk[] disks = UniDosFormatDisk.create(
+			"createdeletecreate-test-unidos-800k.dsk");
+		createDeleteCreate(disks, "B");
+		saveDisks(disks);
+	}
+
+	/**
+	 * Test creating, deleting, and then creating another file which re-uses
+	 * the old directory entry on a ProDOS 140K disk.
+	 */
+	public void testCreateDeleteCreateProdosDisk() 
+	throws DiskFullException, IOException {
+		FormattedDisk[] disks = ProdosFormatDisk.create(
+			"createdeletecreate-test-prodos-140k.dsk", "TEST",
+			ProdosFormatDisk.APPLE_140KB_DISK);
+		createDeleteCreate(disks, "BIN");
+		saveDisks(disks);
+	}
+	
+	/**
+	 * Write many files to disk, read from disk, and verify contents.
+	 * The intention is to verify creating files is done correctly,
+	 * writing of contents is done correctly (the files are a series of
+	 * random bytes), and reading of files is done correctly.
+	 */
 	protected void writeFiles(FormattedDisk[] disks, String binaryType, 
 		String textType, boolean testText) throws DiskFullException {
 		FormattedDisk disk = disks[0];
@@ -142,6 +230,9 @@ public class DiskWriterTest extends TestCase {
 		showDirectory(disks, "AFTER FILE CREATION");
 	}
 	
+	/**
+	 * Generate randomized data for writing to disk.
+	 */
 	protected void writeFile(FormattedDisk disk, int size, String fileType,
 		boolean test) throws DiskFullException {
 		byte[] data = new byte[size];
@@ -151,6 +242,12 @@ public class DiskWriterTest extends TestCase {
 		writeFile(disk, data, fileType, test);
 	}
 	
+	/**
+	 * Create a file, write the file, and if specified, verify that the file
+	 * contents match.  The verification is optional because some files,
+	 * depending on the operating system format may not come back in the
+	 * exact same length.
+	 */
 	protected void writeFile(FormattedDisk disk, byte[] data, String fileType,
 		boolean test) throws DiskFullException {
 		FileEntry entry = disk.createFile();
@@ -167,6 +264,9 @@ public class DiskWriterTest extends TestCase {
 		}
 	}
 	
+	/**
+	 * Display the contents of a directory.
+	 */
 	protected void showDirectory(FormattedDisk[] formattedDisks, String title) {
 		System.out.println();
 		System.out.println("************************************************");
@@ -177,7 +277,7 @@ public class DiskWriterTest extends TestCase {
 			System.out.println(formattedDisk.getDiskName());
 			List files = formattedDisk.getFiles();
 			if (files != null) {
-				showFiles(files, "");
+				showFiles(files, "", false);
 			}
 			System.out.println(formattedDisk.getFreeSpace() + " bytes free.");
 			System.out.println(formattedDisk.getUsedSpace() + " bytes used.");
@@ -193,10 +293,13 @@ public class DiskWriterTest extends TestCase {
 		System.out.println();
 	}
 	
-	protected void showFiles(List files, String indent) {
+	/**
+	 * Display a list of files.
+	 */
+	protected void showFiles(List files, String indent, boolean showDeleted) {
 		for (int i=0; i<files.size(); i++) {
 			FileEntry entry = (FileEntry) files.get(i);
-			if (!entry.isDeleted()) {
+			if (showDeleted || !entry.isDeleted()) {
 				List data = entry.getFileColumnData(FormattedDisk.FILE_DISPLAY_NATIVE);
 				System.out.print(indent);
 				for (int d=0; d<data.size(); d++) {
@@ -206,11 +309,14 @@ public class DiskWriterTest extends TestCase {
 				System.out.println();
 			}
 			if (entry.isDirectory()) {
-				showFiles(entry.getFiles(), indent + "  ");
+				showFiles(entry.getFiles(), indent + "  ", showDeleted);
 			}
 		}
 	}
 	
+	/**
+	 * Draw a disk usage map.
+	 */
 	protected void showDiskUsage(FormattedDisk disk) {
 		int[] dimensions = disk.getBitmapDimensions();
 		DiskUsage usage = disk.getDiskUsage();
@@ -251,8 +357,9 @@ public class DiskWriterTest extends TestCase {
 		}
 		for (int d=0; d<disks.length; d++) {
 			FormattedDisk disk = disks[d];
-			System.out.println("Excercising disk " + disk.getDiskName() + 
-				" in the " + disk.getFormat() + " format.");
+			System.out.println("Excercising create and delete on disk " 
+				+ disk.getDiskName() + " in the " + disk.getFormat() 
+				+ " format.");
 			int originalUsed = disk.getUsedSpace();
 			int originalFree = disk.getFreeSpace();
 			for (int count=0; count<5; count++) {
@@ -279,6 +386,34 @@ public class DiskWriterTest extends TestCase {
 		}
 	}
 	
+	/**
+	 * Test a create file, delete file, create file sequence.
+	 * The expected result is that the deleted file entry is reused.
+	 */
+	protected void createDeleteCreate(FormattedDisk[] disks, String filetype) 
+	throws DiskFullException {
+		for (int d=0; d<disks.length; d++) {
+			FormattedDisk disk = disks[d];
+			System.out.println("Exercising create, delete, create sequence "
+				+ "on disk " + disk.getDiskName() + ".");
+			writeFile(disk, 5432, filetype, false);
+			List files = disk.getFiles();
+			for (int i=0; i<files.size(); i++) {
+				FileEntry entry = (FileEntry) files.get(i);
+				entry.delete();
+			}
+			writeFile(disk, 1234, filetype, false);
+			files = disk.getFiles();
+			for (int i=0; i<files.size(); i++) {
+				FileEntry entry = (FileEntry) files.get(i);
+				if (entry.isDeleted()) {
+					showFiles(files, "", true);
+					fail("There should be no deleted files");
+				}
+			}
+		}
+	}
+
 	/**
 	 * Save a disk, if the saveImage flag has been set to true.
 	 */
