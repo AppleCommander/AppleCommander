@@ -40,6 +40,15 @@ public class ImportSpecification {
 		this.targetFilename = targetFilename;
 	}
 	/**
+	 * Create the ImportSpecification with default values.
+	 */
+	public ImportSpecification(String sourceFilename, String targetFilename,
+			String filetype) {
+		this.sourceFilename = sourceFilename;
+		this.targetFilename = targetFilename;
+		this.filetype = filetype;
+	}
+	/**
 	 * Returns the address.
 	 * @return int
 	 */
