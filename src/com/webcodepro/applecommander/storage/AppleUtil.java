@@ -19,6 +19,9 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -307,5 +310,64 @@ public class AppleUtil {
 			}
 		}
 		return buf.toString();
+	}
+	
+	/**
+	 * Mimic the Apple IIGS UnPackBytes method call.  The compression is
+	 * very similar the RLE, but has the following coding conventions:<br>
+	 *     00xx xxxx = 1 to 64 bytes follow (all different)<br>
+	 *     01xx xxxx = 3, 5, 6, or 7 repeats of next byte<br>
+	 *     10xx xxxx = 1 to 64 repeats of next 4 bytes<br>
+	 *     11xx xxxx = 1 to 64 repeats of next byte taken as 4 bytes<br>
+	 * The 6 data bits are stored as length-1; hence 000000 is a length of
+	 * 1 and 111111 is a length of 64.
+	 */
+	public static byte[] unpackBytes(byte[] compressedData) {
+		ByteArrayOutputStream decompressedStream = 
+			new ByteArrayOutputStream(compressedData.length * 2);
+		int offset = 0;
+		byte data;
+		byte[] dataArray = new byte[4];
+		while (offset < compressedData.length) {
+			byte header = compressedData[offset++];
+			int length = (header & 0x3f) + 1; 	// 0x3f = 00111111
+			switch (header & 0xc0) {			// 0xc0 = 11000000
+				case 0x00:	// 00xx xxxx (copy)
+					for (int i=0; i<length; i++) {
+						decompressedStream.write(compressedData[offset++]);
+					}
+					break;
+				case 0x40:	// 01xx xxxx (repeat byte)
+					data = compressedData[offset++];
+					for (int i=0; i<length; i++) {
+						decompressedStream.write(data);
+					}
+					break;
+				case 0x80:	// 10xx xxxx (repeat next 4 bytes)
+					for (int i=0; i<4; i++) {
+						dataArray[i] = compressedData[offset++];
+					}
+					for (int i=0; i<length; i++) {
+						try {
+							decompressedStream.write(dataArray);
+						} catch (IOException ignored) {
+						}
+					}
+					break;
+				case 0xc0:	// 11xx xxxx (repeat byte 4 times length)
+					data = compressedData[offset++];
+					for (int i=0; i<4; i++) {
+						dataArray[i] = data;
+					}
+					for (int i=0; i<length; i++) {
+						try {
+							decompressedStream.write(dataArray);
+						} catch (IOException ignored) {
+						}
+					}
+					break;
+			}
+		}
+		return decompressedStream.toByteArray();
 	}
 }
