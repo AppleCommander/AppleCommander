@@ -15,7 +15,10 @@ builds the SWT swt.so file.
 Building AppleCommander for Windows using MinGW (2.0.3 with GCJ update to 3.3).
 See build/build-applecommander-mingw for the current script.
 
-1.  Using MinGW, date related support classes are not compiled in.  This is a known
+1.  Export to the filesystem AppleCommander/src/com directory tree into the build
+    directory.
+
+2.  Using MinGW, date related support classes are not compiled in.  This is a known
     issue and there is a suggested work-around posted here:
         http://gcc.gnu.org/ml/java/2002-04/msg00180.html
     Basically, force a reference to the classes which cause the error - the problem
@@ -33,6 +36,20 @@ See build/build-applecommander-mingw for the current script.
     the main method.  I am currently pasting this into AppleCommander.java itself.
     A better solution would be to do this automatically...
 
+3.  Place a copy of the AppleCommander JAR file in the build directory - name it
+    AppleCommander.jar.
+    
+4.  Copy swt.jar, libswt.a, and swt-win32-*.dll into the build directory.
+
+5.  Ensure that UPX is on the path.  You will need to set this manually.
+    I placed UPX in C:\UPX - so I use the following command:
+    	export PATH=$PATH:/c/UPX
+
+5.  Run build-applecommander-mingw script from MinGW in the build directory.
+
+6.  Distribution consists of smallest executable plus the SWT DLL file.
+
+
 *************************
 ** MISCELLANEOUS NOTES **
 *************************
@@ -46,7 +63,7 @@ Update #1:
     apply are simply not compiled nor linked into the executable. 
 
 Update #2:
-    Resources can be compiled/atteched to a specific Java class.  AppleCommander has
+    Resources can be compiled/attached to a specific Java class.  AppleCommander has
     a number of resources that should be built into the exe class.  This simplifies
     the distribution to be the AppleCommander executable and the SWT support DLL.
     See the AppleCommander build script for details.
