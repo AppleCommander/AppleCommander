@@ -93,12 +93,15 @@ public class PascalFormatDisk extends FormattedDisk {
 	}
 
 	/**
-	 * Constructor for PascalFormatDisk.
-	 * @param filename
+	 * Create a PascalFormatDisk.
 	 */
-	public PascalFormatDisk(String filename, String volumeName) {
-		super(filename, new byte[APPLE_140KB_DISK]);
-		setDiskName(volumeName);
+	public static PascalFormatDisk[] create(String filename, String volumeName, 
+		int size) {
+			
+		PascalFormatDisk disk = new PascalFormatDisk(filename, new byte[size]);
+		disk.setDiskName(volumeName);
+		disk.format();
+		return new PascalFormatDisk[] { disk };
 	}
 
 	/**

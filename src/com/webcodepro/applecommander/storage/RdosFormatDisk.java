@@ -121,12 +121,13 @@ public class RdosFormatDisk extends FormattedDisk {
 	}
 	
 	/**
-	 * Constructor for RdosFormatDisk.
-	 * @param filename
-	 * @param diskImage
+	 * Create a RdosFormatDisk.
 	 */
-	public RdosFormatDisk(String filename) {
-		super(filename, new byte[APPLE_140KB_DISK]);
+	public static RdosFormatDisk[] create(String filename) {
+		RdosFormatDisk disk = 
+			new RdosFormatDisk(filename, new byte[APPLE_140KB_DISK]);
+		disk.format();
+		return new RdosFormatDisk[] { disk };
 	}
 
 	/**
