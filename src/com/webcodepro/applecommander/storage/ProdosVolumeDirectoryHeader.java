@@ -19,6 +19,8 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import com.webcodepro.applecommander.util.AppleUtil;
+
 /**
  * Represents the ProDOS volume directory header.
  * <p>

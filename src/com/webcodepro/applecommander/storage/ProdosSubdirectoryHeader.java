@@ -19,6 +19,8 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import com.webcodepro.applecommander.util.AppleUtil;
+
 /**
  * Provides commone subdirectory attributes.
  * <p>

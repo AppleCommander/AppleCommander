@@ -19,7 +19,6 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import com.webcodepro.applecommander.storage.AppleUtil;
 import com.webcodepro.applecommander.storage.AppleWorksWordProcessorFileFilter;
 import com.webcodepro.applecommander.storage.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.BinaryFileFilter;
@@ -36,6 +35,7 @@ import com.webcodepro.applecommander.storage.TextFileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk.FileColumnHeader;
 import com.webcodepro.applecommander.ui.ImportSpecification;
 import com.webcodepro.applecommander.ui.UserPreferences;
+import com.webcodepro.applecommander.util.AppleUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

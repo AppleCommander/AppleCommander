@@ -19,7 +19,7 @@
  */
 package com.webcodepro.applecommander.test;
 
-import com.webcodepro.applecommander.storage.AppleUtil;
+import com.webcodepro.applecommander.util.AppleUtil;
 
 import junit.framework.TestCase;
 

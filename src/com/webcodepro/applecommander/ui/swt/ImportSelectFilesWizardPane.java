@@ -1,7 +1,7 @@
 package com.webcodepro.applecommander.ui.swt;
 
-import com.webcodepro.applecommander.storage.AppleUtil;
 import com.webcodepro.applecommander.ui.ImportSpecification;
+import com.webcodepro.applecommander.util.AppleUtil;
 
 import java.io.File;
 import java.util.Iterator;
