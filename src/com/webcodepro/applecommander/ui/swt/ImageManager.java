@@ -50,6 +50,7 @@ public class ImageManager {
 	private Image compileIcon;
 	private Image compileWizardLogo;
 	private Image viewFileIcon;
+	private Image saveAsIcon;
 	/**
 	 * Construct the ImageManager.
 	 */
@@ -73,6 +74,7 @@ public class ImageManager {
 		compileIcon = createImage(display, "compile.gif");
 		compileWizardLogo = createImage(display, "CompileWizardLogo.gif");
 		viewFileIcon = createImage(display, "viewfile.gif");
+		saveAsIcon = createImage(display, "saveas.gif");
 	}
 	/**
 	 * Dispose of resources.
@@ -97,6 +99,7 @@ public class ImageManager {
 		compileIcon.dispose();
 		compileWizardLogo.dispose();
 		viewFileIcon.dispose();
+		saveAsIcon.dispose();
 	}
 	/**
 	 * Creates an image.
@@ -264,5 +267,13 @@ public class ImageManager {
 	 */
 	public Image getViewFileIcon() {
 		return viewFileIcon;
+	}
+
+	/**
+	 * Returns the saveAsIcon.
+	 * @return Image
+	 */
+	public Image getSaveAsIcon() {
+		return saveAsIcon;
 	}
 }
