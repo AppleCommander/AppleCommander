@@ -333,6 +333,11 @@ public class AppleUtil {
 			year = gc.get(GregorianCalendar.YEAR);
 			minute = gc.get(GregorianCalendar.MINUTE);
 			hour = gc.get(GregorianCalendar.HOUR_OF_DAY);
+			if (year >= 2000) {
+				year -= 2000;
+			} else {
+				year -= 1900;
+			}
 		}
 		int ymd = ((year & 0x7f) << 9) | ((month & 0xf) << 5) | (day & 0x1f);
 		int hm = ((hour & 0x1f) << 8) | (minute & 0x3f);

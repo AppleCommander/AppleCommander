@@ -19,6 +19,9 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
+
 /**
  * Filter the given file data for text.
  * <p>
@@ -34,27 +37,30 @@ public class TextFileFilter implements FileFilter {
 	}
 
 	/**
-	 * Process the given FileEntry and return a byte array with filtered data.
-	 * @see com.webcodepro.applecommander.storage.FileFilter#filter(byte[])
+	 * Process the given FileEntry and return a byte array 
+	 * with filtered data; use PrintWriter to get platform 
+	 * agnostic line endings.
 	 */
 	public byte[] filter(FileEntry fileEntry) {
 		byte[] fileData = fileEntry.getFileData();
-		byte[] workingData = new byte[fileData.length];
-		int position = 0;
-		for (int i=0; i<fileData.length; i++) {
-			byte byt = fileData[i];
-			if (byt != 0) {
-				if ((byt & 0x80) != 0) {	// high bit set
-					workingData[position++] = (byte)(byt & 0x7f);
+		int offset = 0;
+		ByteArrayOutputStream byteArray = new
+			ByteArrayOutputStream(fileData.length);
+		PrintWriter printWriter = new PrintWriter(byteArray, true);
+		while (offset < fileData.length) {
+			char c = (char)(fileData[offset] & 0x7f);
+			if (c != 0) {
+				if (c == 0x0d) { //Apple line end
+					printWriter.println();
 				} else {
-					workingData[position++] = byt;
+					printWriter.print(c);
 				}
 			}
+			offset++;
 		}
-		byte[] filteredData = new byte[position];
-		System.arraycopy(workingData, 0, filteredData, 0, filteredData.length);
-		return filteredData;
+		return byteArray.toByteArray();
 	}
+
 
 	/**
 	 * Give suggested file name.

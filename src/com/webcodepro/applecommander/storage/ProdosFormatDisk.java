@@ -189,6 +189,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 		throws DiskFullException {
 			
 		int blockNumber = directory.getFileEntryBlock();
+		int headerBlock = blockNumber;
 		while (blockNumber != 0) {
 			byte[] block = readBlock(blockNumber);
 			int offset = 4;
@@ -197,6 +198,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 				if ((value & 0xf0) == 0) {
 					ProdosFileEntry fileEntry = 
 						new ProdosFileEntry(this, blockNumber, offset);
+					fileEntry.setKeyPointer(0); //may have been recycled
 					fileEntry.setCreationDate(new Date());
 					fileEntry.setProdosVersion(0);
 					fileEntry.setMinimumProdosVersion(0);
@@ -204,7 +206,8 @@ public class ProdosFormatDisk extends FormattedDisk {
 					fileEntry.setCanRead(true);
 					fileEntry.setCanRename(true);
 					fileEntry.setCanWrite(true);
-					fileEntry.setSaplingFile();
+					fileEntry.setSeedlingFile();
+					fileEntry.setHeaderPointer(headerBlock);
 					fileEntry.setFilename("BLANK");
 					directory.incrementFileCount();
 					return fileEntry;

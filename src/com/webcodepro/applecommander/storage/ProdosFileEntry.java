@@ -255,6 +255,15 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	}
 
 	/**
+	 * Set the block number of the  block for the directory which describes this file.
+	 */
+	public void setHeaderPointer(int headerPointer) {
+		byte[] entry = readFileEntry();
+		AppleUtil.setWordValue(entry, 0x25, headerPointer);
+		writeFileEntry(entry);
+	}
+
+	/**
 	 * Identify if this file is locked.
 	 */
 	public boolean isLocked() {
@@ -296,7 +305,19 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 */
 	public void delete() {
 		getDisk().freeBlocks(this);
-		setStorageType(0);
+
+		//decrement file count in header block
+		int headerBlock = getHeaderPointer();
+		byte[] data = getDisk().readBlock(headerBlock);
+		int fileCount = AppleUtil.getWordValue(data, 0x25);
+		if (fileCount != 0) fileCount--;
+		AppleUtil.setWordValue(data, 0x25, fileCount);
+		getDisk().writeBlock(headerBlock, data);
+
+		//clear storage type and name length
+		data = readFileEntry();
+		data[0] = 0;
+		writeFileEntry(data);
 	}
 
 	/**
