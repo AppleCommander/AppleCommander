@@ -205,7 +205,7 @@ public class DosFileEntry implements FileEntry {
 	 */
 	public void setSectorsUsed(int sectorsUsed) {
 		byte[] data = readFileEntry();
-		data[0x21] = (byte) sectorsUsed;
+		AppleUtil.setWordValue(data, 0x21, sectorsUsed);
 		writeFileEntry(data);
 	}
 
