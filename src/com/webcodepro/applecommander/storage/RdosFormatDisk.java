@@ -165,13 +165,6 @@ public class RdosFormatDisk extends FormattedDisk {
 	}
 
 	/**
-	 * RDOS dos not support directories.
-	 */
-	public boolean canHaveDirectories() {
-		return false;
-	}
-
-	/**
 	 * RDOS really does not have a disk name.  Fake one.
 	 */
 	public String getDiskName() {
@@ -202,8 +195,26 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * Create a new FileEntry.
 	 */
 	public FileEntry createFile() throws DiskFullException {
-		// FIXME: Need to implement!
-		return null;
+		throw new DiskFullException("Cannot create a file (yet).");
+	}
+
+	/**
+	 * Identify if additional directories can be created.  This
+	 * may indicate that directories are not available to this
+	 * operating system or simply that the disk image is "locked"
+	 * to writing.
+	 */
+	public boolean canCreateDirectories() {
+		return false;
+	}
+	
+	/**
+	 * Indicates if this disk image can create a file.
+	 * If not, the reason may be as simple as it has not beem implemented
+	 * to something specific about the disk.
+	 */
+	public boolean canCreateFile() {
+		return false;		// FIXME - need to implement
 	}
 
 	/**
@@ -339,12 +350,12 @@ public class RdosFormatDisk extends FormattedDisk {
 	}
 	
 	/**
-	 * Indicates if this disk image can create a file.
+	 * RDOS dos not support directories.
 	 */
-	public boolean canCreateFile() {
-		return false;	// FIXME - not implemented
+	public boolean canHaveDirectories() {
+		return false;
 	}
-	
+
 	/**
 	 * Indicates if this disk image can delete a file.
 	 */
