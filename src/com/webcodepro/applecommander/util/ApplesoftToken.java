@@ -24,6 +24,10 @@ public class ApplesoftToken {
 		this.stringValue = stringValue;
 	}
 	
+	public boolean isCommandSeparator() {
+		return ":".equals(stringValue);
+	}
+	
 	public boolean isLineNumber() {
 		return !isToken() && !isString();
 	}
