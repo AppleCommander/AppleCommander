@@ -482,7 +482,7 @@ public class DosFormatDisk extends FormattedDisk {
 	}
 	
 	/**
-	 * Delete a DosFileEntry.
+	 * Free sectors used by a DosFileEntry.
 	 */
 	protected void freeSectors(DosFileEntry dosFileEntry) {
 		byte[] vtoc = readVtoc();
