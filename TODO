@@ -14,6 +14,7 @@ o Create reusable show dialog messages (they're scattered all over right now) to
   up code a bit.
 o Prepare for internationalization (I18N).  Started as a simplification process but it
   got carried away.
+o Update per Eclipse 3.0 recommendations.
 
 --- FUTURE 1.3.x ---
 ? Compile of BASIC programs
