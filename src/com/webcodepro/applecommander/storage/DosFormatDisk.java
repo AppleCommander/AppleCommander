@@ -98,14 +98,14 @@ public class DosFormatDisk extends FormattedDisk {
 	}
 
 	/**
-	 * Constructor for DosFormatDisk.  All DOS disk images are expected to
+	 * Create a DosFormatDisk.  All DOS disk images are expected to
 	 * be 140K in size.
-	 * @param filename
-	 * @param diskImage
-	 * @param order
 	 */
-	public DosFormatDisk(String filename) {
-		super(filename, new byte[APPLE_140KB_DISK]);
+	public static DosFormatDisk[] create(String filename) {
+		DosFormatDisk disk = 
+			new DosFormatDisk(filename, new byte[APPLE_140KB_DISK]);
+		disk.format();
+		return new DosFormatDisk[] { disk };
 	}
 
 	/**
@@ -375,10 +375,20 @@ public class DosFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
+		format(15, 35, 16);
+	}
+	
+	/**
+	 * Format the disk as DOS 3.3 given the dymanic parameters.
+	 * (Used for UniDOS and OzDOS.)
+	 */
+	protected void format(int firstCatalogSector, int tracksPerDisk,
+		int sectorsPerTrack) {
+			
 		writeBootCode();
 		// create catalog sectors
 		byte[] data = new byte[SECTOR_SIZE];
-		for (int sector=15; sector > 0; sector--) {
+		for (int sector=firstCatalogSector; sector > 0; sector--) {
 			if (sector == 0) {
 				data[0x01] = CATALOG_TRACK;
 				data[0x02] = (byte)(sector-1);
@@ -390,17 +400,17 @@ public class DosFormatDisk extends FormattedDisk {
 		}
 		// create VTOC
 		data[0x01] = CATALOG_TRACK;	// track# of first catalog sector
-		data[0x02] = 15;			// sector# of first catalog sector
+		data[0x02] = (byte)firstCatalogSector;	// sector# of first catalog sector
 		data[0x03] = 3;				// DOS 3.3 formatted
 		data[0x06] = (byte)254;	// DISK VOLUME#
 		data[0x27] = 122;			// maximum # of T/S pairs in a sector
 		data[0x30] = CATALOG_TRACK+1;	// last track where sectors allocated
 		data[0x31] = 1;				// direction of allocation
-		data[0x34] = 35;			// tracks per disk
-		data[0x35] = 16;			// sectors per disk
+		data[0x34] = (byte)tracksPerDisk;	// tracks per disk
+		data[0x35] = (byte)sectorsPerTrack;// sectors per track
 		data[0x37] = 1;				// 36/37 are # of bytes per sector
-		for (int track=0; track<35; track++) {
-			for (int sector=0; sector<16; sector++) {
+		for (int track=0; track<tracksPerDisk; track++) {
+			for (int sector=0; sector<sectorsPerTrack; sector++) {
 				if (track == 0 || track == CATALOG_TRACK) {
 					setSectorUsed(track, sector, data);
 				} else {
