@@ -70,15 +70,6 @@ public interface FileEntry {
 	public boolean isDirectory();
 	
 	/**
-	 * Retrieve the list of files in this directory.
-	 * Note that if this is not a directory, the return
-	 * value should be null.  If this a directory, the
-	 * return value should always be a list - a directory
-	 * with 0 entries returns an empty list.
-	 */
-	public List getFiles();
-	
-	/**
 	 * Identify if this file has been deleted.
 	 */
 	public boolean isDeleted();
