@@ -1,3 +1,8 @@
 bin
 AppleCommander.preferences
-write-test.dsk
+*.dsk
+*.po
+*.hdv
+*.do
+*.2mg
+*.2img
