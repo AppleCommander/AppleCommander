@@ -215,6 +215,9 @@ public class FileViewerWindow {
 		black.dispose();
 		blue.dispose();
 		green.dispose();
+		if (nativeFilterAdapter != null) nativeFilterAdapter.dispose();
+		hexFilterAdapter.dispose();
+		rawDumpFilterAdapter.dispose();
 		System.gc();
 	}
 

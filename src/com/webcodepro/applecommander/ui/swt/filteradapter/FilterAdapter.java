@@ -62,6 +62,9 @@ public abstract class FilterAdapter {
 
 	public abstract void display();
 
+	public void dispose() {
+	}
+
 	public ToolItem create(ToolBar toolBar) {
 		if (toolItem == null) {
 			toolItem = new ToolItem(toolBar, SWT.RADIO);

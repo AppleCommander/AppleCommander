@@ -56,6 +56,11 @@ public class ApplesoftFilterAdapter extends FilterAdapter {
 			
 		setContentTypeAdapter(new StyledTextAdapter(styledText, getFileEntry().getFilename()));
 	}
+	
+	public void dispose() {
+		styledText.dispose();
+	}
+
 
 	protected void createStyledText() {
 		styledText = new StyledText(getComposite(), SWT.NONE);

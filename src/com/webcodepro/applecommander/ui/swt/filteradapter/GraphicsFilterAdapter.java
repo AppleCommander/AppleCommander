@@ -84,5 +84,10 @@ public class GraphicsFilterAdapter extends FilterAdapter {
 			setContentTypeAdapter(new NoActionContentTypeAdapter());
 		}
 	}
+	
+	public void dispose() {
+		image.dispose();
+	}
+
 
 }
