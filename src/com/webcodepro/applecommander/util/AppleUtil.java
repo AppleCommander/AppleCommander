@@ -21,6 +21,7 @@ package com.webcodepro.applecommander.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -31,6 +32,17 @@ import java.util.GregorianCalendar;
  * @author Rob Greene
  */
 public class AppleUtil {
+	/**
+	 * This is the number of bytes to display per line.
+	 */
+	private static final int BYTES_PER_LINE = 16;
+
+	/**
+	 * This is the ASCII space character as used by the Apple ][.
+	 * The high bit is off.
+	 */
+	private static final int APPLE_SPACE = 0x20;
+
 	/**
 	 * Bit masks used for the bit shifting or testing operations.
 	 */
@@ -501,5 +513,56 @@ public class AppleUtil {
 			(byte) ((result & byte4Mask) >> 32 & 0xff),
 			(byte) ((result & byte5Mask) >> 24 & 0xff)
 		};
+	}
+	
+	/**
+	 * Generate a simple hex dump from the given byte array.
+	 * <p>
+	 * This is in the general form of:<br>
+	 * MMMMMM: HH HH HH HH HH HH HH HH  HH HH HH HH HH HH HH HH  AAAAAAAA AAAAAAAA<br>
+	 * Where MMMMMM = memory address, HH = hex byte, and
+	 * A = ASCII character.
+	 */
+	public static String getHexDump(byte[] bytes) {
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		PrintWriter printer = new PrintWriter(output);
+		printer.print(" Offset  ");
+		printer.print("Hex Data                                          ");
+		printer.println("Characters");
+		printer.print("=======  ");
+		printer.print("================================================  ");
+		printer.println("=================");
+		for (int offset=0; offset<bytes.length; offset+= BYTES_PER_LINE) {
+			printer.print("$");
+			printer.print(AppleUtil.getFormatted3ByteAddress(offset));
+			printer.print("  ");
+			for (int b=0; b<BYTES_PER_LINE; b++) {
+				if (b == BYTES_PER_LINE / 2) printer.print(' ');
+				int index = offset+b;
+				printer.print( (index < bytes.length) ?
+					AppleUtil.getFormattedByte(bytes[index]) : "..");
+				printer.print(' ');
+			}
+			printer.print(' ');
+			for (int a=0; a<BYTES_PER_LINE; a++) {
+				if (a == BYTES_PER_LINE / 2) printer.print(' ');
+				int index = offset+a;
+				if (index < bytes.length) {
+					char ch = (char) (bytes[index] & 0x7f);
+					if ((byte)ch >= (byte)APPLE_SPACE) {
+						printer.print(ch);
+					} else {
+						printer.print('.');
+					}
+				} else {
+					printer.print(' ');
+				}
+			}
+			printer.println();
+		}
+		printer.println("** END **");
+		printer.flush();
+		printer.close();
+		return output.toString();
 	}
 }
