@@ -242,6 +242,20 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 		layoutData = new GridData();
 		layoutData.widthHint = 75;
 		addressText.setLayoutData(layoutData);
+		if (spec.hasFiletype()) {
+			addressText.setEnabled(
+				wizard.getDisk().needsAddress(spec.getFiletype()));
+		}
+
+		// Enable/disable the address component:
+		filetypes.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				String filetype = filetypes.getItem(
+					filetypes.getSelectionIndex());
+				addressText.setEnabled(
+					wizard.getDisk().needsAddress(filetype));
+			}
+		});
 
 		// Bottom row of buttons
 		layoutData = new GridData();
