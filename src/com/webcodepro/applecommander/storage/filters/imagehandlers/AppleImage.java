@@ -21,6 +21,7 @@ package com.webcodepro.applecommander.storage.filters.imagehandlers;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 
 /**
  * AppleImage is an abstract class that represents a generic interface
@@ -42,20 +43,31 @@ public abstract class AppleImage {
 	 */
 	private String[] availableExtensions;
 	/**
-	 * Create a specific instance of AppleImage.
+	 * Create a specific instance of AppleImage.  This has been coded
+	 * using Reflection to ease native compilation for the most part.
 	 */
 	public static AppleImage create(int width, int height) {
-		try {
-			return new ImageIoImage(width, height);
-		} catch (ClassNotFoundException ignored) {
-		}
-		try {
-			return new SunJpegImage(width, height);
-		} catch (ClassNotFoundException ignored) {
-		}
-		try {
-			return new SwtImage(width, height);
-		} catch (ClassNotFoundException ignored) {
+		String[] classes = {
+			"ImageIoImage", "SunJpegImage", "SwtImage" };
+		Class[] constructorArgClasses = new Class[] {
+			int.class, int.class };
+		Object[] constructorArgs = new Object[] {
+			new Integer(width), new Integer(height) };
+		for (int i=0; i<classes.length; i++) {
+			try {
+				Class appleImageClass = Class.forName(
+					"com.webcodepro.applecommander.storage.filters.imagehandlers." 
+					+ classes[i]);
+				Constructor constructor = 
+					appleImageClass.getConstructor(constructorArgClasses);
+				AppleImage appleImage = (AppleImage) 
+					constructor.newInstance(constructorArgs);
+				return appleImage;
+			} catch (Exception ignored) {
+				// There are multiple exceptions that can be thrown here.
+				// For the most part, this is expected and simply means that
+				// the image handler is not available on the platform.
+			}
 		}
 		return null;
 	}
