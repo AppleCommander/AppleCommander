@@ -2,29 +2,7 @@ THINGS TO DO
 ============
 This is the internal list of items that need to be done.
 
---- 1.3.0 ---
-* HDV disks are not always created to their full capacity.  AppleCommander, however,
-  assumes that the size of the file on disk is the size of the disk.  (Really!)
-  This is an issue because the ProDOS bitmap indicates there is a certain
-  amount of space and AppleCommander just assumes that the data exists.
-* Incorporated fixes from John Matthews.  See:
-	http://www.wright.edu/~john.matthews/ac.html
-* Early release of Applesoft BASIC compiler.  This currently is limited to assembly
-  of small programs.  If a command is not compiled, you are likely to just get an
-  error about expecting a line number.  Expressions are not very complete.  Supported
-  commands are:
-  		  END, FLASH, FOR, GOTO, GR, HCOLOR, HGR, HGR2, HOME, HPLOT,
-  		  HTAB, INVERSE, NEXT, NORMAL, PRINT, RETURN, TEXT, VTAB
-  Unsupported commands are:
-          ABS, AND, ASC, AT, ATN, CALL, CHR$, CLEAR, COLOR=, CONT, COS,
-          DATA, DEF, DEL, DIM, DRAW, EXP, FN, FRE, GET, GOSUB, GR, HIMEM:, 
-          HLIN, IF, IN#, INPUT, INT, LEFT$, LEN, LET, LIST, LOAD, LOG, 
-          LOMEM:, MID$, NEW, NOT, NOTRACE, ON, ONERR, OR, PDL, PEEK, PLOT, 
-          POKE, POP, POS, PR#, READ, RECALL, REM, RESTORE, RESUME, RIGHT$, 
-          RND, ROT=, RUN, SAVE, SCALE=, SCRN, SGN, SHLOAD, SIN, SPC, 
-          SPEED=, SQR, STEP, STOP, STORE, STR$, TAB, TAN, THEN, TO, TRACE, 
-          USR, VAL, VLIN, WAIT, XDRAW, &
-  Note that the compiler is not very sophisticated and probably won't be.
+--- 1.3.1 ---
 
 --- FUTURE 1.3.x ---
 o Compile of BASIC programs
