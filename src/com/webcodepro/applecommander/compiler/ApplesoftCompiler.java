@@ -264,10 +264,13 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 			try {
 				method.invoke(this, new Object[0]);
 			} catch (IllegalArgumentException e) {
+				System.err.println("Unable to locate " + method.getName());
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
+				System.err.println("Unable to locate " + method.getName());
 				e.printStackTrace();
 			} catch (InvocationTargetException e) {
+				System.err.println("Unable to locate " + method.getName());
 				e.printStackTrace();
 			}
 		} else {
@@ -371,7 +374,11 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 	protected Variable evaluateExpression() throws CompileException {
 		// FIXME: no type checking available
 		// FIXME: needs to evaluate all valid expressions
-		ApplesoftToken token = nextToken();
+		ApplesoftToken token = peekToken();
+		if (token.isEndOfCommand()) {
+			return null;
+		}
+		token = nextToken();
 		if (token.isString()) {
 			String value = token.getStringValue();
 			Variable variable = null;
@@ -509,7 +516,9 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 		ApplesoftToken token = null;
 		do {
 			Variable variable = evaluateExpression();
-			if (variable.isConstantFloat() || variable.isTypeFloat()) {
+			if (variable == null) {
+				addAssembly(null, "JSR", "PRCR");
+			} else if (variable.isConstantFloat() || variable.isTypeFloat()) {
 				addLoadFac(variable);
 				addAssembly(null, "JSR", "PRNTFAC");
 			} else if (variable.isConstantInteger() || variable.isTypeInteger()) {
