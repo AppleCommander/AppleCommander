@@ -896,9 +896,12 @@ public class DiskExplorerTab {
 				}
 				filename = fileDialog.open();
 				directory = fileDialog.getFilterPath();
-			} else {
+			} else if (fileFilter != null) {
 				filename = directory + File.separator + AppleUtil.
 					getNiceFilename(fileFilter.getSuggestedFileName(fileEntry));
+			} else {
+				filename = directory + File.separator + AppleUtil.
+					getNiceFilename(fileEntry.getFilename());
 			}
 			if (filename != null) {
 				userPreferences.setExportDirectory(directory);
@@ -1108,26 +1111,30 @@ public class DiskExplorerTab {
 					FileEntry fileEntry = directory.createFile();
 					fileEntry.setFilename(spec.getTargetFilename());
 					fileEntry.setFiletype(spec.getFiletype());
-					if (fileEntry.needsAddress()) {
-						fileEntry.setAddress(spec.getAddress());
-					}
-					try {
-						fileEntry.setFileData(buffer.toByteArray());
-					} catch (ProdosDiskSizeDoesNotMatchException ex) {
-						MessageBox yesNoPrompt = new MessageBox(shell,
-							SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-						yesNoPrompt.setText("Resize disk?");
-						yesNoPrompt.setMessage("This disk needs to be resized to match "
-							+ "the formatted capacity.  This should be an "
-							+ "ApplePC HDV disk iamge - they typically start "
-							+ "at 0 bytes and grow to the maximum capacity "
-							+ "(32MB).  Resize the disk?");
-						int answer = yesNoPrompt.open();
-						if (answer == SWT.YES) {
-							ProdosFormatDisk prodosDisk = (ProdosFormatDisk) 
-								fileEntry.getFormattedDisk();
-							prodosDisk.resizeDiskImage();
+					if (spec.isRawFileImport()) {
+						disks[0].setFileData(fileEntry, buffer.toByteArray());
+					} else {
+						if (fileEntry.needsAddress()) {
+							fileEntry.setAddress(spec.getAddress());
+						}
+						try {
 							fileEntry.setFileData(buffer.toByteArray());
+						} catch (ProdosDiskSizeDoesNotMatchException ex) {
+							MessageBox yesNoPrompt = new MessageBox(shell,
+								SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+							yesNoPrompt.setText("Resize disk?");
+							yesNoPrompt.setMessage("This disk needs to be resized to match "
+								+ "the formatted capacity.  This should be an "
+								+ "ApplePC HDV disk iamge - they typically start "
+								+ "at 0 bytes and grow to the maximum capacity "
+								+ "(32MB).  Resize the disk?");
+							int answer = yesNoPrompt.open();
+							if (answer == SWT.YES) {
+								ProdosFormatDisk prodosDisk = (ProdosFormatDisk) 
+									fileEntry.getFormattedDisk();
+								prodosDisk.resizeDiskImage();
+								fileEntry.setFileData(buffer.toByteArray());
+							}
 						}
 					}
 				}
