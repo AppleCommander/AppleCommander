@@ -21,7 +21,6 @@ package com.webcodepro.applecommander.ui.swt;
 
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.Disk.FilenameFilter;
 import com.webcodepro.applecommander.ui.AppleCommander;
 import com.webcodepro.applecommander.ui.UserPreferences;
@@ -54,6 +53,7 @@ public class SwtAppleCommander {
 	private Shell shell;
 	private ToolBar toolBar;
 	private UserPreferences userPreferences = UserPreferences.getInstance();
+	private ImageCanvas imageCanvas;
 	private static ImageManager imageManager;
 
 	/**
@@ -107,7 +107,7 @@ public class SwtAppleCommander {
 		Image logoImage = imageManager.getLogoImage();
 		gridData.widthHint = logoImage.getImageData().width;
 		gridData.heightHint = logoImage.getImageData().height;
-		ImageCanvas imageCanvas = new ImageCanvas(shell, SWT.BORDER, logoImage, gridData);
+		imageCanvas = new ImageCanvas(shell, SWT.BORDER, logoImage, gridData);
 		
 		shell.pack();
 		shell.open();
@@ -118,6 +118,7 @@ public class SwtAppleCommander {
 	 * Dispose of all shared resources.
 	 */
 	private void dispose(DisposeEvent event) {
+		imageCanvas.dispose();
 		toolBar.dispose();
 		imageManager.dispose();
 	}
