@@ -11,12 +11,16 @@ This is the internal list of items that need to be done.
 * Import file specification should only allow address editing if the filetype
   requires it.
 * Fixed parsing of filetype definitions for ProDOS volumes.
-
---- FUTURE 1.2.x ---
-o Need to be able to import into a directory in ProDOS.  This will most
+* Need to be able to import into a directory in ProDOS.  This will most
   likely involve adding an interface indicating a (writable) directory.
   This interface would be applied to both disks as well as file entries,
   if appropriate.
+* ProDOS subdirectories need to allocate another block as they fill up; otherwise
+  the directory is limited to the number of entries the fit within the allocated
+  space.
+
+--- FUTURE 1.2.x ---
+o Import could use a progress indicator.
 o Save does not allow the disk image location to be chosen for new images. (Maybe
   the wizard should pay more attention?)
 o Work on identifying why GCJ introduces slow performance to some areas.
@@ -28,6 +32,7 @@ o HDV disks are not always created to their full capacity.  AppleCommander, howe
   amount of space and AppleCommander just assumes that the data exists.
 o Compile into native executable (hopefully Linux and Windows).
 o Short-cut keys would be nice.
+o Need to update preferences with import location, disk creation location.
   
 --- FUTURE 1.3.x (or later) ---
 o Add drag-and-drop capability.
