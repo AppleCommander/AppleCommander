@@ -3,21 +3,51 @@ THINGS TO DO
 This is the internal list of items that need to be done.
 
 --- 1.3.1 ---
-* Short-cut keys would be nice.
+* Short-cut keys have been implemented.
+  - From AppleCommander window:
+    - CTRL+O = Open a disk image
+    - CTRL+C = Create a new disk image
+    - CTRL+A = About...
+  - From disk window
+    - Toolbar shortcuts:
+      - F2 = Standard file view
+      - F3 = Native file view
+      - F4 = Detail file view
+      - F5 = Show deleted files
+      - CTRL+I = Import files wizard
+      - CTRL+S = Save
+      - CTRL+SHIFT+S = Save As
+    - Directory shortcuts (in addition to toolbar shortcuts)
+      - "+" = expand one level
+      - "-" = close one level
+      - CTRL+"+" = expand fully
+      - CTRL+"-" = close fully
+    - File shortcuts (in addition to toolbar shortcuts)
+      - CTRL+E = Export file wizard
+      - CTRL+C = Compile BASIC program (BETA)
+      - CTRL+V = View file (later version)
+      - CTRL+D = Delete file
+* Spent time ensuring that buttons, context menus, and shortcuts are enabled or
+  disabled as appropriate.
+* Save does not allow the disk image location to be chosen for new images. (Maybe
+  the wizard should pay more attention?)
+  - Implemented Save As
+  - A save on a new image invokes Save As
+o Need to update preferences with import location, disk creation location.
+o Provide a command-line interface (scripting - ie, mass load).
+o Enhance the BASIC compiler with a few more commands...
 
 --- FUTURE 1.3.x ---
 o Compile of BASIC programs
-o Save does not allow the disk image location to be chosen for new images. (Maybe
-  the wizard should pay more attention?)
 o Add RDOS writing capability.
 o Add Apple Pascal writing capability.
 o Create subdirectories as appropriate (ProDOS).
-o Need to update preferences with import location, disk creation location.
-  
---- FUTURE 1.3.x (or later) ---
+o File preview - hex, text, image.  Use FileFilters to convert file to the
+  appropriate format?
+ 
+--- FUTURE 1.4.x (or later) ---
 o Add drag-and-drop capability.
 o Provide a Swing GUI so people are not "limited" to SWT.  This may be tossed.
-o Provide a command-line interface (scripting - ie, mass load).
 o Added more information to About box including GPL, TODO, VERSIONS, etc.
 o Change disk format.
 o Sector/Block editor.
@@ -28,5 +58,3 @@ o Open SHK files?  Similar operation to zip files.
 o Open SDK files?  Opens directly into a Disk Window.
 o Make formatted images bootable.  May need user to supply a "master" disk from
   which files or data is copied.
-o File preview - hex, text, image.  Use FileFilters to convert file to the
-  appropriate format?
