@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# This script will build the AppleCommander executable.  Make sure that the
+# SWT library (swt.a) is available - see build-swt-linux-gtk if this needs
+# to be built.
+
+# The SWT jar files are required as well as the AppleCommander jar file.
+# Additionally, the SWT *.so files will be required to run AppleCommander.
+# Last but not least, the image files are required by AppleCommander and
+# are expected to be in the same directory as Java would expect them to
+# be in - but you can remove all the other class or java files.
+
+DIR=$(pwd)
+CLASSPATH="$DIR/swt.jar:$DIR/swt-pi.jar:$DIR/AppleCommander-1.1.1b.jar"
+FLAGS="-O3"
+mkdir obj
+cd obj
+rm *.o
+find ../com -name "*.java" -exec gcj --classpath=$CLASSPATH $FLAGS -c {} \;
+
+cd $DIR
+rm applecommander.a
+ar r applecommander.a obj/*.o
+
+gcj $FLAGS --main=com.webcodepro.applecommander.ui.AppleCommander \
+	-o AppleCommander applecommander.a swt.a
+
