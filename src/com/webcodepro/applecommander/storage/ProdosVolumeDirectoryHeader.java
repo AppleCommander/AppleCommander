@@ -31,14 +31,23 @@ public class ProdosVolumeDirectoryHeader extends ProdosCommonDirectoryHeader {
 	 * Constructor for ProdosVolumeDirectoryHeaderEntry.
 	 * @param fileEntry
 	 */
-	public ProdosVolumeDirectoryHeader(byte[] fileEntry) {
-		super(fileEntry);
+	public ProdosVolumeDirectoryHeader(ProdosFormatDisk disk) {
+		super(disk, 2);
 	}
 
 	/**
 	 * Return the name of this volume.
 	 */
 	public String getVolumeName() {
-		return AppleUtil.getProdosString(getFileEntry(), 0);
+		return AppleUtil.getProdosString(readFileEntry(), 0);
+	}
+	
+	/**
+	 * Set the name of this volume.
+	 */
+	public void setVolumeName(String volumeName) {
+		byte[] data = readFileEntry();
+		AppleUtil.setProdosString(data, 0, volumeName.toUpperCase(), 15);
+		writeFileEntry(data);
 	}
 }
