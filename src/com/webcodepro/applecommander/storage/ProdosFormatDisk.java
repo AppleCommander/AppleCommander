@@ -926,4 +926,11 @@ public class ProdosFormatDisk extends FormattedDisk {
 		}
 		return false;
 	}
+
+	/**
+	 * Indicates if this FormattedDisk supports a disk map.
+	 */	
+	public boolean supportsDiskMap() {
+		return true;
+	}
 }

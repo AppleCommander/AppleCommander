@@ -362,4 +362,11 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	public void resizeDiskImage() {
 		resizeDiskImage(getFreeSpace() + getUsedSpace());
 	}
+
+	/**
+	 * Indicates if this FormattedDisk supports a disk map.
+	 */	
+	public boolean supportsDiskMap() {
+		return false;
+	}
 }

@@ -692,4 +692,11 @@ public class DosFormatDisk extends FormattedDisk {
 	public boolean needsAddress(String filetype) {
 		return "B".equals(filetype);
 	}
+
+	/**
+	 * Indicates if this FormattedDisk supports a disk map.
+	 */	
+	public boolean supportsDiskMap() {
+		return true;
+	}
 }

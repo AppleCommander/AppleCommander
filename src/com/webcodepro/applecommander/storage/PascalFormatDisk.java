@@ -522,4 +522,11 @@ public class PascalFormatDisk extends FormattedDisk {
 	public boolean needsAddress(String filetype) {
 		return false;
 	}
+
+	/**
+	 * Indicates if this FormattedDisk supports a disk map.
+	 */	
+	public boolean supportsDiskMap() {
+		return true;
+	}
 }
