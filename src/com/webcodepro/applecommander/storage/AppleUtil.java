@@ -135,6 +135,19 @@ public class AppleUtil {
 	}
 
 	/**
+	 * Create an Apple string that is space delimited.
+	 */
+	public static void setString(byte[] buffer, int offset, String string, int length, boolean highBitOn) {
+		for (int i=0; i<length; i++) {
+			char ch = ' ';
+			if (i < string.length()) {
+				ch = string.charAt(i);
+			}
+			buffer[offset+i] = (byte) (ch | (highBitOn ? 0x80 : 0x00));
+		}
+	}
+
+	/**
 	 * Create an Apple string that is the same length as the given string.
 	 */
 	public static void setString(byte[] buffer, int offset, String string) {
@@ -202,6 +215,15 @@ public class AppleUtil {
 	}
 	
 	/**
+	 * Sets a ProDOS string into the buffer.
+	 */
+	public static void setProdosString(byte[] buffer, int offset, String string, int maxLength) {
+		int len = Math.min(string.length(), maxLength);
+		buffer[offset] = (byte) ((buffer[offset] & 0xf0) | (len & 0x0f));
+		setString(buffer, offset+1, string, len, false);
+	}
+	
+	/**
 	 * Format a byte value as hexidecimal.
 	 */
 	public static String getFormattedByte(int byt) {
@@ -239,6 +261,30 @@ public class AppleUtil {
 
 		GregorianCalendar gc = new GregorianCalendar(year, month, day, hour, minute);
 		return gc.getTime();
+	}
+	
+	/**
+	 * Set a ProDOS date into the buffer.
+	 */
+	public static void setProdosDate(byte[] buffer, int offset, Date date) {
+		int day = 0;
+		int month = 0;
+		int year = 0;
+		int minute = 0;
+		int hour = 0;
+		if (date != null) {
+			GregorianCalendar gc = new GregorianCalendar();
+			gc.setTime(date);
+			day = gc.get(GregorianCalendar.DAY_OF_MONTH);
+			month = gc.get(GregorianCalendar.MONTH);
+			year = gc.get(GregorianCalendar.YEAR);
+			minute = gc.get(GregorianCalendar.MINUTE);
+			hour = gc.get(GregorianCalendar.HOUR_OF_DAY);
+		}
+		int ymd = ((year & 0x7f) << 9) | ((month & 0xf) << 5) | (day & 0x1f);
+		int hm = ((hour & 0x1f) << 8) | (minute & 0x3f);
+		setWordValue(buffer, offset, ymd);
+		setWordValue(buffer, offset+2, hm);
 	}
 	
 	/**
