@@ -170,6 +170,7 @@ public class SwtAppleCommander implements Listener {
 					showUnrecognizedDiskFormatMessage(fullpath);
 				}
 			} catch (Exception ignored) {
+				ignored.printStackTrace();
 				showUnrecognizedDiskFormatMessage(fullpath);
 			}
 		}
