@@ -176,4 +176,13 @@ public abstract class ImageOrder {
 		int size = diskImageManager.getPhysicalSize();
 		diskImageManager.setDiskImage(new byte[size]);
 	}
+	
+	/**
+	 * Answer with the total number of sectors in a disk.
+	 * This is used to size the disk and compare sizes instead of using byte counts
+	 * which can differ.
+	 */
+	public int getSectorsPerDisk() {
+		return getTracksPerDisk() * getSectorsPerTrack();
+	}
 }
