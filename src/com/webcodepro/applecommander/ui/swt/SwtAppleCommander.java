@@ -25,8 +25,6 @@ import com.webcodepro.applecommander.storage.Disk.FilenameFilter;
 import com.webcodepro.applecommander.ui.AppleCommander;
 import com.webcodepro.applecommander.ui.UserPreferences;
 
-import java.io.IOException;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -169,20 +167,29 @@ public class SwtAppleCommander implements Listener {
 					DiskWindow window = new DiskWindow(shell, formattedDisks, imageManager);
 					window.open();
 				} else {
-					Shell finalShell = shell;
-					MessageBox box = new MessageBox(finalShell, SWT.ICON_ERROR | SWT.OK);
-					box.setText("Unrecognized Disk Format");
-					box.setMessage(
-						  "Unable to load '" + fullpath + "'.\n\n"
-					    + "AppleCommander did not recognize the format\n"
-						+ "of that disk.  Either this is a new format\n"
-						+ "or a protected disk.\n\n"
-						+ "Sorry!");
-					box.open();
+					showUnrecognizedDiskFormatMessage(fullpath);
 				}
-			} catch (IOException ignored) {
+			} catch (Exception ignored) {
+				showUnrecognizedDiskFormatMessage(fullpath);
 			}
 		}
+	}
+
+	/**
+	 * Displays the unrecognized disk format message.
+	 * @param fullpath
+	 */
+	private void showUnrecognizedDiskFormatMessage(String fullpath) {
+		Shell finalShell = shell;
+		MessageBox box = new MessageBox(finalShell, SWT.ICON_ERROR | SWT.OK);
+		box.setText("Unrecognized Disk Format");
+		box.setMessage(
+			  "Unable to load '" + fullpath + "'.\n\n"
+		    + "AppleCommander did not recognize the format\n"
+			+ "of the disk.  Either this is a new format\n"
+			+ "or a protected disk.\n\n"
+			+ "Sorry!");
+		box.open();
 	}
 
 	/**
