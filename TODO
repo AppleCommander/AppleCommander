@@ -11,9 +11,19 @@ This is the internal list of items that need to be done.
   introduced.
 * Extract AppleWorks Data Base files.
 * Extract AppleWorks Spread Sheet files.
+* Fixed minor issue with ProDOS disks where files at the 128K border would
+  be grown (incorrectly) into a Tree file (instead of a Sapling).
+* Import of multiple files fails after multiple imports.  This was an issue
+  with ProDOS files >128K ("Tree" files).  The delete code didn't handle the
+  master index block appropriately when blocks numbered zero were present
+  (normally indicating the end of file).
 
 --- FUTURE ---
-o Import of multiple files fails after multiple imports.
+o Import menu should be in directory pane instead of file pane.
+o Need to be able to import into a directory in ProDOS.  This will most
+  likely involve adding an interface indicating a (writable) directory.
+  This interface would be applied to both disks as well as file entries,
+  if appropriate.
 o Import file specification should only allow address editing if the filetype
   requires it.
 o Save does not allow the disk image location to be chosen for new images. (Maybe
@@ -25,6 +35,8 @@ o Add RDOS writing capability.
 o Add Apple Pascal writing capability.
 o HDV disks are not always created to their full capacity.  AppleCommander, however,
   assumes that the size of the disk on disk is the size of the disk.  (Really!)
+  This is likely an issue because the ProDOS bitmap indicates there is a certain
+  amount of space and AppleCommander just assumes that the data exists.
 o Allow group assignments in import. Not really applicable now that datatype is
   chosen by file extension.
 o Provide a Swing GUI so people are not "limited" to SWT.  This may be tossed.
