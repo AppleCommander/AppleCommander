@@ -3,6 +3,7 @@ THINGS TO DO
 This is the internal list of items that need to be done.
 
 --- 1.3.1 ---
+o Short-cut keys would be nice.
 
 --- FUTURE 1.3.x ---
 o Compile of BASIC programs
@@ -11,9 +12,7 @@ o Save does not allow the disk image location to be chosen for new images. (Mayb
 o Add RDOS writing capability.
 o Add Apple Pascal writing capability.
 o Create subdirectories as appropriate (ProDOS).
-o Short-cut keys would be nice.
 o Need to update preferences with import location, disk creation location.
-o DELETE does not seem to delete in all circumstances.
   
 --- FUTURE 1.3.x (or later) ---
 o Add drag-and-drop capability.
