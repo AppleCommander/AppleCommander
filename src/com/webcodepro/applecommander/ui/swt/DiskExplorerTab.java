@@ -1316,8 +1316,39 @@ public class DiskExplorerTab {
 	 */
 	protected void viewFile() {
 		FileEntry fileEntry = getSelectedFileEntry();
-		FileViewerWindow window = new FileViewerWindow(shell, fileEntry, imageManager);
-		window.open();
+		if (fileEntry.isDeleted()) {
+			MessageBox box = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
+			box.setText("Unable to view a deleted file!");
+			box.setMessage("Sorry, you cannot view a deleted file.");
+			box.open();
+		} else if (fileEntry.isDirectory()) {
+			TreeItem item = findDirectoryItem(directoryTree.getSelection()[0].getItems(), fileEntry.getFilename(), 1, 0);
+			if (item != null) {
+				directoryTree.showItem(item);
+				directoryTree.setSelection(new TreeItem[] { item });
+				changeCurrentFormat(currentFormat);		// minor hack
+			}
+		} else {	// Assuming a normal file!
+			FileViewerWindow window = new FileViewerWindow(shell, fileEntry, imageManager);
+			window.open();
+		}
+	}
+	/**
+	 * Locate a named item in the directory tree.
+	 */
+	protected TreeItem findDirectoryItem(TreeItem[] treeItems, String name, int maxDepth, int currentDepth) {
+		if (maxDepth == currentDepth) return null;
+		for (int i=0; i<treeItems.length; i++) {
+			if (name.equals(treeItems[i].getText())) {
+				return treeItems[i];
+			} else if (treeItems[i].getItems() != null) {
+				TreeItem item = findDirectoryItem(treeItems[i].getItems(), name, maxDepth, currentDepth+1);
+				if (item != null) {
+					return item;
+				}
+			}
+		}
+		return null;
 	}
 	/**
 	 * Create the keyboard handler for the file pane.
