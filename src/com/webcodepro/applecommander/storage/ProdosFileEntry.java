@@ -445,6 +445,8 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 			return new AppleWorksWordProcessorFileFilter();
 		} else if ("ADB".equals(getFiletype())) {
 			return new AppleWorksDataBaseFileFilter();
+		} else if ("ASP".equals(getFiletype())) {
+			return new AppleWorksSpreadSheetFileFilter();
 		} else if ("BAS".equals(getFiletype())) {
 			return new ApplesoftFileFilter();
 		} else if ("INT".equals(getFiletype())) {	// supposedly not available in ProDOS, however
