@@ -19,7 +19,7 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import com.webcodepro.applecommander.util.*;
+import com.webcodepro.applecommander.util.AppleUtil;
 
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;

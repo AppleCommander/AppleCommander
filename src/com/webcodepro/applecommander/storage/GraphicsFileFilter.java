@@ -20,7 +20,7 @@
 package com.webcodepro.applecommander.storage;
 
 import com.webcodepro.applecommander.storage.filters.imagehandlers.AppleImage;
-import com.webcodepro.applecommander.util.*;
+import com.webcodepro.applecommander.util.AppleUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

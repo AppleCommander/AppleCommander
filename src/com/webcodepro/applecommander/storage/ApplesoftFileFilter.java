@@ -19,7 +19,8 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import com.webcodepro.applecommander.util.*;
+import com.webcodepro.applecommander.util.ApplesoftToken;
+import com.webcodepro.applecommander.util.ApplesoftTokenizer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
