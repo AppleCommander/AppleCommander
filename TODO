@@ -14,12 +14,10 @@ This is the internal list of items that need to be done.
 	- Export
 	- Compile
 * Added support for Finder Icons File ($CA or "ICN").
-o Adding CP/M support.
+* Added CP/M disk image support.
 
 --- FUTURE 1.3.x ---
 o Compile of BASIC programs
-o Add RDOS writing capability.
-o Add Apple Pascal writing capability.
 o Create subdirectories as appropriate (ProDOS).
 o Enhance the BASIC compiler with a few more commands...
 o Improve file preview for Integer BASIC files.
@@ -30,8 +28,12 @@ o Add formatted assembly FileFilter.  Needs to understand multiple assembly prog
 o SWT image handlers do no appear to work correctly.  BMP works - but color seems
   off.  GIF/PNG/JPEG give errors or a black image.
 o Viewing or double-clicking on a directory crashes AppleCommander.
+o Add a View As menu pick and drop-down on toolbar.  (ie, view as Text or binary)
  
 --- FUTURE 1.4.x (or later) ---
+o Add RDOS writing capability.
+o Add Apple Pascal writing capability.
+o Add CP/M writing capability.
 o Add drag-and-drop capability.
 o Provide a Swing GUI so people are not "limited" to SWT.  This may be tossed.
 o Added more information to About box including GPL, TODO, VERSIONS, etc.
