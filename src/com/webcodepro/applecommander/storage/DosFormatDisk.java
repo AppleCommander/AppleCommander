@@ -20,7 +20,6 @@
 package com.webcodepro.applecommander.storage;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
 
 /**
@@ -42,6 +41,14 @@ public class DosFormatDisk extends FormattedDisk {
 	 * Indicates the index of the sector in the location array.
 	 */	
 	public static final int SECTOR_LOCATION_INDEX = 1;
+	/**
+	 * The standard DOS 3.3 catalog track.
+	 */
+	public static final int CATALOG_TRACK = 17;
+	/**
+	 * The standard VTOC sector.
+	 */
+	public static final int VTOC_SECTOR = 0;
 
 	/**
 	 * Use this inner interface for managing the disk usage data.
@@ -72,11 +79,8 @@ public class DosFormatDisk extends FormattedDisk {
 			if (location == null || location.length != 2) {
 				throw new IllegalArgumentException("Invalid dimension for isFree! Did you call next first?");
 			}
-			byte[] vtoc = getVtoc();
-			byte byt = vtoc[0x38 + (location[TRACK_LOCATION_INDEX] * 4) 
-				+ (location[SECTOR_LOCATION_INDEX] / 8)];
-			boolean free = AppleUtil.isBitSet(byt, 7 - (location[SECTOR_LOCATION_INDEX] % 8));
-			return free;
+			return isSectorFree(location[TRACK_LOCATION_INDEX], 
+				location[SECTOR_LOCATION_INDEX], readVtoc());
 		}
 		public boolean isUsed() {
 			return !isFree();
@@ -94,6 +98,17 @@ public class DosFormatDisk extends FormattedDisk {
 	}
 
 	/**
+	 * Constructor for DosFormatDisk.  All DOS disk images are expected to
+	 * be 140K in size.
+	 * @param filename
+	 * @param diskImage
+	 * @param order
+	 */
+	public DosFormatDisk(String filename) {
+		super(filename, new byte[APPLE_140KB_DISK]);
+	}
+
+	/**
 	 * Identify the operating system format of this disk as DOS 3.3.
 	 * @see com.webcodepro.applecommander.storage.Disk#getFormat()
 	 */
@@ -107,7 +122,7 @@ public class DosFormatDisk extends FormattedDisk {
 	 */
 	public List getFiles() {
 		List list = new ArrayList();
-		byte[] vtoc = getVtoc();
+		byte[] vtoc = readVtoc();
 		int track = AppleUtil.getUnsignedByte(vtoc[1]);
 		int sector = AppleUtil.getUnsignedByte(vtoc[2]);
 		while (track != 0) {	// iterate through all catalog sectors
@@ -149,7 +164,7 @@ public class DosFormatDisk extends FormattedDisk {
 	 * Comput the number of free sectors available on the disk.
 	 */
 	public int getFreeSectors() {
-		byte[] vtoc = getVtoc();
+		byte[] vtoc = readVtoc();
 		int freeSectors = 0;
 		for (int offset=0x38; offset<0xff; offset++) {
 			byte bitmap = vtoc[offset];
@@ -189,56 +204,15 @@ public class DosFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.Disk#getDiskName()
 	 */
 	public String getDiskName() {
-		int volumeNumber = AppleUtil.getUnsignedByte(getVtoc()[0x06]);
+		int volumeNumber = AppleUtil.getUnsignedByte(readVtoc()[0x06]);
 		return "DISK VOLUME #" + volumeNumber;
 	}
 
 	/**
 	 * Return the VTOC (Volume Table Of Contents).
 	 */
-	protected byte[] getVtoc() {
-		return readSector(0x11, 0);
-	}
-
-	/**
-	 * Get the disk usage bitmap.  The size could vary and is stored in the
-	 * VTOC.
-	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getBitmap()
-	 * @deprecated DOS 3.3.po comes up with 448 entries in the bitmap?!
-	 */
-	public BitSet getBitmap() {
-		byte[] vtoc = getVtoc();
-		int tracks = getTracks();
-		int sectors = getSectors();
-		BitSet bitmap = new BitSet(tracks * sectors);
-		// individually test each track & sector - should handle 140K or 400K disks!
-		int count = 0;
-		for (int t=0; t<tracks; t++) {
-			for (int s=0; s<sectors; s++) {
-				byte byt = vtoc[0x38 + (t * 4) + (s / 8)];
-				boolean free = AppleUtil.isBitSet(byt, 7 - (s % 8));
-				bitmap.set(count, free);
-				count++;
-			}
-		}
-		return bitmap;
-	}
-
-	/**
-	 * Get the free setting for the bitmap at a specific location.
-	 * The location is specified by an int array to support block
-	 * and track/sector formatted disks.
-	 * @deprecated
-	 */
-	public boolean isLocationFree(int[] location) {
-		if (location == null || location.length != 2) {
-			throw new IllegalArgumentException("Invalid dimension for isLocationFree!");
-		}
-		byte[] vtoc = getVtoc();
-		byte byt = vtoc[0x38 + (location[TRACK_LOCATION_INDEX] * 4) 
-			+ (location[SECTOR_LOCATION_INDEX] / 8)];
-		boolean free = AppleUtil.isBitSet(byt, 7 - (location[SECTOR_LOCATION_INDEX] % 8));
-		return free;
+	protected byte[] readVtoc() {
+		return readSector(CATALOG_TRACK, VTOC_SECTOR);
 	}
 
 	/**
@@ -252,7 +226,7 @@ public class DosFormatDisk extends FormattedDisk {
 	 * Get the number of tracks on this disk.
 	 */
 	public int getTracks() {
-		byte[] vtoc = getVtoc();
+		byte[] vtoc = readVtoc();
 		return AppleUtil.getUnsignedByte(vtoc[0x34]);
 	}
 
@@ -260,7 +234,7 @@ public class DosFormatDisk extends FormattedDisk {
 	 * Get the number of sectors on this disk.
 	 */
 	public int getSectors() {
-		byte[] vtoc = getVtoc();
+		byte[] vtoc = readVtoc();
 		return AppleUtil.getUnsignedByte(vtoc[0x35]);
 	}
 
@@ -394,5 +368,109 @@ public class DosFormatDisk extends FormattedDisk {
 			}
 		}
 		return fileData;
+	}
+
+	/**
+	 * Format the disk as DOS 3.3.
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
+	 */
+	public void format() {
+		writeBootCode();
+		// create catalog sectors
+		byte[] data = new byte[SECTOR_SIZE];
+		for (int sector=15; sector > 0; sector--) {
+			if (sector == 0) {
+				data[0x01] = CATALOG_TRACK;
+				data[0x02] = (byte)(sector-1);
+			} else {
+				data[0x01] = 0;
+				data[0x02] = 0;
+			}
+			writeSector(CATALOG_TRACK, sector, data);
+		}
+		// create VTOC
+		data[0x01] = CATALOG_TRACK;	// track# of first catalog sector
+		data[0x02] = 15;			// sector# of first catalog sector
+		data[0x03] = 3;				// DOS 3.3 formatted
+		data[0x06] = (byte)254;	// DISK VOLUME#
+		data[0x27] = 122;			// maximum # of T/S pairs in a sector
+		data[0x30] = CATALOG_TRACK+1;	// last track where sectors allocated
+		data[0x31] = 1;				// direction of allocation
+		data[0x34] = 35;			// tracks per disk
+		data[0x35] = 16;			// sectors per disk
+		data[0x37] = 1;				// 36/37 are # of bytes per sector
+		for (int track=0; track<35; track++) {
+			for (int sector=0; sector<16; sector++) {
+				if (track == 0 || track == CATALOG_TRACK) {
+					setSectorUsed(track, sector, data);
+				} else {
+					setSectorFree(track, sector, data);
+				}
+			}
+		}
+		writeSector(CATALOG_TRACK, VTOC_SECTOR, data);
+	}
+
+	/**
+	 * Indicates if a specific track/sector is free.
+	 */
+	public boolean isSectorFree(int track, int sector, byte[] vtoc) {
+		checkRange(track, sector);
+		byte byt = vtoc[getFreeMapByte(track, sector)];
+		return AppleUtil.isBitSet(byt, getFreeMapBit(sector));
+	}
+	
+	/**
+	 * Indicates if a specific track/sector is used.
+	 */
+	public boolean isSectorUsed(int track, int sector, byte[] vtoc) {
+		return !isSectorFree(track, sector, vtoc);
+	}
+	
+	/**
+	 * Sets the track/sector indicator to free.
+	 */
+	public void setSectorFree(int track, int sector, byte[] vtoc) {
+		checkRange(track, sector);
+		int offset = getFreeMapByte(track, sector);
+		byte byt = vtoc[offset];
+		byt = AppleUtil.setBit(byt, getFreeMapBit(sector));
+		vtoc[offset] = byt;
+	}
+
+	/**
+	 * Sets the track/sector indicator to used.
+	 */
+	public void setSectorUsed(int track, int sector, byte[] vtoc) {
+		checkRange(track, sector);
+		int offset = getFreeMapByte(track, sector);
+		byte byt = vtoc[offset];
+		byt = AppleUtil.clearBit(byt, getFreeMapBit(sector));
+		vtoc[offset] = byt;
+	}
+	
+	/**
+	 * Compute the VTOC byte for the T/S map.
+	 */
+	protected int getFreeMapByte(int track, int sector) {
+		return 0x38 + (track * 4) + (sector / 8);
+	}
+	
+	/**
+	 * Compute the VTOC bit for the T/S map.
+	 */
+	protected int getFreeMapBit(int sector) {
+		return 7 - (sector % 8);
+	}
+	
+	/**
+	 * Validate track/sector range.
+	 */
+	protected void checkRange(int track, int sector) {
+		if (track > 35 || sector > 32) {
+			throw new IllegalArgumentException(
+				"Invalid track (" + track + "), sector (" + sector
+				+ ") combination.");
+		}
 	}
 }
