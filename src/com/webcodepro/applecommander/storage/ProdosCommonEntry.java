@@ -44,7 +44,7 @@ public class ProdosCommonEntry {
 	 * The offset into the block that the FileEntry is at.
 	 */
 	private int offset;
-
+	
 	/**
 	 * Constructor for ProdosCommonEntry.
 	 */
@@ -53,6 +53,13 @@ public class ProdosCommonEntry {
 		this.disk = disk;
 		this.block = block;
 		this.offset = offset;
+	}
+	
+	/**
+	 * Get the block in which the FileEntry resides.
+	 */
+	protected int getFileEntryBlock() {
+		return block;
 	}
 	
 	/**
@@ -249,7 +256,7 @@ public class ProdosCommonEntry {
 	/**
 	 * Set if this file may be destroyed.
 	 */
-	public void setDestroy(boolean destroy) {
+	public void setCanDestroy(boolean destroy) {
 		setAccess(7, destroy);
 	}
 
@@ -263,7 +270,7 @@ public class ProdosCommonEntry {
 	/**
 	 * Set if this file may be renamed.
 	 */
-	public void setRename(boolean rename) {
+	public void setCanRename(boolean rename) {
 		setAccess(6, rename);
 	}
 
@@ -277,7 +284,7 @@ public class ProdosCommonEntry {
 	/**
 	 * Set if this file has changed since last backup.
 	 */
-	public void setChanged(boolean changed) {
+	public void setHasChanged(boolean changed) {
 		setAccess(5, changed);
 	}
 
@@ -291,7 +298,7 @@ public class ProdosCommonEntry {
 	/**
 	 * Set if this file may be written.
 	 */
-	public void setWrite(boolean write) {
+	public void setCanWrite(boolean write) {
 		setAccess(1, write);
 	}
 
@@ -305,7 +312,7 @@ public class ProdosCommonEntry {
 	/**
 	 * Set if this file may be read.
 	 */
-	public void setRead(boolean read) {
+	public void setCanRead(boolean read) {
 		setAccess(0, read);
 	}
 
