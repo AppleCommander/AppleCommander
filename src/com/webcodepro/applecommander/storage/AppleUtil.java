@@ -39,6 +39,9 @@ public class AppleUtil {
 	 * A word is two bytes, in standard Apple LO/HI format.
 	 */
 	public static int getWordValue(byte[] buffer, int offset) {
+		if (offset+1 > buffer.length) {
+			return 0;
+		}
 		return getWordValue(buffer[offset], buffer[offset+1]);
 	}
 	/**
@@ -62,6 +65,9 @@ public class AppleUtil {
 	 * Stored in standard Apple LO/HI format.
 	 */
 	public static int get3ByteValue(byte[] buffer, int offset) {
+		if (offset+2 > buffer.length) {
+			return 0;
+		}
 		return getUnsignedByte(buffer[offset]) 
 			+ getUnsignedByte(buffer[offset+1])*256
 			+ getUnsignedByte(buffer[offset+2])*65536;
