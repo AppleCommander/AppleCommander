@@ -75,6 +75,26 @@ public class DiskWriterTest extends TestCase {
 		disks[0].save();
 	}
 	
+	public void testCreateAndDeleteDos33() {
+		FormattedDisk[] disks = DosFormatDisk.create(
+			"createanddelete-test-dos33.dsk");
+		createAndDeleteFiles(disks, "B");
+	}
+
+	public void testCreateAndDeleteProdos140kDisk() {
+		FormattedDisk[] disks = ProdosFormatDisk.create(
+			"createanddelete-test-prodos-140k.dsk", "TEST", 
+			ProdosFormatDisk.APPLE_140KB_DISK);
+		createAndDeleteFiles(disks, "BIN");
+	}
+
+	public void testCreateAndDeleteProdos800kDisk() {
+		FormattedDisk[] disks = ProdosFormatDisk.create(
+			"createanddelete-test-prodos-800k.dsk", "TEST",
+			ProdosFormatDisk.APPLE_800KB_2IMG_DISK);
+		createAndDeleteFiles(disks, "BIN");
+	}
+	
 	protected void writeFiles(FormattedDisk[] disks, String binaryType, 
 		String textType, boolean testText) throws DiskFullException {
 		FormattedDisk disk = disks[0];
@@ -117,7 +137,10 @@ public class DiskWriterTest extends TestCase {
 		byte[] data2 = entry.getFileData();
 		if (test) {
 			assertTrue("File lengths do not match", data.length == data2.length);
-			assertTrue("File contents do not match", Arrays.equals(data, data2));
+			//assertTrue("File contents do not match", Arrays.equals(data, data2));
+			for (int i=0; i<data.length; i++) {
+				assertTrue("File contents differ at " + i, data[i] == data2[i]);
+			}
 		}
 	}
 	
@@ -191,5 +214,45 @@ public class DiskWriterTest extends TestCase {
 			}
 		}
 		System.out.println("U = used, . = free");
+	}
+	
+	/**
+	 * Create a bunch of files and then delete them repeatedly.
+	 * This is intended to excersize not only creating and deleting
+	 * files but the disk management (ala Disk Map).
+	 */
+	protected void createAndDeleteFiles(FormattedDisk[] disks, String filetype) {
+		byte[] data = new byte[129 * 1024];
+		for (int i=0; i<data.length; i++) {
+			data[i] = (byte)(Math.random() * 1024);
+		}
+		for (int d=0; d<disks.length; d++) {
+			FormattedDisk disk = disks[d];
+			System.out.println("Excercising disk " + disk.getDiskName() + 
+				" in the " + disk.getFormat() + " format.");
+			int originalUsed = disk.getUsedSpace();
+			int originalFree = disk.getFreeSpace();
+			for (int count=0; count<5; count++) {
+				// Fill the disk with files:
+				try {
+					while (true) {
+						writeFile(disk, data, filetype, false);
+					}
+				} catch (DiskFullException ex) {
+					// ignored
+				}
+				// Remove the files:
+				List files = disk.getFiles();
+				for (int i=0; i<files.size(); i++) {
+					FileEntry entry = (FileEntry) files.get(i);
+					entry.delete();
+				}
+				// Verify that we're back to what we started with:
+				assertTrue("Free space does not match", 
+					originalFree == disk.getFreeSpace());
+				assertTrue("Used space does not match", 
+					originalUsed == disk.getUsedSpace());
+			}
+		}
 	}
 }
