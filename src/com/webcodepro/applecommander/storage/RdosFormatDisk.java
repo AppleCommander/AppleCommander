@@ -365,7 +365,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 *         reads from track 1 sector 9 (whatever RDOS block that
 	 *         would be) and executes that code for the directory.
 	 *         AppleCommander will need to either clone the code or write
-	 *         its own routine.
+	 *         its own routine.  This is RDOS block #25.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
