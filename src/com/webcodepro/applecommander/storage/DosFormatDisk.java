@@ -464,10 +464,11 @@ public class DosFormatDisk extends FormattedDisk {
 	}
 	
 	/**
-	 * Validate track/sector range.
+	 * Validate track/sector range.  This just validates the
+	 * maximum values allowable for track and sector. 
 	 */
 	protected void checkRange(int track, int sector) {
-		if (track > 35 || sector > 32) {
+		if (track > 50 || sector > 32) {
 			throw new IllegalArgumentException(
 				"Invalid track (" + track + "), sector (" + sector
 				+ ") combination.");

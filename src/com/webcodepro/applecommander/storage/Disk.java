@@ -350,7 +350,13 @@ public class Disk {
 	 * with.
 	 */
 	protected int getOffset(int track, int sector) throws IllegalArgumentException {
-		if ((track * 16 + sector) * SECTOR_SIZE > getPhysicalSize()) {
+		int length = diskImage.length;
+		if (length != APPLE_140KB_DISK && length != APPLE_800KB_DISK) {
+			throw new IllegalArgumentException("Unrecognized DOS format!");
+		}
+		int sectorsPerTrack = 16;
+		if (length == APPLE_800KB_DISK) sectorsPerTrack = 32;
+		if ((track * sectorsPerTrack + sector) * SECTOR_SIZE > getPhysicalSize()) {
 			throw new IllegalArgumentException(
 				"The track (" + track + ") and sector (" + sector 
 				+ ") do not match the disk image size.");
@@ -362,7 +368,7 @@ public class Disk {
 			return ((track * 8) + blockInterleave[sector]) * BLOCK_SIZE 
 				+ blockOffsets[sector] * SECTOR_SIZE;
 		} else if (isDosOrder()) {
-			return (track * 16 + sector) * SECTOR_SIZE;
+			return (track * sectorsPerTrack + sector) * SECTOR_SIZE;
 		} else {
 			throw new IllegalArgumentException(
 				"Unknown disk format.");
@@ -382,15 +388,25 @@ public class Disk {
 	
 	/**
 	 * Test the disk format to see if this is a DOS 3.3 formatted
-	 * disk.
+	 * disk.  This is a little nasty - since 800KB and 140KB images have
+	 * different characteristics.
 	 */
 	public boolean isDosFormat() {
 		byte[] vtoc = readSector(17, 0);
 		return vtoc[0x01] == 17	// expect catalog to start on track 17
-			&& vtoc[0x02] == 15		// expect catalog to start on sector 15
+			&& (
+				vtoc[0x02] == 15		// expect catalog to start on sector 15 (140KB disk only!)
+				||
+				vtoc[0x02] == 31		// expect catalog to start on sector 31 (800KB disk only!)
+				)
 			&& vtoc[0x27] == 122	// expect 122 tract/sector pairs per sector
-			&& vtoc[0x34] == 35		// expect 35 tracks per disk (140KB disk only!)
-			&& vtoc[0x35] == 16		// expect 16 sectors per disk (140KB disk only!)
+			&& ((
+				vtoc[0x34] == 35		// expect 35 tracks per disk (140KB disk only!)
+				&& vtoc[0x35] == 16		// expect 16 sectors per disk (140KB disk only!)
+				) || (
+				vtoc[0x34] == 50		// expect 50 tracks per disk (800KB disk only!)
+				&& vtoc[0x35] == 32		// expect 32 sectors per disk (800KB disk only!)
+				))
 			&& vtoc[0x36] == 0		// bytes per sector (low byte)
 			&& vtoc[0x37] == 1;		// bytes per sector (high byte)
 	}
