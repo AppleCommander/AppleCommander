@@ -275,7 +275,7 @@ public class DiskExplorerTab {
 		item.setEnabled(disks[0].canDeleteFile());
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				// FIXME
+				deleteFile();
 			}
 		});
 		
@@ -680,6 +680,31 @@ public class DiskExplorerTab {
 		}
 	}
 	/**
+	 * Delete the currently selected files.
+	 */
+	protected void deleteFile() {
+		TableItem[] selection = fileTable.getSelection();
+
+		MessageBox box = new MessageBox(shell, 
+			SWT.ICON_ERROR | SWT.YES | SWT.NO);
+		box.setText("Are you sure?");
+		box.setMessage(
+			"Are you sure you want to delete "
+			+ ((selection.length > 1) ? "these files" : "this file")
+			+ "?\n\n"
+			+ "Choose YES to proceed or NO to cancel.");
+		int button = box.open();
+		if (button == SWT.YES) {
+			for (int i=0; i<selection.length; i++) {
+				TableItem tableItem = selection[i];
+				FileEntry fileEntry = (FileEntry) tableItem.getData();
+				fileEntry.delete();
+			}
+			fillFileTable(currentFileList);
+			saveToolItem.setEnabled(true);
+		}
+	}
+	/**
 	 * Sort the file table by the specified columnIndex.
 	 */
 	protected void sortFileTable(int columnIndex) {
@@ -802,7 +827,7 @@ public class DiskExplorerTab {
 		deleteToolItem.setEnabled(false);
 		deleteToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
-				// FIXME
+				deleteFile();
 			}
 		});
 		item = new ToolItem(toolBar, SWT.SEPARATOR);
