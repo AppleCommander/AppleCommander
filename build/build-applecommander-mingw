@@ -1,6 +1,11 @@
 #!/bin/sh
 
-APPLECOMMANDER_FILES=$(cd com; find . -name "*.java" -print | sed 's#^\./#com/#')
+exec >$0.log 2>&1
+
+APPLECOMMANDER_FILES=$(cd com; \
+	find . -name "*.java" -not -name "*Test.java" -not -name "ImageIoImage.java" \
+		-not -name "SunJpegImage.java" -print |
+	sed 's#^\./#com/#')
 
 OPTS="-static -O3 --no-bounds-checking -funroll-loops -finline-functions \
 	-fkeep-inline-functions -malign-double"
