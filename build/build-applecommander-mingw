@@ -15,15 +15,11 @@ echo "**                  COMPILING               **"
 echo "**********************************************"
 echo
 
-# Need to load image-related stuff... (Should be done in SWT build)
-#echo Compiling SWTImageLoaders.java ...
-#gcj --classpath="swt.jar;AppleCommander.jar" $OPTS -g0 -c SWTImageLoaders.java
-
 for i in $APPLECOMMANDER_FILES
 do
 	OBJ_FILE=$(echo $i | sed 's/\//_/g' | sed 's/\.java$/\.o/')
 	echo Compiling $i to $OBJ_FILE
-	gcj --classpath="swt.jar;AppleCommander.jar" $OPTS -g0 -c -o $OBJ_FILE $i
+	gcj --classpath="AppleCommander.jar" $OPTS -g0 -c -o $OBJ_FILE $i
 done
 
 echo "**********************************************"
@@ -32,7 +28,7 @@ echo "**********************************************"
 echo
 for i in $(ls com/webcodepro/applecommander/ui/images/*.gif \
 	   com/webcodepro/applecommander/storage/*.dump \
-	   com/webcodepro/applecommander/storage/*.properties)
+	   com/webcodepro/applecommander/storage/os/prodos/*.properties)
 do
 	FILENAME=$(basename $i)
 	OBJ=$FILENAME.o
@@ -44,9 +40,9 @@ echo "**********************************************"
 echo "**                 BUILD EXE                **"
 echo "**********************************************"
 echo
-gcj -mwindows --classpath="swt.jar;AppleCommander.jar" $OPTS \
+gcj -s -fjni -mwindows --classpath="AppleCommander.jar" $OPTS \
 	--main=com.webcodepro.applecommander.ui.AppleCommander \
-	-o AppleCommander *.o -L. -lswt
+	-o AppleCommander *.o
 
 echo "**********************************************"
 echo "**                   CLEAN                  **"
