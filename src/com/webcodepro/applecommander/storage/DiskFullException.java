@@ -33,10 +33,4 @@ public class DiskFullException extends Exception {
 	public DiskFullException(String description) {
 		super(description);
 	}
-	/**
-	 * Constructor for DiskFullException.
-	 */
-	public DiskFullException(String description, Throwable exception) {
-		super(description, exception);
-	}
 }
