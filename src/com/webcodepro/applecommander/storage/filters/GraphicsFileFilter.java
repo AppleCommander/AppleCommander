@@ -71,14 +71,13 @@ public class GraphicsFileFilter implements FileFilter {
 	 */
 	public GraphicsFileFilter() {
 		super();
-		appleImage = AppleImage.create(1,1);	// used by isCodecAvailable
 	}
 	
 	/**
 	 * Indicate if a codec is available (assist with interface requirements).
 	 */
-	public boolean isCodecAvailable() {
-		return appleImage != null;
+	public static boolean isCodecAvailable() {
+		return AppleImage.create(1,1) != null;
 	}
 
 	/**
