@@ -303,11 +303,11 @@ public class AppleUtil {
 		if (ymd == 0) return null;
 		int hm = getWordValue(buffer, offset+2);
 		
-		int day = ymd & 0x001f;			// bits 0-4
-		int month = (ymd & 0x01e0) >> 5;	// bits 5-8
-		int year = (ymd & 0xfe00) >> 9;	// bits 9-15
-		int minute = hm & 0x003f;			// bits 0-5
-		int hour = (hm & 0x1f00) >> 8;		// bits 8-12
+		int day = ymd & 0x001f;				// bits 0-4
+		int month = ((ymd & 0x01e0) >> 5) - 1;	// bits 5-8
+		int year = (ymd & 0xfe00) >> 9;		// bits 9-15
+		int minute = hm & 0x003f;				// bits 0-5
+		int hour = (hm & 0x1f00) >> 8;			// bits 8-12
 
 		if (year < 50) year+= 2000;
 		if (year < 100) year+= 1900;
@@ -329,7 +329,7 @@ public class AppleUtil {
 			GregorianCalendar gc = new GregorianCalendar();
 			gc.setTime(date);
 			day = gc.get(GregorianCalendar.DAY_OF_MONTH);
-			month = gc.get(GregorianCalendar.MONTH);
+			month = gc.get(GregorianCalendar.MONTH) + 1;
 			year = gc.get(GregorianCalendar.YEAR);
 			minute = gc.get(GregorianCalendar.MINUTE);
 			hour = gc.get(GregorianCalendar.HOUR_OF_DAY);
