@@ -16,8 +16,10 @@ o Add Apple Pascal writing capability.
 o Create subdirectories as appropriate (ProDOS).
 o Short-cut keys would be nice.
 o Need to update preferences with import location, disk creation location.
+o DELETE does not seem to delete in all circumstances.
   
 --- FUTURE 1.3.x (or later) ---
+o Compile of BASIC programs?
 o Add drag-and-drop capability.
 o Provide a Swing GUI so people are not "limited" to SWT.  This may be tossed.
 o Provide a command-line interface (scripting - ie, mass load).
