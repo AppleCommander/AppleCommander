@@ -23,6 +23,7 @@ import com.webcodepro.applecommander.storage.AppleUtil;
 import com.webcodepro.applecommander.storage.AppleWorksWordProcessorFileFilter;
 import com.webcodepro.applecommander.storage.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.BinaryFileFilter;
+import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileEntryComparator;
 import com.webcodepro.applecommander.storage.FileFilter;
@@ -61,6 +62,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
@@ -187,7 +189,7 @@ public class DiskExplorerTab {
 						TreeItem item = new TreeItem(diskItem, SWT.BORDER);
 						item.setText(entry.getFilename());
 						item.setData(entry);
-						addDirectoriesToTree(item, entry);
+						addDirectoriesToTree(item, (DirectoryEntry)entry);
 					}
 				}
 			}
@@ -713,17 +715,40 @@ public class DiskExplorerTab {
 	 * Start the import wizard and import the selected files.
 	 */
 	protected void importFiles() {
-		// FIXME - assumes 1st disk and does not support directories
-		FormattedDisk disk = disks[0];
+		TreeItem treeItem = directoryTree.getSelection()[0];
+		DirectoryEntry directory = (DirectoryEntry) treeItem.getData();
 		ImportWizard wizard = new ImportWizard(shell, 
-			imageManager, disk);
+			imageManager, directory.getFormattedDisk());
 		wizard.open();
 		if (wizard.isWizardCompleted()) {
 			try {
 				List specs = wizard.getImportSpecifications();
+
+//		Shell dialog = new Shell(shell, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+//		dialog.setText("Importing files...");
+//		GridLayout layout = new GridLayout();
+//		layout.horizontalSpacing = 5;
+//		layout.makeColumnsEqualWidth = false;
+//		layout.marginHeight = 5;
+//		layout.marginWidth = 5;
+//		layout.numColumns = 2;
+//		layout.verticalSpacing = 5;
+//		dialog.setLayout(layout);
+//		Label label = new Label(dialog, SWT.NONE);
+//		label.setText("Processing:");
+//		Label countLabel = new Label(dialog, SWT.NONE);
+//		countLabel.setText("0 of " + specs.size());
+//		label = new Label(dialog, SWT.NONE);
+//		label.setText("Filename:");
+//		Label nameLabel = new Label(dialog, SWT.NONE);
+//		dialog.setSize(200,-1);
+//		dialog.open();
+
 				for (int i=0; i<specs.size(); i++) {
 					ImportSpecification spec = 
 						(ImportSpecification) specs.get(i);
+//					countLabel.setText((i+1) + " of " + specs.size());
+//					nameLabel.setText(spec.getSourceFilename());
 					ByteArrayOutputStream buffer = 
 						new ByteArrayOutputStream();
 					InputStream input = 
@@ -732,7 +757,7 @@ public class DiskExplorerTab {
 					while ((data = input.read()) != -1) {
 						buffer.write(data);
 					}
-					FileEntry fileEntry = disk.createFile();
+					FileEntry fileEntry = directory.createFile();
 					fileEntry.setFilename(spec.getTargetFilename());
 					fileEntry.setFiletype(spec.getFiletype());
 					if (fileEntry.needsAddress()) {
@@ -740,6 +765,8 @@ public class DiskExplorerTab {
 					}
 					fileEntry.setFileData(buffer.toByteArray());
 				}
+//		dialog.close();
+//		dialog.dispose();
 			} catch (Exception ex) {
 				MessageBox box = new MessageBox(shell, 
 					SWT.ICON_ERROR | SWT.OK);
@@ -763,7 +790,7 @@ public class DiskExplorerTab {
 	/**
 	 * Helper function for building fileTree.
 	 */
-	protected void addDirectoriesToTree(TreeItem directoryItem, FileEntry directoryEntry) {
+	protected void addDirectoriesToTree(TreeItem directoryItem, DirectoryEntry directoryEntry) {
 		Iterator files = directoryEntry.getFiles().iterator();
 		while (files.hasNext()) {
 			final FileEntry entry = (FileEntry) files.next();
@@ -771,7 +798,7 @@ public class DiskExplorerTab {
 				TreeItem item = new TreeItem(directoryItem, SWT.BORDER);
 				item.setText(entry.getFilename());
 				item.setData(entry);
-				addDirectoriesToTree(item, entry);
+				addDirectoriesToTree(item, (DirectoryEntry)entry);
 			}
 		}
 	}
@@ -830,7 +857,7 @@ public class DiskExplorerTab {
 		importToolItem.setImage(imageManager.getImportFileIcon());
 		importToolItem.setText("&Import...");
 		importToolItem.setToolTipText("Import a file");
-		importToolItem.setEnabled(true);
+		importToolItem.setEnabled(disks[0].canCreateFile() && disks[0].canWriteFileData());
 		importToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				importFiles();
@@ -899,14 +926,8 @@ public class DiskExplorerTab {
 	protected void changeCurrentFormat(int newFormat) {
 		TreeItem selection = directoryTree.getSelection()[0];
 		Object data = selection.getData();
-		List fileList = null;
-		if (data instanceof FileEntry) {
-			FileEntry directory = (FileEntry) data;
-			fileList = directory.getFiles();
-		} else  if (data instanceof FormattedDisk) {
-			FormattedDisk disk = (FormattedDisk) data;
-			fileList = disk.getFiles();
-		}
+		DirectoryEntry directory = (DirectoryEntry) data;
+		List fileList = directory.getFiles();
 		
 		formatChanged = (currentFormat != newFormat);
 		if (formatChanged || !fileList.equals(currentFileList)) {
