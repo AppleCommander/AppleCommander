@@ -19,9 +19,12 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Manages a disk that is in the ProDOS format.
@@ -31,9 +34,45 @@ import java.util.List;
  */
 public class ProdosFormatDisk extends FormattedDisk {
 	/**
+	 * A complete list of all known ProDOS filetypes.  Note that this
+	 * list really cannot be complete, as there are multiple mappings per
+	 * identifier in some cases - differentiated by AUXTYPE.  This is
+	 * loaded via initialize when the first instance of ProdosFormatDisk
+	 * is created.
+	 */
+	private static ProdosFileType[] fileTypes;
+	/**
+	 * This array of strings conains all filetypes.  This is lazy 
+	 * initialized by getFiletypes.
+	 */
+	private static String[] filetypeStrings;
+	/**
 	 * Hold on to the volume directory header.
 	 */
 	private ProdosVolumeDirectoryHeader volumeHeader;
+
+	/**
+	 * This class holds filetype mappings.
+	 */
+	private class ProdosFileType {
+		private byte type;
+		private String string;
+		private boolean addressRequired;
+		public ProdosFileType(byte type, String string, boolean addressRequired) {
+			this.type = type;
+			this.string = string;
+			this.addressRequired = addressRequired;
+		}
+		public byte getType() {
+			return type;
+		}
+		public String getString() {
+			return string;
+		}
+		public boolean needsAddress() {
+			return addressRequired;
+		}
+	}
 
 	/**
 	 * Use this inner interface for managing the disk usage data.
@@ -73,6 +112,33 @@ public class ProdosFormatDisk extends FormattedDisk {
 	public ProdosFormatDisk(String filename, byte[] diskImage) {
 		super(filename, diskImage);
 		volumeHeader = new ProdosVolumeDirectoryHeader(this);
+		initialize();
+	}
+	
+	/**
+	 * Initialize all file types.
+	 */
+	protected void initialize() {
+		if (fileTypes != null) return;
+		
+		fileTypes = new ProdosFileType[256];
+		InputStream inputStream = 
+			getClass().getResourceAsStream("ProdosFileTypes.properties");
+		Properties properties = new Properties();
+		try {
+			properties.load(inputStream);
+			for (int i=0; i<256; i++) {
+				String byt = AppleUtil.getFormattedByte(i).toLowerCase();
+				String string = (String) properties.get("filetype." + byt);
+				if (string == null || string.length() == 0) {
+					string = "$" + byt.toUpperCase();
+				}
+				boolean addressRequired = Boolean.getBoolean(
+					(String) properties.get("filetype." + byt + ".addres"));
+				fileTypes[i] = new ProdosFileType((byte)i, string, addressRequired);
+			}
+		} catch (IOException ignored) {
+		}
 	}
 
 	/**
@@ -707,5 +773,62 @@ public class ProdosFormatDisk extends FormattedDisk {
 			i++;
 		}
 		return newName.toString().toUpperCase().trim();
+	}
+
+	/**
+	 * Return the filetype of this file.  This will be three characters,
+	 * according to ProDOS - a "$xx" if unknown.
+	 */
+	public String getFiletype(int filetype) {
+		ProdosFileType prodostype = fileTypes[filetype];
+		return prodostype.getString();
+	}
+
+	/**
+	 * Get the numerical filetype.
+	 */
+	public byte getFiletype(String filetype) {
+		ProdosFileType type = findFileType(filetype);
+		if (type != null) {
+			return type.getType();
+		}
+		return 0x00;
+	}
+	
+	/**
+	 * Locate the associated ProdosFileType.
+	 */
+	public ProdosFileType findFileType(String filetype) {
+		for (int i=0; i<fileTypes.length; i++) {
+			if (filetype.equalsIgnoreCase(fileTypes[i].getString())) {
+				return fileTypes[i];
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Returns a list of possible file types.  Since the filetype is
+	 * specific to each operating system, a simple String is used.
+	 */
+	public String[] getFiletypes() {
+		if (filetypeStrings == null) {
+			filetypeStrings = new String[fileTypes.length];
+			for (int i = 0; i < fileTypes.length; i++) {
+				filetypeStrings[i] = fileTypes[i].getString();
+			}
+		}
+		return filetypeStrings;
+	}
+
+	/**
+	 * Indicates if this filetype requires an address component.
+	 */
+	public boolean needsAddress(String filetype) {
+		ProdosFileType fileType = findFileType(filetype);
+		if (fileType != null) {
+			return fileType.needsAddress();
+		}
+		return false;
 	}
 }
