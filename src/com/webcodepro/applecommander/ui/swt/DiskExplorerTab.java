@@ -102,6 +102,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.compilefile.CompileWizard;
 import com.webcodepro.applecommander.ui.swt.wizard.exportfile.ExportWizard;
 import com.webcodepro.applecommander.ui.swt.wizard.importfile.ImportWizard;
 import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.StreamUtil;
 
 /**
  * Build the Disk File tab for the Disk Window.
@@ -1101,14 +1102,9 @@ public class DiskExplorerTab {
 					countLabel.setText("File " + (i+1) + " of " + specs.size());
 					nameLabel.setText(spec.getSourceFilename());
 					progressBar.setSelection(i);
-					ByteArrayOutputStream buffer = 
-						new ByteArrayOutputStream();
-					InputStream input = 
-						new FileInputStream(spec.getSourceFilename());
-					int data;
-					while ((data = input.read()) != -1) {
-						buffer.write(data);
-					}
+					ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+					InputStream input =  new FileInputStream(spec.getSourceFilename());
+					StreamUtil.copy(input, buffer);
 					FileEntry fileEntry = directory.createFile();
 					fileEntry.setFilename(spec.getTargetFilename());
 					fileEntry.setFiletype(spec.getFiletype());
