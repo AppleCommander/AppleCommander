@@ -1,0 +1,35 @@
+General process to prepare, build, and release AppleCommander
+=============================================================
+
+This documents the over-all process used when making a new release of
+AppleCommander.  It requires admin authority on the AppleCommander project
+on SourceForge.  Plan about 60 minutes for the release process.
+
+ 1. Update version number in AppleCommander.java.
+
+ 2. Move notes from TODO to VERSIONS.
+
+ 3. Update web pages.  This includes, but is not limited to:
+      * index.html            (new features)
+      * news-posting.html     (news message that will be sent)
+
+ 4. Tag AppleCommander project with the version number.  The
+    standard is: v[major].[minor].[service]
+
+ 5. Build JAR file using executableJar target in build.xml.
+
+ 6. Build Javadoc using sourceZip target in build.xml.
+
+ 7. Make AppleCommander source build.
+
+ 8. Upload web pages (including javadoc) to AppleCommander site.
+
+ 9. Upload files to SourceForge upload site.
+
+10. Make release through SourceForge release system.
+
+11. Post announcement to AppleCommander project site on SourceForge.
+
+12. Post message to news groups:
+      * comp.emulators.apple2
+      * comp.sys.apple2
