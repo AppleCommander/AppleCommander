@@ -35,7 +35,7 @@ import java.util.List;
 import junit.framework.TestCase;
 
 /**
- * Test DiskHelper and its related Apple2 classes.
+ * Test Disk and FormattedDisk for read.
  * <p>
  * Date created: Oct 3, 2002 11:35:26 PM
  * @author: Rob Greene
