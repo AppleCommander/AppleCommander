@@ -6,7 +6,6 @@ package com.webcodepro.applecommander.ui.swt;
  * http://www.eclipse.org/legal/cpl-v10.html
  */
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
 
 import org.eclipse.swt.SWT;
@@ -30,8 +29,6 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
-import com.webcodepro.applecommander.ui.AppleCommander;
 
 /**
  * Instructions on how to use the Sleak tool with a standlaone SWT example:
@@ -61,14 +58,9 @@ public static void main (String [] args) {
 	Sleak sleak = new Sleak ();
 	sleak.open ();
 
-	// Launch you application here
-	try {
-		AppleCommander.main(null);
-	} catch (IOException e) {
-		e.printStackTrace();
-	}
-//	SwtAppleCommander ac = new SwtAppleCommander();
-//	ac.launch();
+	// Launch your application here
+	SwtAppleCommander ac = new SwtAppleCommander();
+	ac.launch(display);
 	// End of AC code...	
 	
 	while (!sleak.shell.isDisposed ()) {
