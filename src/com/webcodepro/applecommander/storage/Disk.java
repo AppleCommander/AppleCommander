@@ -167,6 +167,12 @@ public class Disk {
 									UniDosFormatDisk.UNIDOS_DISK_1),
 				new UniDosFormatDisk(filename, diskImage, 
 									UniDosFormatDisk.UNIDOS_DISK_2) };
+		} else if (isOzDosFormat()) {
+			return new FormattedDisk[] {
+				new OzDosFormatDisk(filename, diskImage,
+									OzDosFormatDisk.OZDOS_DISK_1),
+				new OzDosFormatDisk(filename, diskImage,
+									OzDosFormatDisk.OZDOS_DISK_2) };
 		} else if (isDosFormat()) {
 			return new FormattedDisk[]
 				{ new DosFormatDisk(filename, diskImage) };
@@ -359,7 +365,9 @@ public class Disk {
 	 */
 	protected int getOffset(int track, int sector) throws IllegalArgumentException {
 		int length = diskImage.length;
-		if (length != APPLE_140KB_DISK && length != APPLE_800KB_DISK) {
+		if (length != APPLE_140KB_DISK && length != APPLE_800KB_DISK
+			&& length != APPLE_800KB_2IMG_DISK
+			&& track != 0 && sector != 0) {		// HACK: Allows boot sector writing
 			throw new IllegalArgumentException("Unrecognized DOS format!");
 		}
 		int sectorsPerTrack = 16;
@@ -414,6 +422,8 @@ public class Disk {
 	/**
 	 * Test the disk format to see if this is a UniDOS formatted
 	 * disk.  UniDOS creates two logical disks on an 800KB physical disk.
+	 * The first logical disk takes up the first 400KB and the second
+	 * logical disk takes up the second 400KB.
 	 */
 	public boolean isUniDosFormat() {
 		if (getPhysicalSize() != APPLE_800KB_DISK
@@ -430,6 +440,7 @@ public class Disk {
 			&& vtoc1[0x34] == 50	// expect 50 tracks per disk
 			&& vtoc1[0x35] == 32	// expect 32 sectors per disk
 			&& vtoc1[0x36] == 0		// bytes per sector (low byte)
+			&& vtoc1[0x37] == 1		// bytes per sector (high byte)
 			// LOGICAL DISK #2
 			&& vtoc2[0x37] == 1		// bytes per sector (high byte)
 			&& vtoc2[0x01] == 17	// expect catalog to start on track 17
@@ -439,6 +450,38 @@ public class Disk {
 			&& vtoc2[0x35] == 32	// expect 32 sectors per disk
 			&& vtoc2[0x36] == 0		// bytes per sector (low byte)
 			&& vtoc2[0x37] == 1;	// bytes per sector (high byte)
+	}
+
+	/**
+	 * Test the disk format to see if this is a OzDOS formatted
+	 * disk.  OzDOS creates two logical disks on an 800KB physical disk.
+	 * The first logical disk takes the first half of each block and
+	 * the second logical disk takes the second half of each block.
+	 */
+	public boolean isOzDosFormat() {
+		if (getPhysicalSize() != APPLE_800KB_DISK
+			&& getPhysicalSize() != APPLE_800KB_2IMG_DISK) {
+			return false;
+		}
+		byte[] vtoc = readBlock(544);	// contains BOTH VTOCs!
+		return
+			// LOGICAL DISK #1
+			vtoc[0x001] == 17		// expect catalog to start on track 17
+			&& vtoc[0x002] == 31	// expect catalog to start on sector 31
+			&& vtoc[0x027] == 122	// expect 122 tract/sector pairs per sector
+			&& vtoc[0x034] == 50	// expect 50 tracks per disk
+			&& vtoc[0x035] == 32	// expect 32 sectors per disk
+			&& vtoc[0x036] == 0		// bytes per sector (low byte)
+			&& vtoc[0x037] == 1		// bytes per sector (high byte)
+			// LOGICAL DISK #2
+			&& vtoc[0x137] == 1		// bytes per sector (high byte)
+			&& vtoc[0x101] == 17	// expect catalog to start on track 17
+			&& vtoc[0x102] == 31	// expect catalog to start on sector 31
+			&& vtoc[0x127] == 122	// expect 122 tract/sector pairs per sector
+			&& vtoc[0x134] == 50	// expect 50 tracks per disk
+			&& vtoc[0x135] == 32	// expect 32 sectors per disk
+			&& vtoc[0x136] == 0		// bytes per sector (low byte)
+			&& vtoc[0x137] == 1;	// bytes per sector (high byte)
 	}
 	
 	/**
