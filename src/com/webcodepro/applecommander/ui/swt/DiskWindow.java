@@ -61,7 +61,7 @@ public class DiskWindow {
 		shell = new Shell(parentShell, SWT.SHELL_TRIM);
 		shell.setLayout(new FillLayout());
 		shell.setImage(imageManager.getDiskIcon());
-		shell.setText("AppleCommander - " + disks[0].getFilename());
+		setStandardWindowTitle();
 		shell.addDisposeListener(new DisposeListener() {
 				public void widgetDisposed(DisposeEvent event) {
 					dispose(event);
@@ -70,7 +70,7 @@ public class DiskWindow {
 			
 		CTabFolder tabFolder = new CTabFolder(shell, SWT.BOTTOM);
 		diskExplorerTab = new DiskExplorerTab(tabFolder, disks, 
-			imageManager);
+			imageManager, this);
 		diskMapTabs = new DiskMapTab[disks.length];
 		for (int i=0; i<disks.length; i++) {
 			diskMapTabs[i] = new DiskMapTab(tabFolder, disks[i]);
@@ -80,6 +80,14 @@ public class DiskWindow {
 		
 		
 		shell.open();
+	}
+	
+	/**
+	 * Set the standard AppleCommander disk window title.
+	 * This is referenced in DiskWindow as well as DiskExplorerTab.
+	 */
+	public void setStandardWindowTitle() {
+		shell.setText("AppleCommander - " + disks[0].getFilename());
 	}
 	
 	/**
