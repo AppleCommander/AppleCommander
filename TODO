@@ -20,11 +20,13 @@ This is the internal list of items that need to be done.
 * File viewer window now scrolls an appropriate amount: PgUp/PgDn, arrows, 
   mousewheel all work (must select content area first of course).
 * Wizard windows no longer show up with the title bar off the screen.
+* Refactor FileViewerWindow.  Created supporting FilterAdapter classes as well as 
+  (presumably) reusable ContentAdapters.  Started caching the filtered content for
+  a little speed improvement when switching filters (native, hex, raw) in the FileView.
 
 --- FUTURE 1.3.x ---
 o Create reusable show dialog messages (they're scattered all over right now) to clean
   up code a bit.
-o Refactor FileViewerWindow.
 o BUG: Import of binary file does not set starting address.
 o MISSING FEATURE: Unable to import a RAW binary image.
 ? Compile of BASIC programs
