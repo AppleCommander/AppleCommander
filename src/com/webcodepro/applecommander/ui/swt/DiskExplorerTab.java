@@ -80,6 +80,7 @@ import com.webcodepro.applecommander.storage.filters.AppleWorksDataBaseFileFilte
 import com.webcodepro.applecommander.storage.filters.AppleWorksSpreadSheetFileFilter;
 import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFileFilter;
 import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
+import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
@@ -485,6 +486,15 @@ public class DiskExplorerTab {
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				fileFilter = new TextFileFilter();
+				exportFile(null);
+			}
+		});
+
+		item = new MenuItem(menu, SWT.NONE);
+		item.setText("Formatted Assembly...");
+		item.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				fileFilter = new AssemblySourceFileFilter();
 				exportFile(null);
 			}
 		});
