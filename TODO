@@ -3,7 +3,7 @@ THINGS TO DO
 This is the internal list of items that need to be done.
 
 -- 1.3.3 --
-* Repackage code - packages are getting a bit large.  The goal is to make class
+* Repackage code - packages were getting a bit large.  The goal is to make class
   structure/placement more logical.
   GUI:
   - Moved the SWT wizards into their own packages;
@@ -38,8 +38,13 @@ o SWT image handlers do not appear to work correctly.  BMP works - but color see
 o It has been reported that Apple Pascal includes extra information at the beginning
   and/or the end of a line - need to resolve this for the preview and export function.
 o Resolve OS X issues where window cannot come to the foreground.
+o Further automate build (and web site) deployment.
  
 --- FUTURE 1.4.x (or later) ---
+o Change layout of DiskExplorer window to not be tabbed.  Information could/should be
+  a popup window.  File browsing and disk free space can be shown or hidden by toolbar
+  buttons (see Denis Molony's prototype for example).  Can add file tracking at this 
+  point.  Possibly toggle sector/block editor?
 o Add RDOS writing capability.
 o Add Apple Pascal writing capability.
 o Add CP/M writing capability.
