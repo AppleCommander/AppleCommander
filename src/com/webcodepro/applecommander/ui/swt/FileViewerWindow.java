@@ -29,6 +29,7 @@ import com.webcodepro.applecommander.storage.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.HexDumpFileFilter;
 import com.webcodepro.applecommander.storage.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.TextFileFilter;
+import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.ApplesoftToken;
 import com.webcodepro.applecommander.util.ApplesoftTokenizer;
 
@@ -38,12 +39,14 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.custom.StyledTextPrintOptions;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
@@ -51,6 +54,9 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.printing.PrintDialog;
+import org.eclipse.swt.printing.Printer;
+import org.eclipse.swt.printing.PrinterData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
@@ -66,6 +72,9 @@ import org.eclipse.swt.widgets.ToolItem;
  * @author: Rob Greene
  */
 public class FileViewerWindow {
+	private static final char CTRL_P = 'P' - '@';
+	private static final char CTRL_C = 'C' - '@';
+
 	private Shell parentShell;
 	private ImageManager imageManager;
 	
@@ -79,6 +88,7 @@ public class FileViewerWindow {
 	private ToolItem hexDumpToolItem;
 	private ToolItem rawDumpToolItem;
 	private ToolItem printToolItem;
+	private ToolItem copyToolItem;
 	
 	private Font courier;
 	private Color black;
@@ -119,6 +129,7 @@ public class FileViewerWindow {
 		content = new ScrolledComposite(composite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
 		gridData = new GridData(GridData.FILL_BOTH);
 		content.setLayoutData(gridData);
+		content.addListener(SWT.KeyUp, createToolbarCommandHandler());
 		
 		courier = new Font(shell.getDisplay(), "Courier", 10, SWT.NORMAL);
 		black = new Color(shell.getDisplay(), 0, 0, 0);
@@ -148,7 +159,7 @@ public class FileViewerWindow {
 		toolBar = new ToolBar(composite, SWT.FLAT);
 		toolBar.addListener(SWT.KeyUp, createToolbarCommandHandler());
 		if (layoutData != null) toolBar.setLayoutData(layoutData);
-
+		
 		if (nativeFilter instanceof ApplesoftFileFilter || nativeFilter instanceof IntegerBasicFileFilter) {
 			nativeToolItem = new ToolItem(toolBar, SWT.RADIO);
 			nativeToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_AS_BASIC_PROGRAM));
@@ -241,30 +252,83 @@ public class FileViewerWindow {
 		
 		new ToolItem(toolBar, SWT.SEPARATOR);
 		
-		ToolItem copy = new ToolItem(toolBar, SWT.PUSH);
-		copy.setText("Copy");
-		copy.setToolTipText("Copies selection to the clipboard");
-		copy.setEnabled(false);
+		copyToolItem = new ToolItem(toolBar, SWT.PUSH);
+		copyToolItem.setImage(imageManager.get(ImageManager.ICON_COPY));
+		copyToolItem.setText("Copy");
+		copyToolItem.setToolTipText("Copies selection to the clipboard (CTRL+C)");
+		copyToolItem.setEnabled(true);
+		copyToolItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				copy();
+			}
+		});
 
 		new ToolItem(toolBar, SWT.SEPARATOR);
 		
 		printToolItem = new ToolItem(toolBar, SWT.PUSH);
 		printToolItem.setImage(imageManager.get(ImageManager.ICON_PRINT_FILE));
 		printToolItem.setText("Print");
-		printToolItem.setToolTipText("Print contents...");
+		printToolItem.setToolTipText("Print contents... (CTRL+P)");
 		printToolItem.setEnabled(true);
 		printToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
-				// FIXME
-				Control control = content.getContent();
-				if (control instanceof StyledText) {
-					StyledText styledText = (StyledText) control;
-					styledText.print();
-				}
+				print();
 			}
 		});
 
 		toolBar.pack();
+	}
+	protected void print() {
+		PrintDialog dialog = new PrintDialog(shell);
+		PrinterData printerData = dialog.open();
+		if (printerData == null) return;
+		Printer printer = new Printer(printerData);
+		
+		Control control = content.getContent();
+		if (control instanceof StyledText) {
+			StyledText styledText = (StyledText) control;
+			styledText.print();
+			// FIXME: Unable to use printer chosen and print?!
+			//printer.startJob(fileEntry.getFilename());
+			//printer.startPage();
+//			StyledTextPrintOptions options = new StyledTextPrintOptions();
+//			options.jobName = fileEntry.getFilename();
+//			options.printTextFontStyle = true;
+//			styledText.print(printer); //, options);
+			//printer.endPage();
+			//printer.endJob();
+		} else if (control instanceof ImageCanvas) {
+			printer.startJob(fileEntry.getFilename());
+			printer.startPage();
+			Point dpi = printer.getDPI();
+			ImageCanvas imageCanvas = (ImageCanvas) control;
+			Image image = imageCanvas.getImage();
+			int imageWidth = image.getImageData().width;
+			int imageHeight = image.getImageData().height;
+			int printedWidth = imageWidth * (dpi.x / 96);
+			int printedHeight = imageHeight * (dpi.y / 96);
+			GC gc = new GC(printer);
+			gc.drawImage(image,
+				0, 0, imageWidth, imageHeight,
+				0, 0, printedWidth, printedHeight);
+			printer.endPage();
+			printer.endJob();
+			gc.dispose();
+		}
+		//printer.dispose();
+	}
+	protected void copy() {
+		Control control = content.getContent();
+		if (control instanceof StyledText) {
+			StyledText styledText = (StyledText) control;
+			styledText.copy();
+		} else if (control instanceof ImageCanvas) {
+			// TODO: Can SWT copy an image to the clipboard?
+//			Clipboard clipboard = new Clipboard(shell.getDisplay());
+//			String[] typeNames = clipboard.getAvailableTypeNames();
+			// look at the typeNames - nothing that looks like an image?!
+//			clipboard.dispose();
+		}
 	}
 	protected void displayNativeFormat() {
 		Control oldContent = content.getContent();
@@ -276,6 +340,8 @@ public class FileViewerWindow {
 		if (nativeToolItem != null) nativeToolItem.setSelection(true);
 		hexDumpToolItem.setSelection(false);
 		rawDumpToolItem.setSelection(false);
+		
+		copyToolItem.setEnabled(true);
 		
 		if (nativeFilter instanceof ApplesoftFileFilter) {
 			StyledText styledText = new StyledText(content, SWT.NONE);
@@ -326,6 +392,7 @@ public class FileViewerWindow {
 			content.setExpandVertical(true);
 			content.setMinWidth(size.x);
 			content.setMinHeight(size.y);
+			content.getContent().addListener(SWT.KeyUp, createToolbarCommandHandler());
 		} else if (nativeFilter instanceof IntegerBasicFileFilter) {
 			String basicDump = new String(nativeFilter.filter(fileEntry));
 			createTextWidget(content, basicDump);
@@ -339,6 +406,8 @@ public class FileViewerWindow {
 			String basicDump = new String(nativeFilter.filter(fileEntry));
 			createTextWidget(content, basicDump);
 		} else if (nativeFilter instanceof GraphicsFileFilter) {
+			copyToolItem.setEnabled(false);
+
 			byte[] imageBytes = nativeFilter.filter(fileEntry);
 			ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes);
 			ImageLoader imageLoader = new ImageLoader();
@@ -364,6 +433,8 @@ public class FileViewerWindow {
 		}
 	}
 	protected void createTextWidget(Composite composite, String text) {
+		copyToolItem.setEnabled(true);
+
 		StyledText styledText = new StyledText(composite, SWT.NONE);
 		styledText.setText(text);
 		styledText.setFont(courier);
@@ -375,8 +446,11 @@ public class FileViewerWindow {
 		content.setExpandVertical(true);
 		content.setMinWidth(size.x);
 		content.setMinHeight(size.y);
+		content.getContent().addListener(SWT.KeyUp, createToolbarCommandHandler());
 	}
 	protected void displayHexFormat() {
+		copyToolItem.setEnabled(true);
+
 		Control oldContent = content.getContent();
 		if (oldContent != null) {
 			oldContent.dispose();
@@ -402,7 +476,7 @@ public class FileViewerWindow {
 		hexDumpToolItem.setSelection(false);
 		rawDumpToolItem.setSelection(true);
 
-		String rawDump = new String(
+		String rawDump = AppleUtil.getHexDump(
 			fileEntry.getFormattedDisk().getFileData(fileEntry));
 		createTextWidget(content, rawDump);
 	}
@@ -415,16 +489,27 @@ public class FileViewerWindow {
 		return new Listener() {
 			public void handleEvent(Event event) {
 				if (event.type == SWT.KeyUp) {
-					switch (event.keyCode) {
-						case SWT.F2:	// the "native" file format (image, text, etc)
-							displayNativeFormat();
-							break;
-						case SWT.F3:	// Hex format
-							displayHexFormat();
-							break;
-						case SWT.F4:	// "Raw" hex format
-							displayRawFormat();
-							break;
+					if ((event.type & SWT.CTRL) != 0) {	// CTRL+key
+						switch (event.keyCode) {
+							case CTRL_C:
+								copy();
+								break;
+							case CTRL_P:
+								print();
+								break;
+						}
+					} else if ((event.type & SWT.ALT) == 0) { // key alone
+						switch (event.keyCode) {
+							case SWT.F2:	// the "native" file format (image, text, etc)
+								displayNativeFormat();
+								break;
+							case SWT.F3:	// Hex format
+								displayHexFormat();
+								break;
+							case SWT.F4:	// "Raw" hex format
+								displayRawFormat();
+								break;
+						}
 					}
 				}
 			}
