@@ -36,7 +36,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
@@ -48,7 +50,7 @@ import org.eclipse.swt.widgets.ToolItem;
  * Date created: Oct 7, 2002 9:43:37 PM
  * @author: Rob Greene
  */
-public class SwtAppleCommander {
+public class SwtAppleCommander implements Listener {
 	private Display display;
 	private Shell shell;
 	private ToolBar toolBar;
@@ -60,6 +62,22 @@ public class SwtAppleCommander {
 	 * Launch SwtAppleCommander.
 	 */
 	public static void main(String[] args) {
+		Display display = new Display();
+		imageManager = new ImageManager(display);
+		SwtAppleCommander application = new SwtAppleCommander();
+		Shell shell = application.open(display);
+		
+		while (!shell.isDisposed()) {
+			if (!display.readAndDispatch()) display.sleep();
+		}
+		
+		UserPreferences.getInstance().save();
+	}
+
+	/**
+	 * Launch SwtAppleCommander.
+	 */
+	public void launch() {
 		Display display = new Display();
 		imageManager = new ImageManager(display);
 		SwtAppleCommander application = new SwtAppleCommander();
@@ -108,6 +126,8 @@ public class SwtAppleCommander {
 		gridData.widthHint = logoImage.getImageData().width;
 		gridData.heightHint = logoImage.getImageData().height;
 		imageCanvas = new ImageCanvas(shell, SWT.BORDER, logoImage, gridData);
+		imageCanvas.addListener(SWT.KeyUp, this);
+		imageCanvas.setFocus();
 		
 		shell.pack();
 		shell.open();
@@ -187,9 +207,9 @@ public class SwtAppleCommander {
 
 		ToolItem item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(imageManager.getOpenDiskIcon());
-		item.setText("&Open...");
+		item.setText("Open...");
 		item.setSelection(false);
-		item.setToolTipText("Open a disk image");
+		item.setToolTipText("Open a disk image (Ctrl+O)");
 		item.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				openFile();
@@ -199,8 +219,8 @@ public class SwtAppleCommander {
 
 		item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(imageManager.getNewDiskIcon());
-		item.setText("&Create...");
-		item.setToolTipText("Create a disk image");
+		item.setText("Create...");
+		item.setToolTipText("Create a disk image (Ctrl+C)");
 		item.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				createDiskImage();
@@ -210,26 +230,46 @@ public class SwtAppleCommander {
 
 		item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(imageManager.getAboutIcon());
-		item.setText("&About");
-		item.setToolTipText("About AppleCommander");
-		final Shell finalShell = shell;
+		item.setText("About");
+		item.setToolTipText("About AppleCommander (Ctrl+A)");
 		item.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
-				MessageBox box = new MessageBox(finalShell, SWT.ICON_INFORMATION | SWT.OK);
-				box.setText("About AppleCommander");
-				box.setMessage(
-					  "AppleCommander\n"
-					+ "Version " + AppleCommander.VERSION + "\n"
-					+ AppleCommander.COPYRIGHT + "\n\n"
-				    + "AppleCommander was created for the express\n"
-					+ "purpose of assisting those-who-remember.\n\n"
-					+ "I wish you many hours of vintage pleasure!\n"
-					+ "-Rob");
-				box.open();
+				showAboutAppleCommander();
 			}
 		});
 		item = new ToolItem(toolBar, SWT.SEPARATOR);
 
 		toolBar.pack();
+	}
+	
+	public void showAboutAppleCommander() {
+		final Shell finalShell = shell;
+		MessageBox box = new MessageBox(finalShell, SWT.ICON_INFORMATION | SWT.OK);
+		box.setText("About AppleCommander");
+		box.setMessage(
+			  "AppleCommander\n"
+			+ "Version " + AppleCommander.VERSION + "\n"
+			+ AppleCommander.COPYRIGHT + "\n\n"
+			+ "AppleCommander was created for the express\n"
+			+ "purpose of assisting those-who-remember.\n\n"
+			+ "I wish you many hours of vintage pleasure!\n"
+			+ "-Rob");
+		box.open();
+	}
+
+	public void handleEvent(Event event) {
+		if (event.type == SWT.KeyUp && (event.stateMask & SWT.CTRL) != 0) {
+			switch (event.character) {
+				case 0x01:		// CTRL+A
+					showAboutAppleCommander();
+					break;
+				case 0x03:		// CTRL+C
+					createDiskImage();
+					break;
+				case 0x0f:		// CTRL+O
+					openFile();
+					break;
+			}
+		}		
 	}
 }
