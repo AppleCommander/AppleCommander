@@ -30,6 +30,8 @@ import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.IntegerBasicFileFilter;
+import com.webcodepro.applecommander.storage.ProdosDiskSizeDoesNotMatchException;
+import com.webcodepro.applecommander.storage.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.TextFileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk.FileColumnHeader;
 import com.webcodepro.applecommander.ui.ImportSpecification;
@@ -716,6 +718,7 @@ public class DiskExplorerTab {
 	 * Start the import wizard and import the selected files.
 	 */
 	protected void importFiles() {
+		//FIXME: This code has become really ugly!
 		TreeItem treeItem = directoryTree.getSelection()[0];
 		DirectoryEntry directory = (DirectoryEntry) treeItem.getData();
 		ImportWizard wizard = new ImportWizard(shell, 
@@ -779,7 +782,25 @@ public class DiskExplorerTab {
 					if (fileEntry.needsAddress()) {
 						fileEntry.setAddress(spec.getAddress());
 					}
-					fileEntry.setFileData(buffer.toByteArray());
+					try {
+						fileEntry.setFileData(buffer.toByteArray());
+					} catch (ProdosDiskSizeDoesNotMatchException ex) {
+						MessageBox yesNoPrompt = new MessageBox(shell,
+							SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+						yesNoPrompt.setText("Resize disk?");
+						yesNoPrompt.setMessage("This disk needs to be resized to match "
+							+ "the formatted capacity.  This should be an "
+							+ "ApplePC HDV disk iamge - they typically start "
+							+ "at 0 bytes and grow to the maximum capacity "
+							+ "(32MB).  Resize the disk?");
+						int answer = yesNoPrompt.open();
+						if (answer == SWT.YES) {
+							ProdosFormatDisk prodosDisk = (ProdosFormatDisk) 
+								fileEntry.getFormattedDisk();
+							prodosDisk.resizeDiskImage();
+							fileEntry.setFileData(buffer.toByteArray());
+						}
+					}
 				}
 			} catch (Exception ex) {
 				MessageBox box = new MessageBox(shell, 
