@@ -22,8 +22,6 @@ package com.webcodepro.applecommander.ui.swt;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 
-import java.util.Stack;
-
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 
@@ -36,7 +34,6 @@ import org.eclipse.swt.widgets.Shell;
 public class ExportWizard extends Wizard {
 	private FormattedDisk disk;
 	private FileFilter fileFilter;
-	private Stack wizardPanes = new Stack();
 	private String directory;
 	/**
 	 * Constructor for ExportWizard.
