@@ -59,6 +59,11 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 	 * included.
 	 */
 	private boolean inHeaderOrFooter = false;
+	/**
+	 * This constant indicates how many TWIPS there are per inch.
+	 * I'm fairly certain of this number, but it may need tweaking.
+	 */
+	private static final int TWIPS_PER_INCH = 1440;
 	/*
 	 * Identifies the codes embedded in the AppleWorks file.
 	 */
@@ -105,7 +110,7 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 	private static final int COMMAND_CENTER = 0xe1;
 	private static final int COMMAND_PAPER_LENGTH = 0xe2;	// 10ths of an inch
 	private static final int COMMAND_MARGIN_TOP = 0xe3;		// 10ths of an inch
-	private static final int COMMAND_MARGIN_BOTTON = 0xe4;	// 10ths of an inch
+	private static final int COMMAND_MARGIN_BOTTOM = 0xe4;	// 10ths of an inch
 	private static final int COMMAND_LINES_PER_INCH = 0xe5;
 	private static final int COMMAND_SINGLE_SPACE = 0xe6;
 	private static final int COMMAND_DOUBLE_SPACE = 0xe7;
@@ -146,9 +151,11 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 			printWriter.println("<html><style>BODY { font-family: monospace; }</style><body>");
 		} else if (isRtfRendering()) {
 			printWriter.print("{\\rtf1");
+			printWriter.print("{\\fonttbl{\\f0\\fmodern\\fprq1\\fcharset0 Courier New;}}");
 			printWriter.print("{\\*\\generator AppleCommander ");
 			printWriter.print(AppleCommander.VERSION);
 			printWriter.println(";}");
+			printWriter.print("\\f0 ");
 		}
 		boolean version3 = (fileData[183] != 0);
 		int offset = 300 + (version3 ? 2 : 0);	// version 3.0's first line record is invalid
@@ -274,7 +281,7 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 						printWriter.print("\\b ");
 						break;
 			case CODE_BOLD_OFF:
-						printWriter.print("\\b0");
+						printWriter.print("\\b0 ");
 						break;
 			case CODE_UNDERLINE_ON:
 						printWriter.print("\\ul ");
@@ -349,9 +356,10 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 		PrintWriter printWriter, int offset) {
 		
 		if (inHeaderOrFooter) {
-			printWriter.print("}");
+			printWriter.print("}\\f0 ");
 			inHeaderOrFooter = false;
 		}
+		int twipDistance = byte0 * TWIPS_PER_INCH / 10;
 		switch (byte1) {
 			case COMMAND_PAGEHEADER:
 						printWriter.print("{\\header ");
@@ -381,6 +389,36 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 			case COMMAND_PAGE_BREAK_256:
 			case COMMAND_NEW_PAGE:
 						printWriter.print("\\page ");
+						break;
+			case COMMAND_PLATEN_WIDTH:
+						printWriter.print("\\paperw");
+						printWriter.print(twipDistance);
+						printWriter.print(" ");
+						break;
+			case COMMAND_PAPER_LENGTH:
+						printWriter.print("\\paperl");
+						printWriter.print(twipDistance);
+						printWriter.print(" ");
+						break;
+			case COMMAND_MARGIN_LEFT:
+						printWriter.print("\\margl");
+						printWriter.print(twipDistance);
+						printWriter.print(" ");
+						break;
+			case COMMAND_MARGIN_RIGHT:
+						printWriter.print("\\margr");
+						printWriter.print(twipDistance);
+						printWriter.print(" ");
+						break;
+			case COMMAND_MARGIN_TOP:
+						printWriter.print("\\margt");
+						printWriter.print(twipDistance);
+						printWriter.print(" ");
+						break;
+			case COMMAND_MARGIN_BOTTOM:
+						printWriter.print("\\margb");
+						printWriter.print(twipDistance);
+						printWriter.print(" ");
 						break;
 			default:	offset = handleCommandRecordAsText(byte0, byte1, 
 							printWriter, offset);
