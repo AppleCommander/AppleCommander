@@ -19,6 +19,8 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -295,5 +297,29 @@ public abstract class FormattedDisk extends Disk {
 			}
 		}
 		return theFileEntry;
+	}
+	
+	/**
+	 * Format the disk.  Make sure that this is what is intended -
+	 * there is no backing out!
+	 */
+	public abstract void format();
+	
+	/**
+	 * Write the AppleCommander boot code to track 0 sector 0 of
+	 * the disk.  This will work for a floppy, but may cause problems
+	 * for other devices.
+	 */
+	protected void writeBootCode() {
+		InputStream inputStream = getClass().
+			getResourceAsStream("AppleCommander-boot.dump");
+		if (inputStream != null) {
+			byte[] bootCode = new byte[SECTOR_SIZE];
+			try {
+				inputStream.read(bootCode, 0, bootCode.length);
+				writeSector(0, 0, bootCode);
+			} catch (IOException ignored) {
+			}
+		}
 	}
 }
