@@ -1,6 +1,6 @@
 /*
  * AppleCommander - An Apple ][ image utility.
- * Copyright (C) 2002 by Robert Greene
+ * Copyright (C) 2002-3 by Robert Greene
  * robgreene at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it 
@@ -113,11 +113,19 @@ public class ExportGraphicsTypePane extends WizardPane {
 			}
 		});
 		button = new Button(graphicsModeGroup, SWT.RADIO);
-		button.setText("Super hires (320x200 or 640x200)");
-		button.setSelection(getGraphicsFilter().isSuperHiresMode());
+		button.setText("Super hires 16 color mode (320x200 or 640x200)");
+		button.setSelection(getGraphicsFilter().isSuperHires16Mode());
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_SHR);
+				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_SHR_16);
+			}
+		});
+		button = new Button(graphicsModeGroup, SWT.RADIO);
+		button.setText("Super hires 3200 color mode (320x200 or 640x200)");
+		button.setSelection(getGraphicsFilter().isSuperHires3200Mode());
+		button.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_SHR_3200);
 			}
 		});
 		label = new Label(control, SWT.WRAP);

@@ -1,6 +1,6 @@
 /*
  * AppleCommander - An Apple ][ image utility.
- * Copyright (C) 2002 by Robert Greene
+ * Copyright (C) 2002-3 by Robert Greene
  * robgreene at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it 
@@ -40,6 +40,13 @@ import java.io.IOException;
  * does not follow this - it uses a real 4 bit value, but the high bit is still ignored for
  * graphics (hence, the 560 instead of 640 resolution).
  * <p>
+ * SHR has been implemented in "16 color" mode as well as 3200 color mode.  Note that
+ * 16 color mode is really 16 pallettes of 16 colors while 3200 color mode is 200
+ * pallettes of 16 colors (one pallette per line).
+ * <p>
+ * NOTE: The design is feeling kludgy.  There are 6 distinct variations - possibly a
+ * subclass is needed to interpret the various graphic image or some such redesign.
+ * <p>
  * Date created: Nov 3, 2002 12:06:36 PM
  * @author: Rob Greene
  */
@@ -48,7 +55,8 @@ public class GraphicsFileFilter implements FileFilter {
 	public static final int MODE_HGR_COLOR = 2;
 	public static final int MODE_DHR_BLACK_AND_WHITE = 3;
 	public static final int MODE_DHR_COLOR = 4;
-	public static final int MODE_SHR = 5;
+	public static final int MODE_SHR_16 = 5;
+	public static final int MODE_SHR_3200 = 6;
 	
 	private int mode = MODE_HGR_COLOR;
 	private AppleImage appleImage;	
@@ -95,13 +103,15 @@ public class GraphicsFileFilter implements FileFilter {
 				}
 			}
 			int base = 0;
-			byte[] pallettes = new byte[0x200];
-			System.arraycopy(fileData, 0x7e00, pallettes, 0, pallettes.length);
+			int palletteOffset = isSuperHires3200Mode() ? 0x7d00 : 0x7e00;
+			byte[] pallettes;
+			pallettes = new byte[fileData.length - palletteOffset];
+			System.arraycopy(fileData, palletteOffset, pallettes, 0, pallettes.length);
 			for (int y=0; y<200; y++) {
 				byte[] lineData = new byte[160];
 				System.arraycopy(fileData, base, lineData, 0, lineData.length);
 				processSuperHiresLine(lineData, image, y, 
-					fileData[0x7d00+y], pallettes);
+					fileData[0x7d00+y] /* N/A for 3200 mode */, pallettes);
 				base+= lineData.length;
 			}
 		} else {
@@ -298,7 +308,7 @@ public class GraphicsFileFilter implements FileFilter {
 	 * mode.
 	 * <p>
 	 * The color map varies depending upon the SCB value(s) and the pallettes
-	 * stored with the image.
+	 * stored with the image. The SCB does not apple to 3200 SHR mode!
      * </pre>
 	 */
 	protected void processSuperHiresLine(byte[] lineData, 
@@ -307,6 +317,12 @@ public class GraphicsFileFilter implements FileFilter {
 		int palletteNumber = (scb & 0x0f);
 		boolean fillMode = (scb & 0x20) != 0;
 		boolean mode320 = (scb & 0x80) == 0;
+		if (isSuperHires3200Mode()) {
+			int numPallettes = pallettes.length / 32;
+			palletteNumber = y % numPallettes;
+			fillMode = false;	// never
+			mode320 = true;	// always
+		}
 		int width = mode320 ? 320 : 640;
 		int yPosition = y*2;
 		int lastColorValue = 0;
@@ -321,6 +337,9 @@ public class GraphicsFileFilter implements FileFilter {
 					colorNumber = (byt & 0x0f);
 				} else {
 					colorNumber = (byt & 0xf0) >> 4;
+				}
+				if (isSuperHires3200Mode()) {
+					colorNumber= 0x0f - colorNumber;	// pallette entries are reversed
 				}
 			} else {
 				int offset = (x / 4);
@@ -432,8 +451,15 @@ public class GraphicsFileFilter implements FileFilter {
 	/**
 	 * Indicates if this is configured for super hires 16 color mode.
 	 */
-	public boolean isSuperHiresMode() {
-		return mode == MODE_SHR;
+	public boolean isSuperHires16Mode() {
+		return mode == MODE_SHR_16;
+	}
+	
+	/**
+	 * Indicates if this is configured for super hires 3200 color mode.
+	 */
+	public boolean isSuperHires3200Mode() {
+		return mode == MODE_SHR_3200;
 	}
 	
 	/**
@@ -448,5 +474,12 @@ public class GraphicsFileFilter implements FileFilter {
 	 */
 	public boolean isDoubleHiresMode() {
 		return isDoubleHiresBlackAndWhiteMode() || isDoubleHiresColorMode();
+	}
+	
+	/**
+	 * Indicates if this is a super-hires mode.
+	 */
+	public boolean isSuperHiresMode() {
+		return isSuperHires16Mode() || isSuperHires3200Mode();
 	}
 }
