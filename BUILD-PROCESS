@@ -16,24 +16,25 @@ on SourceForge.  Plan about 60 minutes for the release process.
  4. Tag AppleCommander project with the version number.  The
     standard is: v[major].[minor].[service]
 
- 5. Build JAR file using executableJar target in build.xml.
-
- 6. Build source build using sourceZip target in build.xml.
-
- 7. Make AppleCommander Javadoc build.
+ 5. Build distribution files - Ant target "all".
+    - Build JAR file using executableGuiJar target.
+    - Build JAR file using executableCmdJar target.
+    - Build source build using sourceZip target.
+    - Make AppleCommander Javadoc build using javadocZip target.
+    - Build web site with websiteZip target.
  
- 8. Build native AppleCommander executable for Windows.
- 
- 9. Build native AppleCommander executable for Linux.
+ 6. Build native executables:
+    - Build native AppleCommander executable for Windows.
+ 	- Build native AppleCommander executable for Linux.
 
-10. Upload web pages (including javadoc) to AppleCommander site.
+ 7. Upload web pages (including javadoc) to AppleCommander site.
 
-11. Upload files to SourceForge upload site.
+ 8. Upload files to SourceForge upload site.
 
-12. Make release through SourceForge release system.
+ 9. Make release through SourceForge release system.
 
-13. Post announcement to AppleCommander project site on SourceForge.
+10. Post announcement to AppleCommander project site on SourceForge.
 
-14. Post message to news groups:
+11. Post message to news groups:
       * comp.emulators.apple2
       * comp.sys.apple2
