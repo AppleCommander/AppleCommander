@@ -20,6 +20,7 @@
 package com.webcodepro.applecommander.storage;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -29,11 +30,6 @@ import java.util.List;
  * @author: Rob Greene
  */
 public class ProdosFormatDisk extends FormattedDisk {
-	/**
-	 * The standard ProDOS file entry length.
-	 */
-	public static final int ENTRY_LENGTH = 0x27;
-	
 	/**
 	 * Hold on to the volume directory header.
 	 */
@@ -60,20 +56,9 @@ public class ProdosFormatDisk extends FormattedDisk {
 				throw new IllegalArgumentException("Invalid dimension for isFree! Did you call next first?");
 			}
 			if (data == null) {
-				int volumeBitmapBlock = volumeHeader.getBitMapPointer();
-				int volumeBitmapBlocks = volumeHeader.getTotalBlocks();
-				int blocksToRead = (volumeBitmapBlocks / 4096) + 1;
-				// Read in the entire volume bitmap:
-				data = new byte[blocksToRead * BLOCK_SIZE];
-				for (int i=0; i<blocksToRead; i++) {
-					System.arraycopy(readBlock(volumeBitmapBlock+i), 0, data, i*BLOCK_SIZE, BLOCK_SIZE);
-				}
+				data = readVolumeBitMap();
 			}
-			// Locate appropriate bit and check it:
-			int byt = location / 8;
-			int bit = 7 - (location % 8);
-			boolean free = AppleUtil.isBitSet(data[byt], bit);
-			return free;
+			return isBlockFree(data, location);
 		}
 		public boolean isUsed() {
 			return !isFree();
@@ -87,12 +72,15 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 */
 	public ProdosFormatDisk(String filename, byte[] diskImage) {
 		super(filename, diskImage);
-		
-		// read volume header:
-		byte[] block = readBlock(2);
-		byte[] entry = new byte[ENTRY_LENGTH];
-		System.arraycopy(block, 4, entry, 0, ENTRY_LENGTH);
-		volumeHeader = new ProdosVolumeDirectoryHeader(entry);
+		volumeHeader = new ProdosVolumeDirectoryHeader(this);
+	}
+
+	/**
+	 * Constructor for ProdosFormatDisk.
+	 */
+	public ProdosFormatDisk(String filename, String diskName, int imageSize) {
+		this(filename, new byte[imageSize]);
+		volumeHeader.setVolumeName(diskName);
 	}
 
 	/**
@@ -120,31 +108,23 @@ public class ProdosFormatDisk extends FormattedDisk {
 		while (blockNumber != 0) {
 			byte[] block = readBlock(blockNumber);
 			int offset = 4;
-			while (offset+ENTRY_LENGTH < BLOCK_SIZE) {
-				byte[] entry = new byte[ENTRY_LENGTH];
-				System.arraycopy(block, offset, entry, 0, ENTRY_LENGTH);
-				int checksum = 0;
-				for (int i=0; i<entry.length; i++) {
-					checksum |= entry[i];
-				}
-				if (checksum != 0) {
-					ProdosCommonEntry tester = new ProdosCommonEntry(entry);
-					if (tester.isVolumeHeader() || tester.isSubdirectoryHeader()) {
-						// ignore it, we've already got it
-					} else {
-						ProdosFileEntry fileEntry = new ProdosFileEntry(entry, this);
-						files.add(fileEntry);
-						if (fileEntry.isDirectory()) {
-							int keyPointer = fileEntry.getKeyPointer();
-							byte[] subdirBlock = readBlock(keyPointer);
-							byte[] subdirEntry = new byte[ENTRY_LENGTH];
-							System.arraycopy(subdirBlock, 4, subdirEntry, 0, ENTRY_LENGTH);
-							fileEntry.setSubdirectoryHeader(new ProdosSubdirectoryHeader(subdirEntry));
-							fileEntry.setFiles(getFiles(keyPointer));
-						}
+			while (offset+ProdosCommonEntry.ENTRY_LENGTH < BLOCK_SIZE) {
+				ProdosCommonEntry tester = 
+					new ProdosCommonEntry(this, blockNumber, offset);
+				if (tester.isVolumeHeader() || tester.isSubdirectoryHeader()) {
+					// ignore it, we've already got it
+				} else {
+					ProdosFileEntry fileEntry = 
+						new ProdosFileEntry(this, blockNumber, offset);
+					files.add(fileEntry);
+					if (fileEntry.isDirectory()) {
+						int keyPointer = fileEntry.getKeyPointer();
+						fileEntry.setSubdirectoryHeader(
+							new ProdosSubdirectoryHeader(this, keyPointer));
+						fileEntry.setFiles(getFiles(keyPointer));
 					}
 				}
-				offset+= entry.length;
+				offset+= ProdosCommonEntry.ENTRY_LENGTH;
 			}
 			blockNumber = AppleUtil.getWordValue(block, 2);
 		}
@@ -364,7 +344,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 				offset+= getIndexBlockData(fileData, indexBlock, offset);
 			}
 		} else {
-			throw new IllegalArgumentException("Unknown ProDOS filetype!");
+			throw new IllegalArgumentException("Unknown ProDOS storage type!");
 		}
 		return fileData;
 	}
@@ -389,4 +369,122 @@ public class ProdosFormatDisk extends FormattedDisk {
 		}
 		return offset;
 	}
+	
+	/**
+	 * Read the Volume Bit Map.
+	 */
+	public byte[] readVolumeBitMap() {
+		int volumeBitmapBlock = volumeHeader.getBitMapPointer();
+		int volumeBitmapBlocks = volumeHeader.getTotalBlocks();
+		int blocksToRead = (volumeBitmapBlocks / 4096) + 1;
+		// Read in the entire volume bitmap:
+		byte[] data = new byte[blocksToRead * BLOCK_SIZE];
+		for (int i=0; i<blocksToRead; i++) {
+			System.arraycopy(readBlock(volumeBitmapBlock+i), 0, data, i*BLOCK_SIZE, BLOCK_SIZE);
+		}
+		return data;
+	}
+	
+	/**
+	 * Write the Volume Bit Map.
+	 */
+	public void writeVolumeBitMap(byte[] data) {
+		int volumeBitmapBlock = volumeHeader.getBitMapPointer();
+		int volumeBitmapBlocks = volumeHeader.getTotalBlocks();
+		int blocksToWrite = (volumeBitmapBlocks / 4096) + 1;
+		if (data.length != blocksToWrite * BLOCK_SIZE) {
+			throw new IllegalArgumentException(
+				"The ProDOS Volume Bit Map is not the correct size.");
+		}
+		byte[] dataBlock = new byte[BLOCK_SIZE];
+		for (int i=0; i<blocksToWrite; i++) {
+			System.arraycopy(data, i*BLOCK_SIZE, dataBlock, 0, BLOCK_SIZE);
+			writeBlock(volumeBitmapBlock+i, dataBlock);
+		}
+	}
+	
+	/**
+	 * Determine if the specified block is free.
+	 */
+	public boolean isBlockFree(byte[] data, int blockNumber) {
+		// Locate appropriate bit and check it:
+		int byt = blockNumber / 8;
+		int bit = 7 - (blockNumber % 8);
+		boolean free = AppleUtil.isBitSet(data[byt], bit);
+		return free;
+	}
+
+	/**
+	 * Set if the specified block is free.
+	 */
+	public void setBlockFree(byte[] data, int blockNumber) {
+		// Locate appropriate bit and check it:
+		int byt = blockNumber / 8;
+		int bit = 7 - (blockNumber % 8);
+		data[byt] = AppleUtil.setBit(data[byt], bit);
+	}
+	
+	/**
+	 * Determine if the specified block is used.
+	 */
+	public boolean isBlockUsed(byte[] data, int blockNumber) {
+		return !isBlockFree(data, blockNumber);
+	}
+
+	/**
+	 * Set if the specified block is free.
+	 */
+	public void setBlockUsed(byte[] data, int blockNumber) {
+		// Locate appropriate bit and check it:
+		int byt = blockNumber / 8;
+		int bit = 7 - (blockNumber % 8);
+		data[byt] = AppleUtil.clearBit(data[byt], bit);
+	}
+	
+	/**
+	 * Format the ProDOS volume.
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
+	 */
+	public void format() {
+		writeBootCode();
+		String volumeName = volumeHeader.getVolumeName();
+		int totalBlocks = getDiskImage().length / BLOCK_SIZE;
+		int usedBlocks = (totalBlocks / 4096) + 7;
+		// setup volume directory
+		byte[] data = new byte[BLOCK_SIZE];
+		for (int block=2; block<6; block++) {
+			int nextBlock = (block < 5) ? block+1 : 0;
+			int prevBlock = (block > 2) ? block-1 : 0;
+			AppleUtil.setWordValue(data, 0, prevBlock);
+			AppleUtil.setWordValue(data, 2, nextBlock);
+			writeBlock(block, data);
+		}
+		// setup volume header information (each set will also save data)
+		volumeHeader.setVolumeHeader();
+		volumeHeader.setVolumeName(volumeName);
+		volumeHeader.setCreationDate(new Date());
+		volumeHeader.setProdosVersion(0);
+		volumeHeader.setMinimumProdosVersion(0);
+		volumeHeader.setChanged(true);
+		volumeHeader.setDestroy(true);
+		volumeHeader.setRead(true);
+		volumeHeader.setRename(true);
+		volumeHeader.setWrite(true);
+		volumeHeader.setEntryLength();
+		volumeHeader.setEntriesPerBlock();
+		volumeHeader.setFileCount(0);
+		volumeHeader.setBitMapPointer(6);
+		volumeHeader.setTotalBlocks(totalBlocks);
+		// setup bitmap usage
+		byte[] bitmap = readVolumeBitMap();
+		for (int block=0; block<totalBlocks; block++) {
+			if (block < usedBlocks) {
+				setBlockUsed(bitmap, block);
+			} else {
+				setBlockFree(bitmap, block);
+			}
+		}
+		writeVolumeBitMap(bitmap);
+	}
+
 }
