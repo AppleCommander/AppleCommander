@@ -121,7 +121,7 @@ public class DiskImageFormatPane extends WizardPane {
 			"RDOS was created by (or for) SSI to protected their games. The\n"
 			+ "original format appears to be a 13 sector disk. Most disk images\n"
 			+ "that I've seen have been mapped onto a 16 sector disk (leaving 3\n"
-			+ "sectors of each disk unused.  The only image size RDOS supports\n"
+			+ "sectors of each track unused.  The only image size RDOS supports\n"
 			+ "is 140K.");
 		control.pack();
 	}
