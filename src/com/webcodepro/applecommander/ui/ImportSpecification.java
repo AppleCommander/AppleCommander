@@ -32,6 +32,7 @@ public class ImportSpecification {
 	private String targetFilename;
 	private String filetype;
 	private int address;
+	private boolean rawFileImport;
 	/**
 	 * Create the ImportSpecification with default values.
 	 */
@@ -102,5 +103,19 @@ public class ImportSpecification {
 	 */
 	public void setTargetFilename(String targetFilename) {
 		this.targetFilename = targetFilename;
+	}
+	/**
+	 * Answers true if the file should be imported as a raw file -
+	 * that is, no doctoring of the file bytes at all.  Particularly
+	 * important in operating systems like DOS 3.3.  
+	 */
+	public boolean isRawFileImport() {
+		return rawFileImport;
+	}
+	/**
+	 * Sets raw file import flag.
+	 */
+	public void setRawFileImport(boolean rawFileImport) {
+		this.rawFileImport = rawFileImport;
 	}
 }
