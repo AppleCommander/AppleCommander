@@ -130,8 +130,12 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 * according to ProDOS - a "$xx" if unknown.
 	 */
 	public String getFiletype() {
-		int filetype = AppleUtil.getUnsignedByte(readFileEntry()[0x10]);
+		int filetype = getFiletypeByte();
 		return getDisk().getFiletype(filetype);
+	}
+	
+	public int getFiletypeByte() {
+		return AppleUtil.getUnsignedByte(readFileEntry()[0x10]);
 	}
 
 	/**
@@ -387,7 +391,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 				list.add(AppleUtil.getFormattedWord(getHeaderPointer()));
 				list.add(AppleUtil.getFormattedWord(getKeyPointer()));
 				list.add(isSaplingFile() ? "Sapling" : isSeedlingFile() ? "Seedling" : 
-					isTreeFile() ? "Tree" : "Unknown");
+					isTreeFile() ? "Tree" : "Unknown (" + getFileTypeString() + ")");
 				list.add(hasChanged() ? "Changed" : "");
 				numberFormat.setMinimumIntegerDigits(1);
 				list.add(numberFormat.format(getMinimumProdosVersion()));
@@ -401,6 +405,13 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 				break;
 		}
 		return list;
+	}
+	
+	/**
+	 * Return the ProDOS file type as a hex string.
+	 */
+	public String getFileTypeString() {
+		return "$" + AppleUtil.getFormattedByte(getStorageType());
 	}
 
 	/**
@@ -427,51 +438,65 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 * of guessing the appropriate filter.
 	 */
 	public FileFilter getSuggestedFilter() {
-		if ("TXT".equals(getFiletype()) || "SRC".equals(getFiletype())) {
+		int filetype = getFiletypeByte();
+		int auxtype = getAuxiliaryType();
+		int filesize = getSize();
+		
+		switch (filetype) {
+		case 0x04:		// TXT
+		case 0xb0:		// SRC
 			return new TextFileFilter();
-		} else if ("AWP".equals(getFiletype())) {
-			return new AppleWorksWordProcessorFileFilter();
-		} else if ("ADB".equals(getFiletype())) {
+		case 0x19:		// ADB
 			return new AppleWorksDataBaseFileFilter();
-		} else if ("ASP".equals(getFiletype())) {
+		case 0x1a:		// AWP
+			return new AppleWorksWordProcessorFileFilter();
+		case 0x1b:		// ASP
 			return new AppleWorksSpreadSheetFileFilter();
-		} else if ("BAS".equals(getFiletype())) {
+		case 0xfc:		// BAS
 			return new ApplesoftFileFilter();
-		} else if ("INT".equals(getFiletype())) {	// supposedly not available in ProDOS, however
+		case 0xfa:		// INT
 			return new IntegerBasicFileFilter();
-		} else if ("PNT".equals(getFiletype())) {
-			if (getAuxiliaryType() == 0x0001) {
+		case 0xc0:		// PNT
+			if (auxtype == 0x0001) {
 				GraphicsFileFilter filter = new GraphicsFileFilter();
 				filter.setMode(GraphicsFileFilter.MODE_SHR_16);
 				return filter;
 			}
-		} else if ("PIC".equals(getFiletype())) {
-			int auxType = getAuxiliaryType();
-			int fileSize = getSize();
+			break;
+		case 0xc1: 	// PIC
 			// AUX TYPE $0002 is sometimes mislabeled and should be $0000
 			// the OR attempts to identify these
-			if (auxType == 0x0000 || (auxType == 0x0002 && fileSize == 32768) ) {
+			if (auxtype == 0x0000 || (auxtype == 0x0002 && filesize == 32768) ) {
 				GraphicsFileFilter filter = new GraphicsFileFilter();
 				filter.setMode(GraphicsFileFilter.MODE_SHR_16);
 				return filter;
-			} else if (auxType == 0x0002 && fileSize == 38400) {
+			} else if (auxtype == 0x0002 && filesize == 38400) {
 				GraphicsFileFilter filter = new GraphicsFileFilter();
 				filter.setMode(GraphicsFileFilter.MODE_SHR_3200);
 				return filter;
 			}
-		} else if ("BIN".equals(getFiletype())) {
-			int size = getSize();
+			// fall through to BinaryFileFilter...
+			break;
+		case 0x06: 	// BIN
 			// the minimum size is guessed a bit - I don't remember, but maybe there
 			// are 8 spare bytes at the end of the graphics screen
-			GraphicsFileFilter filter = new GraphicsFileFilter();
-			if (size >= 8184 && size <= 8192) {
+			if (filesize >= 8184 && filesize <= 8192) {
+				GraphicsFileFilter filter = new GraphicsFileFilter();
 				filter.setMode(GraphicsFileFilter.MODE_HGR_COLOR);
 				return filter;
-			} else if (size >= 16377 && size <= 16384) {
+			} else if (filesize >= 16377 && filesize <= 16384) {
+				GraphicsFileFilter filter = new GraphicsFileFilter();
 				filter.setMode(GraphicsFileFilter.MODE_DHR_COLOR);
 				return filter;
 			}
 			// fall through to BinaryFileFilter...
+			break;
+		case 0xca:		// ICN
+			{	// This is a trick to fix the scope on the filter variable...
+				GraphicsFileFilter filter = new GraphicsFileFilter();
+				filter.setMode(GraphicsFileFilter.MODE_QUICKDRAW2_ICON);
+				return filter;
+			}
 		}
 		return new BinaryFileFilter();
 	}
