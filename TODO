@@ -2,6 +2,11 @@ THINGS TO DO
 ============
 This is the internal list of items that need to be done.
 
+--- 1.2.3 ---
+* Separated image support for GraphicsFileFilter.  This allows easier preparation
+  for compiling AppleCommander as a Windows executable (and allows limited image
+  support to boot).
+
 --- FUTURE 1.2.x ---
 o Save does not allow the disk image location to be chosen for new images. (Maybe
   the wizard should pay more attention?)
