@@ -105,6 +105,16 @@ public class FileViewerWindow {
 		this.imageManager = imageManager;
 		this.nativeFilter = fileEntry.getSuggestedFilter();
 	}
+
+	/**
+	 * Construct the file viewer window.
+	 */
+	public FileViewerWindow(Shell parentShell, FileEntry fileEntry, ImageManager imageManager, FileFilter nativeFilter) {
+		this.parentShell = shell;
+		this.fileEntry = fileEntry;
+		this.imageManager = imageManager;
+		this.nativeFilter = nativeFilter;
+	}
 	
 	/**
 	 * Setup the File Viewer window and display (open) it.
