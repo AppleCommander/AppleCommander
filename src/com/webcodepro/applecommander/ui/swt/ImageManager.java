@@ -1,6 +1,6 @@
 /*
  * AppleCommander - An Apple ][ image utility.
- * Copyright (C) 2002 by Robert Greene
+ * Copyright (C) 2002-3 by Robert Greene
  * robgreene at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it 
@@ -48,6 +48,7 @@ public class ImageManager {
 	private Image diskImageWizardLogo;
 	private Image importWizardLogo;
 	private Image compileIcon;
+	private Image compileWizardLogo;
 	/**
 	 * Construct the ImageManager.
 	 */
@@ -69,6 +70,7 @@ public class ImageManager {
 		diskImageWizardLogo = createImage(display, "DiskImageWizardLogo.gif");
 		importWizardLogo = createImage(display, "ImportWizardLogo.gif");
 		compileIcon = createImage(display, "compile.gif");
+		compileWizardLogo = createImage(display, "CompileWizardLogo.gif");
 	}
 	/**
 	 * Dispose of resources.
@@ -91,6 +93,7 @@ public class ImageManager {
 		diskImageWizardLogo.dispose();
 		importWizardLogo.dispose();
 		compileIcon.dispose();
+		compileWizardLogo.dispose();
 	}
 	/**
 	 * Creates an image.
@@ -243,4 +246,13 @@ public class ImageManager {
 	public Image getCompileIcon() {
 		return compileIcon;
 	}
+	
+	/**
+	 * Returns the compileWizardLogo.
+	 * @return Image
+	 */
+	public Image getCompileWizardLogo() {
+		return compileWizardLogo;
+	}
+
 }
