@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.webcodepro.applecommander.storage.AppleUtil;
 import com.webcodepro.applecommander.storage.AppleWorksWordProcessorFileFilter;
 import com.webcodepro.applecommander.storage.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.BinaryFileFilter;
@@ -625,7 +626,8 @@ public class DiskExplorerTab {
 				filename = fileDialog.open();
 				directory = fileDialog.getFilterPath();
 			} else {
-				filename = directory + File.separator + fileFilter.getSuggestedFileName(fileEntry);
+				filename = directory + File.separator + AppleUtil.
+					getNiceFilename(fileFilter.getSuggestedFileName(fileEntry));
 			}
 			if (filename != null) {
 				userPreferences.setExportDirectory(directory);
