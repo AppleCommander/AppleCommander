@@ -3,8 +3,7 @@ be directions!
 
 
 Issues:
-1) Need SWT code and need to compile it for all interested platforms.
-2) Unable to handle graphics (images) in native mode.  Need to patch code in
+1) Unable to handle graphics (images) in native mode.  Need to patch code in
    compile process for this.
 
 
@@ -12,32 +11,9 @@ Issues:
 **     LINUX       **
 *********************
 
-com.webcodepro.applecommander.storage:
-=====================================
-These are generated in when trying to compile test and storage package.  The
-JAR file must be valid (used by GCJ itself) and the classpath cannot use any
-shortcuts (like "~" in Linux).  Commands:
-
-	gcj --classpath=AppleCommander-1.1.1b.jar -c *.java
-	gcj -shared -o storage.so *.o
-	
-Note that graphics will be an issue.  GraphicsFileFilter needed to be patched
-to be (essentially) useless.  The SUN JPEGCodec is not available, nor is the
-ImageIO library.  GCJ uses something less than JDK 1.4, presumably as the 
-supported JDK level.
-
-com.webcodepro.applecommander.test:
-==================================
-If JUnit is not available (or wanted), remove any references to JUnit.
-(Make sure the assert statements have been removed also.)  The main method
-should execute tests directly.  The full package must be specified, else GCJ
-will not be happy with it.  Commands used to compile:
-
-	gcj --classpath=AppleCommander-1.1.1b.jar -c DoIt.java 
-	gcj --main=com.webcodepro.applecommander.test.DoIt -o DoIt DoIt.o storage.so 
-	
-"DoIt" was a highly modified version of DiskHelperTest.  Have not tested with
-real data as of yet - may have same problems as the Windows code.
+See build/build-applecommander-linux-gtk for the script which builds
+an executable of AppleCommander.  The build/build-swt-linux-gtk script
+builds the SWT swt.so file.
 
 
 **********************
@@ -76,4 +52,7 @@ Command sequence is similar to this.
       gcj --main=com.webcodepro.applecommander.test.DoIt -o DoIt DoIt.o ..\storage\*.o
       strip -x DoIt.exe
    The executable is 2.7MB and runs to completion!
-
+3) If all of AppleCommander is built, the resulting executable cannot use
+   Runtime.loadLibrary because that method is not implemented.  Either need
+   to wait for GCJ to be updated or need to compile the native code into
+   executable (and this may or may not work).
