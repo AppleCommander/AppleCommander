@@ -2,29 +2,6 @@ THINGS TO DO
 ============
 This is the internal list of items that need to be done.
 
---- 1.2.2 ---
-* ProDOS disks now re-use deleted file entries.  Prior to this fix,
-  deleted entries were never re-used.  If importing many files, a 
-  "Disk Full" error would be generated rather quickly.
-* ProDOS file entries do not generate spurious file entries.  There
-  was no method of detecting unused entries in pre-1.2.2 code.
-* Import file specification should only allow address editing if the filetype
-  requires it.
-* Fixed parsing of filetype definitions for ProDOS volumes.
-* Need to be able to import into a directory in ProDOS.  This will most
-  likely involve adding an interface indicating a (writable) directory.
-  This interface would be applied to both disks as well as file entries,
-  if appropriate.
-* ProDOS subdirectories need to allocate another block as they fill up; otherwise
-  the directory is limited to the number of entries that fit within the allocated
-  space.
-* Import now sports a progress indicator and identifies which file is being
-  imported.
-* Popup dialogs are now centered above the controlling window instead of popping
-  up randomly.
-* Added a Hex Dump file filter that displays offset into file, hex bytes, and
-  the ASCII code.
-
 --- FUTURE 1.2.x ---
 o Save does not allow the disk image location to be chosen for new images. (Maybe
   the wizard should pay more attention?)
@@ -44,6 +21,7 @@ o Need to update preferences with import location, disk creation location.
 o Add drag-and-drop capability.
 o Provide a Swing GUI so people are not "limited" to SWT.  This may be tossed.
 o Provide a command-line interface (scripting - ie, mass load).
+o Added more information to About box including GPL, TODO, VERSIONS, etc.
 o Change disk format.
 o Sector/Block editor.
 o Open zip files; be able to browse disk images from the zip file. This should be
