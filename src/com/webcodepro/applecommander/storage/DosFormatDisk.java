@@ -30,10 +30,6 @@ import java.util.List;
  */
 public class DosFormatDisk extends FormattedDisk {
 	/**
-	 * Indicates the length in bytes of the DOS file entry field.
-	 */
-	public static final int FILE_DESCRIPTIVE_ENTRY_LENGTH = 35;
-	/**
 	 * Indicates the index of the track in the location array.
 	 */	
 	public static final int TRACK_LOCATION_INDEX = 0;
@@ -49,6 +45,10 @@ public class DosFormatDisk extends FormattedDisk {
 	 * The standard VTOC sector.
 	 */
 	public static final int VTOC_SECTOR = 0;
+	/**
+	 * The standard track/sector pairs in a track/sector list.
+	 */
+	public static final int TRACK_SECTOR_PAIRS = 122;
 
 	/**
 	 * Use this inner interface for managing the disk usage data.
@@ -129,17 +129,38 @@ public class DosFormatDisk extends FormattedDisk {
 			byte[] catalogSector = readSector(track, sector);
 			int offset = 0x0b;
 			while (offset < 0xff) {	// iterate through all entries
-				byte[] entry = new byte[FILE_DESCRIPTIVE_ENTRY_LENGTH];
-				System.arraycopy(catalogSector, offset, entry, 0, entry.length);
-				if (entry[0] != 0) {
-					list.add(new DosFileEntry(entry, this));
+				if (catalogSector[offset] != 0) {
+					list.add(new DosFileEntry(this, track, sector, offset));
 				}
-				offset+= entry.length;
+				offset+= DosFileEntry.FILE_DESCRIPTIVE_ENTRY_LENGTH;
 			}
 			track = catalogSector[1];
 			sector = catalogSector[2];
 		}
 		return list;
+	}
+	
+	/**
+	 * Create a FileEntry.
+	 */
+	public FileEntry createFile() throws DiskFullException {
+		byte[] vtoc = readVtoc();
+		int track = AppleUtil.getUnsignedByte(vtoc[1]);
+		int sector = AppleUtil.getUnsignedByte(vtoc[2]);
+		while (track != 0) {	// iterate through all catalog sectors
+			byte[] catalogSector = readSector(track, sector);
+			int offset = 0x0b;
+			while (offset < 0xff) {	// iterate through all entries
+				int value = AppleUtil.getUnsignedByte(catalogSector[offset]);
+				if (value == 0 || value == 0xff) {
+					return new DosFileEntry(this, track, sector, offset);
+				}
+				offset+= DosFileEntry.FILE_DESCRIPTIVE_ENTRY_LENGTH;
+			}
+			track = catalogSector[1];
+			sector = catalogSector[2];
+		}
+		throw new DiskFullException("Unable to allocate more space for another file!");
 	}
 
 	/**
@@ -213,6 +234,13 @@ public class DosFormatDisk extends FormattedDisk {
 	 */
 	protected byte[] readVtoc() {
 		return readSector(CATALOG_TRACK, VTOC_SECTOR);
+	}
+	
+	/**
+	 * Save the VTOC (Volume Table Of Contents) to disk.
+	 */
+	protected void writeVtoc(byte[] vtoc) {
+		writeSector(CATALOG_TRACK, VTOC_SECTOR, vtoc);
 	}
 
 	/**
@@ -323,21 +351,21 @@ public class DosFormatDisk extends FormattedDisk {
 	 * Indicates if this disk image can write data to a file.
 	 */
 	public boolean canWriteFileData() {
-		return false;	// FIXME - not implemented
+		return true;
 	}
 	
 	/**
 	 * Indicates if this disk image can create a file.
 	 */
 	public boolean canCreateFile() {
-		return false;	// FIXME - not implemented
+		return true;
 	}
 	
 	/**
 	 * Indicates if this disk image can delete a file.
 	 */
 	public boolean canDeleteFile() {
-		return false;	// FIXME - not implemented
+		return true;
 	}
 
 	/**
@@ -368,6 +396,111 @@ public class DosFormatDisk extends FormattedDisk {
 			}
 		}
 		return fileData;
+	}
+	
+	/**
+	 * Set the data associated with the specified DosFileEntry into sectors
+	 * on the disk.
+	 */
+	protected void setFileData(DosFileEntry fileEntry, byte[] data) throws DiskFullException {
+		// compute free space and see if the data will fit!
+		int numberOfDataSectors = (data.length + SECTOR_SIZE - 1) / SECTOR_SIZE;
+		int numberOfSectors = numberOfDataSectors + 
+			(numberOfDataSectors + TRACK_SECTOR_PAIRS - 1) / TRACK_SECTOR_PAIRS;
+		if (numberOfSectors > getFreeSectors() + fileEntry.getSectorsUsed()) {
+			throw new DiskFullException("This file requires " + numberOfSectors
+				+ " sectors but there are only " + getFreeSectors() + " sectors"
+				+ " available on the disk.");
+		}
+		// free "old" data and just rewrite stuff...
+		freeSectors(fileEntry);
+		byte[] vtoc = readVtoc();
+		int track = fileEntry.getTrack();
+		int sector = fileEntry.getSector();
+		if (track == 0) {
+			track = 1;
+			sector = 0;
+			while (true) {
+				if (isSectorFree(track,sector,vtoc)) {
+					break;
+				}
+				sector++;
+				if (sector >= getSectors()) {
+					track++;
+					sector = 0;
+				}
+			}
+			fileEntry.setTrack(track);
+			fileEntry.setSector(sector);
+		}
+		setSectorUsed(track, sector, vtoc);
+		byte[] trackSectorList = new byte[SECTOR_SIZE];
+		int offset = 0;
+		int trackSectorOffset = 0x0c;
+		int totalSectors = 0;
+		int t=1;	// initial search for space
+		int s=0;
+		while (offset < data.length) {
+			// locate next free sector
+			while (true) {
+				if (isSectorFree(t,s,vtoc)) {
+					break;
+				}
+				s++;
+				if (s >= getSectors()) {
+					t++;
+					s = 0;
+				}
+			}
+			setSectorUsed(t,s,vtoc);
+			if (trackSectorOffset >= 0x100) {
+				// filled up the first track/sector list - save it
+				trackSectorList[0x01] = (byte) t;
+				trackSectorList[0x02] = (byte) s;
+				writeSector(track, sector, trackSectorList);
+				trackSectorList = new byte[SECTOR_SIZE];
+				trackSectorOffset = 0x0c;
+				track = t;
+				sector = s;
+			} else {
+				// write out a data sector
+				trackSectorList[trackSectorOffset] = (byte) t;
+				trackSectorList[trackSectorOffset+1] = (byte) s;
+				trackSectorOffset+= 2;
+				byte[] sectorData = new byte[SECTOR_SIZE];
+				int length = Math.min(SECTOR_SIZE, data.length - offset);
+				System.arraycopy(data, offset, sectorData, 0, length);
+				writeSector(t,s,sectorData);
+				offset+= SECTOR_SIZE;
+			}
+			totalSectors++;
+		}
+		writeSector(track, sector, trackSectorList);	// last T/S list
+		totalSectors++;
+		fileEntry.setSectorsUsed(totalSectors);
+		writeVtoc(vtoc);
+	}
+	
+	/**
+	 * Delete a DosFileEntry.
+	 */
+	protected void freeSectors(DosFileEntry dosFileEntry) {
+		byte[] vtoc = readVtoc();
+		int track = dosFileEntry.getTrack();
+		int sector = dosFileEntry.getSector();
+		while (track != 0) {
+			setSectorFree(track,sector,vtoc);
+			byte[] trackSectorList = readSector(track, sector);
+			track = AppleUtil.getUnsignedByte(trackSectorList[0x01]);
+			sector = AppleUtil.getUnsignedByte(trackSectorList[0x02]);
+			for (int i=0x0c; i<0x100; i+=2) {
+				int t = AppleUtil.getUnsignedByte(trackSectorList[i]);
+				if (t == 0) break;
+				int s = AppleUtil.getUnsignedByte(trackSectorList[i+1]);
+				setSectorFree(t,s,vtoc);
+			}
+		}
+		writeVtoc(vtoc);
 	}
 
 	/**
@@ -403,7 +536,7 @@ public class DosFormatDisk extends FormattedDisk {
 		data[0x02] = (byte)firstCatalogSector;	// sector# of first catalog sector
 		data[0x03] = 3;				// DOS 3.3 formatted
 		data[0x06] = (byte)254;	// DISK VOLUME#
-		data[0x27] = 122;			// maximum # of T/S pairs in a sector
+		data[0x27] = TRACK_SECTOR_PAIRS;// maximum # of T/S pairs in a sector
 		data[0x30] = CATALOG_TRACK+1;	// last track where sectors allocated
 		data[0x31] = 1;				// direction of allocation
 		data[0x34] = (byte)tracksPerDisk;	// tracks per disk
@@ -418,7 +551,7 @@ public class DosFormatDisk extends FormattedDisk {
 				}
 			}
 		}
-		writeSector(CATALOG_TRACK, VTOC_SECTOR, data);
+		writeVtoc(data);
 	}
 
 	/**
@@ -463,14 +596,17 @@ public class DosFormatDisk extends FormattedDisk {
 	 * Compute the VTOC byte for the T/S map.
 	 */
 	protected int getFreeMapByte(int track, int sector) {
-		return 0x38 + (track * 4) + (sector / 8);
+		int trackOffset = track * 4;
+		int sectorOffset = 1 - ((sector & 0x8) >> 3);
+		return 0x38 + trackOffset + sectorOffset;
 	}
 	
 	/**
 	 * Compute the VTOC bit for the T/S map.
 	 */
 	protected int getFreeMapBit(int sector) {
-		return 7 - (sector % 8);
+		int bit = sector & 0x7;
+		return bit;
 	}
 	
 	/**
