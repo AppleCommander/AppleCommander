@@ -113,6 +113,9 @@ public class ApplesoftTokenizer {
 				} else {
 					return new ApplesoftToken(byt, tokens[token]);
 				}
+			} else if (byt == ':' || byt == ';' || byt == ',' || byt == '^'
+				|| byt == '+' || byt == '-' || byt == '*' || byt == '/') {
+				return new ApplesoftToken(new String(new byte[] { byt }));
 			} else {
 				StringBuffer string = new StringBuffer();
 				while (true) {
