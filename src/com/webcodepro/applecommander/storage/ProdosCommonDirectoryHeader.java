@@ -31,42 +31,87 @@ public class ProdosCommonDirectoryHeader extends ProdosCommonEntry {
 	 * Constructor for ProdosCommonDirectoryHeader.
 	 * @param fileEntry
 	 */
-	public ProdosCommonDirectoryHeader(byte[] fileEntry) {
-		super(fileEntry);
+	public ProdosCommonDirectoryHeader(ProdosFormatDisk disk, int block) {
+		super(disk, block, 4);	// directory entries are always offset 4, right?
 	}
 
 	/**
 	 * Get the length of each entry.  Expected to be 0x27.
 	 */
 	public int getEntryLength() {
-		return AppleUtil.getUnsignedByte(getFileEntry()[0x1f]);
+		return AppleUtil.getUnsignedByte(readFileEntry()[0x1f]);
+	}
+	
+	/**
+	 * Set the length of each entry.
+	 */
+	public void setEntryLength() {
+		byte[] data = readFileEntry();
+		data[0x1f] = (byte) ENTRY_LENGTH;
+		writeFileEntry(data);
 	}
 	
 	/**
 	 * Get the number of entries per block. Expected to be 0x0d.
 	 */
 	public int getEntriesPerBlock() {
-		return AppleUtil.getUnsignedByte(getFileEntry()[0x20]);
+		return AppleUtil.getUnsignedByte(readFileEntry()[0x20]);
+	}
+
+	/**
+	 * Set the number of entries per block.
+	 */
+	public void setEntriesPerBlock() {
+		byte[] data = readFileEntry();
+		data[0x20] = 0x0d;
+		writeFileEntry(data);
 	}
 	
 	/**
 	 * Get the number of active entries in the volume directory.
 	 */
 	public int getFileCount() {
-		return AppleUtil.getWordValue(getFileEntry(), 0x21);
+		return AppleUtil.getWordValue(readFileEntry(), 0x21);
+	}
+
+	/**
+	 * Set the number of active entries in the volume directory.
+	 */
+	public void setFileCount(int fileCount) {
+		byte[] data = readFileEntry();
+		AppleUtil.setWordValue(data, 0x21, fileCount);
+		writeFileEntry(data);
 	}
 	
 	/**
 	 * Get the block number of the bit map.
 	 */
 	public int getBitMapPointer() {
-		return AppleUtil.getWordValue(getFileEntry(), 0x23);
+		return AppleUtil.getWordValue(readFileEntry(), 0x23);
+	}
+
+	/**
+	 * Set the block number of the bit map.
+	 */
+	public void setBitMapPointer(int blockNumber) {
+		byte[] data = readFileEntry();
+		AppleUtil.setWordValue(data, 0x23, blockNumber);
+		writeFileEntry(data);
 	}
 	
 	/**
 	 * Get the total number of blocks on this volume.
 	 */
 	public int getTotalBlocks() {
-		return AppleUtil.getWordValue(getFileEntry(), 0x25);
+		return AppleUtil.getWordValue(readFileEntry(), 0x25);
+	}
+
+	/**
+	 * Set the total number of blocks on this volume.
+	 */
+	public void setTotalBlocks(int totalBlocks) {
+		byte[] data = readFileEntry();
+		AppleUtil.setWordValue(data, 0x25, totalBlocks);
+		writeFileEntry(data);
 	}
 }
