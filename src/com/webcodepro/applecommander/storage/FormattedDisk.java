@@ -354,4 +354,12 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	public FormattedDisk getFormattedDisk() {
 		return this;
 	}
+	
+	/**
+	 * Resize the disk image to be its full size.  Only invole this
+	 * method if a size does not match exception is thrown.
+	 */
+	public void resizeDiskImage() {
+		resizeDiskImage(getFreeSpace() + getUsedSpace());
+	}
 }

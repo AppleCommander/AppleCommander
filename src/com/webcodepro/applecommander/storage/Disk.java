@@ -267,6 +267,23 @@ public class Disk {
 	}
 	
 	/**
+	 * Resize a disk image up to a larger size.  The primary intention is to
+	 * "fix" disk images that have been created too small.  The primary culprit
+	 * is ApplePC HDV images which dynamically grow.  Since AppleCommander
+	 * works with a byte array, the image must grow to its full size.
+	 * @param newSize
+	 */
+	protected void resizeDiskImage(int newSize) {
+		if (newSize < diskImage.length) {
+			throw new IllegalArgumentException(
+				"Cannot resize a disk to be smaller than the current size!");
+		}
+		byte[] newDiskImage = new byte[newSize];
+		System.arraycopy(diskImage, 0, newDiskImage, 0, diskImage.length);
+		diskImage = newDiskImage;
+	}
+	
+	/**
 	 * Read the block from the disk image.
 	 */
 	public byte[] readBlock(int block) {
