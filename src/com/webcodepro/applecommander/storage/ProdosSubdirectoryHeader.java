@@ -26,6 +26,7 @@ package com.webcodepro.applecommander.storage;
  * @author: Rob Greene
  */
 public class ProdosSubdirectoryHeader extends ProdosCommonDirectoryHeader {
+	private ProdosDirectoryEntry directoryEntry;
 
 	/**
 	 * Constructor for ProdosSubdirectoryHeader.
@@ -62,5 +63,19 @@ public class ProdosSubdirectoryHeader extends ProdosCommonDirectoryHeader {
 	 */
 	public int getParentEntryLength() {
 		return AppleUtil.getWordValue(readFileEntry(), 0x26);
+	}
+	
+	/**
+	 * Set the related ProDOS directory entry.
+	 */
+	public void setProdosDirectoryEntry(ProdosDirectoryEntry directoryEntry) {
+		this.directoryEntry = directoryEntry;
+	}
+	
+	/**
+	 * Get the related ProDOS directory entry.
+	 */
+	public ProdosDirectoryEntry getProdosDirectoryEntry() {
+		return directoryEntry;
 	}
 }
