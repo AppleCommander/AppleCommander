@@ -83,7 +83,7 @@ public class AppleWorksWordProcessorPane extends WizardPane {
 		button.setSelection(getFilter().isTextRendering());
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				getFilter().setRendering(AppleWorksWordProcessorFileFilter.RENDER_AS_TEXT);
+				getFilter().selectTextRendering();
 			}
 		});
 		button = new Button(control, SWT.RADIO);
@@ -91,7 +91,15 @@ public class AppleWorksWordProcessorPane extends WizardPane {
 		button.setSelection(getFilter().isHtmlRendering());
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				getFilter().setRendering(AppleWorksWordProcessorFileFilter.RENDER_AS_HTML);
+				getFilter().selectHtmlRendering();
+			}
+		});
+		button = new Button(control, SWT.RADIO);
+		button.setText("RTF (Rich Text Format)");
+		button.setSelection(getFilter().isRtfRendering());
+		button.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				getFilter().selectRtfRendering();
 			}
 		});
 	}
