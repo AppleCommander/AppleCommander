@@ -25,6 +25,7 @@ import com.webcodepro.applecommander.storage.AppleWorksWordProcessorFileFilter;
 import com.webcodepro.applecommander.storage.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.BinaryFileFilter;
 import com.webcodepro.applecommander.storage.GraphicsFileFilter;
+import com.webcodepro.applecommander.storage.HexDumpFileFilter;
 import com.webcodepro.applecommander.storage.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.TextFileFilter;
 
@@ -95,6 +96,14 @@ public class ExportFileStartPane extends WizardPane {
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				wizard.setFileFilter(new BinaryFileFilter());
+			}
+		});
+		button = new Button(buttonSubpanel, SWT.RADIO);
+		button.setText("Hex Dump");
+		button.setSelection(wizard.getFileFilter() instanceof HexDumpFileFilter);
+		button.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				wizard.setFileFilter(new HexDumpFileFilter());
 			}
 		});
 		button = new Button(buttonSubpanel, SWT.RADIO);
