@@ -27,10 +27,12 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Label;
 
 import com.webcodepro.applecommander.ui.swt.FileViewerWindow;
 import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
 import com.webcodepro.applecommander.ui.swt.util.contentadapter.ImageCanvasAdapter;
+import com.webcodepro.applecommander.ui.swt.util.contentadapter.NoActionContentTypeAdapter;
 
 /**
  * Provides a view of an Apple graphic image.
@@ -39,6 +41,7 @@ import com.webcodepro.applecommander.ui.swt.util.contentadapter.ImageCanvasAdapt
  */
 public class GraphicsFilterAdapter extends FilterAdapter {
 	private Image image;
+	private boolean error = false;
 	
 	public GraphicsFilterAdapter(FileViewerWindow window, String text, String toolTipText, Image image) {
 		super(window, text, toolTipText, image);
@@ -47,27 +50,39 @@ public class GraphicsFilterAdapter extends FilterAdapter {
 	public void display() {
 		getCopyToolItem().setEnabled(false);
 
-		if (image == null) {
-			byte[] imageBytes = getFileFilter().filter(getFileEntry());
-			ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes);
-			ImageLoader imageLoader = new ImageLoader();
-			ImageData[] imageData = imageLoader.load(inputStream);
-			image = new Image(getComposite().getDisplay(), imageData[0]);
+		if (image == null && error == false) {
+			try {
+				byte[] imageBytes = getFileFilter().filter(getFileEntry());
+				ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes);
+				ImageLoader imageLoader = new ImageLoader();
+				ImageData[] imageData = imageLoader.load(inputStream);
+				image = new Image(getComposite().getDisplay(), imageData[0]);
+			} catch (Throwable t) {
+				error = true;
+			}
 		}
 
-		GridLayout layout = new GridLayout();
-		getComposite().setLayout(layout);
-		GridData gridData = new GridData();
-		gridData.widthHint = image.getImageData().width;
-		gridData.heightHint = image.getImageData().height;
-		ImageCanvas imageCanvas = new ImageCanvas(getComposite(), SWT.NONE, image, gridData);
-		getComposite().setContent(imageCanvas);
-		getComposite().setExpandHorizontal(true);
-		getComposite().setExpandVertical(true);
-		getComposite().setMinWidth(image.getImageData().width);
-		getComposite().setMinHeight(image.getImageData().height);
-			
-		setContentTypeAdapter(new ImageCanvasAdapter(imageCanvas, getFileEntry().getFilename()));
+		if (!error) {
+			GridLayout layout = new GridLayout();
+			getComposite().setLayout(layout);
+			GridData gridData = new GridData();
+			gridData.widthHint = image.getImageData().width;
+			gridData.heightHint = image.getImageData().height;
+			ImageCanvas imageCanvas = new ImageCanvas(getComposite(), SWT.NONE, image, gridData);
+			getComposite().setContent(imageCanvas);
+			getComposite().setExpandHorizontal(true);
+			getComposite().setExpandVertical(true);
+			getComposite().setMinWidth(image.getImageData().width);
+			getComposite().setMinHeight(image.getImageData().height);
+			setContentTypeAdapter(new ImageCanvasAdapter(imageCanvas, getFileEntry().getFilename()));
+		} else {
+			Label label = new Label(getComposite(), SWT.NULL);
+			label.setText("Unexpected graphic file encountered!");
+			getComposite().setContent(label);
+			getComposite().setExpandHorizontal(true);
+			getComposite().setExpandVertical(true);
+			setContentTypeAdapter(new NoActionContentTypeAdapter());
+		}
 	}
 
 }
