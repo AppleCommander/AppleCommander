@@ -45,6 +45,7 @@ public class ImageManager {
 	private Image openDiskIcon;
 	private Image newDiskIcon;
 	private Image aboutIcon;
+	private Image diskImageWizardLogo;
 	/**
 	 * Construct the ImageManager.
 	 */
@@ -63,6 +64,7 @@ public class ImageManager {
 		openDiskIcon = createImage(display, "opendisk.gif");
 		newDiskIcon = createImage(display, "newdisk.gif");
 		aboutIcon = createImage(display, "about.gif");
+		diskImageWizardLogo = createImage(display, "DiskImageWizardLogo.gif");
 	}
 	/**
 	 * Dispose of resources.
@@ -82,6 +84,7 @@ public class ImageManager {
 		openDiskIcon.dispose();
 		newDiskIcon.dispose();
 		aboutIcon.dispose();
+		diskImageWizardLogo.dispose();
 	}
 	/**
 	 * Creates an image.
@@ -211,4 +214,11 @@ public class ImageManager {
 		return openDiskIcon;
 	}
 
+	/**
+	 * Returns the diskImageWizardLogo.
+	 * @return Image
+	 */
+	public Image getDiskImageWizardLogo() {
+		return diskImageWizardLogo;
+	}
 }
