@@ -20,6 +20,7 @@
 package com.webcodepro.applecommander.ui.swt;
 
 import com.webcodepro.applecommander.storage.AppleWorksDataBaseFileFilter;
+import com.webcodepro.applecommander.storage.AppleWorksSpreadSheetFileFilter;
 import com.webcodepro.applecommander.storage.AppleWorksWordProcessorFileFilter;
 import com.webcodepro.applecommander.storage.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.BinaryFileFilter;
@@ -134,6 +135,14 @@ public class ExportFileStartPane extends WizardPane {
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				wizard.setFileFilter(new AppleWorksDataBaseFileFilter());
+			}
+		});
+		button = new Button(buttonSubpanel, SWT.RADIO);
+		button.setText("AppleWorks Spread Sheet file");
+		button.setSelection(wizard.getFileFilter() instanceof AppleWorksSpreadSheetFileFilter);
+		button.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				wizard.setFileFilter(new AppleWorksSpreadSheetFileFilter());
 			}
 		});
 		button = new Button(buttonSubpanel, SWT.RADIO);
