@@ -1,6 +1,7 @@
 package com.webcodepro.applecommander.ui.swt;
 
 import com.webcodepro.applecommander.ui.ImportSpecification;
+import com.webcodepro.applecommander.ui.UserPreferences;
 import com.webcodepro.applecommander.util.AppleUtil;
 
 import java.io.File;
@@ -116,9 +117,13 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 			public void widgetSelected(SelectionEvent event) {
 				FileDialog dialog = new FileDialog(parent.getShell(), 
 					SWT.OPEN | SWT.MULTI);
+				dialog.setFilterPath(
+					UserPreferences.getInstance().getImportDirectory());
 				String filename = dialog.open();
 				if (filename != null) {
 					setFilenames(dialog.getFilterPath(), dialog.getFileNames());
+					UserPreferences.getInstance().setImportDirectory(
+						dialog.getFilterPath());
 				}
 			}
 		});
