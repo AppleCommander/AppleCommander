@@ -175,26 +175,12 @@ public class SwtAppleCommander {
 	 * Create a disk image.
 	 */
 	private void createDiskImage() {
-		FileDialog fileDialog = new FileDialog(shell, SWT.SAVE);
-		FilenameFilter[] fileFilters = Disk.getFilenameFilters();
-		String[] names = new String[fileFilters.length];
-		String[] extensions = new String[fileFilters.length];
-		for (int i=0; i<fileFilters.length; i++) {
-			names[i] = fileFilters[i].getNames();
-			extensions[i] = fileFilters[i].getExtensions();
-		}
-		fileDialog.setFilterNames(names);
-		fileDialog.setFilterExtensions(extensions);
-		fileDialog.setFilterPath(userPreferences.getDiskImageDirectory());
-		String fullpath = fileDialog.open();
-		
-		if (fullpath != null) {
-			//userPreferences.setDiskImageDirectory(fileDialog.getFilterPath());
-			FormattedDisk disk = new ProdosFormatDisk(fullpath, 
-				"ASDF", Disk.APPLE_140KB_DISK);
-			disk.format();
-			DiskWindow window = new DiskWindow(shell, 
-				new FormattedDisk[] { disk }, imageManager);
+		DiskImageWizard wizard = new DiskImageWizard(shell,
+			imageManager.getDiskImageWizardLogo());
+		wizard.open();
+		if (wizard.isWizardCompleted()) {
+			FormattedDisk[] disks = wizard.getFormattedDisks();
+			DiskWindow window = new DiskWindow(shell, disks, imageManager);
 			window.open();
 		}
 	}
