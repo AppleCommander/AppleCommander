@@ -19,11 +19,6 @@
  */
 package com.webcodepro.applecommander.test;
 
-import java.io.IOException;
-import java.util.List;
-
-import junit.framework.TestCase;
-
 import com.webcodepro.applecommander.storage.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.BinaryFileFilter;
 import com.webcodepro.applecommander.storage.Disk;
@@ -33,6 +28,11 @@ import com.webcodepro.applecommander.storage.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.TextFileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
+
+import java.io.IOException;
+import java.util.List;
+
+import junit.framework.TestCase;
 
 /**
  * Test DiskHelper and its related Apple2 classes.

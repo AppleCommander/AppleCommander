@@ -19,6 +19,9 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
+import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -34,9 +37,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
 
 /**
  * Build the Disk Map tab for the Disk Window.

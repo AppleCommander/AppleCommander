@@ -19,13 +19,13 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import com.sun.image.codec.jpeg.JPEGCodec;
+
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
-
-import com.sun.image.codec.jpeg.JPEGCodec;
 
 /**
  * Filter the given file as if it were a graphics image.

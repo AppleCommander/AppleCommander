@@ -19,6 +19,13 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
+import com.webcodepro.applecommander.storage.AppleWorksWordProcessorFileFilter;
+import com.webcodepro.applecommander.storage.ApplesoftFileFilter;
+import com.webcodepro.applecommander.storage.BinaryFileFilter;
+import com.webcodepro.applecommander.storage.GraphicsFileFilter;
+import com.webcodepro.applecommander.storage.IntegerBasicFileFilter;
+import com.webcodepro.applecommander.storage.TextFileFilter;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -26,13 +33,6 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-
-import com.webcodepro.applecommander.storage.AppleWorksWordProcessorFileFilter;
-import com.webcodepro.applecommander.storage.ApplesoftFileFilter;
-import com.webcodepro.applecommander.storage.BinaryFileFilter;
-import com.webcodepro.applecommander.storage.GraphicsFileFilter;
-import com.webcodepro.applecommander.storage.IntegerBasicFileFilter;
-import com.webcodepro.applecommander.storage.TextFileFilter;
 
 /**
  * Provides the wizard pane which gets the export filter.

@@ -20,11 +20,8 @@
 package com.webcodepro.applecommander.ui.swt;
 
 import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.DosFormatDisk;
 import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.ProdosFormatDisk;
-import com.webcodepro.applecommander.storage.RdosFormatDisk;
 import com.webcodepro.applecommander.storage.Disk.FilenameFilter;
 import com.webcodepro.applecommander.ui.AppleCommander;
 import com.webcodepro.applecommander.ui.UserPreferences;
