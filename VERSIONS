@@ -22,6 +22,7 @@
           USR, VAL, VLIN, WAIT, XDRAW, &
   Note that the compiler is not very sophisticated.
 * Updated build notes and process.
+* DELETE does not seem to delete in all circumstances.  (JM caught this one.)
 
 1.2.3 (2003-04-13)
 * Separated image support for GraphicsFileFilter.  This allows easier preparation
