@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
 import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFileFilter;
+import com.webcodepro.applecommander.ui.TextBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 
 /**
@@ -37,6 +38,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  * @author Rob Greene
  */
 public class AppleWorksWordProcessorPane extends WizardPane {
+	private TextBundle textBundle = TextBundle.getInstance();
 	private Composite parent;
 	private Object layoutData;
 	private Composite control;
@@ -52,14 +54,14 @@ public class AppleWorksWordProcessorPane extends WizardPane {
 	}
 	/**
 	 * Get the next WizardPane.
-	 * @see com.webcodepro.applecommander.gui.WizardPane#getNextPane()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
 	public WizardPane getNextPane() {
 		return new ExportFileDestinationPane(parent, wizard, layoutData);
 	}
 	/**
 	 * Create and display the wizard pane.
-	 * @see com.webcodepro.applecommander.gui.WizardPane#open()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#open()
 	 */
 	public void open() {
 		wizard.enableFinishButton(false);
@@ -75,12 +77,12 @@ public class AppleWorksWordProcessorPane extends WizardPane {
 		layout.spacing = 3;
 		control.setLayout(layout);
 		Label label = new Label(control, SWT.WRAP);
-		label.setText("Please choose the appropriate format:");
+		label.setText(textBundle.get("AppleWorksWordProcessorFormatPrompt")); //$NON-NLS-1$
 		RowLayout subpanelLayout = new RowLayout(SWT.VERTICAL);
 		subpanelLayout.justify = true;
 		subpanelLayout.spacing = 3;
 		Button button = new Button(control, SWT.RADIO);
-		button.setText("Text");
+		button.setText(textBundle.get("AppleWorksWordProcessorFormatAsText")); //$NON-NLS-1$
 		button.setSelection(getFilter().isTextRendering());
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -88,7 +90,7 @@ public class AppleWorksWordProcessorPane extends WizardPane {
 			}
 		});
 		button = new Button(control, SWT.RADIO);
-		button.setText("HTML");
+		button.setText(textBundle.get("AppleWorksWordProcessorFormatAsHtml")); //$NON-NLS-1$
 		button.setSelection(getFilter().isHtmlRendering());
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -96,7 +98,7 @@ public class AppleWorksWordProcessorPane extends WizardPane {
 			}
 		});
 		button = new Button(control, SWT.RADIO);
-		button.setText("RTF (Rich Text Format)");
+		button.setText(textBundle.get("AppleWorksWordProcessorFormatAsRtf")); //$NON-NLS-1$
 		button.setSelection(getFilter().isRtfRendering());
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -106,7 +108,7 @@ public class AppleWorksWordProcessorPane extends WizardPane {
 	}
 	/**
 	 * Dispose of any resources.
-	 * @see com.webcodepro.applecommander.gui.WizardPane#dispose()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
 	 */
 	public void dispose() {
 		control.dispose();

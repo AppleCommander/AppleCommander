@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
+import com.webcodepro.applecommander.ui.TextBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 
 /**
@@ -37,6 +38,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  * @author Rob Greene
  */
 public class ExportGraphicsTypePane extends WizardPane {
+	private TextBundle textBundle = TextBundle.getInstance();
 	private Composite parent;
 	private Object layoutData;
 	private Composite control;
@@ -52,14 +54,14 @@ public class ExportGraphicsTypePane extends WizardPane {
 	}
 	/**
 	 * Determine the next wizard pane and return an instance.
-	 * @see com.webcodepro.applecommander.gui.WizardPane#getNextPane()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
 	public WizardPane getNextPane() {
 		return new ExportFileDestinationPane(parent, wizard, layoutData);
 	}
 	/**
 	 * Open up and configure the wizard pane.
-	 * @see com.webcodepro.applecommander.gui.WizardPane#open()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#open()
 	 */
 	public void open() {
 		wizard.enableFinishButton(false);
@@ -75,14 +77,14 @@ public class ExportGraphicsTypePane extends WizardPane {
 		layout.spacing = 3;
 		control.setLayout(layout);
 		Label label = new Label(control, SWT.WRAP);
-		label.setText("Please choose the appropriate graphics mode:");
+		label.setText(textBundle.get("ExportGraphicsTypePrompt")); //$NON-NLS-1$
 		RowLayout subpanelLayout = new RowLayout(SWT.VERTICAL);
 		subpanelLayout.justify = true;
 		subpanelLayout.spacing = 3;
 		Composite graphicsModeGroup = new Composite(control, SWT.NULL);
 		graphicsModeGroup.setLayout(subpanelLayout);
 		Button button = new Button(graphicsModeGroup, SWT.RADIO);
-		button.setText("Hires black and white (280x192)");
+		button.setText(textBundle.get("ExportGraphicsTypeHiresBlackAndWhite")); //$NON-NLS-1$
 		button.setSelection(getGraphicsFilter().isHiresBlackAndWhiteMode());
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -90,7 +92,7 @@ public class ExportGraphicsTypePane extends WizardPane {
 			}
 		});
 		button = new Button(graphicsModeGroup, SWT.RADIO);
-		button.setText("Hires color (280x192)");
+		button.setText(textBundle.get("ExportGraphicsTypeHiresColor")); //$NON-NLS-1$
 		button.setSelection(getGraphicsFilter().isHiresColorMode());
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -98,7 +100,7 @@ public class ExportGraphicsTypePane extends WizardPane {
 			}
 		});
 		button = new Button(graphicsModeGroup, SWT.RADIO);
-		button.setText("Double hires black and white (560x384)");
+		button.setText(textBundle.get("ExportGraphicsTypeDoubleHiresBlackAndWhite")); //$NON-NLS-1$
 		button.setSelection(getGraphicsFilter().isDoubleHiresBlackAndWhiteMode());
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -106,7 +108,7 @@ public class ExportGraphicsTypePane extends WizardPane {
 			}
 		});
 		button = new Button(graphicsModeGroup, SWT.RADIO);
-		button.setText("Double hires color (560x384)");
+		button.setText(textBundle.get("ExportGraphicsTypeDoubleHiresColor")); //$NON-NLS-1$
 		button.setSelection(getGraphicsFilter().isDoubleHiresColorMode());
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -114,7 +116,7 @@ public class ExportGraphicsTypePane extends WizardPane {
 			}
 		});
 		button = new Button(graphicsModeGroup, SWT.RADIO);
-		button.setText("Super hires 16 color mode (320x200 or 640x200)");
+		button.setText(textBundle.get("ExportGraphicsTypeSuperHiresColor")); //$NON-NLS-1$
 		button.setSelection(getGraphicsFilter().isSuperHires16Mode());
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -122,7 +124,7 @@ public class ExportGraphicsTypePane extends WizardPane {
 			}
 		});
 		button = new Button(graphicsModeGroup, SWT.RADIO);
-		button.setText("Super hires 3200 color mode (320x200 or 640x200)");
+		button.setText(textBundle.get("ExportGraphicsTypeSuperHires3200Color")); //$NON-NLS-1$
 		button.setSelection(getGraphicsFilter().isSuperHires3200Mode());
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -130,7 +132,7 @@ public class ExportGraphicsTypePane extends WizardPane {
 			}
 		});
 		button = new Button(graphicsModeGroup, SWT.RADIO);
-		button.setText("QuickDraw II Icon (ICN)");
+		button.setText(textBundle.get("ExportGraphicsTypeQuickDraw2Icon")); //$NON-NLS-1$
 		button.setSelection(getGraphicsFilter().isQuickDraw2Icon());
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -138,7 +140,7 @@ public class ExportGraphicsTypePane extends WizardPane {
 			}
 		});
 		label = new Label(control, SWT.WRAP);
-		label.setText("Please choose the appropriate file format to save image as:");
+		label.setText(textBundle.get("ExportGraphicsFileFormatPrompt")); //$NON-NLS-1$
 		Composite graphicsFormatGroup = new Composite(control, SWT.NULL);
 		graphicsFormatGroup.setLayout(subpanelLayout);
 		String[] formats = getGraphicsFilter().getFileExtensions();
@@ -156,7 +158,7 @@ public class ExportGraphicsTypePane extends WizardPane {
 	}
 	/**
 	 * Dispose of widgets.
-	 * @see com.webcodepro.applecommander.gui.WizardPane#dispose()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
 	 */
 	public void dispose() {
 		control.dispose();

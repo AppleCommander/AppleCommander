@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.ui.TextBundle;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 import com.webcodepro.applecommander.ui.swt.wizard.Wizard;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
@@ -41,7 +42,8 @@ public class ExportWizard extends Wizard {
 	 * Constructor for ExportWizard.
 	 */
 	public ExportWizard(Shell parent, ImageManager imageManager, FormattedDisk disk) {
-		super(parent, imageManager.get(ImageManager.LOGO_EXPORT_WIZARD), "Export Wizard");
+		super(parent, imageManager.get(ImageManager.LOGO_EXPORT_WIZARD), 
+				TextBundle.getInstance().get("ExportWizardTitle")); //$NON-NLS-1$
 		this.disk = disk;
 	}
 	/**
@@ -78,7 +80,7 @@ public class ExportWizard extends Wizard {
 	}
 	/**
 	 * Create the initial display used in the wizard.
-	 * @see com.webcodepro.applecommander.ui.swt.Wizard#createInitialWizardPane()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.Wizard#createInitialWizardPane()
 	 */
 	public WizardPane createInitialWizardPane() {
 		return new ExportFileStartPane(getContentPane(), this, null);

@@ -38,6 +38,7 @@ import com.webcodepro.applecommander.storage.filters.HexDumpFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
+import com.webcodepro.applecommander.ui.TextBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 
 /**
@@ -47,11 +48,11 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  * @author Rob Greene
  */
 public class ExportFileStartPane extends WizardPane {
+	private TextBundle textBundle = TextBundle.getInstance();
 	private Composite parent;
 	private Object layoutData;
 	private Composite control;
 	private ExportWizard wizard;
-	private GraphicsFileFilter graphicsFileFilter = new GraphicsFileFilter();
 	/**
 	 * Constructor for ExportFileStartPane.
 	 */
@@ -78,113 +79,113 @@ public class ExportFileStartPane extends WizardPane {
 		layout.spacing = 3;
 		control.setLayout(layout);
 		Label label = new Label(control, SWT.WRAP);
-		label.setText("Please choose the type of file that is being exported.");
+		label.setText(textBundle.get("ExportFileTypePrompt")); //$NON-NLS-1$
 		RowLayout subpanelLayout = new RowLayout(SWT.VERTICAL);
 		subpanelLayout.justify = true;
 		subpanelLayout.spacing = 3;
 		Composite buttonSubpanel = new Composite(control, SWT.NULL);
 		buttonSubpanel.setLayout(subpanelLayout);
 		Button button = new Button(buttonSubpanel, SWT.RADIO);
-		button.setText("Raw disk data");
+		button.setText(textBundle.get("ExportFileAsRawDiskData")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() == null);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				wizard.setFileFilter(null);
+				getWizard().setFileFilter(null);
 			}
 		});
 		button = new Button(buttonSubpanel, SWT.RADIO);
-		button.setText("Binary file");
+		button.setText(textBundle.get("ExportFileAsBinaryFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof BinaryFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				wizard.setFileFilter(new BinaryFileFilter());
+				getWizard().setFileFilter(new BinaryFileFilter());
 			}
 		});
 		button = new Button(buttonSubpanel, SWT.RADIO);
-		button.setText("Hex Dump");
+		button.setText(textBundle.get("ExportFileAsHexDump")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof HexDumpFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				wizard.setFileFilter(new HexDumpFileFilter());
+				getWizard().setFileFilter(new HexDumpFileFilter());
 			}
 		});
 		button = new Button(buttonSubpanel, SWT.RADIO);
-		button.setText("ASCII text file");
+		button.setText(textBundle.get("ExportFileAsAsciiTextFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof TextFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				wizard.setFileFilter(new TextFileFilter());
+				getWizard().setFileFilter(new TextFileFilter());
 			}
 		});
 		button = new Button(buttonSubpanel, SWT.RADIO);
-		button.setText("Formatted Assembly text file");
+		button.setText(textBundle.get("ExportFileAsFormattedAssemblyTextFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof AssemblySourceFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				wizard.setFileFilter(new AssemblySourceFileFilter());
+				getWizard().setFileFilter(new AssemblySourceFileFilter());
 			}
 		});
 		button = new Button(buttonSubpanel, SWT.RADIO);
-		button.setText("Pascal text file");
+		button.setText(textBundle.get("ExportFileAsPascalTextFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof PascalTextFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				wizard.setFileFilter(new PascalTextFileFilter());
+				getWizard().setFileFilter(new PascalTextFileFilter());
 			}
 		});
 		button = new Button(buttonSubpanel, SWT.RADIO);
-		button.setText("Applesoft BASIC file");
+		button.setText(textBundle.get("ExportFileAsApplesoftBasicFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof ApplesoftFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				wizard.setFileFilter(new ApplesoftFileFilter());
+				getWizard().setFileFilter(new ApplesoftFileFilter());
 			}
 		});
 		button = new Button(buttonSubpanel, SWT.RADIO);
-		button.setText("Integer BASIC file");
+		button.setText(textBundle.get("ExportFileAsIntegerBasicFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof IntegerBasicFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				wizard.setFileFilter(new IntegerBasicFileFilter());
+				getWizard().setFileFilter(new IntegerBasicFileFilter());
 			}
 		});
 		button = new Button(buttonSubpanel, SWT.RADIO);
-		button.setText("AppleWorks Word Processor file");
+		button.setText(textBundle.get("ExportFileAsAppleworksWordProcessorFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof AppleWorksWordProcessorFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				wizard.setFileFilter(new AppleWorksWordProcessorFileFilter());
+				getWizard().setFileFilter(new AppleWorksWordProcessorFileFilter());
 			}
 		});
 		button = new Button(buttonSubpanel, SWT.RADIO);
-		button.setText("AppleWorks Data Base file");
+		button.setText(textBundle.get("ExportFileAsAppleworksDatabaseFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof AppleWorksDataBaseFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				wizard.setFileFilter(new AppleWorksDataBaseFileFilter());
+				getWizard().setFileFilter(new AppleWorksDataBaseFileFilter());
 			}
 		});
 		button = new Button(buttonSubpanel, SWT.RADIO);
-		button.setText("AppleWorks Spread Sheet file");
+		button.setText(textBundle.get("ExportFileAsAppleworksSpreadsheetFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof AppleWorksSpreadSheetFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				wizard.setFileFilter(new AppleWorksSpreadSheetFileFilter());
+				getWizard().setFileFilter(new AppleWorksSpreadSheetFileFilter());
 			}
 		});
 		button = new Button(buttonSubpanel, SWT.RADIO);
-		button.setText("Graphic file...");
-		button.setEnabled(graphicsFileFilter.isCodecAvailable());
+		button.setText(textBundle.get("ExportFileAsGraphicsFile")); //$NON-NLS-1$
+		button.setEnabled(GraphicsFileFilter.isCodecAvailable());
 		button.setSelection(wizard.getFileFilter() instanceof GraphicsFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				wizard.setFileFilter(graphicsFileFilter);
+				getWizard().setFileFilter(new GraphicsFileFilter());
 			}
 		});
 	}
 	/**
 	 * Get the next pane. A null return indicates the end of the wizard.
-	 * @see com.webcodepro.applecommander.gui.WizardPane#getNextPane()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
 	public WizardPane getNextPane() {
 		if (wizard.getFileFilter() instanceof GraphicsFileFilter) {
@@ -196,10 +197,14 @@ public class ExportFileStartPane extends WizardPane {
 	}
 	/**
 	 * Dispose of resources.
-	 * @see com.webcodepro.applecommander.gui.WizardPane#dispose()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
 	 */
 	public void dispose() {
 		control.dispose();
 		control = null;
+	}
+	
+	protected ExportWizard getWizard() {
+		return wizard;
 	}
 }
