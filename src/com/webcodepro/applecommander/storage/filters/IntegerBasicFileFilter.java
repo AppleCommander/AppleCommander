@@ -43,7 +43,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * $B0 - $B9 = signifies a number stored in a word.<br>
  * <p>
  * Date created: Nov 3, 2002 1:14:47 AM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class IntegerBasicFileFilter implements FileFilter {
 	private static String[] tokens = {

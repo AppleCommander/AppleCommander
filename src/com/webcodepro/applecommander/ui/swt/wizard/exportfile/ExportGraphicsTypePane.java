@@ -34,7 +34,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  * Choose graphics options for file export.
  * <p>
  * Date created: Nov 7, 2002 10:25:43 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class ExportGraphicsTypePane extends WizardPane {
 	private Composite parent;

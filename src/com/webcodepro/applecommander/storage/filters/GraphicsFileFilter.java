@@ -52,7 +52,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * subclass is needed to interpret the various graphic image or some such redesign.
  * <p>
  * Date created: Nov 3, 2002 12:06:36 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class GraphicsFileFilter implements FileFilter {
 	public static final int MODE_HGR_BLACK_AND_WHITE = 1;

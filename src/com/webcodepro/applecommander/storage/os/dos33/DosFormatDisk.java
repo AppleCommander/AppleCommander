@@ -32,7 +32,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * Manages a disk that is in Apple DOS 3.3 format.
  * <p>
  * Date created: Oct 4, 2002 12:29:23 AM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class DosFormatDisk extends FormattedDisk {
 	/**

@@ -23,7 +23,7 @@ package com.webcodepro.applecommander.ui.swt.wizard;
  * Represents a pane of a wizard.
  * <p>
  * Date created: Nov 7, 2002 8:40:44 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public abstract class WizardPane {
 	/**

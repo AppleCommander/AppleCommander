@@ -39,7 +39,7 @@ import com.webcodepro.applecommander.storage.physical.ProdosOrder;
  * Test Disk and FormattedDisk for write.
  * <p>
  * Date created: Oct 3, 2002 11:35:26 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class DiskWriterTest extends TestCase {
 	/**

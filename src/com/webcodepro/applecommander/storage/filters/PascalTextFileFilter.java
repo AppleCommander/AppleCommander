@@ -59,7 +59,7 @@ import com.webcodepro.applecommander.storage.FileFilter;
  * </quote>
  * (Thanks to Hans Otten for sending in this information.)
  *
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class PascalTextFileFilter implements FileFilter {
 	private static final char NUL = 0x00;

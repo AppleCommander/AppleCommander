@@ -27,7 +27,7 @@ import java.util.Comparator;
  * is done (instead of a String).
  * <p>
  * Date created: Oct 27, 2002 8:24:39 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class FileEntryComparator implements Comparator {
 	private int columnIndex;

@@ -50,7 +50,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.diskimage.DiskImageWizard;
  * Main class for the SwtAppleCommander interface.
  * <p>
  * Date created: Oct 7, 2002 9:43:37 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class SwtAppleCommander implements Listener {
 	private Display display;

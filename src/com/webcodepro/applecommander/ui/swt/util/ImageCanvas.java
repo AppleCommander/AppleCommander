@@ -32,7 +32,7 @@ import org.eclipse.swt.widgets.Composite;
  * Displays an image.
  * <p>
  * Date created: Nov 7, 2002 9:28:21 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class ImageCanvas extends Canvas implements PaintListener {
 	private Image image;

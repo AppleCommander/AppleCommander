@@ -36,7 +36,7 @@ import com.webcodepro.applecommander.storage.FileEntry;
  * [End-of-line marker: $00 bytes]
  * <p>
  * Date created: May 26, 2003 10:36:04 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class ApplesoftTokenizer {
 	private static String tokens[] = {	// starts at $80

@@ -25,7 +25,7 @@ import java.util.List;
  * Represents a file entry on disk - not the data.
  * <p>
  * Date created: Oct 4, 2002 4:46:42 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public interface FileEntry {
 	/**

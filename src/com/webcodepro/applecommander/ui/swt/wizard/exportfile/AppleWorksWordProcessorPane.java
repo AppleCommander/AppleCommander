@@ -34,7 +34,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  * Choose format for AppleWorks Word Processor export.
  * <p>
  * Date created: Nov 15, 2002 11:31:15 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class AppleWorksWordProcessorPane extends WizardPane {
 	private Composite parent;

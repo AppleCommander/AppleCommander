@@ -39,7 +39,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  * Set locations and file names for the export.
  * <p>
  * Date created: Nov 8, 2002 11:18:47 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class ExportFileDestinationPane extends WizardPane {
 	private Composite parent;

@@ -29,7 +29,7 @@ import com.webcodepro.applecommander.storage.FileFilter;
  * Filter the given file data for text.
  * <p>
  * Date created: Nov 2, 2002 9:11:27 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class TextFileFilter implements FileFilter {
 	/**

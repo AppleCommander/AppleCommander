@@ -40,7 +40,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * Represents a DOS file entry on disk.
  * <p>
  * Date created: Oct 4, 2002 5:15:25 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class DosFileEntry implements FileEntry {
 	/**

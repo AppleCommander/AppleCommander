@@ -32,7 +32,7 @@ import com.webcodepro.applecommander.storage.physical.ImageOrder;
  * Abstract representation of a formatted Apple2 disk (floppy, 800k, hard disk).
  * <p>
  * Date created: Oct 5, 2002 3:51:44 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	/**

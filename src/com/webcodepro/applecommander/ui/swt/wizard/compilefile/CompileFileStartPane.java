@@ -39,7 +39,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  * Provides the wizard pane which gets the export filter.
  * <p>
  * Date created: Nov 7, 2002 8:43:27 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class CompileFileStartPane extends WizardPane {
 	private Composite parent;

@@ -65,7 +65,7 @@ import com.webcodepro.applecommander.ui.swt.util.contentadapter.ContentTypeAdapt
  * View a particular files content.
  * <p>
  * Date created: Dec 7, 2003
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class FileViewerWindow {
 	private static final char CTRL_A = 'A' - '@';

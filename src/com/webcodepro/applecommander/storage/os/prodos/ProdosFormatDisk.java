@@ -36,7 +36,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * Manages a disk that is in the ProDOS format.
  * <p>
  * Date created: Oct 3, 2002 11:45:25 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class ProdosFormatDisk extends FormattedDisk {
 	/**

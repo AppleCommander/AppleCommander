@@ -31,7 +31,7 @@ import com.webcodepro.applecommander.util.ApplesoftTokenizer;
  * Filter the given file as an Applesoft file.
  * <p>
  * Date created: Nov 2, 2002 10:04:10 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class ApplesoftFileFilter implements FileFilter {
 	/**

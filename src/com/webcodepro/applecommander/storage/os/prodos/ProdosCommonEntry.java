@@ -28,7 +28,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * Represents the common Prodos entry behavior.
  * <p>
  * Date created: Oct 5, 2002 10:55:41 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class ProdosCommonEntry {
 	/**

@@ -27,7 +27,7 @@ package com.webcodepro.applecommander.storage;
  * as that signified either the end of a file or filler space.
  * <p>
  * Date created: Nov 2, 2002 9:02:47 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public interface FileFilter {
 	/**

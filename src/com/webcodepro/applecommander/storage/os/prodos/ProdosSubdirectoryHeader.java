@@ -25,7 +25,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * Provides commone subdirectory attributes.
  * <p>
  * Date created: Oct 5, 2002 11:17:57 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class ProdosSubdirectoryHeader extends ProdosCommonDirectoryHeader {
 	private ProdosDirectoryEntry directoryEntry;

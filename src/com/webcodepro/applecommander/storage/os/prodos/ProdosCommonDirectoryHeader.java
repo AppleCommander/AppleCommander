@@ -25,7 +25,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * Provide common directory header attributes.
  * <p>
  * Date created: Oct 5, 2002 11:17:00 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class ProdosCommonDirectoryHeader extends ProdosCommonEntry {
 

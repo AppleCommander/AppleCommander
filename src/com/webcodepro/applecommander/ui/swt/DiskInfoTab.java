@@ -42,7 +42,7 @@ import com.webcodepro.applecommander.storage.FormattedDisk.DiskInformation;
  * Build the Disk Info tab for the Disk Window.
  * <p>
  * Date created: Nov 17, 2002 9:15:29 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class DiskInfoTab {
 	private Table infoTable;

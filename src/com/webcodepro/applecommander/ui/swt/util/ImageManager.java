@@ -37,7 +37,7 @@ import org.eclipse.swt.widgets.Display;
  * constructor. 
  * <p>
  * Date created: Nov 17, 2002 6:53:08 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class ImageManager {
 	public static final String ICON_DISK = "diskicon.gif";

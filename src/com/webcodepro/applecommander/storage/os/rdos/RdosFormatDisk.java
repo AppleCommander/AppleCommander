@@ -44,7 +44,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * to 455.  It also may also cause incompatibilities with other formats and other cracks.
  * <p>
  * Date created: Oct 7, 2002 2:03:58 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class RdosFormatDisk extends FormattedDisk {
 	/**

@@ -28,7 +28,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 /**
  * Compare disks wizard.
  * <p>
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class CompareDisksWizard extends Wizard {
 	private String diskname1;

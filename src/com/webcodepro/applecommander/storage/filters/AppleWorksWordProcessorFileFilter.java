@@ -42,7 +42,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * 	http://www.gno.org/pub/apple2/doc/apple/filetypes/ftn.1a.xxxx
  * <p>
  * Date created: Nov 15, 2002 3:55:21 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class AppleWorksWordProcessorFileFilter implements FileFilter {
 	/*

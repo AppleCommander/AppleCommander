@@ -44,7 +44,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * Represents a ProDOS file entry on disk.
  * <p>
  * Date created: Oct 5, 2002 6:01:15 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	/**

@@ -106,7 +106,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * Build the Disk File tab for the Disk Window.
  * <p>
  * Date created: Nov 17, 2002 9:46:53 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class DiskExplorerTab {
 	private static final char CTRL_C = 'C' - '@';

@@ -51,7 +51,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * </tt>
  * <p>
  * Date created: Oct 7, 2002 1:36:56 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class RdosFileEntry implements FileEntry {
 	private byte[] fileEntry;

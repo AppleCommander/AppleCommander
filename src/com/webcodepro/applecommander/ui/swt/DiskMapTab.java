@@ -42,7 +42,7 @@ import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
  * Build the Disk Map tab for the Disk Window.
  * <p>
  * Date created: Nov 17, 2002 9:27:44 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class DiskMapTab {
 	private FormattedDisk disk;

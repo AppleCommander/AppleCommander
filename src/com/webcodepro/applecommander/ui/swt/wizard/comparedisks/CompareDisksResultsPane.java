@@ -23,7 +23,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.FormattedDisk;
@@ -33,15 +32,13 @@ import com.webcodepro.applecommander.util.AppleUtil;
 /**
  * Shows the result of the disk image comparison.
  * <p>
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class CompareDisksResultsPane extends WizardPane {
 	private Composite parent;
 	private Object layoutData;
 	private Composite control;
 	private CompareDisksWizard wizard;
-	private Text diskname1Text;
-	private Text diskname2Text;
 	/**
 	 * Constructor for ExportFileStartPane.
 	 */

@@ -28,7 +28,7 @@ import java.util.Properties;
  * all AppleCommander user interfaces.
  * <p>
  * Date created: Nov 18, 2002 10:08:34 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class UserPreferences {
 	private static final String FILENAME = "AppleCommander.preferences";

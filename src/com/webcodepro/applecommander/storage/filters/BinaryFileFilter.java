@@ -26,7 +26,7 @@ import com.webcodepro.applecommander.storage.FileFilter;
  * Filter the given file data to be the appropriate length.
  * <p>
  * Date created: Nov 2, 2002 9:07:52 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class BinaryFileFilter implements FileFilter {
 	/**

@@ -35,7 +35,7 @@ import org.eclipse.swt.widgets.ToolItem;
  * Code taken and modified from SWT examples to be more generic.
  * <p>
  * Date created: Nov 2, 2002 8:25:11 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class DropDownSelectionListener extends SelectionAdapter {
 	private Menu menu = null;

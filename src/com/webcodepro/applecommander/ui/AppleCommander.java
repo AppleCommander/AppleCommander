@@ -36,7 +36,7 @@ import java.lang.reflect.Method;
  * are referenced in various places, it may well be worth it.
  * <p>
  * Date created: Nov 16, 2002 9:13:25 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class AppleCommander {
 	public static final String VERSION = "1.3.3pre";

@@ -38,7 +38,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 /**
  * Provides the wizard pane which gets the disks to compare.
  * <p>
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class CompareDisksStartPane extends WizardPane {
 	private Composite parent;

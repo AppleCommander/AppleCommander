@@ -49,7 +49,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * Abstract representation of an Apple2 disk (floppy, 800k, hard disk).
  * <p>
  * Date created: Oct 3, 2002 10:59:47 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class Disk {
 	/**

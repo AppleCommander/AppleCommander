@@ -37,8 +37,8 @@ import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
 import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 
 /**
- * A frame work for displaying a wizard-like user interface.
- * @author: Rob Greene
+ * A framework for displaying a wizard-like user interface.
+ * @author Rob Greene
  */
 public abstract class Wizard {
 	private Shell parent;

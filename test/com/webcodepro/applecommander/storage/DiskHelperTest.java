@@ -35,7 +35,7 @@ import junit.framework.TestCase;
  * Test Disk and FormattedDisk for read.
  * <p>
  * Date created: Oct 3, 2002 11:35:26 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class DiskHelperTest extends TestCase {
 

@@ -33,7 +33,7 @@ import com.webcodepro.applecommander.ui.swt.util.ImageManager;
  * Displays disk information on the screen.
  * <p>
  * Date created: Oct 12, 2002 3:28:41 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class DiskWindow {
 	private Shell parentShell;

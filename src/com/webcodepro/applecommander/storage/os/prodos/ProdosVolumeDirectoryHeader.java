@@ -25,7 +25,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * Represents the ProDOS volume directory header.
  * <p>
  * Date created: Oct 5, 2002 10:58:24 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class ProdosVolumeDirectoryHeader extends ProdosCommonDirectoryHeader {
 
