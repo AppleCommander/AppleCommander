@@ -19,11 +19,14 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Represents a ProDOS file entry on disk.
@@ -32,16 +35,60 @@ import java.util.List;
  * @author: Rob Greene
  */
 public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
+	private static ProdosFileType[] fileTypes;
 	private List files;
 	private ProdosSubdirectoryHeader subdirectoryHeader;
+	
+	/**
+	 * This class holds filetype mappings.
+	 */
+	private class ProdosFileType {
+		private byte type;
+		private String string;
+		public ProdosFileType(byte type, String string) {
+			this.type = type;
+			this.string = string;
+		}
+		public byte getType() {
+			return type;
+		}
+		public String getString() {
+			return string;
+		}
+	}
 
 	/**
 	 * Constructor for ProdosFileEntry.
 	 */
 	public ProdosFileEntry(ProdosFormatDisk disk, int block, int offset) {
 		super(disk, block, offset);
+		initialize();
 	}
-
+	
+	/**
+	 * Initialize all file types.
+	 */
+	protected void initialize() {
+		if (fileTypes != null) return;
+		
+		fileTypes = new ProdosFileType[256];
+		InputStream inputStream = 
+			getClass().getResourceAsStream("ProdosFileTypes.properties");
+		Properties properties = new Properties();
+		try {
+			properties.load(inputStream);
+			for (int i=0; i<256; i++) {
+				String byt = AppleUtil.getFormattedByte(i).toLowerCase();
+				String string = (String) properties.get("filetype." + byt);
+				if (string == null || string.length() == 0) {
+					string = "$" + byt.toUpperCase();
+				}
+				fileTypes[i] = new ProdosFileType((byte)i, string);
+			}
+		} catch (IOException ignored) {
+		}
+	}
+	
 	/**
 	 * Return the name of this file.
 	 * This handles normal files, deleted files, and AppleWorks files - which use
@@ -93,123 +140,53 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	}
 
 	/**
+	 * Set the name of this file.
+	 */
+	public void setFilename(String filename) {
+		byte[] fileEntry = readFileEntry();
+		if (isDeleted()) {
+			AppleUtil.setString(fileEntry, 1, filename.toUpperCase(), 15);
+		} else {
+			AppleUtil.setProdosString(fileEntry, 0, filename.toUpperCase(), 15);
+		}
+		if (isAppleWorksFile()) {
+			byte lowByte = 0;
+			byte highByte = 0;
+			for (int i=0; i<filename.length(); i++) {
+				if (Character.isLowerCase(filename.charAt(i))) {
+					if (i < 8) {
+						lowByte = AppleUtil.setBit(lowByte, 7-i);
+					} else if (i < 16) {
+						highByte = AppleUtil.setBit(highByte, 7-(i%8));
+					}
+				}
+			}
+			setAuxiliaryType(fileEntry, lowByte, highByte);
+		}
+		writeFileEntry(fileEntry);
+	}
+
+	/**
 	 * Return the filetype of this file.  This will be three characters,
 	 * according to ProDOS - a "$xx" if unknown.
-	 * <p>
-	 * This could be improved should specific information regarding file types
-	 * be needed; the file type could become a separate object which works with
-	 * the file in some manner.
-	 * <p>
-	 * Note: Source of information is the following url -
-	 * http://www.apple2.org.za/gswv/gsezine/GS.WorldView/ProDOS.File.Types.v2.0.txt
 	 */
 	public String getFiletype() {
 		int filetype = AppleUtil.getUnsignedByte(readFileEntry()[0x10]);
-		switch (filetype) {
-			case 0x00:	return "UNK";
-			case 0x01:	return "BAD";
-			case 0x02:	return "PCD";
-			case 0x03:	return "PTX";
-			case 0x04:	return "TXT";
-			case 0x05:	return "PDA";
-			case 0x06:	return "BIN";
-			case 0x07:	return "FNT";
-			case 0x08:	return "FOT";
-			case 0x09:	return "BA3";
-			case 0x0a:	return "DA3";
-			case 0x0b:	return "WPF";
-			case 0x0c:	return "SOS";
-			case 0x0f:	return "DIR";
-			case 0x10:	return "RPD";
-			case 0x11:	return "RPI";
-			case 0x12:	return "AFD";
-			case 0x13:	return "AFM";
-			case 0x14:	return "AFR";
-			case 0x15:	return "SCL";
-			case 0x16:	return "PFS";
-			case 0x19:	return "ADB";	// AppleWorks: AUX TYPE indicates UPPER/lower case
-			case 0x1a:	return "AWP";	// AppleWorks: AUX TYPE indicates UPPER/lower case
-			case 0x1b:	return "ASP";	// AppleWorks: AUX TYPE indicates UPPER/lower case
-			case 0x20:	return "TDM";
-			case 0x21:	return "IPS";
-			case 0x22:	return "UPV";
-			case 0x29:	return "3SD";
-			case 0x2a:	return "8SC";
-			case 0x2b:	return "8OB";
-			case 0x2c:	return "8IC";
-			case 0x2d:	return "8LD";
-			case 0x2e:	return "P8C";	// P8C or PTP, depending on AUX TYPE
-			case 0x41:	return "OCR";
-			case 0x42:	return "FTD";
-			case 0x50:	return "GWP";
-			case 0x51:	return "GSS";
-			case 0x52:	return "GDB";
-			case 0x53:	return "DRW";
-			case 0x54:	return "GDP";
-			case 0x55:	return "HMD";
-			case 0x56:	return "EDU";
-			case 0x57:	return "STN";
-			case 0x58:	return "HLP";
-			case 0x59:	return "COM";
-			case 0x5a:	return "CFG";	// CFG or PTP, depending on AUX TYPE
-			case 0x5b:	return "ANM";
-			case 0x5c:	return "MUM";
-			case 0x5d:	return "ENT";
-			case 0x5e:	return "DVU";
-			case 0x60:	return "PRE";
-			case 0x6b:	return "BIO";
-			case 0x6d:	return "DVR";	// DVR/TDR
-			case 0x6e:	return "PRE";
-			case 0x6f:	return "HDV";	// PC Volume
-			case 0xa0:	return "WP_";
-			case 0xab:	return "GSB";
-			case 0xac:	return "TDF";
-			case 0xad:	return "BDF";
-			case 0xb0:	return "SRC";
-			case 0xb1:	return "OBJ";
-			case 0xb2:	return "LIB";
-			case 0xb3:	return "S16";
-			case 0xb4:	return "RTL";
-			case 0xb5:	return "EXE";
-			case 0xb6:	return "STR";	// STR/PIF
-			case 0xb7:	return "TSF";	// TSF/TIF
-			case 0xb8:	return "NDA";
-			case 0xb9:	return "CDA";
-			case 0xba:	return "TOL";
-			case 0xbb:	return "DRV";	// DRV/DVR
-			case 0xbc:	return "LDF";
-			case 0xbd:	return "FST";
-			case 0xbf:	return "DOC";
-			case 0xc0:	return "PNT";
-			case 0xc1:	return "PIC";
-			case 0xc2:	return "ANI";
-			case 0xc3:	return "PAL";
-			case 0xc5:	return "OOG";
-			case 0xc6:	return "SCR";
-			case 0xc7:	return "CDV";
-			case 0xc8:	return "FON";
-			case 0xc9:	return "FND";
-			case 0xca:	return "ICN";
-			case 0xd5:	return "MUS";
-			case 0xd6:	return "INS";
-			case 0xd7:	return "MDI";
-			case 0xd8:	return "SND";
-			case 0xdb:	return "DBM";
-			case 0xe0:	return "SHK";
-			case 0xe2:	return "DTS";	// DTS/ATK
-			case 0xee:	return "R16";
-			case 0xef:	return "PAS";
-			case 0xf0:	return "CMD";
-			// Left $F1 - $F8 alone as these are user-defined types
-			case 0xf9:	return "P16";
-			case 0xfa:	return "INT";
-			case 0xfb:	return "IVR";
-			case 0xfc:	return "BAS";
-			case 0xfd:	return "VAR";
-			case 0xfe:	return "REL";
-			case 0xff:	return "SYS";
-			default :
-				return "$" + AppleUtil.getFormattedByte(filetype);
+		ProdosFileType prodostype = fileTypes[filetype];
+		return prodostype.getString();
+	}
+
+	/**
+	 * Set the filetype.
+	 */
+	public void setFiletype(String filetype) {
+		for (int i=0; i<fileTypes.length; i++) {
+			if (filetype.equalsIgnoreCase(fileTypes[i].getString())) {
+				byte[] entry = readFileEntry();
+				entry[0x10] = fileTypes[i].getType();
+				writeFileEntry(entry);
+				return;
+			}
 		}
 	}
 	
@@ -229,12 +206,31 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	public int getKeyPointer() {
 		return AppleUtil.getWordValue(readFileEntry(), 0x11);
 	}
+	
+	/**
+	 * Set the key pointer.  This is either the data block (seedling),
+	 * index block (sapling), or master index block (tree).
+	 */
+	public void setKeyPointer(int keyPointer) {
+		byte[] entry = readFileEntry();
+		AppleUtil.setWordValue(entry, 0x11, keyPointer);
+		writeFileEntry(entry);
+	}
 
 	/**
 	 * Get the number of blocks used.
 	 */
 	public int getBlocksUsed() {
 		return AppleUtil.getWordValue(readFileEntry(), 0x13);
+	}
+	
+	/**
+	 * Set the number of blocks used.
+	 */
+	public void setBlocksUsed(int blocksUsed) {
+		byte[] entry = readFileEntry();
+		AppleUtil.setWordValue(entry, 0x13, blocksUsed);
+		writeFileEntry(entry);
 	}
 
 	/**
@@ -243,7 +239,15 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	public int getEofPosition() {
 		return AppleUtil.get3ByteValue(readFileEntry(), 0x15);
 	}
-
+	
+	/**
+	 * Set the EOF position.
+	 */
+	public void setEofPosition(int eofPosition) {
+		byte[] entry = readFileEntry();
+		AppleUtil.set3ByteValue(entry, 0x15, eofPosition);
+		writeFileEntry(entry);
+	}
 
 	/**
 	 * Get the auxiliary type for this file.
@@ -252,9 +256,18 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 * BAS - load address for program image.
 	 * VAR - address of compressed variables image.
 	 * SYS - load address for system program (usually 0x2000).
+	 * AWP/ADB/ASP - upper/lowercase flags
 	 */
 	public int getAuxiliaryType() {
 		return AppleUtil.getWordValue(readFileEntry(), 0x1f);
+	}
+	
+	/**
+	 * Set the auxiliary type for this file.
+	 */
+	public void setAuxiliaryType(byte[] entry, byte low, byte high) {
+		entry[0x1f] = low;
+		entry[0x20] = high;
 	}
 
 	/**
@@ -262,6 +275,15 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 */
 	public Date getLastModificationDate() {
 		return AppleUtil.getProdosDate(readFileEntry(), 0x21);
+	}
+	
+	/**
+	 * Set the last modification date.
+	 */
+	public void setLastModificationDate(Date date) {
+		byte[] entry = readFileEntry();
+		AppleUtil.setProdosDate(entry, 0x21, date);
+		writeFileEntry(entry);
 	}
 
 	/**
@@ -276,6 +298,15 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 */
 	public boolean isLocked() {
 		return !canDestroy() && !canRename() && !canWrite();
+	}
+
+	/**
+	 * Set the lock indicator.
+	 */
+	public void setLocked(boolean lock) {
+		setCanDestroy(lock);
+		setCanRename(lock);
+		setCanWrite(lock);
 	}
 
 	/**
@@ -315,6 +346,14 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 */
 	public boolean isDeleted() {
 		return getStorageType() == 0;
+	}
+
+	/**
+	 * Delete the file.
+	 */
+	public void delete() {
+		getDisk().freeBlocks(this);
+		setStorageType(0);
 	}
 
 	/**
@@ -393,7 +432,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 						&&  getAuxiliaryType() > 0) {
 					list.add("A=$" + AppleUtil.getFormattedWord(getAuxiliaryType()));
 				} else {
-					list.add("");
+					list.add("$" + AppleUtil.getFormattedWord(getAuxiliaryType()));
 				}
 				list.add(AppleUtil.getFormattedWord(getHeaderPointer()));
 				list.add(AppleUtil.getFormattedWord(getKeyPointer()));
@@ -423,6 +462,16 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	}
 
 	/**
+	 * Set the file data.  This is essentially the save operation.
+	 * Specifically, if the filetype is binary, the length and
+	 * address need to be set.  If the filetype is applesoft or
+	 * integer basic, the start address needs to be set.
+	 */
+	public void setFileData(byte[] data) throws DiskFullException {
+		getDisk().setFileData(this, data);
+	}
+
+	/**
 	 * Get the suggested FileFilter.  This appears to be operating system
 	 * specific, so each operating system needs to implement some manner
 	 * of guessing the appropriate filter.
@@ -436,6 +485,18 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 			return new ApplesoftFileFilter();
 		} else if ("INT".equals(getFiletype())) {	// supposedly not available in ProDOS, however
 			return new IntegerBasicFileFilter();
+		} else if ("PNT".equals(getFiletype())) {
+			if (getAuxiliaryType() == 0x0001) {
+				GraphicsFileFilter filter = new GraphicsFileFilter();
+				filter.setMode(GraphicsFileFilter.MODE_SHR);
+				return filter;
+			}
+		} else if ("PIC".equals(getFiletype())) {
+			if (getAuxiliaryType() == 0x0000) {
+				GraphicsFileFilter filter = new GraphicsFileFilter();
+				filter.setMode(GraphicsFileFilter.MODE_SHR);
+				return filter;
+			}
 		} else if ("BIN".equals(getFiletype())) {
 			int size = getSize();
 			// the minimum size is guessed a bit - I don't remember, but maybe there
