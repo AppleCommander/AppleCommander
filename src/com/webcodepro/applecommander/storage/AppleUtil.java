@@ -269,6 +269,14 @@ public class AppleUtil {
 	}
 	
 	/**
+	 * Format a 3 byte value as hexidecimal.
+	 */
+	public static String getFormatted3ByteAddress(int addr) {
+		return getFormattedByte((addr & 0xff0000) >> 16)
+			+ getFormattedWord(addr & 0x00ffff);
+	}
+	
+	/**
 	 * Convert a typical Apple formatted word.  This is essentially
 	 * a hex string that may start with a '$' and has 1 - 4 digits.
 	 */
