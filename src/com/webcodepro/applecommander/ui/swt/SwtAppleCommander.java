@@ -226,7 +226,7 @@ public class SwtAppleCommander {
 				box.setMessage(
 					  "AppleCommander\n"
 					+ "Version " + AppleCommander.VERSION + "\n"
-					+ "Copyright (c) 2002\n\n"
+					+ "Copyright (c) 2002-2003\n\n"
 				    + "AppleCommander was created for the express\n"
 					+ "purpose of assisting those-who-remember.\n\n"
 					+ "I wish you many hours of vintage pleasure!\n"
