@@ -194,7 +194,8 @@ public class SwtAppleCommander {
 
 		ToolItem item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(imageManager.getOpenDiskIcon());
-		item.setText("Open...");
+		item.setText("&Open...");
+		item.setSelection(false);
 		item.setToolTipText("Open a disk image");
 		item.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
@@ -205,7 +206,7 @@ public class SwtAppleCommander {
 
 		item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(imageManager.getNewDiskIcon());
-		item.setText("Create...");
+		item.setText("&Create...");
 		item.setToolTipText("Create a disk image");
 		item.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
@@ -216,7 +217,7 @@ public class SwtAppleCommander {
 
 		item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(imageManager.getAboutIcon());
-		item.setText("About");
+		item.setText("&About");
 		item.setToolTipText("About AppleCommander");
 		final Shell finalShell = shell;
 		item.addSelectionListener(new SelectionAdapter () {

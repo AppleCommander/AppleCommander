@@ -782,7 +782,7 @@ public class DiskExplorerTab {
 
 		ToolItem item = new ToolItem(toolBar, SWT.RADIO);
 		item.setImage(imageManager.getStandardFileViewIcon());
-		item.setText("Standard");
+		item.setText("&Standard");
 		item.setToolTipText("Displays files in standard format");
 		item.setSelection(true);
 		item.addSelectionListener(new SelectionAdapter () {
@@ -792,7 +792,7 @@ public class DiskExplorerTab {
 		});
 		item = new ToolItem(toolBar, SWT.RADIO);
 		item.setImage(imageManager.getNativeFileViewIcon());
-		item.setText("Native");
+		item.setText("&Native");
 		item.setToolTipText("Displays files in native format for the operating system");
 		item.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
@@ -801,7 +801,7 @@ public class DiskExplorerTab {
 		});
 		item = new ToolItem(toolBar, SWT.RADIO);
 		item.setImage(imageManager.getDetailFileViewIcon());
-		item.setText("Detail");
+		item.setText("&Detail");
 		item.setToolTipText("Displays files in with full details");
 		item.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
@@ -812,7 +812,7 @@ public class DiskExplorerTab {
 
 		item = new ToolItem(toolBar, SWT.CHECK);
 		item.setImage(imageManager.getDeletedFilesIcon());
-		item.setText("Deleted");
+		item.setText("De&leted");
 		item.setToolTipText("Show deleted files");
 		item.setEnabled(disks[0].supportsDeletedFiles());
 		item.addSelectionListener(new SelectionAdapter () {
@@ -826,7 +826,7 @@ public class DiskExplorerTab {
 
 		importToolItem = new ToolItem(toolBar, SWT.PUSH);
 		importToolItem.setImage(imageManager.getImportFileIcon());
-		importToolItem.setText("Import...");
+		importToolItem.setText("&Import...");
 		importToolItem.setToolTipText("Import a file");
 		importToolItem.setEnabled(true);
 		importToolItem.addSelectionListener(new SelectionAdapter () {
@@ -837,7 +837,7 @@ public class DiskExplorerTab {
 		
 		exportToolItem = new ToolItem(toolBar, SWT.DROP_DOWN);
 		exportToolItem.setImage(imageManager.getExportFileIcon());
-		exportToolItem.setText("Export...");
+		exportToolItem.setText("&Export...");
 		exportToolItem.setToolTipText("Export a file");
 		exportToolItem.setEnabled(false);
 		exportToolItem.addSelectionListener(
@@ -868,7 +868,7 @@ public class DiskExplorerTab {
 
 		deleteToolItem = new ToolItem(toolBar, SWT.PUSH);
 		deleteToolItem.setImage(imageManager.getDeleteFileIcon());
-		deleteToolItem.setText("Delete");
+		deleteToolItem.setText("D&elete");
 		deleteToolItem.setToolTipText("Delete a file");
 		deleteToolItem.setEnabled(false);
 		deleteToolItem.addSelectionListener(new SelectionAdapter () {
@@ -880,7 +880,7 @@ public class DiskExplorerTab {
 
 		saveToolItem = new ToolItem(toolBar, SWT.PUSH);
 		saveToolItem.setImage(imageManager.getSaveImageIcon());
-		saveToolItem.setText("Save");
+		saveToolItem.setText("&Save");
 		saveToolItem.setToolTipText("Save disk image");
 		saveToolItem.setEnabled(disks[0].hasChanged());	// same physical disk
 		saveToolItem.addSelectionListener(new SelectionAdapter () {
