@@ -64,9 +64,8 @@ public class FileEntryComparator implements Comparator {
 			int int1 = toInt(column1);
 			int int2 = toInt(column2);
 			return int1 - int2;
-		} else {
-			return column1.compareTo(column2);
 		}
+		return column1.compareTo(column2);
 	}
 
 	/**

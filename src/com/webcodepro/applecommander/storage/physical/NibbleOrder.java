@@ -21,7 +21,9 @@ package com.webcodepro.applecommander.storage.physical;
 
 import java.util.Arrays;
 
+import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Supports disk images stored in nibbilized DOS physical order.
@@ -29,6 +31,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * @author Rob Greene (RobGreene@users.sourceforge.net)
  */
 public class NibbleOrder extends DosOrder {
+	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * This is the 6 and 2 write translate table, as given in Beneath
 	 * Apple DOS, pg 3-21.
@@ -111,8 +114,8 @@ public class NibbleOrder extends DosOrder {
 			found = (t == track && s == sector);
 		}
 		if (!found) {
-			throw new IllegalArgumentException("Unable to locate physical sector "
-				+ sector + " on track " + track + "(#2)");
+			throw new IllegalArgumentException(textBundle
+				.format("NibbleOrder.InvalidPhysicalSectorError", sector, track, 1)); //$NON-NLS-1$
 		}
 		// 3. read data field that immediately follows the address field
 		byte[] dataField = new byte[349];
@@ -218,8 +221,8 @@ public class NibbleOrder extends DosOrder {
 		while (!found && offset < trackData.length) {
 			int nextOffset = locateField(0xd5, 0xaa, 0x96, trackData, addressField, offset);
 			if (nextOffset < offset) {	// we wrapped!
-				throw new IllegalArgumentException("Unable to locate physical sector "
-					+ sector + " on track " + track);
+				throw new IllegalArgumentException(textBundle
+					.format("NibbleOrder.InvalidPhysicalSectorError", sector, track, 2)); //$NON-NLS-1$
 			}
 			offset = nextOffset;
 			int t = decodeOddEven(addressField, 5);
@@ -227,8 +230,8 @@ public class NibbleOrder extends DosOrder {
 			found = (t == track && s == sector); 
 		}
 		if (!found) {
-			throw new IllegalArgumentException("Unable to locate physical sector "
-				+ sector + " on track " + track + "(#2)");
+			throw new IllegalArgumentException(textBundle
+					.format("NibbleOrder.InvalidPhysicalSectorError", sector, track, 2)); //$NON-NLS-1$
 		}
 
 		// 3. PRENIBBLE: This is Java translated from assembly @ $B800

@@ -34,9 +34,10 @@ import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
+import com.webcodepro.applecommander.util.TextBundle;
 
 public class ac {
-	private static TextBundle textBundle = TextBundle.getInstance();
+	private static TextBundle textBundle = UiBundle.getInstance();
 
 	public static void main(String[] args) {
 		try {

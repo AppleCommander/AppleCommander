@@ -31,7 +31,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
-import com.webcodepro.applecommander.ui.TextBundle;
+import com.webcodepro.applecommander.ui.UiBundle;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * SWT-related utility code.
@@ -40,7 +41,7 @@ import com.webcodepro.applecommander.ui.TextBundle;
  * @author Rob Greene
  */
 public class SwtUtil {
-	private static TextBundle textBundle = TextBundle.getInstance();
+	private static TextBundle textBundle = UiBundle.getInstance();
 	
 	/**
 	 * Center the child shell within the parent shell window.

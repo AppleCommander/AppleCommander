@@ -23,11 +23,12 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
 import com.webcodepro.applecommander.ui.ImportSpecification;
-import com.webcodepro.applecommander.ui.TextBundle;
+import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.UserPreferences;
 import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Allow the used to choose the files to import into the disk image.
@@ -36,7 +37,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * @author Rob Greene
  */
 public class ImportSelectFilesWizardPane extends WizardPane {
-	private TextBundle textBundle = TextBundle.getInstance();
+	private TextBundle textBundle = UiBundle.getInstance();
 	private ImportWizard wizard;
 	private Composite control;
 	private Composite parent;

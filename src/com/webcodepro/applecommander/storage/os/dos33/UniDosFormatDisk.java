@@ -19,7 +19,9 @@
  */
 package com.webcodepro.applecommander.storage.os.dos33;
 
+import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Manages a disk that is in UniDOS format.
@@ -30,6 +32,7 @@ import com.webcodepro.applecommander.storage.physical.ImageOrder;
  * @author Rob
  */
 public class UniDosFormatDisk extends DosFormatDisk {
+	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Use this indicator to work with logical disk #1.
 	 * It is essentially the track offset into the disk image.
@@ -47,8 +50,6 @@ public class UniDosFormatDisk extends DosFormatDisk {
 	private int logicalOffset;
 	/**
 	 * Constructor for UniDosFormatDisk.
-	 * @param filename
-	 * @param diskImage
 	 */
 	public UniDosFormatDisk(String filename, ImageOrder imageOrder, int logicalOffset) {
 		super(filename, imageOrder);
@@ -70,9 +71,9 @@ public class UniDosFormatDisk extends DosFormatDisk {
 	 */
 	public String getDiskName() {
 		if (logicalOffset == UNIDOS_DISK_1) {
-			return super.getDiskName() + " (Disk 1)";
+			return textBundle.format("DiskNameN", super.getDiskName(), 1); //$NON-NLS-1$
 		} else if (logicalOffset == UNIDOS_DISK_2) {
-			return super.getDiskName() + " (Disk 2)";
+			return textBundle.format("DiskNameN", super.getDiskName(), 2); //$NON-NLS-1$
 		} else {
 			return super.getDiskName();
 		}

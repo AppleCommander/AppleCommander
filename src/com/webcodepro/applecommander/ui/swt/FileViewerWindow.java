@@ -51,6 +51,7 @@ import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
+import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.filteradapter.ApplesoftFilterAdapter;
 import com.webcodepro.applecommander.ui.swt.filteradapter.FilterAdapter;
 import com.webcodepro.applecommander.ui.swt.filteradapter.GraphicsFilterAdapter;
@@ -60,6 +61,7 @@ import com.webcodepro.applecommander.ui.swt.filteradapter.TextFilterAdapter;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 import com.webcodepro.applecommander.ui.swt.util.contentadapter.ContentTypeAdapter;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * View a particular files content.
@@ -71,6 +73,8 @@ public class FileViewerWindow {
 	private static final char CTRL_A = 'A' - '@';
 	private static final char CTRL_P = 'P' - '@';
 	private static final char CTRL_C = 'C' - '@';
+	
+	private TextBundle textBundle = UiBundle.getInstance();
 
 	private Shell parentShell;
 	private ImageManager imageManager;
@@ -84,7 +88,6 @@ public class FileViewerWindow {
 	private ToolItem nativeToolItem;
 	private ToolItem hexDumpToolItem;
 	private ToolItem rawDumpToolItem;
-	private ToolItem printToolItem;
 	private ToolItem copyToolItem;
 	
 	private Font courier;
@@ -124,7 +127,8 @@ public class FileViewerWindow {
 		shell = new Shell(parentShell, SWT.SHELL_TRIM);
 		shell.setLayout(new FillLayout());
 		shell.setImage(imageManager.get(ImageManager.ICON_DISK));
-		shell.setText("File Viewer - " + fileEntry.getFilename());
+		shell.setText(textBundle.format("FileViewerWindow.Title", //$NON-NLS-1$ 
+				fileEntry.getFilename()));
 		shell.addDisposeListener(new DisposeListener() {
 				public void widgetDisposed(DisposeEvent event) {
 					dispose(event);
@@ -143,7 +147,7 @@ public class FileViewerWindow {
 		content.setLayoutData(gridData);
 		content.addListener(SWT.KeyUp, createToolbarCommandHandler());
 		
-		courier = new Font(shell.getDisplay(), "Courier", 10, SWT.NORMAL);
+		courier = new Font(shell.getDisplay(), "Courier", 10, SWT.NORMAL); //$NON-NLS-1$
 		black = new Color(shell.getDisplay(), 0, 0, 0);
 		blue = new Color(shell.getDisplay(), 0, 0, 192);
 		green = new Color(shell.getDisplay(), 0, 192, 0);
@@ -161,48 +165,48 @@ public class FileViewerWindow {
 		nativeFilterAdapterMap = new HashMap();
 		
 		nativeFilterAdapterMap.put(ApplesoftFileFilter.class, 
-			new ApplesoftFilterAdapter(this, "Applesoft", 
-				"Displays file as an Applesoft BASIC program (F2)", 
+			new ApplesoftFilterAdapter(this, textBundle.get("FileViewerWindow.ApplesoftButton"),  //$NON-NLS-1$
+				textBundle.get("FileViewerWindow.ApplesoftTooltip"),  //$NON-NLS-1$
 				imageManager.get(ImageManager.ICON_VIEW_AS_BASIC_PROGRAM)
 			));
 		nativeFilterAdapterMap.put(AppleWorksDataBaseFileFilter.class, 
-			new TextFilterAdapter(this, "Database", 
-				"Displays file as a database file (F2)", 
+			new TextFilterAdapter(this, textBundle.get("FileViewerWindow.DatabaseButton"),  //$NON-NLS-1$
+				textBundle.get("FileViewerWindow.DatabaseTooltip"),  //$NON-NLS-1$
 				imageManager.get(ImageManager.ICON_VIEW_AS_DATABASE)
 			));
 		nativeFilterAdapterMap.put(AppleWorksSpreadSheetFileFilter.class, 
-			new TextFilterAdapter(this, "Spreadsheet", 
-				"Displays file as a spreadsheet file (F2)", 
+			new TextFilterAdapter(this, textBundle.get("FileViewerWindow.SpreadsheetButton"),  //$NON-NLS-1$
+				textBundle.get("FileViewerWindow.SpreadsheetTooltip"),  //$NON-NLS-1$
 				imageManager.get(ImageManager.ICON_VIEW_AS_SPREADSHEET)
 			));
 		nativeFilterAdapterMap.put(AppleWorksWordProcessorFileFilter.class, 
-			new TextFilterAdapter(this, "Wordprocessor", 
-				"Displays file as a wordprocessor file (F2)", 
+			new TextFilterAdapter(this, textBundle.get("FileViewerWindow.WordprocessorButton"),  //$NON-NLS-1$
+				textBundle.get("FileViewerWindow.WordprocessorTooltip"),  //$NON-NLS-1$
 				imageManager.get(ImageManager.ICON_VIEW_AS_WORDPROCESSOR)
 			));
 		nativeFilterAdapterMap.put(AssemblySourceFileFilter.class, 
-			new TextFilterAdapter(this, "Assembly", 
-				"Displays file as assembly source file (F2)", 
+			new TextFilterAdapter(this, textBundle.get("FileViewerWindow.AssemblyButton"),  //$NON-NLS-1$
+				textBundle.get("FileViewerWindow.AssemblyTooltip"),  //$NON-NLS-1$
 				imageManager.get(ImageManager.ICON_VIEW_AS_TEXTFILE)
 			));
 		nativeFilterAdapterMap.put(GraphicsFileFilter.class, 
-			new GraphicsFilterAdapter(this, "Image", 
-				"Displays file as an image (F2)", 
+			new GraphicsFilterAdapter(this, textBundle.get("FileViewerWindow.ImageButton"),  //$NON-NLS-1$
+				textBundle.get("FileViewerWindow.ImageTooltip"),  //$NON-NLS-1$
 				imageManager.get(ImageManager.ICON_VIEW_AS_IMAGE)
 			));
 		nativeFilterAdapterMap.put(IntegerBasicFileFilter.class, 
-			new TextFilterAdapter(this, "Integer BASIC", 
-				"Displays file as an Integer BASIC program (F2)", 
+			new TextFilterAdapter(this, textBundle.get("FileViewerWindow.IntegerBasicButton"),  //$NON-NLS-1$
+				textBundle.get("FileViewerWindow.IntegerBasicTooltip"),  //$NON-NLS-1$
 				imageManager.get(ImageManager.ICON_VIEW_AS_BASIC_PROGRAM)
 			));
 		nativeFilterAdapterMap.put(PascalTextFileFilter.class, 
-			new TextFilterAdapter(this, "Pascal Text", 
-				"Displays file as Pascal text file (F2)", 
+			new TextFilterAdapter(this, textBundle.get("FileViewerWindow.PascalTextButton"),  //$NON-NLS-1$
+				textBundle.get("FileViewerWindow.PascalTextTooltip"),  //$NON-NLS-1$
 				imageManager.get(ImageManager.ICON_VIEW_AS_TEXTFILE)
 			));
 		nativeFilterAdapterMap.put(TextFileFilter.class,
-			new TextFilterAdapter(this, "Text",
-				"Displays file as a text file (F2)",
+			new TextFilterAdapter(this, textBundle.get("FileViewerWindow.TextButton"), //$NON-NLS-1$
+				textBundle.get("FileViewerWindow.TextTooltip"), //$NON-NLS-1$
 				imageManager.get(ImageManager.ICON_VIEW_AS_TEXTFILE)
 			));
 	}
@@ -210,7 +214,7 @@ public class FileViewerWindow {
 	/**
 	 * Dispose of all shared resources.
 	 */
-	private void dispose(DisposeEvent event) {
+	protected void dispose(DisposeEvent event) {
 		courier.dispose();
 		black.dispose();
 		blue.dispose();
@@ -247,7 +251,7 @@ public class FileViewerWindow {
 		new ToolItem(toolBar, SWT.SEPARATOR);
 		copyToolItem = createCopyToolItem();
 		new ToolItem(toolBar, SWT.SEPARATOR);
-		printToolItem = createPrintToolItem();
+		createPrintToolItem();
 		toolBar.pack();
 	}
 	
@@ -255,8 +259,8 @@ public class FileViewerWindow {
 	 * Create the hex dump tool item (button).
 	 */
 	protected ToolItem createHexDumpToolItem() {
-		hexFilterAdapter = new HexFilterAdapter(this, "Hex Dump", 
-				"Displays file as a hex dump (F3)", 
+		hexFilterAdapter = new HexFilterAdapter(this, textBundle.get("FileViewerWindow.HexDumpButton"),  //$NON-NLS-1$
+				textBundle.get("FileViewerWindow.HexDumpTooltip"),  //$NON-NLS-1$
 				imageManager.get(ImageManager.ICON_VIEW_IN_HEX));
 		hexFilterAdapter.setHexSelected();
 		ToolItem toolItem = hexFilterAdapter.create(toolBar);
@@ -267,8 +271,8 @@ public class FileViewerWindow {
 	 * Create the raw dump tool item (button).
 	 */
 	protected ToolItem createRawDumpToolItem() {
-		rawDumpFilterAdapter = new RawDumpFilterAdapter(this, "Raw Dump", 
-				"Displays file as a raw hex dump (F4)", 
+		rawDumpFilterAdapter = new RawDumpFilterAdapter(this, textBundle.get("FileViewerWindow.RawDumpButton"),  //$NON-NLS-1$
+				textBundle.get("FileViewerWindow.RawDumpTooltip"),  //$NON-NLS-1$
 				imageManager.get(ImageManager.ICON_VIEW_IN_RAW_HEX));
 		rawDumpFilterAdapter.setDumpSelected();
 		ToolItem toolItem = rawDumpFilterAdapter.create(toolBar);
@@ -281,12 +285,12 @@ public class FileViewerWindow {
 	protected ToolItem createCopyToolItem() {
 		ToolItem toolItem = new ToolItem(toolBar, SWT.PUSH);
 		toolItem.setImage(imageManager.get(ImageManager.ICON_COPY));
-		toolItem.setText("Copy");
-		toolItem.setToolTipText("Copies selection to the clipboard (CTRL+C)");
+		toolItem.setText(textBundle.get("FileViewerWindow.CopyButton")); //$NON-NLS-1$
+		toolItem.setToolTipText(textBundle.get("FileViewerWindow.CopyTooltip")); //$NON-NLS-1$
 		toolItem.setEnabled(true);
 		toolItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				contentTypeAdapter.copy();
+				getContentTypeAdapter().copy();
 			}
 		});
 		return toolItem;
@@ -298,12 +302,12 @@ public class FileViewerWindow {
 	protected ToolItem createPrintToolItem() {
 		ToolItem toolItem = new ToolItem(toolBar, SWT.PUSH);
 		toolItem.setImage(imageManager.get(ImageManager.ICON_PRINT_FILE));
-		toolItem.setText("Print");
-		toolItem.setToolTipText("Print contents... (CTRL+P)");
+		toolItem.setText(textBundle.get("PrintButton")); //$NON-NLS-1$
+		toolItem.setToolTipText(textBundle.get("FileViewerWindow.PrintTooltip")); //$NON-NLS-1$
 		toolItem.setEnabled(true);
 		toolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
-				contentTypeAdapter.print();
+				getContentTypeAdapter().print();
 			}
 		});
 		return toolItem;
@@ -321,27 +325,27 @@ public class FileViewerWindow {
 					if ((event.stateMask & SWT.CTRL) != 0) {	// CTRL+key
 						switch (event.character) {
 							case CTRL_C:
-								contentTypeAdapter.copy();
+								getContentTypeAdapter().copy();
 								break;
 							case CTRL_A:
-								contentTypeAdapter.selectAll();
+								getContentTypeAdapter().selectAll();
 								break;
 							case CTRL_P:
-								contentTypeAdapter.print();
+								getContentTypeAdapter().print();
 								break;
 						}
 					} else if ((event.stateMask & SWT.ALT) == 0) { // key alone
 						switch (event.keyCode) {
 							case SWT.F2:	// the "native" file format (image, text, etc)
-								nativeFilterAdapter.display();
+								getNativeFilterAdapter().display();
 								setFilterToolItemSelection(true, false, false);
 								break;
 							case SWT.F3:	// Hex format
-								hexFilterAdapter.display();
+								getHexFilterAdapter().display();
 								setFilterToolItemSelection(false, true, false);
 								break;
 							case SWT.F4:	// "Raw" hex format
-								rawDumpFilterAdapter.display();
+								getRawDumpFilterAdapter().display();
 								setFilterToolItemSelection(false, false, true);
 								break;
 						}
@@ -382,5 +386,17 @@ public class FileViewerWindow {
 		if (nativeToolItem != null) nativeToolItem.setSelection(nativeSelected);
 		hexDumpToolItem.setSelection(hexSelected);
 		rawDumpToolItem.setSelection(dumpSelected);
+	}
+	protected ContentTypeAdapter getContentTypeAdapter() {
+		return contentTypeAdapter;
+	}
+	protected FilterAdapter getHexFilterAdapter() {
+		return hexFilterAdapter;
+	}
+	protected FilterAdapter getNativeFilterAdapter() {
+		return nativeFilterAdapter;
+	}
+	protected FilterAdapter getRawDumpFilterAdapter() {
+		return rawDumpFilterAdapter;
 	}
 }

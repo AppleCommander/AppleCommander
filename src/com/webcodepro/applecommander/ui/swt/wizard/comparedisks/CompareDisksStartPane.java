@@ -33,8 +33,9 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import com.webcodepro.applecommander.ui.TextBundle;
+import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Provides the wizard pane which gets the disks to compare.
@@ -42,7 +43,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  * @author Rob Greene
  */
 public class CompareDisksStartPane extends WizardPane {
-	private TextBundle textBundle = TextBundle.getInstance();
+	private TextBundle textBundle = UiBundle.getInstance();
 	private Composite parent;
 	private Object layoutData;
 	private Composite control;

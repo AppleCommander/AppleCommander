@@ -31,7 +31,6 @@ public class ProdosVolumeDirectoryHeader extends ProdosCommonDirectoryHeader {
 
 	/**
 	 * Constructor for ProdosVolumeDirectoryHeaderEntry.
-	 * @param fileEntry
 	 */
 	public ProdosVolumeDirectoryHeader(ProdosFormatDisk disk) {
 		super(disk, 2);

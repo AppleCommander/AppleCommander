@@ -47,22 +47,22 @@ import com.webcodepro.applecommander.util.AppleUtil;
  */
 public class IntegerBasicFileFilter implements FileFilter {
 	private static String[] tokens = {
-		null,	 	null, 		null,	": ",		"LOAD ",	"SAVE ",	null, 		"RUN ",	// $00-$07
-		null,		"DEL ",		", ",	"NEW ",		"CLR ",		"AUTO ",	null,		"MAN ",	// $08-$0F
-		"HIMEM: ",	"LOMEM: ",	"+",	"-",		"*",		"/",		"=",		"#",	// $10-$17
-		">=",		">",		"<=",	"<>",		"<",		" AND ",	" OR ",		" MOD ",// $18-$1F
-		"^",		null,		"(",	",",		" THEN ",	" THEN ",	",",		",",	// $20-$27
-		"\"",		"\"",		"(",	null,		null,		"(",		" PEEK ",	"RND ",	// $28-$2F
-		"SGN ",		"ABS ",		"PDL ",	null,		"(",		"+",		"-",		"NOT ",	// $30-$37
-		"(",		"=",		"#",	" LEN(",	" ASC(",	" SCRN(",	",",		" (",	// $38-$3F
-		"$",		null,		"(",	",",		",",		";",		";",		";",	// $40-$47
-		",",		",",		",",	"TEXT ",	"GR ",		"CALL ",	"DIM ",		"DIM ",	// $48-$4F
-		"TAB ",		"END ",		"INPUT ",	"INPUT ",	"INPUT ",	"FOR ",	"=",		" TO ",	// $50-$57
-		" STEP ",	"NEXT ",	",",	"RETURN ",	"GOSUB ",	"REM ",		"LET ",		"GOTO ",// $58-$5F
-		"IF ",		"PRINT ",	"PRINT ",	"PRINT ",	" POKE ",	",",	"COLOR= ",	"PLOT ",// $60-$67
-		",",		"HLIN ",	",",	" AT ",		"VLIN ",	",",		" AT ",		"VTAB ",// $68-$6F
-		"=",		"=",		")",	null,		"LIST ",	",",		null,		"POP ",	// $70-$77
-		null,		"NO DSP ",	"NO TRACE ",	"DSP ",	"DSP ",	"TRACE ",	"PR # ",	"IN # "	// $78-$7F
+		null,	 	null, 		null,	": ",		"LOAD ",	"SAVE ",	null, 		"RUN ",	// $00-$07 //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		null,		"DEL ",		", ",	"NEW ",		"CLR ",		"AUTO ",	null,		"MAN ",	// $08-$0F //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+		"HIMEM: ",	"LOMEM: ",	"+",	"-",		"*",		"/",		"=",		"#",	// $10-$17 //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		">=",		">",		"<=",	"<>",		"<",		" AND ",	" OR ",		" MOD ",// $18-$1F //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"^",		null,		"(",	",",		" THEN ",	" THEN ",	",",		",",	// $20-$27 //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+		"\"",		"\"",		"(",	null,		null,		"(",		" PEEK ",	"RND ",	// $28-$2F //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+		"SGN ",		"ABS ",		"PDL ",	null,		"(",		"+",		"-",		"NOT ",	// $30-$37 //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+		"(",		"=",		"#",	" LEN(",	" ASC(",	" SCRN(",	",",		" (",	// $38-$3F //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"$",		null,		"(",	",",		",",		";",		";",		";",	// $40-$47 //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+		",",		",",		",",	"TEXT ",	"GR ",		"CALL ",	"DIM ",		"DIM ",	// $48-$4F //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"TAB ",		"END ",		"INPUT ",	"INPUT ",	"INPUT ",	"FOR ",	"=",		" TO ",	// $50-$57 //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		" STEP ",	"NEXT ",	",",	"RETURN ",	"GOSUB ",	"REM ",		"LET ",		"GOTO ",// $58-$5F //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"IF ",		"PRINT ",	"PRINT ",	"PRINT ",	" POKE ",	",",	"COLOR= ",	"PLOT ",// $60-$67 //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		",",		"HLIN ",	",",	" AT ",		"VLIN ",	",",		" AT ",		"VTAB ",// $68-$6F //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"=",		"=",		")",	null,		"LIST ",	",",		null,		"POP ",	// $70-$77 //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+		null,		"NO DSP ",	"NO TRACE ",	"DSP ",	"DSP ",	"TRACE ",	"PR # ",	"IN # "	// $78-$7F //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
 	};
 
 	/**
@@ -99,15 +99,15 @@ public class IntegerBasicFileFilter implements FileFilter {
 					} else {
 						char ch = (char)(byt&0x7f);
 						if (ch < 0x20) {	// handle control characters
-							printWriter.print("<CTRL-");
+							printWriter.print("<CTRL-"); //$NON-NLS-1$
 							printWriter.print((char)('@' + ch));
-							printWriter.print(">");
+							printWriter.print(">"); //$NON-NLS-1$
 						} else {
 							printWriter.print(ch);
 						}
 					}
 				} else {
-					String token = tokens[(int)byt];
+					String token = tokens[byt];
 					if (token != null) {
 						printWriter.print(token);
 						inComment = (byt == 0x5d);	// REM statement
@@ -128,8 +128,8 @@ public class IntegerBasicFileFilter implements FileFilter {
 	 */
 	public String getSuggestedFileName(FileEntry fileEntry) {
 		String fileName = fileEntry.getFilename().trim();
-		if (!fileName.toLowerCase().endsWith(".int")) {
-			fileName = fileName + ".int";
+		if (!fileName.toLowerCase().endsWith(".int")) { //$NON-NLS-1$
+			fileName = fileName + ".int"; //$NON-NLS-1$
 		}
 		return fileName;
 	}

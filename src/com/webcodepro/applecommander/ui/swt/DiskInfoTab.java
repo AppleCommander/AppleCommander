@@ -37,6 +37,8 @@ import org.eclipse.swt.widgets.TableItem;
 
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskInformation;
+import com.webcodepro.applecommander.ui.UiBundle;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Build the Disk Info tab for the Disk Window.
@@ -45,6 +47,7 @@ import com.webcodepro.applecommander.storage.FormattedDisk.DiskInformation;
  * @author Rob Greene
  */
 public class DiskInfoTab {
+	private TextBundle textBundle = UiBundle.getInstance();
 	private Table infoTable;
 	private Composite composite;
 	private FormattedDisk[] formattedDisks;
@@ -55,12 +58,12 @@ public class DiskInfoTab {
 		this.formattedDisks = disks;
 		
 		CTabItem ctabitem = new CTabItem(tabFolder, SWT.NULL);
-		ctabitem.setText("Disk Info");
+		ctabitem.setText(textBundle.get("DiskInfoTab.Title")); //$NON-NLS-1$
 		
 		tabFolder.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				infoTable.removeAll();
-				buildDiskInfoTable(formattedDisks[0]);	// FIXME!
+				getInfoTable().removeAll();
+				buildDiskInfoTable(getFormattedDisk(0));	// FIXME!
 			}
 		});
 		
@@ -98,11 +101,11 @@ public class DiskInfoTab {
 		infoTable.setHeaderVisible(true);
 		TableColumn column = new TableColumn(infoTable, SWT.LEFT);
 		column.setResizable(true);
-		column.setText("Label");
+		column.setText(textBundle.get("DiskInfoTab.LabelHeader")); //$NON-NLS-1$
 		column.setWidth(200);
 		column = new TableColumn(infoTable, SWT.LEFT);
 		column.setResizable(true);
-		column.setText("Value");
+		column.setText(textBundle.get("DiskInfoTab.ValueHeader")); //$NON-NLS-1$
 		column.setWidth(400);
 	}
 	/**
@@ -123,5 +126,11 @@ public class DiskInfoTab {
 	public void dispose() {
 		infoTable.dispose();
 		composite.dispose();
+	}
+	protected Table getInfoTable() {
+		return infoTable;
+	}
+	protected FormattedDisk getFormattedDisk(int diskNumber) {
+		return formattedDisks[diskNumber];
 	}
 }

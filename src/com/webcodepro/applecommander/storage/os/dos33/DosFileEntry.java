@@ -28,6 +28,7 @@ import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
@@ -35,6 +36,7 @@ import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Represents a DOS file entry on disk.
@@ -43,6 +45,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * @author Rob Greene
  */
 public class DosFileEntry implements FileEntry {
+	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Indicates the length in bytes of the DOS file entry field.
 	 */
@@ -95,9 +98,9 @@ public class DosFileEntry implements FileEntry {
 	 */
 	protected void writeFileEntry(byte[] fileEntry) {
 		if (fileEntry.length != FILE_DESCRIPTIVE_ENTRY_LENGTH) {
-			throw new IllegalArgumentException(
-				"A DOS 3.3 file entry must be " + FILE_DESCRIPTIVE_ENTRY_LENGTH
-				+ " bytes long!");
+			throw new IllegalArgumentException(textBundle.
+					format("DosFileEntry.DosFileEntryLengthError", //$NON-NLS-1$
+							FILE_DESCRIPTIVE_ENTRY_LENGTH));
 		}
 		byte[] sectorData = disk.readSector(track, sector);
 		System.arraycopy(fileEntry, 0, sectorData, offset, fileEntry.length);
@@ -134,18 +137,18 @@ public class DosFileEntry implements FileEntry {
 	 */
 	public String getFiletype() {
 		int filetype = (AppleUtil.getUnsignedByte(readFileEntry()[2]) & 0x7f);
-		if (filetype == 0x00) return "T";
+		if (filetype == 0x00) return "T"; //$NON-NLS-1$
 		// the "^" operator is exclusive or - used to ensure only that
 		// bit was turned on.  if others are turned on, fall through and
 		// return a "?" as the file type
-		if ((filetype ^ 0x01) == 0) return "I";
-		if ((filetype ^ 0x02) == 0) return "A";
-		if ((filetype ^ 0x04) == 0) return "B";
-		if ((filetype ^ 0x08) == 0) return "S";
-		if ((filetype ^ 0x10) == 0) return "R";
-		if ((filetype ^ 0x20) == 0) return "a";
-		if ((filetype ^ 0x40) == 0) return "b";
-		return "?";	// should never occur (read the code!)
+		if ((filetype ^ 0x01) == 0) return "I"; //$NON-NLS-1$
+		if ((filetype ^ 0x02) == 0) return "A"; //$NON-NLS-1$
+		if ((filetype ^ 0x04) == 0) return "B"; //$NON-NLS-1$
+		if ((filetype ^ 0x08) == 0) return "S"; //$NON-NLS-1$
+		if ((filetype ^ 0x10) == 0) return "R"; //$NON-NLS-1$
+		if ((filetype ^ 0x20) == 0) return "a"; //$NON-NLS-1$
+		if ((filetype ^ 0x40) == 0) return "b"; //$NON-NLS-1$
+		return "?";	// should never occur (read the code!) //$NON-NLS-1$
 	}
 
 	/**
@@ -154,14 +157,14 @@ public class DosFileEntry implements FileEntry {
 	public void setFiletype(String filetype) {
 		byte[] data = readFileEntry();
 		int type = 0x04;	// assume binary
-		if ("T".equals(filetype)) type = 0x00;
-		if ("I".equals(filetype)) type = 0x01;
-		if ("A".equals(filetype)) type = 0x02;
-		if ("B".equals(filetype)) type = 0x04;
-		if ("S".equals(filetype)) type = 0x08;
-		if ("R".equals(filetype)) type = 0x10;
-		if ("a".equals(filetype)) type = 0x20;
-		if ("b".equals(filetype)) type = 0x40;
+		if ("T".equals(filetype)) type = 0x00; //$NON-NLS-1$
+		if ("I".equals(filetype)) type = 0x01; //$NON-NLS-1$
+		if ("A".equals(filetype)) type = 0x02; //$NON-NLS-1$
+		if ("B".equals(filetype)) type = 0x04; //$NON-NLS-1$
+		if ("S".equals(filetype)) type = 0x08; //$NON-NLS-1$
+		if ("R".equals(filetype)) type = 0x10; //$NON-NLS-1$
+		if ("a".equals(filetype)) type = 0x20; //$NON-NLS-1$
+		if ("b".equals(filetype)) type = 0x40; //$NON-NLS-1$
 		type = (type | (data[2] & 0x80));
 		data[2] = (byte) type;
 		writeFileEntry(data);
@@ -201,10 +204,10 @@ public class DosFileEntry implements FileEntry {
 		int size = (getSectorsUsed()-1) * Disk.SECTOR_SIZE;
 		if (size < 1) size = 0;	// we assume a T/S block is included (may not be)
 		if (rawdata != null) {
-			if ("B".equals(getFiletype())) {
+			if ("B".equals(getFiletype())) { //$NON-NLS-1$
 				// binary
 				return AppleUtil.getWordValue(rawdata, 2);
-			} else if ("A".equals(getFiletype()) || "I".equals(getFiletype())) {
+			} else if ("A".equals(getFiletype()) || "I".equals(getFiletype())) { //$NON-NLS-1$ //$NON-NLS-2$
 				// applesoft, integer basic
 				return AppleUtil.getWordValue(rawdata, 0);
 			}
@@ -237,15 +240,6 @@ public class DosFileEntry implements FileEntry {
 	}
 
 	/**
-	 * Retrieve the list of files in this directory.
-	 * Always returns null for DOS.
-	 * @see com.webcodepro.applecommander.storage.FileEntry#getFiles()
-	 */
-	public List getFiles() {
-		return null;
-	}
-
-	/**
 	 * Identify if this file has been deleted.
 	 * @see com.webcodepro.applecommander.storage.FileEntry#isDeleted()
 	 */
@@ -275,27 +269,27 @@ public class DosFileEntry implements FileEntry {
 		List list = new ArrayList();
 		switch (displayMode) {
 			case FormattedDisk.FILE_DISPLAY_NATIVE:
-				list.add(isLocked() ? "*" : " ");
+				list.add(isLocked() ? "*" : " "); //$NON-NLS-1$ //$NON-NLS-2$
 				list.add(getFiletype());
 				numberFormat.setMinimumIntegerDigits(3);
 				list.add(numberFormat.format(getSectorsUsed()));
 				list.add(getFilename());
 				break;
 			case FormattedDisk.FILE_DISPLAY_DETAIL:
-				list.add(isLocked() ? "*" : " ");
+				list.add(isLocked() ? "*" : " "); //$NON-NLS-1$ //$NON-NLS-2$
 				list.add(getFiletype());
 				list.add(getFilename());
 				list.add(numberFormat.format(getSize()));
 				numberFormat.setMinimumIntegerDigits(3);
 				list.add(numberFormat.format(getSectorsUsed()));
-				list.add(isDeleted() ? "Deleted" : "");
-				list.add("T" + getTrack() + " S" + getSector());
+				list.add(isDeleted() ? textBundle.get("Deleted") : "");  //$NON-NLS-1$//$NON-NLS-2$
+				list.add("T" + getTrack() + " S" + getSector()); //$NON-NLS-1$ //$NON-NLS-2$
 				break;
 			default:	// FILE_DISPLAY_STANDARD
 				list.add(getFilename());
 				list.add(getFiletype());
 				list.add(numberFormat.format(getSize()));
-				list.add(isLocked() ? "Locked" : "");
+				list.add(isLocked() ? textBundle.get("Locked") : "");  //$NON-NLS-1$//$NON-NLS-2$
 				break;
 		}
 		return list;
@@ -428,8 +422,8 @@ public class DosFileEntry implements FileEntry {
 	 */
 	public boolean isAssemblySourceFile() {
 		boolean rightFiletype = isTextFile() || isBinaryFile();
-		if (rightFiletype && getFilename().endsWith(".S")) return true;
-		if (rightFiletype && getFilename().startsWith("T.")) return true;
+		if (rightFiletype && getFilename().endsWith(".S")) return true; //$NON-NLS-1$
+		if (rightFiletype && getFilename().startsWith("T.")) return true; //$NON-NLS-1$
 		return false;
 	}
 
@@ -437,28 +431,28 @@ public class DosFileEntry implements FileEntry {
 	 * Determine if this is a text file.
 	 */
 	public boolean isTextFile() {
-		return "T".equals(getFiletype());
+		return "T".equals(getFiletype()); //$NON-NLS-1$
 	}
 	
 	/**
 	 * Determine if this is an Applesoft BASIC file.
 	 */
 	public boolean isApplesoftBasicFile() {
-		return "A".equals(getFiletype());
+		return "A".equals(getFiletype()); //$NON-NLS-1$
 	}
 
 	/**
 	 * Determine if this is an Integer BASIC file.
 	 */
 	public boolean isIntegerBasicFile() {
-		return "I".equals(getFiletype());
+		return "I".equals(getFiletype()); //$NON-NLS-1$
 	}
 
 	/**
 	 * Determine if this is a binary file.
 	 */
 	public boolean isBinaryFile() {
-		return "B".equals(getFiletype());
+		return "B".equals(getFiletype()); //$NON-NLS-1$
 	}
 	
 	/**
@@ -494,8 +488,8 @@ public class DosFileEntry implements FileEntry {
 			}
 		} catch (DiskFullException e) {
 			// Should not be possible when the file isn't being modified!!
-			throw new IllegalStateException("Unable to set address for DosFileEntry [" 
-				+ getFilename() + "]");
+			throw new IllegalStateException(textBundle.
+					format("DosFileEntry.UnableToSetAddressError", getFilename())); //$NON-NLS-1$
 		}
 	}
 

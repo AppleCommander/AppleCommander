@@ -27,12 +27,14 @@ import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Handle RDOS file entry format.
@@ -54,6 +56,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * @author Rob Greene
  */
 public class RdosFileEntry implements FileEntry {
+	private TextBundle textBundle = StorageBundle.getInstance();
 	private byte[] fileEntry;
 	private RdosFormatDisk disk;
 
@@ -91,7 +94,7 @@ public class RdosFileEntry implements FileEntry {
 	 * Return the name of this file.
 	 */
 	public String getFilename() {
-		return isDeleted() ? "<NOT IN USE>            " : AppleUtil.getString(fileEntry, 0, 24);
+		return isDeleted() ? textBundle.get("RdosFileEntry.NotInUse") : AppleUtil.getString(fileEntry, 0, 24); //$NON-NLS-1$
 	}
 
 	/**
@@ -112,7 +115,7 @@ public class RdosFileEntry implements FileEntry {
 	 * Return the filetype of this file.
 	 */
 	public String getFiletype() {
-		return isDeleted() ? " " : AppleUtil.getString(fileEntry, 0x18, 1);
+		return isDeleted() ? " " : AppleUtil.getString(fileEntry, 0x18, 1); //$NON-NLS-1$
 	}
 
 	/**
@@ -201,14 +204,14 @@ public class RdosFileEntry implements FileEntry {
 				list.add(numberFormat.format(getSize()));
 				numberFormat.setMinimumIntegerDigits(3);
 				list.add(numberFormat.format(getStartingBlock()));
-				list.add("$" + AppleUtil.getFormattedWord(getAddress()));
-				list.add(isDeleted() ? "Deleted" : "");
+				list.add("$" + AppleUtil.getFormattedWord(getAddress())); //$NON-NLS-1$
+				list.add(isDeleted() ? textBundle.get("Deleted") : "");  //$NON-NLS-1$//$NON-NLS-2$
 				break;
 			default:	// FILE_DISPLAY_STANDARD
 				list.add(getFilename());
 				list.add(getFiletype());
 				list.add(numberFormat.format(getSize()));
-				list.add(isLocked() ? "Locked" : "");
+				list.add(isLocked() ? textBundle.get("Locked") : "");  //$NON-NLS-1$//$NON-NLS-2$
 				break;
 		}
 		return list;
@@ -267,28 +270,28 @@ public class RdosFileEntry implements FileEntry {
 	 * Determine if this is a text file.
 	 */
 	public boolean isTextFile() {
-		return "T".equals(getFiletype());
+		return "T".equals(getFiletype()); //$NON-NLS-1$
 	}
 	
 	/**
 	 * Determine if this is an Applesoft BASIC file.
 	 */
 	public boolean isApplesoftBasicFile() {
-		return "A".equals(getFiletype());
+		return "A".equals(getFiletype()); //$NON-NLS-1$
 	}
 
 	/**
 	 * Determine if this is an Integer BASIC file.
 	 */
 	public boolean isIntegerBasicFile() {
-		return "I".equals(getFiletype());
+		return "I".equals(getFiletype()); //$NON-NLS-1$
 	}
 
 	/**
 	 * Determine if this is a binary file.
 	 */
 	public boolean isBinaryFile() {
-		return "B".equals(getFiletype());
+		return "B".equals(getFiletype()); //$NON-NLS-1$
 	}
 
 	/**

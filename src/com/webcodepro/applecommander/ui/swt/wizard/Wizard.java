@@ -33,16 +33,17 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-import com.webcodepro.applecommander.ui.TextBundle;
+import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
 import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * A framework for displaying a wizard-like user interface.
  * @author Rob Greene
  */
 public abstract class Wizard {
-	private TextBundle textBundle = TextBundle.getInstance();
+	private TextBundle textBundle = UiBundle.getInstance();
 	private Shell parent;
 	private Shell dialog;
 	private Image logo;

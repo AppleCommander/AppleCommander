@@ -410,7 +410,8 @@ public class GraphicsFileFilter implements FileFilter {
 	 * Construct a series of icons based on the QuickDraw II Icon file format.
 	 * In ProDOS, this is the ICN ($Ca) file format.
 	 * <p>
-	 * @see http://www.gno.org/pub/apple2/doc/apple/filetypes/ftn.ca.xxxx
+	 * See <a href='http://www.gno.org/pub/apple2/doc/apple/filetypes/ftn.ca.xxxx'>this
+	 * page</a> for details.
 	 */
 	public AppleImage[] buildQuickDraw2Icons(FileEntry fileEntry) {
 		List icons = new ArrayList();
@@ -509,8 +510,8 @@ public class GraphicsFileFilter implements FileFilter {
 	 */
 	public String getSuggestedFileName(FileEntry fileEntry) {
 		String fileName = fileEntry.getFilename().trim();
-		if (!fileName.toLowerCase().endsWith("." + getExtension())) {
-			fileName = fileName + "." + getExtension();
+		if (!fileName.toLowerCase().endsWith("." + getExtension())) { //$NON-NLS-1$
+			fileName = fileName + "." + getExtension(); //$NON-NLS-1$
 		}
 		return fileName;
 	}

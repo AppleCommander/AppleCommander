@@ -32,7 +32,6 @@ public class ProdosSubdirectoryHeader extends ProdosCommonDirectoryHeader {
 
 	/**
 	 * Constructor for ProdosSubdirectoryHeader.
-	 * @param fileEntry
 	 */
 	public ProdosSubdirectoryHeader(ProdosFormatDisk disk, int block) {
 		super(disk, block);

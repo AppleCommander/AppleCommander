@@ -21,7 +21,7 @@ package com.webcodepro.applecommander.ui.swt.wizard.comparedisks;
 
 import org.eclipse.swt.widgets.Shell;
 
-import com.webcodepro.applecommander.ui.TextBundle;
+import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 import com.webcodepro.applecommander.ui.swt.wizard.Wizard;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
@@ -39,7 +39,7 @@ public class CompareDisksWizard extends Wizard {
 	 */
 	public CompareDisksWizard(Shell parent, ImageManager imageManager) {
 		super(parent, imageManager.get(ImageManager.LOGO_COMPARE_IMAGE_WIZARD), 
-				TextBundle.getInstance().get("CompareDisksTitle")); //$NON-NLS-1$
+				UiBundle.getInstance().get("CompareDisksTitle")); //$NON-NLS-1$
 	}
 	/**
 	 * Create the initial display used in the wizard.

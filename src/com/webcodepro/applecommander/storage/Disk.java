@@ -45,6 +45,7 @@ import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import com.webcodepro.applecommander.storage.physical.UniversalDiskImageLayout;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.StreamUtil;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Abstract representation of an Apple2 disk (floppy, 800k, hard disk).
@@ -86,6 +87,7 @@ public class Disk {
 	public static final int APPLE_32MB_HARDDISK = 33553920;	// short one block!
 
 	private static FilenameFilter[] filenameFilters;
+	private TextBundle textBundle = StorageBundle.getInstance();
 	private String filename;
 	private boolean newImage = false;
 	private ByteArrayImageLayout diskImageManager;
@@ -108,22 +110,22 @@ public class Disk {
 	 */
 	private Disk() {
 		filenameFilters = new FilenameFilter[] {
-			new FilenameFilter("All Emulator Images", 
-				"*.do; *.dsk; *.po; *.nib; *.2mg; *.2img; *.hdv; *.do.gz; *.dsk.gz; *.po.gz; *.nib.gz; *.2mg.gz; *.2img.gz"),
-			new FilenameFilter("140K DOS Ordered Images (*.do, *.dsk)", 
-				"*.do; *.dsk; *.do.gz; *.dsk.gz"),
-			new FilenameFilter("140K Nibbilized Images (*.nib)",
-				"*.nib; *.nib.gz"),
-			new FilenameFilter("140K ProDOS Ordered Images (*.po)", 
-				"*.po; *.po.gz"),
-			new FilenameFilter("800K ProDOS Ordered Images (*.2mg, *.2img)", 
-				"*.2mg; *.2img; *.2mg.gz, *.2img.gz"),
-			new FilenameFilter("ApplePC Hard Disk Images (*.hdv)", 
-				"*.hdv"),
-			new FilenameFilter("All Compressed Images", 
-				"*.do.gz; *.dsk.gz; *.po.gz; *.2mg.gz; *.2img.gz"),
-			new FilenameFilter("All Files", 
-				"*.*")
+			new FilenameFilter(textBundle.get("Disk.AllImages"),  //$NON-NLS-1$
+				"*.do; *.dsk; *.po; *.nib; *.2mg; *.2img; *.hdv; *.do.gz; *.dsk.gz; *.po.gz; *.nib.gz; *.2mg.gz; *.2img.gz"), //$NON-NLS-1$
+			new FilenameFilter(textBundle.get("Disk.140kDosImages"),  //$NON-NLS-1$
+				"*.do; *.dsk; *.do.gz; *.dsk.gz"), //$NON-NLS-1$
+			new FilenameFilter(textBundle.get("Disk.140kNibbleImages"), //$NON-NLS-1$
+				"*.nib; *.nib.gz"), //$NON-NLS-1$
+			new FilenameFilter(textBundle.get("Disk.140kProdosImages"),  //$NON-NLS-1$
+				"*.po; *.po.gz"), //$NON-NLS-1$
+			new FilenameFilter(textBundle.get("Disk.800kProdosImages"),  //$NON-NLS-1$
+				"*.2mg; *.2img; *.2mg.gz, *.2img.gz"), //$NON-NLS-1$
+			new FilenameFilter(textBundle.get("Disk.ApplePcImages"),  //$NON-NLS-1$
+				"*.hdv"), //$NON-NLS-1$
+			new FilenameFilter(textBundle.get("Disk.CompressedImages"),  //$NON-NLS-1$
+				"*.do.gz; *.dsk.gz; *.po.gz; *.2mg.gz; *.2img.gz"), //$NON-NLS-1$
+			new FilenameFilter(textBundle.get("Disk.AllFiles"),  //$NON-NLS-1$
+				"*.*") //$NON-NLS-1$
 		};
 	}
 	
@@ -237,9 +239,8 @@ public class Disk {
 	public ByteArrayImageLayout getDiskImageManager() {
 		if (imageOrder != null) {
 			return imageOrder.getDiskImageManager();
-		} else {
-			return diskImageManager;
 		}
+		return diskImageManager;
 	}
 
 	/**
@@ -261,17 +262,17 @@ public class Disk {
 	 * Indicate if this disk is GZIP compressed.
 	 */
 	public boolean isCompressed() {
-		return filename.toLowerCase().endsWith(".gz");
+		return filename.toLowerCase().endsWith(".gz"); //$NON-NLS-1$
 	}
 	
 	/**
 	 * Indicate if this disk is ProDOS ordered (beginning with block 0).
 	 */
 	public boolean isProdosOrder() {
-		return filename.toLowerCase().endsWith(".po")
-			|| filename.toLowerCase().endsWith(".po.gz")
+		return filename.toLowerCase().endsWith(".po") //$NON-NLS-1$
+			|| filename.toLowerCase().endsWith(".po.gz") //$NON-NLS-1$
 			|| is2ImgOrder()
-			|| filename.toLowerCase().endsWith(".hdv")
+			|| filename.toLowerCase().endsWith(".hdv") //$NON-NLS-1$
 			|| getPhysicalSize() >= APPLE_800KB_2IMG_DISK;
 	}
 	
@@ -279,10 +280,10 @@ public class Disk {
 	 * Indicate if this disk is DOS ordered (T0,S0 - T35,S15).
 	 */
 	public boolean isDosOrder() {
-		return filename.toLowerCase().endsWith(".do")
-			|| filename.toLowerCase().endsWith(".do.gz")
-			|| filename.toLowerCase().endsWith(".dsk")
-			|| filename.toLowerCase().endsWith(".dsk.gz");
+		return filename.toLowerCase().endsWith(".do") //$NON-NLS-1$
+			|| filename.toLowerCase().endsWith(".do.gz") //$NON-NLS-1$
+			|| filename.toLowerCase().endsWith(".dsk") //$NON-NLS-1$
+			|| filename.toLowerCase().endsWith(".dsk.gz"); //$NON-NLS-1$
 	}
 	
 	/**
@@ -290,18 +291,18 @@ public class Disk {
 	 * This is ProDOS ordered, but with a header on the disk.
 	 */
 	public boolean is2ImgOrder() {
-		return filename.toLowerCase().endsWith(".2img")
-			|| filename.toLowerCase().endsWith(".2img.gz")
-			|| filename.toLowerCase().endsWith(".2mg")
-		|| filename.toLowerCase().endsWith(".2mg.gz");
+		return filename.toLowerCase().endsWith(".2img") //$NON-NLS-1$
+			|| filename.toLowerCase().endsWith(".2img.gz") //$NON-NLS-1$
+			|| filename.toLowerCase().endsWith(".2mg") //$NON-NLS-1$
+		|| filename.toLowerCase().endsWith(".2mg.gz"); //$NON-NLS-1$
 	}
 
 	/**
 	 * Indicate if this disk is a nibbilized disk..
 	 */
 	public boolean isNibbleOrder() {
-		return filename.toLowerCase().endsWith(".nib")
-			|| filename.toLowerCase().endsWith(".nib.gz");
+		return filename.toLowerCase().endsWith(".nib") //$NON-NLS-1$
+			|| filename.toLowerCase().endsWith(".nib.gz"); //$NON-NLS-1$
 	}
 	
 	/**
@@ -310,9 +311,8 @@ public class Disk {
 	public int getPhysicalSize() {
 		if (getDiskImageManager() != null) {
 			return getDiskImageManager().getPhysicalSize();
-		} else {
-			return getImageOrder().getPhysicalSize();
 		}
+		return getImageOrder().getPhysicalSize();
 	}
 	
 	/**
@@ -325,7 +325,7 @@ public class Disk {
 	protected void resizeDiskImage(int newSize) {
 		if (newSize < getPhysicalSize()) {
 			throw new IllegalArgumentException(
-				"Cannot resize a disk to be smaller than the current size!");
+				textBundle.get("Disk.ResizeDiskError")); //$NON-NLS-1$
 		}
 		byte[] newDiskImage = new byte[newSize];
 		byte[] oldDiskImage = imageOrder.getDiskImageManager().getDiskImage();
@@ -525,7 +525,7 @@ public class Disk {
 		if (!is140KbDisk()) return false;
 		byte[] block = readSector(0, 0x0d);
 		String id = AppleUtil.getString(block, 0xe0, 4);
-		return "RDOS".equals(id);
+		return "RDOS".equals(id); //$NON-NLS-1$
 	}
 	
 	/**

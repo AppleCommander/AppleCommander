@@ -34,8 +34,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.webcodepro.applecommander.ui.TextBundle;
+import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Set locations and file names for the export.
@@ -44,7 +45,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  * @author Rob Greene
  */
 public class ExportFileDestinationPane extends WizardPane {
-	private TextBundle textBundle = TextBundle.getInstance();
+	private TextBundle textBundle = UiBundle.getInstance();
 	private Composite parent;
 	private Object layoutData;
 	private Composite control;
@@ -106,7 +107,7 @@ public class ExportFileDestinationPane extends WizardPane {
 				DirectoryDialog directoryDialog = new DirectoryDialog(getShell());
 				directoryDialog.setFilterPath(getDirectoryText().getText());
 				directoryDialog.setMessage(
-					TextBundle.getInstance().get("ExportFileDirectoryPrompt")); //$NON-NLS-1$
+					UiBundle.getInstance().get("ExportFileDirectoryPrompt")); //$NON-NLS-1$
 				String directory = directoryDialog.open();
 				if (directory != null) {
 					getDirectoryText().setText(directory);

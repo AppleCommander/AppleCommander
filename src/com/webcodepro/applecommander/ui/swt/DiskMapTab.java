@@ -37,6 +37,8 @@ import org.eclipse.swt.widgets.Label;
 
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
+import com.webcodepro.applecommander.ui.UiBundle;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Build the Disk Map tab for the Disk Window.
@@ -46,6 +48,7 @@ import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
  */
 public class DiskMapTab {
 	private FormattedDisk disk;
+	private TextBundle textBundle = UiBundle.getInstance();
 	// used locally - not shared between windows; hopefully will
 	// not be a resource drain!
 	private Color freeFill;
@@ -72,9 +75,9 @@ public class DiskMapTab {
 	protected void createDiskMapTab(CTabFolder tabFolder) {	
 		CTabItem item = new CTabItem(tabFolder, SWT.NULL);
 		if (disk.getLogicalDiskNumber() > 0) {
-			item.setText("Disk Map #" + disk.getLogicalDiskNumber());
+			item.setText(textBundle.get("DiskMapTab.MultipleTabsTitle") + disk.getLogicalDiskNumber()); //$NON-NLS-1$
 		} else {
-			item.setText("Disk Map");
+			item.setText(textBundle.get("DiskMapTab.SingleTabTitle")); //$NON-NLS-1$
 		}
 		
 		Canvas canvas = new Canvas(tabFolder, SWT.NULL);
@@ -91,19 +94,13 @@ public class DiskMapTab {
 		Label title = new Label(canvas, SWT.LEFT);
 		StringBuffer buf = new StringBuffer();
 		if (labels.length == 1) {
-			buf.append("This disk is organized by the ");
-			buf.append(labels[0].toLowerCase());
-			buf.append(". Therefore, no organization has been forced on the ");
-			buf.append(labels[0].toLowerCase());
-			buf.append(" layout.");
+			buf.append(textBundle.format("DiskMapTab.BlockDecriptiveLabel", //$NON-NLS-1$
+					labels[0].toLowerCase()));
 		} else {
-			buf.append("This disk is organized by ");
-			for (int i=0; i<labels.length; i++) {
-				if (i > 0) buf.append(" and ");
-				buf.append(labels[i].toLowerCase());
-			}
-			buf.append(", and this implies a rigid layout to the disk. ");
-			buf.append("This will be reflected in the disk map.");
+			buf.append(textBundle.format("DiskMapTab.TrackAndSectorDecriptiveLabel", //$NON-NLS-1$
+					new Object[] {
+						labels[0].toLowerCase(),
+						labels[1].toLowerCase() }));
 		}
 		title.setText(buf.toString());
 		title.setLayoutData(data);
@@ -169,8 +166,9 @@ public class DiskMapTab {
 	/**
 	 * Handle paint requests for horizontal ruler.
 	 */
-	private void paintHorizontalRuler(PaintEvent event) {
-		String label = (disk.getBitmapLabels()[0] + "s").toUpperCase();
+	protected void paintHorizontalRuler(PaintEvent event) {
+		// FIXME - not i18n safe!!
+		String label = (disk.getBitmapLabels()[0] + "s").toUpperCase(); //$NON-NLS-1$
 		Canvas canvas = (Canvas) event.widget;
 		Rectangle area = canvas.getClientArea();
 		event.gc.drawLine(area.x, area.y + area.height/2, area.x + area.width, area.y + area.height/2);
@@ -180,14 +178,15 @@ public class DiskMapTab {
 	/**
 	 * Handle paint requests for vertical ruler.
 	 */
-	private void paintVerticalRuler(PaintEvent event) {
-		String label = (disk.getBitmapLabels()[0] + "s").toUpperCase();
+	protected void paintVerticalRuler(PaintEvent event) {
+		// FIXME - not i18n safe!!
+		String label = (disk.getBitmapLabels()[0] + "s").toUpperCase(); //$NON-NLS-1$
 		if (disk.getBitmapLabels().length == 2) {
-			label = (disk.getBitmapLabels()[1] + "s").toUpperCase();
+			label = (disk.getBitmapLabels()[1] + "s").toUpperCase(); //$NON-NLS-1$
 		}
 		StringBuffer buf = new StringBuffer();
 		for (int i=0; i<label.length(); i++) {
-			if (i>0) buf.append("\n");
+			if (i>0) buf.append("\n"); //$NON-NLS-1$
 			buf.append(label.charAt(i));
 		}
 		label = buf.toString();
@@ -200,7 +199,7 @@ public class DiskMapTab {
 	/**
 	 * Handle paint requests for disk map.
 	 */
-	private void paintMap(PaintEvent event) {
+	protected void paintMap(PaintEvent event) {
 		if (disk.getDiskUsage() == null) {
 			paintNoMap(event);
 		} else if (disk.getBitmapDimensions() == null) {
@@ -212,13 +211,13 @@ public class DiskMapTab {
 	/**
 	 * Handle paint requests for legend.
 	 */
-	private void paintLegend(PaintEvent event) {
+	protected void paintLegend(PaintEvent event) {
 		Color background = event.gc.getBackground();
 		Canvas canvas = (Canvas) event.widget;
 
 		int height = event.gc.getFontMetrics().getHeight();
-		String freeText = " = Free";
-		String usedText = " = Used";
+		String freeText = textBundle.get("DiskMapTab.FreeLegend"); //$NON-NLS-1$
+		String usedText = textBundle.get("DiskMapTab.UsedLegend"); //$NON-NLS-1$
 		int padding = 50;	// space between items
 		
 		int totalWidth =
@@ -240,13 +239,13 @@ public class DiskMapTab {
 		drawBox(box, event.gc, usedFill, black, gray);
 		offset+= height;
 		event.gc.setBackground(background);
-		event.gc.drawText(" = Used", offset, 0);
+		event.gc.drawText(usedText, offset, 0);
 	}
 	/**
 	 * Display message to user regarding no disk map being available.
 	 */
 	private void paintNoMap(PaintEvent event) {
-		event.gc.drawString("A disk map is unavailable.", 0,  0);
+		event.gc.drawString(textBundle.get("DiskMapTab.DiskMapUnavailableMessage"), 0,  0); //$NON-NLS-1$
 	}
 	/**
 	 * Paint a track/sector map.

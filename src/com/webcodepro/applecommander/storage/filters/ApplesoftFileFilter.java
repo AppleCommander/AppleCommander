@@ -61,7 +61,7 @@ public class ApplesoftFileFilter implements FileFilter {
 					printWriter.println();
 				}
 				printWriter.print(token.getLineNumber());
-				printWriter.print(" ");
+				printWriter.print(" "); //$NON-NLS-1$
 			} else if (token.isToken()) {
 				printWriter.print(token.getTokenString());
 			} else {
@@ -77,8 +77,8 @@ public class ApplesoftFileFilter implements FileFilter {
 	 */
 	public String getSuggestedFileName(FileEntry fileEntry) {
 		String fileName = fileEntry.getFilename().trim();
-		if (!fileName.toLowerCase().endsWith(".bas")) {
-			fileName = fileName + ".bas";
+		if (!fileName.toLowerCase().endsWith(".bas")) { //$NON-NLS-1$
+			fileName = fileName + ".bas"; //$NON-NLS-1$
 		}
 		return fileName;
 	}

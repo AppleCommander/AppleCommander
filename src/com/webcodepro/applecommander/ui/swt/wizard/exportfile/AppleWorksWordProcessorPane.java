@@ -28,8 +28,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
 import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFileFilter;
-import com.webcodepro.applecommander.ui.TextBundle;
+import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Choose format for AppleWorks Word Processor export.
@@ -38,7 +39,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  * @author Rob Greene
  */
 public class AppleWorksWordProcessorPane extends WizardPane {
-	private TextBundle textBundle = TextBundle.getInstance();
+	private TextBundle textBundle = UiBundle.getInstance();
 	private Composite parent;
 	private Object layoutData;
 	private Composite control;

@@ -94,7 +94,7 @@ import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.NibbleOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import com.webcodepro.applecommander.ui.ImportSpecification;
-import com.webcodepro.applecommander.ui.TextBundle;
+import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.UserPreferences;
 import com.webcodepro.applecommander.ui.swt.util.DropDownSelectionListener;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
@@ -104,6 +104,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.exportfile.ExportWizard;
 import com.webcodepro.applecommander.ui.swt.wizard.importfile.ImportWizard;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.StreamUtil;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Build the Disk File tab for the Disk Window.
@@ -146,7 +147,7 @@ public class DiskExplorerTab {
 	private Menu changeImageOrderMenu;
 
 	private UserPreferences userPreferences = UserPreferences.getInstance();
-	private TextBundle textBundle = TextBundle.getInstance();
+	private TextBundle textBundle = UiBundle.getInstance();
 	private FileFilter fileFilter;
 	private GraphicsFileFilter graphicsFilter = new GraphicsFileFilter();
 	private AppleWorksWordProcessorFileFilter awpFilter = new AppleWorksWordProcessorFileFilter();
@@ -591,7 +592,7 @@ public class DiskExplorerTab {
 
 		item = new MenuItem(menu, SWT.NONE);
 		item.setText(textBundle.get("ExportAsGraphicsMenuItem")); //$NON-NLS-1$
-		item.setEnabled(graphicsFilter.isCodecAvailable());
+		item.setEnabled(GraphicsFileFilter.isCodecAvailable());
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				setFileFilter(getGraphicsFilter());
@@ -602,7 +603,7 @@ public class DiskExplorerTab {
 		// Add graphics mode
 		item = new MenuItem(menu, SWT.CASCADE);
 		item.setText(textBundle.get("ExportGraphicsModeMenuItem")); //$NON-NLS-1$
-		item.setEnabled(graphicsFilter.isCodecAvailable());
+		item.setEnabled(GraphicsFileFilter.isCodecAvailable());
 		subMenu = new Menu(shell, SWT.DROP_DOWN);
 		item.setMenu(subMenu);
 		subMenu.addMenuListener(new MenuAdapter() {
@@ -694,11 +695,11 @@ public class DiskExplorerTab {
 		});
 		
 		// Add graphics formats, if any are defined.
-		String[] formats = graphicsFilter.getFileExtensions();
+		String[] formats = GraphicsFileFilter.getFileExtensions();
 		if (formats != null && formats.length > 0) {
 			item = new MenuItem(menu, SWT.CASCADE);
 			item.setText(textBundle.get("ExportGraphicsFormatMenuItem")); //$NON-NLS-1$
-			item.setEnabled(graphicsFilter.isCodecAvailable());
+			item.setEnabled(GraphicsFileFilter.isCodecAvailable());
 			subMenu = new Menu(shell, SWT.DROP_DOWN);
 			item.setMenu(subMenu);
 			subMenu.addMenuListener(new MenuAdapter() {
@@ -1255,7 +1256,7 @@ public class DiskExplorerTab {
 		});
 		printToolItem = new ToolItem(toolBar, SWT.PUSH);
 		printToolItem.setImage(imageManager.get(ImageManager.ICON_PRINT_FILE));
-		printToolItem.setText(textBundle.get("PrintDirectoryToolItem")); //$NON-NLS-1$
+		printToolItem.setText(textBundle.get("PrintButton")); //$NON-NLS-1$
 		printToolItem.setToolTipText(textBundle.get("PrintDirectoryHoverText")); //$NON-NLS-1$
 		printToolItem.setEnabled(true);
 		printToolItem.addSelectionListener(new SelectionAdapter () {
@@ -1616,8 +1617,8 @@ public class DiskExplorerTab {
 		private Rectangle clientArea;
 		private GC gc;
 		private List fileHeaders;
-		private int[] columnWidths;
-		private int[] columnPosition;
+		private int[] printColumnWidths;
+		private int[] printColumnPosition;
 		private Font normalFont;
 		private Font headerFont;
 		private String filename;
@@ -1677,13 +1678,13 @@ public class DiskExplorerTab {
 					header.getMaximumWidth() : header.getTitle().length();
 				totalWidth+= widths[i];
 			}
-			columnWidths = new int[fileHeaders.size()];
-			columnPosition = new int[fileHeaders.size()];
+			printColumnWidths = new int[fileHeaders.size()];
+			printColumnPosition = new int[fileHeaders.size()];
 			int position = clientArea.x;
 			for (int i=0; i<fileHeaders.size(); i++) {
-				columnWidths[i] = (widths[i] * clientArea.width) / totalWidth;
-				columnPosition[i] = position; 
-				position+= columnWidths[i];
+				printColumnWidths[i] = (widths[i] * clientArea.width) / totalWidth;
+				printColumnPosition[i] = position; 
+				position+= printColumnWidths[i];
 			}
 		}
 		protected void printFileHeaders() {
@@ -1694,10 +1695,10 @@ public class DiskExplorerTab {
 			println(new String());
 		}
 		protected void print(int column, String text, int alignment) {
-			int x0 = columnPosition[column];
-			int x1 = (column+1 < columnPosition.length) ?
-					columnPosition[column+1] : clientArea.width;
-			int w = columnWidths[column];
+			int x0 = printColumnPosition[column];
+			int x1 = (column+1 < printColumnPosition.length) ?
+					printColumnPosition[column+1] : clientArea.width;
+			int w = printColumnWidths[column];
 			switch (alignment) {
 				case FileColumnHeader.ALIGN_LEFT:
 					x = x0;
@@ -1734,7 +1735,7 @@ public class DiskExplorerTab {
 				y - dpiY + point.y);
 		}
 		protected void printFooter() {
-			TextBundle textBundle = TextBundle.getInstance();
+			TextBundle textBundle = UiBundle.getInstance();
 			String text = textBundle.format("PageNumberText", Integer.toString(page)); //$NON-NLS-1$
 			Point point = gc.stringExtent(text);
 			gc.drawString(text, 

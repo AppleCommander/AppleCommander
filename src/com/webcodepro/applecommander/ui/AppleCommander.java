@@ -22,6 +22,8 @@ package com.webcodepro.applecommander.ui;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import com.webcodepro.applecommander.util.TextBundle;
+
 /**
  * Launch AppleCommander.
  * This application attempts to identify which type of user-interface to
@@ -39,7 +41,7 @@ import java.lang.reflect.Method;
  */
 public class AppleCommander {
 	public static final String VERSION = "1.3.4pre"; //$NON-NLS-1$
-	private static TextBundle textBundle = TextBundle.getInstance();
+	private static TextBundle textBundle = UiBundle.getInstance();
 	/**
 	 * Launch AppleCommander.
 	 */

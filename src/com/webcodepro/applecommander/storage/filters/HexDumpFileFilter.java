@@ -39,7 +39,7 @@ public class HexDumpFileFilter implements FileFilter {
 
 	/**
 	 * Create the hex dump format.
-	 * @see com.webcodepro.applecommander.storage.FileFilter#filter(byte[])
+	 * @see com.webcodepro.applecommander.storage.FileFilter#filter(FileEntry)
 	 */
 	public byte[] filter(FileEntry fileEntry) {
 		return AppleUtil.getHexDump(fileEntry.getFileData()).getBytes();
@@ -50,8 +50,8 @@ public class HexDumpFileFilter implements FileFilter {
 	 */
 	public String getSuggestedFileName(FileEntry fileEntry) {
 		String fileName = fileEntry.getFilename().trim();
-		if (!fileName.toLowerCase().endsWith(".txt")) {
-			fileName = fileName + ".txt";
+		if (!fileName.toLowerCase().endsWith(".txt")) { //$NON-NLS-1$
+			fileName = fileName + ".txt"; //$NON-NLS-1$
 		}
 		return fileName;
 	}

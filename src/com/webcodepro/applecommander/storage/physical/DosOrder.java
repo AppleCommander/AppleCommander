@@ -20,6 +20,8 @@
 package com.webcodepro.applecommander.storage.physical;
 
 import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.StorageBundle;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Supports disk images stored in DOS physical order.
@@ -27,6 +29,7 @@ import com.webcodepro.applecommander.storage.Disk;
  * @author Rob Greene (RobGreene@users.sourceforge.net)
  */
 public class DosOrder extends ImageOrder {
+	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Construct a DosOrder.
 	 */
@@ -73,16 +76,16 @@ public class DosOrder extends ImageOrder {
 			&& !isSizeApprox(Disk.APPLE_800KB_DISK)
 			&& !isSizeApprox(Disk.APPLE_800KB_2IMG_DISK)
 			&& track != 0 && sector != 0) {		// HACK: Allows boot sector writing
-			throw new IllegalArgumentException("Unrecognized DOS format!");
+			throw new IllegalArgumentException(
+					textBundle.get("DosOrder.UnrecognizedFormatError")); //$NON-NLS-1$
 		}
 		int offset = (track * getSectorsPerTrack() + sector) * Disk.SECTOR_SIZE;
 		if (offset > getPhysicalSize()) {
 			throw new IllegalArgumentException(
-				"The track (" + track + ") and sector (" + sector 
-				+ ") do not match the disk image size.");
-		} else {
-			return offset;
+				textBundle.format("DosOrder.InvalidSizeError", //$NON-NLS-1$
+						track, sector));
 		}
+		return offset;
 	}
 
 	/**

@@ -63,6 +63,7 @@ public abstract class FilterAdapter {
 	public abstract void display();
 
 	public void dispose() {
+		// nothing to dispose
 	}
 
 	public ToolItem create(ToolBar toolBar) {
@@ -75,7 +76,8 @@ public abstract class FilterAdapter {
 			toolItem.addSelectionListener(new SelectionAdapter () {
 				public void widgetSelected(SelectionEvent e) {
 					display();
-					window.setFilterToolItemSelection(nativeSelected, hexSelected, dumpSelected);
+					getWindow().setFilterToolItemSelection(
+						isNativeSelected(), isHexSelected(), isDumpSelected());
 				}
 			});
 		}
@@ -138,5 +140,17 @@ public abstract class FilterAdapter {
 		nativeSelected = true;
 		hexSelected = false;
 		dumpSelected = false;
+	}
+	protected boolean isDumpSelected() {
+		return dumpSelected;
+	}
+	protected boolean isHexSelected() {
+		return hexSelected;
+	}
+	protected boolean isNativeSelected() {
+		return nativeSelected;
+	}
+	protected FileViewerWindow getWindow() {
+		return window;
 	}
 }

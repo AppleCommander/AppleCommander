@@ -8,9 +8,11 @@ import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Support the CP/M file entry.  Note that this may actually contain references
@@ -19,6 +21,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * @author Rob Greene
  */
 public class CpmFileEntry implements FileEntry {
+	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * The standard CP/M file entry length.
 	 */
@@ -84,7 +87,9 @@ public class CpmFileEntry implements FileEntry {
 	 * A short collection of known text-type files.
 	 */
 	public static final String[] TEXT_FILETYPES = {
-		"TXT", "ASM", "MAC", "DOC", "PRN", "PAS", "ME", "INC", "HLP"
+		"TXT", "ASM", "MAC", "DOC", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		"PRN", "PAS", "ME",  "INC", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		"HLP" //$NON-NLS-1$
 	};
 	/**
 	 * Reference to the disk this FileEntry is attached to.
@@ -382,15 +387,15 @@ public class CpmFileEntry implements FileEntry {
 				list.add(getFilename());
 				list.add(getFiletype());
 				list.add(numberFormat.format(getSize()));
-				list.add("0x" + AppleUtil.getFormattedByte(getUserNumber(0)));
-				list.add(isDeleted() ? "Deleted" : "");
-				list.add(isLocked() ? "Locked" : "");
+				list.add("0x" + AppleUtil.getFormattedByte(getUserNumber(0))); //$NON-NLS-1$
+				list.add(isDeleted() ? textBundle.get("Deleted") : "");  //$NON-NLS-1$//$NON-NLS-2$
+				list.add(isLocked() ? textBundle.get("Locked") : "");  //$NON-NLS-1$//$NON-NLS-2$
 				break;
 			default:	// FILE_DISPLAY_STANDARD
 				list.add(getFilename());
 				list.add(getFiletype());
 				list.add(numberFormat.format(getSize()));
-				list.add(isLocked() ? "Locked" : "");
+				list.add(isLocked() ? textBundle.get("Locked") : "");  //$NON-NLS-1$//$NON-NLS-2$
 				break;
 		}
 		return list;

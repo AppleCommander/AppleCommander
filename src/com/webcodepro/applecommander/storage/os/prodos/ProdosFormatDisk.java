@@ -29,8 +29,10 @@ import java.util.Properties;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Manages a disk that is in the ProDOS format.
@@ -39,6 +41,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * @author Rob Greene
  */
 public class ProdosFormatDisk extends FormattedDisk {
+	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * The location of the "next block" pointer in a directory entry.
 	 * This is a 2-byte word (lo/hi) format.  $0000 is end of directory.
@@ -107,7 +110,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 		private int location = -1;
 		private transient byte[] data = null;
 		public boolean hasNext() {
-			return location == -1 || location < volumeHeader.getTotalBlocks() - 1;
+			return location == -1 || location < getVolumeHeader().getTotalBlocks() - 1;
 		}
 		public void next() {
 			location++;
@@ -117,7 +120,8 @@ public class ProdosFormatDisk extends FormattedDisk {
 		 */
 		public boolean isFree() {
 			if (location == -1) {
-				throw new IllegalArgumentException("Invalid dimension for isFree! Did you call next first?");
+				throw new IllegalArgumentException(StorageBundle.getInstance()
+						.get("ProdosFormatDisk.InvalidDimensionError")); //$NON-NLS-1$
 			}
 			if (data == null) {
 				data = readVolumeBitMap();
@@ -132,7 +136,6 @@ public class ProdosFormatDisk extends FormattedDisk {
 	/**
 	 * Constructor for ProdosFormatDisk.
 	 * @param filename
-	 * @param diskImage
 	 */
 	public ProdosFormatDisk(String filename, ImageOrder imageOrder) {
 		super(filename, imageOrder);
@@ -148,23 +151,24 @@ public class ProdosFormatDisk extends FormattedDisk {
 		
 		fileTypes = new ProdosFileType[256];
 		InputStream inputStream = 
-			getClass().getResourceAsStream("ProdosFileTypes.properties");
+			getClass().getResourceAsStream("ProdosFileTypes.properties"); //$NON-NLS-1$
 		Properties properties = new Properties();
 		try {
 			properties.load(inputStream);
 			for (int i=0; i<256; i++) {
 				String byt = AppleUtil.getFormattedByte(i).toLowerCase();
-				String string = (String) properties.get("filetype." + byt);
+				String string = (String) properties.get("filetype." + byt); //$NON-NLS-1$
 				if (string == null || string.length() == 0) {
-					string = "$" + byt.toUpperCase();
+					string = "$" + byt.toUpperCase(); //$NON-NLS-1$
 				}
 				boolean addressRequired = Boolean.valueOf((String) properties.get(
-					"filetype." + byt + ".address")).booleanValue();
+					"filetype." + byt + ".address")).booleanValue(); //$NON-NLS-1$ //$NON-NLS-2$
 				boolean canCompile = Boolean.valueOf((String) properties.get(
-					"filetype." + byt + ".compile")).booleanValue();
+					"filetype." + byt + ".compile")).booleanValue(); //$NON-NLS-1$ //$NON-NLS-2$
 				fileTypes[i] = new ProdosFileType((byte)i, string, addressRequired, canCompile);
 			}
 		} catch (IOException ignored) {
+			// Ignored
 		}
 	}
 
@@ -180,10 +184,10 @@ public class ProdosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Identify the operating system format of this disk.
-	 * @see com.webcodepro.applecommander.storage.Disk#getFormat()
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFormat()
 	 */
 	public String getFormat() {
-		return "ProDOS";
+		return textBundle.get("Prodos"); //$NON-NLS-1$
 	}
 
 	/**
@@ -219,7 +223,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 					fileEntry.setCanWrite(true);
 					fileEntry.setSeedlingFile();
 					fileEntry.setHeaderPointer(headerBlock);
-					fileEntry.setFilename("BLANK");
+					fileEntry.setFilename(textBundle.get("ProdosFormatDisk.Blank")); //$NON-NLS-1$
 					directory.incrementFileCount();
 					return fileEntry;
 				}
@@ -245,12 +249,12 @@ public class ProdosFormatDisk extends FormattedDisk {
 			}
 			blockNumber = nextBlockNumber;
 		}
-		throw new DiskFullException("Unable to allocate more space for another file!");
+		throw new DiskFullException(textBundle.get("ProdosFormatDisk.UnableToAllocateSpaceError")); //$NON-NLS-1$
 	}
 
 	/**
 	 * Retrieve a list of files.
-	 * @see com.webcodepro.applecommander.storage.Disk#getFiles()
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFiles()
 	 */
 	public List getFiles() {
 		return getFiles(VOLUME_DIRECTORY_BLOCK);
@@ -292,7 +296,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	
 	/**
 	 * Return the amount of free space in bytes.
-	 * @see com.webcodepro.applecommander.storage.Disk#getFreeSpace()
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFreeSpace()
 	 */
 	public int getFreeSpace() {
 		return getFreeBlocks() * BLOCK_SIZE;
@@ -316,7 +320,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Return the amount of used space in bytes.
-	 * @see com.webcodepro.applecommander.storage.Disk#getUsedSpace()
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getUsedSpace()
 	 */
 	public int getUsedSpace() {
 		return getUsedBlocks() * BLOCK_SIZE;
@@ -350,10 +354,10 @@ public class ProdosFormatDisk extends FormattedDisk {
 	
 	/**
 	 * Return the name of the disk.
-	 * @see com.webcodepro.applecommander.storage.Disk#getDiskName()
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getDiskName()
 	 */
 	public String getDiskName() {
-		return "/" + volumeHeader.getVolumeName() + "/";
+		return "/" + volumeHeader.getVolumeName() + "/"; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	/**
@@ -389,7 +393,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * Get the labels to use in the bitmap.
 	 */
 	public String[] getBitmapLabels() {
-		return new String[] { "Block" };
+		return new String[] { textBundle.get("Block") }; //$NON-NLS-1$
 	}
 	
 	/**
@@ -397,23 +401,26 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 */
 	public List getDiskInformation() {
 		List list = super.getDiskInformation();
-		list.add(new DiskInformation("Total Blocks", volumeHeader.getTotalBlocks()));
-		list.add(new DiskInformation("Free Blocks", getFreeBlocks()));
-		list.add(new DiskInformation("Used Blocks", getUsedBlocks()));
-		list.add(new DiskInformation("Volume Access", 
-			(volumeHeader.canDestroy() ? "Destroy " : "") +
-			(volumeHeader.canRead() ? "Read " : "") +
-			(volumeHeader.canRename() ? "Rename " : "") +
-			(volumeHeader.canWrite() ? "Write" : "")));
-		list.add(new DiskInformation("Block Number of Bitmap", volumeHeader.getBitMapPointer()));
-		list.add(new DiskInformation("Creation Date", volumeHeader.getCreationDate()));
-		list.add(new DiskInformation("File Entries Per Block", volumeHeader.getEntriesPerBlock()));
-		list.add(new DiskInformation("File Entry Length (bytes)", volumeHeader.getEntryLength()));
-		list.add(new DiskInformation("Active Files in Root Directory", volumeHeader.getFileCount()));
-		list.add(new DiskInformation("Minimum ProDOS Version Required", 
+		list.add(new DiskInformation(textBundle.get("TotalBlocks"),  //$NON-NLS-1$
+				volumeHeader.getTotalBlocks()));
+		list.add(new DiskInformation(textBundle.get("FreeBlocks"),  //$NON-NLS-1$
+				getFreeBlocks()));
+		list.add(new DiskInformation(textBundle.get("UsedBlocks"),  //$NON-NLS-1$
+				getUsedBlocks()));
+		list.add(new DiskInformation(textBundle.get("ProdosFormatDisk.VolumeAccess"),  //$NON-NLS-1$
+			(volumeHeader.canDestroy() ? textBundle.get("Destroy") : "") +  //$NON-NLS-1$//$NON-NLS-2$
+			(volumeHeader.canRead() ? textBundle.get("Read") : "") +  //$NON-NLS-1$//$NON-NLS-2$
+			(volumeHeader.canRename() ? textBundle.get("Rename") : "") +  //$NON-NLS-1$//$NON-NLS-2$
+			(volumeHeader.canWrite() ? textBundle.get("Write") : "")));  //$NON-NLS-1$//$NON-NLS-2$
+		list.add(new DiskInformation(textBundle.get("ProdosFormatDisk.BitmapBlockNumber"), volumeHeader.getBitMapPointer())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("ProdosFormatDisk.CreationDate"), volumeHeader.getCreationDate())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("ProdosFormatDisk.FileEntriesPerBlock"), volumeHeader.getEntriesPerBlock())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("ProdosFormatDisk.FileEntryLength"), volumeHeader.getEntryLength())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("ProdosFormatDisk.ActiveFilesInRootDirectory"), volumeHeader.getFileCount())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("ProdosFormatDisk.MinimumVersionProdos"),  //$NON-NLS-1$
 			volumeHeader.getMinimumProdosVersion()));
-		list.add(new DiskInformation("Volume Created By ProDOS Version", volumeHeader.getProdosVersion()));
-		list.add(new DiskInformation("Volume Name", volumeHeader.getVolumeName()));
+		list.add(new DiskInformation(textBundle.get("ProdosFormatDisk.CreationVersionProdos"), volumeHeader.getProdosVersion())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("ProdosFormatDisk.VolumeName"), volumeHeader.getVolumeName())); //$NON-NLS-1$
 		return list;
 	}
 
@@ -425,33 +432,46 @@ public class ProdosFormatDisk extends FormattedDisk {
 		List list = new ArrayList();
 		switch (displayMode) {
 			case FILE_DISPLAY_NATIVE:
-				list.add(new FileColumnHeader(" ", 1, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Name", 15, FileColumnHeader.ALIGN_LEFT));
-				list.add(new FileColumnHeader("Filetype", 8, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Blocks", 3, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Modified", 10, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Created", 10, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Length", 10, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Aux. Type", 8, FileColumnHeader.ALIGN_LEFT));
+				list.add(new FileColumnHeader(" ", 1, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("Name"), 15,  //$NON-NLS-1$
+						FileColumnHeader.ALIGN_LEFT));
+				list.add(new FileColumnHeader(textBundle.get("Filetype"), 8, //$NON-NLS-1$ 
+						FileColumnHeader.ALIGN_CENTER));
+				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3,  //$NON-NLS-1$
+						FileColumnHeader.ALIGN_RIGHT));
+				list.add(new FileColumnHeader(textBundle.get("Modified"), 10, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_CENTER));
+				list.add(new FileColumnHeader(
+						textBundle.get("ProdosFormatDisk.Created"), 10, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_CENTER));
+				list.add(new FileColumnHeader(
+						textBundle.get("ProdosFormatDisk.Length"), 10, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_RIGHT));
+				list.add(new FileColumnHeader(
+						textBundle.get("ProdosFormatDisk.AuxType"), 8, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_LEFT));
 				break;
 			case FILE_DISPLAY_DETAIL:
-				list.add(new FileColumnHeader(" ", 1, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Name", 15, FileColumnHeader.ALIGN_LEFT));
-				list.add(new FileColumnHeader("Deleted?", 7, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Permissions", 8, FileColumnHeader.ALIGN_LEFT));
-				list.add(new FileColumnHeader("Filetype", 8, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Directory?", 9, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Blocks", 3, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Modified", 10, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Created", 10, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Length", 10, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Aux. Type", 8, FileColumnHeader.ALIGN_LEFT));
-				list.add(new FileColumnHeader("Dir. Header", 5, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Key Block", 5, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Key Type", 8, FileColumnHeader.ALIGN_LEFT));
-				list.add(new FileColumnHeader("Changed", 5, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Min. ProDOS Ver.", 2, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("ProDOS Ver.", 2, FileColumnHeader.ALIGN_CENTER));
+				list.add(new FileColumnHeader(" ", 1, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("Name"), 15,  //$NON-NLS-1$
+						FileColumnHeader.ALIGN_LEFT));
+				list.add(new FileColumnHeader(textBundle.get("DeletedQ"), 7,  //$NON-NLS-1$
+						FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.Permissions"), 8, FileColumnHeader.ALIGN_LEFT)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("Filetype"), 8, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.DirectoryQ"), 9, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3,  //$NON-NLS-1$
+						FileColumnHeader.ALIGN_RIGHT));
+				list.add(new FileColumnHeader(textBundle.get("Modified"), 10, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.Created"), 10, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.Length"), 10, FileColumnHeader.ALIGN_RIGHT)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.AuxType"), 8, FileColumnHeader.ALIGN_LEFT)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.DirectoryHeader"), 5, FileColumnHeader.ALIGN_RIGHT)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.KeyBlock"), 5, FileColumnHeader.ALIGN_RIGHT)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.KeyType"), 8, FileColumnHeader.ALIGN_LEFT)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.Changed"), 5, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.MinimumProdosVersion"), 2, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.ProdosVersion"), 2, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
 				break;
 			default:	// FILE_DISPLAY_STANDARD
 				list.addAll(super.getFileColumnHeaders(displayMode));
@@ -476,7 +496,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	
 	/**
 	 * Identify if this disk format is capable of having directories.
-	 * @see com.webcodepro.applecommander.storage.Disk#canHaveDirectories()
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#canHaveDirectories()
 	 */
 	public boolean canHaveDirectories() {
 		return true;
@@ -502,7 +522,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 */
 	public byte[] getFileData(FileEntry fileEntry) {
 		if ( !(fileEntry instanceof ProdosFileEntry)) {
-			throw new IllegalArgumentException("Most have a ProDOS file entry!");
+			throw new IllegalArgumentException(textBundle.get("ProdosFormatDisk.MustHaveEntry")); //$NON-NLS-1$
 		}
 		ProdosFileEntry prodosEntry = (ProdosFileEntry) fileEntry;
 		byte[] fileData = new byte[prodosEntry.getEofPosition()];
@@ -524,7 +544,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 				}
 			}
 		} else {
-			throw new IllegalArgumentException("Unknown ProDOS storage type!");
+			throw new IllegalArgumentException(textBundle.get("ProdosFormatDisk.UnknownStorageType")); //$NON-NLS-1$
 		}
 		return fileData;
 	}
@@ -565,7 +585,6 @@ public class ProdosFormatDisk extends FormattedDisk {
 	/**
 	 * Read file data from the given index block.
 	 * Note that block number 0 is an unused block.
-	 * @see #getFileData()
 	 */
 	protected int getIndexBlockData(byte[] fileData, byte[] indexBlock, int offset) {
 		for (int i=0; i<0x100; i++) {
@@ -576,10 +595,9 @@ public class ProdosFormatDisk extends FormattedDisk {
 				if (blockNumber != 0) System.arraycopy(blockData, 0, fileData, offset, bytesToCopy);
 				offset+= bytesToCopy;
 				break;
-			} else {
-				if (blockNumber != 0) System.arraycopy(blockData, 0, fileData, offset, blockData.length);
-				offset+= blockData.length;
 			}
+			if (blockNumber != 0) System.arraycopy(blockData, 0, fileData, offset, blockData.length);
+			offset+= blockData.length;
 		}
 		return offset;
 	}
@@ -601,9 +619,9 @@ public class ProdosFormatDisk extends FormattedDisk {
 			}
 		}
 		if (numberOfBlocks > getFreeBlocks() + fileEntry.getBlocksUsed()) {
-			throw new DiskFullException("This file requires " + numberOfBlocks
-				+ " blocks but there are only " + getFreeBlocks() + " blocks"
-				+ " available on the disk.");
+			throw new DiskFullException(textBundle.
+					format("ProdosFormatDisk.NotEnoughSpaceOnDiskError", //$NON-NLS-1$
+					numberOfBlocks, getFreeBlocks()));
 		}
 		// free "old" data and just rewrite stuff...
 		freeBlocks(fileEntry);
@@ -691,12 +709,12 @@ public class ProdosFormatDisk extends FormattedDisk {
 					return block;
 				}
 				throw new ProdosDiskSizeDoesNotMatchException(
-					"The ProDOS physical disk size does not match the formatted size.");
+					textBundle.get("ProdosFormatDisk.ProdosDiskSizeDoesNotMatchError")); //$NON-NLS-1$
 			}
 			block++;
 		}
 		throw new DiskFullException(
-			"Unable to locate a free block in the Volume Bitmap!");
+			textBundle.get("ProdosFormatDisk.NoFreeBlockAvailableError")); //$NON-NLS-1$
 	}
 	
 	/**
@@ -723,7 +741,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 		int blocksToWrite = (volumeBitmapBlocks / 4096) + 1;
 		if (data.length != blocksToWrite * BLOCK_SIZE) {
 			throw new IllegalArgumentException(
-				"The ProDOS Volume Bit Map is not the correct size.");
+				textBundle.get("ProdosFormatDisk.UnexpectedVolumeBitMapSizeError")); //$NON-NLS-1$
 		}
 		byte[] dataBlock = new byte[BLOCK_SIZE];
 		for (int i=0; i<blocksToWrite; i++) {
@@ -852,8 +870,8 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * as to the filetype.
 	 */
 	public String getSuggestedFiletype(String filename) {
-		String filetype = "BIN";
-		int pos = filename.lastIndexOf(".");
+		String filetype = "BIN"; //$NON-NLS-1$
+		int pos = filename.lastIndexOf("."); //$NON-NLS-1$
 		if (pos > 0) {
 			String what = filename.substring(pos+1);
 			ProdosFileType type = findFileType(what);
@@ -956,5 +974,9 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 */
 	public void setFileData(FileEntry fileEntry, byte[] fileData) throws DiskFullException {
 		setFileData((ProdosFileEntry)fileEntry, fileData);
+	}
+	
+	protected ProdosVolumeDirectoryHeader getVolumeHeader() {
+		return volumeHeader;
 	}
 }

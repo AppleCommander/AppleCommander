@@ -94,14 +94,14 @@ public class AppleWorksSpreadSheetFileFilter implements FileFilter {
 	 * These are the formulas starting at FORMULA_OFFSET.
 	 */
 	private static final String[] formulaText = {
-		"@Deg", "@Rad", "@Pi", "@True", "@False", "@Not", "@IsBlank", 
-		"@IsNA", "@IsError", "@Exp", "@Ln", "@Log", "@Cos", "@Sin",
-		"@Tan", "@ACos", "@ASin", "@ATan2", "@ATan", "@Mod", "@FV", 
-		"@PV", "@PMT", "@Term", "@Rate", "@Round", "@Or", "@And", 
-		"@Sum", "@Avg", "@Choose", "@Count", "@Error", "@IRR", "@If",
-		"@Int", "@Lookup", "@Max", "@Min", "@NA", "@NPV", "@Sqrt",
-		"@Abs", null, "<>", ">=", "<=", "=", ">", "<", ",", "^",
-		")", "-", "+", "/", "*", "(", "-", "+", "..", null, null,
+		"@Deg", "@Rad", "@Pi", "@True", "@False", "@Not", "@IsBlank",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+		"@IsNA", "@IsError", "@Exp", "@Ln", "@Log", "@Cos", "@Sin", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+		"@Tan", "@ACos", "@ASin", "@ATan2", "@ATan", "@Mod", "@FV",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+		"@PV", "@PMT", "@Term", "@Rate", "@Round", "@Or", "@And",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+		"@Sum", "@Avg", "@Choose", "@Count", "@Error", "@IRR", "@If", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+		"@Int", "@Lookup", "@Max", "@Min", "@NA", "@NPV", "@Sqrt", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+		"@Abs", null, "<>", ">=", "<=", "=", ">", "<", ",", "^", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
+		")", "-", "+", "/", "*", "(", "-", "+", "..", null, null, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
 		null 
 	};
 	/**
@@ -153,7 +153,7 @@ public class AppleWorksSpreadSheetFileFilter implements FileFilter {
 	 * @see com.webcodepro.applecommander.storage.FileFilter#getSuggestedFileName(FileEntry)
 	 */
 	public String getSuggestedFileName(FileEntry fileEntry) {
-		return fileEntry.getFilename() + ".csv";
+		return fileEntry.getFilename() + ".csv"; //$NON-NLS-1$
 	}
 	/**
 	 * Process an entire row.
@@ -163,12 +163,12 @@ public class AppleWorksSpreadSheetFileFilter implements FileFilter {
 		while (true) {
 			int rowControl = AppleUtil.getUnsignedByte(fileData[offset]);
 			if (rowControl <= 0x7f) {			// process row
-				if (column > 0) printWriter.print(",");
+				if (column > 0) printWriter.print(","); //$NON-NLS-1$
 				processCell(printWriter, fileData, offset+1, rowControl, 
 					rowNumber, column);
 				offset+= rowControl;
 			} else if (rowControl < 0xff) {	// skip rows
-				if (column > 0) printWriter.print(",");
+				if (column > 0) printWriter.print(","); //$NON-NLS-1$
 				int columns = rowControl - 0x80;
 				skipColumns(column, printWriter, columns);
 				column+= columns;
@@ -185,8 +185,8 @@ public class AppleWorksSpreadSheetFileFilter implements FileFilter {
 	 */
 	protected void skipColumns(int column, PrintWriter printWriter, int columns) {
 		while (columns > 0) {
-			if (column > 0) printWriter.print(",");
-			printWriter.print("\",\"");
+			if (column > 0) printWriter.print(","); //$NON-NLS-1$
+			printWriter.print("\",\""); //$NON-NLS-1$
 			columns--;
 			column++;
 		}
@@ -253,7 +253,7 @@ public class AppleWorksSpreadSheetFileFilter implements FileFilter {
 			printWriter.print(string);
 			printWriter.print('"');
 		} else {
-			printWriter.print("\"Unknown Cell Contents!\"");
+			printWriter.print("\"Unknown Cell Contents!\""); //$NON-NLS-1$
 		}
 	}
 	/**
@@ -264,7 +264,7 @@ public class AppleWorksSpreadSheetFileFilter implements FileFilter {
 		int pos2 = column % 26;
 		StringBuffer buf = new StringBuffer();
 		if (pos1 > 0) {
-			buf.append((char) '@' + pos1);
+			buf.append((char)('@' + pos1));
 		}
 		buf.append((char)('@' + pos2));
 		return buf.toString();

@@ -78,14 +78,14 @@ public class ApplesoftFilterAdapter extends FilterAdapter {
 				if (firstLine) {
 					firstLine = false;
 				} else {
-					styledText.append("\n");
+					styledText.append("\n"); //$NON-NLS-1$
 				}
 				styledText.append(Integer.toString(token.getLineNumber()));
-				styledText.append(" ");
+				styledText.append(" "); //$NON-NLS-1$
 			} else if (token.isCommandSeparator() || token.isExpressionSeparator()) {
 				styledText.append(token.getStringValue());
 			} else if (token.isEndOfCommand()) {
-				styledText.append("\n");
+				styledText.append("\n"); //$NON-NLS-1$
 			} else if (token.isString()) {
 				int caretOffset = styledText.getCharCount();
 				styledText.append(token.getStringValue());

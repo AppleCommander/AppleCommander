@@ -27,8 +27,10 @@ import java.util.List;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Manages a disk that is in the RDOS format.
@@ -47,6 +49,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * @author Rob Greene
  */
 public class RdosFormatDisk extends FormattedDisk {
+	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * The RDOS disks are structured in a different order than DOS 3.3.
 	 * This table interpolates between the RDOS ordering and the DOS
@@ -69,7 +72,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	/**
 	 * The known filetypes for a RDOS disk.
 	 */
-	public static final String[] filetypes = { "B", "A", "T" };
+	public static final String[] filetypes = { "B", "A", "T" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 	/**
 	 * Use this inner interface for managing the disk usage data.
@@ -123,8 +126,6 @@ public class RdosFormatDisk extends FormattedDisk {
 	
 	/**
 	 * Constructor for RdosFormatDisk.
-	 * @param filename
-	 * @param diskImage
 	 */
 	public RdosFormatDisk(String filename, ImageOrder imageOrder) {
 		super(filename, imageOrder);
@@ -200,7 +201,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * Create a new FileEntry.
 	 */
 	public FileEntry createFile() throws DiskFullException {
-		throw new DiskFullException("Cannot create a file (yet).");
+		throw new DiskFullException(textBundle.get("FileCreationNotSupported")); //$NON-NLS-1$
 	}
 
 	/**
@@ -226,7 +227,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * Identify the operating system format of this disk.
 	 */
 	public String getFormat() {
-		return "RDOS 2.1";
+		return textBundle.get("RdosFormatDisk.Rdos21"); //$NON-NLS-1$
 	}
 	
 	/**
@@ -289,7 +290,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * Get the labels to use in the bitmap.
 	 */
 	public String[] getBitmapLabels() {
-		return new String[] { "Block" };
+		return new String[] { textBundle.get("Block") }; //$NON-NLS-1$
 	}
 	
 	/**
@@ -297,9 +298,9 @@ public class RdosFormatDisk extends FormattedDisk {
 	 */
 	public List getDiskInformation() {
 		List list = super.getDiskInformation();
-		list.add(new DiskInformation("Total Blocks", BLOCKS_ON_DISK));
-		list.add(new DiskInformation("Free Blocks", getFreeBlocks()));
-		list.add(new DiskInformation("Used Blocks", getUsedBlocks()));
+		list.add(new DiskInformation(textBundle.get("TotalBlocks"), BLOCKS_ON_DISK)); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("FreeBlocks"), getFreeBlocks())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("UsedBlocks"), getUsedBlocks())); //$NON-NLS-1$
 		return list;
 	}
 
@@ -311,20 +312,20 @@ public class RdosFormatDisk extends FormattedDisk {
 		List list = new ArrayList();
 		switch (displayMode) {
 			case FILE_DISPLAY_NATIVE:
-				list.add(new FileColumnHeader("Type", 1, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Blocks", 3, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Name", 24, FileColumnHeader.ALIGN_LEFT));
-				list.add(new FileColumnHeader("Size", 6, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Starting Block", 3, FileColumnHeader.ALIGN_RIGHT));
+				list.add(new FileColumnHeader(textBundle.get("Type"), 1, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3, FileColumnHeader.ALIGN_RIGHT)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("Name"), 24, FileColumnHeader.ALIGN_LEFT)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("RdosFormatDisk.Size"), 6, FileColumnHeader.ALIGN_RIGHT)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("RdosFormatDisk.StartingBlock"), 3, FileColumnHeader.ALIGN_RIGHT)); //$NON-NLS-1$
 				break;
 			case FILE_DISPLAY_DETAIL:
-				list.add(new FileColumnHeader("Type", 1, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Blocks", 3, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Name", 24, FileColumnHeader.ALIGN_LEFT));
-				list.add(new FileColumnHeader("Size", 6, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Starting Block", 3, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Address", 5, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Deleted?", 7, FileColumnHeader.ALIGN_CENTER));
+				list.add(new FileColumnHeader(textBundle.get("Type"), 1, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3, FileColumnHeader.ALIGN_RIGHT)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("Name"), 24, FileColumnHeader.ALIGN_LEFT)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("RdosFormatDisk.Size"), 6, FileColumnHeader.ALIGN_RIGHT)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("RdosFormatDisk.StartingBlock"), 3, FileColumnHeader.ALIGN_RIGHT)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("RdosFormatDisk.Address"), 5, FileColumnHeader.ALIGN_RIGHT)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("DeletedQ"), 7, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
 				break;
 			default:	// FILE_DISPLAY_STANDARD
 				list.addAll(super.getFileColumnHeaders(displayMode));
@@ -373,7 +374,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 */
 	public byte[] getFileData(FileEntry fileEntry) {
 		if ( !(fileEntry instanceof RdosFileEntry)) {
-			throw new IllegalArgumentException("Most have a RDOS file entry!");
+			throw new IllegalArgumentException(textBundle.get("RdosFormatDisk.IncorrectFileEntryError")); //$NON-NLS-1$
 		}
 		RdosFileEntry rdosEntry = (RdosFileEntry) fileEntry;
 		int startingBlock = rdosEntry.getStartingBlock();
@@ -403,7 +404,7 @@ public class RdosFormatDisk extends FormattedDisk {
 		// minor hack - ensure that AppleCommander itself recognizes the
 		// RDOS disk!
 		byte[] block = readSector(0, 0x0d);
-		AppleUtil.setString(block, 0xe0, "RDOS FORMATTED BY APPLECOMMANDER", 0x20);
+		AppleUtil.setString(block, 0xe0, textBundle.get("RdosFormatDisk.IdentifierText"), 0x20); //$NON-NLS-1$
 		writeSector(0, 0x0d, block);
 		// a hack - until real code goes here.
 		block = new byte[256];
@@ -412,8 +413,8 @@ public class RdosFormatDisk extends FormattedDisk {
 		// write the first directory entry
 		// FIXME - this should use FileEntry!
 		byte[] data = readRdosBlock(13);
-		AppleUtil.setString(data, 0x00, "RDOS 2.1 FORMAT NOBOOT", 0x18);
-		AppleUtil.setString(data, 0x18, "B", 0x01);
+		AppleUtil.setString(data, 0x00, textBundle.get("RdosFormatDisk.InitialSystemFile"), 0x18); //$NON-NLS-1$
+		AppleUtil.setString(data, 0x18, "B", 0x01); //$NON-NLS-1$
 		data[0x19] = 26;
 		AppleUtil.setWordValue(data, 0x1a, 0x1000);
 		AppleUtil.setWordValue(data, 0x1c, 6656);
@@ -445,12 +446,12 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * as to the filetype.
 	 */
 	public String getSuggestedFiletype(String filename) {
-		String filetype = "B";
-		int pos = filename.lastIndexOf(".");
+		String filetype = "B"; //$NON-NLS-1$
+		int pos = filename.lastIndexOf("."); //$NON-NLS-1$
 		if (pos > 0) {
 			String what = filename.substring(pos+1);
-			if ("txt".equalsIgnoreCase(what)) {
-				filetype = "T";
+			if ("txt".equalsIgnoreCase(what)) { //$NON-NLS-1$
+				filetype = "T"; //$NON-NLS-1$
 			}
 		}
 		return filetype;
@@ -470,7 +471,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * address.
 	 */
 	public boolean needsAddress(String filetype) {
-		return "B".equals(filetype);
+		return "B".equals(filetype); //$NON-NLS-1$
 	}
 
 	/**

@@ -25,8 +25,10 @@ import java.util.List;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Manages a disk that is in Apple DOS 3.3 format.
@@ -35,6 +37,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * @author Rob Greene
  */
 public class DosFormatDisk extends FormattedDisk {
+	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Indicates the index of the track in the location array.
 	 */	
@@ -59,7 +62,8 @@ public class DosFormatDisk extends FormattedDisk {
 	 * The list of filetypes available.
 	 */
 	private static final String[] filetypes = { 
-			"T", "A", "I", "B", "S", "R", "a", "b" 
+			"T", "A", "I", "B", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+			"S", "R", "a", "b"  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		};
 
 	/**
@@ -89,7 +93,8 @@ public class DosFormatDisk extends FormattedDisk {
 		 */
 		public boolean isFree() {
 			if (location == null || location.length != 2) {
-				throw new IllegalArgumentException("Invalid dimension for isFree! Did you call next first?");
+				throw new IllegalArgumentException(StorageBundle.getInstance()
+						.get("DosFormatDisk.InvalidDimensionError")); //$NON-NLS-1$
 			}
 			return isSectorFree(location[TRACK_LOCATION_INDEX], 
 				location[SECTOR_LOCATION_INDEX], readVtoc());
@@ -101,9 +106,6 @@ public class DosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Constructor for DosFormatDisk.
-	 * @param filename
-	 * @param diskImage
-	 * @param order
 	 */
 	public DosFormatDisk(String filename, ImageOrder imageOrder) {
 		super(filename, imageOrder);
@@ -121,15 +123,15 @@ public class DosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Identify the operating system format of this disk as DOS 3.3.
-	 * @see com.webcodepro.applecommander.storage.Disk#getFormat()
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFormat()
 	 */
 	public String getFormat() {
-		return "DOS 3.3";
+		return textBundle.get("Dos33"); //$NON-NLS-1$
 	}
 
 	/**
 	 * Retrieve a list of files.
-	 * @see com.webcodepro.applecommander.storage.Disk#getFiles()
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFiles()
 	 */
 	public List getFiles() {
 		List list = new ArrayList();
@@ -171,7 +173,7 @@ public class DosFormatDisk extends FormattedDisk {
 			track = catalogSector[1];
 			sector = catalogSector[2];
 		}
-		throw new DiskFullException("Unable to allocate more space for another file!");
+		throw new DiskFullException(textBundle.get("DosFormatDisk.NoMoreSpaceError")); //$NON-NLS-1$
 	}
 
 	/**
@@ -197,7 +199,7 @@ public class DosFormatDisk extends FormattedDisk {
 	 * Compute the amount of freespace available on the disk.
 	 * This algorithm completely ignores tracks and sectors by
 	 * running through the entire bitmap stored on the VTOC.
-	 * @see com.webcodepro.applecommander.storage.Disk#getFreeSpace()
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFreeSpace()
 	 */
 	public int getFreeSpace() {
 		return getFreeSectors() * SECTOR_SIZE;
@@ -218,7 +220,7 @@ public class DosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Return the amount of used space in bytes.
-	 * @see com.webcodepro.applecommander.storage.Disk#getUsedSpace()
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getUsedSpace()
 	 */
 	public int getUsedSpace() {
 		return getUsedSectors() * SECTOR_SIZE;
@@ -244,11 +246,11 @@ public class DosFormatDisk extends FormattedDisk {
 	 * Return the DOS disk name.  Basically, the DISK VOLUME #xxx
 	 * that a CATALOG command would show.  Note that Java bytes are
 	 * signed, so a little mojo is in order.
-	 * @see com.webcodepro.applecommander.storage.Disk#getDiskName()
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getDiskName()
 	 */
 	public String getDiskName() {
 		int volumeNumber = AppleUtil.getUnsignedByte(readVtoc()[0x06]);
-		return "DISK VOLUME #" + volumeNumber;
+		return textBundle.get("DosFormatDisk.DiskVolume") + volumeNumber; //$NON-NLS-1$
 	}
 
 	/**
@@ -310,7 +312,7 @@ public class DosFormatDisk extends FormattedDisk {
 	 * Get the labels to use in the bitmap.
 	 */
 	public String[] getBitmapLabels() {
-		return new String[] { "Track", "Sector" };
+		return new String[] { textBundle.get("DosFormatDisk.Track"), textBundle.get("DosFormatDisk.Sector") }; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	/**
@@ -318,11 +320,11 @@ public class DosFormatDisk extends FormattedDisk {
 	 */
 	public List getDiskInformation() {
 		List list = super.getDiskInformation();
-		list.add(new DiskInformation("Total Sectors", getTotalSectors()));
-		list.add(new DiskInformation("Free Sectors", getFreeSectors()));
-		list.add(new DiskInformation("Used Sectors", getUsedSectors()));
-		list.add(new DiskInformation("Tracks On Disk", getTracks()));
-		list.add(new DiskInformation("Sectors On Disk", getSectors()));
+		list.add(new DiskInformation(textBundle.get("DosFormatDisk.TotalSectors"), getTotalSectors())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("DosFormatDisk.FreeSectors"), getFreeSectors())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("DosFormatDisk.UsedSectors"), getUsedSectors())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("DosFormatDisk.TracksOnDisk"), getTracks())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("DosFormatDisk.SectorsOnDisk"), getSectors())); //$NON-NLS-1$
 		return list;
 	}
 
@@ -334,19 +336,23 @@ public class DosFormatDisk extends FormattedDisk {
 		List list = new ArrayList();
 		switch (displayMode) {
 			case FILE_DISPLAY_NATIVE:
-				list.add(new FileColumnHeader(" ", 1, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Type", 1, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Size (sectors)", 3, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Name", 30, FileColumnHeader.ALIGN_LEFT));
+				list.add(new FileColumnHeader(" ", 1, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("DosFormatDisk.Type"), 1, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("DosFormatDisk.SizeInSectors"), 3, FileColumnHeader.ALIGN_RIGHT)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("Name"), 30,  //$NON-NLS-1$
+						FileColumnHeader.ALIGN_LEFT));
 				break;
 			case FILE_DISPLAY_DETAIL:
-				list.add(new FileColumnHeader(" ", 1, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Type", 1, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Name", 30, FileColumnHeader.ALIGN_LEFT));
-				list.add(new FileColumnHeader("Size (bytes)", 6, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Size (sectors)", 3, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Deleted?", 7, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Track/Sector List", 7, FileColumnHeader.ALIGN_CENTER));
+				list.add(new FileColumnHeader(" ", 1, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("DosFormatDisk.Type"), 1, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("Name"), 30,  //$NON-NLS-1$
+						FileColumnHeader.ALIGN_LEFT));
+				list.add(new FileColumnHeader(textBundle.get("SizeInBytes"), 6,  //$NON-NLS-1$
+						FileColumnHeader.ALIGN_RIGHT));
+				list.add(new FileColumnHeader(textBundle.get("DosFormatDisk.SizeInSectors"), 3, FileColumnHeader.ALIGN_RIGHT)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(textBundle.get("DeletedQ"), 7,  //$NON-NLS-1$
+						FileColumnHeader.ALIGN_CENTER));
+				list.add(new FileColumnHeader(textBundle.get("DosFormatDisk.TrackAndSectorList"), 7, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
 				break;
 			default:	// FILE_DISPLAY_STANDARD
 				list.addAll(super.getFileColumnHeaders(displayMode));
@@ -378,7 +384,7 @@ public class DosFormatDisk extends FormattedDisk {
 	
 	/**
 	 * Identify if this disk format as not capable of having directories.
-	 * @see com.webcodepro.applecommander.storage.Disk#hasDirectories()
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#canHaveDirectories()
 	 */
 	public boolean canHaveDirectories() {
 		return false;
@@ -396,7 +402,7 @@ public class DosFormatDisk extends FormattedDisk {
 	 */
 	public byte[] getFileData(FileEntry fileEntry) {
 		if ( !(fileEntry instanceof DosFileEntry)) {
-			throw new IllegalArgumentException("Most have a DOS 3.3 file entry!");
+			throw new IllegalArgumentException(textBundle.get("DosFormatDisk.InvalidFileEntryError")); //$NON-NLS-1$
 		}
 		DosFileEntry dosEntry = (DosFileEntry) fileEntry;
 		// Size is calculated by sectors used - not actual size - as size varies
@@ -448,9 +454,9 @@ public class DosFormatDisk extends FormattedDisk {
 		int numberOfSectors = numberOfDataSectors + 
 			(numberOfDataSectors + TRACK_SECTOR_PAIRS - 1) / TRACK_SECTOR_PAIRS;
 		if (numberOfSectors > getFreeSectors() + fileEntry.getSectorsUsed()) {
-			throw new DiskFullException("This file requires " + numberOfSectors
-				+ " sectors but there are only " + getFreeSectors() + " sectors"
-				+ " available on the disk.");
+			throw new DiskFullException(
+					textBundle.format("DosFormatDisk.NotEnoughSectorsError", //$NON-NLS-1$
+					numberOfSectors, getFreeSectors()));
 		}
 		// free "old" data and just rewrite stuff...
 		freeSectors(fileEntry);
@@ -658,8 +664,8 @@ public class DosFormatDisk extends FormattedDisk {
 	protected void checkRange(int track, int sector) {
 		if (track > 50 || sector > 32) {
 			throw new IllegalArgumentException(
-				"Invalid track (" + track + "), sector (" + sector
-				+ ") combination.");
+				textBundle.format("DosFormatDisk.InvalidTrackAndSectorCombinationError", //$NON-NLS-1$
+				track, sector));
 		}
 	}
 
@@ -687,12 +693,12 @@ public class DosFormatDisk extends FormattedDisk {
 	 * as to the filetype.
 	 */
 	public String getSuggestedFiletype(String filename) {
-		String filetype = "B";
-		int pos = filename.lastIndexOf(".");
+		String filetype = "B"; //$NON-NLS-1$
+		int pos = filename.lastIndexOf("."); //$NON-NLS-1$
 		if (pos > 0) {
 			String what = filename.substring(pos+1);
-			if ("txt".equalsIgnoreCase(what)) {
-				filetype = "T";
+			if ("txt".equalsIgnoreCase(what)) { //$NON-NLS-1$
+				filetype = "T"; //$NON-NLS-1$
 			}
 		}
 		return filetype;
@@ -711,7 +717,7 @@ public class DosFormatDisk extends FormattedDisk {
 	 * For DOS, only the Binary type needs an address.
 	 */
 	public boolean needsAddress(String filetype) {
-		return "B".equals(filetype);
+		return "B".equals(filetype); //$NON-NLS-1$
 	}
 
 	/**

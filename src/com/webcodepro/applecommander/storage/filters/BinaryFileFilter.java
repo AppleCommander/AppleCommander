@@ -38,7 +38,7 @@ public class BinaryFileFilter implements FileFilter {
 
 	/**
 	 * Process the given FileEntry and return a byte array with filtered data.
-	 * @see com.webcodepro.applecommander.storage.FileFilter#filter(byte[])
+	 * @see com.webcodepro.applecommander.storage.FileFilter#filter(FileEntry)
 	 */
 	public byte[] filter(FileEntry fileEntry) {
 		return fileEntry.getFileData();	// should be nothing to do
@@ -49,8 +49,8 @@ public class BinaryFileFilter implements FileFilter {
 	 */
 	public String getSuggestedFileName(FileEntry fileEntry) {
 		String fileName = fileEntry.getFilename().trim();
-		if (!fileName.toLowerCase().endsWith(".dump")) {
-			fileName = fileName + ".dump";
+		if (!fileName.toLowerCase().endsWith(".dump")) { //$NON-NLS-1$
+			fileName = fileName + ".dump"; //$NON-NLS-1$
 		}
 		return fileName;
 	}

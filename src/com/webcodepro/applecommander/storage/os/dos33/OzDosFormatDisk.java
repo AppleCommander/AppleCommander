@@ -19,7 +19,9 @@
  */
 package com.webcodepro.applecommander.storage.os.dos33;
 
+import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Manages a disk that is in OzDOS format.
@@ -32,6 +34,7 @@ import com.webcodepro.applecommander.storage.physical.ImageOrder;
  * @author Rob Greene
  */
 public class OzDosFormatDisk extends DosFormatDisk {
+	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Use this indicator to work with logical disk #1.
 	 * It is essentially the offset into the block.
@@ -49,8 +52,6 @@ public class OzDosFormatDisk extends DosFormatDisk {
 	private int logicalOffset;
 	/**
 	 * Constructor for OzDosFormatDisk.
-	 * @param filename
-	 * @param diskImage
 	 */
 	public OzDosFormatDisk(String filename, ImageOrder imageOrder, int logicalOffset) {
 		super(filename, imageOrder);
@@ -72,9 +73,9 @@ public class OzDosFormatDisk extends DosFormatDisk {
 	 */
 	public String getDiskName() {
 		if (logicalOffset == OZDOS_DISK_1) {
-			return super.getDiskName() + " (Disk 1)";
+			return textBundle.format("DiskNameN", super.getDiskName(), 1); //$NON-NLS-1$
 		} else if (logicalOffset == OZDOS_DISK_2) {
-			return super.getDiskName() + " (Disk 2)";
+			return textBundle.format("DiskNameN", super.getDiskName(), 2); //$NON-NLS-1$
 		} else {
 			return super.getDiskName();
 		}

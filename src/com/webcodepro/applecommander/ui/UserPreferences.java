@@ -73,7 +73,7 @@ public class UserPreferences {
 	public void save() {
 		try {
 			FileOutputStream outputStream = new FileOutputStream(FILENAME);
-			properties.store(outputStream, TextBundle.getInstance().
+			properties.store(outputStream, UiBundle.getInstance().
 				get("UserPreferencesComment")); //$NON-NLS-1$
 			outputStream.close();
 		} catch (Exception ignored) {

@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Abstract representation of a formatted Apple2 disk (floppy, 800k, hard disk).
@@ -35,6 +36,7 @@ import com.webcodepro.applecommander.storage.physical.ImageOrder;
  * @author Rob Greene
  */
 public abstract class FormattedDisk extends Disk implements DirectoryEntry {
+	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Use this inner class for label/value mappings in the disk info page.
 	 */
@@ -50,12 +52,14 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 			this.value = Integer.toString(value);
 		}
 		public DiskInformation(String label, Date value) {
-			SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+			SimpleDateFormat dateFormat = new SimpleDateFormat(
+					StorageBundle.getInstance().get("DateFormat")); //$NON-NLS-1$
 			this.label = label;
 			if (value != null) {
 				this.value = dateFormat.format(value);
 			} else {
-				this.value = "-None-";
+				this.value = StorageBundle.getInstance()
+					.get("FormattedDisk.NullDate"); //$NON-NLS-1$
 			}
 		}
 		public String getLabel() {
@@ -121,8 +125,6 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	
 	/**
 	 * Constructor for FormattedDisk.
-	 * @param filename
-	 * @param diskImage
 	 */
 	public FormattedDisk(String filename, ImageOrder imageOrder) {
 		super(filename, imageOrder);
@@ -180,19 +182,19 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	 */
 	public List getDiskInformation() {
 		List list = new ArrayList();
-		list.add(new DiskInformation("File Name", getFilename()));
-		list.add(new DiskInformation("Disk Name", getDiskName()));
-		list.add(new DiskInformation("Physical Size (bytes)", getPhysicalSize()));
-		list.add(new DiskInformation("Free Space (bytes)", getFreeSpace()));
-		list.add(new DiskInformation("Used Space (bytes)", getUsedSpace()));
-		list.add(new DiskInformation("Physical Size (KB)", getPhysicalSize() / 1024));
-		list.add(new DiskInformation("Free Space (KB)", getFreeSpace() / 1024));
-		list.add(new DiskInformation("Used Space (KB)", getUsedSpace() / 1024));
-		list.add(new DiskInformation("Archive Order", 
-					is2ImgOrder() ? "2IMG" :
-					isDosOrder() ? "DOS 3.3" : 
-					isProdosOrder() ? "ProDOS" : "Unknown"));
-		list.add(new DiskInformation("Disk Format", getFormat()));
+		list.add(new DiskInformation(textBundle.get("FormattedDisk.FileName"), getFilename())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("FormattedDisk.DiskName"), getDiskName())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("FormattedDisk.PhysicalSizeInBytes"), getPhysicalSize())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("FormattedDisk.FreeSpaceInBytes"), getFreeSpace())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("FormattedDisk.UsedSpaceInBytes"), getUsedSpace())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("FormattedDisk.PhysicalSizeInKb"), getPhysicalSize() / 1024)); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("FormattedDisk.FreeSpaceInKb"), getFreeSpace() / 1024)); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("FormattedDisk.UsedSpaceInKb"), getUsedSpace() / 1024)); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("FormattedDisk.ArchiveOrder"),  //$NON-NLS-1$
+					is2ImgOrder() ? textBundle.get("FormattedDisk.2Img") : //$NON-NLS-1$
+					isDosOrder() ? textBundle.get("Dos33") :  //$NON-NLS-1$
+					isProdosOrder() ? textBundle.get("Prodos") : textBundle.get("FormattedDisk.Unknown"))); //$NON-NLS-1$ //$NON-NLS-2$
+		list.add(new DiskInformation(textBundle.get("FormattedDisk.DiskFormat"), getFormat())); //$NON-NLS-1$
 		return list;
 	}
 	
@@ -202,10 +204,14 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	 */
 	public List getFileColumnHeaders(int displayMode) {
 		List list = new ArrayList();
-		list.add(new FileColumnHeader("Name", 30, FileColumnHeader.ALIGN_LEFT));
-		list.add(new FileColumnHeader("Type", 8, FileColumnHeader.ALIGN_CENTER));
-		list.add(new FileColumnHeader("Size (bytes)", 6, FileColumnHeader.ALIGN_RIGHT));
-		list.add(new FileColumnHeader("Locked?", 6, FileColumnHeader.ALIGN_CENTER));
+		list.add(new FileColumnHeader(textBundle
+				.get("Name"), 30, FileColumnHeader.ALIGN_LEFT)); //$NON-NLS-1$
+		list.add(new FileColumnHeader(textBundle
+				.get("Type"), 8, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+		list.add(new FileColumnHeader(textBundle
+				.get("SizeInBytes"), 6, FileColumnHeader.ALIGN_RIGHT)); //$NON-NLS-1$
+		list.add(new FileColumnHeader(textBundle
+				.get("LockedQ"), 6, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
 		return list;
 	}
 	
@@ -303,13 +309,14 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	 */
 	protected void writeBootCode() {
 		InputStream inputStream = getClass().
-			getResourceAsStream("AppleCommander-boot.dump");
+			getResourceAsStream("AppleCommander-boot.dump"); //$NON-NLS-1$
 		if (inputStream != null) {
 			byte[] bootCode = new byte[SECTOR_SIZE];
 			try {
 				inputStream.read(bootCode, 0, bootCode.length);
 				writeSector(0, 0, bootCode);
 			} catch (IOException ignored) {
+				// Ignored
 			}
 		}
 	}

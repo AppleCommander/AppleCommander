@@ -40,12 +40,13 @@ import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.Disk.FilenameFilter;
 import com.webcodepro.applecommander.ui.AppleCommander;
-import com.webcodepro.applecommander.ui.TextBundle;
+import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.UserPreferences;
 import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 import com.webcodepro.applecommander.ui.swt.wizard.comparedisks.CompareDisksWizard;
 import com.webcodepro.applecommander.ui.swt.wizard.diskimage.DiskImageWizard;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Main class for the SwtAppleCommander interface.
@@ -54,11 +55,10 @@ import com.webcodepro.applecommander.ui.swt.wizard.diskimage.DiskImageWizard;
  * @author Rob Greene
  */
 public class SwtAppleCommander implements Listener {
-	private Display display;
 	private Shell shell;
 	private ToolBar toolBar;
 	private UserPreferences userPreferences = UserPreferences.getInstance();
-	private TextBundle textBundle = TextBundle.getInstance();
+	private TextBundle textBundle = UiBundle.getInstance();
 	private ImageCanvas imageCanvas;
 	private static ImageManager imageManager;
 
@@ -104,11 +104,10 @@ public class SwtAppleCommander implements Listener {
 	/**
 	 * Opens the main program.
 	 */
-	private Shell open(Display display) {		
-		this.display = display;
-		Display.setAppName("AppleCommander");
+	protected Shell open(Display display) {		
+		Display.setAppName(textBundle.get("SwtAppleCommander.AppleCommander")); //$NON-NLS-1$
 		shell = new Shell(display, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.TITLE);
-		shell.setText("AppleCommander");
+		shell.setText(textBundle.get("SwtAppleCommander.AppleCommander")); //$NON-NLS-1$
 		shell.setImage(imageManager.get(ImageManager.ICON_DISK));
 		shell.addDisposeListener(new DisposeListener() {
 				public void widgetDisposed(DisposeEvent event) {
@@ -141,7 +140,7 @@ public class SwtAppleCommander implements Listener {
 	/**
 	 * Dispose of all shared resources.
 	 */
-	private void dispose(DisposeEvent event) {
+	protected void dispose(DisposeEvent event) {
 		imageCanvas.dispose();
 		toolBar.dispose();
 		imageManager.dispose();
@@ -150,7 +149,7 @@ public class SwtAppleCommander implements Listener {
 	/**
 	 * Open a file.
 	 */
-	private void openFile() {
+	protected void openFile() {
 		FileDialog fileDialog = new FileDialog(shell, SWT.OPEN);
 		FilenameFilter[] fileFilters = Disk.getFilenameFilters();
 		String[] names = new String[fileFilters.length];
@@ -186,23 +185,20 @@ public class SwtAppleCommander implements Listener {
 	 * Displays the unrecognized disk format message.
 	 * @param fullpath
 	 */
-	private void showUnrecognizedDiskFormatMessage(String fullpath) {
+	protected void showUnrecognizedDiskFormatMessage(String fullpath) {
 		Shell finalShell = shell;
 		MessageBox box = new MessageBox(finalShell, SWT.ICON_ERROR | SWT.OK);
-		box.setText("Unrecognized Disk Format");
+		box.setText(textBundle.get("SwtAppleCommander.UnrecognizedFormatTitle")); //$NON-NLS-1$
 		box.setMessage(
-			  "Unable to load '" + fullpath + "'.\n\n"
-		    + "AppleCommander did not recognize the format\n"
-			+ "of the disk.  Either this is a new format\n"
-			+ "or a protected disk.\n\n"
-			+ "Sorry!");
+			  textBundle.format("SwtAppleCommander.UnrecognizedFormatMessage", //$NON-NLS-1$
+			  		fullpath));
 		box.open();
 	}
 
 	/**
 	 * Create a disk image.
 	 */
-	private void createDiskImage() {
+	protected void createDiskImage() {
 		DiskImageWizard wizard = new DiskImageWizard(shell, imageManager);
 		wizard.open();
 		if (wizard.isWizardCompleted()) {
@@ -221,9 +217,9 @@ public class SwtAppleCommander implements Listener {
 
 		ToolItem item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(imageManager.get(ImageManager.ICON_OPEN_DISK_IMAGE));
-		item.setText("Open...");
+		item.setText(textBundle.get("OpenButton")); //$NON-NLS-1$
 		item.setSelection(false);
-		item.setToolTipText("Open a disk image (Ctrl+O)");
+		item.setToolTipText(textBundle.get("SwtAppleCommander.OpenDiskImageTooltip")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				openFile();
@@ -233,8 +229,8 @@ public class SwtAppleCommander implements Listener {
 
 		item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(imageManager.get(ImageManager.ICON_NEW_DISK_IMAGE));
-		item.setText("Create...");
-		item.setToolTipText("Create a disk image (Ctrl+C)");
+		item.setText(textBundle.get("CreateButton")); //$NON-NLS-1$
+		item.setToolTipText(textBundle.get("SwtAppleCommander.CreateDiskImageTooltip")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				createDiskImage();
@@ -244,8 +240,8 @@ public class SwtAppleCommander implements Listener {
 
 		item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(imageManager.get(ImageManager.ICON_COMPARE_DISKS));
-		item.setText("Compare...");
-		item.setToolTipText("Compare two disk images (Ctrl+E)");
+		item.setText(textBundle.get("CreateButton")); //$NON-NLS-1$
+		item.setToolTipText(textBundle.get("SwtAppleCommander.CompareDiskImageTooltip")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				compareDiskImages();
@@ -255,8 +251,8 @@ public class SwtAppleCommander implements Listener {
 
 		item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(imageManager.get(ImageManager.ICON_ABOUT_APPLECOMMANDER));
-		item.setText("About");
-		item.setToolTipText("About AppleCommander (Ctrl+A)");
+		item.setText(textBundle.get("AboutButton")); //$NON-NLS-1$
+		item.setToolTipText(textBundle.get("SwtAppleCommander.AboutTooltip")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				showAboutAppleCommander();
@@ -270,15 +266,10 @@ public class SwtAppleCommander implements Listener {
 	public void showAboutAppleCommander() {
 		final Shell finalShell = shell;
 		MessageBox box = new MessageBox(finalShell, SWT.ICON_INFORMATION | SWT.OK);
-		box.setText("About AppleCommander");
-		box.setMessage(
-			  "AppleCommander\n"
-			+ "Version " + AppleCommander.VERSION + "\n"
-			+ textBundle.get("Copyright") + "\n\n"
-			+ "AppleCommander was created for the express\n"
-			+ "purpose of assisting those-who-remember.\n\n"
-			+ "I wish you many hours of vintage pleasure!\n"
-			+ "-Rob");
+		box.setText(textBundle.get("SwtAppleCommander.AboutTitle")); //$NON-NLS-1$
+		box.setMessage( 
+		  textBundle.format("SwtAppleCommander.AboutMessage", //$NON-NLS-1$
+		  new Object[] { AppleCommander.VERSION, textBundle.get("Copyright") })); //$NON-NLS-1$
 		box.open();
 	}
 

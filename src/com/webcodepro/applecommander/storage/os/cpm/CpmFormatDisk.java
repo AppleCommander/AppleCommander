@@ -28,8 +28,10 @@ import java.util.StringTokenizer;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Manages a disk that is in the Apple CP/M format.
@@ -37,6 +39,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * @author Rob Greene
  */
 public class CpmFormatDisk extends FormattedDisk {
+	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * The size of the CP/M sector.  Assumed to be 128.
 	 */
@@ -115,7 +118,7 @@ public class CpmFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getDiskName()
 	 */
 	public String getDiskName() {
-		return "CP/M Volume";
+		return textBundle.get("CpmFormatDisk.DiskName"); //$NON-NLS-1$
 	}
 
 	/**
@@ -123,7 +126,7 @@ public class CpmFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFormat()
 	 */
 	public String getFormat() {
-		return "CP/M";
+		return textBundle.get("CpmFormatDisk.Cpm"); //$NON-NLS-1$
 	}
 
 	/**
@@ -205,7 +208,7 @@ public class CpmFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getBitmapLabels()
 	 */
 	public String[] getBitmapLabels() {
-		return new String[] { "CP/M 1K BLOCK" };
+		return new String[] { textBundle.get("CpmFormatDisk.BitmapLabel") }; //$NON-NLS-1$
 	}
 
 	/**
@@ -308,7 +311,7 @@ public class CpmFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getSuggestedFilename(java.lang.String)
 	 */
 	public String getSuggestedFilename(String filename) {
-		StringTokenizer tokenizer = new StringTokenizer(filename, ".");
+		StringTokenizer tokenizer = new StringTokenizer(filename, "."); //$NON-NLS-1$
 		filename = tokenizer.nextToken();	// grab just the first part of the name..
 		StringBuffer newName = new StringBuffer();
 		if (!Character.isLetter(filename.charAt(0))) {
@@ -332,9 +335,9 @@ public class CpmFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getSuggestedFiletype(java.lang.String)
 	 */
 	public String getSuggestedFiletype(String filetype) {
-		StringTokenizer tokenizer = new StringTokenizer(filetype, ".");
+		StringTokenizer tokenizer = new StringTokenizer(filetype, "."); //$NON-NLS-1$
 		tokenizer.nextToken();
-		filetype = "";
+		filetype = ""; //$NON-NLS-1$
 		while (tokenizer.hasMoreTokens()) {
 			filetype = tokenizer.nextToken();	// grab just the last part of the name...
 		}
@@ -383,8 +386,8 @@ public class CpmFormatDisk extends FormattedDisk {
 			CpmFileEntry fileEntry = new CpmFileEntry(this, offset);
 			if (!fileEntry.isEmpty()) {
 				// Files are unique by name, type, and user number.
-				String key = fileEntry.getFilename().trim() + "." 
-					+ fileEntry.getFiletype().trim() + ":"
+				String key = fileEntry.getFilename().trim() + "."  //$NON-NLS-1$
+					+ fileEntry.getFiletype().trim() + ":" //$NON-NLS-1$
 					+ fileEntry.getUserNumber(0);
 				if (index.containsKey(key)) {
 					fileEntry = (CpmFileEntry) index.get(key);
@@ -473,16 +476,24 @@ public class CpmFormatDisk extends FormattedDisk {
 		List list = new ArrayList();
 		switch (displayMode) {
 			case FILE_DISPLAY_NATIVE:
-				list.add(new FileColumnHeader("Name", 8, FileColumnHeader.ALIGN_LEFT));
-				list.add(new FileColumnHeader("Type", 3, FileColumnHeader.ALIGN_LEFT));
+				list.add(new FileColumnHeader(textBundle.get("Name"), 8, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_LEFT));
+				list.add(new FileColumnHeader(textBundle.get("Type"), 3, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_LEFT));
 				break;
 			case FILE_DISPLAY_DETAIL:
-				list.add(new FileColumnHeader("Name", 8, FileColumnHeader.ALIGN_LEFT));
-				list.add(new FileColumnHeader("Type", 3, FileColumnHeader.ALIGN_LEFT));
-				list.add(new FileColumnHeader("Size (bytes)", 6, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("User#", 4, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Deleted?", 7, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Locked?", 6, FileColumnHeader.ALIGN_CENTER));
+				list.add(new FileColumnHeader(textBundle.get("Name"), 8, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_LEFT));
+				list.add(new FileColumnHeader(textBundle.get("Type"), 3, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_LEFT));
+				list.add(new FileColumnHeader(textBundle.get("SizeInBytes"), 6, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_RIGHT));
+				list.add(new FileColumnHeader(textBundle.get("CpmFormatDisk.UserNumber"), 4, //$NON-NLS-1$ 
+						FileColumnHeader.ALIGN_RIGHT));
+				list.add(new FileColumnHeader(textBundle.get("DeletedQ"), 7, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_CENTER));
+				list.add(new FileColumnHeader(textBundle.get("LockedQ"), 6, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_CENTER));
 				break;
 			default:	// FILE_DISPLAY_STANDARD
 				list.addAll(super.getFileColumnHeaders(displayMode));

@@ -24,7 +24,9 @@ import java.io.PrintWriter;
 
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
+import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Export an AppleWorks database file to a text file.
@@ -45,6 +47,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * @author Rob Greene
  */
 public class AppleWorksDataBaseFileFilter implements FileFilter {
+	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * The number of bytes in the remainder of the header record.
 	 */
@@ -91,7 +94,7 @@ public class AppleWorksDataBaseFileFilter implements FileFilter {
 	 * Count of the number of bytes in the remainder of the
 	 * data record.
 	 */
-	private static final int DATA_LENGTH_WORD = 0;
+//	private static final int DATA_LENGTH_WORD = 0;
 	/**
 	 * Data control record indicating that a number of
 	 * categories need to be skipped. This (minus $80)
@@ -120,9 +123,18 @@ public class AppleWorksDataBaseFileFilter implements FileFilter {
 	 * List of months used for date conversion.
 	 */
 	private static final String[] months = {
-		"January", "February", "March", "April",
-		"May", "June", "July", "August", "September",
-		"October", "November", "December"
+		StorageBundle.getInstance().get("AppleWorksDataBaseFileFilter.January"), //$NON-NLS-1$
+		StorageBundle.getInstance().get("AppleWorksDataBaseFileFilter.February"), //$NON-NLS-1$
+		StorageBundle.getInstance().get("AppleWorksDataBaseFileFilter.March"), //$NON-NLS-1$
+		StorageBundle.getInstance().get("AppleWorksDataBaseFileFilter.April"), //$NON-NLS-1$
+		StorageBundle.getInstance().get("AppleWorksDataBaseFileFilter.May"), //$NON-NLS-1$
+		StorageBundle.getInstance().get("AppleWorksDataBaseFileFilter.June"), //$NON-NLS-1$
+		StorageBundle.getInstance().get("AppleWorksDataBaseFileFilter.July"), //$NON-NLS-1$
+		StorageBundle.getInstance().get("AppleWorksDataBaseFileFilter.August"), //$NON-NLS-1$
+		StorageBundle.getInstance().get("AppleWorksDataBaseFileFilter.September"), //$NON-NLS-1$
+		StorageBundle.getInstance().get("AppleWorksDataBaseFileFilter.October"), //$NON-NLS-1$
+		StorageBundle.getInstance().get("AppleWorksDataBaseFileFilter.November"), //$NON-NLS-1$
+		StorageBundle.getInstance().get("AppleWorksDataBaseFileFilter.December") //$NON-NLS-1$
 	};
 	/**
 	 * ASCII day of the month, like "31" ($33 $31).
@@ -179,7 +191,7 @@ public class AppleWorksDataBaseFileFilter implements FileFilter {
 		int offset = HEADER_CATEGORY_STRING;
 		for (int i=0; i<categoryCount; i++) {
 			String name = AppleUtil.getProdosString(fileData, offset);
-			if (i > 0) printWriter.print(",");
+			if (i > 0) printWriter.print(","); //$NON-NLS-1$
 			printWriter.print('"');
 			printWriter.print(name);
 			printWriter.print('"');
@@ -188,7 +200,7 @@ public class AppleWorksDataBaseFileFilter implements FileFilter {
 		printWriter.println();
 		if (offset != headerLength) {
 			throw new IndexOutOfBoundsException(
-				"AppleWorks Data Base file header lenth does not check. Aborting.");
+				textBundle.get("AppleWorksDataBaseFileFilter.InvalidHeaderLengthError")); //$NON-NLS-1$
 		}
 		// skip reports:
 		offset+= (reportCount * REPORT_LENGTH);
@@ -221,7 +233,7 @@ public class AppleWorksDataBaseFileFilter implements FileFilter {
 				} else {
 					int repeats = controlByte - DATA_CONTROL_SKIP;
 					while (repeats > 0) {
-						printWriter.print("\",\"");
+						printWriter.print("\",\""); //$NON-NLS-1$
 						repeats--;
 					}
 				}
@@ -238,16 +250,15 @@ public class AppleWorksDataBaseFileFilter implements FileFilter {
 	 * @see com.webcodepro.applecommander.storage.FileFilter#getSuggestedFileName(FileEntry)
 	 */
 	public String getSuggestedFileName(FileEntry fileEntry) {
-		return fileEntry.getFilename() + ".csv";
+		return fileEntry.getFilename() + ".csv"; //$NON-NLS-1$
 	}
 	/**
 	 * Convert the date entry.
 	 */
 	protected void convertDate(PrintWriter printWriter, String date) {
 		if (date.length() != DATE_LENGTH) {
-			printWriter.print("[Invalid Date=");
-			printWriter.print(date);
-			printWriter.print("]");
+			printWriter.print(textBundle.
+					format("AppleWorksDataBaseFileFilter.InvalidDate", date)); //$NON-NLS-1$
 		}
 		
 		printWriter.print((char)('0' + (date.charAt(DATE_YEAR_OFFSET) - 0x30)));
@@ -263,9 +274,8 @@ public class AppleWorksDataBaseFileFilter implements FileFilter {
 	 */
 	protected void convertTime(PrintWriter printWriter, String time) {
 		if (time.length() != TIME_LENGTH) {
-			printWriter.print("[Invalid Time=");
-			printWriter.print(time);
-			printWriter.print("]");
+			printWriter.print(textBundle.
+					format("AppleWorksDataBaseFileFilter.InvalidTime", time)); //$NON-NLS-1$
 		}
 
 		printWriter.print(time.charAt(TIME_HOUR_OFFSET) - 'A');

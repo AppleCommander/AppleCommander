@@ -31,7 +31,6 @@ public class ProdosCommonDirectoryHeader extends ProdosCommonEntry {
 
 	/**
 	 * Constructor for ProdosCommonDirectoryHeader.
-	 * @param fileEntry
 	 */
 	public ProdosCommonDirectoryHeader(ProdosFormatDisk disk, int block) {
 		super(disk, block, 4);	// directory entries are always offset 4, right?

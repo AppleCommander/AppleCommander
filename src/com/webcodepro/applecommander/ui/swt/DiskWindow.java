@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Shell;
 
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 
 /**
@@ -44,7 +45,6 @@ public class DiskWindow {
 	
 	private DiskInfoTab diskInfoTab;
 	private DiskMapTab[] diskMapTabs;
-	private DiskExplorerTab diskExplorerTab;
 
 	/**
 	 * Construct the disk window.
@@ -70,8 +70,7 @@ public class DiskWindow {
 			});
 			
 		CTabFolder tabFolder = new CTabFolder(shell, SWT.BOTTOM);
-		diskExplorerTab = new DiskExplorerTab(tabFolder, disks, 
-			imageManager, this);
+		new DiskExplorerTab(tabFolder, disks, imageManager, this);
 		diskMapTabs = new DiskMapTab[disks.length];
 		for (int i=0; i<disks.length; i++) {
 			if (disks[i].supportsDiskMap()) {
@@ -90,13 +89,14 @@ public class DiskWindow {
 	 * This is referenced in DiskWindow as well as DiskExplorerTab.
 	 */
 	public void setStandardWindowTitle() {
-		shell.setText("AppleCommander - " + disks[0].getFilename());
+		shell.setText(UiBundle.getInstance().format(
+				"DiskWindow.Title", disks[0].getFilename())); //$NON-NLS-1$
 	}
 	
 	/**
 	 * Dispose of all shared resources.
 	 */
-	private void dispose(DisposeEvent event) {
+	protected void dispose(DisposeEvent event) {
 		for (int i=0; i<diskMapTabs.length; i++) {
 			if (diskMapTabs[i] != null) diskMapTabs[i].dispose();
 		}

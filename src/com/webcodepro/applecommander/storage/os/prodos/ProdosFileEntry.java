@@ -29,6 +29,7 @@ import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.filters.AppleWorksDataBaseFileFilter;
 import com.webcodepro.applecommander.storage.filters.AppleWorksSpreadSheetFileFilter;
 import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFileFilter;
@@ -39,6 +40,7 @@ import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Represents a ProDOS file entry on disk.
@@ -47,6 +49,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * @author Rob Greene
  */
 public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
+	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Constructor for ProdosFileEntry.
 	 */
@@ -344,68 +347,75 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 */
 	public List getFileColumnData(int displayMode) {
 		NumberFormat numberFormat = NumberFormat.getNumberInstance();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+		SimpleDateFormat dateFormat = new SimpleDateFormat(
+				textBundle.get("DateFormat")); //$NON-NLS-1$
 
 		List list = new ArrayList();
 		switch (displayMode) {
 			case FormattedDisk.FILE_DISPLAY_NATIVE:
-				list.add(isLocked() ? "*" : " ");
+				list.add(isLocked() ? "*" : " "); //$NON-NLS-1$ //$NON-NLS-2$
 				list.add(getFilename());
 				list.add(getFiletype());
 				numberFormat.setMinimumIntegerDigits(3);
 				list.add(numberFormat.format(getBlocksUsed()));
-				list.add(getLastModificationDate() == null ? "<NO DATE> " : 
+				list.add(getLastModificationDate() == null ? 
+					textBundle.get("ProdosFileEntry.NullDate") :  //$NON-NLS-1$
 					dateFormat.format(getLastModificationDate()));
-				list.add(getCreationDate() == null ? "<NO DATE> " : 
+				list.add(getCreationDate() == null ? 
+					textBundle.get("ProdosFileEntry.NullDate") :  //$NON-NLS-1$
 					dateFormat.format(getCreationDate()));
 				numberFormat.setMinimumIntegerDigits(1);
 				list.add(numberFormat.format(getEofPosition()));
-				if ("TXT".equals(getFiletype()) && getAuxiliaryType() > 0) {
+				if ("TXT".equals(getFiletype()) && getAuxiliaryType() > 0) { //$NON-NLS-1$
 					numberFormat.setMinimumIntegerDigits(1);
-					list.add("L=" + numberFormat.format(getAuxiliaryType()).trim());
-				} else if (("BIN".equals(getFiletype()) || "BAS".equals(getFiletype())
-						|| "VAR".equals(getFiletype()) || "SYS".equals(getFiletype()))
+					list.add("L=" + numberFormat.format(getAuxiliaryType()).trim()); //$NON-NLS-1$
+				} else if (("BIN".equals(getFiletype()) || "BAS".equals(getFiletype()) //$NON-NLS-1$ //$NON-NLS-2$
+						|| "VAR".equals(getFiletype()) || "SYS".equals(getFiletype())) //$NON-NLS-1$ //$NON-NLS-2$
 						&&  getAuxiliaryType() > 0) {
-					list.add("A=$" + AppleUtil.getFormattedWord(getAuxiliaryType()));
+					list.add("A=$" + AppleUtil.getFormattedWord(getAuxiliaryType())); //$NON-NLS-1$
 				} else {
-					list.add("");
+					list.add(""); //$NON-NLS-1$
 				}
 				break;
 			case FormattedDisk.FILE_DISPLAY_DETAIL:
-				list.add(isLocked() ? "*" : " ");
+				list.add(isLocked() ? "*" : " "); //$NON-NLS-1$ //$NON-NLS-2$
 				list.add(getFilename());
-				list.add(isDeleted() ? "Deleted" : "");
-				String permissions = "";
-				if (canDestroy()) permissions+= "Destroy ";
-				if (canRead()) permissions+= "Read ";
-				if (canRename()) permissions+= "Rename ";
-				if (canWrite()) permissions+= "Write ";
+				list.add(isDeleted() ? textBundle.get("Deleted") : "");  //$NON-NLS-1$//$NON-NLS-2$
+				String permissions = ""; //$NON-NLS-1$
+				if (canDestroy()) permissions+= textBundle.get("Destroy"); //$NON-NLS-1$
+				if (canRead()) permissions+= textBundle.get("Read"); //$NON-NLS-1$
+				if (canRename()) permissions+= textBundle.get("Rename"); //$NON-NLS-1$
+				if (canWrite()) permissions+= textBundle.get("Write"); //$NON-NLS-1$
 				list.add(permissions);
 				list.add(getFiletype());
-				list.add(isDirectory() ? "Directory" : "");
+				list.add(isDirectory() ? textBundle.get("ProdosFileEntry.Directory") : "");  //$NON-NLS-1$//$NON-NLS-2$
 				numberFormat.setMinimumIntegerDigits(3);
 				list.add(numberFormat.format(getBlocksUsed()));
-				list.add(getLastModificationDate() == null ? "<NO DATE> " : 
+				list.add(getLastModificationDate() == null ? 
+					textBundle.get("ProdosFileEntry.NullDate") :  //$NON-NLS-1$
 					dateFormat.format(getLastModificationDate()));
-				list.add(getCreationDate() == null ? "<NO DATE> " : 
+				list.add(getCreationDate() == null ? textBundle.get("ProdosFileEntry.NullDate") :  //$NON-NLS-1$
 					dateFormat.format(getCreationDate()));
 				numberFormat.setMinimumIntegerDigits(1);
 				list.add(numberFormat.format(getEofPosition()));
-				if ("TXT".equals(getFiletype()) && getAuxiliaryType() > 0) {
+				if ("TXT".equals(getFiletype()) && getAuxiliaryType() > 0) { //$NON-NLS-1$
 					numberFormat.setMinimumIntegerDigits(1);
-					list.add("L=" + numberFormat.format(getAuxiliaryType()).trim());
-				} else if (("BIN".equals(getFiletype()) || "BAS".equals(getFiletype())
-						|| "VAR".equals(getFiletype()) || "SYS".equals(getFiletype()))
+					list.add("L=" + numberFormat.format(getAuxiliaryType()).trim()); //$NON-NLS-1$
+				} else if (("BIN".equals(getFiletype()) || "BAS".equals(getFiletype()) //$NON-NLS-1$ //$NON-NLS-2$
+						|| "VAR".equals(getFiletype()) || "SYS".equals(getFiletype())) //$NON-NLS-1$ //$NON-NLS-2$
 						&&  getAuxiliaryType() > 0) {
-					list.add("A=$" + AppleUtil.getFormattedWord(getAuxiliaryType()));
+					list.add("A=$" + AppleUtil.getFormattedWord(getAuxiliaryType())); //$NON-NLS-1$
 				} else {
-					list.add("$" + AppleUtil.getFormattedWord(getAuxiliaryType()));
+					list.add("$" + AppleUtil.getFormattedWord(getAuxiliaryType())); //$NON-NLS-1$
 				}
 				list.add(AppleUtil.getFormattedWord(getHeaderPointer()));
 				list.add(AppleUtil.getFormattedWord(getKeyPointer()));
-				list.add(isSaplingFile() ? "Sapling" : isSeedlingFile() ? "Seedling" : 
-					isTreeFile() ? "Tree" : "Unknown (" + getFileTypeString() + ")");
-				list.add(hasChanged() ? "Changed" : "");
+				list.add(isSaplingFile() ? textBundle.get("ProdosFileEntry.Sapling") :  //$NON-NLS-1$
+					isSeedlingFile() ? textBundle.get("ProdosFileEntry.Seedling") :  //$NON-NLS-1$
+					isTreeFile() ? textBundle.get("ProdosFileEntry.Tree") :  //$NON-NLS-1$
+					textBundle.format("ProdosFileEntry.UnknownFileType", getFileTypeString())); //$NON-NLS-1$
+				list.add(hasChanged() ? 
+					textBundle.get("ProdosFileEntry.Changed") : "");  //$NON-NLS-1$//$NON-NLS-2$
 				numberFormat.setMinimumIntegerDigits(1);
 				list.add(numberFormat.format(getMinimumProdosVersion()));
 				list.add(numberFormat.format(getProdosVersion()));
@@ -414,7 +424,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 				list.add(getFilename());
 				list.add(getFiletype());
 				list.add(numberFormat.format(getSize()));
-				list.add(isLocked() ? "Locked" : "");
+				list.add(isLocked() ? textBundle.get("Locked") : "");  //$NON-NLS-1$//$NON-NLS-2$
 				break;
 		}
 		return list;
@@ -424,7 +434,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 * Return the ProDOS file type as a hex string.
 	 */
 	public String getFileTypeString() {
-		return "$" + AppleUtil.getFormattedByte(getStorageType());
+		return "$" + AppleUtil.getFormattedByte(getStorageType()); //$NON-NLS-1$
 	}
 
 	/**
@@ -457,7 +467,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 		
 		switch (filetype) {
 		case 0x04:		// TXT
-			if (getFilename().endsWith(".S")) {
+			if (getFilename().endsWith(".S")) { //$NON-NLS-1$
 				return new AssemblySourceFileFilter();			
 			}
 			return new TextFileFilter();

@@ -29,7 +29,6 @@ import java.util.GregorianCalendar;
 
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import com.webcodepro.applecommander.ui.TextBundle;
 
 /**
  * This class contains helper methods for dealing with Apple2 data.
@@ -540,8 +539,8 @@ public class AppleUtil {
 	public static String getHexDump(byte[] bytes) {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		PrintWriter printer = new PrintWriter(output);
-		printer.println(textBundle.get("HexDumpLine1")); //$NON-NLS-1$
-		printer.println(textBundle.get("HexDumpLine2")); //$NON-NLS-1$
+		printer.println(textBundle.get("AppleUtil.HexDumpLine1")); //$NON-NLS-1$
+		printer.println(textBundle.get("AppleUtil.HexDumpLine2")); //$NON-NLS-1$
 		for (int offset=0; offset<bytes.length; offset+= BYTES_PER_LINE) {
 			printer.print("$"); //$NON-NLS-1$
 			printer.print(AppleUtil.getFormatted3ByteAddress(offset));
@@ -570,7 +569,7 @@ public class AppleUtil {
 			}
 			printer.println();
 		}
-		printer.println(textBundle.get("HexDumpEndMessage")); //$NON-NLS-1$
+		printer.println(textBundle.get("AppleUtil.HexDumpEndMessage")); //$NON-NLS-1$
 		printer.flush();
 		printer.close();
 		return output.toString();
@@ -581,7 +580,8 @@ public class AppleUtil {
 	 */
 	public static void changeImageOrderByTrackAndSector(ImageOrder sourceOrder, ImageOrder targetOrder) {
 		if (!sameSectorsPerDisk(sourceOrder, targetOrder)) {
-			throw new IllegalArgumentException(textBundle.get("CannotChangeImageOrder")); //$NON-NLS-1$
+			throw new IllegalArgumentException(textBundle.
+					get("AppleUtil.CannotChangeImageOrder")); //$NON-NLS-1$
 		}
 		for (int track = 0; track < sourceOrder.getTracksPerDisk(); track++) {
 			for (int sector = 0; sector < sourceOrder.getSectorsPerTrack(); sector++) {
@@ -605,7 +605,8 @@ public class AppleUtil {
 		ImageOrder sourceOrder = sourceDisk.getImageOrder();
 		ImageOrder targetOrder = targetDisk.getImageOrder();
 		if (!sameSectorsPerDisk(sourceOrder, targetOrder)) {
-			throw new IllegalArgumentException(textBundle.get("CannotCompareDisks")); //$NON-NLS-1$
+			throw new IllegalArgumentException(textBundle.
+					get("AppleUtil.CannotCompareDisks")); //$NON-NLS-1$
 		}
 		for (int track = 0; track < sourceOrder.getTracksPerDisk(); track++) {
 			for (int sector = 0; sector < sourceOrder.getSectorsPerTrack(); sector++) {
@@ -624,7 +625,8 @@ public class AppleUtil {
 	 */
 	public static void changeImageOrderByBlock(ImageOrder sourceOrder, ImageOrder targetOrder) {
 		if (!sameBlocksPerDisk(sourceOrder, targetOrder)) {
-			throw new IllegalArgumentException(textBundle.get("CannotChangeImageOrder")); //$NON-NLS-1$
+			throw new IllegalArgumentException(textBundle.
+					get("AppleUtil.CannotChangeImageOrder")); //$NON-NLS-1$
 		}
 		for (int block = 0; block < sourceOrder.getBlocksOnDevice(); block++) {
 			byte[] blockData = sourceOrder.readBlock(block);
@@ -646,7 +648,8 @@ public class AppleUtil {
 		ImageOrder sourceOrder = sourceDisk.getImageOrder();
 		ImageOrder targetOrder = targetDisk.getImageOrder();
 		if (!sameBlocksPerDisk(sourceOrder, targetOrder)) {
-			throw new IllegalArgumentException(textBundle.get("CannotCompareDisks")); //$NON-NLS-1$
+			throw new IllegalArgumentException(textBundle.
+					get("AppleUtil.CannotCompareDisks")); //$NON-NLS-1$
 		}
 		for (int block = 0; block < sourceOrder.getBlocksOnDevice(); block++) {
 				byte[] sourceData = sourceOrder.readBlock(block);

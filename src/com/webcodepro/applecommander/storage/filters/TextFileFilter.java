@@ -70,8 +70,8 @@ public class TextFileFilter implements FileFilter {
 	 */
 	public String getSuggestedFileName(FileEntry fileEntry) {
 		String fileName = fileEntry.getFilename().trim();
-		if (!fileName.toLowerCase().endsWith(".txt")) {
-			fileName = fileName + ".txt";
+		if (!fileName.toLowerCase().endsWith(".txt")) { //$NON-NLS-1$
+			fileName = fileName + ".txt"; //$NON-NLS-1$
 		}
 		return fileName;
 	}

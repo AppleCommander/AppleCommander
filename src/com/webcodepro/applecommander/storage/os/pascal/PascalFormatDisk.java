@@ -28,8 +28,10 @@ import java.util.List;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Manages a disk that is in the Pascal format.
@@ -38,6 +40,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * @author Rob Greene
  */
 public class PascalFormatDisk extends FormattedDisk {
+	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * The size of the Pascal file entry.
 	 */
@@ -48,22 +51,22 @@ public class PascalFormatDisk extends FormattedDisk {
 	public static final int PASCAL_BLOCKS_ON_140K_DISK = 280;
 	
 	// filetypes used elsewhere in the code:
-	private static final String TEXTFILE = "textfile";
-	private static final String CODEFILE = "codefile";
-	private static final String DATAFILE = "datafile";
+	private static final String TEXTFILE = "textfile"; //$NON-NLS-1$
+	private static final String CODEFILE = "codefile"; //$NON-NLS-1$
+	private static final String DATAFILE = "datafile"; //$NON-NLS-1$
 	
 	/**
 	 * The know filetypes for a Pascal disk.
 	 */
 	private static final String[] filetypes = {
-			"xdskfile",
+			"xdskfile", //$NON-NLS-1$
 			CODEFILE,
 			TEXTFILE,
-			"infofile",
+			"infofile", //$NON-NLS-1$
 			DATAFILE,
-			"graffile",
-			"fotofile",
-			"securedir" };
+			"graffile", //$NON-NLS-1$
+			"fotofile", //$NON-NLS-1$
+			"securedir" }; //$NON-NLS-1$
 
 	/**
 	 * Use this inner interface for managing the disk usage data.
@@ -109,8 +112,6 @@ public class PascalFormatDisk extends FormattedDisk {
 	
 	/**
 	 * Constructor for PascalFormatDisk.
-	 * @param filename
-	 * @param diskImage
 	 */
 	public PascalFormatDisk(String filename, ImageOrder imageOrder) {
 		super(filename, imageOrder);
@@ -128,15 +129,15 @@ public class PascalFormatDisk extends FormattedDisk {
 
 	/**
 	 * Identify the operating system format of this disk.
-	 * @see com.webcodepro.applecommander.storage.Disk#getFormat()
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFormat()
 	 */
 	public String getFormat() {
-		return "Pascal";
+		return textBundle.get("PascalFormatDisk.Pascal"); //$NON-NLS-1$
 	}
 
 	/**
 	 * Retrieve a list of files.
-	 * @see com.webcodepro.applecommander.storage.Disk#getFiles()
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFiles()
 	 */
 	public List getFiles() {
 		List list = new ArrayList();
@@ -158,7 +159,7 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * Create a new FileEntry.
 	 */
 	public FileEntry createFile() throws DiskFullException {
-		throw new DiskFullException("Unable to create files (yet).");
+		throw new DiskFullException(textBundle.get("FileCreationNotSupported")); //$NON-NLS-1$
 	}
 
 	/**
@@ -197,7 +198,7 @@ public class PascalFormatDisk extends FormattedDisk {
 	 */
 	public void writeDirectory(byte[] directory) {
 		if (directory == null || directory.length != 2048) {
-			throw new IllegalArgumentException("Invalid Pascal directory.");
+			throw new IllegalArgumentException(textBundle.get("PascalFormatDisk.InvalidPascalDirectory")); //$NON-NLS-1$
 		}
 		for (int i=0; i<4; i++) {
 			byte[] block = new byte[BLOCK_SIZE];
@@ -208,7 +209,7 @@ public class PascalFormatDisk extends FormattedDisk {
 
 	/**
 	 * Identify if this disk format is capable of having directories.
-	 * @see com.webcodepro.applecommander.storage.Disk#canHaveDirectories()
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#canHaveDirectories()
 	 */
 	public boolean canHaveDirectories() {
 		return false;
@@ -216,7 +217,7 @@ public class PascalFormatDisk extends FormattedDisk {
 
 	/**
 	 * Return the amount of free space in bytes.
-	 * @see com.webcodepro.applecommander.storage.Disk#getFreeSpace()
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFreeSpace()
 	 */
 	public int getFreeSpace() {
 		return getFreeBlocks() * BLOCK_SIZE;
@@ -277,7 +278,7 @@ public class PascalFormatDisk extends FormattedDisk {
 
 	/**
 	 * Return the amount of used space in bytes.
-	 * @see com.webcodepro.applecommander.storage.Disk#getUsedSpace()
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getUsedSpace()
 	 */
 	public int getUsedSpace() {
 		return getUsedBlocks() * BLOCK_SIZE;
@@ -301,10 +302,10 @@ public class PascalFormatDisk extends FormattedDisk {
 	/**
 	 * Return the name of the disk.  This is stored on block #2
 	 * offset +6 (string[7]).
-	 * @see com.webcodepro.applecommander.storage.Disk#getDiskName()
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getDiskName()
 	 */
 	public String getDiskName() {
-		return AppleUtil.getPascalString(readBlock(2), 6) + ":";
+		return AppleUtil.getPascalString(readBlock(2), 6) + ":"; //$NON-NLS-1$
 	}
 	
 	/**
@@ -343,7 +344,7 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * Get the labels to use in the bitmap.
 	 */
 	public String[] getBitmapLabels() {
-		return new String[] { "Block" };
+		return new String[] { textBundle.get("Block") }; //$NON-NLS-1$
 	}
 	
 	/**
@@ -351,12 +352,15 @@ public class PascalFormatDisk extends FormattedDisk {
 	 */
 	public List getDiskInformation() {
 		List list = super.getDiskInformation();
-		list.add(new DiskInformation("Total Blocks", getBlocksOnDisk()));
-		list.add(new DiskInformation("Free Blocks", getFreeBlocks()));
-		list.add(new DiskInformation("Used Blocks", getUsedBlocks()));
-		list.add(new DiskInformation("Files On Disk", getFilesOnDisk()));
-		list.add(new DiskInformation("Last Access Date", getLastAccessDate()));
-		list.add(new DiskInformation("Most Recent Date Setting", getMostRecentDateSetting()));
+		list.add(new DiskInformation(textBundle.get("TotalBlocks"), getBlocksOnDisk())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("FreeBlocks"), getFreeBlocks())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("UsedBlocks"), getUsedBlocks())); //$NON-NLS-1$
+		list.add(new DiskInformation(
+				textBundle.get("PascalFormatDisk.FilesOnDisk"), getFilesOnDisk())); //$NON-NLS-1$
+		list.add(new DiskInformation(
+				textBundle.get("PascalFormatDisk.LastAccessDate"), getLastAccessDate())); //$NON-NLS-1$
+		list.add(new DiskInformation(
+				textBundle.get("PascalFormatDisk.MostRecentDateSetting"), getMostRecentDateSetting())); //$NON-NLS-1$
 		return list;
 	}
 
@@ -368,20 +372,35 @@ public class PascalFormatDisk extends FormattedDisk {
 		List list = new ArrayList();
 		switch (displayMode) {
 			case FILE_DISPLAY_NATIVE:
-				list.add(new FileColumnHeader("Modified", 8, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Blocks", 3, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Filetype", 8, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Name", 15, FileColumnHeader.ALIGN_LEFT));
+				list.add(new FileColumnHeader(textBundle.get("Modified"), 8, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_CENTER));
+				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_RIGHT));
+				list.add(new FileColumnHeader(textBundle.get("Filetype"), 8, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_CENTER));
+				list.add(new FileColumnHeader(textBundle.get("Name"), 15, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_LEFT));
 				break;
 			case FILE_DISPLAY_DETAIL:
-				list.add(new FileColumnHeader("Modified", 8, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Blocks", 3, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Bytes in last block", 3, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Size (bytes)", 6, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Filetype", 8, FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader("Name", 15, FileColumnHeader.ALIGN_LEFT));
-				list.add(new FileColumnHeader("First Block", 3, FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader("Last Block", 3, FileColumnHeader.ALIGN_RIGHT));
+				list.add(new FileColumnHeader(textBundle.get("Modified"), 8, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_CENTER));
+				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_RIGHT));
+				list.add(new FileColumnHeader(
+						textBundle.get("PascalFormatDisk.BytesInLastBlock"), 3, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_RIGHT));
+				list.add(new FileColumnHeader(textBundle.get("SizeInBytes"), 6, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_RIGHT));
+				list.add(new FileColumnHeader(textBundle.get("Filetype"), 8, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_CENTER));
+				list.add(new FileColumnHeader(textBundle.get("Name"), 15, //$NON-NLS-1$
+						FileColumnHeader.ALIGN_LEFT));
+				list.add(new FileColumnHeader(
+						textBundle.get("PascalFormatDisk.FirstBlock"), 3, //$NON-NLS-1$ 
+						FileColumnHeader.ALIGN_RIGHT));
+				list.add(new FileColumnHeader(
+						textBundle.get("PascalFormatDisk.LastBlock"), 3, //$NON-NLS-1$ 
+						FileColumnHeader.ALIGN_RIGHT));
 				break;
 			default:	// FILE_DISPLAY_STANDARD
 				list.addAll(super.getFileColumnHeaders(displayMode));
@@ -423,7 +442,7 @@ public class PascalFormatDisk extends FormattedDisk {
 	 */
 	public byte[] getFileData(FileEntry fileEntry) {
 		if ( !(fileEntry instanceof PascalFileEntry)) {
-			throw new IllegalArgumentException("Most have a Pascal file entry!");
+			throw new IllegalArgumentException(textBundle.get("PascalFormatDisk.IncorrectFileEntryError")); //$NON-NLS-1$
 		}
 		PascalFileEntry pascalEntry = (PascalFileEntry) fileEntry;
 		int firstBlock = pascalEntry.getFirstBlock();
@@ -433,7 +452,8 @@ public class PascalFormatDisk extends FormattedDisk {
 		for (int block = firstBlock; block < lastBlock; block++) {
 			byte[] blockData = readBlock(block);
 			if (block == lastBlock-1) {
-				System.arraycopy(blockData, 0, fileData, offset, pascalEntry.getBytesUsedInLastBlock());
+				System.arraycopy(blockData, 0, fileData, offset, 
+						pascalEntry.getBytesUsedInLastBlock());
 			} else {
 				System.arraycopy(blockData, 0, fileData, offset, blockData.length);
 			}
@@ -498,12 +518,12 @@ public class PascalFormatDisk extends FormattedDisk {
 	 */
 	public String getSuggestedFiletype(String filename) {
 		String filetype = DATAFILE;
-		int pos = filename.lastIndexOf(".");
+		int pos = filename.lastIndexOf("."); //$NON-NLS-1$
 		if (pos > 0) {
 			String what = filename.substring(pos+1);
-			if ("txt".equalsIgnoreCase(what)) {
+			if ("txt".equalsIgnoreCase(what)) { //$NON-NLS-1$
 				filetype = TEXTFILE;
-			} else if ("pas".equalsIgnoreCase(what)) {
+			} else if ("pas".equalsIgnoreCase(what)) { //$NON-NLS-1$
 				filetype = CODEFILE;
 			}
 		}

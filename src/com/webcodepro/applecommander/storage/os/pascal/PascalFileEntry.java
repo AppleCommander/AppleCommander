@@ -30,11 +30,13 @@ import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Represents a Pascal file entry on disk.
@@ -43,6 +45,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * @author Rob Greene
  */
 public class PascalFileEntry implements FileEntry {
+	private TextBundle textBundle = StorageBundle.getInstance();
 	private byte[] fileEntry;
 	private PascalFormatDisk disk;
 
@@ -97,10 +100,9 @@ public class PascalFileEntry implements FileEntry {
 		String[] filetypes = disk.getFiletypes();
 		int filetype = fileEntry[4] & 0x0f;
 		if (filetype == 0 || filetype > filetypes.length) {
-			return "unknown (" + filetype + ")";
-		} else {
-			return filetypes[filetype-1];
+			return textBundle.format("PascalFileEntry.UnknownFiletype", filetype); //$NON-NLS-1$
 		}
+		return filetypes[filetype-1];
 	}
 
 	/**
@@ -190,7 +192,8 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	public List getFileColumnData(int displayMode) {
 		NumberFormat numberFormat = NumberFormat.getNumberInstance();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yy");
+		SimpleDateFormat dateFormat = new SimpleDateFormat(
+				textBundle.get("PascalFileEntry.PascalDateFormat")); //$NON-NLS-1$
 
 		List list = new ArrayList();
 		switch (displayMode) {
@@ -218,7 +221,7 @@ public class PascalFileEntry implements FileEntry {
 				list.add(getFilename());
 				list.add(getFiletype());
 				list.add(numberFormat.format(getSize()));
-				list.add(isLocked() ? "Locked" : "");
+				list.add(isLocked() ? textBundle.get("Locked") : "");  //$NON-NLS-1$//$NON-NLS-2$
 				break;
 		}
 		return list;
@@ -246,13 +249,12 @@ public class PascalFileEntry implements FileEntry {
 	 * of guessing the appropriate filter.
 	 */
 	public FileFilter getSuggestedFilter() {
-		if ("textfile".equals(getFiletype())) {
-			if (getFilename().toLowerCase().endsWith(".text")) {
+		if ("textfile".equals(getFiletype())) { //$NON-NLS-1$
+			if (getFilename().toLowerCase().endsWith(".text")) { //$NON-NLS-1$
 				return new PascalTextFileFilter();
-			} else {
-				return new TextFileFilter();
 			}
-		} else if ("datafile".equals(getFiletype()) && getSize() >= 8184 && getSize() <= 8192) {
+			return new TextFileFilter();
+		} else if ("datafile".equals(getFiletype()) && getSize() >= 8184 && getSize() <= 8192) { //$NON-NLS-1$
 			GraphicsFileFilter filter = new GraphicsFileFilter();
 			filter.setMode(GraphicsFileFilter.MODE_HGR_COLOR);
 			return filter;

@@ -29,6 +29,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Label;
 
+import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.FileViewerWindow;
 import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
 import com.webcodepro.applecommander.ui.swt.util.contentadapter.ImageCanvasAdapter;
@@ -77,7 +78,8 @@ public class GraphicsFilterAdapter extends FilterAdapter {
 			setContentTypeAdapter(new ImageCanvasAdapter(imageCanvas, getFileEntry().getFilename()));
 		} else {
 			Label label = new Label(getComposite(), SWT.NULL);
-			label.setText("Unexpected graphic file encountered!");
+			label.setText(UiBundle.getInstance().get(
+					"GraphicsFilterAdapter.BadImageMessage")); //$NON-NLS-1$
 			getComposite().setContent(label);
 			getComposite().setExpandHorizontal(true);
 			getComposite().setExpandVertical(true);

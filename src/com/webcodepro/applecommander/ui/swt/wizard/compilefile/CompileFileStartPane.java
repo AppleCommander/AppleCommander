@@ -33,8 +33,9 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import com.webcodepro.applecommander.ui.TextBundle;
+import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Provides the wizard pane which gets the export filter.
@@ -43,7 +44,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  * @author Rob Greene
  */
 public class CompileFileStartPane extends WizardPane {
-	private TextBundle textBundle = TextBundle.getInstance();
+	private TextBundle textBundle = UiBundle.getInstance();
 	private Composite parent;
 	private Object layoutData;
 	private Composite control;
@@ -99,7 +100,7 @@ public class CompileFileStartPane extends WizardPane {
 				DirectoryDialog directoryDialog = new DirectoryDialog(
 						getControl().getShell());
 				directoryDialog.setFilterPath(getDirectoryText().getText());
-				directoryDialog.setMessage(TextBundle.getInstance().
+				directoryDialog.setMessage(UiBundle.getInstance().
 						get("CompileFileDirectoryPrompt")); //$NON-NLS-1$
 				String directory = directoryDialog.open();
 				if (directory != null) {
