@@ -35,6 +35,8 @@ public class UserPreferences {
 	private static final String IMAGE_DIRECTORY = "imageDirectory";
 	private static final String EXPORT_DIRECTORY = "exportDirectory";
 	private static final String COMPILE_DIRECTORY = "compileDirectory";
+	private static final String SAVE_DIRECTORY = "saveDirectory";
+	private static final String IMPORT_DIRECTORY = "importDirectory";
 	private static UserPreferences instance;
 	private Properties properties = new Properties();
 	/**
@@ -75,7 +77,7 @@ public class UserPreferences {
 		}
 	}
 	/**
-	 * Get the disk image directory.
+	 * Get the disk image directory (used for "open" command).
 	 */
 	public String getDiskImageDirectory() {
 		return properties.getProperty(IMAGE_DIRECTORY);
@@ -91,6 +93,18 @@ public class UserPreferences {
 	 */
 	public String getCompileDirectory() {
 		return properties.getProperty(COMPILE_DIRECTORY);
+	}
+	/**
+	 * Get the save directory.
+	 */
+	public String getSaveDirectory() {
+		return properties.getProperty(SAVE_DIRECTORY);
+	}
+	/**
+	 * Get the import directory.
+	 */
+	public String getImportDirectory() {
+		return properties.getProperty(IMPORT_DIRECTORY);
 	}
 	/**
 	 * Set the disk image directory.
@@ -109,5 +123,17 @@ public class UserPreferences {
 	 */
 	public void setCompileDirectory(String compileDirectory) {
 		properties.setProperty(COMPILE_DIRECTORY, compileDirectory);
+	}
+	/**
+	 * Set the save directory.
+	 */
+	public void setSaveDirectory(String saveDirectory) {
+		properties.setProperty(SAVE_DIRECTORY, saveDirectory);
+	}
+	/**
+	 * Set the import directory.
+	 */
+	public void setImportDirectory(String importDirectory) {
+		properties.setProperty(IMPORT_DIRECTORY, importDirectory);
 	}
 }
