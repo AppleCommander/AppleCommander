@@ -400,6 +400,9 @@ public class Disk {
 	 */
 	protected int getOffset(int track, int sector) throws IllegalArgumentException {
 		int length = diskImage.length;
+		if (length >= APPLE_140KB_DISK && length <= APPLE_140KB_DISK + 10) {
+			length = APPLE_140KB_DISK;
+		}
 		if (length != APPLE_140KB_DISK && length != APPLE_800KB_DISK
 			&& length != APPLE_800KB_2IMG_DISK
 			&& track != 0 && sector != 0) {		// HACK: Allows boot sector writing
@@ -446,14 +449,16 @@ public class Disk {
 	 */
 	public boolean isDosFormat() {
 		byte[] vtoc = readSector(17, 0);
-		return getPhysicalSize() == APPLE_140KB_DISK
+		return getPhysicalSize() >= APPLE_140KB_DISK
+			// sometimes the disk image can have stray bytes at the end... 
+			&& getPhysicalSize() <= APPLE_140KB_DISK + 16
 			&& vtoc[0x01] == 17		// expect catalog to start on track 17
-			&& vtoc[0x02] == 15		// expect catalog to start on sector 15 (140KB disk only!)
+// can vary	&& vtoc[0x02] == 15		// expect catalog to start on sector 15 (140KB disk only!)
 			&& vtoc[0x27] == 122	// expect 122 tract/sector pairs per sector
 			&& vtoc[0x34] == 35		// expect 35 tracks per disk (140KB disk only!)
-			&& vtoc[0x35] == 16		// expect 16 sectors per disk (140KB disk only!)
-			&& vtoc[0x36] == 0		// bytes per sector (low byte)
-			&& vtoc[0x37] == 1;		// bytes per sector (high byte)
+			&& vtoc[0x35] == 16;		// expect 16 sectors per disk (140KB disk only!)
+//			&& vtoc[0x36] == 0		// bytes per sector (low byte)
+//			&& vtoc[0x37] == 1;		// bytes per sector (high byte)
 	}
 
 	/**
