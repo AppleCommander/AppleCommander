@@ -113,6 +113,7 @@ public class DiskExplorerTab {
 	private ToolItem importToolItem;
 	private ToolItem compileToolItem;
 	private ToolItem viewFileItem;
+	private ToolItem printToolItem;
 	private ToolItem deleteToolItem;
 	private ToolItem saveToolItem;
 	private ToolItem saveAsToolItem;
@@ -289,7 +290,7 @@ public class DiskExplorerTab {
 
 		item = new MenuItem(menu, SWT.CASCADE);
 		item.setText("Import...\tCTRL+I");
-		item.setImage(imageManager.getImportFileIcon());
+		item.setImage(imageManager.get(ImageManager.ICON_IMPORT_FILE));
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				importFiles();
@@ -327,12 +328,17 @@ public class DiskExplorerTab {
 		MenuItem item = new MenuItem(menu, SWT.CASCADE);
 		item.setText("&View\tCtrl+V");
 		item.setAccelerator(SWT.CTRL+'V');
-		item.setImage(imageManager.getViewFileIcon());
+		item.setImage(imageManager.get(ImageManager.ICON_VIEW_FILE));
+		item.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				viewFile();
+			}
+		});
 
 		item = new MenuItem(menu, SWT.CASCADE);
 		item.setText("&Compile...\tCtrl+C");
 		item.setAccelerator(SWT.CTRL+'C');
-		item.setImage(imageManager.getCompileIcon());
+		item.setImage(imageManager.get(ImageManager.ICON_COMPILE_FILE));
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				compileFileWizard();
@@ -346,7 +352,7 @@ public class DiskExplorerTab {
 		item.setAccelerator(SWT.CTRL+'E');
 		item.setEnabled(disks[0].canReadFileData());
 		item.setMenu(createFileExportMenu(SWT.DROP_DOWN));
-		item.setImage(imageManager.getExportFileIcon());
+		item.setImage(imageManager.get(ImageManager.ICON_EXPORT_FILE));
 
 		item = new MenuItem(menu, SWT.SEPARATOR);
 
@@ -354,7 +360,7 @@ public class DiskExplorerTab {
 		item.setText("&Delete...\tCtrl+D");
 		item.setAccelerator(SWT.CTRL+'D');
 		item.setEnabled(disks[0].canDeleteFile());
-		item.setImage(imageManager.getDeleteFileIcon());
+		item.setImage(imageManager.get(ImageManager.ICON_DELETE_FILE));
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				deleteFile();
@@ -639,7 +645,6 @@ public class DiskExplorerTab {
 						exportToolItem.setEnabled(disks[0].canReadFileData());
 						deleteToolItem.setEnabled(disks[0].canDeleteFile());
 						compileToolItem.setEnabled(fileEntry != null && fileEntry.canCompile());
-						// FIXME: Need appropriate logic..
 						viewFileItem.setEnabled(true);
 					} else {
 						exportToolItem.setEnabled(false);
@@ -652,7 +657,7 @@ public class DiskExplorerTab {
 				 * Double-click handler.
 				 */
 				public void widgetDefaultSelected(SelectionEvent event) {
-					// No action defined at this time
+					viewFile();
 				}
 			});
 			TableColumn column = null;
@@ -1027,7 +1032,7 @@ public class DiskExplorerTab {
 		if (layoutData != null) toolBar.setLayoutData(layoutData);
 
 		standardFormatToolItem = new ToolItem(toolBar, SWT.RADIO);
-		standardFormatToolItem.setImage(imageManager.getStandardFileViewIcon());
+		standardFormatToolItem.setImage(imageManager.get(ImageManager.ICON_STANDARD_FILE_VIEW));
 		standardFormatToolItem.setText("Standard");
 		standardFormatToolItem.setToolTipText("Displays files in standard format (F2)");
 		standardFormatToolItem.setSelection(true);
@@ -1037,7 +1042,7 @@ public class DiskExplorerTab {
 			}
 		});
 		nativeFormatToolItem = new ToolItem(toolBar, SWT.RADIO);
-		nativeFormatToolItem.setImage(imageManager.getNativeFileViewIcon());
+		nativeFormatToolItem.setImage(imageManager.get(ImageManager.ICON_NATIVE_FILE_VIEW));
 		nativeFormatToolItem.setText("Native");
 		nativeFormatToolItem.setToolTipText("Displays files in native format for the operating system (F3)");
 		nativeFormatToolItem.addSelectionListener(new SelectionAdapter () {
@@ -1046,7 +1051,7 @@ public class DiskExplorerTab {
 			}
 		});
 		detailFormatToolItem = new ToolItem(toolBar, SWT.RADIO);
-		detailFormatToolItem.setImage(imageManager.getDetailFileViewIcon());
+		detailFormatToolItem.setImage(imageManager.get(ImageManager.ICON_DETAIL_FILE_VIEW));
 		detailFormatToolItem.setText("Detail");
 		detailFormatToolItem.setToolTipText("Displays files in with full details (F4)");
 		detailFormatToolItem.addSelectionListener(new SelectionAdapter () {
@@ -1058,7 +1063,7 @@ public class DiskExplorerTab {
 		new ToolItem(toolBar, SWT.SEPARATOR);
 		
 		showDeletedFilesToolItem = new ToolItem(toolBar, SWT.CHECK);
-		showDeletedFilesToolItem.setImage(imageManager.getDeletedFilesIcon());
+		showDeletedFilesToolItem.setImage(imageManager.get(ImageManager.ICON_SHOW_DELETED_FILES));
 		showDeletedFilesToolItem.setText("Deleted");
 		showDeletedFilesToolItem.setToolTipText("Show deleted files (F5)");
 		showDeletedFilesToolItem.setEnabled(disks[0].supportsDeletedFiles());
@@ -1072,7 +1077,7 @@ public class DiskExplorerTab {
 		new ToolItem(toolBar, SWT.SEPARATOR);
 
 		importToolItem = new ToolItem(toolBar, SWT.PUSH);
-		importToolItem.setImage(imageManager.getImportFileIcon());
+		importToolItem.setImage(imageManager.get(ImageManager.ICON_IMPORT_FILE));
 		importToolItem.setText("Import...");
 		importToolItem.setToolTipText("Import a file (CTRL+I)");
 		importToolItem.setEnabled(disks[0].canCreateFile() && disks[0].canWriteFileData());
@@ -1083,7 +1088,7 @@ public class DiskExplorerTab {
 		});
 		
 		exportToolItem = new ToolItem(toolBar, SWT.DROP_DOWN);
-		exportToolItem.setImage(imageManager.getExportFileIcon());
+		exportToolItem.setImage(imageManager.get(ImageManager.ICON_EXPORT_FILE));
 		exportToolItem.setText("Export...");
 		exportToolItem.setToolTipText("Export a file (CTRL+E)");
 		exportToolItem.setEnabled(false);
@@ -1100,7 +1105,7 @@ public class DiskExplorerTab {
 		new ToolItem(toolBar, SWT.SEPARATOR);
 
 		compileToolItem = new ToolItem(toolBar, SWT.PUSH);
-		compileToolItem.setImage(imageManager.getCompileIcon());
+		compileToolItem.setImage(imageManager.get(ImageManager.ICON_COMPILE_FILE));
 		compileToolItem.setText("Compile");
 		compileToolItem.setToolTipText("Compile a BASIC program (CTRL+C)");
 		compileToolItem.setEnabled(false);
@@ -1112,21 +1117,32 @@ public class DiskExplorerTab {
 			}
 		});
 		viewFileItem = new ToolItem(toolBar, SWT.PUSH);
-		viewFileItem.setImage(imageManager.getViewFileIcon());
+		viewFileItem.setImage(imageManager.get(ImageManager.ICON_VIEW_FILE));
 		viewFileItem.setText("View");
 		viewFileItem.setToolTipText("View file (CTRL+V)");
 		viewFileItem.setEnabled(false);
 		viewFileItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent event) {
 				if (event.detail != SWT.ARROW) {
+					viewFile();
 				}
+			}
+		});
+		printToolItem = new ToolItem(toolBar, SWT.PUSH);
+		printToolItem.setImage(imageManager.get(ImageManager.ICON_PRINT_FILE));
+		printToolItem.setText("Print");
+		printToolItem.setToolTipText("Print directory listing...");
+		printToolItem.setEnabled(false);
+		printToolItem.addSelectionListener(new SelectionAdapter () {
+			public void widgetSelected(SelectionEvent e) {
+				// FIXME
 			}
 		});
 		
 		new ToolItem(toolBar, SWT.SEPARATOR);
 
 		deleteToolItem = new ToolItem(toolBar, SWT.PUSH);
-		deleteToolItem.setImage(imageManager.getDeleteFileIcon());
+		deleteToolItem.setImage(imageManager.get(ImageManager.ICON_DELETE_FILE));
 		deleteToolItem.setText("Delete");
 		deleteToolItem.setToolTipText("Delete a file (CTRL+D)");
 		deleteToolItem.setEnabled(false);
@@ -1139,7 +1155,7 @@ public class DiskExplorerTab {
 		new ToolItem(toolBar, SWT.SEPARATOR);
 
 		saveToolItem = new ToolItem(toolBar, SWT.PUSH);
-		saveToolItem.setImage(imageManager.getSaveImageIcon());
+		saveToolItem.setImage(imageManager.get(ImageManager.ICON_SAVE_DISK_IMAGE));
 		saveToolItem.setText("Save");
 		saveToolItem.setToolTipText("Save disk image (CTRL+S)");
 		saveToolItem.setEnabled(disks[0].hasChanged());	// same physical disk
@@ -1150,7 +1166,7 @@ public class DiskExplorerTab {
 		});
 
 		saveAsToolItem = new ToolItem(toolBar, SWT.PUSH);
-		saveAsToolItem.setImage(imageManager.getSaveAsIcon());
+		saveAsToolItem.setImage(imageManager.get(ImageManager.ICON_SAVE_DISK_IMAGE_AS));
 		saveAsToolItem.setText("Save As");
 		saveAsToolItem.setToolTipText("Save disk image as... (CTRL+SHIFT+S)");
 		saveAsToolItem.setEnabled(true);	// We can always Save As...
@@ -1285,6 +1301,14 @@ public class DiskExplorerTab {
 		};
 	}
 	/**
+	 * Open up the view file window for the currently selected file.
+	 */
+	protected void viewFile() {
+		FileEntry fileEntry = getSelectedFileEntry();
+		FileViewerWindow window = new FileViewerWindow(shell, fileEntry, imageManager);
+		window.open();
+	}
+	/**
 	 * Create the keyboard handler for the file pane.
 	 * These are keys that are <em>only</em> active in the file
 	 * viewer.  See createToolbarCommandHandler for the general application
@@ -1311,9 +1335,7 @@ public class DiskExplorerTab {
 							exportFileWizard();
 							break;
 						case CTRL_V:	// View file
-							// TODO
-							FileViewerWindow window = new FileViewerWindow(shell, fileEntry, imageManager);
-							window.open();
+							viewFile();
 							break;
 					}		
 				}
