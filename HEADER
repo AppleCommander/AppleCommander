@@ -1,4 +1,4 @@
-Attach the following code to the header of all source files.
+Attach the following comment to the header of all source files.
 
 /*
  * AppleCommander - An Apple ][ image utility.
