@@ -66,6 +66,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -721,34 +722,49 @@ public class DiskExplorerTab {
 			imageManager, directory.getFormattedDisk());
 		wizard.open();
 		if (wizard.isWizardCompleted()) {
+			Shell dialog = null;
 			try {
 				List specs = wizard.getImportSpecifications();
-
-//		Shell dialog = new Shell(shell, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
-//		dialog.setText("Importing files...");
-//		GridLayout layout = new GridLayout();
-//		layout.horizontalSpacing = 5;
-//		layout.makeColumnsEqualWidth = false;
-//		layout.marginHeight = 5;
-//		layout.marginWidth = 5;
-//		layout.numColumns = 2;
-//		layout.verticalSpacing = 5;
-//		dialog.setLayout(layout);
-//		Label label = new Label(dialog, SWT.NONE);
-//		label.setText("Processing:");
-//		Label countLabel = new Label(dialog, SWT.NONE);
-//		countLabel.setText("0 of " + specs.size());
-//		label = new Label(dialog, SWT.NONE);
-//		label.setText("Filename:");
-//		Label nameLabel = new Label(dialog, SWT.NONE);
-//		dialog.setSize(200,-1);
-//		dialog.open();
-
+				// Progress meter for import wizard:
+				dialog = new Shell(shell, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+				dialog.setText("Importing files...");
+				GridLayout layout = new GridLayout();
+				layout.horizontalSpacing = 5;
+				layout.makeColumnsEqualWidth = false;
+				layout.marginHeight = 5;
+				layout.marginWidth = 5;
+				layout.numColumns = 2;
+				layout.verticalSpacing = 5;
+				dialog.setLayout(layout);
+				Label label = new Label(dialog, SWT.NONE);
+				label.setText("Processing:");
+				Label countLabel = new Label(dialog, SWT.NONE);
+				GridData gridData = new GridData();
+				gridData.widthHint = 300;
+				countLabel.setLayoutData(gridData);
+				label = new Label(dialog, SWT.NONE);
+				label.setText("Filename:");
+				Label nameLabel = new Label(dialog, SWT.NONE);
+				gridData = new GridData();
+				gridData.widthHint = 300;
+				nameLabel.setLayoutData(gridData);
+				gridData = new GridData(GridData.FILL_HORIZONTAL);
+				gridData.horizontalSpan = 2;
+				gridData.grabExcessHorizontalSpace = true;
+				ProgressBar progressBar = new ProgressBar(dialog, SWT.NONE);
+				progressBar.setLayoutData(gridData);
+				progressBar.setMinimum(0);
+				progressBar.setMaximum(specs.size());
+				dialog.pack();
+				SwtUtil.center(shell, dialog);
+				dialog.open();
+				// begin the import:
 				for (int i=0; i<specs.size(); i++) {
 					ImportSpecification spec = 
 						(ImportSpecification) specs.get(i);
-//					countLabel.setText((i+1) + " of " + specs.size());
-//					nameLabel.setText(spec.getSourceFilename());
+					countLabel.setText("File " + (i+1) + " of " + specs.size());
+					nameLabel.setText(spec.getSourceFilename());
+					progressBar.setSelection(i);
 					ByteArrayOutputStream buffer = 
 						new ByteArrayOutputStream();
 					InputStream input = 
@@ -765,8 +781,6 @@ public class DiskExplorerTab {
 					}
 					fileEntry.setFileData(buffer.toByteArray());
 				}
-//		dialog.close();
-//		dialog.dispose();
 			} catch (Exception ex) {
 				MessageBox box = new MessageBox(shell, 
 					SWT.ICON_ERROR | SWT.OK);
@@ -776,6 +790,8 @@ public class DiskExplorerTab {
 				    + "'" + ex.getMessage() + "'");
 				box.open();
 			}
+			dialog.close();
+			dialog.dispose();
 			changeCurrentFormat(currentFormat);
 			saveToolItem.setEnabled(true);
 		}
