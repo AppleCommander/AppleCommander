@@ -10,7 +10,7 @@
 	<property name="build" value="build"/>
 	<property name="doc" value="documentation"/>
 	<property name="web" value="web"/>
-	<property name="swtjar" value="C:\Program Files\Eclipse 2.0\plugins\org.eclipse.swt.win32_2.0.2\ws\win32\swt.jar"/>
+	<property name="swtjar" value="C:\Program Files\Eclipse 2.1\plugins\org.eclipse.swt.win32_2.1.0\ws\win32\swt.jar"/>
 	<property name="acjar" value="${lib}/AppleCommander.jar"/>
 	<property name="aczip" value="${work}/AppleCommander.zip"/>
 	
