@@ -31,6 +31,7 @@ import com.webcodepro.applecommander.storage.filters.AppleWorksDataBaseFileFilte
 import com.webcodepro.applecommander.storage.filters.AppleWorksSpreadSheetFileFilter;
 import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFileFilter;
 import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
+import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.HexDumpFileFilter;
@@ -113,6 +114,14 @@ public class ExportFileStartPane extends WizardPane {
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				wizard.setFileFilter(new TextFileFilter());
+			}
+		});
+		button = new Button(buttonSubpanel, SWT.RADIO);
+		button.setText("Formatted Assembly text file");
+		button.setSelection(wizard.getFileFilter() instanceof AssemblySourceFileFilter);
+		button.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				wizard.setFileFilter(new AssemblySourceFileFilter());
 			}
 		});
 		button = new Button(buttonSubpanel, SWT.RADIO);
