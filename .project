@@ -3,7 +3,6 @@
 	<name>AppleCommander</name>
 	<comment></comment>
 	<projects>
-		<project>JUnit</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
