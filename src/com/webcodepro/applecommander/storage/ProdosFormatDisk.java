@@ -133,8 +133,8 @@ public class ProdosFormatDisk extends FormattedDisk {
 				if (string == null || string.length() == 0) {
 					string = "$" + byt.toUpperCase();
 				}
-				boolean addressRequired = Boolean.getBoolean(
-					(String) properties.get("filetype." + byt + ".addres"));
+				boolean addressRequired = Boolean.valueOf((String) properties.get(
+					"filetype." + byt + ".address")).booleanValue();
 				fileTypes[i] = new ProdosFileType((byte)i, string, addressRequired);
 			}
 		} catch (IOException ignored) {
@@ -178,7 +178,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 			int offset = 4;
 			while (offset+ProdosCommonEntry.ENTRY_LENGTH < BLOCK_SIZE) {
 				int value = AppleUtil.getUnsignedByte(block[offset]);
-				if (value == 0) {
+				if ((value & 0xf0) == 0) {
 					ProdosFileEntry fileEntry = 
 						new ProdosFileEntry(this, blockNumber, offset);
 					fileEntry.setCreationDate(new Date());
@@ -222,7 +222,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 					new ProdosCommonEntry(this, blockNumber, offset);
 				if (tester.isVolumeHeader() || tester.isSubdirectoryHeader()) {
 					// ignore it, we've already got it
-				} else {
+				} else if (!tester.isEmpty()) {
 					ProdosFileEntry fileEntry = 
 						new ProdosFileEntry(this, blockNumber, offset);
 					files.add(fileEntry);
