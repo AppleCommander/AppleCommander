@@ -708,4 +708,14 @@ public class DosFormatDisk extends FormattedDisk {
 	public boolean supportsDiskMap() {
 		return true;
 	}
+
+	/**
+	 * Change to a different ImageOrder.  Remains in DOS 3.3 format but
+	 * the underlying order can chage.
+	 * @see ImageOrder
+	 */
+	public void changeImageOrder(ImageOrder imageOrder) {
+		AppleUtil.changeImageOrderByTrackAndSector(getImageOrder(), imageOrder);
+		setImageOrder(imageOrder);
+	}
 }

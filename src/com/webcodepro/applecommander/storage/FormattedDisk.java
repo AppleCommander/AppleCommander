@@ -371,4 +371,12 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	public boolean supportsDiskMap() {
 		return false;
 	}
+
+	/**
+	 * Change the physical ordering of the disk.  This must be implemented by all
+	 * subclasses.  See AppleUtil for common utility methods.  (It is assumed that a
+	 * disk needs to be copied in the appropriate order - ie, by track and sector for
+	 * a DOS type disk or by blocks in a ProDOS type disk.)
+	 */
+	public abstract void changeImageOrder(ImageOrder imageOrder);
 }

@@ -935,4 +935,14 @@ public class ProdosFormatDisk extends FormattedDisk {
 	public boolean supportsDiskMap() {
 		return true;
 	}
+
+	/**
+	 * Change to a different ImageOrder.  Remains in ProDOS format but
+	 * the underlying order can chage.
+	 * @see ImageOrder
+	 */
+	public void changeImageOrder(ImageOrder imageOrder) {
+		AppleUtil.changeImageOrderByBlock(getImageOrder(), imageOrder);
+		setImageOrder(imageOrder);
+	}
 }
