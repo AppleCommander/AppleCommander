@@ -2,7 +2,7 @@ THINGS TO DO
 ============
 This is the internal list of items that need to be done.
 
--- 1.3.4 --
+-- 1.3.4 -- ** Maybe I18N is sufficient for 1.4.0? **
 * Started using the SWT S-Leak application to test for application resource leakage.
 * Reports of a few issues with 800K images.  UniDOS in particular doesn't appear to be
   recognized appropriately.  This was due to a mix-up in setting the the image ordering.
@@ -10,11 +10,12 @@ This is the internal list of items that need to be done.
 * Fixed bug that where a file cound not be exported as raw binary.  (Crashed AppleCommander.)
 * Raw binary files may now be imported - just check the raw image checkbox in the import
   wizard.
-o Fix scrollbar for FileViewer!
-
---- FUTURE 1.3.x ---
 o Create reusable show dialog messages (they're scattered all over right now) to clean
   up code a bit.
+o Prepare for internationalization (I18N).  Started as a simplification process but it
+  got carried away.
+
+--- FUTURE 1.3.x ---
 ? Compile of BASIC programs
 ? Enhance the BASIC compiler with a few more commands...
 o Create subdirectories as appropriate (ProDOS).
@@ -24,6 +25,7 @@ o Improve file preview for AppleWorks Word Processor files (make implementation
 o SWT image handlers do not appear to work correctly.  BMP works - but color seems
   off.  GIF/PNG/JPEG give errors or a black image.
 o Resolve OS X issues where window cannot come to the foreground.
+o Fix scrollbar for FileViewer!  PgUp/PgDn doesn't seem to work.
  
 --- FUTURE 1.4.x (or later) ---
 o Change layout of DiskExplorer window to not be tabbed.  Information could/should be
