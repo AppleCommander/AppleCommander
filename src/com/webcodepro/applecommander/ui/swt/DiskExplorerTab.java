@@ -1108,6 +1108,9 @@ public class DiskExplorerTab {
 					FileEntry fileEntry = directory.createFile();
 					fileEntry.setFilename(spec.getTargetFilename());
 					fileEntry.setFiletype(spec.getFiletype());
+					if (fileEntry.needsAddress()) {
+						fileEntry.setAddress(spec.getAddress());
+					}
 					try {
 						fileEntry.setFileData(buffer.toByteArray());
 					} catch (ProdosDiskSizeDoesNotMatchException ex) {
@@ -1126,9 +1129,6 @@ public class DiskExplorerTab {
 							prodosDisk.resizeDiskImage();
 							fileEntry.setFileData(buffer.toByteArray());
 						}
-					}
-					if (fileEntry.needsAddress()) {
-						fileEntry.setAddress(spec.getAddress());
 					}
 				}
 			} catch (Exception ex) {
