@@ -19,9 +19,17 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import java.io.File;
+import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DosFormatDisk;
+import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.PascalFormatDisk;
+import com.webcodepro.applecommander.storage.ProdosFormatDisk;
+import com.webcodepro.applecommander.storage.RdosFormatDisk;
+import com.webcodepro.applecommander.storage.Disk.FilenameFilter;
+import com.webcodepro.applecommander.ui.AppleCommander;
+import com.webcodepro.applecommander.ui.UserPreferences;
+
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -37,12 +45,6 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
-
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.Disk.FilenameFilter;
-import com.webcodepro.applecommander.ui.AppleCommander;
-import com.webcodepro.applecommander.ui.UserPreferences;
 
 /**
  * Main class for the SwtAppleCommander interface.
@@ -151,9 +153,9 @@ public class SwtAppleCommander {
 			userPreferences.setDiskImageDirectory(fileDialog.getFilterPath());
 			try {
 				Disk disk = new Disk(fullpath);
-				FormattedDisk formattedDisk = disk.getFormattedDisk();
-				if (formattedDisk != null) {
-					DiskWindow window = new DiskWindow(shell, formattedDisk, imageManager);
+				FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+				if (formattedDisks != null) {
+					DiskWindow window = new DiskWindow(shell, formattedDisks, imageManager);
 					window.open();
 				} else {
 					Shell finalShell = shell;
@@ -169,6 +171,34 @@ public class SwtAppleCommander {
 				}
 			} catch (IOException ignored) {
 			}
+		}
+	}
+
+	/**
+	 * Create a disk image.
+	 */
+	private void createDiskImage() {
+		FileDialog fileDialog = new FileDialog(shell, SWT.SAVE);
+		FilenameFilter[] fileFilters = Disk.getFilenameFilters();
+		String[] names = new String[fileFilters.length];
+		String[] extensions = new String[fileFilters.length];
+		for (int i=0; i<fileFilters.length; i++) {
+			names[i] = fileFilters[i].getNames();
+			extensions[i] = fileFilters[i].getExtensions();
+		}
+		fileDialog.setFilterNames(names);
+		fileDialog.setFilterExtensions(extensions);
+		fileDialog.setFilterPath(userPreferences.getDiskImageDirectory());
+		String fullpath = fileDialog.open();
+		
+		if (fullpath != null) {
+			//userPreferences.setDiskImageDirectory(fileDialog.getFilterPath());
+			FormattedDisk disk = new ProdosFormatDisk(fullpath, 
+				"ASDF", Disk.APPLE_140KB_DISK);
+			disk.format();
+			DiskWindow window = new DiskWindow(shell, 
+				new FormattedDisk[] { disk }, imageManager);
+			window.open();
 		}
 	}
 
@@ -194,10 +224,9 @@ public class SwtAppleCommander {
 		item.setImage(imageManager.getNewDiskIcon());
 		item.setText("Create...");
 		item.setToolTipText("Create a disk image");
-		item.setEnabled(false);
 		item.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
-				// not available yet
+				createDiskImage();
 			}
 		});
 		item = new ToolItem(toolBar, SWT.SEPARATOR);
