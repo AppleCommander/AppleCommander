@@ -17,8 +17,13 @@ This is the internal list of items that need to be done.
   with ProDOS files >128K ("Tree" files).  The delete code didn't handle the
   master index block appropriately when blocks numbered zero were present
   (normally indicating the end of file).
+* DOS 3.3 was not writing correct number of sectors if a file was more than
+  256 sectors long.
+* DOS 3.3 was not managing deleted file entries appropriately and tried to
+  work with track $FF.
 
 --- FUTURE ---
+o *** DOS 3.3 800K DISK #2 FAILS CREATE/DELETE TEST! ***
 o Import menu should be in directory pane instead of file pane.
 o Need to be able to import into a directory in ProDOS.  This will most
   likely involve adding an interface indicating a (writable) directory.
