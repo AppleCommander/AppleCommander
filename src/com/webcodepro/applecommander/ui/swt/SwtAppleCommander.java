@@ -175,8 +175,7 @@ public class SwtAppleCommander {
 	 * Create a disk image.
 	 */
 	private void createDiskImage() {
-		DiskImageWizard wizard = new DiskImageWizard(shell,
-			imageManager.getDiskImageWizardLogo());
+		DiskImageWizard wizard = new DiskImageWizard(shell, imageManager);
 		wizard.open();
 		if (wizard.isWizardCompleted()) {
 			FormattedDisk[] disks = wizard.getFormattedDisks();
@@ -226,7 +225,7 @@ public class SwtAppleCommander {
 				box.setMessage(
 					  "AppleCommander\n"
 					+ "Version " + AppleCommander.VERSION + "\n"
-					+ "Copyright (c) 2002-2003\n\n"
+					+ AppleCommander.COPYRIGHT + "\n\n"
 				    + "AppleCommander was created for the express\n"
 					+ "purpose of assisting those-who-remember.\n\n"
 					+ "I wish you many hours of vintage pleasure!\n"
