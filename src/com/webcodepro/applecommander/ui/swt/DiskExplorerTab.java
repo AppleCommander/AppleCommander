@@ -20,6 +20,8 @@
 package com.webcodepro.applecommander.ui.swt;
 
 import com.webcodepro.applecommander.compiler.ApplesoftCompiler;
+import com.webcodepro.applecommander.storage.AppleWorksDataBaseFileFilter;
+import com.webcodepro.applecommander.storage.AppleWorksSpreadSheetFileFilter;
 import com.webcodepro.applecommander.storage.AppleWorksWordProcessorFileFilter;
 import com.webcodepro.applecommander.storage.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.BinaryFileFilter;
@@ -322,18 +324,31 @@ public class DiskExplorerTab {
 				MenuItem[] subItems = theMenu.getItems();
 				FileEntry fileEntry = getSelectedFileEntry();
 				// View File
-				subItems[0].setEnabled(fileEntry != null);		// FIXME
+				subItems[0].setEnabled(disks[0].canReadFileData() 
+					&& fileEntry != null && !fileEntry.isDeleted() 
+					&& !fileEntry.isDirectory());
+				subItems[1].setEnabled(disks[0].canReadFileData() 
+					&& fileEntry != null && !fileEntry.isDeleted() 
+					&& !fileEntry.isDirectory());
 				// Compile File
-				subItems[1].setEnabled(fileEntry != null && fileEntry.canCompile());
+				subItems[3].setEnabled(disks[0].canReadFileData()
+					&& fileEntry != null && fileEntry.canCompile()
+					&& !fileEntry.isDeleted());
 				// Export File
-				subItems[3].setEnabled(fileEntry != null);
+				subItems[5].setEnabled(disks[0].canReadFileData()
+					&& fileEntry != null && !fileEntry.isDeleted()
+					&& !fileEntry.isDirectory());
+				subItems[6].setEnabled(disks[0].canReadFileData()
+					&& fileEntry != null && !fileEntry.isDeleted()
+					&& !fileEntry.isDirectory());
 				// Delete File
-				subItems[5].setEnabled(fileEntry != null);
+				subItems[8].setEnabled(disks[0].canDeleteFile()
+					&& fileEntry != null && !fileEntry.isDeleted());
 			}
 		});
 		
 		MenuItem item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("&View\tCtrl+V");
+		item.setText("&View Wizard\tCtrl+V");
 		item.setAccelerator(SWT.CTRL+'V');
 		item.setImage(imageManager.get(ImageManager.ICON_VIEW_FILE));
 		item.addSelectionListener(new SelectionAdapter() {
@@ -341,6 +356,12 @@ public class DiskExplorerTab {
 				viewFile();
 			}
 		});
+
+		item = new MenuItem(menu, SWT.CASCADE);
+		item.setText("View As");
+		item.setMenu(createFileViewMenu(SWT.DROP_DOWN));
+
+		item = new MenuItem(menu, SWT.SEPARATOR);
 
 		item = new MenuItem(menu, SWT.CASCADE);
 		item.setText("&Compile...\tCtrl+C");
@@ -355,22 +376,47 @@ public class DiskExplorerTab {
 		item = new MenuItem(menu, SWT.SEPARATOR);
 		
 		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("&Export\tCtrl+E");
+		item.setText("&Export Wizard...\tCtrl+E");
 		item.setAccelerator(SWT.CTRL+'E');
-		item.setEnabled(disks[0].canReadFileData());
-		item.setMenu(createFileExportMenu(SWT.DROP_DOWN));
 		item.setImage(imageManager.get(ImageManager.ICON_EXPORT_FILE));
+
+		item = new MenuItem(menu, SWT.CASCADE);
+		item.setText("Export As...");
+		item.setMenu(createFileExportMenu(SWT.DROP_DOWN));
 
 		item = new MenuItem(menu, SWT.SEPARATOR);
 
 		item = new MenuItem(menu, SWT.CASCADE);
 		item.setText("&Delete...\tCtrl+D");
 		item.setAccelerator(SWT.CTRL+'D');
-		item.setEnabled(disks[0].canDeleteFile());
 		item.setImage(imageManager.get(ImageManager.ICON_DELETE_FILE));
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				deleteFile();
+			}
+		});
+		
+		return menu;
+	}
+	/**
+	 * Construct the popup menu for the view as right-click option.
+	 */
+	protected Menu createFileViewMenu(int style) {
+		Menu menu = new Menu(shell, style);
+		
+		MenuItem item = new MenuItem(menu, SWT.NONE);
+		item.setText("Text");
+		item.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				viewFile();		// FIXME
+			}
+		});
+
+		item = new MenuItem(menu, SWT.NONE);
+		item.setText("Graphics");
+		item.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				viewFile();		// FIXME
 			}
 		});
 		
@@ -427,6 +473,24 @@ public class DiskExplorerTab {
 			}
 		});
 
+		item = new MenuItem(menu, SWT.NONE);
+		item.setText("AppleWorks Spreadsheet File...");
+		item.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				fileFilter = new AppleWorksSpreadSheetFileFilter();
+				exportFile(null);
+			}
+		});
+
+		item = new MenuItem(menu, SWT.NONE);
+		item.setText("AppleWorks Database File...");
+		item.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				fileFilter = new AppleWorksDataBaseFileFilter();
+				exportFile(null);
+			}
+		});
+
 		item = new MenuItem(menu, SWT.SEPARATOR);
 
 		item = new MenuItem(menu, SWT.NONE);
@@ -451,6 +515,7 @@ public class DiskExplorerTab {
 				MenuItem[] subItems = theMenu.getItems();
 				subItems[0].setSelection(awpFilter.isTextRendering());
 				subItems[1].setSelection(awpFilter.isHtmlRendering());
+				subItems[2].setSelection(awpFilter.isRtfRendering());
 			}
 		});
 		item = new MenuItem(subMenu, SWT.RADIO);
@@ -471,6 +536,16 @@ public class DiskExplorerTab {
 			 */
 			public void widgetSelected(SelectionEvent event) {
 				awpFilter.selectHtmlRendering();
+			}
+		});
+		item = new MenuItem(subMenu, SWT.RADIO);
+		item.setText("RTF");
+		item.addSelectionListener(new SelectionAdapter() {
+			/**
+			 * Set the appropriate rendering style.
+			 */
+			public void widgetSelected(SelectionEvent event) {
+				awpFilter.selectRtfRendering();
 			}
 		});
 		
@@ -504,6 +579,9 @@ public class DiskExplorerTab {
 				subItems[1].setSelection(graphicsFilter.isHiresColorMode());
 				subItems[2].setSelection(graphicsFilter.isDoubleHiresBlackAndWhiteMode());
 				subItems[3].setSelection(graphicsFilter.isDoubleHiresColorMode());
+				subItems[4].setSelection(graphicsFilter.isSuperHires16Mode());
+				subItems[5].setSelection(graphicsFilter.isSuperHires3200Mode());
+				subItems[6].setSelection(graphicsFilter.isQuickDraw2Icon());
 			}
 		});
 		item = new MenuItem(subMenu, SWT.RADIO);
@@ -544,6 +622,36 @@ public class DiskExplorerTab {
 			 */
 			public void widgetSelected(SelectionEvent event) {
 				graphicsFilter.setMode(GraphicsFileFilter.MODE_DHR_COLOR);
+			}
+		});
+		item = new MenuItem(subMenu, SWT.RADIO);
+		item.setText("Super Hires");
+		item.addSelectionListener(new SelectionAdapter() {
+			/**
+			 * Set the appropriate graphics mode.
+			 */
+			public void widgetSelected(SelectionEvent event) {
+				graphicsFilter.setMode(GraphicsFileFilter.MODE_SHR_16);
+			}
+		});
+		item = new MenuItem(subMenu, SWT.RADIO);
+		item.setText("Super Hires 3200 color");
+		item.addSelectionListener(new SelectionAdapter() {
+			/**
+			 * Set the appropriate graphics mode.
+			 */
+			public void widgetSelected(SelectionEvent event) {
+				graphicsFilter.setMode(GraphicsFileFilter.MODE_SHR_3200);
+			}
+		});
+		item = new MenuItem(subMenu, SWT.RADIO);
+		item.setText("QuickDraw II Icon file (ICN)");
+		item.addSelectionListener(new SelectionAdapter() {
+			/**
+			 * Set the appropriate graphics mode.
+			 */
+			public void widgetSelected(SelectionEvent event) {
+				graphicsFilter.setMode(GraphicsFileFilter.MODE_QUICKDRAW2_ICON);
 			}
 		});
 		
@@ -707,7 +815,6 @@ public class DiskExplorerTab {
 
 		// disable all file-level operations:
 		exportToolItem.setEnabled(false);
-		//importToolItem.setEnabled(false);
 		deleteToolItem.setEnabled(false);
 		compileToolItem.setEnabled(false);
 		viewFileItem.setEnabled(false);
