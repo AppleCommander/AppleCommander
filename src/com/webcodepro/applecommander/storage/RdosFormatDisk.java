@@ -60,6 +60,10 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * RDOS apparantly only worked on 5.25" disks.
 	 */
 	public static final int BLOCKS_ON_DISK = 455;
+	/**
+	 * The known filetypes for a RDOS disk.
+	 */
+	public static final String[] filetypes = { "B", "A", "T" };
 
 	/**
 	 * Use this inner interface for managing the disk usage data.
@@ -415,5 +419,22 @@ public class RdosFormatDisk extends FormattedDisk {
 	public String getSuggestedFilename(String filename) {
 		int len = Math.min(filename.length(), 24);
 		return filename.toUpperCase().substring(0, len).trim();
+	}
+
+	/**
+	 * Returns a list of possible file types.  Since the filetype is
+	 * specific to each operating system, a simple String is used.
+	 */
+	public String[] getFiletypes() {
+		return filetypes;
+	}
+
+	/**
+	 * Indicates if this filetype requires an address component.
+	 * Presumably, the "B" filetype is binary and will need an
+	 * address.
+	 */
+	public boolean needsAddress(String filetype) {
+		return "B".equals(filetype);
 	}
 }

@@ -49,6 +49,12 @@ public class DosFormatDisk extends FormattedDisk {
 	 * The standard track/sector pairs in a track/sector list.
 	 */
 	public static final int TRACK_SECTOR_PAIRS = 122;
+	/**
+	 * The list of filetypes available.
+	 */
+	private static final String[] filetypes = { 
+			"T", "A", "I", "B", "S", "R", "a", "b" 
+		};
 
 	/**
 	 * Use this inner interface for managing the disk usage data.
@@ -636,5 +642,21 @@ public class DosFormatDisk extends FormattedDisk {
 	public String getSuggestedFilename(String filename) {
 		int len = Math.min(filename.length(), 30);
 		return filename.toUpperCase().substring(0, len).trim();
+	}
+
+	/**
+	 * Returns a list of possible file types.  Since the filetype is
+	 * specific to each operating system, a simple String is used.
+	 */
+	public String[] getFiletypes() {
+		return filetypes;
+	}
+
+	/**
+	 * Indicates if this filetype requires an address component.
+	 * For DOS, only the Binary type needs an address.
+	 */
+	public boolean needsAddress(String filetype) {
+		return "B".equals(filetype);
 	}
 }

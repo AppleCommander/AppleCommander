@@ -342,4 +342,15 @@ public abstract class FormattedDisk extends Disk {
 	 * the filename.
 	 */
 	public abstract String getSuggestedFilename(String filename);
+	
+	/**
+	 * Returns a list of possible file types.  Since the filetype is
+	 * specific to each operating system, a simple String is used.
+	 */
+	public abstract String[] getFiletypes();
+
+	/**
+	 * Indicates if this filetype requires an address component.
+	 */
+	public abstract boolean needsAddress(String filetype);
 }

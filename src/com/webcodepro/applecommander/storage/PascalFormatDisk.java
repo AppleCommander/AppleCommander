@@ -40,6 +40,18 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * The number of Pascal blocks on a 140K disk.
 	 */
 	public static final int PASCAL_BLOCKS_ON_140K_DISK = 280;
+	/**
+	 * The know filetypes for a Pascal disk.
+	 */
+	private static final String[] filetypes = {
+			"xdskfile",
+			"codefile",
+			"textfile",
+			"infofile",
+			"datafile",
+			"graffile",
+			"fotofile",
+			"securedir" };
 
 	/**
 	 * Use this inner interface for managing the disk usage data.
@@ -454,5 +466,21 @@ public class PascalFormatDisk extends FormattedDisk {
 			i++;
 		}
 		return newName.toString().toUpperCase().trim();
+	}
+
+	/**
+	 * Returns a list of possible file types.  Since the filetype is
+	 * specific to each operating system, a simple String is used.
+	 */
+	public String[] getFiletypes() {
+		return filetypes;
+	}
+
+	/**
+	 * Indicates if this filetype requires an address component.
+	 * No Pascal filetypes require or support an address.
+	 */
+	public boolean needsAddress(String filetype) {
+		return false;
 	}
 }
