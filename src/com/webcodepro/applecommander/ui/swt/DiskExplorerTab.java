@@ -365,7 +365,7 @@ public class DiskExplorerTab {
 			 * Set the appropriate rendering style.
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				awpFilter.setRendering(AppleWorksWordProcessorFileFilter.RENDER_AS_TEXT);
+				awpFilter.selectTextRendering();
 			}
 		});
 		item = new MenuItem(subMenu, SWT.RADIO);
@@ -375,7 +375,7 @@ public class DiskExplorerTab {
 			 * Set the appropriate rendering style.
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				awpFilter.setRendering(AppleWorksWordProcessorFileFilter.RENDER_AS_HTML);
+				awpFilter.selectHtmlRendering();
 			}
 		});
 		
