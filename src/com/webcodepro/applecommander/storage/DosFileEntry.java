@@ -87,6 +87,13 @@ public class DosFileEntry implements FileEntry {
 	}
 
 	/**
+	 * Return the maximum filename length.
+	 */
+	public int getMaximumFilenameLength() {
+		return 30;
+	}
+
+	/**
 	 * Return the name of this file.
 	 * @see com.webcodepro.applecommander.storage.FileEntry#getFilename()
 	 */

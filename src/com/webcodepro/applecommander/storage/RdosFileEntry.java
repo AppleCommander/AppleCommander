@@ -82,6 +82,13 @@ public class RdosFileEntry implements FileEntry {
 	public String getFilename() {
 		return isDeleted() ? "<NOT IN USE>            " : AppleUtil.getString(fileEntry, 0, 24);
 	}
+
+	/**
+	 * Return the maximum filename length.
+	 */
+	public int getMaximumFilenameLength() {
+		return 24;
+	}
 	
 	/**
 	 * Return the filetype of this file.

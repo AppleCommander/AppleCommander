@@ -121,4 +121,9 @@ public interface FileEntry {
 	 * disk.
 	 */
 	public FormattedDisk getFormattedDisk();
+	
+	/**
+	 * Return the maximum filename length.
+	 */
+	public int getMaximumFilenameLength();
 }

@@ -64,6 +64,13 @@ public class PascalFileEntry implements FileEntry {
 	public String getFilename() {
 		return AppleUtil.getPascalString(fileEntry, 6);
 	}
+	
+	/**
+	 * Return the maximum filename length.
+	 */
+	public int getMaximumFilenameLength() {
+		return 15;
+	}
 
 	/**
 	 * Return the filetype of this file.

@@ -140,6 +140,13 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	}
 
 	/**
+	 * Return the maximum filename length.
+	 */
+	public int getMaximumFilenameLength() {
+		return 15;
+	}
+
+	/**
 	 * Set the name of this file.
 	 */
 	public void setFilename(String filename) {
