@@ -72,6 +72,7 @@ import org.eclipse.swt.widgets.ToolItem;
  * @author: Rob Greene
  */
 public class FileViewerWindow {
+	private static final char CTRL_A = 'A' - '@';
 	private static final char CTRL_P = 'P' - '@';
 	private static final char CTRL_C = 'C' - '@';
 
@@ -278,50 +279,87 @@ public class FileViewerWindow {
 
 		toolBar.pack();
 	}
+	
+	/**
+	 * Print current file.
+	 */
 	protected void print() {
 		PrintDialog dialog = new PrintDialog(shell);
 		PrinterData printerData = dialog.open();
 		if (printerData == null) return;
-		Printer printer = new Printer(printerData);
+		final Printer printer = new Printer(printerData);
 		
-		Control control = content.getContent();
+		final Control control = content.getContent();
 		if (control instanceof StyledText) {
 			StyledText styledText = (StyledText) control;
-			styledText.print();
-			// FIXME: Unable to use printer chosen and print?!
-			//printer.startJob(fileEntry.getFilename());
-			//printer.startPage();
-//			StyledTextPrintOptions options = new StyledTextPrintOptions();
-//			options.jobName = fileEntry.getFilename();
-//			options.printTextFontStyle = true;
-//			styledText.print(printer); //, options);
-			//printer.endPage();
-			//printer.endJob();
+			StyledTextPrintOptions options = new StyledTextPrintOptions();
+			options.jobName = fileEntry.getFilename();
+			options.printLineBackground = true;
+			options.printTextBackground = true;
+			options.printTextFontStyle = true;
+			options.printTextForeground = true;
+			options.footer = "\t<page>";
+			options.header = "\t" + fileEntry.getFilename();
+			 
+			final Runnable runnable = styledText.print(printer, options);
+			new Thread(new Runnable() {
+				public void run() {
+					runnable.run();
+					printer.dispose();
+				}
+			}).start();
 		} else if (control instanceof ImageCanvas) {
-			printer.startJob(fileEntry.getFilename());
-			printer.startPage();
-			Point dpi = printer.getDPI();
-			ImageCanvas imageCanvas = (ImageCanvas) control;
-			Image image = imageCanvas.getImage();
-			int imageWidth = image.getImageData().width;
-			int imageHeight = image.getImageData().height;
-			int printedWidth = imageWidth * (dpi.x / 96);
-			int printedHeight = imageHeight * (dpi.y / 96);
-			GC gc = new GC(printer);
-			gc.drawImage(image,
-				0, 0, imageWidth, imageHeight,
-				0, 0, printedWidth, printedHeight);
-			printer.endPage();
-			printer.endJob();
-			gc.dispose();
+			new Thread(new Runnable() {
+				public void run() {
+					printer.startJob(fileEntry.getFilename());
+					printer.startPage();
+					Point dpi = printer.getDPI();
+					ImageCanvas imageCanvas = (ImageCanvas) control;
+					Image image = imageCanvas.getImage();
+					int imageWidth = image.getImageData().width;
+					int imageHeight = image.getImageData().height;
+					int printedWidth = imageWidth * (dpi.x / 96);
+					int printedHeight = imageHeight * (dpi.y / 96);
+					GC gc = new GC(printer);
+					gc.drawImage(image,
+						0, 0, imageWidth, imageHeight,
+						0, 0, printedWidth, printedHeight);
+					printer.endPage();
+					printer.endJob();
+					gc.dispose();
+					printer.dispose();
+				}
+			}).start();
 		}
-		//printer.dispose();
 	}
+	
+	/**
+	 * Select all text within the widget.
+	 */
+	protected void selectAll() {
+		Control control = content.getContent();
+		if (control instanceof StyledText) {	// only applies to StyledText
+			StyledText styledText = (StyledText) control;
+			styledText.selectAll();
+		}
+	}
+
+	/**
+	 * Perform copy operation.
+	 */
 	protected void copy() {
 		Control control = content.getContent();
 		if (control instanceof StyledText) {
 			StyledText styledText = (StyledText) control;
-			styledText.copy();
+			// If there is no selection, copy everything
+			if (styledText.getSelectionCount() == 0) {
+				Point selection = styledText.getSelection();
+				styledText.selectAll();
+				styledText.copy();
+				styledText.setSelection(selection);
+			} else {	// copy current selection
+				styledText.copy();
+			}
 		} else if (control instanceof ImageCanvas) {
 			// TODO: Can SWT copy an image to the clipboard?
 //			Clipboard clipboard = new Clipboard(shell.getDisplay());
@@ -330,6 +368,10 @@ public class FileViewerWindow {
 //			clipboard.dispose();
 		}
 	}
+	
+	/**
+	 * Display the file in its native format.
+	 */
 	protected void displayNativeFormat() {
 		Control oldContent = content.getContent();
 		if (oldContent != null) {
@@ -432,6 +474,10 @@ public class FileViewerWindow {
 			displayHexFormat();
 		}
 	}
+	
+	/**
+	 * Create a StyledText widget for displaying plain text.
+	 */
 	protected void createTextWidget(Composite composite, String text) {
 		copyToolItem.setEnabled(true);
 
@@ -448,6 +494,10 @@ public class FileViewerWindow {
 		content.setMinHeight(size.y);
 		content.getContent().addListener(SWT.KeyUp, createToolbarCommandHandler());
 	}
+	
+	/**
+	 * Display file content as a hex dump.
+	 */
 	protected void displayHexFormat() {
 		copyToolItem.setEnabled(true);
 
@@ -465,6 +515,10 @@ public class FileViewerWindow {
 		String hexDump = new String(filter.filter(fileEntry));
 		createTextWidget(content, hexDump);
 	}
+	
+	/**
+	 * Display file content as hex dump of raw disk bytes.
+	 */
 	protected void displayRawFormat() {
 		Control oldContent = content.getContent();
 		if (oldContent != null) {
@@ -480,6 +534,7 @@ public class FileViewerWindow {
 			fileEntry.getFormattedDisk().getFileData(fileEntry));
 		createTextWidget(content, rawDump);
 	}
+
 	/**
 	 * The toolbar command handler contains the global toolbar
 	 * actions. The intent is that the listener is then added to 
@@ -489,16 +544,19 @@ public class FileViewerWindow {
 		return new Listener() {
 			public void handleEvent(Event event) {
 				if (event.type == SWT.KeyUp) {
-					if ((event.type & SWT.CTRL) != 0) {	// CTRL+key
-						switch (event.keyCode) {
+					if ((event.stateMask & SWT.CTRL) != 0) {	// CTRL+key
+						switch (event.character) {
 							case CTRL_C:
 								copy();
+								break;
+							case CTRL_A:
+								selectAll();
 								break;
 							case CTRL_P:
 								print();
 								break;
 						}
-					} else if ((event.type & SWT.ALT) == 0) { // key alone
+					} else if ((event.stateMask & SWT.ALT) == 0) { // key alone
 						switch (event.keyCode) {
 							case SWT.F2:	// the "native" file format (image, text, etc)
 								displayNativeFormat();
