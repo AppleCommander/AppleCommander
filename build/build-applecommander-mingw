@@ -14,6 +14,11 @@ echo "**********************************************"
 echo "**                  COMPILING               **"
 echo "**********************************************"
 echo
+
+# Need to load image-related stuff... (Should be done in SWT build)
+#echo Compiling SWTImageLoaders.java ...
+#gcj --classpath="swt.jar;AppleCommander.jar" $OPTS -g0 -c SWTImageLoaders.java
+
 for i in $APPLECOMMANDER_FILES
 do
 	OBJ_FILE=$(echo $i | sed 's/\//_/g' | sed 's/\.java$/\.o/')
