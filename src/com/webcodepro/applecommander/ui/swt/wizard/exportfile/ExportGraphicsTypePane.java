@@ -143,7 +143,7 @@ public class ExportGraphicsTypePane extends WizardPane {
 		label.setText(textBundle.get("ExportGraphicsFileFormatPrompt")); //$NON-NLS-1$
 		Composite graphicsFormatGroup = new Composite(control, SWT.NULL);
 		graphicsFormatGroup.setLayout(subpanelLayout);
-		String[] formats = getGraphicsFilter().getFileExtensions();
+		String[] formats = GraphicsFileFilter.getFileExtensions();
 		for (int i=0; i<formats.length; i++) {
 			button = new Button(graphicsFormatGroup, SWT.RADIO);
 			button.setText(formats[i]);
