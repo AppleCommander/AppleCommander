@@ -40,6 +40,7 @@ See build/build-applecommander-mingw for the current script.
     AppleCommander.jar.
     
 4.  Copy swt.jar, libswt.a, and swt-win32-*.dll into the build directory.
+    (Check at http://www.thisiscool.com/gcc_mingw.htm and grab a copy.)
 
 5.  Ensure that UPX is on the path.  You will need to set this manually.
     I placed UPX in C:\UPX - so I use the following command:
