@@ -23,11 +23,12 @@ import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.DosFormatDisk;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.OzDosFormatDisk;
 import com.webcodepro.applecommander.storage.ProdosFormatDisk;
+import com.webcodepro.applecommander.storage.UniDosFormatDisk;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -39,6 +40,11 @@ import junit.framework.TestCase;
  * @author: Rob Greene
  */
 public class DiskWriterTest extends TestCase {
+	/**
+	 * Determine if the created disk images should be saved for later
+	 * perusal.
+	 */
+	private static final boolean saveImage = false;
 
 	public DiskWriterTest(String name) {
 		super(name);
@@ -51,48 +57,65 @@ public class DiskWriterTest extends TestCase {
 	public void testWriteToDos33() throws DiskFullException, IOException {
 		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.dsk");
 		writeFiles(disks, "B", "T", false);
-		disks[0].save();
+		saveDisks(disks);
 	}
 	
 	public void testWriteToProdos140kDisk() throws DiskFullException, IOException {
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"write-test-prodos-140k.dsk", "TEST", ProdosFormatDisk.APPLE_140KB_DISK);
 		writeFiles(disks, "BIN", "TXT", true);
-		disks[0].save();
+		saveDisks(disks);
 	}
 
 	public void testWriteToProdos800kDisk() throws DiskFullException, IOException {
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"write-test-prodos-800k.po", "TEST", ProdosFormatDisk.APPLE_800KB_DISK);
 		writeFiles(disks, "BIN", "TXT", true);
-		disks[0].save();
+		saveDisks(disks);
 	}
 
 	public void testWriteToProdos5mbDisk() throws DiskFullException, IOException {
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"write-test-prodos-5mb.hdv", "TEST", ProdosFormatDisk.APPLE_5MB_HARDDISK);
 		writeFiles(disks, "BIN", "TXT", true);
-		disks[0].save();
+		saveDisks(disks);
 	}
 	
-	public void testCreateAndDeleteDos33() {
+	public void testCreateAndDeleteDos33() throws IOException {
 		FormattedDisk[] disks = DosFormatDisk.create(
 			"createanddelete-test-dos33.dsk");
 		createAndDeleteFiles(disks, "B");
+		saveDisks(disks);
 	}
 
-	public void testCreateAndDeleteProdos140kDisk() {
+	public void testCreateAndDeleteOzDos() throws IOException {
+		FormattedDisk[] disks = OzDosFormatDisk.create(
+			"createanddelete-test-ozdos.po");
+		createAndDeleteFiles(disks, "B");
+		saveDisks(disks);
+	}
+
+	public void testCreateAndDeleteUniDos() throws IOException {
+		FormattedDisk[] disks = UniDosFormatDisk.create(
+			"createanddelete-test-unidos.dsk");
+		createAndDeleteFiles(disks, "B");
+		saveDisks(disks);
+	}
+
+	public void testCreateAndDeleteProdos140kDisk() throws IOException {
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"createanddelete-test-prodos-140k.dsk", "TEST", 
 			ProdosFormatDisk.APPLE_140KB_DISK);
 		createAndDeleteFiles(disks, "BIN");
+		saveDisks(disks);
 	}
 
-	public void testCreateAndDeleteProdos800kDisk() {
+	public void testCreateAndDeleteProdos800kDisk() throws IOException {
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"createanddelete-test-prodos-800k.dsk", "TEST",
 			ProdosFormatDisk.APPLE_800KB_2IMG_DISK);
 		createAndDeleteFiles(disks, "BIN");
+		saveDisks(disks);
 	}
 	
 	protected void writeFiles(FormattedDisk[] disks, String binaryType, 
@@ -252,6 +275,17 @@ public class DiskWriterTest extends TestCase {
 					originalFree == disk.getFreeSpace());
 				assertTrue("Used space does not match", 
 					originalUsed == disk.getUsedSpace());
+			}
+		}
+	}
+	
+	/**
+	 * Save a disk, if the saveImage flag has been set to true.
+	 */
+	protected void saveDisks(FormattedDisk[] disks) throws IOException {
+		if (saveImage) {
+			for (int i=0; i<disks.length; i++) {
+				disks[i].save();
 			}
 		}
 	}
