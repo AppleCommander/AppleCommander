@@ -1,8 +1,10 @@
 AppleCommander - An Apple ][ image utility.
-Copyright (C) 2003 by Robert Greene
+Copyright (C) 2002-4 by Robert Greene
 robgreene at users.sourceforge.net
 
 Code contributed from:
 * John B. Matthews M.D.
   - many bug fixes
 * Chris Sebrell
+* Hans Otten
+  - information regarding Pascal text file format
