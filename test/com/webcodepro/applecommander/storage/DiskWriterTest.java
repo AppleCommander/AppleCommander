@@ -68,8 +68,8 @@ public class DiskWriterTest extends TestCase {
 	public void testWriteToDos33() throws DiskFullException, IOException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
 		ImageOrder imageOrder = new DosOrder(imageLayout);
-		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.dsk", imageOrder);
-		writeFiles(disks, "B", "T", false);
+		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.dsk", imageOrder); //$NON-NLS-1$
+		writeFiles(disks, "B", "T", false); //$NON-NLS-1$ //$NON-NLS-2$
 		saveDisks(disks);
 	}
 
@@ -79,8 +79,8 @@ public class DiskWriterTest extends TestCase {
 	public void testWriteToDos33Nibble() throws DiskFullException, IOException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_NIBBLE_DISK);
 		ImageOrder imageOrder = new NibbleOrder(imageLayout);
-		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.nib", imageOrder);
-		writeFiles(disks, "B", "T", false);
+		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.nib", imageOrder); //$NON-NLS-1$
+		writeFiles(disks, "B", "T", false); //$NON-NLS-1$ //$NON-NLS-2$
 		saveImage = true;
 		saveDisks(disks);
 		saveImage = false;
@@ -93,8 +93,8 @@ public class DiskWriterTest extends TestCase {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
 		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"write-test-prodos-140k.dsk", "TEST", imageOrder);
-		writeFiles(disks, "BIN", "TXT", true);
+			"write-test-prodos-140k.dsk", "TEST", imageOrder); //$NON-NLS-1$ //$NON-NLS-2$
+		writeFiles(disks, "BIN", "TXT", true); //$NON-NLS-1$ //$NON-NLS-2$
 		saveDisks(disks);
 	}
 
@@ -105,8 +105,8 @@ public class DiskWriterTest extends TestCase {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
 		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"write-test-prodos-800k.po", "TEST", imageOrder);
-		writeFiles(disks, "BIN", "TXT", true);
+			"write-test-prodos-800k.po", "TEST", imageOrder); //$NON-NLS-1$ //$NON-NLS-2$
+		writeFiles(disks, "BIN", "TXT", true); //$NON-NLS-1$ //$NON-NLS-2$
 		saveDisks(disks);
 	}
 
@@ -117,8 +117,8 @@ public class DiskWriterTest extends TestCase {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_5MB_HARDDISK);
 		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"write-test-prodos-5mb.hdv", "TEST", imageOrder);
-		writeFiles(disks, "BIN", "TXT", true);
+			"write-test-prodos-5mb.hdv", "TEST", imageOrder); //$NON-NLS-1$ //$NON-NLS-2$
+		writeFiles(disks, "BIN", "TXT", true); //$NON-NLS-1$ //$NON-NLS-2$
 		saveDisks(disks);
 	}
 	
@@ -129,8 +129,8 @@ public class DiskWriterTest extends TestCase {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
 		ImageOrder imageOrder = new DosOrder(imageLayout);
 		FormattedDisk[] disks = DosFormatDisk.create(
-			"createanddelete-test-dos33.dsk", imageOrder);
-		createAndDeleteFiles(disks, "B");
+			"createanddelete-test-dos33.dsk", imageOrder); //$NON-NLS-1$
+		createAndDeleteFiles(disks, "B"); //$NON-NLS-1$
 		saveDisks(disks);
 	}
 
@@ -141,8 +141,8 @@ public class DiskWriterTest extends TestCase {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
 		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = OzDosFormatDisk.create(
-			"createanddelete-test-ozdos.po", imageOrder);
-		createAndDeleteFiles(disks, "B");
+			"createanddelete-test-ozdos.po", imageOrder); //$NON-NLS-1$
+		createAndDeleteFiles(disks, "B"); //$NON-NLS-1$
 		saveDisks(disks);
 	}
 
@@ -153,8 +153,8 @@ public class DiskWriterTest extends TestCase {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
 		ImageOrder imageOrder = new DosOrder(imageLayout);
 		FormattedDisk[] disks = UniDosFormatDisk.create(
-			"createanddelete-test-unidos.dsk", imageOrder);
-		createAndDeleteFiles(disks, "B");
+			"createanddelete-test-unidos.dsk", imageOrder); //$NON-NLS-1$
+		createAndDeleteFiles(disks, "B"); //$NON-NLS-1$
 		saveDisks(disks);
 	}
 
@@ -165,9 +165,9 @@ public class DiskWriterTest extends TestCase {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
 		ImageOrder imageOrder = new DosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"createanddelete-test-prodos-140k.dsk", "TEST", 
+			"createanddelete-test-prodos-140k.dsk", "TEST",  //$NON-NLS-1$ //$NON-NLS-2$
 			imageOrder);
-		createAndDeleteFiles(disks, "BIN");
+		createAndDeleteFiles(disks, "BIN"); //$NON-NLS-1$
 		saveDisks(disks);
 	}
 
@@ -178,9 +178,9 @@ public class DiskWriterTest extends TestCase {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
 		ImageOrder imageOrder = new DosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"createanddelete-test-prodos-800k.dsk", "TEST",
+			"createanddelete-test-prodos-800k.dsk", "TEST", //$NON-NLS-1$ //$NON-NLS-2$
 			imageOrder);
-		createAndDeleteFiles(disks, "BIN");
+		createAndDeleteFiles(disks, "BIN"); //$NON-NLS-1$
 		saveDisks(disks);
 	}
 	
@@ -193,8 +193,8 @@ public class DiskWriterTest extends TestCase {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
 		ImageOrder imageOrder = new DosOrder(imageLayout);
 		FormattedDisk[] disks = DosFormatDisk.create(
-			"createdeletecreate-test-dos-140k.dsk", imageOrder);
-		createDeleteCreate(disks, "B");
+			"createdeletecreate-test-dos-140k.dsk", imageOrder); //$NON-NLS-1$
+		createDeleteCreate(disks, "B"); //$NON-NLS-1$
 		saveDisks(disks);
 	}
 
@@ -207,8 +207,8 @@ public class DiskWriterTest extends TestCase {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
 		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = OzDosFormatDisk.create(
-			"createdeletecreate-test-ozdos-800k.po", imageOrder);
-		createDeleteCreate(disks, "B");
+			"createdeletecreate-test-ozdos-800k.po", imageOrder); //$NON-NLS-1$
+		createDeleteCreate(disks, "B"); //$NON-NLS-1$
 		saveDisks(disks);
 	}
 
@@ -221,8 +221,8 @@ public class DiskWriterTest extends TestCase {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
 		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = UniDosFormatDisk.create(
-			"createdeletecreate-test-unidos-800k.dsk", imageOrder);
-		createDeleteCreate(disks, "B");
+			"createdeletecreate-test-unidos-800k.dsk", imageOrder); //$NON-NLS-1$
+		createDeleteCreate(disks, "B"); //$NON-NLS-1$
 		saveDisks(disks);
 	}
 
@@ -235,9 +235,9 @@ public class DiskWriterTest extends TestCase {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
 		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"createdeletecreate-test-prodos-140k.dsk", "TEST",
+			"createdeletecreate-test-prodos-140k.dsk", "TEST", //$NON-NLS-1$ //$NON-NLS-2$
 			imageOrder);
-		createDeleteCreate(disks, "BIN");
+		createDeleteCreate(disks, "BIN"); //$NON-NLS-1$
 		saveDisks(disks);
 	}
 	
@@ -250,7 +250,7 @@ public class DiskWriterTest extends TestCase {
 	protected void writeFiles(FormattedDisk[] disks, String binaryType, 
 		String textType, boolean testText) throws DiskFullException {
 		FormattedDisk disk = disks[0];
-		showDirectory(disks, "BEFORE FILE CREATION");
+		showDirectory(disks, "BEFORE FILE CREATION"); //$NON-NLS-1$
 		writeFile(disk, 1, binaryType, true);
 		writeFile(disk, 2, binaryType, true);
 		writeFile(disk, 4, binaryType, true);
@@ -261,7 +261,7 @@ public class DiskWriterTest extends TestCase {
 		writeFile(disk, 1234, binaryType, true);
 		writeFile(disk, 54321, binaryType, true);
 		writeFile(disk, 
-			"This is a test text file create from the DiskWriterTest".getBytes(), 
+			"This is a test text file create from the DiskWriterTest".getBytes(),  //$NON-NLS-1$
 			textType, testText);
 		if (disk.getPhysicalSize() > Disk.APPLE_140KB_DISK
 			&& disk.getPhysicalSize() != Disk.APPLE_140KB_NIBBLE_DISK) {
@@ -269,7 +269,7 @@ public class DiskWriterTest extends TestCase {
 			writeFile(disk, 150000, binaryType, true);
 			writeFile(disk, 300000, binaryType, true);
 		}
-		showDirectory(disks, "AFTER FILE CREATION");
+		showDirectory(disks, "AFTER FILE CREATION"); //$NON-NLS-1$
 	}
 	
 	/**
@@ -293,15 +293,15 @@ public class DiskWriterTest extends TestCase {
 	protected void writeFile(FormattedDisk disk, byte[] data, String fileType,
 		boolean test) throws DiskFullException {
 		FileEntry entry = disk.createFile();
-		entry.setFilename("file-" + data.length);
+		entry.setFilename("file-" + data.length); //$NON-NLS-1$
 		entry.setFiletype(fileType);
 		entry.setFileData(data);
 		byte[] data2 = entry.getFileData();
 		if (test) {
-			assertTrue("File lengths do not match", data.length == data2.length);
+			assertTrue("File lengths do not match", data.length == data2.length); //$NON-NLS-1$
 			//assertTrue("File contents do not match", Arrays.equals(data, data2));
 			for (int i=0; i<data.length; i++) {
-				assertTrue("File contents differ at " + i, data[i] == data2[i]);
+				assertTrue("File contents differ at " + i, data[i] == data2[i]); //$NON-NLS-1$
 			}
 		}
 	}
@@ -311,7 +311,7 @@ public class DiskWriterTest extends TestCase {
 	 */
 	protected void showDirectory(FormattedDisk[] formattedDisks, String title) {
 		System.out.println();
-		System.out.println("************************************************");
+		System.out.println("************************************************"); //$NON-NLS-1$
 		System.out.println(title);
 		for (int i=0; i<formattedDisks.length; i++) {
 			FormattedDisk formattedDisk = formattedDisks[i];
@@ -319,19 +319,19 @@ public class DiskWriterTest extends TestCase {
 			System.out.println(formattedDisk.getDiskName());
 			List files = formattedDisk.getFiles();
 			if (files != null) {
-				showFiles(files, "", false);
+				showFiles(files, "", false); //$NON-NLS-1$
 			}
-			System.out.println(formattedDisk.getFreeSpace() + " bytes free.");
-			System.out.println(formattedDisk.getUsedSpace() + " bytes used.");
-			System.out.println("This disk " + (formattedDisk.canHaveDirectories() ? "does" : "does not") +
-				" support directories.");
-			System.out.println("This disk is formatted in the " + formattedDisk.getFormat() + " format.");
+			System.out.println(formattedDisk.getFreeSpace() + " bytes free."); //$NON-NLS-1$
+			System.out.println(formattedDisk.getUsedSpace() + " bytes used."); //$NON-NLS-1$
+			System.out.println("This disk " + (formattedDisk.canHaveDirectories() ? "does" : "does not") + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				" support directories."); //$NON-NLS-1$
+			System.out.println("This disk is formatted in the " + formattedDisk.getFormat() + " format."); //$NON-NLS-1$ //$NON-NLS-2$
 			System.out.println();
 			
 			showDiskUsage(formattedDisk);
 		}
 		System.out.println();
-		System.out.println("************************************************");
+		System.out.println("************************************************"); //$NON-NLS-1$
 		System.out.println();
 	}
 	
@@ -346,13 +346,13 @@ public class DiskWriterTest extends TestCase {
 				System.out.print(indent);
 				for (int d=0; d<data.size(); d++) {
 					System.out.print(data.get(d));
-					System.out.print(" ");
+					System.out.print(" "); //$NON-NLS-1$
 				}
 				System.out.println();
 			}
 			if (entry.isDirectory()) {
 				showFiles(((DirectoryEntry)entry).getFiles(), 
-					indent + "  ", showDeleted);
+					indent + "  ", showDeleted); //$NON-NLS-1$
 			}
 		}
 	}
@@ -364,7 +364,7 @@ public class DiskWriterTest extends TestCase {
 		int[] dimensions = disk.getBitmapDimensions();
 		DiskUsage usage = disk.getDiskUsage();
 		if (usage == null) {
-			System.out.println("A bitmap is not available.");
+			System.out.println("A bitmap is not available."); //$NON-NLS-1$
 			return;
 		}
 		if (dimensions == null) {
@@ -372,7 +372,7 @@ public class DiskWriterTest extends TestCase {
 			while (usage.hasNext()) {
 				if (i > 0 && i % 80 == 0) System.out.println();
 				usage.next();
-				System.out.print(usage.isFree() ? "." : "U");
+				System.out.print(usage.isFree() ? "." : "U"); //$NON-NLS-1$ //$NON-NLS-2$
 				i++;
 			}
 			System.out.println();
@@ -380,12 +380,12 @@ public class DiskWriterTest extends TestCase {
 			for (int y=dimensions[0]-1; y>=0; y--) {
 				for (int x=0; x<dimensions[1]; x++) {
 					usage.next();
-					System.out.print(usage.isFree() ? "." : "U");
+					System.out.print(usage.isFree() ? "." : "U"); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 				System.out.println();
 			}
 		}
-		System.out.println("U = used, . = free");
+		System.out.println("U = used, . = free"); //$NON-NLS-1$
 	}
 	
 	/**
@@ -400,9 +400,9 @@ public class DiskWriterTest extends TestCase {
 		}
 		for (int d=0; d<disks.length; d++) {
 			FormattedDisk disk = disks[d];
-			System.out.println("Excercising create and delete on disk " 
-				+ disk.getDiskName() + " in the " + disk.getFormat() 
-				+ " format.");
+			System.out.println("Excercising create and delete on disk "  //$NON-NLS-1$
+				+ disk.getDiskName() + " in the " + disk.getFormat()  //$NON-NLS-1$
+				+ " format."); //$NON-NLS-1$
 			int originalUsed = disk.getUsedSpace();
 			int originalFree = disk.getFreeSpace();
 			for (int count=0; count<5; count++) {
@@ -421,9 +421,9 @@ public class DiskWriterTest extends TestCase {
 					entry.delete();
 				}
 				// Verify that we're back to what we started with:
-				assertTrue("Free space does not match", 
+				assertTrue("Free space does not match",  //$NON-NLS-1$
 					originalFree == disk.getFreeSpace());
-				assertTrue("Used space does not match", 
+				assertTrue("Used space does not match",  //$NON-NLS-1$
 					originalUsed == disk.getUsedSpace());
 			}
 		}
@@ -437,8 +437,8 @@ public class DiskWriterTest extends TestCase {
 	throws DiskFullException {
 		for (int d=0; d<disks.length; d++) {
 			FormattedDisk disk = disks[d];
-			System.out.println("Exercising create, delete, create sequence "
-				+ "on disk " + disk.getDiskName() + ".");
+			System.out.println("Exercising create, delete, create sequence " //$NON-NLS-1$
+				+ "on disk " + disk.getDiskName() + "."); //$NON-NLS-1$ //$NON-NLS-2$
 			writeFile(disk, 5432, filetype, false);
 			List files = disk.getFiles();
 			for (int i=0; i<files.size(); i++) {
@@ -450,8 +450,8 @@ public class DiskWriterTest extends TestCase {
 			for (int i=0; i<files.size(); i++) {
 				FileEntry entry = (FileEntry) files.get(i);
 				if (entry.isDeleted()) {
-					showFiles(files, "", true);
-					fail("There should be no deleted files");
+					showFiles(files, "", true); //$NON-NLS-1$
+					fail("There should be no deleted files"); //$NON-NLS-1$
 				}
 			}
 		}

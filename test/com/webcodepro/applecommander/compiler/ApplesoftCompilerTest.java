@@ -19,19 +19,21 @@
  */
 package com.webcodepro.applecommander.compiler;
 
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
-
 import java.io.FileOutputStream;
 
 import junit.framework.TestCase;
+
+import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.FileEntry;
+import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
+import com.webcodepro.applecommander.testconfig.TestConfig;
 
 /**
  * Test the ApplesoftCompiler. 
  * @author Rob
  */
 public class ApplesoftCompilerTest extends TestCase {
+	private TestConfig config = TestConfig.getInstance();
 	/**
 	 * Constructor for ApplesoftCompilerTest.
 	 * @param arg0
@@ -46,13 +48,14 @@ public class ApplesoftCompilerTest extends TestCase {
 
 	public void testCompileColors() throws Exception {
 		DosFormatDisk disk = (DosFormatDisk) 
-			new Disk("C:/My Apple2/Disks/MASTER.DSK").getFormattedDisks()[0];
-		FileEntry fileEntry = disk.getFile("COLORS");
+			new Disk(config.getDiskDir() + "/MASTER.DSK").getFormattedDisks()[0]; //$NON-NLS-1$
+		FileEntry fileEntry = disk.getFile("COLORS"); //$NON-NLS-1$
 		ApplesoftCompiler compiler = new ApplesoftCompiler(fileEntry);
 		compiler.setIntegerOnlyMath(true);
 		byte[] assembly = compiler.compile();
 		System.out.println(new String(assembly));
-		FileOutputStream output = new FileOutputStream("C:/Temp/COLORS.s");
+		FileOutputStream output = new FileOutputStream(config.getTempDir() 
+				+ "/COLORS.s"); //$NON-NLS-1$
 		output.write(assembly);
 		output.close();
 	}
