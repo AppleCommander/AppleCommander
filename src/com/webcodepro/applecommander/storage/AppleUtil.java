@@ -74,7 +74,16 @@ public class AppleUtil {
 		return getUnsignedByte(buffer[offset]) 
 			+ getUnsignedByte(buffer[offset+1])*256
 			+ getUnsignedByte(buffer[offset+2])*65536;
-	}	
+	}
+	
+	/**
+	 * Set the value of a 3 byte value.
+	 */
+	public static void set3ByteValue(byte[] buffer, int offset, int value) {
+		buffer[offset] =   (byte) (value & 0x0000ff);
+		buffer[offset+1] = (byte)((value & 0x00ff00) >> 8);
+		buffer[offset+2] = (byte)((value & 0xff0000) >> 16);
+	}
 
 	/**
 	 * Extract out an unsigned byte as an int.
