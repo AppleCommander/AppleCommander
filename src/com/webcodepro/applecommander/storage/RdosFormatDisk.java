@@ -42,6 +42,16 @@ import java.util.List;
  */
 public class RdosFormatDisk extends FormattedDisk {
 	/**
+	 * The RDOS disks are structured in a different order than DOS 3.3.
+	 * This table interpolates between the RDOS ordering and the DOS
+	 * ordering.  It appears that RDOS may use the physical sector number
+	 * instead of the logical sector.
+	 */
+	private static final int sectorSkew[] = { 
+		0, 7, 0x0e, 6, 0x0d, 5, 0x0c, 4,
+		0x0b, 3, 0x0a, 2, 9, 1, 8, 0x0f 
+		};
+	/**
 	 * Specifies the length of a file entry.
 	 */
 	public static final int ENTRY_LENGTH = 0x20;
@@ -111,6 +121,15 @@ public class RdosFormatDisk extends FormattedDisk {
 	}
 	
 	/**
+	 * Constructor for RdosFormatDisk.
+	 * @param filename
+	 * @param diskImage
+	 */
+	public RdosFormatDisk(String filename) {
+		super(filename, new byte[APPLE_140KB_DISK]);
+	}
+
+	/**
 	 * Read an RDOS block.  The sector skewing for RDOS seems to be different.
 	 * This routine will convert the block number to a DOS track and sector,
 	 * handling the sector change-over.  The readSector method then should
@@ -120,11 +139,24 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * itself is a 13 sector format.
 	 */
 	public byte[] readRdosBlock(int block) {
-		int sectorSkew[] = { 0, 7, 0x0e, 6, 0x0d, 5, 0x0c, 4,
-							0x0b, 3, 0x0a, 2, 9, 1, 8, 0x0f };
 		int track = block / 13;
 		int sector = sectorSkew[block % 13];
 		return readSector(track, sector);
+	}
+	
+	/**
+	 * Write an RDOS block.  The sector skewing for RDOS seems to be different.
+	 * This routine will convert the block number to a DOS track and sector,
+	 * handling the sector change-over.  The writeSector method then should
+	 * take care of various image formats.
+	 * <p>
+	 * Note that sectorSkew has the full 16 sectors, even though RDOS
+	 * itself is a 13 sector format.
+	 */
+	public void writeRdosBlock(int block, byte[] data) {
+		int track = block / 13;
+		int sector = sectorSkew[block % 13];
+		writeSector(track, sector, data);
 	}
 
 	/**
@@ -325,4 +357,38 @@ public class RdosFormatDisk extends FormattedDisk {
 		}
 		return fileData;
 	}
+	
+	/**
+	 * Format the disk as an RDOS disk.
+	 * FIXME - RDOS does not "like" an AppleCommander formatted disk.
+	 *         This appears to be because the &amp;CAT command command
+	 *         reads from track 1 sector 9 (whatever RDOS block that
+	 *         would be) and executes that code for the directory.
+	 *         AppleCommander will need to either clone the code or write
+	 *         its own routine.
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
+	 */
+	public void format() {
+		writeBootCode();
+		// minor hack - ensure that AppleCommander itself recognizes the
+		// RDOS disk!
+		byte[] block = readSector(0, 0x0d);
+		AppleUtil.setString(block, 0xe0, "RDOS FORMATTED BY APPLECOMMANDER", 0x20);
+		writeSector(0, 0x0d, block);
+		// a hack - until real code goes here.
+		block = new byte[256];
+		block[0] = 0x60;
+		writeSector(1, 9, block);
+		// write the first directory entry
+		// FIXME - this should use FileEntry!
+		byte[] data = readRdosBlock(13);
+		AppleUtil.setString(data, 0x00, "RDOS 2.1 FORMAT NOBOOT", 0x18);
+		AppleUtil.setString(data, 0x18, "B", 0x01);
+		data[0x19] = 26;
+		AppleUtil.setWordValue(data, 0x1a, 0x1000);
+		AppleUtil.setWordValue(data, 0x1c, 6656);
+		AppleUtil.setWordValue(data, 0x1e, 0);
+		writeRdosBlock(13, data);
+	}
+
 }
