@@ -35,6 +35,7 @@ import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.HexDumpFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
+import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 
@@ -112,6 +113,14 @@ public class ExportFileStartPane extends WizardPane {
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				wizard.setFileFilter(new TextFileFilter());
+			}
+		});
+		button = new Button(buttonSubpanel, SWT.RADIO);
+		button.setText("Pascal text file");
+		button.setSelection(wizard.getFileFilter() instanceof PascalTextFileFilter);
+		button.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				wizard.setFileFilter(new PascalTextFileFilter());
 			}
 		});
 		button = new Button(buttonSubpanel, SWT.RADIO);
