@@ -59,6 +59,12 @@ public class SwtImage extends AppleImage {
 		imageData.setPixel(x, y, color);
 	}
 	/**
+	 * Get a color point.
+	 */
+	public int getPoint(int x, int y) {
+		return imageData.getPixel(x,y);
+	}
+	/**
 	 * Save the image.
 	 */
 	public void save(OutputStream outputStream) throws IOException {
@@ -75,5 +81,17 @@ public class SwtImage extends AppleImage {
 			format = SWT.IMAGE_PNG;
 		}
 		imageLoader.save(outputStream, format);
+	}
+	/**
+	 * Return the width of the image.
+	 */
+	public int getWidth() {
+		return imageData.width;
+	}
+	/**
+	 * Return the height of the image.
+	 */
+	public int getHeight() {
+		return imageData.height;
 	}
 }

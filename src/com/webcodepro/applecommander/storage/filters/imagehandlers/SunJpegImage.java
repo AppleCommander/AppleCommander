@@ -51,9 +51,27 @@ public class SunJpegImage extends AppleImage {
 		image.setRGB(x, y, color);
 	}
 	/**
+	 * Get a color point.
+	 */
+	public int getPoint(int x, int y) {
+		return image.getRGB(x,y);
+	}
+	/**
 	 * Save the image.
 	 */
 	public void save(OutputStream outputStream) throws IOException {
 		JPEGCodec.createJPEGEncoder(outputStream).encode(image);
+	}
+	/**
+	 * Return the width of the image.
+	 */
+	public int getWidth() {
+		return image.getWidth();
+	}
+	/**
+	 * Return the height of the image.
+	 */
+	public int getHeight() {
+		return image.getHeight();
 	}
 }

@@ -115,7 +115,19 @@ public abstract class AppleImage {
 	 */
 	public abstract void setPoint(int x, int y, int color);
 	/**
+	 * Get a color point.
+	 */
+	public abstract int getPoint(int x, int y);
+	/**
 	 * Save the image.
 	 */
 	public abstract void save(OutputStream outputStream) throws IOException;
+	/**
+	 * Return the width of the image.
+	 */
+	public abstract int getWidth();
+	/**
+	 * Return the height of the image.
+	 */
+	public abstract int getHeight();
 }
