@@ -482,7 +482,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 			for (int i=0; i<0x100; i++) {
 				int indexBlockNumber = AppleUtil.getWordValue(
 					masterIndexBlock[i], masterIndexBlock[i+0x100]);
-				freeBlocksInIndex(bitmap,indexBlockNumber);
+				if (indexBlockNumber > 0) freeBlocksInIndex(bitmap,indexBlockNumber);
 			}
 		}
 		writeVolumeBitMap(bitmap);
@@ -533,7 +533,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 		int numberOfDataBlocks = (fileData.length + BLOCK_SIZE - 1) / BLOCK_SIZE;
 		int numberOfBlocks = numberOfDataBlocks;
 		if (numberOfBlocks > 1) {
-			numberOfBlocks+= (numberOfDataBlocks / 256) + 1;	// that's 128K
+			numberOfBlocks+= ((numberOfDataBlocks-1) / 256) + 1;	// that's 128K
 			if (numberOfDataBlocks > 256) {
 				numberOfBlocks++;
 			}
@@ -565,24 +565,8 @@ public class ProdosFormatDisk extends FormattedDisk {
 			System.arraycopy(fileData,offset,blockData,0,length);
 			writeBlock(blockNumber, blockData);
 			if (numberOfDataBlocks > 1) {
-				if (indexBlockData == null) {	// sapling files
-					indexBlockNumber = findFreeBlock(bitmap);
-					indexBlockData = new byte[BLOCK_SIZE];
-					setBlockUsed(bitmap, indexBlockNumber);
-					blockCount++;
-					// This is only used for Tree files:
-					int position = (offset / (BLOCK_SIZE * 256));
-					byte low = (byte)(indexBlockNumber % 256);
-					byte high = (byte)(indexBlockNumber / 256);
-					masterIndexBlockData[position] = low;
-					masterIndexBlockData[position + 0x100] = high;
-				}
-				int position = (offset / BLOCK_SIZE) % 256;
-				byte low = (byte)(blockNumber % 256);
-				byte high = (byte)(blockNumber / 256);
-				indexBlockData[position] = low;
-				indexBlockData[position + 0x100] = high;
-				if (position == 255) {	// growing to a tree file
+				// growing to a tree file
+				if (offset > 0 && (offset / BLOCK_SIZE) % 256 == 0) {
 					if (masterIndexBlockNumber == 0) {
 						masterIndexBlockNumber = findFreeBlock(bitmap);
 						setBlockUsed(bitmap, masterIndexBlockNumber);
@@ -592,13 +576,32 @@ public class ProdosFormatDisk extends FormattedDisk {
 					indexBlockData = null;
 					indexBlockNumber = 0;
 				}
+				// new index block
+				if (indexBlockData == null) {	// sapling files
+					indexBlockNumber = findFreeBlock(bitmap);
+					indexBlockData = new byte[BLOCK_SIZE];
+					setBlockUsed(bitmap, indexBlockNumber);
+					blockCount++;
+					// This is only used for Tree files (but we always record it):
+					int position = (offset / (BLOCK_SIZE * 256));
+					byte low = (byte)(indexBlockNumber % 256);
+					byte high = (byte)(indexBlockNumber / 256);
+					masterIndexBlockData[position] = low;
+					masterIndexBlockData[position + 0x100] = high;
+				}
+				// record last block position in index block
+				int position = (offset / BLOCK_SIZE) % 256;
+				byte low = (byte)(blockNumber % 256);
+				byte high = (byte)(blockNumber / 256);
+				indexBlockData[position] = low;
+				indexBlockData[position + 0x100] = high;
 			}
 			offset+= BLOCK_SIZE;
 		}
-		if (numberOfBlocks == 1) {
+		if (numberOfDataBlocks == 1) {
 			fileEntry.setKeyPointer(blockNumber);
 			fileEntry.setSeedlingFile();
-		} else if (numberOfBlocks <= 256) {
+		} else if (numberOfDataBlocks <= 256) {
 			writeBlock(indexBlockNumber, indexBlockData);
 			fileEntry.setKeyPointer(indexBlockNumber);
 			fileEntry.setSaplingFile();
