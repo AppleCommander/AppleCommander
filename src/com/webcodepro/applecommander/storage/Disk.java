@@ -371,7 +371,9 @@ public class Disk {
 			throw new IllegalArgumentException("Unrecognized DOS format!");
 		}
 		int sectorsPerTrack = 16;
-		if (length == APPLE_800KB_DISK) sectorsPerTrack = 32;
+		if (length == APPLE_800KB_DISK || length == APPLE_800KB_2IMG_DISK) {
+			sectorsPerTrack = 32;
+		}
 		if ((track * sectorsPerTrack + sector) * SECTOR_SIZE > getPhysicalSize()) {
 			throw new IllegalArgumentException(
 				"The track (" + track + ") and sector (" + sector 
