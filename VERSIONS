@@ -1,0 +1,136 @@
+1.2.0 (2003-02-11)
+* Can now create disk images. For the moment, these images are not 
+  bootable (including hard disk images) - they do however boot a 
+  nifty title screen... 
+* Files can now be imported into disks. Formats that support this 
+  are DOS 3.3 and ProDOS formats. (Pascal and RDOS will come at a 
+  later point.) 
+* The AppleWorks export now has an option for exporting to 
+  Rich-Text Format (RTF). This format can be loaded into many 
+  word-processors easily. 
+* The graphics export option now supports Super High-Res images. 
+  Both unpacked and packed formats. These are essentially raw dumps 
+  from the IIGS memory that were saved to disk. 
+* Files can be deleted. 
+* Any changes to a disk image can be saved. Please be careful! It's 
+  easy enough to keep a backup copy of your work these days. 
+* Two new DOS derivitaves are available: UniDOS and OzDOS (both are 
+  800K formats). 
+
+1.1.1 (2002-11-23)
+* Fixed AppleWorks upper/lower case filename resolution.  Human memory 
+  proves to be rusty - fortunately, the folks at gno.org have a good 
+  reference.  See:
+        http://www.gno.org/pub/apple2/doc/apple/filetypes/ftn.1a.xxxx
+* Extract AppleWorks word processor (AWP) files.  Extracts as raw text 
+  or HTML (semi formatted).  See
+                http://www.gno.org/pub/apple2/doc/apple/filetypes/ftn.1a.xxxx
+  for a description of the AppleWorks Word Processor file type.
+* Expanded wizard to include AppleWorks Word Processor format/rendering 
+  options (text or html).
+* If a filter is chosen via the drop-down menu on the button, the button 
+  thinks it was clicked.  Fixed.
+* Exporting a file now warns that a file exists and will as if it should 
+  be overwritten.
+* Reorganized the user-interface classes.  In particular, segmented 
+  DiskWindow into multiple classes (each tab is a separate class now).
+* Added user preferences to AppleCommander.  Currently only tracks the disk 
+  image directory and the export directory.
+* Attempt to identify file filter based on file type, size, and whatever 
+  else makes sense.
+* Mark all files as GPL.
+* Allow multiple file exports.
+
+1.1.0 (2002-11-12)
+* AppleCommander still not starting in Windows 98.  InputStream used in 
+  image loading was not being closed.  Did not resolve issue.
+* Raw extract of file data.
+* Extract binary files (differs from raw extract by paying attention 
+  to file lengths and any additional overhead which the operating system 
+  may store.
+* Extract files as text.
+* Extract Applesoft files by converting tokens to strings.
+* Extract Integer Basic files by converting tokens to strings.
+* RDOS files are not being read correctly; maybe this is an issue with 
+  the sector skew? Resolved that RDOS images are apprantly 13 sectors. 
+  Updated accordingly.
+* Fixed bug in DOS Applesoft and Binary file length calculations.  
+  Deleted file entries were (a) not being detected correctly which 
+  caused (b) the read of file data to crash AppleCommander.  (The initial 
+  bytes for A and B file types indicate file length.)
+* Updated FileFilter to suggest an appropriate file name.
+* Extracting black & white or color (user selected) HGR file format to 
+  PNG/JPEG (user selected).  GIF is not a part of ImageIO for writing 
+  (apparantly is avilable for reading).
+* Fixed issue in determining DOS format disks.  Originally was only 
+  checking 3 bytes of the VTOC for valid values.  Extended to check for 8 
+  valid values in the VTOC.  Fixed known problem with Crisis Mountain.
+* Allow graphic extraction to happen with JDK 1.3 (currently limited to 
+  JDK 1.4).  If not possible, disable graphics filter.  Change export 
+  options appropriately.
+* Extract Apple double hi-res image formats (B&W, color) and convert to 
+  PNG/JPEG.  Technical specs are available at - 
+  	http://web.pdx.edu/~heiss/technotes/aiie/tn.aiie.03.html
+* Double hi-res images are extracted at 560x384 pixels to maintain 
+  appropriate aspect ratio.
+* Changed method of loading images. This fixed the Windows 98 startup issue.
+* When opening a disk image on Linux, the tab is now selected.  This is 
+  done implicitly under Windows.  When running under Linux (motif to 
+  be precise), there is no default tab and it must be explicitly selected.
+* Export wizard. Allows filter to be chosen along with any filter settings 
+  (just graphics right now) and export directory.  Settings are remembered 
+  between exports.
+
+1.0.1g (2002-10-31)
+* AppleCommander would not start under Windows 98.  Looking at where 
+  the crash happened, it was the only PNG image in the system.  Converted 
+  this PNG image to GIF format and will re-release.  No other code changes.  
+  Does not resolve Windows 98 issue.
+
+Website (2002-10-28)
+* Make website and announce on comp.sys.apple2.
+
+1.0.1 (2002-10-27)
+* Fixed a number of JDK 1.3 issues - code where JDK 1.4 is fine, but 
+  the method is not available in JDK 1.3.  These were:
+  - NumberFormat.getIntegerInstance() ==> NumberFormat.getNumberInstance().
+  - BitMap set(int, boolean) ==> set(int) if true and clear(int) if false.
+* Sort bug - if sorting a string that is null or zero length, a 
+  NumberFormatException could occur.
+
+1.0 (2002-10-27)
+* Change to JDK 1.3 for compile. Needed to change entire workspace.
+* Show/hide deleted files. Should be available only on disks which can hold 
+  deleted files.
+* Support .zip or .gz compression.  Added support for GZIP.  Unable to find 
+  an example of a ZIP compressed archive.  Deprecated DiskHelper class - 
+  seemed to make sense to merge into the Disk interface itself.
+* Modify Disk interface to give a list of file types - in a generic manner - 
+  which would be used by the GUI instead of trying to keep GUI in synch with 
+  the Disk interface.  Added FileFilter to Disk and added getFileFilters 
+  class method.
+* Double-click on directory should expand that item.
+* Fixed ProDOS filename recognition in the case of a deleted file.
+* Right-click menu for directories - expand/collapse; expand all/collapse all.
+* Add sorting to file table.
+
+0.92 (2002-10-24)
+* Fix icon transparency. Needed to change from PNG to GIF; apparantly SWT 
+  does not do PNG transparency.
+* Don't use large font in disk usage map; on some displays, the words are 
+  cut off and the legend doesn't fit in the window.
+* Remove getDirectoryString from FileEntry interface and replace with 
+  getFileColumnData.
+* In ProDOS view, if address is $0000, it should not be displayed.
+* Remember column sizing in file view.
+* Improved initial width guess for columns in file view.
+* Do not always redraw table - do it intelligently.  Checking both the list 
+  of files and the format before deciding upon an action.
+* Need icons for delete file and save image.
+
+0.91 (2002-10-21)
+* Implement changing views (standard, native, detail).
+
+0.90 (2002-10-17)
+* Initial release - basic reading of disks.
+
