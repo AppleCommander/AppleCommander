@@ -83,15 +83,7 @@ public class PascalFileEntry implements FileEntry {
 	 * Return the filetype of this file.
 	 */
 	public String getFiletype() {
-		String filetypes[] = {
-			"xdskfile (for bad blocks)",
-			"codefile",
-			"textfile",
-			"infofile",
-			"datafile",
-			"graffile",
-			"fotofile",
-			"securedir" };
+		String[] filetypes = disk.getFiletypes();
 		int filetype = fileEntry[4] & 0x0f;
 		if (filetype == 0 || filetype > filetypes.length) {
 			return "unknown (" + filetype + ")";
@@ -256,5 +248,22 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	public FormattedDisk getFormattedDisk() {
 		return disk;
+	}
+
+	/**
+	 * Indicates if this filetype requires an address component.
+	 * Note that the FormattedDisk also has this method - normally,
+	 * this will defer to the method on FormattedDisk, as it will be
+	 * more generic.
+	 */
+	public boolean needsAddress() {
+		return false;
+	}
+	
+	/**
+	 * Set the address that this file loads at.
+	 */
+	public void setAddress(int address) {
+		// Does not apply.
 	}
 }

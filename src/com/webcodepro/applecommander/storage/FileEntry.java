@@ -126,4 +126,17 @@ public interface FileEntry {
 	 * Return the maximum filename length.
 	 */
 	public int getMaximumFilenameLength();
+	
+	/**
+	 * Indicates if this filetype requires an address component.
+	 * Note that the FormattedDisk also has this method - normally,
+	 * this will defer to the method on FormattedDisk, as it will be
+	 * more generic.
+	 */
+	public abstract boolean needsAddress();
+	
+	/**
+	 * Set the address that this file loads at.
+	 */
+	public abstract void setAddress(int address);
 }

@@ -430,4 +430,21 @@ public class DosFileEntry implements FileEntry {
 	public FormattedDisk getFormattedDisk() {
 		return disk;
 	}
+
+	/**
+	 * Indicates if this filetype requires an address component.
+	 * Note that the FormattedDisk also has this method - normally,
+	 * this will defer to the method on FormattedDisk, as it will be
+	 * more generic.
+	 */
+	public boolean needsAddress() {
+		return disk.needsAddress(getFiletype());
+	}
+	
+	/**
+	 * Set the address that this file loads at.
+	 */
+	public void setAddress(int address) {
+		// FIXME - need to implement
+	}
 }
