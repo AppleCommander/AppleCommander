@@ -58,4 +58,10 @@ public class ImageCanvas extends Canvas implements PaintListener {
 			image.getImageData().width,
 			image.getImageData().height);
 	}
+	/**
+	 * Get the Image.
+	 */
+	public Image getImage() {
+		return image;
+	}
 }
