@@ -44,6 +44,7 @@ import com.webcodepro.applecommander.storage.physical.NibbleOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import com.webcodepro.applecommander.storage.physical.UniversalDiskImageLayout;
 import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.StreamUtil;
 
 /**
  * Abstract representation of an Apple2 disk (floppy, 800k, hard disk).
@@ -149,12 +150,7 @@ public class Disk {
 		int diskSize = (int) file.length();
 		ByteArrayOutputStream diskImageByteArray = 
 			new ByteArrayOutputStream(diskSize);
-		byte[] data = new byte[1024];
-		int bytes;
-		while ((bytes = input.read(data)) > 0) {
-			diskImageByteArray.write(data, 0, bytes);
-		}
-		input.close();
+		StreamUtil.copy(input, diskImageByteArray);
 		byte[] diskImage = diskImageByteArray.toByteArray();
 		if (diskImage.length >= APPLE_800KB_2IMG_DISK 
 			&& diskImage.length <= APPLE_800KB_2IMG_DISK + 10) {
@@ -276,7 +272,7 @@ public class Disk {
 			|| filename.toLowerCase().endsWith(".po.gz")
 			|| is2ImgOrder()
 			|| filename.toLowerCase().endsWith(".hdv")
-			|| getPhysicalSize() >= APPLE_800KB_DISK;
+			|| getPhysicalSize() >= APPLE_800KB_2IMG_DISK;
 	}
 	
 	/**
@@ -383,6 +379,7 @@ public class Disk {
 	 * different characteristics.  This just tests 140KB images.
 	 */
 	public boolean isDosFormat() {
+		if (!is140KbDisk()) return false;
 		byte[] vtoc = readSector(17, 0);
 		return (imageOrder.isSizeApprox(APPLE_140KB_DISK)
 				 || imageOrder.isSizeApprox(APPLE_140KB_NIBBLE_DISK))						 
@@ -402,10 +399,7 @@ public class Disk {
 	 * logical disk takes up the second 400KB.
 	 */
 	public boolean isUniDosFormat() {
-		if (getPhysicalSize() != APPLE_800KB_DISK
-			&& getPhysicalSize() != APPLE_800KB_2IMG_DISK) {
-			return false;
-		}
+		if (!is800KbDisk()) return false;
 		byte[] vtoc1 = readSector(17, 0);	// logical disk #1
 		byte[] vtoc2 = readSector(67, 0);	// logical disk #2
 		return
@@ -418,7 +412,6 @@ public class Disk {
 			&& vtoc1[0x36] == 0		// bytes per sector (low byte)
 			&& vtoc1[0x37] == 1		// bytes per sector (high byte)
 			// LOGICAL DISK #2
-			&& vtoc2[0x37] == 1		// bytes per sector (high byte)
 			&& vtoc2[0x01] == 17	// expect catalog to start on track 17
 			&& vtoc2[0x02] == 31	// expect catalog to start on sector 31
 			&& vtoc2[0x27] == 122	// expect 122 tract/sector pairs per sector
@@ -435,10 +428,7 @@ public class Disk {
 	 * the second logical disk takes the second half of each block.
 	 */
 	public boolean isOzDosFormat() {
-		if (getPhysicalSize() != APPLE_800KB_DISK
-			&& getPhysicalSize() != APPLE_800KB_2IMG_DISK) {
-			return false;
-		}
+		if (!is800KbDisk()) return false;
 		byte[] vtoc = readBlock(544);	// contains BOTH VTOCs!
 		return
 			// LOGICAL DISK #1
@@ -465,6 +455,7 @@ public class Disk {
 	 * disk.
 	 */
 	public boolean isPascalFormat() {
+		if (!is140KbDisk()) return false;
 		byte[] directory = readBlock(2);
 		return directory[0] == 0 && directory[1] == 0
 			&& directory[2] == 6 && directory[3] == 0
@@ -476,6 +467,7 @@ public class Disk {
 	 * Check the first 256 bytes of the CP/M directory for validity.
 	 */
 	public boolean isCpmFormat() {
+		if (!is140KbDisk()) return false;
 		byte[] directory = readSector(3, 0);
 		int bytes[] = new int[256];
 		for (int i=0; i<directory.length; i++) {
@@ -507,10 +499,30 @@ public class Disk {
 	}
 	
 	/**
+	 * Answers true if this disk image is within the expected 140K
+	 * disk size.  Can vary if a header has been applied or if this is
+	 * a nibblized disk image.
+	 */
+	protected boolean is140KbDisk() {
+		return getPhysicalSize() >= APPLE_140KB_DISK
+			&& getPhysicalSize() <= APPLE_140KB_NIBBLE_DISK;
+	}
+
+	/**
+	 * Answers true if this disk image is within the expected 800K
+	 * disk size.  Can vary if a 2IMG header has been applied.
+	 */
+	protected boolean is800KbDisk() {
+		return getPhysicalSize() >= APPLE_800KB_DISK
+			&& getPhysicalSize() <= APPLE_800KB_2IMG_DISK;
+	}
+	
+	/**
 	 * Test the disk format to see if this is a RDOS formatted
 	 * disk.
 	 */
 	public boolean isRdosFormat() {
+		if (!is140KbDisk()) return false;
 		byte[] block = readSector(0, 0x0d);
 		String id = AppleUtil.getString(block, 0xe0, 4);
 		return "RDOS".equals(id);
