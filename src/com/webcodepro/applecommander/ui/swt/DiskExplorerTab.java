@@ -21,6 +21,7 @@ package com.webcodepro.applecommander.ui.swt;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
@@ -82,6 +83,7 @@ public class DiskExplorerTab {
 	private ToolItem exportToolItem;
 	private ToolItem importToolItem;
 	private ToolItem deleteToolItem;
+	private ToolItem saveToolItem;
 	private ImageManager imageManager;
 
 	private UserPreferences userPreferences = UserPreferences.getInstance();
@@ -798,14 +800,14 @@ public class DiskExplorerTab {
 		});
 		item = new ToolItem(toolBar, SWT.SEPARATOR);
 
-		item = new ToolItem(toolBar, SWT.PUSH);
-		item.setImage(imageManager.getSaveImageIcon());
-		item.setText("Save");
-		item.setToolTipText("Save disk image");
-		item.setEnabled(false);
-		item.addSelectionListener(new SelectionAdapter () {
+		saveToolItem = new ToolItem(toolBar, SWT.PUSH);
+		saveToolItem.setImage(imageManager.getSaveImageIcon());
+		saveToolItem.setText("Save");
+		saveToolItem.setToolTipText("Save disk image");
+		saveToolItem.setEnabled(disk.hasChanged());
+		saveToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
-				// not available yet
+				save();
 			}
 		});
 
@@ -831,6 +833,31 @@ public class DiskExplorerTab {
 			preserveColumnWidths();	// must be done before assigning newFormat
 			currentFormat = newFormat;
 			fillFileTable(fileList);
+		}
+	}
+	/**
+	 * Handle save.
+	 */
+	protected void save() {
+		try {
+			disk.save();
+			saveToolItem.setEnabled(disk.hasChanged());
+		} catch (IOException ex) {
+			Shell finalShell = shell;
+			String errorMessage = ex.getMessage();
+			if (errorMessage == null) {
+				errorMessage = ex.getClass().getName();
+			}
+			MessageBox box = new MessageBox(finalShell, 
+				SWT.ICON_ERROR | SWT.CLOSE);
+			box.setText("Unable to save disk image!");
+			box.setMessage(
+				  "Unable to save '" + disk.getFilename() + "'.\n\n"
+			    + "AppleCommander was unable to save the disk\n"
+			    + "image.  The system error given was '"
+			    + errorMessage + "'\n\n"
+				+ "Sorry!");
+			box.open();
 		}
 	}
 }
