@@ -378,7 +378,6 @@ public class ProdosFormatDisk extends FormattedDisk {
 		}
 		ProdosFileEntry prodosEntry = (ProdosFileEntry) fileEntry;
 		byte[] fileData = new byte[prodosEntry.getEofPosition()];
-		int indexBlocks = 0;
 		if (prodosEntry.isSeedlingFile()) {
 			byte[] blockData = readBlock(prodosEntry.getKeyPointer());
 			System.arraycopy(blockData, 0, fileData, 0, prodosEntry.getEofPosition());
@@ -390,8 +389,11 @@ public class ProdosFormatDisk extends FormattedDisk {
 			int offset = 0;
 			for (int i=0; i<0x100; i++) {
 				int blockNumber = AppleUtil.getWordValue(masterIndexBlock[i], masterIndexBlock[i+0x100]);
-				byte[] indexBlock = readBlock(blockNumber);
-				offset+= getIndexBlockData(fileData, indexBlock, offset);
+				if (blockNumber > 0) {
+					// FIXME - this may break sparse files!
+					byte[] indexBlock = readBlock(blockNumber);
+					offset= getIndexBlockData(fileData, indexBlock, offset);
+				}
 			}
 		} else {
 			throw new IllegalArgumentException("Unknown ProDOS storage type!");
@@ -411,7 +413,6 @@ public class ProdosFormatDisk extends FormattedDisk {
 			freeBlocksInIndex(bitmap,block);
 		} else if (prodosFileEntry.isTreeFile()) {
 			byte[] masterIndexBlock = readBlock(block);
-			int offset = 0;
 			for (int i=0; i<0x100; i++) {
 				int indexBlockNumber = AppleUtil.getWordValue(
 					masterIndexBlock[i], masterIndexBlock[i+0x100]);
@@ -427,7 +428,6 @@ public class ProdosFormatDisk extends FormattedDisk {
 	private void freeBlocksInIndex(byte[] bitmap, int indexBlockNumber) {
 		setBlockFree(bitmap, indexBlockNumber);
 		byte[] indexBlock = readBlock(indexBlockNumber);
-		int offset = 0;
 		for (int i=0; i<0x100; i++) {
 			int blockNumber = AppleUtil.getWordValue(indexBlock[i], indexBlock[i+0x100]);
 			if (blockNumber > 0) setBlockFree(bitmap, blockNumber);
@@ -511,7 +511,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 					masterIndexBlockData[position] = low;
 					masterIndexBlockData[position + 0x100] = high;
 				}
-				int position = (offset / BLOCK_SIZE);
+				int position = (offset / BLOCK_SIZE) % 256;
 				byte low = (byte)(blockNumber % 256);
 				byte high = (byte)(blockNumber / 256);
 				indexBlockData[position] = low;
