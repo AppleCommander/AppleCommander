@@ -24,6 +24,8 @@ import com.webcodepro.applecommander.util.AppleUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Filter the given file as if it were a graphics image.
@@ -57,6 +59,7 @@ public class GraphicsFileFilter implements FileFilter {
 	public static final int MODE_DHR_COLOR = 4;
 	public static final int MODE_SHR_16 = 5;
 	public static final int MODE_SHR_3200 = 6;
+	public static final int MODE_QUICKDRAW2_ICON = 7;
 	
 	private int mode = MODE_HGR_COLOR;
 	private AppleImage appleImage;	
@@ -89,11 +92,30 @@ public class GraphicsFileFilter implements FileFilter {
 			image = AppleImage.create(560, 192*2);
 		} else if (isSuperHiresMode()) {
 			image = AppleImage.create(640, 400);
+		} else if (isQuickDraw2Icon()) {
+			// Build later...
 		} else {
 			return new byte[0];
 		}
-		image.setFileExtension(appleImage.getFileExtension());
-		if (isSuperHiresMode()) {
+		if (isQuickDraw2Icon()) {
+			AppleImage[] icons = buildQuickDraw2Icons(fileEntry);
+			int width = 0;
+			for (int i=0; i<icons.length; i+=2) {
+				width+= icons[i].getWidth();
+			}
+			int height = icons[0].getHeight() + icons[1].getHeight();
+			image = AppleImage.create(width, height);
+			int x = 0;
+			for (int i=0; i<icons.length; i++) {
+				if (i % 2 == 0) {		// the actual icon
+					copyImage(image, icons[i], x, 0);
+				} else {				// the mask - note that height and width is 
+										// assumed to be same between icon and its mask
+					copyImage(image, icons[i], x, icons[i].getHeight());
+					x+= icons[i].getWidth();
+				}
+			}
+		} else if (isSuperHiresMode()) {
 			if (fileData.length < 32767) {	// leaves 1 byte of leeway
 				fileData = AppleUtil.unpackBytes(fileData);
 				if (fileData.length == 32767) {
@@ -142,6 +164,7 @@ public class GraphicsFileFilter implements FileFilter {
 			}
 		}
 		try {
+			image.setFileExtension(appleImage.getFileExtension());
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			image.save(outputStream);
 			return outputStream.toByteArray();
@@ -380,6 +403,97 @@ public class GraphicsFileFilter implements FileFilter {
 			}
 		}
 	}
+	
+	/**
+	 * Construct a series of icons based on the QuickDraw II Icon file format.
+	 * In ProDOS, this is the ICN ($Ca) file format.
+	 * <p>
+	 * @see http://www.gno.org/pub/apple2/doc/apple/filetypes/ftn.ca.xxxx
+	 */
+	public AppleImage[] buildQuickDraw2Icons(FileEntry fileEntry) {
+		List icons = new ArrayList();
+		int offset = 26;	// skip file header
+		byte[] filedata = fileEntry.getFileData();
+		while (offset < filedata.length) {
+			int iDataLen = AppleUtil.getWordValue(filedata, offset);
+			if (iDataLen == 0) break;	// end of file
+			AppleImage[] imageAndMask = buildQuickDraw2IconAndMask(filedata, offset+86);
+			icons.add(imageAndMask[0]);
+			icons.add(imageAndMask[1]);
+			offset+= iDataLen;
+		}
+		AppleImage[] images = new AppleImage[icons.size()];
+		icons.toArray(images); 
+		return images;
+	}
+	
+	/**
+	 * Each icon is composed of two images - one an icon and the other is the mask.
+	 */
+	protected AppleImage[] buildQuickDraw2IconAndMask(byte[] filedata, int offset) {
+		boolean colorIcon = AppleUtil.getWordValue(filedata, offset) == 0x8000;
+		//int iconSize = AppleUtil.getWordValue(filedata, offset+2);
+		int iconHeight = AppleUtil.getWordValue(filedata, offset+4);
+		int iconWidth = AppleUtil.getWordValue(filedata, offset+6);
+		AppleImage[] iconAndMask = new AppleImage[2];
+		offset+= 8;
+		iconAndMask[0] = buildQuickDraw2IconOrMask(filedata, colorIcon, iconHeight, iconWidth, offset);
+		int bytesWide = 1 + ((iconWidth - 1) / 2);
+		offset+= bytesWide * iconHeight;
+		iconAndMask[1] = buildQuickDraw2IconOrMask(filedata, false, iconHeight, iconWidth, offset);
+		return iconAndMask;
+	}
+	
+	/**
+	 * Build an image of an individual icon or its mask. 
+	 */
+	protected AppleImage buildQuickDraw2IconOrMask(byte[] filedata, boolean isColor, int height, int width, int offset) {
+		AppleImage icon = AppleImage.create(width, height);
+		int[] colors = {	// this is a wild guess, by the way!
+				0x000000, 0xff0000, 0x800000, 0xff8000,	// black, magenta, brown, orange
+				0x008000, 0x808080, 0x00ff00, 0xffff00,	// dark green, grey1, green, yellow
+				0x000080, 0xff00ff, 0x808080, 0xff80c0,	// dark blue, voilet, grey2, pink
+				0x0000a0, 0x0000ff, 0x00c080, 0xffffff	// medium blue, light blue, aqua, white
+		};
+		int[] grays = {	// a logical guess...
+				0x000000, 0x111111, 0x222222, 0x333333,
+				0x444444, 0x555555, 0x666666, 0x777777,
+				0x888888, 0x999999, 0xaaaaaa, 0xbbbbbb,
+				0xcccccc, 0xdddddd, 0xeeeeee, 0xffffff
+		};
+		for (int y=0; y<height; y++) {
+			for (int x=0; x<width; x++) {
+				if (x > 0 && x%2 == 0) {
+					offset++;
+				}
+				int byteValue = AppleUtil.getUnsignedByte(filedata[offset]);
+				int pixel = 0;
+				if (x%2 == 0) {
+					pixel = byteValue & 0x0f;
+				} else {
+					pixel = byteValue & 0xf0 >> 4;
+				}
+				int color = isColor ? colors[pixel] : grays[pixel];
+				icon.setPoint(x, y, color);
+			}
+			offset++;
+		}
+		return icon;
+	}
+
+	/**
+	 * Copy an image from the source image to the destination image.
+	 * This isn't optimal, nor can it be - we're hiding the actual image
+	 * implementation, after all.  Initially written to handle Apple IIGS
+	 * Toolbox Icon files.
+	 */
+	public void copyImage(AppleImage destImage, AppleImage srcImage, int xStart, int yStart) {
+		for (int y=0; y<srcImage.getHeight(); y++) {
+			for (int x=0; x<srcImage.getWidth(); x++) {
+				destImage.setPoint(xStart+x, yStart+y, srcImage.getPoint(x,y));
+			}
+		}
+	}
 
 	/**
 	 * Give file extensions.
@@ -481,5 +595,12 @@ public class GraphicsFileFilter implements FileFilter {
 	 */
 	public boolean isSuperHiresMode() {
 		return isSuperHires16Mode() || isSuperHires3200Mode();
+	}
+	
+	/**
+	 * Indicates if this is a QuickDraw II Icon.
+	 */
+	public boolean isQuickDraw2Icon() {
+		return mode == MODE_QUICKDRAW2_ICON;
 	}
 }

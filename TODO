@@ -13,6 +13,7 @@ This is the internal list of items that need to be done.
 	- Import (new)
 	- Export
 	- Compile
+* Added support for Finder Icons File ($CA or "ICN").
 
 --- FUTURE 1.3.x ---
 o Compile of BASIC programs
