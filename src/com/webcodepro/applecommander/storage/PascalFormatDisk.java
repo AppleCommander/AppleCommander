@@ -19,7 +19,7 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import com.webcodepro.applecommander.util.*;
+import com.webcodepro.applecommander.util.AppleUtil;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -31,7 +31,7 @@ import java.util.List;
  * Manages a disk that is in the Pascal format.
  * <p>
  * Date created: Oct 4, 2002 11:56:50 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class PascalFormatDisk extends FormattedDisk {
 	/**
@@ -302,7 +302,7 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.Disk#getDiskName()
 	 */
 	public String getDiskName() {
-		return AppleUtil.getPascalString(readBlock(2), 6);
+		return AppleUtil.getPascalString(readBlock(2), 6) + ":";
 	}
 	
 	/**
