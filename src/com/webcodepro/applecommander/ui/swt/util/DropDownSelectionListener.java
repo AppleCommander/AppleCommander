@@ -99,7 +99,7 @@ public class DropDownSelectionListener extends SelectionAdapter {
 	/**
 	 * Set menu visibility and track state.
 	 */
-	private void setMenuVisible(boolean visible) {
+	protected void setMenuVisible(boolean visible) {
 		menu.setVisible(visible);
 		this.visible = visible;
 	}

@@ -49,8 +49,8 @@ public class StyledTextAdapter implements ContentTypeAdapter {
 		options.printTextBackground = true;
 		options.printTextFontStyle = true;
 		options.printTextForeground = true;
-		options.footer = "\t<page>";
-		options.header = "\t" + printJobName;
+		options.footer = "\t<page>"; //$NON-NLS-1$ (for StyledText widget!)
+		options.header = "\t" + printJobName; //$NON-NLS-1$
 		 
 		final Runnable runnable = styledText.print(printer, options);
 		new Thread(new Runnable() {

@@ -46,10 +46,10 @@ public class ImageCanvasAdapter implements ContentTypeAdapter {
 		if (printer == null) return;	// Print was cancelled
 		new Thread(new Runnable() {
 			public void run() {
-				printer.startJob(printJobName);
+				printer.startJob(getPrintJobName());
 				printer.startPage();
 				Point dpi = printer.getDPI();
-				Image image = imageCanvas.getImage();
+				Image image = getImageCanvas().getImage();
 				int imageWidth = image.getImageData().width;
 				int imageHeight = image.getImageData().height;
 				int printedWidth = imageWidth * (dpi.x / 96);
@@ -76,5 +76,13 @@ public class ImageCanvasAdapter implements ContentTypeAdapter {
 		//	String[] typeNames = clipboard.getAvailableTypeNames();
 		// look at the typeNames - nothing that looks like an image?!
 		//	clipboard.dispose();
+	}
+	
+	protected ImageCanvas getImageCanvas() {
+		return imageCanvas;
+	}
+	
+	protected String getPrintJobName() {
+		return printJobName;
 	}
 }
