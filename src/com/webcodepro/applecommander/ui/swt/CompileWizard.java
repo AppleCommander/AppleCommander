@@ -36,7 +36,7 @@ public class CompileWizard extends Wizard {
 	 * Constructor for ExportWizard.
 	 */
 	public CompileWizard(Shell parent, ImageManager imageManager, FormattedDisk disk) {
-		super(parent, imageManager.getCompileWizardLogo(), "Compile Wizard");
+		super(parent, imageManager.get(ImageManager.LOGO_COMPILE_WIZARD), "Compile Wizard");
 		this.disk = disk;
 	}
 	/**

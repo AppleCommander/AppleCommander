@@ -40,7 +40,7 @@ public class ImportWizard extends Wizard {
 	 * Constructor for ImportWizard.
 	 */
 	public ImportWizard(Shell parent, ImageManager imageManager, FormattedDisk disk) {
-		super(parent, imageManager.getImportWizardLogo(), "Import Wizard");
+		super(parent, imageManager.get(ImageManager.LOGO_IMPORT_WIZARD), "Import Wizard");
 		this.disk = disk;
 	}
 	/**

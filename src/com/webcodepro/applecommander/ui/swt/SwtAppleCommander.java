@@ -105,7 +105,7 @@ public class SwtAppleCommander implements Listener {
 		Display.setAppName("AppleCommander");
 		shell = new Shell(display, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.TITLE);
 		shell.setText("AppleCommander");
-		shell.setImage(imageManager.getDiskIcon());
+		shell.setImage(imageManager.get(ImageManager.ICON_DISK));
 		shell.addDisposeListener(new DisposeListener() {
 				public void widgetDisposed(DisposeEvent event) {
 					dispose(event);
@@ -122,7 +122,7 @@ public class SwtAppleCommander implements Listener {
 		createToolBar(shell, gridData);
 		
 		gridData = new GridData();
-		Image logoImage = imageManager.getLogoImage();
+		Image logoImage = imageManager.get(ImageManager.LOGO_APPLECOMMANDER);
 		gridData.widthHint = logoImage.getImageData().width;
 		gridData.heightHint = logoImage.getImageData().height;
 		imageCanvas = new ImageCanvas(shell, SWT.BORDER, logoImage, gridData);
@@ -206,7 +206,7 @@ public class SwtAppleCommander implements Listener {
 		if (layoutData != null) toolBar.setLayoutData(layoutData);
 
 		ToolItem item = new ToolItem(toolBar, SWT.PUSH);
-		item.setImage(imageManager.getOpenDiskIcon());
+		item.setImage(imageManager.get(ImageManager.ICON_OPEN_DISK_IMAGE));
 		item.setText("Open...");
 		item.setSelection(false);
 		item.setToolTipText("Open a disk image (Ctrl+O)");
@@ -218,7 +218,7 @@ public class SwtAppleCommander implements Listener {
 		item = new ToolItem(toolBar, SWT.SEPARATOR);
 
 		item = new ToolItem(toolBar, SWT.PUSH);
-		item.setImage(imageManager.getNewDiskIcon());
+		item.setImage(imageManager.get(ImageManager.ICON_NEW_DISK_IMAGE));
 		item.setText("Create...");
 		item.setToolTipText("Create a disk image (Ctrl+C)");
 		item.addSelectionListener(new SelectionAdapter () {
@@ -229,7 +229,7 @@ public class SwtAppleCommander implements Listener {
 		item = new ToolItem(toolBar, SWT.SEPARATOR);
 
 		item = new ToolItem(toolBar, SWT.PUSH);
-		item.setImage(imageManager.getAboutIcon());
+		item.setImage(imageManager.get(ImageManager.ICON_ABOUT_APPLECOMMANDER));
 		item.setText("About");
 		item.setToolTipText("About AppleCommander (Ctrl+A)");
 		item.addSelectionListener(new SelectionAdapter () {
