@@ -508,4 +508,13 @@ public class CpmFormatDisk extends FormattedDisk {
 		AppleUtil.changeImageOrderByTrackAndSector(getImageOrder(), imageOrder);
 		setImageOrder(imageOrder);
 	}
+
+	/**
+	 * Writes the raw bytes into the file.  This bypasses any special formatting
+	 * of the data (such as prepending the data with a length and/or an address).
+	 * Typically, the FileEntry.setFileData method should be used. 
+	 */
+	public void setFileData(FileEntry fileEntry, byte[] fileData) throws DiskFullException {
+		// TODO implement setFileData
+	}
 }
