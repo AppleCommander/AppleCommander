@@ -42,6 +42,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 	private Button editButton;
 	private Table fileTable;
 	private Text addressText;
+	private Button rawCheckbox;
 	/**
 	 * Constructor for ImportSelectFilesWizardPane.
 	 */
@@ -253,6 +254,12 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 			addressText.setEnabled(
 				wizard.getDisk().needsAddress(spec.getFiletype()));
 		}
+		
+		// RAW file image: (probably only used for DOS 3.3)
+		label = new Label(dialog, SWT.NONE);
+		label.setText("RAW binary?");
+		rawCheckbox = new Button(dialog, SWT.CHECK);
+		rawCheckbox.setSelection(spec.isRawFileImport());
 
 		// Enable/disable the address component:
 		filetypes.addSelectionListener(new SelectionAdapter() {
@@ -279,6 +286,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 				filenameText.dispose();
 				filetypes.dispose();
 				addressText.dispose();
+				rawCheckbox.dispose();
 				dialog.close();
 			}
 		});
@@ -293,9 +301,11 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 					filetypes.getSelectionIndex()));
 				spec.setAddress(AppleUtil.convertFormattedWord(
 					addressText.getText()));
+				spec.setRawFileImport(rawCheckbox.getSelection());
 				filenameText.dispose();
 				filetypes.dispose();
 				addressText.dispose();
+				rawCheckbox.dispose();
 				dialog.close();
 				refreshTable();
 			}
