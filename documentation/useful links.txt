@@ -1,0 +1,7 @@
+
+Applesoft Internals:
+* http://www.apple2.org.za/gswv/gsezine/GS.WorldView/@A2.GS.TECH.INFO/AppleSoft/
+
+Apple Technical Information Library, March 1997
+* http://archaic-apples.shauny.de/files/apple2/til/A2TIL000.TXT
+  (includes Applesoft Internals among other things)
