@@ -20,10 +20,14 @@
 package com.webcodepro.applecommander.storage;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Abstract representation of an Apple2 disk (floppy, 800k, hard disk).
@@ -60,6 +64,7 @@ public class Disk {
 	private static FilenameFilter[] filenameFilters;
 	private byte[] diskImage;
 	private String filename;
+	private boolean changed = false;
 	
 	/**
 	 * Get the supported file filters supported by the Disk interface.
@@ -80,7 +85,7 @@ public class Disk {
 		filenameFilters = new FilenameFilter[] {
 			new FilenameFilter("All Emulator Images", 
 				"*.do; *.dsk; *.po; *.2mg; *.2img; *.hdv; *.do.gz; *.dsk.gz; *.po.gz; *.2mg.gz; *.2img.gz"),
-			new FilenameFilter("140K DOS 3.3 Ordered Images (*.do, *.dsk)", 
+			new FilenameFilter("140K DOS Ordered Images (*.do, *.dsk)", 
 				"*.do; *.dsk; *.do.gz; *.dsk.gz"),
 			new FilenameFilter("140K ProDOS Ordered Images (*.po)", 
 				"*.po; *.po.gz"),
@@ -127,6 +132,23 @@ public class Disk {
 		input.close();
 		this.diskImage = diskImageByteArray.toByteArray();
 	}
+	
+	/**
+	 * Save a Disk image to its file.
+	 */
+	public void save() throws IOException {
+		File file = new File(getFilename());
+		if (!file.exists()) {
+			file.createNewFile();
+		}
+		OutputStream output = new FileOutputStream(file);
+		if (isCompressed()) {
+			output = new GZIPOutputStream(output);
+		}
+		output.write(getDiskImage());
+		output.close();
+		changed = false;
+	}
 
 	/**
 	 * Determine type of disk, and return the appropriate
@@ -159,8 +181,18 @@ public class Disk {
 	 */
 	public byte[] readBytes(int start, int length) {
 		byte[] buffer = new byte[length];
-		System.arraycopy(diskImage, start + (is2ImgOrder() ? 0x40 : 0), buffer, 0, length);
+		System.arraycopy(diskImage, start + (is2ImgOrder() ? 0x40 : 0), 
+			buffer, 0, length);
 		return buffer;
+	}
+	
+	/**
+	 * Write data to the disk image.
+	 */
+	public void writeBytes(int start, byte[] bytes) {
+		changed = true;
+		System.arraycopy(bytes, 0, diskImage, 
+			start + (is2ImgOrder() ? 0x40 : 0), bytes.length);
 	}
 
 	/**
@@ -249,21 +281,41 @@ public class Disk {
 	/**
 	 * Retrieve the specified sector.
 	 */
-	public byte[] readSector(int track, int sector) {
+	public byte[] readSector(int track, int sector) throws IllegalArgumentException {
+		return readBytes(getOffset(track, sector), SECTOR_SIZE);
+	}
+	
+	/**
+	 * Write the specified sector.
+	 */
+	public void writeSector(int track, int sector, byte[] bytes) 
+			throws IllegalArgumentException {
+		writeBytes(getOffset(track, sector), bytes);
+	}
+	
+	/**
+	 * Compute the track and sector offset into the disk image.
+	 * This takes into account what type of format is being dealt
+	 * with.
+	 */
+	protected int getOffset(int track, int sector) throws IllegalArgumentException {
 		if ((track * 16 + sector) * SECTOR_SIZE > getPhysicalSize()) {
-			return null;
+			throw new IllegalArgumentException(
+				"The track (" + track + ") and sector (" + sector 
+				+ ") do not match the disk image size.");
 		} else if (isProdosOrder()) {
 			// what block a sector belongs to:
 			int[] blockInterleave = { 0, 7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 0, 7 };
 			// where in that block a sector resides:
 			int[] blockOffsets = { 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1 };
-			return readBytes(
-				((track * 8) + blockInterleave[sector]) * BLOCK_SIZE 
-				+ blockOffsets[sector] * SECTOR_SIZE, SECTOR_SIZE);
+			return ((track * 8) + blockInterleave[sector]) * BLOCK_SIZE 
+				+ blockOffsets[sector] * SECTOR_SIZE;
 		} else if (isDosOrder()) {
-			return readBytes((track * 16 + sector) * SECTOR_SIZE, SECTOR_SIZE);
+			return (track * 16 + sector) * SECTOR_SIZE;
+		} else {
+			throw new IllegalArgumentException(
+				"Unknown disk format.");
 		}
-		return null;
 	}
 	
 	/**
@@ -312,5 +364,13 @@ public class Disk {
 		byte[] block = readSector(0, 0x0d);
 		String id = AppleUtil.getString(block, 0xe0, 4);
 		return "RDOS".equals(id);
+	}
+	
+	/**
+	 * Indicates if the disk has changed. Triggered when data is
+	 * written and cleared when data is saved.
+	 */
+	public boolean hasChanged() {
+		return changed;
 	}
 }
