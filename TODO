@@ -2,16 +2,18 @@ THINGS TO DO
 ============
 This is the internal list of items that need to be done.
 
+--- 1.2.4 ---
+* HDV disks are not always created to their full capacity.  AppleCommander, however,
+  assumes that the size of the file on disk is the size of the disk.  (Really!)
+  This is an issue because the ProDOS bitmap indicates there is a certain
+  amount of space and AppleCommander just assumes that the data exists.
+
 --- FUTURE 1.2.x ---
 o Save does not allow the disk image location to be chosen for new images. (Maybe
   the wizard should pay more attention?)
 o Add RDOS writing capability.
 o Add Apple Pascal writing capability.
 o Create subdirectories as appropriate (ProDOS).
-o HDV disks are not always created to their full capacity.  AppleCommander, however,
-  assumes that the size of the file on disk is the size of the disk.  (Really!)
-  This is likely an issue because the ProDOS bitmap indicates there is a certain
-  amount of space and AppleCommander just assumes that the data exists.
 o Short-cut keys would be nice.
 o Need to update preferences with import location, disk creation location.
   
