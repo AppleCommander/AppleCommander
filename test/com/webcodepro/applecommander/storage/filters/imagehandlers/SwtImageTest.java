@@ -23,19 +23,27 @@ public class SwtImageTest extends TestCase {
 	}
 
 	public void testPNG() throws Exception {
-		performTest("PNG");
+		performTest("PNG"); //$NON-NLS-1$
 	}
 	
 	public void testJPEG() throws Exception {
-		performTest("JPEG");
+		performTest("JPEG"); //$NON-NLS-1$
 	}
 	
 	public void testBMP() throws Exception {
-		performTest("BMP");
+		performTest("BMP"); //$NON-NLS-1$
+	}
+	
+	public void testBMP_RLE() throws Exception {
+		performTest("RLE"); //$NON-NLS-1$
 	}
 	
 	public void testGIF() throws Exception {
-		performTest("GIF");
+		performTest("GIF"); //$NON-NLS-1$
+	}
+	
+	public void testICO() throws Exception {
+		performTest("ICO"); //$NON-NLS-1$
 	}
 	
 	protected void performTest(String imageType) throws Exception {
@@ -59,6 +67,6 @@ public class SwtImageTest extends TestCase {
 				image.setPoint(x, y, color);
 			}
 		}
-		image.save(new FileOutputStream("C:/Temp/TestImage." + imageType));
+		image.save(new FileOutputStream("TestImage." + imageType)); //$NON-NLS-1$
 	}
 }
