@@ -6,4 +6,4 @@ This has been tested only on Windows XP but should run on Windows 98,
 Windows NT, Windows 2000, and Windows XP.
 
 Have fun!
--Rob
+-RobGreene at users.sourceforge.net
