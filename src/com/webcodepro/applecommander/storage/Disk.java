@@ -21,6 +21,12 @@ package com.webcodepro.applecommander.storage;
 
 import com.webcodepro.applecommander.storage.cpm.CpmFileEntry;
 import com.webcodepro.applecommander.storage.cpm.CpmFormatDisk;
+import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
+import com.webcodepro.applecommander.storage.physical.DosOrder;
+import com.webcodepro.applecommander.storage.physical.NibbleOrder;
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import com.webcodepro.applecommander.storage.physical.ProdosOrder;
+import com.webcodepro.applecommander.storage.physical.UniversalDiskImageLayout;
 import com.webcodepro.applecommander.util.AppleUtil;
 
 import java.io.ByteArrayOutputStream;
@@ -62,6 +68,7 @@ public class Disk {
 	public static final int BLOCK_SIZE = 512;
 	public static final int SECTOR_SIZE = 256;
 	public static final int APPLE_140KB_DISK = 143360;
+	public static final int APPLE_140KB_NIBBLE_DISK = 232960;
 	public static final int APPLE_800KB_DISK = 819200;
 	public static final int APPLE_800KB_2IMG_DISK = APPLE_800KB_DISK + 0x40;
 	public static final int APPLE_5MB_HARDDISK = 5242880;
@@ -70,10 +77,9 @@ public class Disk {
 	public static final int APPLE_32MB_HARDDISK = 33553920;	// short one block!
 
 	private static FilenameFilter[] filenameFilters;
-	private byte[] diskImage;
 	private String filename;
-	private boolean changed = false;
 	private boolean newImage = false;
+	private ImageOrder imageOrder;
 	
 	/**
 	 * Get the supported file filters supported by the Disk interface.
@@ -93,9 +99,11 @@ public class Disk {
 	private Disk() {
 		filenameFilters = new FilenameFilter[] {
 			new FilenameFilter("All Emulator Images", 
-				"*.do; *.dsk; *.po; *.2mg; *.2img; *.hdv; *.do.gz; *.dsk.gz; *.po.gz; *.2mg.gz; *.2img.gz"),
+				"*.do; *.dsk; *.po; *.nib; *.2mg; *.2img; *.hdv; *.do.gz; *.dsk.gz; *.po.gz; *.nib.gz; *.2mg.gz; *.2img.gz"),
 			new FilenameFilter("140K DOS Ordered Images (*.do, *.dsk)", 
 				"*.do; *.dsk; *.do.gz; *.dsk.gz"),
+			new FilenameFilter("140K Nibbilized Images (*.nib)",
+				"*.nib, *.nib.gz"),
 			new FilenameFilter("140K ProDOS Ordered Images (*.po)", 
 				"*.po; *.po.gz"),
 			new FilenameFilter("800K ProDOS Ordered Images (*.2mg, *.2img)", 
@@ -112,8 +120,8 @@ public class Disk {
 	/**
 	 * Construct a Disk with the given byte array.
 	 */
-	protected Disk(String filename, byte[] diskImage) {
-		this.diskImage = diskImage;
+	protected Disk(String filename, ImageOrder imageOrder) {
+		this.imageOrder = imageOrder;
 		this.filename = filename;
 		this.newImage = true;
 	}
@@ -138,7 +146,21 @@ public class Disk {
 			diskImageByteArray.write(data, 0, bytes);
 		}
 		input.close();
-		this.diskImage = diskImageByteArray.toByteArray();
+		byte[] diskImage = diskImageByteArray.toByteArray();
+		ByteArrayImageLayout diskImageManager = null;
+		if (diskImage.length >= APPLE_800KB_2IMG_DISK 
+			&& diskImage.length <= APPLE_800KB_2IMG_DISK + 10) {
+			diskImageManager = new UniversalDiskImageLayout(diskImage);
+		} else {
+			diskImageManager = new ByteArrayImageLayout(diskImage);
+		}
+		if (isDosOrder()) {
+			imageOrder = new DosOrder(diskImageManager);
+		} else if (isProdosOrder()) {
+			imageOrder = new ProdosOrder(diskImageManager);
+		} else if (isNibbleOrder()) {
+			imageOrder = new NibbleOrder(diskImageManager);
+		}
 	}
 	
 	/**
@@ -153,9 +175,9 @@ public class Disk {
 		if (isCompressed()) {
 			output = new GZIPOutputStream(output);
 		}
-		output.write(getDiskImage());
+		output.write(getDiskImageManager().getDiskImage());
 		output.close();
-		changed = false;
+		getDiskImageManager().setChanged(false);
 		newImage = false;
 	}
 
@@ -175,31 +197,31 @@ public class Disk {
 	public FormattedDisk[] getFormattedDisks() {
 		if (isProdosFormat()) {
 			return new FormattedDisk[]
-				{ new ProdosFormatDisk(filename, diskImage) };
+				{ new ProdosFormatDisk(filename, imageOrder) };
 		} else if (isUniDosFormat()) {
 			return new FormattedDisk[] {
-				new UniDosFormatDisk(filename, diskImage, 
+				new UniDosFormatDisk(filename, imageOrder, 
 									UniDosFormatDisk.UNIDOS_DISK_1),
-				new UniDosFormatDisk(filename, diskImage, 
+				new UniDosFormatDisk(filename, imageOrder, 
 									UniDosFormatDisk.UNIDOS_DISK_2) };
 		} else if (isOzDosFormat()) {
 			return new FormattedDisk[] {
-				new OzDosFormatDisk(filename, diskImage,
+				new OzDosFormatDisk(filename, imageOrder,
 									OzDosFormatDisk.OZDOS_DISK_1),
-				new OzDosFormatDisk(filename, diskImage,
+				new OzDosFormatDisk(filename, imageOrder,
 									OzDosFormatDisk.OZDOS_DISK_2) };
 		} else if (isDosFormat()) {
 			return new FormattedDisk[]
-				{ new DosFormatDisk(filename, diskImage) };
+				{ new DosFormatDisk(filename, imageOrder) };
 		} else if (isPascalFormat()) {
 			return new FormattedDisk[]
-				{ new PascalFormatDisk(filename, diskImage) };
+				{ new PascalFormatDisk(filename, imageOrder) };
 		} else if (isRdosFormat()) {
 			return new FormattedDisk[]
-				{ new RdosFormatDisk(filename, diskImage) };
+				{ new RdosFormatDisk(filename, imageOrder) };
 		} else if (isCpmFormat()) {
 			return new FormattedDisk[]
-				{ new CpmFormatDisk(filename, diskImage) };
+				{ new CpmFormatDisk(filename, imageOrder) };
 		}
 		return null;
 	}
@@ -208,27 +230,8 @@ public class Disk {
 	 * Returns the diskImage.
 	 * @return byte[]
 	 */
-	public byte[] getDiskImage() {
-		return diskImage;
-	}
-	
-	/**
-	 * Extract a portion of the disk image.
-	 */
-	public byte[] readBytes(int start, int length) {
-		byte[] buffer = new byte[length];
-		System.arraycopy(diskImage, start + (is2ImgOrder() ? 0x40 : 0), 
-			buffer, 0, length);
-		return buffer;
-	}
-	
-	/**
-	 * Write data to the disk image.
-	 */
-	public void writeBytes(int start, byte[] bytes) {
-		changed = true;
-		System.arraycopy(bytes, 0, diskImage, 
-			start + (is2ImgOrder() ? 0x40 : 0), bytes.length);
+	public ByteArrayImageLayout getDiskImageManager() {
+		return imageOrder.getDiskImageManager();
 	}
 
 	/**
@@ -274,14 +277,22 @@ public class Disk {
 		return filename.toLowerCase().endsWith(".2img")
 			|| filename.toLowerCase().endsWith(".2img.gz")
 			|| filename.toLowerCase().endsWith(".2mg")
-			|| filename.toLowerCase().endsWith(".2mg.gz");
+		|| filename.toLowerCase().endsWith(".2mg.gz");
+	}
+
+	/**
+	 * Indicate if this disk is a nibbilized disk..
+	 */
+	public boolean isNibbleOrder() {
+		return filename.toLowerCase().endsWith(".nib")
+			|| filename.toLowerCase().endsWith(".nib.gz");
 	}
 	
 	/**
 	 * Identify the size of this disk.
 	 */
 	public int getPhysicalSize() {
-		return diskImage.length;
+		return getDiskImageManager().getPhysicalSize();
 	}
 	
 	/**
@@ -292,97 +303,35 @@ public class Disk {
 	 * @param newSize
 	 */
 	protected void resizeDiskImage(int newSize) {
-		if (newSize < diskImage.length) {
+		if (newSize < getPhysicalSize()) {
 			throw new IllegalArgumentException(
 				"Cannot resize a disk to be smaller than the current size!");
 		}
 		byte[] newDiskImage = new byte[newSize];
-		System.arraycopy(diskImage, 0, newDiskImage, 0, diskImage.length);
-		diskImage = newDiskImage;
+		byte[] oldDiskImage = imageOrder.getDiskImageManager().getDiskImage();
+		System.arraycopy(oldDiskImage, 0, newDiskImage, 0, oldDiskImage.length);
+		imageOrder.getDiskImageManager().setDiskImage(newDiskImage);
 	}
 	
 	/**
 	 * Read the block from the disk image.
 	 */
 	public byte[] readBlock(int block) {
-		byte[] data = new byte[BLOCK_SIZE];
-		System.arraycopy(readBytes(getOffset1(block), SECTOR_SIZE),
-			0, data, 0, SECTOR_SIZE);
-		System.arraycopy(readBytes(getOffset2(block), SECTOR_SIZE),
-			0, data, SECTOR_SIZE, SECTOR_SIZE);
-		return data;
+		return imageOrder.readBlock(block);
 	}
 	
 	/**
 	 * Write the block to the disk image.
 	 */
 	public void writeBlock(int block, byte[] data) {
-		byte[] sector = new byte[SECTOR_SIZE];
-		System.arraycopy(data, 0, sector, 0, SECTOR_SIZE);
-		writeBytes(getOffset1(block), sector);
-		System.arraycopy(data, SECTOR_SIZE, sector, 0, SECTOR_SIZE);
-		writeBytes(getOffset2(block), sector);
-	}
-
-	/**
-	 * Compute the block offset into the disk image.
-	 * Note that for ProDOS blocks the offset is broken into two
-	 * pieces - depending of the format the image is in, they may
-	 * or may not be adjacent within the disk image itself.
-	 * This takes into account what type of format is being dealt
-	 * with.
-	 */
-	protected int getOffset1(int block) throws IllegalArgumentException {
-		if (block * BLOCK_SIZE > getPhysicalSize()) {
-			throw new IllegalArgumentException("The block (" + block 
-				+ ") does match the disk image size.");
-		} else if (isProdosOrder()) {
-			return block*BLOCK_SIZE;
-		} else if (isDosOrder()) {
-			int[] sectorMapping1 = { 0, 13, 11, 9, 7, 5, 3, 1 };
-			int track = block / 8;
-			int sectorOffset = block % 8;
-			int sector1 = sectorMapping1[sectorOffset];
-			int physicalLocation1 = (track * 16 + sector1) * SECTOR_SIZE;
-			return physicalLocation1;
-		} else {
-			throw new IllegalArgumentException(
-				"Unknown disk format.");
-		}
-	}
-
-	/**
-	 * Compute the block offset into the disk image.
-	 * Note that for ProDOS blocks the offset is broken into two
-	 * pieces - depending of the format the image is in, they may
-	 * or may not be adjacent within the disk image itself.
-	 * This takes into account what type of format is being dealt
-	 * with.
-	 */
-	protected int getOffset2(int block) throws IllegalArgumentException {
-		if (block * BLOCK_SIZE > getPhysicalSize()) {
-			throw new IllegalArgumentException("The block (" + block 
-				+ ") does match the disk image size.");
-		} else if (isProdosOrder()) {
-			return block*BLOCK_SIZE + SECTOR_SIZE;
-		} else if (isDosOrder()) {
-			int[] sectorMapping2 = { 14, 12, 10, 8, 6, 4, 2, 15 };
-			int track = block / 8;
-			int sectorOffset = block % 8;
-			int sector2 = sectorMapping2[sectorOffset];
-			int physicalLocation2 = (track * 16 + sector2) * SECTOR_SIZE;
-			return physicalLocation2;
-		} else {
-			throw new IllegalArgumentException(
-				"Unknown disk format.");
-		}
+		imageOrder.writeBlock(block, data);
 	}
 
 	/**
 	 * Retrieve the specified sector.
 	 */
 	public byte[] readSector(int track, int sector) throws IllegalArgumentException {
-		return readBytes(getOffset(track, sector), SECTOR_SIZE);
+		return imageOrder.readSector(track, sector);
 	}
 	
 	/**
@@ -390,45 +339,7 @@ public class Disk {
 	 */
 	public void writeSector(int track, int sector, byte[] bytes) 
 			throws IllegalArgumentException {
-		writeBytes(getOffset(track, sector), bytes);
-	}
-	
-	/**
-	 * Compute the track and sector offset into the disk image.
-	 * This takes into account what type of format is being dealt
-	 * with.
-	 */
-	protected int getOffset(int track, int sector) throws IllegalArgumentException {
-		int length = diskImage.length;
-		if (length >= APPLE_140KB_DISK && length <= APPLE_140KB_DISK + 10) {
-			length = APPLE_140KB_DISK;
-		}
-		if (length != APPLE_140KB_DISK && length != APPLE_800KB_DISK
-			&& length != APPLE_800KB_2IMG_DISK
-			&& track != 0 && sector != 0) {		// HACK: Allows boot sector writing
-			throw new IllegalArgumentException("Unrecognized DOS format!");
-		}
-		int sectorsPerTrack = 16;
-		if (length == APPLE_800KB_DISK || length == APPLE_800KB_2IMG_DISK) {
-			sectorsPerTrack = 32;
-		}
-		if ((track * sectorsPerTrack + sector) * SECTOR_SIZE > getPhysicalSize()) {
-			throw new IllegalArgumentException(
-				"The track (" + track + ") and sector (" + sector 
-				+ ") do not match the disk image size.");
-		} else if (isProdosOrder()) {
-			// what block a sector belongs to:
-			int[] blockInterleave = { 0, 7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 0, 7 };
-			// where in that block a sector resides:
-			int[] blockOffsets = { 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1 };
-			return ((track * 8) + blockInterleave[sector]) * BLOCK_SIZE 
-				+ blockOffsets[sector] * SECTOR_SIZE;
-		} else if (isDosOrder()) {
-			return (track * sectorsPerTrack + sector) * SECTOR_SIZE;
-		} else {
-			throw new IllegalArgumentException(
-				"Unknown disk format.");
-		}
+		imageOrder.writeSector(track, sector, bytes);
 	}
 	
 	/**
@@ -445,13 +356,12 @@ public class Disk {
 	/**
 	 * Test the disk format to see if this is a DOS 3.3 formatted
 	 * disk.  This is a little nasty - since 800KB and 140KB images have
-	 * different characteristics.
+	 * different characteristics.  This just tests 140KB images.
 	 */
 	public boolean isDosFormat() {
 		byte[] vtoc = readSector(17, 0);
-		return getPhysicalSize() >= APPLE_140KB_DISK
-			// sometimes the disk image can have stray bytes at the end... 
-			&& getPhysicalSize() <= APPLE_140KB_DISK + 16
+		return (imageOrder.isSizeApprox(APPLE_140KB_DISK)
+				 || imageOrder.isSizeApprox(APPLE_140KB_NIBBLE_DISK))						 
 			&& vtoc[0x01] == 17		// expect catalog to start on track 17
 // can vary	&& vtoc[0x02] == 15		// expect catalog to start on sector 15 (140KB disk only!)
 			&& vtoc[0x27] == 122	// expect 122 tract/sector pairs per sector
@@ -587,7 +497,7 @@ public class Disk {
 	 * written and cleared when data is saved.
 	 */
 	public boolean hasChanged() {
-		return changed;
+		return getDiskImageManager().hasChanged();
 	}
 	
 	/**
@@ -596,5 +506,19 @@ public class Disk {
 	 */
 	public boolean isNewImage() {
 		return newImage;
+	}
+	
+	/**
+	 * Answer with the phyiscal ordering of the disk.
+	 */
+	public ImageOrder getImageOrder() {
+		return imageOrder;
+	}
+	
+	/**
+	 * Set the physical ordering of the disk.
+	 */
+	public void setImageOrder(ImageOrder imageOrder) {
+		this.imageOrder = imageOrder;
 	}
 }
