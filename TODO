@@ -1,0 +1,21 @@
+THINGS TO DO
+============
+This is the internal list of items that need to be done.
+
+--- 1.2.0 ---
+* Import needs to refresh the file list.
+* Release code and tag the version.
+* Build and release to SourceForge.
+
+--- 1.2.1 ---
+o Import file specification should only allow address editing if the filetype
+  requires it.
+o Import from right-click menu needs to be enabled.
+o Save does not allow the disk image location to be chosen for new images. (Maybe
+  the wizard should pay more attention?)
+o The information tab does not get updated.  Now that the disk can be modified,
+  this page needs to be updated when shown.
+o RTF export of AWP files could be improved.
+o Work on identifying why GCJ introduces slow performance to some areas.
+o Add RDOS writing capability.
+o Add Apple Pascal writing capability.
