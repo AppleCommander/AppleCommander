@@ -29,7 +29,7 @@ import com.webcodepro.applecommander.storage.FileEntry;
  * ...
  * [Line]<br>
  * <br>
- * where <Line> is:<br>
+ * where [Line] is:<br>
  * [Next addr - $0000 is end of program]  (word)<br>
  * [Line no]    (word)<br>
  * [Tokens and/or characters]<br>
