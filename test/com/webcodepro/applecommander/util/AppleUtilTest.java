@@ -76,20 +76,20 @@ public class AppleUtilTest extends TestCase {
 		answer |= testAnswer[4] & 0xff;
 		// Allow some variance = +/- 1 (that would be the least-significant bit)
 		if (Math.abs(answer - correctAnswer) > 1) {
-			fail("Numbers should match - " + question);
+			fail("Numbers should match - " + question); //$NON-NLS-1$
 		}
 	}
 	
 	public void testChangeDosImageOrder() throws DiskFullException {
 		// Straight DOS disk in standard DOS order
-		DosFormatDisk dosDiskDosOrder = DosFormatDisk.create("dostemp.dsk", 
+		DosFormatDisk dosDiskDosOrder = DosFormatDisk.create("dostemp.dsk",  //$NON-NLS-1$
 			new DosOrder(new ByteArrayImageLayout(Disk.APPLE_140KB_DISK)))[0];
 		FileEntry fileEntry = dosDiskDosOrder.createFile();
-		fileEntry.setFilename("TESTFILE");
-		fileEntry.setFiletype("T");
-		fileEntry.setFileData("This is a test file.".getBytes());
+		fileEntry.setFilename("TESTFILE"); //$NON-NLS-1$
+		fileEntry.setFiletype("T"); //$NON-NLS-1$
+		fileEntry.setFileData("This is a test file.".getBytes()); //$NON-NLS-1$
 		// A duplicate - then we change it to a NIB disk image...
-		DosFormatDisk dosDiskNibbleOrder = DosFormatDisk.create("dostemp2.nib",
+		DosFormatDisk dosDiskNibbleOrder = DosFormatDisk.create("dostemp2.nib", //$NON-NLS-1$
 			new NibbleOrder(new ByteArrayImageLayout(Disk.APPLE_140KB_DISK)))[0];
 		AppleUtil.changeImageOrderByTrackAndSector(dosDiskDosOrder.getImageOrder(),
 			dosDiskNibbleOrder.getImageOrder());
@@ -99,16 +99,16 @@ public class AppleUtilTest extends TestCase {
 
 	public void testChangeProdosImageOrder() throws DiskFullException {
 		// Straight ProDOS disk in standard ProDOS block order
-		ProdosFormatDisk prodosDiskDosOrder = ProdosFormatDisk.create("prodostemp.po", 
-			"prodostemp",
+		ProdosFormatDisk prodosDiskDosOrder = ProdosFormatDisk.create("prodostemp.po",  //$NON-NLS-1$
+			"prodostemp", //$NON-NLS-1$
 			new ProdosOrder(new ByteArrayImageLayout(Disk.APPLE_140KB_DISK)))[0];
 		FileEntry fileEntry = prodosDiskDosOrder.createFile();
-		fileEntry.setFilename("TESTFILE");
-		fileEntry.setFiletype("TXT");
-		fileEntry.setFileData("This is a test file.".getBytes());
+		fileEntry.setFilename("TESTFILE"); //$NON-NLS-1$
+		fileEntry.setFiletype("TXT"); //$NON-NLS-1$
+		fileEntry.setFileData("This is a test file.".getBytes()); //$NON-NLS-1$
 		// A duplicate - then we change it to a NIB disk image...
-		ProdosFormatDisk prodosDiskNibbleOrder = ProdosFormatDisk.create("prodostemp2.nib",
-			"prodostemp2",
+		ProdosFormatDisk prodosDiskNibbleOrder = ProdosFormatDisk.create("prodostemp2.nib", //$NON-NLS-1$
+			"prodostemp2", //$NON-NLS-1$
 			new NibbleOrder(new ByteArrayImageLayout(Disk.APPLE_140KB_DISK)))[0];
 		AppleUtil.changeImageOrderByBlock(prodosDiskDosOrder.getImageOrder(),
 			prodosDiskNibbleOrder.getImageOrder());
