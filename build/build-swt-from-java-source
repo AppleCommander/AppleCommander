@@ -1,0 +1,61 @@
+#!/bin/sh
+
+###############################################################################################
+# Note: It is expected that the source tree has been unzipped.
+# Note: swt.jar is required for the build.  It also must be unzipped for the properties file.
+
+###############################################################################################
+# StyledText somehow confuses GCJ.  According to the message discussion, moving 
+# StyledText.java out of the build path fixes everything.
+#	http://gcc.gnu.org/ml/java/2003-04/msg00270.html
+# This copies StyledText out and compiles it independantly.
+#
+echo Performing special compile for StyledText.java ...
+cp org/eclipse/swt/custom/StyledText.java StyledText.java
+gcj -fjni -g0 -c --classpath=swt.jar StyledText.java
+
+###############################################################################################
+# We need to ensure the image-related stuff gets loaded.
+#
+echo >SWTImageLoaders.java <<EOF
+package org.eclipse.swt.internal.image;
+public class SWTImageLoaders
+{
+    static
+    {
+        GIFFileFormat x = new GIFFileFormat();
+        PNGFileFormat y = new PNGFileFormat();
+        JPEGFileFormat z = new JPEGFileFormat();
+        WinBMPFileFormat q = new WinBMPFileFormat();
+        WinICOFileFormat p = new WinICOFileFormat();
+    }
+}
+EOF
+gcj -fjni -g0 -c --classpath=swt.jar SWTImageLoaders.java
+
+###############################################################################################
+# Compile everything else...
+#
+SWT_SOURCE=$(find . -name "*.java" -not -name "StyledText.java" -print | sed 's/^\.\///')
+
+for i in $SWT_SOURCE
+do
+	OBJ_FILE=$(echo $i | sed 's/\//_/g' | sed 's/\.java$/\.o/')
+	echo Compiling $i to $OBJ_FILE
+	gcj -fjni -g0 -c -o $OBJ_FILE $i
+done
+
+gcj -c --resource=org.eclipse.swt.internal.SWTMessages \
+	-o SWTMessages.o org/eclipse/swt/internal/SWTMessages.properties
+
+###############################################################################################
+# Link it all and clean up.
+#
+echo Creating libswt.a
+ar -rcs libswt.a *.o
+ranlib libswt.a
+
+echo Cleaning up
+rm -f *.o
+
+echo Done.
