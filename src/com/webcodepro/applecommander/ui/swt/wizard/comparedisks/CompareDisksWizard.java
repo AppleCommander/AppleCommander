@@ -37,7 +37,7 @@ public class CompareDisksWizard extends Wizard {
 	 * Constructor for ExportWizard.
 	 */
 	public CompareDisksWizard(Shell parent, ImageManager imageManager) {
-		super(parent, imageManager.get(ImageManager.LOGO_COMPILE_WIZARD), "Compare Disks Wizard");
+		super(parent, imageManager.get(ImageManager.LOGO_COMPARE_IMAGE_WIZARD), "Compare Disks Wizard");
 	}
 	/**
 	 * Create the initial display used in the wizard.
