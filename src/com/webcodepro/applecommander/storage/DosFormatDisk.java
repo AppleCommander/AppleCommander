@@ -522,7 +522,7 @@ public class DosFormatDisk extends FormattedDisk {
 		// create catalog sectors
 		byte[] data = new byte[SECTOR_SIZE];
 		for (int sector=firstCatalogSector; sector > 0; sector--) {
-			if (sector == 0) {
+			if (sector > 1) {
 				data[0x01] = CATALOG_TRACK;
 				data[0x02] = (byte)(sector-1);
 			} else {
