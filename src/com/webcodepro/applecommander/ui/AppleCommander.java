@@ -104,6 +104,7 @@ public class AppleCommander {
 	protected static boolean isSwtAvailable() {
 		try {
 			Class.forName("org.eclipse.swt.SWT");
+			Class.forName("com.webcodepro.applecommander.ui.swt.SwtAppleCommander");
 			return true;
 		} catch (ClassNotFoundException ex) {
 			return false;
