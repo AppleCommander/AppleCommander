@@ -18,9 +18,9 @@ on SourceForge.  Plan about 60 minutes for the release process.
 
  5. Build JAR file using executableJar target in build.xml.
 
- 6. Build Javadoc using sourceZip target in build.xml.
+ 6. Build source build using sourceZip target in build.xml.
 
- 7. Make AppleCommander source build.
+ 7. Make AppleCommander Javadoc build.
  
  8. Build native AppleCommander executable for Windows.
  
