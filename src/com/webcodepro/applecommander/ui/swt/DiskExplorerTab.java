@@ -88,11 +88,22 @@ import org.eclipse.swt.widgets.TreeItem;
  * @author: Rob Greene
  */
 public class DiskExplorerTab {
+	private static final char CTRL_C = 'C' - '@';
+	private static final char CTRL_D = 'D' - '@';
+	private static final char CTRL_E = 'E' - '@';
+	private static final char CTRL_I = 'I' - '@';
+	private static final char CTRL_S = 'S' - '@';
+	private static final char CTRL_V = 'V' - '@';
+	
 	private Shell shell;
 	private SashForm sashForm;
 	private Tree directoryTree;
 	private Table fileTable;
 	private ToolBar toolBar;
+	private ToolItem standardFormatToolItem;
+	private ToolItem nativeFormatToolItem;
+	private ToolItem detailFormatToolItem;
+	private ToolItem showDeletedFilesToolItem;
 	private ToolItem exportToolItem;
 	private ToolItem importToolItem;
 	private ToolItem compileToolItem;
@@ -112,6 +123,7 @@ public class DiskExplorerTab {
 	private List currentFileList;
 	private Map columnWidths = new HashMap();
 	private boolean showDeletedFiles;
+
 	/**
 	 * Create the DISK INFO tab.
 	 */
@@ -129,6 +141,10 @@ public class DiskExplorerTab {
 		sashForm.dispose();
 		directoryTree.dispose();
 		fileTable.dispose();
+		standardFormatToolItem.dispose();
+		nativeFormatToolItem.dispose();
+		detailFormatToolItem.dispose();
+		showDeletedFilesToolItem.dispose();
 		exportToolItem.dispose();
 		importToolItem.dispose();
 		deleteToolItem.dispose();
@@ -180,6 +196,7 @@ public class DiskExplorerTab {
 			}
 		});
 		directoryTree.addListener(SWT.KeyUp, createDirectoryKeyboardHandler());
+		directoryTree.addListener(SWT.KeyUp, createToolbarCommandHandler());
 
 		fileTable = new Table(sashForm, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER);
 		fileTable.setHeaderVisible(true);
@@ -266,7 +283,8 @@ public class DiskExplorerTab {
 		item = new MenuItem(menu, SWT.SEPARATOR);
 
 		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("Import...");
+		item.setText("Import...\tCTRL+I");
+		item.setImage(imageManager.getImportFileIcon());
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				importFiles();
@@ -281,21 +299,34 @@ public class DiskExplorerTab {
 	 */
 	protected Menu createFilePopupMenu() {
 		Menu menu = new Menu(shell, SWT.POP_UP);
+		menu.addMenuListener(new MenuAdapter() {
+			/**
+			 * Toggle all sub-menu MenuItems to the proper state to reflect
+			 * the current file extension chosen.
+			 */
+			public void menuShown(MenuEvent event) {
+				Menu theMenu = (Menu) event.getSource();
+				MenuItem[] subItems = theMenu.getItems();
+				FileEntry fileEntry = (FileEntry) fileTable.getItem(fileTable.getSelectionIndex()).getData();
+				// View File
+				subItems[0].setEnabled(true);		// FIXME
+				// Compile File
+				subItems[1].setEnabled(fileEntry.canCompile());
+			}
+		});
 		
 		MenuItem item = new MenuItem(menu, SWT.CASCADE);
 		item.setText("&View\tCtrl+V");
 		item.setAccelerator(SWT.CTRL+'V');
-		item.setEnabled(true);		// FIXME - does this need to be dynamic?
 		item.setImage(imageManager.getViewFileIcon());
 
 		item = new MenuItem(menu, SWT.CASCADE);
 		item.setText("&Compile...\tCtrl+C");
 		item.setAccelerator(SWT.CTRL+'C');
-		item.setEnabled(true);		// FIXME - does this need to be dynamic?
 		item.setImage(imageManager.getCompileIcon());
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				//compileFile();	//FIXME
+				compileFileWizard();
 			}
 		});
 		
@@ -585,6 +616,7 @@ public class DiskExplorerTab {
 			fileTable.dispose();
 			fileTable = new Table(sashForm, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER);
 			fileTable.addListener(SWT.KeyUp, createFileKeyboardHandler());
+			fileTable.addListener(SWT.KeyUp, createToolbarCommandHandler());
 			fileTable.setHeaderVisible(true);
 			fileTable.setMenu(createFilePopupMenu());
 			fileTable.addSelectionListener(new SelectionListener() {
@@ -982,47 +1014,47 @@ public class DiskExplorerTab {
 	 */
 	private void createFileToolBar(Composite composite, Object layoutData) {
 		toolBar = new ToolBar(composite, SWT.FLAT);
+		toolBar.addListener(SWT.KeyUp, createToolbarCommandHandler());
 		if (layoutData != null) toolBar.setLayoutData(layoutData);
 
-		ToolItem item = new ToolItem(toolBar, SWT.RADIO);
-		item.setImage(imageManager.getStandardFileViewIcon());
-		item.setText("&Standard");
-		item.setToolTipText("Displays files in standard format");
-		item.setSelection(true);
-		item.addSelectionListener(new SelectionAdapter () {
+		standardFormatToolItem = new ToolItem(toolBar, SWT.RADIO);
+		standardFormatToolItem.setImage(imageManager.getStandardFileViewIcon());
+		standardFormatToolItem.setText("Standard");
+		standardFormatToolItem.setToolTipText("Displays files in standard format (F2)");
+		standardFormatToolItem.setSelection(true);
+		standardFormatToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				changeCurrentFormat(FormattedDisk.FILE_DISPLAY_STANDARD);
 			}
 		});
-		item = new ToolItem(toolBar, SWT.RADIO);
-		item.setImage(imageManager.getNativeFileViewIcon());
-		item.setText("&Native");
-		item.setToolTipText("Displays files in native format for the operating system");
-		item.addSelectionListener(new SelectionAdapter () {
+		nativeFormatToolItem = new ToolItem(toolBar, SWT.RADIO);
+		nativeFormatToolItem.setImage(imageManager.getNativeFileViewIcon());
+		nativeFormatToolItem.setText("Native");
+		nativeFormatToolItem.setToolTipText("Displays files in native format for the operating system (F3)");
+		nativeFormatToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				changeCurrentFormat(FormattedDisk.FILE_DISPLAY_NATIVE);
 			}
 		});
-		item = new ToolItem(toolBar, SWT.RADIO);
-		item.setImage(imageManager.getDetailFileViewIcon());
-		item.setText("&Detail");
-		item.setToolTipText("Displays files in with full details");
-		item.addSelectionListener(new SelectionAdapter () {
+		detailFormatToolItem = new ToolItem(toolBar, SWT.RADIO);
+		detailFormatToolItem.setImage(imageManager.getDetailFileViewIcon());
+		detailFormatToolItem.setText("Detail");
+		detailFormatToolItem.setToolTipText("Displays files in with full details (F4)");
+		detailFormatToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				changeCurrentFormat(FormattedDisk.FILE_DISPLAY_DETAIL);
 			}
 		});
-		item = new ToolItem(toolBar, SWT.SEPARATOR);
+		ToolItem item = new ToolItem(toolBar, SWT.SEPARATOR);
 		
-		item = new ToolItem(toolBar, SWT.CHECK);
-		item.setImage(imageManager.getDeletedFilesIcon());
-		item.setText("De&leted");
-		item.setToolTipText("Show deleted files");
-		item.setEnabled(disks[0].supportsDeletedFiles());
-		item.addSelectionListener(new SelectionAdapter () {
+		showDeletedFilesToolItem = new ToolItem(toolBar, SWT.CHECK);
+		showDeletedFilesToolItem.setImage(imageManager.getDeletedFilesIcon());
+		showDeletedFilesToolItem.setText("Deleted");
+		showDeletedFilesToolItem.setToolTipText("Show deleted files (F5)");
+		showDeletedFilesToolItem.setEnabled(disks[0].supportsDeletedFiles());
+		showDeletedFilesToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
-				ToolItem button = (ToolItem) e.getSource();
-				showDeletedFiles = button.getSelection();
+				showDeletedFiles = showDeletedFilesToolItem.getSelection();
 				fillFileTable(currentFileList);
 			}
 		});
@@ -1030,8 +1062,8 @@ public class DiskExplorerTab {
 
 		importToolItem = new ToolItem(toolBar, SWT.PUSH);
 		importToolItem.setImage(imageManager.getImportFileIcon());
-		importToolItem.setText("&Import...");
-		importToolItem.setToolTipText("Import a file");
+		importToolItem.setText("Import...");
+		importToolItem.setToolTipText("Import a file (CTRL+I)");
 		importToolItem.setEnabled(disks[0].canCreateFile() && disks[0].canWriteFileData());
 		importToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
@@ -1041,8 +1073,8 @@ public class DiskExplorerTab {
 		
 		exportToolItem = new ToolItem(toolBar, SWT.DROP_DOWN);
 		exportToolItem.setImage(imageManager.getExportFileIcon());
-		exportToolItem.setText("&Export...");
-		exportToolItem.setToolTipText("Export a file");
+		exportToolItem.setText("Export...");
+		exportToolItem.setToolTipText("Export a file (CTRL+E)");
 		exportToolItem.setEnabled(false);
 		exportToolItem.addSelectionListener(
 			new DropDownSelectionListener(createFileExportMenu(SWT.NONE)));
@@ -1058,7 +1090,7 @@ public class DiskExplorerTab {
 		compileToolItem = new ToolItem(toolBar, SWT.PUSH);
 		compileToolItem.setImage(imageManager.getCompileIcon());
 		compileToolItem.setText("Compile");
-		compileToolItem.setToolTipText("Compile a BASIC program");
+		compileToolItem.setToolTipText("Compile a BASIC program (CTRL+C)");
 		compileToolItem.setEnabled(false);
 		compileToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent event) {
@@ -1070,7 +1102,7 @@ public class DiskExplorerTab {
 		viewFileItem = new ToolItem(toolBar, SWT.PUSH);
 		viewFileItem.setImage(imageManager.getViewFileIcon());
 		viewFileItem.setText("View");
-		viewFileItem.setToolTipText("View file");
+		viewFileItem.setToolTipText("View file (CTRL+V)");
 		viewFileItem.setEnabled(false);
 		viewFileItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent event) {
@@ -1082,8 +1114,8 @@ public class DiskExplorerTab {
 
 		deleteToolItem = new ToolItem(toolBar, SWT.PUSH);
 		deleteToolItem.setImage(imageManager.getDeleteFileIcon());
-		deleteToolItem.setText("D&elete");
-		deleteToolItem.setToolTipText("Delete a file");
+		deleteToolItem.setText("Delete");
+		deleteToolItem.setToolTipText("Delete a file (CTRL+D)");
 		deleteToolItem.setEnabled(false);
 		deleteToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
@@ -1094,8 +1126,8 @@ public class DiskExplorerTab {
 
 		saveToolItem = new ToolItem(toolBar, SWT.PUSH);
 		saveToolItem.setImage(imageManager.getSaveImageIcon());
-		saveToolItem.setText("&Save");
-		saveToolItem.setToolTipText("Save disk image");
+		saveToolItem.setText("Save");
+		saveToolItem.setToolTipText("Save disk image (CTRL+S)");
 		saveToolItem.setEnabled(disks[0].hasChanged());	// same physical disk
 		saveToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
@@ -1119,6 +1151,15 @@ public class DiskExplorerTab {
 			preserveColumnWidths();	// must be done before assigning newFormat
 			currentFormat = newFormat;
 			fillFileTable(fileList);
+
+			// Ensure that the control buttons are set appropriately.
+			// Primarly required for keyboard interface.
+			standardFormatToolItem.setSelection(
+				currentFormat == FormattedDisk.FILE_DISPLAY_STANDARD);
+			nativeFormatToolItem.setSelection(
+				currentFormat == FormattedDisk.FILE_DISPLAY_NATIVE);
+			detailFormatToolItem.setSelection(
+				currentFormat == FormattedDisk.FILE_DISPLAY_DETAIL);
 		}
 	}
 	/**
@@ -1146,7 +1187,13 @@ public class DiskExplorerTab {
 			box.open();
 		}
 	}
-	
+	/**
+	 * Create the keyboard handler for the directory pane.
+	 * These are keys that are <em>only</em> active in the directory
+	 * viewer.  See createToolbarCommandHandler for the general application
+	 * keyboard handler.  
+	 * @see #createToolbarCommandHandler
+	 */
 	private Listener createDirectoryKeyboardHandler() {
 		return new Listener() {
 			public void handleEvent(Event event) {
@@ -1179,25 +1226,79 @@ public class DiskExplorerTab {
 			}		
 		};
 	}
-
+	/**
+	 * Create the keyboard handler for the file pane.
+	 * These are keys that are <em>only</em> active in the file
+	 * viewer.  See createToolbarCommandHandler for the general application
+	 * keyboard handler.  
+	 * @see #createToolbarCommandHandler
+	 */
 	private Listener createFileKeyboardHandler() {
 		return new Listener() {
 			public void handleEvent(Event event) {
 				if (event.type == SWT.KeyUp && (event.stateMask & SWT.CTRL) != 0) {
 					switch (event.character) {
-						case 0x03:		// CTRL+C
-							compileFileWizard();
+						case CTRL_C:	// Compile Wizard
+							if (compileToolItem.isEnabled()) {
+								compileFileWizard();
+							}
 							break;
-						case 0x04:		// CTRL+D
-							deleteFile();
+						case CTRL_D:	// Delete file
+							if (deleteToolItem.isEnabled()) {
+								deleteFile();
+							}
 							break;
-						case 0x05:		// CTRL+E
+						case CTRL_E:	// Export Wizard
 							exportFileWizard();
 							break;
-						case 'V'-' ':	// CTRL+V
+						case CTRL_V:	// View file
 							// TODO
 							break;
 					}		
+				}
+			}
+		};
+	}
+	/**
+	 * The toolbar command handler contains the global toolbar
+	 * actions.  This does not include file-specific actions.
+	 * The intent is that the listener is then added to multiple
+	 * visual components (i.e., the file listing as well as the
+	 * directory listing).
+	 */
+	private Listener createToolbarCommandHandler() {
+		return new Listener() {
+			public void handleEvent(Event event) {
+				if (event.type == SWT.KeyUp) {
+					if ((event.stateMask & SWT.CTRL) != 0) {	// CTRL key held
+						switch (event.character) {
+							case CTRL_I:	// Import Wizard
+								importFiles();
+								break;
+							case CTRL_S:	// Save
+								if (saveToolItem.isEnabled()) {
+									save();
+								}
+								break;
+						}
+					} else {	// No CTRL key
+						switch (event.keyCode) {
+							case SWT.F2:	// Standard file display
+								changeCurrentFormat(FormattedDisk.FILE_DISPLAY_STANDARD);
+								break;
+							case SWT.F3:	// Native file display
+								changeCurrentFormat(FormattedDisk.FILE_DISPLAY_NATIVE);
+								break;
+							case SWT.F4:	// Detail file display
+								changeCurrentFormat(FormattedDisk.FILE_DISPLAY_DETAIL);
+								break;
+							case SWT.F5:	// Show deleted files
+								showDeletedFiles = !showDeletedFilesToolItem.getSelection();
+								showDeletedFilesToolItem.setSelection(showDeletedFiles);
+								fillFileTable(currentFileList);
+								break;
+						}
+					}
 				}
 			}
 		};
