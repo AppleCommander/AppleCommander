@@ -19,6 +19,7 @@
  */
 package com.webcodepro.applecommander.ui;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -43,7 +44,7 @@ public class AppleCommander {
 	/**
 	 * Launch AppleCommander.
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		if (args.length == 0) {
 			if (isSwtAvailable()) {
 				launchSwtAppleCommander(args);
@@ -63,8 +64,7 @@ public class AppleCommander {
 				System.err.println("Sorry, the command line user interface is not available (yet).");
 				//CommandLineAppleCommander.main(extraArgs);
 			} else {
-				System.err.println("Unknown user interface specified!");
-				System.err.println("Use -swt, -swing, or -command.");
+				ac.main(args);
 			}
 		}
 	}
