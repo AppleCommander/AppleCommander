@@ -64,8 +64,10 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
@@ -94,6 +96,7 @@ public class DiskExplorerTab {
 	private ToolItem exportToolItem;
 	private ToolItem importToolItem;
 	private ToolItem compileToolItem;
+	private ToolItem viewFileItem;
 	private ToolItem deleteToolItem;
 	private ToolItem saveToolItem;
 	private ImageManager imageManager;
@@ -130,6 +133,7 @@ public class DiskExplorerTab {
 		importToolItem.dispose();
 		deleteToolItem.dispose();
 		compileToolItem.dispose();
+		viewFileItem.dispose();
 		toolBar.dispose();
 
 		directoryTree = null;
@@ -175,6 +179,7 @@ public class DiskExplorerTab {
 				treeItem[0].setExpanded(!treeItem[0].getExpanded());
 			}
 		});
+		directoryTree.addListener(SWT.KeyUp, createDirectoryKeyboardHandler());
 
 		fileTable = new Table(sashForm, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER);
 		fileTable.setHeaderVisible(true);
@@ -217,7 +222,7 @@ public class DiskExplorerTab {
 		Menu menu = new Menu(shell, SWT.POP_UP);
 		
 		MenuItem item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("Expand");
+		item.setText("Expand\t+");
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				TreeItem[] treeItem = directoryTree.getSelection();
@@ -227,7 +232,7 @@ public class DiskExplorerTab {
 		item.setEnabled(disks[0].canHaveDirectories());
 
 		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("Collapse");
+		item.setText("Collapse\t-");
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				TreeItem[] treeItem = directoryTree.getSelection();
@@ -239,7 +244,7 @@ public class DiskExplorerTab {
 		item = new MenuItem(menu, SWT.SEPARATOR);
 
 		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("Expand All");
+		item.setText("Expand All\tCtrl +");
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				TreeItem[] treeItem = directoryTree.getSelection();
@@ -249,7 +254,7 @@ public class DiskExplorerTab {
 		item.setEnabled(disks[0].canHaveDirectories());
 
 		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("Collapse All");
+		item.setText("Collapse All\tCtrl -");
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				TreeItem[] treeItem = directoryTree.getSelection();
@@ -278,15 +283,38 @@ public class DiskExplorerTab {
 		Menu menu = new Menu(shell, SWT.POP_UP);
 		
 		MenuItem item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("Export");
+		item.setText("&View\tCtrl+V");
+		item.setAccelerator(SWT.CTRL+'V');
+		item.setEnabled(true);		// FIXME - does this need to be dynamic?
+		item.setImage(imageManager.getViewFileIcon());
+
+		item = new MenuItem(menu, SWT.CASCADE);
+		item.setText("&Compile...\tCtrl+C");
+		item.setAccelerator(SWT.CTRL+'C');
+		item.setEnabled(true);		// FIXME - does this need to be dynamic?
+		item.setImage(imageManager.getCompileIcon());
+		item.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				//compileFile();	//FIXME
+			}
+		});
+		
+		item = new MenuItem(menu, SWT.SEPARATOR);
+		
+		item = new MenuItem(menu, SWT.CASCADE);
+		item.setText("&Export\tCtrl+E");
+		item.setAccelerator(SWT.CTRL+'E');
 		item.setEnabled(disks[0].canReadFileData());
 		item.setMenu(createFileExportMenu(SWT.DROP_DOWN));
+		item.setImage(imageManager.getExportFileIcon());
 
 		item = new MenuItem(menu, SWT.SEPARATOR);
 
 		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("Delete...");
+		item.setText("&Delete...\tCtrl+D");
+		item.setAccelerator(SWT.CTRL+'D');
 		item.setEnabled(disks[0].canDeleteFile());
+		item.setImage(imageManager.getDeleteFileIcon());
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				deleteFile();
@@ -556,6 +584,7 @@ public class DiskExplorerTab {
 		if (formatChanged) {
 			fileTable.dispose();
 			fileTable = new Table(sashForm, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER);
+			fileTable.addListener(SWT.KeyUp, createFileKeyboardHandler());
 			fileTable.setHeaderVisible(true);
 			fileTable.setMenu(createFilePopupMenu());
 			fileTable.addSelectionListener(new SelectionListener() {
@@ -568,11 +597,14 @@ public class DiskExplorerTab {
 						FileEntry fileEntry = (FileEntry) fileTable.getItem(fileTable.getSelectionIndex()).getData();
 						exportToolItem.setEnabled(disks[0].canReadFileData());
 						deleteToolItem.setEnabled(disks[0].canDeleteFile());
-						// FIXME:
 						compileToolItem.setEnabled(fileEntry.canCompile());
+						// FIXME: Need appropriate logic..
+						viewFileItem.setEnabled(true);
 					} else {
 						exportToolItem.setEnabled(false);
 						deleteToolItem.setEnabled(false);
+						compileToolItem.setEnabled(false);
+						viewFileItem.setEnabled(false);
 					}
 				}
 				/**
@@ -624,6 +656,29 @@ public class DiskExplorerTab {
 		exportToolItem.setEnabled(false);
 		//importToolItem.setEnabled(false);
 		deleteToolItem.setEnabled(false);
+		compileToolItem.setEnabled(false);
+		viewFileItem.setEnabled(false);
+	}
+	/**
+	 * Open up the Export Wizard dialog box.
+	 */
+	protected void exportFileWizard() {
+		// Get a sugeseted filter, if possible:
+		FileEntry fileEntry = (FileEntry) fileTable.getSelection()[0].getData();
+		if (fileEntry != null) {
+			fileFilter = fileEntry.getSuggestedFilter();
+		}
+		// Start wizard:
+		ExportWizard wizard = new ExportWizard(shell, 
+			imageManager, fileEntry.getFormattedDisk());
+		wizard.setFileFilter(fileFilter);
+		wizard.setDirectory(userPreferences.getExportDirectory());
+		wizard.open();
+		if (wizard.isWizardCompleted()) {
+			fileFilter = wizard.getFileFilter();
+			String exportDirectory = wizard.getDirectory();
+			exportFile(exportDirectory);
+		}
 	}
 	/**
 	 * Export all selected files.
@@ -693,6 +748,20 @@ public class DiskExplorerTab {
 					if (button == SWT.CANCEL) break;	// break out of loop
 				}
 			}
+		}
+	}
+	/**
+	 * Launch the compile file wizard.
+	 */
+	protected void compileFileWizard() {
+		FileEntry fileEntry = (FileEntry) fileTable.getSelection()[0].getData();
+		CompileWizard wizard = new CompileWizard(shell, 
+			imageManager, fileEntry.getFormattedDisk());
+		wizard.setDirectory(userPreferences.getCompileDirectory());
+		wizard.open();
+		if (wizard.isWizardCompleted()) {
+			String compileDirectory = wizard.getDirectory();
+			compileFile(compileDirectory);
 		}
 	}
 	/**
@@ -980,22 +1049,7 @@ public class DiskExplorerTab {
 		exportToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent event) {
 				if (event.detail != SWT.ARROW) {
-					// Get a suggseted filter, if possible:
-					FileEntry fileEntry = (FileEntry) fileTable.getSelection()[0].getData();
-					if (fileEntry != null) {
-						fileFilter = fileEntry.getSuggestedFilter();
-					}
-					// Start wizard:
-					ExportWizard wizard = new ExportWizard(shell, 
-						imageManager, fileEntry.getFormattedDisk());
-					wizard.setFileFilter(fileFilter);
-					wizard.setDirectory(userPreferences.getExportDirectory());
-					wizard.open();
-					if (wizard.isWizardCompleted()) {
-						fileFilter = wizard.getFileFilter();
-						String exportDirectory = wizard.getDirectory();
-						exportFile(exportDirectory);
-					}
+					exportFileWizard();
 				}
 			}
 		});
@@ -1009,16 +1063,18 @@ public class DiskExplorerTab {
 		compileToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent event) {
 				if (event.detail != SWT.ARROW) {
-					// Start wizard:
-					FileEntry fileEntry = (FileEntry) fileTable.getSelection()[0].getData();
-					CompileWizard wizard = new CompileWizard(shell, 
-						imageManager, fileEntry.getFormattedDisk());
-					wizard.setDirectory(userPreferences.getCompileDirectory());
-					wizard.open();
-					if (wizard.isWizardCompleted()) {
-						String compileDirectory = wizard.getDirectory();
-						compileFile(compileDirectory);
-					}
+					compileFileWizard();
+				}
+			}
+		});
+		viewFileItem = new ToolItem(toolBar, SWT.PUSH);
+		viewFileItem.setImage(imageManager.getViewFileIcon());
+		viewFileItem.setText("View");
+		viewFileItem.setToolTipText("View file");
+		viewFileItem.setEnabled(false);
+		viewFileItem.addSelectionListener(new SelectionAdapter () {
+			public void widgetSelected(SelectionEvent event) {
+				if (event.detail != SWT.ARROW) {
 				}
 			}
 		});
@@ -1089,5 +1145,61 @@ public class DiskExplorerTab {
 				+ "Sorry!");
 			box.open();
 		}
+	}
+	
+	private Listener createDirectoryKeyboardHandler() {
+		return new Listener() {
+			public void handleEvent(Event event) {
+				if (event.type == SWT.KeyUp) {
+					TreeItem[] treeItem = null;
+					if ((event.stateMask & SWT.CTRL) != 0) {
+						switch (event.character) {
+							case '-':
+								treeItem = directoryTree.getSelection();
+								setDirectoryExpandedStates(treeItem[0], false);
+								break;
+							case '+':
+								treeItem = directoryTree.getSelection();
+								setDirectoryExpandedStates(treeItem[0], true);
+								break;
+						}
+					} else {	// assume no control and no alt
+						switch (event.character) {
+							case '-':
+								treeItem = directoryTree.getSelection();
+								treeItem[0].setExpanded(false);
+								break;
+							case '+':
+								treeItem = directoryTree.getSelection();
+								treeItem[0].setExpanded(true);
+								break;
+						}
+					}
+				}
+			}		
+		};
+	}
+
+	private Listener createFileKeyboardHandler() {
+		return new Listener() {
+			public void handleEvent(Event event) {
+				if (event.type == SWT.KeyUp && (event.stateMask & SWT.CTRL) != 0) {
+					switch (event.character) {
+						case 0x03:		// CTRL+C
+							compileFileWizard();
+							break;
+						case 0x04:		// CTRL+D
+							deleteFile();
+							break;
+						case 0x05:		// CTRL+E
+							exportFileWizard();
+							break;
+						case 'V'-' ':	// CTRL+V
+							// TODO
+							break;
+					}		
+				}
+			}
+		};
 	}
 }
