@@ -112,6 +112,14 @@ public class ExportGraphicsTypePane extends WizardPane {
 				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_DHR_COLOR);
 			}
 		});
+		button = new Button(graphicsModeGroup, SWT.RADIO);
+		button.setText("Super hires (320x200 or 640x200)");
+		button.setSelection(getGraphicsFilter().isSuperHiresMode());
+		button.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_SHR);
+			}
+		});
 		label = new Label(control, SWT.WRAP);
 		label.setText("Please choose the appropriate file format to save image as:");
 		Composite graphicsFormatGroup = new Composite(control, SWT.NULL);
