@@ -32,12 +32,22 @@ public class ApplesoftToken {
 		return !isToken() && !isString();
 	}
 	
+	public boolean isEndOfCommand() {
+		return isLineNumber() || isCommandSeparator();
+	}
+	
 	public boolean isToken() {
 		return tokenString != null;
 	}
 	
 	public boolean isString() {
 		return stringValue != null;
+	}
+	
+	public boolean isExpressionSeparator() {
+		return isCommandSeparator()
+			|| ",".equals(stringValue)
+			|| ";".equals(stringValue);
 	}
 	
 	/**
