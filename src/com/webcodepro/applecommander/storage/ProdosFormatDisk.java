@@ -487,4 +487,10 @@ public class ProdosFormatDisk extends FormattedDisk {
 		writeVolumeBitMap(bitmap);
 	}
 
+	/**
+	 * Returns the logical disk number.  Returns a 0 to indicate no numbering.
+	 */
+	public int getLogicalDiskNumber() {
+		return 0;
+	}
 }

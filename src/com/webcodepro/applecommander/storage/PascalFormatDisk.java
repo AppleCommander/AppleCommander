@@ -417,4 +417,10 @@ public class PascalFormatDisk extends FormattedDisk {
 		writeDirectory(directory);
 	}
 
+	/**
+	 * Returns the logical disk number.  Returns a 0 to indicate no numbering.
+	 */
+	public int getLogicalDiskNumber() {
+		return 0;
+	}
 }

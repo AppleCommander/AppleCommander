@@ -322,4 +322,12 @@ public abstract class FormattedDisk extends Disk {
 			}
 		}
 	}
+	
+	/**
+	 * Returns the logical disk number.  This can be used to identify
+	 * between disks when a format supports multiple logical volumes.
+	 * If a value of 0 is returned, there is not multiple logical
+	 * volumes to distinguish.
+	 */
+	public abstract int getLogicalDiskNumber();
 }
