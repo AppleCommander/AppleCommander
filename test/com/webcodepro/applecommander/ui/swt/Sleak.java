@@ -72,7 +72,7 @@ public static void main (String [] args) {
 void open () {
 	display = Display.getCurrent ();
 	shell = new Shell (display);
-	shell.setText ("S-Leak");
+	shell.setText ("S-Leak"); //$NON-NLS-1$
 	list = new List (shell, SWT.BORDER | SWT.V_SCROLL);
 	list.addListener (SWT.Selection, new Listener () {
 		public void handleEvent (Event event) {
@@ -87,28 +87,28 @@ void open () {
 		}
 	});
 	check = new Button (shell, SWT.CHECK);
-	check.setText ("Stack");
+	check.setText ("Stack"); //$NON-NLS-1$
 	check.addListener (SWT.Selection, new Listener () {
 		public void handleEvent (Event e) {
 			toggleStackTrace ();
 		}
 	});
 	start = new Button (shell, SWT.PUSH);
-	start.setText ("Snap");
+	start.setText ("Snap"); //$NON-NLS-1$
 	start.addListener (SWT.Selection, new Listener () {
 		public void handleEvent (Event event) {
 			refreshAll ();
 		}
 	});
 	stop = new Button (shell, SWT.PUSH);
-	stop.setText ("Diff");
+	stop.setText ("Diff"); //$NON-NLS-1$
 	stop.addListener (SWT.Selection, new Listener () {
 		public void handleEvent (Event event) {
 			refreshDifference ();
 		}
 	});
 	label = new Label (shell, SWT.BORDER);
-	label.setText ("0 object(s)");
+	label.setText ("0 object(s)"); //$NON-NLS-1$
 	shell.addListener (SWT.Resize, new Listener () {
 		public void handleEvent (Event e) {
 			layout ();
@@ -132,13 +132,13 @@ void refreshLabel () {
 		if (object instanceof Image) images++;
 		if (object instanceof Region) regions++;
 	}
-	String string = "";
-	if (colors != 0) string += colors + " Color(s)\n";
-	if (cursors != 0) string += cursors + " Cursor(s)\n";
-	if (fonts != 0) string += fonts + " Font(s)\n";
-	if (gcs != 0) string += gcs + " GC(s)\n";
-	if (images != 0) string += images + " Image(s)\n";
-	if (regions != 0) string += regions + " Region(s)\n";
+	String string = ""; //$NON-NLS-1$
+	if (colors != 0) string += colors + " Color(s)\n"; //$NON-NLS-1$
+	if (cursors != 0) string += cursors + " Cursor(s)\n"; //$NON-NLS-1$
+	if (fonts != 0) string += fonts + " Font(s)\n"; //$NON-NLS-1$
+	if (gcs != 0) string += gcs + " GC(s)\n"; //$NON-NLS-1$
+	if (images != 0) string += images + " Image(s)\n"; //$NON-NLS-1$
+	if (regions != 0) string += regions + " Region(s)\n"; //$NON-NLS-1$
 	if (string.length () != 0) {
 		string = string.substring (0, string.length () - 1);
 	}
@@ -150,7 +150,7 @@ void refreshDifference () {
 	if (!info.tracking) {
 		MessageBox dialog = new MessageBox (shell, SWT.ICON_WARNING | SWT.OK);
 		dialog.setText (shell.getText ());
-		dialog.setMessage ("Warning: Device is not tracking resource allocation");
+		dialog.setMessage ("Warning: Device is not tracking resource allocation"); //$NON-NLS-1$
 		dialog.open ();
 	}
 	Object [] newObjects = info.objects;
@@ -175,7 +175,7 @@ void refreshDifference () {
 	System.arraycopy (diffObjects, 0, objects, 0, count);
 	System.arraycopy (diffErrors, 0, errors, 0, count);
 	list.removeAll ();
-	text.setText ("");
+	text.setText (""); //$NON-NLS-1$
 	canvas.redraw ();
 	for (int i=0; i<objects.length; i++) {
 		list.add (objectName (objects [i]));
@@ -217,17 +217,17 @@ void paintCanvas (Event event) {
 		if (((Font)object).isDisposed ()) return;
 		gc.setFont ((Font) object);
 		FontData [] array = gc.getFont ().getFontData ();
-		String string = "";
+		String string = ""; //$NON-NLS-1$
 		String lf = text.getLineDelimiter ();
 		for (int i=0; i<array.length; i++) {
 			FontData data = array [i];
-			String style = "NORMAL";
+			String style = "NORMAL"; //$NON-NLS-1$
 			int bits = data.getStyle ();
 			if (bits != 0) {
-				if ((bits & SWT.BOLD) != 0) style = "BOLD ";
-				if ((bits & SWT.ITALIC) != 0) style += "ITALIC";
+				if ((bits & SWT.BOLD) != 0) style = "BOLD "; //$NON-NLS-1$
+				if ((bits & SWT.ITALIC) != 0) style += "ITALIC"; //$NON-NLS-1$
 			}
-			string += data.getName () + " " + data.getHeight () + " " + style + lf;
+			string += data.getName () + " " + data.getHeight () + " " + style + lf; //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		gc.drawString (string, 0, 0);
 		return;
