@@ -53,12 +53,17 @@ public class UniDosFormatDisk extends DosFormatDisk {
 		this.logicalOffset = logicalOffset;
 	}
 	/**
-	 * Constructor for UniDosFormatDisk.
-	 * @param filename
+	 * Create a UniDosFormatDisk.
 	 */
-	public UniDosFormatDisk(String filename, int logicalOffset) {
-		super(filename);
-		this.logicalOffset = logicalOffset;
+	public static DosFormatDisk[] create(String filename) {
+		byte[] diskImage = new byte[APPLE_800KB_2IMG_DISK];
+		UniDosFormatDisk disk1 = new UniDosFormatDisk(filename,
+			diskImage, UNIDOS_DISK_1);
+		disk1.format();
+		UniDosFormatDisk disk2 = new UniDosFormatDisk(filename,
+			diskImage, UNIDOS_DISK_2);
+		disk2.format();
+		return new UniDosFormatDisk[] { disk1, disk2 };
 	}
 	/**
 	 * Answer with the name of this disk.
@@ -95,5 +100,12 @@ public class UniDosFormatDisk extends DosFormatDisk {
 		} else {
 			return 0;
 		}
+	}
+	/**
+	 * Format the disk as UniDOS.
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
+	 */
+	public void format() {
+		format(31, 50, 32);
 	}
 }
