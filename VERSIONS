@@ -1,3 +1,11 @@
+1.2.3 (2003-04-13)
+* Separated image support for GraphicsFileFilter.  This allows easier preparation
+  for compiling AppleCommander as a Windows executable (and allows limited image
+  support to boot).
+* Compile into native executable (Windows works now).
+* Work on identifying why GCJ introduces slow performance to some areas.  This
+  appears to be resolved with an early build of GCJ 3.3.
+
 1.2.2 (2003-03-15)
 * ProDOS disks now re-use deleted file entries.  Prior to this fix,
   deleted entries were never re-used.  If importing many files, a 
