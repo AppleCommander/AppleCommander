@@ -20,6 +20,7 @@
 package com.webcodepro.applecommander.test;
 
 import com.webcodepro.applecommander.storage.DirectoryEntry;
+import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.DosFormatDisk;
 import com.webcodepro.applecommander.storage.FileEntry;
@@ -223,7 +224,7 @@ public class DiskWriterTest extends TestCase {
 		writeFile(disk, 
 			"This is a test text file create from the DiskWriterTest".getBytes(), 
 			textType, testText);
-		if (disk.getPhysicalSize() > disk.APPLE_140KB_DISK) {
+		if (disk.getPhysicalSize() > Disk.APPLE_140KB_DISK) {
 			// create a few big files
 			writeFile(disk, 150000, binaryType, true);
 			writeFile(disk, 300000, binaryType, true);

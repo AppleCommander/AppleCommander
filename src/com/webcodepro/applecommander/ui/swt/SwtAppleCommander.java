@@ -84,7 +84,7 @@ public class SwtAppleCommander {
 	 */
 	private Shell open(Display display) {		
 		this.display = display;
-		display.setAppName("AppleCommander");
+		Display.setAppName("AppleCommander");
 		shell = new Shell(display, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.TITLE);
 		shell.setText("AppleCommander");
 		shell.setImage(imageManager.getDiskIcon());
