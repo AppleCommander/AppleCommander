@@ -1,3 +1,28 @@
+1.2.1 (2003-03-01)
+* Now carries margin setting through, sets font to Courier New (more
+  realistic formatting), and fixes boldface not being turned off
+  correctly when converting AWP files to RTF format.
+* Import could/should choose the filetype based upon the file extension for files
+  being imported. Mostly useful for ProDOS; unless a filetype mapping is 
+  introduced.
+* Export of AppleWorks Data Base files.
+* Export of AppleWorks Spread Sheet files.
+* Fixed minor issue with ProDOS disks where files at the 128K border would
+  be grown (incorrectly) into a Tree file (instead of a Sapling).
+* Import of multiple files fails after multiple imports.  This was an issue
+  with ProDOS files >128K ("Tree" files).  The delete code didn't handle the
+  master index block appropriately when blocks numbered zero were present
+  (normally indicating the end of file).
+* DOS 3.3 was not writing correct number of sectors if a file was more than
+  256 sectors long.
+* DOS 3.3 was not managing deleted file entries appropriately and tried to
+  work with track $FF.
+* Fixed offset calculation for 800K DOS organized disks.  This primarily 
+  affected UniDOS.
+* Import menu should be in directory pane instead of file pane.
+* The information tab does not get updated.  Now that the disk can be modified,
+  this page needs to be updated when shown.
+
 1.2.0 (2003-02-11)
 * Can now create disk images. For the moment, these images are not 
   bootable (including hard disk images) - they do however boot a 

@@ -2,29 +2,8 @@ THINGS TO DO
 ============
 This is the internal list of items that need to be done.
 
---- 1.2.1 ---
-* Now carries margin setting through, sets font to Courier New (more
-  realistic formatting), and fixes boldface not being turned off
-  correctly when converting AWP files to RTF format.
-* Import could/should choose the filetype based upon the file extension for files
-  being imported. Mostly useful for ProDOS; unless a filetype mapping is 
-  introduced.
-* Extract AppleWorks Data Base files.
-* Extract AppleWorks Spread Sheet files.
-* Fixed minor issue with ProDOS disks where files at the 128K border would
-  be grown (incorrectly) into a Tree file (instead of a Sapling).
-* Import of multiple files fails after multiple imports.  This was an issue
-  with ProDOS files >128K ("Tree" files).  The delete code didn't handle the
-  master index block appropriately when blocks numbered zero were present
-  (normally indicating the end of file).
-* DOS 3.3 was not writing correct number of sectors if a file was more than
-  256 sectors long.
-* DOS 3.3 was not managing deleted file entries appropriately and tried to
-  work with track $FF.
 
 --- FUTURE ---
-o *** DOS 3.3 800K DISK #2 FAILS CREATE/DELETE TEST! ***
-o Import menu should be in directory pane instead of file pane.
 o Need to be able to import into a directory in ProDOS.  This will most
   likely involve adding an interface indicating a (writable) directory.
   This interface would be applied to both disks as well as file entries,
@@ -33,8 +12,6 @@ o Import file specification should only allow address editing if the filetype
   requires it.
 o Save does not allow the disk image location to be chosen for new images. (Maybe
   the wizard should pay more attention?)
-o The information tab does not get updated.  Now that the disk can be modified,
-  this page needs to be updated when shown.
 o Work on identifying why GCJ introduces slow performance to some areas.
 o Add RDOS writing capability.
 o Add Apple Pascal writing capability.
@@ -51,3 +28,10 @@ o Compile into native executable (hopefully Linux and Windows).
 o Sector/Block editor.
 o Change disk format.
 o Short-cut keys would be nice.
+o Open zip files; be able to browse disk images from the zip file. This should be
+  a different type of window (Archive Window?) that allows disk images to be
+  opened into a Disk Window.  (Saves would have to be to the file system.)
+o Open SHK files?  Similar operation to zip files.
+o Open SDK files?  Opens directly into a Disk Window.
+o Make formatted images bootable.  May need user to supply a "master" disk from
+  which files or data is copied.
