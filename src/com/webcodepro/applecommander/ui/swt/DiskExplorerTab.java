@@ -1312,6 +1312,8 @@ public class DiskExplorerTab {
 							break;
 						case CTRL_V:	// View file
 							// TODO
+							FileViewerWindow window = new FileViewerWindow(shell, fileEntry, imageManager);
+							window.open();
 							break;
 					}		
 				}
