@@ -36,6 +36,10 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * The size of the Pascal file entry.
 	 */
 	public static final int ENTRY_SIZE = 26;
+	/**
+	 * The number of Pascal blocks on a 140K disk.
+	 */
+	public static final int PASCAL_BLOCKS_ON_140K_DISK = 280;
 
 	/**
 	 * Use this inner interface for managing the disk usage data.
@@ -78,15 +82,23 @@ public class PascalFormatDisk extends FormattedDisk {
 			return !bitmap.get(location);	// false = used
 		}
 	}
-
+	
 	/**
 	 * Constructor for PascalFormatDisk.
 	 * @param filename
 	 * @param diskImage
-	 * @param order
 	 */
 	public PascalFormatDisk(String filename, byte[] diskImage) {
 		super(filename, diskImage);
+	}
+
+	/**
+	 * Constructor for PascalFormatDisk.
+	 * @param filename
+	 */
+	public PascalFormatDisk(String filename, String volumeName) {
+		super(filename, new byte[APPLE_140KB_DISK]);
+		setDiskName(volumeName);
 	}
 
 	/**
@@ -103,11 +115,7 @@ public class PascalFormatDisk extends FormattedDisk {
 	 */
 	public List getFiles() {
 		List list = new ArrayList();
-		// read directory blocks (block 2-5):
-		byte[] directory = new byte[4 * BLOCK_SIZE];
-		for (int i=0; i<4; i++) {
-			System.arraycopy(readBlock(2+i), 0, directory, i*BLOCK_SIZE, BLOCK_SIZE);
-		}
+		byte[] directory = readDirectory();
 		// process directory blocks:
 		int entrySize = ENTRY_SIZE;
 		int offset = entrySize;
@@ -119,6 +127,32 @@ public class PascalFormatDisk extends FormattedDisk {
 			offset+= entrySize;
 		}
 		return list;
+	}
+	
+	/**
+	 * Read directory blocks.  These are always in blocks 2 - 5 and
+	 * are treated as a 2048 byte array.
+	 */
+	public byte[] readDirectory() {
+		byte[] directory = new byte[4 * BLOCK_SIZE];
+		for (int i=0; i<4; i++) {
+			System.arraycopy(readBlock(2+i), 0, directory, i*BLOCK_SIZE, BLOCK_SIZE);
+		}
+		return directory;
+	}
+	
+	/**
+	 * Write directory blocks.
+	 */
+	public void writeDirectory(byte[] directory) {
+		if (directory == null || directory.length != 2048) {
+			throw new IllegalArgumentException("Invalid Pascal directory.");
+		}
+		for (int i=0; i<4; i++) {
+			byte[] block = new byte[BLOCK_SIZE];
+			System.arraycopy(directory, i*BLOCK_SIZE, block, 0, BLOCK_SIZE);
+			writeBlock(2+i, block);
+		}
 	}
 
 	/**
@@ -220,6 +254,16 @@ public class PascalFormatDisk extends FormattedDisk {
 	 */
 	public String getDiskName() {
 		return AppleUtil.getPascalString(readBlock(2), 6);
+	}
+	
+	/**
+	 * Set the name of the disk.  The Pascal parlance is "volume name"
+	 * whereas AppleCommander uses disk name.  Max length is 7.
+	 */
+	public void setDiskName(String volumeName) {
+		byte[] directory = readDirectory();
+		AppleUtil.setPascalString(directory, 6, volumeName.toUpperCase(), 7);
+		writeDirectory(directory);
 	}
 
 	/**
@@ -353,4 +397,24 @@ public class PascalFormatDisk extends FormattedDisk {
 		}
 		return fileData;
 	}
+	
+	/**
+	 * Format the disk as an Apple Pascal disk.
+	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
+	 */
+	public void format() {
+		writeBootCode();
+		// Create volume name
+		byte[] directory = readDirectory();
+		AppleUtil.setWordValue(directory, 0, 0);	// always 0
+		AppleUtil.setWordValue(directory, 2, 6);	// last directory block
+		AppleUtil.setWordValue(directory, 4, 0);	// entry type (0=vol header)
+			// volume name should have been set in constructor!
+		AppleUtil.setWordValue(directory, 14, PASCAL_BLOCKS_ON_140K_DISK);
+		AppleUtil.setWordValue(directory, 16, 0);	// no files
+		AppleUtil.setPascalDate(directory, 18, new Date());	// last access time
+		AppleUtil.setPascalDate(directory, 20, new Date());	// most recent date setting
+		writeDirectory(directory);
+	}
+
 }
