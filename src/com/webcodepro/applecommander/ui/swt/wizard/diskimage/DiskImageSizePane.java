@@ -27,7 +27,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.ui.TextBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 
 /**
@@ -37,6 +38,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  * @author Rob Greene
  */
 public class DiskImageSizePane extends WizardPane {
+	private TextBundle textBundle = TextBundle.getInstance();
 	private DiskImageWizard wizard;
 	private Composite control;
 	private Composite parent;
@@ -50,14 +52,14 @@ public class DiskImageSizePane extends WizardPane {
 	}
 	/**
 	 * Get the next visible pane.
-	 * @see com.webcodepro.applecommander.ui.swt.WizardPane#getNextPane()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
 	public WizardPane getNextPane() {
 		return new DiskImageNamePane(parent, wizard);
 	}
 	/**
 	 * Create the wizard pane.
-	 * @see com.webcodepro.applecommander.ui.swt.WizardPane#open()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#open()
 	 */
 	public void open() {
 		control = new Composite(parent, SWT.NULL);
@@ -73,25 +75,31 @@ public class DiskImageSizePane extends WizardPane {
 		control.setLayout(layout);
 		Label label = new Label(control, SWT.WRAP);
 		label.setText(
-			"Please choose the disk image size:");
+			textBundle.get("DiskImageSizePrompt")); //$NON-NLS-1$
 		RowLayout subpanelLayout = new RowLayout(SWT.VERTICAL);
 		subpanelLayout.justify = true;
 		subpanelLayout.spacing = 3;
 		Composite buttonSubpanel = new Composite(control, SWT.NULL);
 		buttonSubpanel.setLayout(subpanelLayout);
-		createRadioButton(buttonSubpanel, "140KB", FormattedDisk.APPLE_140KB_DISK,
-			"The Disk II 5.25\" floppy drive.");
-		createRadioButton(buttonSubpanel, "800KB", FormattedDisk.APPLE_800KB_2IMG_DISK,
-			"The Apple UniDisk 3.5\" drive.");
+		createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize140Kb"),  //$NON-NLS-1$
+			Disk.APPLE_140KB_DISK,
+			textBundle.get("DiskImageSize140KbText")); //$NON-NLS-1$
+		createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize800Kb"),  //$NON-NLS-1$
+			Disk.APPLE_800KB_2IMG_DISK,
+			textBundle.get("DiskImageSize800KbText")); //$NON-NLS-1$
 		if (wizard.getFormat() == DiskImageWizard.FORMAT_PRODOS) {
-			createRadioButton(buttonSubpanel, "5MB", FormattedDisk.APPLE_5MB_HARDDISK,
-				"A 5MB hard disk.");
-			createRadioButton(buttonSubpanel, "10MB", FormattedDisk.APPLE_10MB_HARDDISK,
-				"A 10MB hard disk.");
-			createRadioButton(buttonSubpanel, "20MB", FormattedDisk.APPLE_20MB_HARDDISK,
-				"A 20MB hard disk.");
-			createRadioButton(buttonSubpanel, "32MB", FormattedDisk.APPLE_32MB_HARDDISK,
-				"A 32MB hard disk.");
+			createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize5Mb"),  //$NON-NLS-1$
+				Disk.APPLE_5MB_HARDDISK,
+				textBundle.get("DiskImageSize5MbText")); //$NON-NLS-1$
+			createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize10Mb"),  //$NON-NLS-1$
+				Disk.APPLE_10MB_HARDDISK,
+				textBundle.get("DiskImageSize10MbText")); //$NON-NLS-1$
+			createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize20Mb"),  //$NON-NLS-1$
+				Disk.APPLE_20MB_HARDDISK,
+				textBundle.get("DiskImageSize20MbText")); //$NON-NLS-1$
+			createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize32Mb"),  //$NON-NLS-1$
+				Disk.APPLE_32MB_HARDDISK, 
+				textBundle.get("DiskImageSize32MbText")); //$NON-NLS-1$
 		}
 	}
 	/**
@@ -106,15 +114,19 @@ public class DiskImageSizePane extends WizardPane {
 		button.setSelection(wizard.getSize() == size);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				wizard.setSize(size);
+				getWizard().setSize(size);
 			}
 		});
 	}
 	/**
 	 * Dispose of all resources.
-	 * @see com.webcodepro.applecommander.ui.swt.WizardPane#dispose()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
 	 */
 	public void dispose() {
 		control.dispose();
+	}
+	
+	protected DiskImageWizard getWizard() {
+		return wizard;
 	}
 }

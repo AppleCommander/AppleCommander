@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
 import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.ui.TextBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 
 /**
@@ -38,6 +39,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  * @author Rob Greene
  */
 public class DiskImageOrderPane extends WizardPane {
+	private TextBundle textBundle = TextBundle.getInstance();
 	private DiskImageWizard wizard;
 	private Composite control;
 	private Composite parent;
@@ -51,14 +53,14 @@ public class DiskImageOrderPane extends WizardPane {
 	}
 	/**
 	 * Get the next visible pane.
-	 * @see com.webcodepro.applecommander.ui.swt.WizardPane#getNextPane()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
 	public WizardPane getNextPane() {
 		return null;
 	}
 	/**
 	 * Create the wizard pane.
-	 * @see com.webcodepro.applecommander.ui.swt.WizardPane#open()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#open()
 	 */
 	public void open() {
 		control = new Composite(parent, SWT.NULL);
@@ -74,44 +76,41 @@ public class DiskImageOrderPane extends WizardPane {
 		control.setLayout(layout);
 		Label label = new Label(control, SWT.WRAP);
 		if (wizard.isHardDisk()) {
-			label.setText("You have chosen a hard disk volume.  The only\n"
-				+ "order allowed is ProDOS.");
+			label.setText(textBundle.get("DiskImageOrderProdosOnly")); //$NON-NLS-1$
 		} else {
-			label.setText("Please choose the order to use in this disk image:");
+			label.setText(textBundle.get("DiskImageOrderPrompt")); //$NON-NLS-1$
 		}
 		RowLayout subpanelLayout = new RowLayout(SWT.VERTICAL);
 		subpanelLayout.justify = true;
 		subpanelLayout.spacing = 3;
 		Composite buttonSubpanel = new Composite(control, SWT.NULL);
 		buttonSubpanel.setLayout(subpanelLayout);
-		createRadioButton(buttonSubpanel, "DOS ordered", 
+		createRadioButton(buttonSubpanel, textBundle.get("DiskImageOrderDosLabel"),  //$NON-NLS-1$
 			DiskImageWizard.ORDER_DOS,
-			"Indicates that image data should be stored by track and sector.");
-		createRadioButton(buttonSubpanel, "ProDOS ordered", 
+			textBundle.get("DiskImageOrderDosText")); //$NON-NLS-1$
+		createRadioButton(buttonSubpanel, textBundle.get("DiskImageOrderProdosLabel"),  //$NON-NLS-1$
 			DiskImageWizard.ORDER_PRODOS,
-			"Indicates that image data should be stored by block.");
+			textBundle.get("DiskImageOrderProdosText")); //$NON-NLS-1$
 		if (wizard.getSize() == Disk.APPLE_140KB_DISK) {
-			createRadioButton(buttonSubpanel, "Nibble ordered",
+			createRadioButton(buttonSubpanel, textBundle.get("DiskImageOrderNibbleLabel"), //$NON-NLS-1$
 				DiskImageWizard.ORDER_NIBBLE,
-				"Indicates that this is a disk stored as a nibble image.  This is "
-				+ "an image that consists of disk bytes.  It is only available for "
-				+ "140KB 5.25\" disks.");
+				textBundle.get("DiskImageOrderNibbleText")); //$NON-NLS-1$
 		}
 		
 		label = new Label(control, SWT.WRAP);
 		if (wizard.isHardDisk()) {
-			label.setText("Compression is not available for hard disk images.");
+			label.setText(textBundle.get("DiskImageOrderNoCompression")); //$NON-NLS-1$
 		} else {
-			label.setText("Indicate if this disk image should be GZIP compressed:");
+			label.setText(textBundle.get("DiskImageOrderCompressionPrompt")); //$NON-NLS-1$
 		}
 		final Button button = new Button(control, SWT.CHECK);
-		button.setText("GZip compression");
-		button.setToolTipText("Compresses the disk image (*.gz).");
+		button.setText(textBundle.get("DiskImageOrderGzipCheckbox")); //$NON-NLS-1$
+		button.setToolTipText(textBundle.get("DiskImageOrderGzipTooltip")); //$NON-NLS-1$
 		button.setSelection(wizard.isCompressed());
 		button.setEnabled(!wizard.isHardDisk());
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				wizard.setCompressed(!wizard.isCompressed());
+				getWizard().setCompressed(!getWizard().isCompressed());
 			}
 		});
 	}
@@ -128,15 +127,19 @@ public class DiskImageOrderPane extends WizardPane {
 		button.setEnabled(!wizard.isHardDisk());
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				wizard.setOrder(order);
+				getWizard().setOrder(order);
 			}
 		});
 	}
 	/**
 	 * Dispose of all resources.
-	 * @see com.webcodepro.applecommander.ui.swt.WizardPane#dispose()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
 	 */
 	public void dispose() {
 		control.dispose();
+	}
+	
+	protected DiskImageWizard getWizard() {
+		return wizard;
 	}
 }

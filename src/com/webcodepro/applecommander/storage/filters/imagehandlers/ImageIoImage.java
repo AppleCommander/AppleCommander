@@ -40,8 +40,10 @@ public class ImageIoImage extends AppleImage {
 	 * as well as sets up the class.
 	 */
 	public ImageIoImage(int width, int height) throws ClassNotFoundException {
-		super(new String[] { "PNG", "JPEG" });
-		Class.forName("javax.imageio.ImageIO");
+//	This lists all permutations of a format (ie, JPG, jpg, JPEG, jpeg, PNG, png):
+//		super(ImageIO.getWriterFormatNames());
+		super(new String[] { "PNG", "JPEG" });  //$NON-NLS-1$//$NON-NLS-2$
+		Class.forName("javax.imageio.ImageIO"); //$NON-NLS-1$
 		image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 	}
 	/**

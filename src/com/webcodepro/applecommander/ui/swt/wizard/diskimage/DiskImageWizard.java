@@ -35,6 +35,7 @@ import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.NibbleOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
+import com.webcodepro.applecommander.ui.TextBundle;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 import com.webcodepro.applecommander.ui.swt.wizard.Wizard;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
@@ -57,20 +58,21 @@ public class DiskImageWizard extends Wizard {
 	public static final int ORDER_PRODOS = 2;
 	public static final int ORDER_NIBBLE = 3;
 	private int format = FORMAT_DOS33;
-	private int size = FormattedDisk.APPLE_140KB_DISK;
-	private String fileName = "";
-	private String volumeName = "";
+	private int size = Disk.APPLE_140KB_DISK;
+	private String fileName = new String();
+	private String volumeName = new String();
 	private int order = ORDER_PRODOS;
 	private boolean compressed = false;
 	/**
 	 * Constructor for ExportWizard.
 	 */
 	public DiskImageWizard(Shell parent, ImageManager imageManager) {
-		super(parent, imageManager.get(ImageManager.LOGO_DISK_IMAGE_WIZARD), "Disk Image Wizard");
+		super(parent, imageManager.get(ImageManager.LOGO_DISK_IMAGE_WIZARD), 
+				TextBundle.getInstance().get("DiskImageWizardTitle")); //$NON-NLS-1$
 	}
 	/**
 	 * Create the initial display used in the wizard.
-	 * @see com.webcodepro.applecommander.ui.swt.Wizard#createInitialWizardPane()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.Wizard#createInitialWizardPane()
 	 */
 	public WizardPane createInitialWizardPane() {
 		return new DiskImageFormatPane(getContentPane(), this);
@@ -81,14 +83,14 @@ public class DiskImageWizard extends Wizard {
 	public FormattedDisk[] getFormattedDisks() {
 		StringBuffer name = new StringBuffer(fileName);
 		if (isHardDisk()) {
-			name.append(".hdv");
+			name.append(".hdv"); //$NON-NLS-1$
 		} else if (order == ORDER_DOS) {
-			name.append(".dsk");
+			name.append(".dsk"); //$NON-NLS-1$
 		} else {
-			name.append(".po");
+			name.append(".po"); //$NON-NLS-1$
 		}
 		if (isCompressed()) {
-			name.append(".gz");
+			name.append(".gz"); //$NON-NLS-1$
 		}
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(getSize());
 		ImageOrder imageOrder = null;

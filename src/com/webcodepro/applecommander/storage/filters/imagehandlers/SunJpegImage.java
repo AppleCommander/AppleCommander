@@ -40,8 +40,8 @@ public class SunJpegImage extends AppleImage {
 	 * as well as sets up the class.
 	 */
 	public SunJpegImage(int width, int height) throws ClassNotFoundException {
-		super(new String[] { "JPEG" });
-		Class.forName("com.sun.image.codec.jpeg.JPEGCodec");
+		super(new String[] { "JPEG" }); //$NON-NLS-1$
+		Class.forName("com.sun.image.codec.jpeg.JPEGCodec"); //$NON-NLS-1$
 		image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 	}
 	/**

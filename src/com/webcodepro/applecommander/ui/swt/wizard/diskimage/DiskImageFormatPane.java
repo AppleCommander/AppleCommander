@@ -27,7 +27,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.ui.TextBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 
 /**
@@ -38,6 +39,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  * @author Rob Greene
  */
 public class DiskImageFormatPane extends WizardPane {
+	private TextBundle textBundle = TextBundle.getInstance();
 	private DiskImageWizard wizard;
 	private Composite control;
 	private Composite parent;
@@ -60,15 +62,15 @@ public class DiskImageFormatPane extends WizardPane {
 			case DiskImageWizard.FORMAT_RDOS:
 			case DiskImageWizard.FORMAT_CPM:
 				wizard.setOrder(DiskImageWizard.ORDER_DOS);
-				wizard.setSize(FormattedDisk.APPLE_140KB_DISK);
+				wizard.setSize(Disk.APPLE_140KB_DISK);
 				return new DiskImageNamePane(parent, wizard);
 			case DiskImageWizard.FORMAT_UNIDOS:
 				wizard.setOrder(DiskImageWizard.ORDER_DOS);
-				wizard.setSize(FormattedDisk.APPLE_800KB_2IMG_DISK);
+				wizard.setSize(Disk.APPLE_800KB_2IMG_DISK);
 				return new DiskImageNamePane(parent, wizard);
 			case DiskImageWizard.FORMAT_OZDOS:
 				wizard.setOrder(DiskImageWizard.ORDER_PRODOS);
-				wizard.setSize(FormattedDisk.APPLE_800KB_2IMG_DISK);
+				wizard.setSize(Disk.APPLE_800KB_2IMG_DISK);
 				return new DiskImageNamePane(parent, wizard);
 			case DiskImageWizard.FORMAT_PASCAL:
 			case DiskImageWizard.FORMAT_PRODOS:
@@ -94,39 +96,33 @@ public class DiskImageFormatPane extends WizardPane {
 		control.setLayout(layout);
 		Label label = new Label(control, SWT.WRAP);
 		label.setText(
-			"Please choose the operating system with which to format\nthe disk image:");
+			textBundle.get("DiskImageFormatPrompt")); //$NON-NLS-1$
 		RowLayout subpanelLayout = new RowLayout(SWT.VERTICAL);
 		subpanelLayout.justify = true;
 		subpanelLayout.spacing = 3;
 		Composite buttonSubpanel = new Composite(control, SWT.NULL);
 		buttonSubpanel.setLayout(subpanelLayout);
-		createRadioButton(buttonSubpanel, "DOS 3.3", DiskImageWizard.FORMAT_DOS33,
-			"This is Apple's DOS 3.3 format.  The disk will automatically be\n"
-			+ "sized at 140K.");
-		createRadioButton(buttonSubpanel, "UniDOS", DiskImageWizard.FORMAT_UNIDOS,
-			"UniDOS was created to allow DOS 3.3 to operate with 800K disk\n"
-			+ "drives.  The disk will default to 800K.");
-		createRadioButton(buttonSubpanel, "OzDOS", DiskImageWizard.FORMAT_OZDOS,
-			"OzDOS was created to allow DOS 3.3 to operate with 800K disk\n"
-			+ "drives.  The disk will default to 800K.");
-		createRadioButton(buttonSubpanel, "ProDOS", DiskImageWizard.FORMAT_PRODOS,
-			"ProDOS was (is?) Apple's professional DOS for the Apple ][ series\n"
-			+ "of computers. ProDOS allows subdirectories and can use devices\n"
-			+ "up to 32MB in size. You will be presented with image sizing\n"
-			+ "options from the 140K disk to a 32MB hard disk.");
-		createRadioButton(buttonSubpanel, "Pascal", DiskImageWizard.FORMAT_PASCAL,
-			"Apple Pascal formatted disks are part of the Pascal environment.\n"
-			+ "Early implementations of Pascal only allowed 140K volumes, but\n"
-			+ "later versions allowed 800K volumes (and possibly more). You\n"
-			+ "will be presented with options for 140K or 800K.");
-		createRadioButton(buttonSubpanel, "RDOS 2.1", DiskImageWizard.FORMAT_RDOS,
-			"RDOS was created by (or for) SSI to protected their games. The\n"
-			+ "original format appears to be a 13 sector disk. Most disk images\n"
-			+ "that I've seen have been mapped onto a 16 sector disk (leaving 3\n"
-			+ "sectors of each track unused.  The only image size RDOS supports\n"
-			+ "is 140K.");
-		createRadioButton(buttonSubpanel, "CP/M", DiskImageWizard.FORMAT_CPM,
-			"CP/M for the Apple computer.");
+		createRadioButton(buttonSubpanel, textBundle.get("Dos"),  //$NON-NLS-1$
+			DiskImageWizard.FORMAT_DOS33,
+			textBundle.get("DiskImageFormatDosTooltip")); //$NON-NLS-1$
+		createRadioButton(buttonSubpanel, textBundle.get("Unidos"),  //$NON-NLS-1$
+			DiskImageWizard.FORMAT_UNIDOS,
+			textBundle.get("DiskImageFormatUnidosTooltip")); //$NON-NLS-1$
+		createRadioButton(buttonSubpanel, textBundle.get("Ozdos"),  //$NON-NLS-1$
+			DiskImageWizard.FORMAT_OZDOS, 
+			textBundle.get("DiskImageFormatOzdosTooltip")); //$NON-NLS-1$
+		createRadioButton(buttonSubpanel, textBundle.get("Prodos"),  //$NON-NLS-1$
+			DiskImageWizard.FORMAT_PRODOS, 
+			textBundle.get("DiskImageFormatProdosTooltip")); //$NON-NLS-1$
+		createRadioButton(buttonSubpanel, textBundle.get("Pascal"),  //$NON-NLS-1$
+			DiskImageWizard.FORMAT_PASCAL, 
+			textBundle.get("DiskImageFormatPascalTooltip")); //$NON-NLS-1$
+		createRadioButton(buttonSubpanel, textBundle.get("Rdos"),  //$NON-NLS-1$
+			DiskImageWizard.FORMAT_RDOS, 
+			textBundle.get("DiskImageFormatRdosTooltip")); //$NON-NLS-1$
+		createRadioButton(buttonSubpanel, textBundle.get("Cpm"),  //$NON-NLS-1$
+			DiskImageWizard.FORMAT_CPM, 
+			textBundle.get("DiskImageFormatCpmTooltip")); //$NON-NLS-1$
 		control.pack();
 	}
 	/**
@@ -141,7 +137,7 @@ public class DiskImageFormatPane extends WizardPane {
 		button.setToolTipText(helpText);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				wizard.setFormat(format);
+				getWizard().setFormat(format);
 			}
 		});
 	}
@@ -150,5 +146,9 @@ public class DiskImageFormatPane extends WizardPane {
 	 */
 	public void dispose() {
 		control.dispose();
+	}
+	
+	protected DiskImageWizard getWizard() {
+		return wizard;
 	}
 }
