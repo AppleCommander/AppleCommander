@@ -64,6 +64,7 @@ public class SwtAppleCommander implements Listener {
 		imageManager = new ImageManager(display);
 		SwtAppleCommander application = new SwtAppleCommander();
 		Shell shell = application.open(display);
+		shell.forceActive();
 		
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) display.sleep();
