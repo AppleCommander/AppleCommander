@@ -36,6 +36,8 @@ o Add the ability to change physical order too (DOS <=> ProDOS <=> Nibble)
   on 140KB images.
 
 --- FUTURE 1.3.x ---
+o BUG: Import of binary file does not set starting address.
+o MISSING FEATURE: Unable to import a RAW binary image.
 o Compile of BASIC programs
 o Create subdirectories as appropriate (ProDOS).
 o Enhance the BASIC compiler with a few more commands...
