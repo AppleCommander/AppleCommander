@@ -875,7 +875,7 @@ public class DiskExplorerTab {
 			}
 		});
 		item = new ToolItem(toolBar, SWT.SEPARATOR);
-
+		
 		item = new ToolItem(toolBar, SWT.CHECK);
 		item.setImage(imageManager.getDeletedFilesIcon());
 		item.setText("De&leted");
@@ -930,6 +930,14 @@ public class DiskExplorerTab {
 				}
 			}
 		});
+		item = new ToolItem(toolBar, SWT.SEPARATOR);
+
+		item = new ToolItem(toolBar, SWT.PUSH);
+		item.setImage(imageManager.getCompileIcon());
+		item.setText("Compile");
+		item.setToolTipText("Compile a BASIC program");
+		item.setEnabled(false);
+		//FIXME - need a listener
 		item = new ToolItem(toolBar, SWT.SEPARATOR);
 
 		deleteToolItem = new ToolItem(toolBar, SWT.PUSH);
