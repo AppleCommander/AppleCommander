@@ -19,17 +19,22 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
+import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.FormattedDisk.DiskInformation;
+
 import java.util.Iterator;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.FormattedDisk.DiskInformation;
 
 /**
  * Build the Disk Info tab for the Disk Window.
@@ -41,16 +46,40 @@ public class DiskInfoTab {
 	/**
 	 * Create the DISK INFO tab.
 	 */
-	public DiskInfoTab(CTabFolder tabFolder, FormattedDisk disk) {
+	public DiskInfoTab(CTabFolder tabFolder, FormattedDisk[] disks) {
 		CTabItem ctabitem = new CTabItem(tabFolder, SWT.NULL);
-		if (disk.getLogicalDiskNumber() > 0) {
-			ctabitem.setText("Disk Info #" + disk.getLogicalDiskNumber());
-		} else {
-			ctabitem.setText("Disk Info");
-		}
+		ctabitem.setText("Disk Info");
 		
-		Table table = new Table(tabFolder, SWT.FULL_SELECTION);
-		ctabitem.setControl(table);
+		ScrolledComposite scrolledComposite = new ScrolledComposite(
+			tabFolder, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
+		scrolledComposite.setExpandHorizontal(true);
+		scrolledComposite.setExpandVertical(true);
+		ctabitem.setControl(scrolledComposite);
+		
+		Composite composite = new Composite(scrolledComposite, SWT.NONE);
+		if (disks.length > 1) {
+			RowLayout layout = new RowLayout(SWT.VERTICAL);
+			layout.wrap = false;
+			composite.setLayout(layout);
+			for (int i=0; i<disks.length; i++) {
+				Label label = new Label(composite, SWT.NULL);
+				label.setText(disks[i].getDiskName());
+				buildDiskInfoTable(disks[i], composite);
+			}
+		} else {
+			composite.setLayout(new FillLayout());
+			buildDiskInfoTable(disks[0], composite);
+		}
+		composite.pack();
+		scrolledComposite.setContent(composite);
+		scrolledComposite.setMinSize(
+			composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+	}
+	/**
+	 * Build the table describing the given disk.
+	 */
+	public Table buildDiskInfoTable(FormattedDisk disk, Composite composite) {
+		Table table = new Table(composite, SWT.FULL_SELECTION);
 		table.setHeaderVisible(true);
 		TableColumn column = new TableColumn(table, SWT.LEFT);
 		column.setResizable(true);
@@ -68,7 +97,7 @@ public class DiskInfoTab {
 			item = new TableItem(table, SWT.NULL);
 			item.setText(new String[] { diskinfo.getLabel(), diskinfo.getValue() });
 		}
-		
+		return table;
 	}
 	/**
 	 * Dispose of resources.
