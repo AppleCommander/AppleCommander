@@ -19,6 +19,10 @@
  */
 package com.webcodepro.applecommander.ui.swt.util;
 
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.graphics.FontMetrics;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Shell;
 
 /**
@@ -37,5 +41,24 @@ public class SwtUtil {
 		int y = parent.getLocation().y +
 			(parent.getSize().y - child.getSize().y) / 2;
 		child.setLocation(x,y);
+	}
+
+	/**
+	 * Setup some sensible paging information.
+	 */
+	public static void setupPagingInformation(ScrolledComposite composite) {
+		GC gc = new GC(composite);
+		FontMetrics fontMetrics = gc.getFontMetrics();
+		gc.dispose();
+		int fontHeight = fontMetrics.getHeight();
+		int fontWidth = fontMetrics.getAverageCharWidth();
+		Rectangle clientArea = composite.getClientArea();
+		int lines = clientArea.height / fontHeight;
+		int pageHeight = lines * fontHeight;
+		int pageWidth = clientArea.width - fontWidth; 
+		composite.getVerticalBar().setIncrement(fontHeight);
+		composite.getVerticalBar().setPageIncrement(pageHeight);
+		composite.getHorizontalBar().setIncrement(fontWidth);
+		composite.getHorizontalBar().setPageIncrement(pageWidth);
 	}
 }
