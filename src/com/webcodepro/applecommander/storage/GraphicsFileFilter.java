@@ -50,6 +50,7 @@ public class GraphicsFileFilter implements FileFilter {
 	public static final int MODE_HGR_COLOR = 2;
 	public static final int MODE_DHR_BLACK_AND_WHITE = 3;
 	public static final int MODE_DHR_COLOR = 4;
+	public static final int MODE_SHR = 5;
 	
 	private String extension;
 	private int mode = MODE_HGR_COLOR;
@@ -119,32 +120,47 @@ public class GraphicsFileFilter implements FileFilter {
 			image = new BufferedImage(280, 192, BufferedImage.TYPE_INT_RGB);
 		} else if (isDoubleHiresMode()) {
 			image = new BufferedImage(560, 192*2, BufferedImage.TYPE_INT_RGB);
+		} else if (isSuperHiresMode()) {
+			image = new BufferedImage(640, 400, BufferedImage.TYPE_INT_RGB);
 		} else {
 			return new byte[0];
 		}
-		for (int y=0; y<192; y++) {
-			int base = (			// odd notation - bit value shifted right * hex value
-				((y & 0x7) << 10)			// 00000111 * 0x0400
-				| (y & 0x8) << 4			// 00001000 * 0x0080
-				| (y & 0x30) << 4			// 00110000 * 0x0100
-				| ((y & 0xc0) >> 6) * 0x028	// 11000000 * 0x0028
-				) & 0x1fff;
-			byte[] lineData = new byte[40];
-			System.arraycopy(fileData, base, lineData, 0, 40);
-			if (isHiresBlackAndWhiteMode()) {
-				processHiresBlackAndWhiteLine(lineData, image, y);
-			} else if (isHiresColorMode()) {
-				processHiresColorLine(lineData, image, y);
-			} else if (isDoubleHiresMode()) {
-				byte[] lineData2 = new byte[40];
-				System.arraycopy(fileData, base + 0x2000, lineData2, 0, 40);
-				if (isDoubleHiresBlackAndWhiteMode()) {
-					processDoubleHiresBlackAndWhiteLine(lineData, lineData2, image, y);
-				} else if (isDoubleHiresColorMode()) {
-					processDoubleHiresColorLine(lineData, lineData2, image, y);
+		if (isSuperHiresMode()) {
+			int base = 0;
+			byte[] pallettes = new byte[0x200];
+			System.arraycopy(fileData, 0x7e00, pallettes, 0, pallettes.length);
+			for (int y=0; y<200; y++) {
+				byte[] lineData = new byte[160];
+				System.arraycopy(fileData, base, lineData, 0, lineData.length);
+				processSuperHiresLine(lineData, image, y, 
+					fileData[0x7d00+y], pallettes);
+				base+= lineData.length;
+			}
+		} else {
+			for (int y=0; y<192; y++) {
+				int base = (			// odd notation - bit value shifted right * hex value
+					((y & 0x7) << 10)			// 00000111 * 0x0400
+					| (y & 0x8) << 4			// 00001000 * 0x0080
+					| (y & 0x30) << 4			// 00110000 * 0x0100
+					| ((y & 0xc0) >> 6) * 0x028	// 11000000 * 0x0028
+					) & 0x1fff;
+				byte[] lineData = new byte[40];
+				System.arraycopy(fileData, base, lineData, 0, 40);
+				if (isHiresBlackAndWhiteMode()) {
+					processHiresBlackAndWhiteLine(lineData, image, y);
+				} else if (isHiresColorMode()) {
+					processHiresColorLine(lineData, image, y);
+				} else if (isDoubleHiresMode()) {
+					byte[] lineData2 = new byte[40];
+					System.arraycopy(fileData, base + 0x2000, lineData2, 0, 40);
+					if (isDoubleHiresBlackAndWhiteMode()) {
+						processDoubleHiresBlackAndWhiteLine(lineData, lineData2, image, y);
+					} else if (isDoubleHiresColorMode()) {
+						processDoubleHiresColorLine(lineData, lineData2, image, y);
+					}
+				} else {
+					// oops...
 				}
-			} else {
-				// oops...
 			}
 		}
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -314,6 +330,75 @@ public class GraphicsFileFilter implements FileFilter {
 	}
 
 	/**
+	 * Given a specific line in the image, process it in super hires color
+	 * mode.
+	 * <p>
+	 * The color map varies depending upon the SCB value(s) and the pallettes
+	 * stored with the image.
+     * </pre>
+	 */
+	protected void processSuperHiresLine(byte[] lineData, 
+		BufferedImage image, int y, byte scb, byte[] pallettes) {
+		
+		int palletteNumber = (scb & 0x0f);
+		boolean fillMode = (scb & 0x20) != 0;
+		boolean mode320 = (scb & 0x80) == 0;
+		int width = mode320 ? 320 : 640;
+		int yPosition = y*2;
+		int lastColorValue = 0;
+
+		for (int x=0; x<width; x++) {
+			int colorNumber;
+			if (mode320) {
+				int offset = (x / 2);
+				int colorBits = (x % 2);
+				byte byt = lineData[offset];
+				if (colorBits == 1) {
+					colorNumber = (byt & 0x0f);
+				} else {
+					colorNumber = (byt & 0xf0) >> 4;
+				}
+			} else {
+				int offset = (x / 4);
+				int colorBits = (x % 4);
+				byte byt = lineData[offset];
+				switch (colorBits) {
+					case 0:	colorNumber = (byt & 0xc0) >> 6;
+								break;
+					case 1:	colorNumber = (byt & 0x30) >> 4;
+								break;
+					case 2:	colorNumber = (byt & 0x0c) >> 2;
+								break;
+					default:
+					case 3:	colorNumber = (byt & 0x03);
+								break;
+				}
+				colorNumber += 12 - (colorBits * 4);
+			}
+	
+			int colorValue;		
+			if (colorNumber == 0 && fillMode) {
+				colorValue = lastColorValue;
+			} else {
+				int colorWord = AppleUtil.getWordValue(pallettes, 
+					palletteNumber * 0x20 + colorNumber * 0x02);
+				colorValue = 
+					(colorWord & 0x0f00) << 12
+					| (colorWord & 0x00f0) << 8
+					| (colorWord & 0x000f) << 4;
+			}
+
+			int xPosition = mode320 ? x*2 : x;
+			image.setRGB(xPosition, yPosition, colorValue);
+			image.setRGB(xPosition, yPosition+1, colorValue);
+			if (mode320) {
+				image.setRGB(xPosition+1, yPosition, colorValue);
+				image.setRGB(xPosition+1, yPosition+1, colorValue);
+			}
+		}
+	}
+
+	/**
 	 * Give file extensions.
 	 */
 	public String[] getFileExtensions() {
@@ -387,16 +472,23 @@ public class GraphicsFileFilter implements FileFilter {
 	}
 	
 	/**
+	 * Indicates if this is configured for super hires 16 color mode.
+	 */
+	public boolean isSuperHiresMode() {
+		return mode == MODE_SHR;
+	}
+	
+	/**
 	 * Indicates if this is a hires mode.
 	 */
-	protected boolean isHiresMode() {
+	public boolean isHiresMode() {
 		return isHiresBlackAndWhiteMode() || isHiresColorMode();
 	}
 	
 	/**
 	 * Indicates if this is a double hires mode.
 	 */
-	protected boolean isDoubleHiresMode() {
+	public boolean isDoubleHiresMode() {
 		return isDoubleHiresBlackAndWhiteMode() || isDoubleHiresColorMode();
 	}
 }
