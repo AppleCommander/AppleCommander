@@ -21,6 +21,7 @@ package com.webcodepro.applecommander.test;
 
 import com.webcodepro.applecommander.storage.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.BinaryFileFilter;
+import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
@@ -158,7 +159,7 @@ public class DiskHelperTest extends TestCase {
 				System.out.println();
 			}
 			if (entry.isDirectory()) {
-				showFiles(entry.getFiles(), indent + "  ");
+				showFiles(((DirectoryEntry)entry).getFiles(), indent + "  ");
 			}
 		}
 	}

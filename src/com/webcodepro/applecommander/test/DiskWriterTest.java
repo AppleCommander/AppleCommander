@@ -19,6 +19,7 @@
  */
 package com.webcodepro.applecommander.test;
 
+import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.DosFormatDisk;
 import com.webcodepro.applecommander.storage.FileEntry;
@@ -309,7 +310,8 @@ public class DiskWriterTest extends TestCase {
 				System.out.println();
 			}
 			if (entry.isDirectory()) {
-				showFiles(entry.getFiles(), indent + "  ", showDeleted);
+				showFiles(((DirectoryEntry)entry).getFiles(), 
+					indent + "  ", showDeleted);
 			}
 		}
 	}
