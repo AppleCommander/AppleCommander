@@ -24,6 +24,7 @@ import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.Disk.FilenameFilter;
 import com.webcodepro.applecommander.ui.AppleCommander;
 import com.webcodepro.applecommander.ui.UserPreferences;
+import com.webcodepro.applecommander.ui.swt.wizard.comparedisks.CompareDisksWizard;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -238,6 +239,17 @@ public class SwtAppleCommander implements Listener {
 		item = new ToolItem(toolBar, SWT.SEPARATOR);
 
 		item = new ToolItem(toolBar, SWT.PUSH);
+		item.setImage(imageManager.get(ImageManager.ICON_COMPARE_DISKS));
+		item.setText("Compare...");
+		item.setToolTipText("Compare two disk images (Ctrl+E)");
+		item.addSelectionListener(new SelectionAdapter () {
+			public void widgetSelected(SelectionEvent e) {
+				compareDiskImages();
+			}
+		});
+		item = new ToolItem(toolBar, SWT.SEPARATOR);
+
+		item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(imageManager.get(ImageManager.ICON_ABOUT_APPLECOMMANDER));
 		item.setText("About");
 		item.setToolTipText("About AppleCommander (Ctrl+A)");
@@ -278,7 +290,19 @@ public class SwtAppleCommander implements Listener {
 				case 0x0f:		// CTRL+O
 					openFile();
 					break;
+				case 0x05:		// CTRL+E
+					compareDiskImages();
+					break;
 			}
 		}		
+	}
+
+	/**
+	 * Start the compare disks wizard.  The result of the comparison is actually
+	 * shown in the wizard, so this code is real simple.
+	 */	
+	public void compareDiskImages() {
+		CompareDisksWizard wizard = new CompareDisksWizard(shell, imageManager);
+		wizard.open();
 	}
 }
