@@ -19,14 +19,14 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
+import com.webcodepro.applecommander.storage.FormattedDisk;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Shell;
-
-import com.webcodepro.applecommander.storage.FormattedDisk;
 
 /**
  * Displays disk information on the screen.
@@ -41,9 +41,9 @@ public class DiskWindow {
 	private Shell shell;
 	private FormattedDisk[] disks;
 	
-	private DiskInfoTab[] diskInfoTabs;
+	private DiskInfoTab diskInfoTab;
 	private DiskMapTab[] diskMapTabs;
-	private DiskExplorerTab[] diskExplorerTabs;
+	private DiskExplorerTab diskExplorerTab;
 
 	/**
 	 * Construct the disk window.
@@ -69,16 +69,15 @@ public class DiskWindow {
 			});
 			
 		CTabFolder tabFolder = new CTabFolder(shell, SWT.BOTTOM);
+		diskExplorerTab = new DiskExplorerTab(tabFolder, disks, 
+			imageManager);
 		diskMapTabs = new DiskMapTab[disks.length];
-		diskInfoTabs = new DiskInfoTab[disks.length];
-		diskExplorerTabs = new DiskExplorerTab[disks.length];
 		for (int i=0; i<disks.length; i++) {
-			diskExplorerTabs[i] = new DiskExplorerTab(tabFolder, disks[i], 
-				imageManager);
 			diskMapTabs[i] = new DiskMapTab(tabFolder, disks[i]);
-			diskInfoTabs[i] = new DiskInfoTab(tabFolder, disks[i]);
 		}
+		diskInfoTab = new DiskInfoTab(tabFolder, disks);
 		tabFolder.setSelection(tabFolder.getItems()[0]);
+		
 		
 		shell.open();
 	}
@@ -89,12 +88,12 @@ public class DiskWindow {
 	private void dispose(DisposeEvent event) {
 		for (int i=0; i<disks.length; i++) {
 			diskMapTabs[i].dispose();
-			diskInfoTabs[i].dispose();
 		}
+		diskInfoTab.dispose();
 
 		disks = null;
 		diskMapTabs = null;
-		diskInfoTabs = null;
+		diskInfoTab = null;
 		System.gc();
 	}
 	
