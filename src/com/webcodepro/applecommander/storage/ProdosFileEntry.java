@@ -1,6 +1,6 @@
 /*
  * AppleCommander - An Apple ][ image utility.
- * Copyright (C) 2002 by Robert Greene
+ * Copyright (C) 2002-3 by Robert Greene
  * robgreene at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it 
@@ -485,5 +485,12 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 		byte[] fileEntry = readFileEntry();
 		setAuxiliaryType(fileEntry, address);
 		writeFileEntry(fileEntry);
+	}
+
+	/**
+	 * Indicates that this filetype can be compiled.
+	 */
+	public boolean canCompile() {
+		return getDisk().canCompile(getFiletype());
 	}
 }

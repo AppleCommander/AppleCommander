@@ -268,4 +268,11 @@ public class PascalFileEntry implements FileEntry {
 	public void setAddress(int address) {
 		// Does not apply.
 	}
+
+	/**
+	 * Indicates that this filetype can be compiled.
+	 */
+	public boolean canCompile() {
+		return false;
+	}
 }

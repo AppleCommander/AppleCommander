@@ -449,4 +449,11 @@ public class DosFileEntry implements FileEntry {
 	public void setAddress(int address) {
 		// FIXME - need to implement
 	}
+
+	/**
+	 * Indicates that this filetype can be compiled.
+	 */
+	public boolean canCompile() {
+		return isApplesoftBasicFile();
+	}
 }

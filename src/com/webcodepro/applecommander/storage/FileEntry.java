@@ -130,4 +130,14 @@ public interface FileEntry {
 	 * Set the address that this file loads at.
 	 */
 	public abstract void setAddress(int address);
+	
+	/**
+	 * Indicates that this filetype can be compiled.
+	 * Compile is a somewhat arbitrary term, as the code may be
+	 * assembled.
+	 * NOTE:  The current assumption is that the filetype is
+	 * AppleSoft.  This should be updated to include Integer BASIC,
+	 * assembly, and potentially other languages.
+	 */
+	public abstract boolean canCompile();
 }

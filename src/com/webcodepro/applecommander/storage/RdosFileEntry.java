@@ -1,6 +1,6 @@
 /*
  * AppleCommander - An Apple ][ image utility.
- * Copyright (C) 2002 by Robert Greene
+ * Copyright (C) 2002-3 by Robert Greene
  * robgreene at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it 
@@ -306,5 +306,14 @@ public class RdosFileEntry implements FileEntry {
 	 */
 	public void setAddress(int address) {
 		// FIXME - need to implement
+	}
+
+	/**
+	 * Indicates that this filetype can be compiled.
+	 * WARNING: RDOS programs most likely will not have the
+	 * DOS routines handled by the compiler.
+	 */
+	public boolean canCompile() {
+		return isApplesoftBasicFile();
 	}
 }
