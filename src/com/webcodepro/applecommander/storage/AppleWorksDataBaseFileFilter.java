@@ -100,7 +100,7 @@ public class AppleWorksDataBaseFileFilter implements FileFilter {
 	/**
 	 * Indicates a date entry.
 	 */
-	private static final int DATA_CONTROL_DATE = 0xc0;
+	private static final int SPECIAL_CONTROL_DATE = 0xc0;
 	/**
 	 * ASCII year code, like "84" ($38 $34).
 	 */
@@ -129,7 +129,7 @@ public class AppleWorksDataBaseFileFilter implements FileFilter {
 	/**
 	 * Indicates a time entry.
 	 */
-	private static final int DATA_CONTROL_TIME = 0xd4;
+	private static final int SPECIAL_CONTROL_TIME = 0xd4;
 	/** 
 	 * ASCII hour code. "A" means 00 (the hour after
 	 * midnight). "X" means 23, the hour before midnight.
@@ -195,39 +195,29 @@ public class AppleWorksDataBaseFileFilter implements FileFilter {
 			while (AppleUtil.getUnsignedByte(fileData[data]) != DATA_CONTROL_END) {
 				if (column > 0) printWriter.print(',');
 				int controlByte = AppleUtil.getUnsignedByte(fileData[data]);
-				switch (controlByte) {
-					case DATA_CONTROL_DATE:
-						printWriter.print('0' + (AppleUtil.getUnsignedByte(
-							fileData[data + DATE_YEAR_OFFSET]) - 0x30));
-						printWriter.print('0' + (AppleUtil.getUnsignedByte(
-							fileData[data + DATE_YEAR_OFFSET + 1]) - 0x30));
-						printWriter.print(months[AppleUtil.getUnsignedByte(
-							fileData[data + DATE_MONTH_OFFSET - 'A'])]);
-						printWriter.print('0' + (AppleUtil.getUnsignedByte(
-							fileData[data + DATE_DAY_OFFSET]) - 0x30));
-						printWriter.print('0' + (AppleUtil.getUnsignedByte(
-							fileData[data + DATE_DAY_OFFSET + 1]) - 0x30));
-						data+= DATE_LENGTH;
-						break;
-					case DATA_CONTROL_TIME:
-						printWriter.print(AppleUtil.getUnsignedByte(
-							fileData[data + TIME_HOUR_OFFSET]) - 'A');
-						printWriter.print('0' + AppleUtil.getUnsignedByte(
-							fileData[data + TIME_MINUTE_OFFSET]) - 0x30);
-						printWriter.print('0' + AppleUtil.getUnsignedByte(
-							fileData[data + TIME_MINUTE_OFFSET + 1]) - 0x30);
-						data+= TIME_LENGTH;
-						break;
-					default:
-						if (controlByte < DATA_CONTROL_SKIP) {
-							String string = AppleUtil.getProdosString(fileData, data);
-							data+= string.length() + 1;
+				if (controlByte < DATA_CONTROL_SKIP) {
+					String string = AppleUtil.getPascalString(fileData, data);
+					int specialChar = AppleUtil.getUnsignedByte(fileData[data+1]);
+					data+= string.length() + 1;
+					switch (specialChar) {
+						case SPECIAL_CONTROL_DATE:
+							convertDate(printWriter, string);
+							break;
+						case SPECIAL_CONTROL_TIME:
+							convertTime(printWriter, string);
+							break;
+						default:
 							printWriter.print('"');
 							printWriter.print(string);
 							printWriter.print('"');
-						} else {
-							// FIXME need to skip records..
-						}
+							break;
+					}
+				} else {
+					int repeats = controlByte - DATA_CONTROL_SKIP;
+					while (repeats > 0) {
+						printWriter.print("\",\"");
+						repeats--;
+					}
 				}
 				column++;
 			}
@@ -243,5 +233,38 @@ public class AppleWorksDataBaseFileFilter implements FileFilter {
 	 */
 	public String getSuggestedFileName(FileEntry fileEntry) {
 		return fileEntry.getFilename() + ".csv";
+	}
+	/**
+	 * Convert the date entry.
+	 */
+	protected void convertDate(PrintWriter printWriter, String date) {
+		if (date.length() != DATE_LENGTH) {
+			printWriter.print("[Invalid Date=");
+			printWriter.print(date);
+			printWriter.print("]");
+		}
+		
+		printWriter.print((char)('0' + (date.charAt(DATE_YEAR_OFFSET) - 0x30)));
+		printWriter.print((char)('0' + (date.charAt(DATE_YEAR_OFFSET + 1) - 0x30)));
+		printWriter.print('-');
+		printWriter.print(months[date.charAt(DATE_MONTH_OFFSET) - 'A'].substring(0,3));
+		printWriter.print('-');
+		printWriter.print((char)('0' + (date.charAt(DATE_DAY_OFFSET) - 0x30)));
+		printWriter.print((char)('0' + (date.charAt(DATE_DAY_OFFSET + 1) - 0x30)));
+	}
+	/**
+	 * Convert the time entry.
+	 */
+	protected void convertTime(PrintWriter printWriter, String time) {
+		if (time.length() != TIME_LENGTH) {
+			printWriter.print("[Invalid Time=");
+			printWriter.print(time);
+			printWriter.print("]");
+		}
+
+		printWriter.print(time.charAt(TIME_HOUR_OFFSET) - 'A');
+		printWriter.print(':');
+		printWriter.print((char)('0' + time.charAt(TIME_MINUTE_OFFSET) - 0x30));
+		printWriter.print((char)('0' + time.charAt(TIME_MINUTE_OFFSET + 1) - 0x30));
 	}
 }
