@@ -249,32 +249,79 @@ public class Disk {
 	}
 	
 	/**
-	 * Get the block from the disk image.
+	 * Read the block from the disk image.
 	 */
 	public byte[] readBlock(int block) {
+		byte[] data = new byte[BLOCK_SIZE];
+		System.arraycopy(readBytes(getOffset1(block), SECTOR_SIZE),
+			0, data, 0, SECTOR_SIZE);
+		System.arraycopy(readBytes(getOffset2(block), SECTOR_SIZE),
+			0, data, SECTOR_SIZE, SECTOR_SIZE);
+		return data;
+	}
+	
+	/**
+	 * Write the block to the disk image.
+	 */
+	public void writeBlock(int block, byte[] data) {
+		byte[] sector = new byte[SECTOR_SIZE];
+		System.arraycopy(data, 0, sector, 0, SECTOR_SIZE);
+		writeBytes(getOffset1(block), sector);
+		System.arraycopy(data, SECTOR_SIZE, sector, 0, SECTOR_SIZE);
+		writeBytes(getOffset2(block), sector);
+	}
+
+	/**
+	 * Compute the block offset into the disk image.
+	 * Note that for ProDOS blocks the offset is broken into two
+	 * pieces - depending of the format the image is in, they may
+	 * or may not be adjacent within the disk image itself.
+	 * This takes into account what type of format is being dealt
+	 * with.
+	 */
+	protected int getOffset1(int block) throws IllegalArgumentException {
 		if (block * BLOCK_SIZE > getPhysicalSize()) {
-			return null;
+			throw new IllegalArgumentException("The block (" + block 
+				+ ") does match the disk image size.");
+		} else if (isProdosOrder()) {
+			return block*BLOCK_SIZE;
+		} else if (isDosOrder()) {
+			int[] sectorMapping1 = { 0, 13, 11, 9, 7, 5, 3, 1 };
+			int track = block / 8;
+			int sectorOffset = block % 8;
+			int sector1 = sectorMapping1[sectorOffset];
+			int physicalLocation1 = (track * 16 + sector1) * SECTOR_SIZE;
+			return physicalLocation1;
 		} else {
-			if (isProdosOrder()) {
-				return readBytes(block*BLOCK_SIZE, BLOCK_SIZE);
-			} else if (isDosOrder()) {
-				int[] sectorMapping1 = { 0, 13, 11, 9, 7, 5, 3, 1 };
-				int[] sectorMapping2 = { 14, 12, 10, 8, 6, 4, 2, 15 };
-				int track = block / 8;
-				int sectorOffset = block % 8;
-				int sector1 = sectorMapping1[sectorOffset];
-				int sector2 = sectorMapping2[sectorOffset];
-				int physicalLocation1 = (track * 16 + sector1) * SECTOR_SIZE;
-				int physicalLocation2 = (track * 16 + sector2) * SECTOR_SIZE;
-				byte[] data = new byte[BLOCK_SIZE];
-				System.arraycopy(readBytes(physicalLocation1, SECTOR_SIZE),
-					0, data, 0, SECTOR_SIZE);
-				System.arraycopy(readBytes(physicalLocation2, SECTOR_SIZE),
-					0, data, SECTOR_SIZE, SECTOR_SIZE);
-				return data;
-			} else {
-				return null;
-			}
+			throw new IllegalArgumentException(
+				"Unknown disk format.");
+		}
+	}
+
+	/**
+	 * Compute the block offset into the disk image.
+	 * Note that for ProDOS blocks the offset is broken into two
+	 * pieces - depending of the format the image is in, they may
+	 * or may not be adjacent within the disk image itself.
+	 * This takes into account what type of format is being dealt
+	 * with.
+	 */
+	protected int getOffset2(int block) throws IllegalArgumentException {
+		if (block * BLOCK_SIZE > getPhysicalSize()) {
+			throw new IllegalArgumentException("The block (" + block 
+				+ ") does match the disk image size.");
+		} else if (isProdosOrder()) {
+			return block*BLOCK_SIZE + SECTOR_SIZE;
+		} else if (isDosOrder()) {
+			int[] sectorMapping2 = { 14, 12, 10, 8, 6, 4, 2, 15 };
+			int track = block / 8;
+			int sectorOffset = block % 8;
+			int sector2 = sectorMapping2[sectorOffset];
+			int physicalLocation2 = (track * 16 + sector2) * SECTOR_SIZE;
+			return physicalLocation2;
+		} else {
+			throw new IllegalArgumentException(
+				"Unknown disk format.");
 		}
 	}
 
@@ -337,7 +384,6 @@ public class Disk {
 		byte[] vtoc = readSector(17, 0);
 		return vtoc[0x01] == 17	// expect catalog to start on track 17
 			&& vtoc[0x02] == 15		// expect catalog to start on sector 15
-			&& vtoc[0x03] == 3		// expect DOS release number of 3
 			&& vtoc[0x27] == 122	// expect 122 tract/sector pairs per sector
 			&& vtoc[0x34] == 35		// expect 35 tracks per disk (140KB disk only!)
 			&& vtoc[0x35] == 16		// expect 16 sectors per disk (140KB disk only!)
