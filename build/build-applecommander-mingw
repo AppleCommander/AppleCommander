@@ -2,6 +2,9 @@
 
 APPLECOMMANDER_FILES=$(cd com; find . -name "*.java" -print | sed 's#^\./#com/#')
 
+OPTS="-static -O3 --no-bounds-checking -funroll-loops -finline-functions \
+	-fkeep-inline-functions -malign-double"
+
 echo "**********************************************"
 echo "**                  COMPILING               **"
 echo "**********************************************"
@@ -10,7 +13,7 @@ for i in $APPLECOMMANDER_FILES
 do
 	OBJ_FILE=$(echo $i | sed 's/\//_/g' | sed 's/\.java$/\.o/')
 	echo Compiling $i to $OBJ_FILE
-	gcj --classpath="swt.jar;AppleCommander.jar" -g0 -c -o $OBJ_FILE $i
+	gcj --classpath="swt.jar;AppleCommander.jar" $OPTS -g0 -c -o $OBJ_FILE $i
 done
 
 echo "**********************************************"
@@ -31,7 +34,7 @@ echo "**********************************************"
 echo "**                 BUILD EXE                **"
 echo "**********************************************"
 echo
-gcj -mwindows --classpath="swt.jar;AppleCommander.jar" \
+gcj -mwindows --classpath="swt.jar;AppleCommander.jar" $OPTS \
 	--main=com.webcodepro.applecommander.ui.AppleCommander \
 	-o AppleCommander *.o -L. -lswt
 
