@@ -32,6 +32,7 @@ import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
+import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 import com.webcodepro.applecommander.util.AppleUtil;
 
@@ -246,7 +247,11 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	public FileFilter getSuggestedFilter() {
 		if ("textfile".equals(getFiletype())) {
-			return new TextFileFilter();
+			if (getFilename().toLowerCase().endsWith(".text")) {
+				return new PascalTextFileFilter();
+			} else {
+				return new TextFileFilter();
+			}
 		} else if ("datafile".equals(getFiletype()) && getSize() >= 8184 && getSize() <= 8192) {
 			GraphicsFileFilter filter = new GraphicsFileFilter();
 			filter.setMode(GraphicsFileFilter.MODE_HGR_COLOR);
