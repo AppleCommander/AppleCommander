@@ -38,8 +38,8 @@ public class ExportWizard extends Wizard {
 	/**
 	 * Constructor for ExportWizard.
 	 */
-	public ExportWizard(Shell parent, Image logo, FormattedDisk disk) {
-		super(parent, logo, "Export Wizard");
+	public ExportWizard(Shell parent, ImageManager imageManager, FormattedDisk disk) {
+		super(parent, imageManager.getExportWizardLogo(), "Export Wizard");
 		this.disk = disk;
 	}
 	/**

@@ -55,8 +55,8 @@ public class DiskImageWizard extends Wizard {
 	/**
 	 * Constructor for ExportWizard.
 	 */
-	public DiskImageWizard(Shell parent, Image logo) {
-		super(parent, logo, "Disk Image Wizard");
+	public DiskImageWizard(Shell parent, ImageManager imageManager) {
+		super(parent, imageManager.getDiskImageWizardLogo(), "Disk Image Wizard");
 	}
 	/**
 	 * Create the initial display used in the wizard.
