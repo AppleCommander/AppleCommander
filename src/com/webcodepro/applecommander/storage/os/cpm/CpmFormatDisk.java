@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
@@ -527,5 +528,13 @@ public class CpmFormatDisk extends FormattedDisk {
 	 */
 	public void setFileData(FileEntry fileEntry, byte[] fileData) throws DiskFullException {
 		// TODO implement setFileData
+	}
+	
+	/**
+	 * Create a new DirectoryEntry.
+	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory()
+	 */
+	public DirectoryEntry createDirectory() throws DiskFullException {
+		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$
 	}
 }

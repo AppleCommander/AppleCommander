@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
@@ -340,7 +341,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * to writing.
 	 */
 	public boolean canCreateDirectories() {
-		return false;
+		return true;
 	}
 	
 	/**
@@ -978,5 +979,13 @@ public class ProdosFormatDisk extends FormattedDisk {
 	
 	protected ProdosVolumeDirectoryHeader getVolumeHeader() {
 		return volumeHeader;
+	}
+
+	/**
+	 * Create a new DirectoryEntry.
+	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory()
+	 */
+	public DirectoryEntry createDirectory() throws DiskFullException {
+		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$
 	}
 }

@@ -24,6 +24,8 @@ import java.util.List;
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
+import com.webcodepro.applecommander.storage.StorageBundle;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Implement directory functionality.
@@ -31,8 +33,8 @@ import com.webcodepro.applecommander.storage.FileEntry;
  * Date Created: Mar 2, 2003
  * @author Rob Greene
  */
-public class ProdosDirectoryEntry extends ProdosFileEntry 
-implements DirectoryEntry {
+public class ProdosDirectoryEntry extends ProdosFileEntry implements DirectoryEntry {
+	private TextBundle textBundle = StorageBundle.getInstance();
 	private ProdosSubdirectoryHeader subdirectoryHeader;
 	
 	/**
@@ -77,7 +79,7 @@ implements DirectoryEntry {
 	 * to writing.
 	 */
 	public boolean canCreateDirectories() {
-		return false;
+		return true;
 	}
 	
 	/**
@@ -87,5 +89,13 @@ implements DirectoryEntry {
 	 */
 	public boolean canCreateFile() {
 		return true;
+	}
+
+	/**
+	 * Create a new DirectoryEntry.
+	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory()
+	 */
+	public DirectoryEntry createDirectory() throws DiskFullException {
+		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$
 	}
 }

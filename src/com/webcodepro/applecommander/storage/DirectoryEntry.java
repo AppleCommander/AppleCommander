@@ -43,6 +43,11 @@ public interface DirectoryEntry {
 	 * Create a new FileEntry.
 	 */
 	public FileEntry createFile() throws DiskFullException;
+	
+	/**
+	 * Create a new DirectoryEntry.
+	 */
+	public DirectoryEntry createDirectory() throws DiskFullException;
 
 	/**
 	 * Identify if additional directories can be created.  This

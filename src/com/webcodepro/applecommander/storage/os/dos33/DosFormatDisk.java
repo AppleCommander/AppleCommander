@@ -22,6 +22,7 @@ package com.webcodepro.applecommander.storage.os.dos33;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
@@ -250,7 +251,7 @@ public class DosFormatDisk extends FormattedDisk {
 	 */
 	public String getDiskName() {
 		int volumeNumber = AppleUtil.getUnsignedByte(readVtoc()[0x06]);
-		return textBundle.get("DosFormatDisk.DiskVolume") + volumeNumber; //$NON-NLS-1$
+		return textBundle.format("DosFormatDisk.DiskVolume", volumeNumber); //$NON-NLS-1$
 	}
 
 	/**
@@ -735,5 +736,13 @@ public class DosFormatDisk extends FormattedDisk {
 	public void changeImageOrder(ImageOrder imageOrder) {
 		AppleUtil.changeImageOrderByTrackAndSector(getImageOrder(), imageOrder);
 		setImageOrder(imageOrder);
+	}
+
+	/**
+	 * Create a new DirectoryEntry.
+	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory()
+	 */
+	public DirectoryEntry createDirectory() throws DiskFullException {
+		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$
 	}
 }

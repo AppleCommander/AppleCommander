@@ -319,6 +319,17 @@ public class DiskExplorerTab {
 		item = new MenuItem(menu, SWT.SEPARATOR);
 
 		item = new MenuItem(menu, SWT.CASCADE);
+		item.setText(textBundle.get("CreateDirectoryMenuItem")); //$NON-NLS-1$
+		item.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				// FIXME need to create directory
+			}
+		});
+		item.setEnabled(disks[0].canCreateDirectories());
+		
+		item = new MenuItem(menu, SWT.SEPARATOR);
+
+		item = new MenuItem(menu, SWT.CASCADE);
 		item.setText(textBundle.get("ImportMenuItem")); //$NON-NLS-1$
 		item.setImage(imageManager.get(ImageManager.ICON_IMPORT_FILE));
 		item.addSelectionListener(new SelectionAdapter() {
