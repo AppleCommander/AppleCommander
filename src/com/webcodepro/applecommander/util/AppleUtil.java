@@ -28,7 +28,7 @@ import java.util.GregorianCalendar;
  * This class contains helper methods for dealing with Apple2 data.
  * <p>
  * Date created: Oct 5, 2002 4:16:16 PM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class AppleUtil {
 	/**
@@ -200,16 +200,16 @@ public class AppleUtil {
 	}
 	
 	/**
-	 * Extract a Pascal date from the buffer.<br>
-	 * Bits 0-3: month (1-12)<br>
-     * Bits 4-8: day (1-31)<br>
-     * Bits 9-15: year (0-99)
-	 */
+	  * Extract a Pascal date from the buffer.<br>
+	  * Bits 0-3: month (1-12)<br>
+	  * Bits 4-8: day (1-31)<br>
+	  * Bits 9-15: year (0-99)
+	  */
 	public static Date getPascalDate(byte[] buffer, int offset) {
 		int pascalDate = getWordValue(buffer, offset);
-		int month =  pascalDate & 0x000f;
-		int day =   (pascalDate & 0x00f0) >> 4;
-		int year =  (pascalDate & 0xff00) >> 8;
+		int month =  pascalDate & 0x000f - 1;
+		int day =   (pascalDate & 0x01f0) >> 4;
+		int year =  (pascalDate & 0xfe00) >> 9;
 		if (year < 50) year+= 2000;
 		if (year < 100) year+= 1900;
 		GregorianCalendar gc = new GregorianCalendar(year, month, day);
@@ -217,20 +217,20 @@ public class AppleUtil {
 	}
 	
 	/**
-	 * Set a Pascal data to the buffer.<br>
-	 * Bits 0-3: month (1-12)<br>
-     * Bits 4-8: day (1-31)<br>
-     * Bits 9-15: year (0-99)
-     */
+	  * Set a Pascal data to the buffer.<br>
+	  * Bits 0-3: month (1-12)<br>
+	  * Bits 4-8: day (1-31)<br>
+	  * Bits 9-15: year (0-99)
+	  */
 	public static void setPascalDate(byte[] buffer, int offset, Date date) {
 		GregorianCalendar gc = new GregorianCalendar();
 		gc.setTime(date);
-		int month = gc.get(GregorianCalendar.MONTH);
+		int month = gc.get(GregorianCalendar.MONTH) + 1;
 		int day = gc.get(GregorianCalendar.DAY_OF_MONTH);
 		int year = gc.get(GregorianCalendar.YEAR) % 100;
 		int pascalDate = (month & 0x000f)
-			| ((day << 4) & 0x00f0)
-			| ((year << 8) & 0xff00);
+			| ((day << 4) & 0x01f0)
+			| ((year << 9) & 0xfe00);
 		setWordValue(buffer, offset, pascalDate);
 	}
 
