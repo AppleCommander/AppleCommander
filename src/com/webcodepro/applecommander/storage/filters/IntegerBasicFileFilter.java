@@ -35,34 +35,36 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * [byte] length of line<br>
  * [word] line number<br>
  * [byte]* line data<br>
- * $01 end of line<br>
+ * $01 is end of line<br>
  * Repeat until end of program (line length of 0).
  * <p>
  * Tokens are $00 - $7F, some are duplicated.<br>
- * $01 = end of line.<br>
+ * $01 is end of line.<br>
  * $B0 - $B9 = signifies a number stored in a word.<br>
  * <p>
  * Date created: Nov 3, 2002 1:14:47 AM
  * @author Rob Greene
+ * Revised filter: Aug 8, 2004 12:45 PM
+ * @author John B. Matthews
  */
 public class IntegerBasicFileFilter implements FileFilter {
 	private static String[] tokens = {
-		null,	 	null, 		null,	": ",		"LOAD ",	"SAVE ",	null, 		"RUN ",	// $00-$07 //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-		null,		"DEL ",		", ",	"NEW ",		"CLR ",		"AUTO ",	null,		"MAN ",	// $08-$0F //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		"HIMEM: ",	"LOMEM: ",	"+",	"-",		"*",		"/",		"=",		"#",	// $10-$17 //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		">=",		">",		"<=",	"<>",		"<",		" AND ",	" OR ",		" MOD ",// $18-$1F //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		"^",		null,		"(",	",",		" THEN ",	" THEN ",	",",		",",	// $20-$27 //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
-		"\"",		"\"",		"(",	null,		null,		"(",		" PEEK ",	"RND ",	// $28-$2F //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		"SGN ",		"ABS ",		"PDL ",	null,		"(",		"+",		"-",		"NOT ",	// $30-$37 //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
-		"(",		"=",		"#",	" LEN(",	" ASC(",	" SCRN(",	",",		" (",	// $38-$3F //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		"$",		null,		"(",	",",		",",		";",		";",		";",	// $40-$47 //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
-		",",		",",		",",	"TEXT ",	"GR ",		"CALL ",	"DIM ",		"DIM ",	// $48-$4F //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		"TAB ",		"END ",		"INPUT ",	"INPUT ",	"INPUT ",	"FOR ",	"=",		" TO ",	// $50-$57 //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" STEP ",	"NEXT ",	",",	"RETURN ",	"GOSUB ",	"REM ",		"LET ",		"GOTO ",// $58-$5F //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		"IF ",		"PRINT ",	"PRINT ",	"PRINT ",	" POKE ",	",",	"COLOR= ",	"PLOT ",// $60-$67 //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		",",		"HLIN ",	",",	" AT ",		"VLIN ",	",",		" AT ",		"VTAB ",// $68-$6F //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		"=",		"=",		")",	null,		"LIST ",	",",		null,		"POP ",	// $70-$77 //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		null,		"NO DSP ",	"NO TRACE ",	"DSP ",	"DSP ",	"TRACE ",	"PR # ",	"IN # "	// $78-$7F //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+		null,	 	null, 		null,	":",		"LOAD ",	"SAVE ",	null, 		"RUN ",	// $00-$07
+		null,		"DEL ",		", ",	"NEW ",		"CLR ",		"AUTO ",	null,		"MAN ",	// $08-$0F
+		"HIMEM:",	"LOMEM:",	"+",	"-",		"*",		"/",		"=",		"#",	// $10-$17
+		">=",		">",		"<=",	"<>",		"<",		" AND ",	" OR ",		" MOD ",// $18-$1F
+		"^",		null,		"(",	",",		" THEN ",	" THEN ",	",",		",",	// $20-$27
+		"\"",		"\"",		"(",	null,		null,		"(",		" PEEK ",	" RND ",// $28-$2F
+		"SGN ",		"ABS ",		"PDL ",	null,		"(",		"+",		"-",		"NOT ",	// $30-$37
+		"(",		"=",		"#",	" LEN(",	" ASC(",	" SCRN(",	",",		"(",	// $38-$3F
+		"$",		null,		"(",	",",		",",		";",		";",		";",	// $40-$47
+		",",		",",		",",	"TEXT ",	"GR ",		"CALL ",	"DIM ",		"DIM ",	// $48-$4F
+		"TAB ",		"END ",		"INPUT ",	"INPUT ",	"INPUT ",	"FOR ",	"=",		" TO ",	// $50-$57
+		" STEP ",	"NEXT ",	",",	"RETURN ",	"GOSUB ",	"REM ",		"LET ",		"GOTO ",// $58-$5F
+		"IF ",		"PRINT ",	"PRINT ",	"PRINT ",	" POKE ",	",",	"COLOR= ",	"PLOT ",// $60-$67
+		",",		"HLIN ",	",",	" AT ",		"VLIN ",	",",		" AT ",		"VTAB ",// $68-$6F
+		"=",		"=",		")",	null,		"LIST ",	",",		null,		"POP ",	// $70-$77
+		null,		"NO DSP ",	"NO TRACE ",	"DSP ",	"DSP ",	"TRACE ",	"PR # ",	"IN # "	// $78-$7F
 	};
 
 	/**
@@ -84,40 +86,59 @@ public class IntegerBasicFileFilter implements FileFilter {
 		while (offset < fileData.length) {
 			int lineLength = AppleUtil.getUnsignedByte(fileData[offset]);
 			int lineNumber = AppleUtil.getWordValue(fileData, offset+1);
+			if (fileData[offset+lineLength-1] != 0x01) { // sanity check
+				printWriter.println("Listing error: possible embedded machine code.");
+				return byteArray.toByteArray();
+			}
 			boolean inComment = false;
+			boolean inLiteral = false;
 			printWriter.print(lineNumber);
 			printWriter.print(' ');
-			for (int i=offset+3; i<(offset+lineLength); i++) {
-				byte byt = fileData[i];
-				if ((byt & 0x80) != 0) {
-					int value = AppleUtil.getUnsignedByte(byt);
-					// numbers follow a number digit
-					if (!inComment && value >= 0xb1 && value <= 0xb9) {
-						int integer = AppleUtil.getWordValue(fileData, i+1);
-						printWriter.print(integer);
-						i+= 2;
-					} else {
-						char ch = (char)(byt&0x7f);
-						if (ch < 0x20) {	// handle control characters
-							printWriter.print("<CTRL-"); //$NON-NLS-1$
-							printWriter.print((char)('@' + ch));
-							printWriter.print(">"); //$NON-NLS-1$
-						} else {
-							printWriter.print(ch);
-						}
+			int i = offset + 3;
+			while (i < offset + lineLength) {	// do one line
+				byte b = fileData[i];
+				char c = (char)(b & 0x7f);
+				if (inComment) {
+					while (fileData[i] != 0x01) {	// until EOL
+						c = (char)(fileData[i] & 0x7f);
+						printWriter.print(c);
+						i++;
 					}
-				} else {
-					String token = tokens[byt];
+					inComment = false;
+				} else if (inLiteral) {
+					while (fileData[i] != 0x29) {	// until close quote
+						c = (char)(fileData[i] & 0x7f);
+						if (c < 0x20) {	// control
+							printWriter.print("<CTRL-" + (char)('@' + c) + ">");
+						} else {	// normal
+							printWriter.print(c);
+						}
+						i++;
+					}
+					inLiteral = false;
+				} else if ((b & 0x80) == 0) {	// token
+					String token = tokens[(int)b];
+					i++;
 					if (token != null) {
 						printWriter.print(token);
-						inComment = (byt == 0x5d);	// REM statement
-					} else {
-						// ignoring unknown tokens
-						// $00 and $01 seem to be valid; the others may or may not be valid
+						inComment = (b == 0x5d);	// REM statement
+						inLiteral = (b == 0x28);	// open quote
 					}
+				} else {	// non-token
+					if (c >= 0x30 && c <= 0x39) { // numeric constant
+						int n = AppleUtil.getWordValue(fileData, i + 1);
+						printWriter.print(n);
+						i += 3;
+					} else {	//identifier
+						while ((fileData[i] & 0x80) != 0) {
+							c = (char)(fileData[i] & 0x7f);
+							printWriter.print(c);
+							i++;
+						}
+					}				
 				}
 			}
-			offset+= lineLength;
+			offset += lineLength;
 			printWriter.println();
 		}
 		return byteArray.toByteArray();
@@ -128,8 +149,8 @@ public class IntegerBasicFileFilter implements FileFilter {
 	 */
 	public String getSuggestedFileName(FileEntry fileEntry) {
 		String fileName = fileEntry.getFilename().trim();
-		if (!fileName.toLowerCase().endsWith(".int")) { //$NON-NLS-1$
-			fileName = fileName + ".int"; //$NON-NLS-1$
+		if (!fileName.toLowerCase().endsWith(".int")) {
+			fileName = fileName + ".int";
 		}
 		return fileName;
 	}
