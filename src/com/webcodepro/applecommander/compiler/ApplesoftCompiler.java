@@ -37,7 +37,9 @@ import java.util.Properties;
 import java.util.Stack;
 
 /**
- * Compile the given file as an Applesoft file.
+ * Compile the given Applesoft file.  The result will be an assembly
+ * program (ultimately assembled).  This is not intended to be anything
+ * sophisticated.
  * <p>
  * Date created: Nov 2, 2002 10:04:10 PM
  * @author: Rob Greene
@@ -276,7 +278,7 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 				e.printStackTrace();
 				return null;
 			} catch (NoSuchMethodException e) {
-				// This is actually valid (during development anyway)
+				// FIXME: This is actually valid (during development anyway)
 				//e.printStackTrace();
 				return null;
 			}
@@ -603,97 +605,4 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 		}
 		return true;
 	}
-
-
-//	/**
-//	 * Process and individual token.
-//	 */
-//	protected void processToken(StringBuffer sourceAssembly, 
-//	StringBuffer sourceLine, ApplesoftToken token, ApplesoftTokenizer tokenizer) {
-//		String expr = null;
-//		switch (token.getTokenValue()) {
-//			case FOR:
-//						String loopVariable = evaluateExpression(sourceAssembly, sourceLine);
-//						if (!isFloatVariable(loopVariable)) {
-//							throw new IllegalArgumentException("FOR loop argument must be a float");
-//						}
-//						token = tokenizer.getNextToken();
-//						if (token.getTokenValue() != EQUALS) {
-//							throw new IllegalArgumentException("FOR requires =");
-//						}
-//						sourceLine.append(token.getTokenString());
-//						String startValue = evaluateExpression(sourceAssembly, sourceLine);
-//						token = tokenizer.getNextToken();
-//						if (token.getTokenValue() != TO) {
-//							throw new IllegalArgumentException("FOR requires TO");
-//						}
-//						sourceLine.append(token.getTokenString());
-//						String endValue = evaluateExpression(sourceAssembly, sourceLine);
-//						if (isFloatVariable(loopVariable)) {
-//							// FIXME: Assumes start/end are integer
-//							sourceAssembly.append("\tLDY ");
-//							sourceAssembly.append(startValue);
-//							sourceAssembly.append("\n");
-//							sourceAssembly.append("\tLDA ");
-//							sourceAssembly.append(startValue);
-//							sourceAssembly.append("\n");
-//							sourceAssembly.append("\tJSR $E2F2 ; GIVAYF\n");
-//							sourceAssembly.append("\tLDY #>");
-//							sourceAssembly.append(loopVariable);
-//							sourceAssembly.append("\n");
-//							sourceAssembly.append("\tLDX #<");
-//							sourceAssembly.append(loopVariable);
-//							sourceAssembly.append("\n");
-//							sourceAssembly.append("\tJSR $EB2B ; MOVMF\n");
-//						}
-//						break;
-//		}
-//	}
-//	
-//	
-//	protected String addIntegerConstant(String value) {
-//		String name = "INT" + value;
-//		if (!integerConstants.containsKey(name)) {
-//			integerConstants.put(name, value);
-//		}
-//		return name;
-//	}
-//
-//	protected String addStringConstant(String value) {
-//		String name = "STR" + stringConstants.size();
-//		if (stringConstants.containsValue(value)) {
-//			Iterator iterator = stringConstants.keySet().iterator();
-//			while (iterator.hasNext()) {
-//				String key = (String) iterator.next();
-//				String keyValue = (String) stringConstants.get(key);
-//				if (value.equals(keyValue)) {
-//					name = key;
-//					break;
-//				}
-//			}
-//		} else {
-//			stringConstants.put(name, value);
-//		}
-//		return name;
-//	}
-//	
-//	protected String addVariable(String variableName) {
-//		if (variableName.endsWith("$")) {
-//			variableName = "STR" + variableName;
-//			if (!stringVariables.contains(variableName)) {
-//				stringVariables.add(variableName);
-//			}
-//		} else if (variableName.endsWith("%")) {
-//			variableName = "INT" + variableName;
-//			if (!integerVariables.contains(variableName)) {
-//				integerVariables.add(variableName);
-//			}
-//		} else {
-//			variableName = "FP" + variableName;
-//			if (!floatVariables.contains(variableName)) {
-//				floatVariables.add(variableName);
-//			}
-//		}
-//		return variableName;
-//	}
 }
