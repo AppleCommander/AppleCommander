@@ -358,8 +358,7 @@ public class DosFileEntry implements FileEntry {
 	public void setFileData(byte[] data) throws DiskFullException {
 		if (isBinaryFile()) {
 			byte[] filedata = new byte[data.length + 4];
-			// FIXME - address is not handled for binary files at this time!
-			AppleUtil.setWordValue(filedata, 0, 0);
+			AppleUtil.setWordValue(filedata, 0, 0);		// Needs to be set via setAddress
 			AppleUtil.setWordValue(filedata, 2, data.length);
 			System.arraycopy(data, 0, filedata, 4, data.length);
 			disk.setFileData(this, filedata);
@@ -471,7 +470,15 @@ public class DosFileEntry implements FileEntry {
 	 * Set the address that this file loads at.
 	 */
 	public void setAddress(int address) {
-		// FIXME - need to implement
+		try {
+			byte[] rawdata = disk.getFileData(this);
+			AppleUtil.setWordValue(rawdata, 0, address);
+			disk.setFileData(this, rawdata);
+		} catch (DiskFullException e) {
+			// Should not be possible when the file isn't being modified!!
+			throw new IllegalStateException("Unable to set address for DosFileEntry [" 
+				+ getFilename() + "]");
+		}
 	}
 
 	/**
