@@ -48,6 +48,7 @@ public abstract class Wizard {
 	private Button nextButton;
 	private Button finishButton;
 	private Composite contentPane;
+	private ImageCanvas imageCanvas;
 	/**
 	 * Constructor for Wizard.
 	 */
@@ -76,7 +77,7 @@ public abstract class Wizard {
 		RowData rowData = new RowData();
 		rowData.width = logo.getImageData().width;
 		rowData.height = logo.getImageData().height;
-		ImageCanvas imageCanvas = new ImageCanvas(dialog, SWT.BORDER, logo, rowData);
+		imageCanvas = new ImageCanvas(dialog, SWT.BORDER, logo, rowData);
 
 		// Starting pane
 		rowData = new RowData();
@@ -163,6 +164,7 @@ public abstract class Wizard {
 			pane.dispose();
 			pane = null;
 		}
+		imageCanvas.dispose();
 		dialog.dispose();
 		backButton.dispose();
 		nextButton.dispose();
