@@ -141,7 +141,12 @@ public abstract class FormattedDisk extends Disk {
 	 * Retrieve a list of files.
 	 */
 	public abstract List getFiles();
-
+	
+	/**
+	 * Create a new FileEntry.
+	 */
+	public abstract FileEntry createFile() throws DiskFullException;
+	
 	/**
 	 * Identify the operating system format of this disk.
 	 */
