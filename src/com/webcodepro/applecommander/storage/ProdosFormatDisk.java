@@ -94,6 +94,47 @@ public class ProdosFormatDisk extends FormattedDisk {
 	}
 
 	/**
+	 * Create a FileEntry in the Volume Directory.
+	 */
+	public FileEntry createFile() throws DiskFullException {
+		return createFile(volumeHeader);
+	}
+	
+	/**
+	 * Create a FileEntry in the given directory.
+	 */
+	public FileEntry createFile(ProdosCommonDirectoryHeader directory) 
+		throws DiskFullException {
+			
+		int blockNumber = directory.getFileEntryBlock();
+		while (blockNumber != 0) {
+			byte[] block = readBlock(blockNumber);
+			int offset = 4;
+			while (offset+ProdosCommonEntry.ENTRY_LENGTH < BLOCK_SIZE) {
+				int value = AppleUtil.getUnsignedByte(block[offset]);
+				if (value == 0) {
+					ProdosFileEntry fileEntry = 
+						new ProdosFileEntry(this, blockNumber, offset);
+					fileEntry.setCreationDate(new Date());
+					fileEntry.setProdosVersion(0);
+					fileEntry.setMinimumProdosVersion(0);
+					fileEntry.setCanDestroy(true);
+					fileEntry.setCanRead(true);
+					fileEntry.setCanRename(true);
+					fileEntry.setCanWrite(true);
+					fileEntry.setSaplingFile();
+					fileEntry.setFilename("BLANK");
+					directory.incrementFileCount();
+					return fileEntry;
+				}
+				offset+= ProdosCommonEntry.ENTRY_LENGTH;
+			}
+			blockNumber = AppleUtil.getWordValue(block, 2);
+		}
+		throw new DiskFullException("Unable to allocate more space for another file!");
+	}
+
+	/**
 	 * Retrieve a list of files.
 	 * @see com.webcodepro.applecommander.storage.Disk#getFiles()
 	 */
@@ -310,21 +351,21 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * Indicates if this disk image can write data to a file.
 	 */
 	public boolean canWriteFileData() {
-		return false;	// FIXME - not implemented
+		return true;
 	}
 	
 	/**
 	 * Indicates if this disk image can create a file.
 	 */
 	public boolean canCreateFile() {
-		return false;	// FIXME - not implemented
+		return true;
 	}
 	
 	/**
 	 * Indicates if this disk image can delete a file.
 	 */
 	public boolean canDeleteFile() {
-		return false;	// FIXME - not implemented
+		return true;
 	}
 
 	/**
@@ -359,6 +400,41 @@ public class ProdosFormatDisk extends FormattedDisk {
 	}
 
 	/**
+	 * Free blocks used by a DosFileEntry.
+	 */
+	protected void freeBlocks(ProdosFileEntry prodosFileEntry) {
+		byte[] bitmap = readVolumeBitMap();
+		int block = prodosFileEntry.getKeyPointer();
+		if (block == 0) return;	// new entry
+		setBlockFree(bitmap,block);
+		if (prodosFileEntry.isSaplingFile()) {
+			freeBlocksInIndex(bitmap,block);
+		} else if (prodosFileEntry.isTreeFile()) {
+			byte[] masterIndexBlock = readBlock(block);
+			int offset = 0;
+			for (int i=0; i<0x100; i++) {
+				int indexBlockNumber = AppleUtil.getWordValue(
+					masterIndexBlock[i], masterIndexBlock[i+0x100]);
+				freeBlocksInIndex(bitmap,indexBlockNumber);
+			}
+		}
+		writeVolumeBitMap(bitmap);
+	}
+	
+	/**
+	 * Free the given index block and the data blocks it points to.
+	 */
+	private void freeBlocksInIndex(byte[] bitmap, int indexBlockNumber) {
+		setBlockFree(bitmap, indexBlockNumber);
+		byte[] indexBlock = readBlock(indexBlockNumber);
+		int offset = 0;
+		for (int i=0; i<0x100; i++) {
+			int blockNumber = AppleUtil.getWordValue(indexBlock[i], indexBlock[i+0x100]);
+			if (blockNumber > 0) setBlockFree(bitmap, blockNumber);
+		}
+	}
+
+	/**
 	 * Read file data from the given index block.
 	 * Note that block number 0 is an unused block.
 	 * @see #getFileData()
@@ -371,12 +447,121 @@ public class ProdosFormatDisk extends FormattedDisk {
 				int bytesToCopy = fileData.length - offset;
 				if (blockNumber != 0) System.arraycopy(blockData, 0, fileData, offset, bytesToCopy);
 				offset+= bytesToCopy;
+				break;
 			} else {
 				if (blockNumber != 0) System.arraycopy(blockData, 0, fileData, offset, blockData.length);
 				offset+= blockData.length;
 			}
 		}
 		return offset;
+	}
+
+	/**
+	 * Set the data associated with the specified ProdosFileEntry into sectors
+	 * on the disk.
+	 */
+	protected void setFileData(ProdosFileEntry fileEntry, byte[] fileData) 
+		throws DiskFullException {
+			
+		// compute free space and see if the data will fit!
+		int numberOfDataBlocks = (fileData.length + BLOCK_SIZE - 1) / BLOCK_SIZE;
+		int numberOfBlocks = numberOfDataBlocks;
+		if (numberOfBlocks > 1) {
+			numberOfBlocks+= (numberOfDataBlocks / 256) + 1;	// that's 128K
+			if (numberOfDataBlocks > 256) {
+				numberOfBlocks++;
+			}
+		}
+		if (numberOfBlocks > getFreeBlocks() + fileEntry.getBlocksUsed()) {
+			throw new DiskFullException("This file requires " + numberOfBlocks
+				+ " blocks but there are only " + getFreeBlocks() + " blocks"
+				+ " available on the disk.");
+		}
+		// free "old" data and just rewrite stuff...
+		freeBlocks(fileEntry);
+		byte[] bitmap = readVolumeBitMap();
+		int blockNumber = fileEntry.getKeyPointer();
+		if (blockNumber == 0) {
+			blockNumber = findFreeBlock(bitmap);
+		}
+		int indexBlockNumber = 0;
+		byte[] indexBlockData = null;
+		int masterIndexBlockNumber = 0;
+		byte[] masterIndexBlockData = new byte[BLOCK_SIZE];
+		int offset = 0;
+		int blockCount = 0;
+		while (offset < fileData.length) {
+			if (blockCount > 0) blockNumber = findFreeBlock(bitmap);
+			setBlockUsed(bitmap, blockNumber);
+			blockCount++;
+			byte[] blockData = new byte[BLOCK_SIZE];
+			int length = Math.min(BLOCK_SIZE, fileData.length - offset);
+			System.arraycopy(fileData,offset,blockData,0,length);
+			writeBlock(blockNumber, blockData);
+			if (numberOfDataBlocks > 1) {
+				if (indexBlockData == null) {	// sapling files
+					indexBlockNumber = findFreeBlock(bitmap);
+					indexBlockData = new byte[BLOCK_SIZE];
+					setBlockUsed(bitmap, indexBlockNumber);
+					blockCount++;
+					// This is only used for Tree files:
+					int position = (offset / (BLOCK_SIZE * 256));
+					byte low = (byte)(indexBlockNumber % 256);
+					byte high = (byte)(indexBlockNumber / 256);
+					masterIndexBlockData[position] = low;
+					masterIndexBlockData[position + 0x100] = high;
+				}
+				int position = (offset / BLOCK_SIZE);
+				byte low = (byte)(blockNumber % 256);
+				byte high = (byte)(blockNumber / 256);
+				indexBlockData[position] = low;
+				indexBlockData[position + 0x100] = high;
+				if (position == 255) {	// growing to a tree file
+					if (masterIndexBlockNumber == 0) {
+						masterIndexBlockNumber = findFreeBlock(bitmap);
+						setBlockUsed(bitmap, masterIndexBlockNumber);
+						blockCount++;
+					}
+					writeBlock(indexBlockNumber, indexBlockData);
+					indexBlockData = null;
+					indexBlockNumber = 0;
+				}
+			}
+			offset+= BLOCK_SIZE;
+		}
+		if (numberOfBlocks == 1) {
+			fileEntry.setKeyPointer(blockNumber);
+			fileEntry.setSeedlingFile();
+		} else if (numberOfBlocks <= 256) {
+			writeBlock(indexBlockNumber, indexBlockData);
+			fileEntry.setKeyPointer(indexBlockNumber);
+			fileEntry.setSaplingFile();
+		} else {
+			writeBlock(indexBlockNumber, indexBlockData);
+			writeBlock(masterIndexBlockNumber, masterIndexBlockData);
+			fileEntry.setKeyPointer(masterIndexBlockNumber);
+			fileEntry.setTreeFile();
+		}
+		fileEntry.setBlocksUsed(blockCount);
+		fileEntry.setEofPosition(fileData.length);
+		fileEntry.setLastModificationDate(new Date());
+		writeVolumeBitMap(bitmap);
+	}
+	
+	/**
+	 * Locate a free block in the Volume Bitmap.
+	 */
+	protected int findFreeBlock(byte[] volumeBitmap) throws DiskFullException {
+		int block = 1;
+		int blocksOnDisk = getBitmapLength();
+		while (block < blocksOnDisk) {
+			if (isBlockFree(volumeBitmap,block)) {
+				return block;
+			}
+			block++;
+		}
+		throw new DiskFullException(
+			"Unable to locate a free block in the Volume Bitmap!");
 	}
 	
 	/**
@@ -474,11 +659,11 @@ public class ProdosFormatDisk extends FormattedDisk {
 		volumeHeader.setCreationDate(new Date());
 		volumeHeader.setProdosVersion(0);
 		volumeHeader.setMinimumProdosVersion(0);
-		volumeHeader.setChanged(true);
-		volumeHeader.setDestroy(true);
-		volumeHeader.setRead(true);
-		volumeHeader.setRename(true);
-		volumeHeader.setWrite(true);
+		volumeHeader.setHasChanged(true);
+		volumeHeader.setCanDestroy(true);
+		volumeHeader.setCanRead(true);
+		volumeHeader.setCanRename(true);
+		volumeHeader.setCanWrite(true);
 		volumeHeader.setEntryLength();
 		volumeHeader.setEntriesPerBlock();
 		volumeHeader.setFileCount(0);
