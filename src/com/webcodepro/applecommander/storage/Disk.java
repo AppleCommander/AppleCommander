@@ -118,14 +118,12 @@ public class Disk {
 	 */
 	public Disk(String filename) throws IOException {
 		this.filename = filename;
-		InputStream input = new FileInputStream(filename);
+		File file = new File(filename);
+		InputStream input = new FileInputStream(file);
 		if (isCompressed()) {
 			input = new GZIPInputStream(input);
 		}
-		int diskSize = APPLE_140KB_DISK;
-		if (is2ImgOrder()) {
-			diskSize = APPLE_800KB_2IMG_DISK;
-		}
+		int diskSize = (int) file.length();
 		ByteArrayOutputStream diskImageByteArray = 
 			new ByteArrayOutputStream(diskSize);
 		byte[] data = new byte[1024];
@@ -159,15 +157,25 @@ public class Disk {
 	 * FormattedDisk object.  Returns null if none are
 	 * recognized.
 	 */
-	public FormattedDisk getFormattedDisk() {
+	public FormattedDisk[] getFormattedDisks() {
 		if (isProdosFormat()) {
-			return new ProdosFormatDisk(filename, diskImage);
+			return new FormattedDisk[]
+				{ new ProdosFormatDisk(filename, diskImage) };
+		} else if (isUniDosFormat()) {
+			return new FormattedDisk[] {
+				new UniDosFormatDisk(filename, diskImage, 
+									UniDosFormatDisk.UNIDOS_DISK_1),
+				new UniDosFormatDisk(filename, diskImage, 
+									UniDosFormatDisk.UNIDOS_DISK_2) };
 		} else if (isDosFormat()) {
-			return new DosFormatDisk(filename, diskImage);
+			return new FormattedDisk[]
+				{ new DosFormatDisk(filename, diskImage) };
 		} else if (isPascalFormat()) {
-			return new PascalFormatDisk(filename, diskImage);
+			return new FormattedDisk[]
+				{ new PascalFormatDisk(filename, diskImage) };
 		} else if (isRdosFormat()) {
-			return new RdosFormatDisk(filename, diskImage);
+			return new FormattedDisk[]
+				{ new RdosFormatDisk(filename, diskImage) };
 		}
 		return null;
 	}
@@ -393,22 +401,44 @@ public class Disk {
 	 */
 	public boolean isDosFormat() {
 		byte[] vtoc = readSector(17, 0);
-		return vtoc[0x01] == 17	// expect catalog to start on track 17
-			&& (
-				vtoc[0x02] == 15		// expect catalog to start on sector 15 (140KB disk only!)
-				||
-				vtoc[0x02] == 31		// expect catalog to start on sector 31 (800KB disk only!)
-				)
+		return getPhysicalSize() == APPLE_140KB_DISK
+			&& vtoc[0x01] == 17		// expect catalog to start on track 17
+			&& vtoc[0x02] == 15		// expect catalog to start on sector 15 (140KB disk only!)
 			&& vtoc[0x27] == 122	// expect 122 tract/sector pairs per sector
-			&& ((
-				vtoc[0x34] == 35		// expect 35 tracks per disk (140KB disk only!)
-				&& vtoc[0x35] == 16		// expect 16 sectors per disk (140KB disk only!)
-				) || (
-				vtoc[0x34] == 50		// expect 50 tracks per disk (800KB disk only!)
-				&& vtoc[0x35] == 32		// expect 32 sectors per disk (800KB disk only!)
-				))
+			&& vtoc[0x34] == 35		// expect 35 tracks per disk (140KB disk only!)
+			&& vtoc[0x35] == 16		// expect 16 sectors per disk (140KB disk only!)
 			&& vtoc[0x36] == 0		// bytes per sector (low byte)
 			&& vtoc[0x37] == 1;		// bytes per sector (high byte)
+	}
+
+	/**
+	 * Test the disk format to see if this is a UniDOS formatted
+	 * disk.  UniDOS creates two logical disks on an 800KB physical disk.
+	 */
+	public boolean isUniDosFormat() {
+		if (getPhysicalSize() != APPLE_800KB_DISK
+			&& getPhysicalSize() != APPLE_800KB_2IMG_DISK) {
+			return false;
+		}
+		byte[] vtoc1 = readSector(17, 0);	// logical disk #1
+		byte[] vtoc2 = readSector(67, 0);	// logical disk #2
+		return
+			// LOGICAL DISK #1
+			vtoc1[0x01] == 17		// expect catalog to start on track 17
+			&& vtoc1[0x02] == 31	// expect catalog to start on sector 31
+			&& vtoc1[0x27] == 122	// expect 122 tract/sector pairs per sector
+			&& vtoc1[0x34] == 50	// expect 50 tracks per disk
+			&& vtoc1[0x35] == 32	// expect 32 sectors per disk
+			&& vtoc1[0x36] == 0		// bytes per sector (low byte)
+			// LOGICAL DISK #2
+			&& vtoc2[0x37] == 1		// bytes per sector (high byte)
+			&& vtoc2[0x01] == 17	// expect catalog to start on track 17
+			&& vtoc2[0x02] == 31	// expect catalog to start on sector 31
+			&& vtoc2[0x27] == 122	// expect 122 tract/sector pairs per sector
+			&& vtoc2[0x34] == 50	// expect 50 tracks per disk
+			&& vtoc2[0x35] == 32	// expect 32 sectors per disk
+			&& vtoc2[0x36] == 0		// bytes per sector (low byte)
+			&& vtoc2[0x37] == 1;	// bytes per sector (high byte)
 	}
 	
 	/**
