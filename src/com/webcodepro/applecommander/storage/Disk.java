@@ -67,6 +67,8 @@ public class Disk {
 	
 	public static final int BLOCK_SIZE = 512;
 	public static final int SECTOR_SIZE = 256;
+	public static final int PRODOS_BLOCKS_ON_140KB_DISK = 280;
+	public static final int DOS33_SECTORS_ON_140KB_DISK = 560;
 	public static final int APPLE_140KB_DISK = 143360;
 	public static final int APPLE_140KB_NIBBLE_DISK = 232960;
 	public static final int APPLE_800KB_DISK = 819200;
@@ -104,7 +106,7 @@ public class Disk {
 			new FilenameFilter("140K DOS Ordered Images (*.do, *.dsk)", 
 				"*.do; *.dsk; *.do.gz; *.dsk.gz"),
 			new FilenameFilter("140K Nibbilized Images (*.nib)",
-				"*.nib, *.nib.gz"),
+				"*.nib; *.nib.gz"),
 			new FilenameFilter("140K ProDOS Ordered Images (*.po)", 
 				"*.po; *.po.gz"),
 			new FilenameFilter("800K ProDOS Ordered Images (*.2mg, *.2img)", 
@@ -244,6 +246,13 @@ public class Disk {
 	 */
 	public String getFilename() {
 		return filename;
+	}
+	
+	/**
+	 * Sets the filename.
+	 */
+	public void setFilename(String filename) {
+		this.filename = filename;
 	}
 	
 	/**
@@ -527,7 +536,7 @@ public class Disk {
 	/**
 	 * Set the physical ordering of the disk.
 	 */
-	public void setImageOrder(ImageOrder imageOrder) {
+	protected void setImageOrder(ImageOrder imageOrder) {
 		this.imageOrder = imageOrder;
 	}
 }
