@@ -51,11 +51,11 @@ public class DiskHelperTest extends TestCase {
 	}
 
 	public void testLoadDos33() throws IOException {
-		FormattedDisk disk = showDirectory("C:/My Apple2/Disks/DOS 3.3.po");
-		assertApplesoftFile(disk, "HELLO");
-		assertIntegerFile(disk, "ANIMALS");
-		assertTextFile(disk, "APPLE PROMS");
-		assertBinaryFile(disk, "BOOT13");
+		FormattedDisk[] disks = showDirectory("C:/My Apple2/Disks/DOS 3.3.po");
+		assertApplesoftFile(disks[0], "HELLO");
+		assertIntegerFile(disks[0], "ANIMALS");
+		assertTextFile(disks[0], "APPLE PROMS");
+		assertBinaryFile(disks[0], "BOOT13");
 	}
 
 	public void testLoadMaster() throws IOException {
@@ -67,10 +67,10 @@ public class DiskHelperTest extends TestCase {
 	}
 	
 	public void testLoadProdos() throws IOException {
-		FormattedDisk disk = showDirectory("C:/My Apple2/Disks/Prodos.dsk");
-		assertApplesoftFile(disk, "COPY.ME");
-		assertBinaryFile(disk, "SETTINGS");
-		assertBinaryFile(disk, "PRODOS");
+		FormattedDisk[] disks = showDirectory("C:/My Apple2/Disks/Prodos.dsk");
+		assertApplesoftFile(disks[0], "COPY.ME");
+		assertBinaryFile(disks[0], "SETTINGS");
+		assertBinaryFile(disks[0], "PRODOS");
 	}
 	
 	public void testLoadMarbleMadness() throws IOException {
@@ -90,11 +90,11 @@ public class DiskHelperTest extends TestCase {
 	}
 
 	public void testPhan2d1() throws IOException {
-		FormattedDisk disk = showDirectory("C:/My Apple2/Disks/phan2d1.dsk");
-		assertApplesoftFile(disk, "PHANTASIE II");
-		assertBinaryFile(disk, "TWN21");
-		assertTextFile(disk, "ITEM");
-		assertGraphicsFile(disk, "ICE DRAGON");
+		FormattedDisk[] disks = showDirectory("C:/My Apple2/Disks/phan2d1.dsk");
+		assertApplesoftFile(disks[0], "PHANTASIE II");
+		assertBinaryFile(disks[0], "TWN21");
+		assertTextFile(disks[0], "ITEM");
+		assertGraphicsFile(disks[0], "ICE DRAGON");
 	}
 
 	public void testPhan2d2() throws IOException {
@@ -110,29 +110,39 @@ public class DiskHelperTest extends TestCase {
 	}
 
 	public void testCavernsOfFreitag() throws IOException {
-		FormattedDisk disk = showDirectory("C:/My Apple2/Disks/CavernsOfFreitag.dsk");
-		assertGraphicsFile(disk, "TITLE.PIC");
+		FormattedDisk[] disks = showDirectory("C:/My Apple2/Disks/CavernsOfFreitag.dsk");
+		assertGraphicsFile(disks[0], "TITLE.PIC");
 	}
 	
-	protected FormattedDisk showDirectory(String imageName) throws IOException {
+	public void testUniDosD3110() throws IOException {
+		showDirectory("C:/My Apple2/Disks/UniDOS/D3110.dsk");
+	}
+
+	public void testUniDosD3151() throws IOException {
+		showDirectory("C:/My Apple2/Disks/UniDOS/D3151.dsk");
+	}
+	
+	protected FormattedDisk[] showDirectory(String imageName) throws IOException {
 		Disk disk = new Disk(imageName);
-		FormattedDisk formattedDisk = disk.getFormattedDisk();
-		System.out.println();
-		System.out.println(formattedDisk.getDiskName());
-		List files = formattedDisk.getFiles();
-		if (files != null) {
-			showFiles(files, "");
+		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+		for (int i=0; i<formattedDisks.length; i++) {
+			FormattedDisk formattedDisk = formattedDisks[i];
+			System.out.println();
+			System.out.println(formattedDisk.getDiskName());
+			List files = formattedDisk.getFiles();
+			if (files != null) {
+				showFiles(files, "");
+			}
+			System.out.println(formattedDisk.getFreeSpace() + " bytes free.");
+			System.out.println(formattedDisk.getUsedSpace() + " bytes used.");
+			System.out.println("This disk " + (formattedDisk.canHaveDirectories() ? "does" : "does not") +
+				" support directories.");
+			System.out.println("This disk is formatted in the " + formattedDisk.getFormat() + " format.");
+			System.out.println();
+			
+			showDiskUsage(formattedDisk);
 		}
-		System.out.println(formattedDisk.getFreeSpace() + " bytes free.");
-		System.out.println(formattedDisk.getUsedSpace() + " bytes used.");
-		System.out.println("This disk " + (formattedDisk.canHaveDirectories() ? "does" : "does not") +
-			" support directories.");
-		System.out.println("This disk is formatted in the " + formattedDisk.getFormat() + " format.");
-		System.out.println();
-		
-		showDiskUsage(formattedDisk);
-		
-		return formattedDisk;
+		return formattedDisks;
 	}
 	
 	protected void showFiles(List files, String indent) {
