@@ -24,8 +24,6 @@ import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DosFormatDisk;
 import com.webcodepro.applecommander.storage.FileEntry;
 
-import java.io.IOException;
-
 import junit.framework.TestCase;
 
 /**
@@ -45,7 +43,7 @@ public class ApplesoftCompilerTest extends TestCase {
 		junit.textui.TestRunner.run(ApplesoftCompilerTest.class);
 	}
 
-	public void testCompileColors() throws IOException {
+	public void testCompileColors() throws Exception {
 		DosFormatDisk disk = (DosFormatDisk) 
 			new Disk("C:/My Apple2/Disks/MASTER.DSK").getFormattedDisks()[0];
 		FileEntry fileEntry = disk.getFile("COLORS");
