@@ -30,16 +30,60 @@ import java.util.List;
  * @author: Rob Greene
  */
 public class DosFileEntry implements FileEntry {
-	private byte[] fileEntry;
+	/**
+	 * Indicates the length in bytes of the DOS file entry field.
+	 */
+	public static final int FILE_DESCRIPTIVE_ENTRY_LENGTH = 35;
+	/**
+	 * Holds the disk the FileEntry is attached to.
+	 */
 	private DosFormatDisk disk;
+	/**
+	 * Track of the FileEntry location.
+	 */
+	private int track;
+	/**
+	 * Sector of the FileEntry location.
+	 */
+	private int sector;
+	/**
+	 * Offset into sector of FileEntry location.
+	 */
+	private int offset;
 
 	/**
 	 * Constructor for DosFileEntry.
 	 */
-	public DosFileEntry(byte[] fileEntry, DosFormatDisk disk) {
+	public DosFileEntry(DosFormatDisk disk, int track, int sector, int offset) {
 		super();
-		this.fileEntry = fileEntry;
 		this.disk = disk;
+		this.track = track;
+		this.sector = sector;
+		this.offset = offset;
+	}
+	
+	/**
+	 * Read the FileEntry from the disk image.
+	 */
+	protected byte[] readFileEntry() {
+		byte[] sectorData = disk.readSector(track, sector);
+		byte[] fileEntry = new byte[FILE_DESCRIPTIVE_ENTRY_LENGTH];
+		System.arraycopy(sectorData, offset, fileEntry, 0, fileEntry.length);
+		return fileEntry;
+	}
+	
+	/**
+	 * Write the FileEntry to the disk image.
+	 */
+	protected void writeFileEntry(byte[] fileEntry) {
+		if (fileEntry.length != FILE_DESCRIPTIVE_ENTRY_LENGTH) {
+			throw new IllegalArgumentException(
+				"A DOS 3.3 file entry must be " + FILE_DESCRIPTIVE_ENTRY_LENGTH
+				+ " bytes long!");
+		}
+		byte[] sectorData = disk.readSector(track, sector);
+		System.arraycopy(fileEntry, 0, sectorData, offset, fileEntry.length);
+		disk.writeSector(track, sector, sectorData);
 	}
 
 	/**
@@ -47,12 +91,16 @@ public class DosFileEntry implements FileEntry {
 	 * @see com.webcodepro.applecommander.storage.FileEntry#getFilename()
 	 */
 	public String getFilename() {
-		byte[] filename = new byte[30];
-		System.arraycopy(fileEntry, 3, filename, 0, filename.length);
-		for (int i=0; i<filename.length; i++) {
-			filename[i] &= 0x7f;
-		}
-		return new String(filename).trim();
+		return AppleUtil.getString(readFileEntry(), 3, 30).trim();
+	}
+	
+	/**
+	 * Set the name of this file.
+	 */
+	public void setFilename(String filename) {
+		byte[] data = readFileEntry();
+		AppleUtil.setString(data, 3, filename.toUpperCase(), 30);
+		writeFileEntry(data);
 	}
 
 	/**
@@ -60,7 +108,7 @@ public class DosFileEntry implements FileEntry {
 	 * @see com.webcodepro.applecommander.storage.FileEntry#getFiletype()
 	 */
 	public String getFiletype() {
-		int filetype = (AppleUtil.getUnsignedByte(fileEntry[2]) & 0x7f);
+		int filetype = (AppleUtil.getUnsignedByte(readFileEntry()[2]) & 0x7f);
 		if (filetype == 0x00) return "T";
 		// the "^" operator is exclusive or - used to ensure only that
 		// bit was turned on.  if others are turned on, fall through and
@@ -76,11 +124,43 @@ public class DosFileEntry implements FileEntry {
 	}
 
 	/**
+	 * Set the filetype.
+	 */
+	public void setFiletype(String filetype) {
+		byte[] data = readFileEntry();
+		int type = 0x04;	// assume binary
+		if ("T".equals(filetype)) type = 0x00;
+		if ("I".equals(filetype)) type = 0x01;
+		if ("A".equals(filetype)) type = 0x02;
+		if ("B".equals(filetype)) type = 0x04;
+		if ("S".equals(filetype)) type = 0x08;
+		if ("R".equals(filetype)) type = 0x10;
+		if ("a".equals(filetype)) type = 0x20;
+		if ("b".equals(filetype)) type = 0x40;
+		type = (type | (data[2] & 0x80));
+		data[2] = (byte) type;
+		writeFileEntry(data);
+	}
+
+	/**
 	 * Identify if this file is locked.
 	 * @see com.webcodepro.applecommander.storage.FileEntry#isLocked()
 	 */
 	public boolean isLocked() {
-		return (fileEntry[2] & 0x80) != 0;
+		return (readFileEntry()[2] & 0x80) != 0;
+	}
+
+	/**
+	 * Set the lock indicator.
+	 */
+	public void setLocked(boolean lock) {
+		byte[] data = readFileEntry();
+		if (lock) {
+			data[2] = (byte)(AppleUtil.getUnsignedByte(data[2]) | 0x80);
+		} else {
+			data[2] = (byte)(AppleUtil.getUnsignedByte(data[2]) & 0x7f);
+		}
+		writeFileEntry(data);
 	}
 
 	/**
@@ -110,8 +190,16 @@ public class DosFileEntry implements FileEntry {
 	 * Compute the number of sectors used.
 	 */
 	public int getSectorsUsed() {
-		return AppleUtil.getUnsignedByte(fileEntry[0x21]) 
-			+ AppleUtil.getUnsignedByte(fileEntry[0x22])*16;
+		return AppleUtil.getWordValue(readFileEntry(), 0x21);
+	}
+	
+	/**
+	 * Set the number of sectors used.
+	 */
+	public void setSectorsUsed(int sectorsUsed) {
+		byte[] data = readFileEntry();
+		data[0x21] = (byte) sectorsUsed;
+		writeFileEntry(data);
 	}
 
 	/**
@@ -136,7 +224,18 @@ public class DosFileEntry implements FileEntry {
 	 * @see com.webcodepro.applecommander.storage.FileEntry#isDeleted()
 	 */
 	public boolean isDeleted() {
-		return AppleUtil.getUnsignedByte(fileEntry[0]) == 0xff;
+		return AppleUtil.getUnsignedByte(readFileEntry()[0]) == 0xff;
+	}
+	
+	/**
+	 * Delete this file.
+	 */
+	public void delete() {
+		disk.freeSectors(this);
+		byte[] fileEntry = readFileEntry();
+		fileEntry[0x20] = fileEntry[0x00];
+		fileEntry[0x00] = (byte)0xff;
+		writeFileEntry(fileEntry);
 	}
 
 	/**
@@ -180,14 +279,32 @@ public class DosFileEntry implements FileEntry {
 	 * Get the track of first track/sector list sector.
 	 */
 	public int getTrack() {
-		return AppleUtil.getUnsignedByte(fileEntry[0x00]);
+		return AppleUtil.getUnsignedByte(readFileEntry()[0x00]);
+	}
+
+	/**
+	 * Set the track of the first track/sector list sector.
+	 */
+	public void setTrack(int track) {
+		byte[] data = readFileEntry();
+		data[0x00] = (byte) track;
+		writeFileEntry(data);
 	}
 	
 	/**
 	 * Get the sector of first track/sector list sector.
 	 */
 	public int getSector() {
-		return AppleUtil.getUnsignedByte(fileEntry[0x01]);
+		return AppleUtil.getUnsignedByte(readFileEntry()[0x01]);
+	}
+	
+	/**
+	 * Set the sector of the first track/sector list sector.
+	 */
+	public void setSector(int sector) {
+		byte[] data = readFileEntry();
+		data[0x01] = (byte) sector;
+		writeFileEntry(data);
 	}
 
 	/**
@@ -209,6 +326,35 @@ public class DosFileEntry implements FileEntry {
 			filedata = rawdata;
 		}
 		return filedata;
+	}
+	
+	/**
+	 * Set the file data.  This is essentially the save operation.
+	 * Specifically, if the filetype is binary, the length and
+	 * address need to be set.  If the filetype is applesoft or
+	 * integer basic, the start address needs to be set.
+	 */
+	public void setFileData(byte[] data) throws DiskFullException {
+		if (isBinaryFile()) {
+			byte[] filedata = new byte[data.length + 4];
+			// FIXME - address is not handled for binary files at this time!
+			AppleUtil.setWordValue(filedata, 0, 0);
+			AppleUtil.setWordValue(filedata, 2, data.length);
+			System.arraycopy(data, 0, filedata, 4, data.length);
+			disk.setFileData(this, filedata);
+		} else if (isApplesoftBasicFile() || isIntegerBasicFile()) {
+			byte[] filedata = new byte[data.length + 2];
+			AppleUtil.setWordValue(filedata, 0, data.length);
+			System.arraycopy(data, 0, filedata, 2, data.length);
+			disk.setFileData(this, filedata);
+		} else if (isTextFile()) {
+			for (int i=0; i<data.length; i++) {
+				data[i] = (byte)(data[i] | 0x80);
+			}
+			disk.setFileData(this, data);
+		} else {
+			disk.setFileData(this, data);
+		}
 	}
 
 	/**
