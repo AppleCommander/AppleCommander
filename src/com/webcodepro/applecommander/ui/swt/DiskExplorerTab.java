@@ -362,7 +362,7 @@ public class DiskExplorerTab {
 		item.setImage(imageManager.get(ImageManager.ICON_VIEW_FILE));
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				viewFile();
+				viewFile(null);
 			}
 		});
 
@@ -417,7 +417,7 @@ public class DiskExplorerTab {
 		item.setText("Text");
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				viewFile();		// FIXME
+				viewFile(TextFileFilter.class);
 			}
 		});
 
@@ -425,7 +425,7 @@ public class DiskExplorerTab {
 		item.setText("Graphics");
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				viewFile();		// FIXME
+				viewFile(GraphicsFileFilter.class);
 			}
 		});
 		
@@ -781,7 +781,7 @@ public class DiskExplorerTab {
 				 * Double-click handler.
 				 */
 				public void widgetDefaultSelected(SelectionEvent event) {
-					viewFile();
+					viewFile(null);
 				}
 			});
 			TableColumn column = null;
@@ -1247,7 +1247,7 @@ public class DiskExplorerTab {
 		viewFileItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent event) {
 				if (event.detail != SWT.ARROW) {
-					viewFile();
+					viewFile(null);
 				}
 			}
 		});
@@ -1458,13 +1458,11 @@ public class DiskExplorerTab {
 	/**
 	 * Open up the view file window for the currently selected file.
 	 */
-	protected void viewFile() {
+	protected void viewFile(Class fileFilterClass) {
 		FileEntry fileEntry = getSelectedFileEntry();
 		if (fileEntry.isDeleted()) {
-			MessageBox box = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
-			box.setText("Unable to view a deleted file!");
-			box.setMessage("Sorry, you cannot view a deleted file.");
-			box.open();
+			showErrorDialogBox("Unable to view a deleted file!",
+				"Sorry, you cannot view a deleted file.", null);
 		} else if (fileEntry.isDirectory()) {
 			TreeItem item = findDirectoryItem(directoryTree.getSelection()[0].getItems(), fileEntry.getFilename(), 1, 0);
 			if (item != null) {
@@ -1473,9 +1471,46 @@ public class DiskExplorerTab {
 				changeCurrentFormat(currentFormat);		// minor hack
 			}
 		} else {	// Assuming a normal file!
-			FileViewerWindow window = new FileViewerWindow(shell, fileEntry, imageManager);
+			FileViewerWindow window = null;
+			FileFilter fileFilter = null;
+			try {
+				fileFilter = (FileFilter) fileFilterClass.newInstance();
+			} catch (NullPointerException ex) {
+				// This is expected
+			} catch (InstantiationException e) {
+				showSystemErrorDialogBox(e);
+			} catch (IllegalAccessException e) {
+				showSystemErrorDialogBox(e);
+			}
+			if (fileFilter != null) {
+				window = new FileViewerWindow(shell, fileEntry, imageManager, fileFilter);
+			} else {
+				window = new FileViewerWindow(shell, fileEntry, imageManager);
+			}
 			window.open();
 		}
+	}
+	/**
+	 * Display an error dialog box with the OK button.
+	 * Note that the Throwable message may be embedded in the displayed message.
+	 * TODO: Should this be a shared method somewhere?
+	 */
+	protected void showErrorDialogBox(String title, String message, Throwable throwable) {
+		MessageBox box = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
+		box.setText(title);
+		if (throwable != null) {
+			message.replaceAll("%MESSAGE%", throwable.getMessage());
+		}
+		box.setMessage(message);
+		box.open();
+	}
+	/**
+	 * Display a system-level error dialog box.
+	 */
+	protected void showSystemErrorDialogBox(Throwable throwable) {
+		showErrorDialogBox("A system error occurred!",
+			"A system error occurred.  The message given was '%MESSAGE%'.",
+			throwable);
 	}
 	/**
 	 * Locate a named item in the directory tree.
@@ -1521,7 +1556,7 @@ public class DiskExplorerTab {
 							exportFileWizard();
 							break;
 						case CTRL_V:	// View file
-							viewFile();
+							viewFile(null);
 							break;
 					}		
 				}
