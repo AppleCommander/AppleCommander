@@ -294,6 +294,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 			}
 		});
 		dialog.pack();
+		SwtUtil.center(wizard.getDialog(), dialog);
 		dialog.open();
 	}
 }
