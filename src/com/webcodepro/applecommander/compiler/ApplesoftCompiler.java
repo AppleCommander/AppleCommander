@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Stack;
 
 /**
  * Compile the given file as an Applesoft file.
@@ -67,6 +68,10 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 	 * Dynamically created map of commands to Methods.
 	 */
 	private Map commandMethods = new HashMap();
+	/**
+	 * Track FOR loop variables.
+	 */
+	private Stack loopVariables = new Stack();
 
 	/**
 	 * Constructor for ApplesoftCompiler.
@@ -149,7 +154,7 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 			}
 			sourceAssembly.append("LINE");
 			sourceAssembly.append(token.getLineNumber());
-			sourceAssembly.append(":\n");
+			sourceAssembly.append("\n");
 			do {
 				evaluateCommand();
 				token = peekToken();
@@ -165,33 +170,16 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 			sourceAssembly.setLength(0);
 		}
 		programCode.insert(0, buildUsedAddresses());
-		for (int i=0; i<variables.size(); i++) {
-			if (i == 0) {
-				sourceAssembly.append("\n");
-				sourceAssembly.append("* Variables:\n");
-			}
-			Variable variable = (Variable) variables.get(i);
-			if (variable.isConstantInteger()) {
-				addAssembly(variable.getName(), "DW", variable.getValue());
-			} else if (variable.isConstantFloat()) {
-				// FIXME
-			} else if (variable.isConstantString()) {
-				addAssembly(variable.getName(), "ASC", variable.getValue());
-				addAssembly(null, "HEX", "00");
-			} else if (variable.isTypeFloat()) {
-				addAssembly(variable.getName(), "DS", "5");
-			} else if (variable.isTypeInteger()) {
-				addAssembly(variable.getName(), "DS", "2");
-			} else if (variable.isTypeString()) {
-				// FIXME
-			}
-		}
-		programCode.append(sourceAssembly);
+		programCode.append(buildVariableSection());
 		sourceLine.setLength(0);
 		sourceAssembly.setLength(0);
 		return programCode.toString().getBytes();
 	}
 	
+	/**
+	 * Build a list of ROM and Zero-page addresses that are used
+	 * within this specific program.  
+	 */
 	protected StringBuffer buildUsedAddresses() {
 		StringBuffer buf = new StringBuffer();
 		if (usedAddresses.size() > 0) {
@@ -206,6 +194,40 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 			buf.append("\n");
 		}
 		return buf;
+	}
+	
+	/**
+	 * Build the variable section that is placed at the end of the
+	 * assembly listing.
+	 * <p>
+	 * <b>Warning:</b> This method re-uses the global sourceAssembly
+	 * variables since the addAssembly method is used to format the
+	 * code.
+	 */
+	protected StringBuffer buildVariableSection() {
+		sourceAssembly.setLength(0);
+		for (int i=0; i<variables.size(); i++) {
+			if (i == 0) {
+				sourceAssembly.append("\n");
+				sourceAssembly.append("* Variables:\n");
+			}
+			Variable variable = (Variable) variables.get(i);
+			if (variable.isConstantInteger()) {
+				addAssembly(variable.getName(), "DW", variable.getValue());
+			} else if (variable.isConstantFloat()) {
+				// FIXME
+			} else if (variable.isConstantString()) {
+				addAssembly(variable.getName(), "ASC", variable.getValue());
+				addAssembly(null, "HEX", "00");
+			} else if (variable.isTypeFloat()) {
+				addAssembly(variable.getName(), "HEX", "8400000000");	// = 0.0
+			} else if (variable.isTypeInteger()) {
+				addAssembly(variable.getName(), "DS", "2");
+			} else if (variable.isTypeString()) {
+				// FIXME
+			}
+		}
+		return sourceAssembly;
 	}
 	
 	protected void evaluateCommand() {
@@ -265,7 +287,7 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 	protected void addAssembly(String label, String mnemonic, String parameter) {
 		if (label != null) {
 			sourceAssembly.append(label);
-			sourceAssembly.append(":\n");
+//			sourceAssembly.append(":\n");
 		}
 		if (mnemonic != null) {
 			sourceAssembly.append(" ");
@@ -361,6 +383,27 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 		}
 	}
 	
+	protected Variable evaluateNumber() throws CompileException {
+		Variable variable = evaluateExpression();
+		if (variable.isNumber()) {
+			return variable;
+		}
+		throw new CompileException("A number is required.");
+	}
+	
+	/**
+	 * Answer with the line number label.  Used by GOTO and ON expr GOTO
+	 * statements.
+	 */
+	protected String getLineNumberLabel() throws CompileException {
+		ApplesoftToken token = nextToken();
+		if (token.isString() && isIntegerNumber(token.getStringValue())) {
+			return "LINE" + token.getStringValue();
+		}
+		throw new CompileException("Expecting a line number but found " 
+			+ token.toString());
+	}
+	
 	protected void addLoadByteValue(Variable variable, char register) throws CompileException {
 		if (variable.isConstantInteger()) {
 			addAssembly(null, "LD" + register, "#" + variable.getValue());
@@ -380,8 +423,8 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 
 	protected void addLoadWordValue(Variable variable, char registerHi, char registerLo) throws CompileException {
 		if (variable.isConstantInteger()) {
-			addAssembly(null, "LD" + registerHi, "#>" + variable.getName());
-			addAssembly(null, "LD" + registerLo, "#<" + variable.getName());
+			addAssembly(null, "LD" + registerHi, "#>" + variable.getValue());
+			addAssembly(null, "LD" + registerLo, "#<" + variable.getValue());
 		} else if (variable.isTypeInteger()) {
 			addAssembly(null, "LD" + registerHi, variable.getName() + "+1");
 			addAssembly(null, "LD" + registerLo, variable.getName());
@@ -403,12 +446,24 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 	
 	protected void addLoadFac(Variable variable) throws CompileException {
 		if (variable.isConstantFloat() || variable.isTypeFloat()) {
-			addAssembly(null, "LDY", "#>" + variable.getName());
-			addAssembly(null, "LDA", "#<" + variable.getName());
+			addLoadAddress(variable, 'Y', 'A');
 			addAssembly(null, "JSR","MOVFM");
+		} else if (variable.isConstantInteger() || variable.isTypeInteger()) {
+			addLoadWordValue(variable, 'A', 'Y');
+			addAssembly(null, "JSR", "GIVAYF");
 		} else {
 			throw new CompileException("Unable to convert to load FAC for: "
 				+ variable.getName());
+		}
+	}
+	
+	protected void addCopyFac(Variable variable) throws CompileException {
+		if (variable.isTypeFloat()) {
+			addLoadAddress(variable, 'Y', 'X');
+			addAssembly(null, "JSR", "MOVMF");
+		} else {
+			throw new CompileException(
+				"Internal Error: Can only copy floats to numeric variables.");
 		}
 	}
 	
@@ -453,6 +508,88 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 			// see if we should continue processing the print statement
 			token = peekToken();
 		} while (token != null && !token.isEndOfCommand());
+	}
+	
+	public void evaluateGOTO() throws CompileException {
+		addAssembly(null, "JMP", getLineNumberLabel());
+	}
+	
+	protected void checkSyntax(byte tokenValue, String expectedToken) throws CompileException {
+		ApplesoftToken token = nextToken();
+		if (token.getTokenValue() != tokenValue) {
+			// FIXME: Should this read token from master token list?
+			throw new CompileException("Syntax Error: Expecting " + expectedToken);
+		}
+	}
+
+	protected void checkSyntax(String stringValue, String expectedToken) throws CompileException {
+		ApplesoftToken token = nextToken();
+		if (!stringValue.equals(token.getStringValue())) {
+			// FIXME: Should this read token from master token list?
+			throw new CompileException("Syntax Error: Expecting " + expectedToken);
+		}
+	}
+	
+	public void evaluateFOR() throws CompileException {
+		Variable loopVariable = evaluateExpression();
+		if (!loopVariable.isTypeFloat()) {
+			throw new CompileException(
+				"Applesoft only allows floating-point FOR variables.");
+		}
+		checkSyntax(EQUALS, "=");
+		Variable startValue = evaluateNumber();
+		checkSyntax(TO, "TO");
+		Variable endValue = evaluateNumber();
+		// FIXME: Need to handle STEP
+		String loopName = "FOR" + loopVariables.size();
+		loopVariables.add(loopName);
+		addLoadFac(startValue);
+		addCopyFac(loopVariable);
+		addAssembly(loopName, null, null);
+		addLoadFac(endValue);
+		addLoadAddress(loopVariable, 'Y', 'A');
+		addAssembly(null, "JSR", "FCOMP");
+		addAssembly(null, "CMP", "#$FF");	// loopVariable > endValue
+		addAssembly(null, "BEQ", "END" + loopName);
+	}
+	
+	public void evaluateHPLOT() throws CompileException {
+		boolean firstCoordinate = true;
+		while (peekToken() != null && !peekToken().isEndOfCommand()) {
+			if (!firstCoordinate) {
+				checkSyntax(TO, "TO");
+			}
+			Variable coordX = evaluateNumber();
+			checkSyntax(",", ", (comma)");
+			Variable coordY = evaluateNumber();
+			if (firstCoordinate) {
+				addLoadWordValue(coordX, 'Y', 'X');
+				addLoadByteValue(coordY, 'A');
+				addAssembly(null, "JSR", "HPOSN");
+				firstCoordinate = false;
+			} else {
+				addLoadWordValue(coordX, 'X', 'A');
+				addLoadByteValue(coordY, 'Y');
+				addAssembly(null, "JSR", "HLIN");
+			}
+		}
+	}
+	
+	public void evaluateNEXT() throws CompileException {
+		// FIXME: Next ignores variable name given...
+		Variable variable = null;
+		if (!peekToken().isCommandSeparator()) {
+			// FIXME: This does not ensure that we only have a variable!
+			variable = evaluateExpression();
+		}
+		addAssembly(null, "LDY", "#1");
+		addAssembly(null, "JSR", "SNGFLT");
+		addLoadAddress(variable, 'Y', 'A');
+		addAssembly(null, "JSR", "FADD");
+		addCopyFac(variable);
+		String loopName = (String) loopVariables.pop();
+		addAssembly(null, "JMP", loopName);
+		addAssembly("END" + loopName, null, null);
 	}
 
 	/**
