@@ -2,12 +2,10 @@ THINGS TO DO
 ============
 This is the internal list of items that need to be done.
 
---- 1.2.0 ---
-* Import needs to refresh the file list.
-* Release code and tag the version.
-* Build and release to SourceForge.
-
 --- 1.2.1 ---
+TBD
+
+--- FUTURE ---
 o Import file specification should only allow address editing if the filetype
   requires it.
 o Import from right-click menu needs to be enabled.
@@ -24,4 +22,11 @@ o HDV disks are not always created to their full capacity.  AppleCommander, howe
 o Import could/should choose the filetype based upon the file extension for files
   being imported.
 o Allow group assignments in import.
-o Begin command-line tool.
+o Provide a Swing GUI so people are not "limited" to SWT.
+o Provide a command-line interface (scripting - ie, mass load).
+o Add drag-and-drop capability.
+o Compile into native executable (hopefully Linux and Windows).
+o Sector/Block editor.
+o Extract various additional document types (ie, other AppleWorks files).
+o Change disk format.
+
