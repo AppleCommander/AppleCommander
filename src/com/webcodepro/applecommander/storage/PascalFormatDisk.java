@@ -131,6 +131,14 @@ public class PascalFormatDisk extends FormattedDisk {
 		}
 		return list;
 	}
+
+	/**
+	 * Create a new FileEntry.
+	 */
+	public FileEntry createFile() throws DiskFullException {
+		// FIXME: Need to implement!
+		return null;
+	}
 	
 	/**
 	 * Read directory blocks.  These are always in blocks 2 - 5 and
@@ -425,5 +433,26 @@ public class PascalFormatDisk extends FormattedDisk {
 	 */
 	public int getLogicalDiskNumber() {
 		return 0;
+	}
+
+	/**
+	 * Returns a valid filename for the given filename.  This is somewhat
+	 * of a guess, but the Pascal filenames appear to have similar
+	 * restrictions as ProDOS.
+	 */
+	public String getSuggestedFilename(String filename) {
+		StringBuffer newName = new StringBuffer();
+		if (!Character.isLetter(filename.charAt(0))) {
+			newName.append('A');
+		}
+		int i=0;
+		while (newName.length() < 15 && i<filename.length()) {
+			char ch = filename.charAt(i);
+			if (Character.isLetterOrDigit(ch) || ch == '.') {
+				newName.append(ch);
+			}
+			i++;
+		}
+		return newName.toString().toUpperCase().trim();
 	}
 }
