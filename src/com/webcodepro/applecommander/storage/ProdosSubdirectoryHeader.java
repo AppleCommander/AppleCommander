@@ -31,15 +31,15 @@ public class ProdosSubdirectoryHeader extends ProdosCommonDirectoryHeader {
 	 * Constructor for ProdosSubdirectoryHeader.
 	 * @param fileEntry
 	 */
-	public ProdosSubdirectoryHeader(byte[] fileEntry) {
-		super(fileEntry);
+	public ProdosSubdirectoryHeader(ProdosFormatDisk disk, int block) {
+		super(disk, block);
 	}
 
 	/**
 	 * Return the name of this subdirectory.
 	 */
 	public String getSubdirectoryName() {
-		return AppleUtil.getProdosString(getFileEntry(), 0);
+		return AppleUtil.getProdosString(readFileEntry(), 0);
 	}
 	
 	/**
@@ -47,20 +47,20 @@ public class ProdosSubdirectoryHeader extends ProdosCommonDirectoryHeader {
 	 * file entry for this subdirectory.
 	 */
 	public int getParentPointer() {
-		return AppleUtil.getWordValue(getFileEntry(), 0x23);
+		return AppleUtil.getWordValue(readFileEntry(), 0x23);
 	}
 	
 	/**
 	 * Return the number of the file entry within the parent block.
 	 */
 	public int getParentEntry() {
-		return AppleUtil.getUnsignedByte(getFileEntry()[0x25]);
+		return AppleUtil.getUnsignedByte(readFileEntry()[0x25]);
 	}
 	
 	/**
 	 * Return the length of the parent entry.
 	 */
 	public int getParentEntryLength() {
-		return AppleUtil.getWordValue(getFileEntry(), 0x26);
+		return AppleUtil.getWordValue(readFileEntry(), 0x26);
 	}
 }
