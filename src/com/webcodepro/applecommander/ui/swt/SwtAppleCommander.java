@@ -122,13 +122,6 @@ public class SwtAppleCommander {
 		toolBar.dispose();
 		imageManager.dispose();
 	}
-
-	/**
-	 * Exits the main program.
-	 */
-	private void exit() {
-		shell.close();
-	}
 	
 	/**
 	 * Open a file.
