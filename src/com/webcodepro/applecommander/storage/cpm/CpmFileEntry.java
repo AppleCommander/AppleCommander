@@ -1,9 +1,11 @@
 package com.webcodepro.applecommander.storage.cpm;
 
+import com.webcodepro.applecommander.storage.BinaryFileFilter;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.TextFileFilter;
 import com.webcodepro.applecommander.util.AppleUtil;
 
 import java.text.NumberFormat;
@@ -11,13 +13,79 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Rob
+ * Support the CP/M file entry.  Note that this may actually contain references
+ * to multiple file entries via the extent counter.
+ * <p>
+ * @author Rob Greene
  */
 public class CpmFileEntry implements FileEntry {
 	/**
 	 * The standard CP/M file entry length.
 	 */
 	public static final int ENTRY_LENGTH = 0x20;
+	/**
+	 * The maximum number of extents per file entry record.
+	 */
+	public static final int MAX_EXTENTS_PER_ENTRY = 0x80;
+	/**
+	 * The number of bytes used if all records in an extent are filled.
+	 * (MAX_EXTENTS_PER_ENTRY * CPM_SECTOR_SIZE)
+	 */
+	public static final int ALL_RECORDS_FILLED_SIZE = 16384;
+	/**
+	 * The user number (UU) field is to distinguish multiple files with the
+	 * same filename.  This appears to be primarily with deleted files?
+	 */
+	public static final int USER_NUMBER_OFFSET = 0;
+	/**
+	 * Offset to beginning of the filename.
+	 */
+	public static final int FILENAME_OFFSET = 1;
+	/**
+	 * Filename length (excluding extension).
+	 */
+	public static final int FILENAME_LENGTH = 8;
+	/**
+	 * Offset to beginning of the filetype.
+	 */
+	public static final int FILETYPE_OFFSET = 9;
+	/**
+	 * Filetype length.
+	 */
+	public static final int FILETYPE_LENGTH = 3;
+	/**
+	 * Offset to the filetype "T1" entry.
+	 * Indicates read-only.
+	 */
+	public static final int FILETYPE_T1_OFFSET = FILETYPE_OFFSET;
+	/**
+	 * Offset to the filetype "T2" entry.
+	 * Indicates system or hidden file.
+	 */
+	public static final int FILETYPE_T2_OFFSET = FILETYPE_OFFSET+1;
+	/**
+	 * Offset to the filetype "T3" entry.
+	 * Backup bit (CP/M 3.1 and later).
+	 */
+	public static final int FILETYPE_T3_OFFSET = FILETYPE_OFFSET+2;
+	/**
+	 * Offset to the extent counter (EX) field.
+	 */
+	public static final int EXTENT_COUNTER_OFFSET = 0xc;
+	/**
+	 * Offset to the record count (RC) field.
+	 */
+	public static final int RECORD_COUNT_OFFSET = 0xf;
+	/**
+	 * Beginning of block allocations.
+	 */
+	public static final int ALLOCATION_OFFSET = 0x10;
+	/**
+	 * A short collection of known text-type files.
+	 */
+	public static final String[] TEXT_FILETYPES = {
+		"TXT", "ASM", "MAC", "DOC", "PRN", "PAS", "ME", "INC", "HLP"
+	};
 	/**
 	 * Reference to the disk this FileEntry is attached to.
 	 */
@@ -46,13 +114,28 @@ public class CpmFileEntry implements FileEntry {
 	 * Read the fileEntry bytes from the disk image.
 	 */
 	protected byte[] readFileEntry(int number) {
-		byte[] data = new byte[2048];
-		System.arraycopy(disk.readCpmBlock(0), 0, data, 0, 1024);
-		System.arraycopy(disk.readCpmBlock(1), 0, data, 1024, 1024);
+		byte[] data = new byte[2 * CpmFormatDisk.CPM_BLOCKSIZE];
+		System.arraycopy(disk.readCpmBlock(0), 0, data, 
+			0, CpmFormatDisk.CPM_BLOCKSIZE);
+		System.arraycopy(disk.readCpmBlock(1), 0, data, 
+			CpmFormatDisk.CPM_BLOCKSIZE, CpmFormatDisk.CPM_BLOCKSIZE);
 		byte[] entry = new byte[ENTRY_LENGTH];
 		int offset = ((Integer)offsets.get(number)).intValue();
 		System.arraycopy(data, offset, entry, 0, ENTRY_LENGTH);
 		return entry;
+	}
+	
+	/**
+	 * Write the fileEntry bytes back to the disk image.
+	 */
+	protected void writeFileEntry(int number, byte[] data) {
+		byte[] block = new byte[CpmFormatDisk.CPM_BLOCKSIZE];
+		System.arraycopy(data, 0, block, 
+			0, CpmFormatDisk.CPM_BLOCKSIZE);
+		disk.writeCpmBlock(0, block);
+		System.arraycopy(data, 0, block, 
+			CpmFormatDisk.CPM_BLOCKSIZE, CpmFormatDisk.CPM_BLOCKSIZE);
+		disk.writeCpmBlock(1, block);
 	}
 
 	/**
@@ -60,15 +143,23 @@ public class CpmFileEntry implements FileEntry {
 	 * @see com.webcodepro.applecommander.storage.FileEntry#getFilename()
 	 */
 	public String getFilename() {
-		return AppleUtil.getString(readFileEntry(0), 1, 8).trim();
+		return AppleUtil.getString(readFileEntry(0), 
+			FILENAME_OFFSET, FILENAME_LENGTH).trim();
 	}
 
 	/**
+	 * Set the filename.  Note that this assumes the file extension
+	 * is completely separate and does not validate characters that
+	 * are being set!
 	 * @see com.webcodepro.applecommander.storage.FileEntry#setFilename(java.lang.String)
 	 */
 	public void setFilename(String filename) {
-		// TODO Auto-generated method stub
-
+		for (int i=0; i<offsets.size(); i++) {
+			byte[] data = readFileEntry(i);
+			AppleUtil.setString(data, FILENAME_OFFSET, filename, 
+				FILENAME_LENGTH, false);
+			writeFileEntry(i, data);
+		}
 	}
 
 	/**
@@ -76,15 +167,26 @@ public class CpmFileEntry implements FileEntry {
 	 * @see com.webcodepro.applecommander.storage.FileEntry#getFiletype()
 	 */
 	public String getFiletype() {
-		return AppleUtil.getString(readFileEntry(0), 9, 3).trim();
+		return AppleUtil.getString(readFileEntry(0), 
+			FILETYPE_OFFSET, FILETYPE_LENGTH).trim();
 	}
 
 	/**
+	 * Set the filetype.  Note that the highbits need to be preserved.
 	 * @see com.webcodepro.applecommander.storage.FileEntry#setFiletype(java.lang.String)
 	 */
 	public void setFiletype(String filetype) {
-		// TODO Auto-generated method stub
-
+		for (int i=0; i<offsets.size(); i++) {
+			int T1 = getFileTypeT1(i);
+			int T2 = getFileTypeT2(i);
+			int T3 = getFileTypeT3(i);
+			byte[] data = readFileEntry(i); 
+			AppleUtil.setString(data, FILETYPE_OFFSET, filetype,
+				FILETYPE_LENGTH, false);
+			data[FILETYPE_OFFSET] |= (T1 > 127) ? 0x80 : 0x00;
+			data[FILETYPE_OFFSET+1] |= (T2 > 127) ? 0x80 : 0x00;
+			data[FILETYPE_OFFSET+1] |= (T3 > 127) ? 0x80 : 0x00;
+		}
 	}
 
 	/**
@@ -100,7 +202,16 @@ public class CpmFileEntry implements FileEntry {
 	 * file type and the high bit indicates read-only.
 	 */
 	public byte getFileTypeT1(int entryNumber) {
-		return readFileEntry(entryNumber)[0x9];
+		return readFileEntry(entryNumber)[FILETYPE_T1_OFFSET];
+	}
+	
+	/**
+	 * Write the file type T1 entry.
+	 */
+	public void setFileTypeT1(int entryNumber, int t1) {
+		byte[] data = readFileEntry(entryNumber);
+		data[FILETYPE_T1_OFFSET] = (byte) t1;
+		writeFileEntry(entryNumber, data);
 	}
 
 	/**
@@ -108,7 +219,16 @@ public class CpmFileEntry implements FileEntry {
 	 * file type and the high bit indicates a system or hidden file.
 	 */
 	public byte getFileTypeT2(int entryNumber) {
-		return readFileEntry(entryNumber)[0xa];
+		return readFileEntry(entryNumber)[FILETYPE_T2_OFFSET];
+	}
+	
+	/**
+	 * Write the file type T2 entry.
+	 */
+	public void setFileTypeT2(int entryNumber, int t2) {
+		byte[] data = readFileEntry(entryNumber);
+		data[FILETYPE_T2_OFFSET] = (byte) t2;
+		writeFileEntry(entryNumber, data);
 	}
 
 	/**
@@ -116,22 +236,38 @@ public class CpmFileEntry implements FileEntry {
 	 * file type and the high bit is the backup bit (CP/M 3.1 and later).
 	 */
 	public byte getFileTypeT3(int entryNumber) {
-		return readFileEntry(entryNumber)[0xb];
+		return readFileEntry(entryNumber)[FILETYPE_T3_OFFSET];
+	}
+	
+	/**
+	 * Write the file type T3 entry.
+	 */
+	public void setFileTypeT3(int entryNumber, int t3) {
+		byte[] data = readFileEntry(entryNumber);
+		data[FILETYPE_T3_OFFSET] = (byte) t3;
+		writeFileEntry(entryNumber, data);
 	}
 
 	/**
+	 * Set the locked status.  This is interpreted as read-only.
 	 * @see com.webcodepro.applecommander.storage.FileEntry#setLocked(boolean)
 	 */
 	public void setLocked(boolean lock) {
-		// TODO Auto-generated method stub
-
+		for (int i=0; i<offsets.size(); i++) {
+			if (lock) {
+				setFileTypeT1(i, getFileTypeT1(i) | 0x80);
+			} else {
+				setFileTypeT1(i, getFileTypeT1(i) & 0x7f);
+			}
+		}
 	}
 	
 	/**
 	 * Read the extent number, low byte.
 	 */
 	public int getExtentCounterLow(int entryNumber) {
-		return AppleUtil.getUnsignedByte(readFileEntry(entryNumber)[0xc]);
+		return AppleUtil.getUnsignedByte(
+			readFileEntry(entryNumber)[EXTENT_COUNTER_OFFSET]);
 	}
 
 	/**
@@ -139,6 +275,16 @@ public class CpmFileEntry implements FileEntry {
 	 * @see com.webcodepro.applecommander.storage.FileEntry#getSize()
 	 */
 	public int getSize() {
+		int entry = findLargestExtent();
+		// Compute file size:
+		return getExtentCounterLow(entry) * ALL_RECORDS_FILLED_SIZE + 
+			getNumberOfRecordsUsed(entry) * CpmFormatDisk.CPM_SECTORSIZE;
+	}
+
+	/**
+	 * Locate the largest extent for this file.
+	 */
+	protected int findLargestExtent() {
 		int entry = -1;
 		// Locate largest extent number:
 		for (int i=0; i<offsets.size(); i++) {
@@ -150,9 +296,17 @@ public class CpmFileEntry implements FileEntry {
 				if (thisExtent > currentExtent) entry = i;
 			}
 		}
-		// Compute file size:
-		return getExtentCounterLow(entry) * 16384 + 
-			getNumberOfRecordsUsed(entry) * 128;
+		return entry;
+	}
+
+	/**
+	 * Compute the number of blocks used.
+	 */
+	public int getBlocksUsed() {
+		int entry = findLargestExtent();
+		return getExtentCounterLow(entry) * ALL_RECORDS_FILLED_SIZE + 
+			(getNumberOfRecordsUsed(entry) - 1) / 
+				CpmFormatDisk.CPM_SECTORS_PER_CPM_BLOCK + 1;
 	}
 
 	/**
@@ -160,14 +314,15 @@ public class CpmFileEntry implements FileEntry {
 	 * 1 record = 128 bytes. 
 	 */	
 	public int getNumberOfRecordsUsed(int entryNumber) {
-		return AppleUtil.getUnsignedByte(readFileEntry(entryNumber)[0xf]);
+		return AppleUtil.getUnsignedByte(
+			readFileEntry(entryNumber)[RECORD_COUNT_OFFSET]);
 	}
 
 	/**
+	 * Apple CP/M does not support directories.
 	 * @see com.webcodepro.applecommander.storage.FileEntry#isDirectory()
 	 */
 	public boolean isDirectory() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -186,15 +341,27 @@ public class CpmFileEntry implements FileEntry {
 	 * conjunction with deleted files. 
 	 */	
 	public int getUserNumber(int entryNumber) {
-		return AppleUtil.getUnsignedByte(readFileEntry(entryNumber)[0x0]);
+		return AppleUtil.getUnsignedByte(readFileEntry(entryNumber)[USER_NUMBER_OFFSET]);
+	}
+	
+	/**
+	 * Write the user number (UU).
+	 */
+	public void setUserNumber(int entryNumber, int userNumber) {
+		byte[] data = readFileEntry(entryNumber);
+		data[USER_NUMBER_OFFSET] = (byte) userNumber;
+		writeFileEntry(entryNumber, data);
 	}
 
 	/**
+	 * There appears to be no disk map involved, so deleting a file consists
+	 * of writing a 0xe5 to the user number.
 	 * @see com.webcodepro.applecommander.storage.FileEntry#delete()
 	 */
 	public void delete() {
-		// TODO Auto-generated method stub
-
+		for (int i=0; i<offsets.size(); i++) {
+			setUserNumber(i, 0xe5);
+		}
 	}
 
 	/**
@@ -230,27 +397,35 @@ public class CpmFileEntry implements FileEntry {
 	}
 
 	/**
+	 * Get file data.  This handles any operating-system specific issues.
 	 * @see com.webcodepro.applecommander.storage.FileEntry#getFileData()
 	 */
 	public byte[] getFileData() {
-		// TODO Auto-generated method stub
-		return null;
+		return disk.getFileData(this);
 	}
 
 	/**
+	 * Set file data.  This, essentially, is saving data to disk using this
+	 * file entry.
 	 * @see com.webcodepro.applecommander.storage.FileEntry#setFileData(byte[])
 	 */
 	public void setFileData(byte[] data) throws DiskFullException {
-		// TODO Auto-generated method stub
-
+		// TODO CP/M format disks don't save data...
 	}
 
 	/**
+	 * Get the suggested FileFilter.  This is a guess based on what appears to
+	 * be text-based files.
 	 * @see com.webcodepro.applecommander.storage.FileEntry#getSuggestedFilter()
 	 */
 	public FileFilter getSuggestedFilter() {
-		// TODO Auto-generated method stub
-		return null;
+		String filetype = getFiletype();
+		for (int i=0; i<TEXT_FILETYPES.length; i++) {
+			if (TEXT_FILETYPES[i].equals(filetype)) {
+				return new TextFileFilter();
+			}
+		}
+		return new BinaryFileFilter();
 	}
 
 	/**
@@ -270,26 +445,27 @@ public class CpmFileEntry implements FileEntry {
 	}
 
 	/**
+	 * Indicates if this filetype requires an address component.
 	 * @see com.webcodepro.applecommander.storage.FileEntry#needsAddress()
 	 */
 	public boolean needsAddress() {
-		// TODO Auto-generated method stub
-		return false;
+		return disk.needsAddress(getFiletype());
 	}
 
 	/**
+	 * Set the address that this file loads at.
 	 * @see com.webcodepro.applecommander.storage.FileEntry#setAddress(int)
 	 */
 	public void setAddress(int address) {
-		// TODO Auto-generated method stub
-
+		// not applicable
 	}
 
 	/**
+	 * Indicates that this filetype can be compiled.
+	 * AppleCommander cannot do much with CP/M files.
 	 * @see com.webcodepro.applecommander.storage.FileEntry#canCompile()
 	 */
 	public boolean canCompile() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -304,5 +480,22 @@ public class CpmFileEntry implements FileEntry {
 			if (byt != 0xE5) return false;
 		}
 		return true;
+	}
+	
+	/**
+	 * Answer with a list of blocks allocated to this file.
+	 */
+	public int[] getAllocations() {
+		int blocks = getBlocksUsed();
+		int[] allocations = new int[blocks];
+		int block = 0;
+		for (int i=0; i<offsets.size(); i++) {
+			byte[] data = readFileEntry(i);
+			int offset = ALLOCATION_OFFSET;
+			while (block < blocks && offset < ENTRY_LENGTH) {
+				allocations[block++] = AppleUtil.getUnsignedByte(data[offset++]);
+			}
+		}
+		return allocations;
 	}
 }
