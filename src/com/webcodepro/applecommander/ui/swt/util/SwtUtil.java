@@ -23,6 +23,10 @@ import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.printing.PrintDialog;
+import org.eclipse.swt.printing.Printer;
+import org.eclipse.swt.printing.PrinterData;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
 /**
@@ -62,5 +66,14 @@ public class SwtUtil {
 		composite.getVerticalBar().setPageIncrement(pageHeight);
 		composite.getHorizontalBar().setIncrement(fontWidth);
 		composite.getHorizontalBar().setPageIncrement(pageWidth);
+	}
+	/**
+	 * Display the Print dialog helper method. 
+	 */
+	public static Printer showPrintDialog(Control control) {
+		PrintDialog dialog = new PrintDialog(control.getShell());
+		PrinterData printerData = dialog.open();
+		if (printerData == null) return null;
+		return new Printer(printerData);
 	}
 }
