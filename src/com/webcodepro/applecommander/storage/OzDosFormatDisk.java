@@ -100,4 +100,29 @@ public class OzDosFormatDisk extends DosFormatDisk {
 		getImageOrder().format();
 		format(31, 50, 32);
 	}
+	/**
+	 * Retrieve the specified sector.
+	 */
+	public byte[] readSector(int track, int sector) throws IllegalArgumentException {
+		byte[] blockData = readBlock(getBlockNumber(track,sector));
+		byte[] sectorData = new byte[SECTOR_SIZE];
+		System.arraycopy(blockData, logicalOffset, sectorData, 0, SECTOR_SIZE);
+		return sectorData;
+	}
+	/**
+	 * Write the specified sector.
+	 */
+	public void writeSector(int track, int sector, byte[] bytes) 
+			throws IllegalArgumentException {
+		int blockNumber = getBlockNumber(track,sector);
+		byte[] blockData = readBlock(blockNumber);
+		System.arraycopy(bytes, 0, blockData, logicalOffset, SECTOR_SIZE);
+		getImageOrder().writeBlock(blockNumber, blockData);
+	}
+	/**
+	 * Compute the block number.
+	 */
+	protected int getBlockNumber(int track, int sector) {
+		return (track * 32) + sector;
+	}
 }

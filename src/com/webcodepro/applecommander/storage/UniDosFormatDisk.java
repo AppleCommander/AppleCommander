@@ -32,14 +32,14 @@ import com.webcodepro.applecommander.storage.physical.ImageOrder;
 public class UniDosFormatDisk extends DosFormatDisk {
 	/**
 	 * Use this indicator to work with logical disk #1.
-	 * It is essentially the offset into the disk image.
+	 * It is essentially the track offset into the disk image.
 	 */
 	public static final int UNIDOS_DISK_1 = 0;
 	/**
 	 * Use this indicator to work with logical disk #2.
-	 * It is essentially the offset into the disk image.
+	 * It is essentially the track offset into the disk image.
 	 */
-	public static final int UNIDOS_DISK_2 = 409600;
+	public static final int UNIDOS_DISK_2 = 50;
 	/**
 	 * Indicates which logical disk to work with (by offset
 	 * into the disk image itself).
@@ -98,5 +98,20 @@ public class UniDosFormatDisk extends DosFormatDisk {
 	public void format() {
 		getImageOrder().format();
 		format(31, 50, 32);
+	}
+
+	/**
+	 * Retrieve the specified sector.
+	 */
+	public byte[] readSector(int track, int sector) throws IllegalArgumentException {
+		return getImageOrder().readSector(track+logicalOffset, sector);
+	}
+	
+	/**
+	 * Write the specified sector.
+	 */
+	public void writeSector(int track, int sector, byte[] bytes) 
+			throws IllegalArgumentException {
+		getImageOrder().writeSector(track+logicalOffset, sector, bytes);
 	}
 }
