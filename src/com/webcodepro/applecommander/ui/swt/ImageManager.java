@@ -73,6 +73,7 @@ public class ImageManager {
 	public static final String LOGO_DISK_IMAGE_WIZARD = "DiskImageWizardLogo.gif";
 	public static final String LOGO_IMPORT_WIZARD = "ImportWizardLogo.gif";
 	public static final String LOGO_COMPILE_WIZARD = "CompileWizardLogo.gif";
+	public static final String LOGO_COMPARE_IMAGE_WIZARD = "CompareImageWizardLogo.gif";
 	
 	private Map images = new HashMap();
 	private String[] imageNames = {
@@ -94,7 +95,7 @@ public class ImageManager {
 		// Logos:
 		LOGO_EXPORT_WIZARD,			LOGO_APPLECOMMANDER,
 		LOGO_DISK_IMAGE_WIZARD,		LOGO_IMPORT_WIZARD,
-		LOGO_COMPILE_WIZARD
+		LOGO_COMPILE_WIZARD,		LOGO_COMPARE_IMAGE_WIZARD
 	};
 	/**
 	 * Construct the ImageManager and load all images.
