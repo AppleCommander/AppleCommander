@@ -16,6 +16,7 @@
   easy enough to keep a backup copy of your work these days. 
 * Two new DOS derivitaves are available: UniDOS and OzDOS (both are 
   800K formats). 
+* Import from right-click menu needs to be enabled.
 
 1.1.1 (2002-11-23)
 * Fixed AppleWorks upper/lower case filename resolution.  Human memory 
