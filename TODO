@@ -19,3 +19,9 @@ o RTF export of AWP files could be improved.
 o Work on identifying why GCJ introduces slow performance to some areas.
 o Add RDOS writing capability.
 o Add Apple Pascal writing capability.
+o HDV disks are not always created to their full capacity.  AppleCommander, however,
+  assumes that the size of the disk on disk is the size of the disk.  (Really!)
+o Import could/should choose the filetype based upon the file extension for files
+  being imported.
+o Allow group assignments in import.
+o Begin command-line tool.
