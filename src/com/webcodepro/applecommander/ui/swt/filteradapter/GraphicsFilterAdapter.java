@@ -86,7 +86,7 @@ public class GraphicsFilterAdapter extends FilterAdapter {
 	}
 	
 	public void dispose() {
-		image.dispose();
+		if (image != null) image.dispose();
 	}
 
 
