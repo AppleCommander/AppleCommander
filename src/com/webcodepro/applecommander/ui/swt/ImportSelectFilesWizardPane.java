@@ -161,7 +161,8 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 		for (int i=0; i<filenames.length; i++) {
 			ImportSpecification spec = new ImportSpecification(
 				path + File.separatorChar+ filenames[i],
-				wizard.getDisk().getSuggestedFilename(filenames[i]));
+				wizard.getDisk().getSuggestedFilename(filenames[i]),
+				wizard.getDisk().getSuggestedFiletype(filenames[i]));
 			wizard.addImportSpecification(spec);
 		}
 		refreshTable();
