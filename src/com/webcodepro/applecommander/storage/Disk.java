@@ -71,6 +71,7 @@ public class Disk {
 	private byte[] diskImage;
 	private String filename;
 	private boolean changed = false;
+	private boolean newImage = false;
 	
 	/**
 	 * Get the supported file filters supported by the Disk interface.
@@ -112,6 +113,7 @@ public class Disk {
 	protected Disk(String filename, byte[] diskImage) {
 		this.diskImage = diskImage;
 		this.filename = filename;
+		this.newImage = true;
 	}
 	
 	/**
@@ -152,6 +154,15 @@ public class Disk {
 		output.write(getDiskImage());
 		output.close();
 		changed = false;
+		newImage = false;
+	}
+
+	/**
+	 * Save a Disk image as a new/different file.
+	 */
+	public void saveAs(String filename) throws IOException {
+		this.filename = filename;
+		save();
 	}
 
 	/**
@@ -532,5 +543,13 @@ public class Disk {
 	 */
 	public boolean hasChanged() {
 		return changed;
+	}
+	
+	/**
+	 * Indicates if the disk image is new.  This can be used
+	 * for Save As processing.
+	 */
+	public boolean isNewImage() {
+		return newImage;
 	}
 }
