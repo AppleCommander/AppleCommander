@@ -19,13 +19,10 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import com.sun.image.codec.jpeg.JPEGCodec;
+import com.webcodepro.applecommander.storage.filters.imagehandlers.AppleImage;
 
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
-import javax.imageio.ImageIO;
 
 /**
  * Filter the given file as if it were a graphics image.
@@ -52,61 +49,22 @@ public class GraphicsFileFilter implements FileFilter {
 	public static final int MODE_DHR_COLOR = 4;
 	public static final int MODE_SHR = 5;
 	
-	private String extension;
 	private int mode = MODE_HGR_COLOR;
-	
-	private static final int CODEC_NONE = 0;			// disabled!
-	private static final int CODEC_IMAGEIO = 1;		// JDK 1.4
-	private static final int CODEC_JPEGCODEC = 2;	// SUN JDK's only
-	private int imageCodec;
+	private AppleImage appleImage;	
 	
 	/**
 	 * Constructor for GraphicsFileFilter.
 	 */
 	public GraphicsFileFilter() {
 		super();
-		determineImageCodec();
-	}
-	
-	/**
-	 * Start guessing which codec is avilable for images.
-	 */
-	protected void determineImageCodec() {
-		try {
-			Class.forName("javax.imageio.ImageIO");
-			imageCodec = CODEC_IMAGEIO;
-			extension = "PNG";
-			return;
-		} catch (ClassNotFoundException ignored) {
-			try {
-				Class.forName("com.sun.image.codec.jpeg.JPEGCodec");
-				imageCodec = CODEC_JPEGCODEC;
-				extension = "JPEG";
-			} catch (ClassNotFoundException ignored2) {
-				imageCodec = CODEC_NONE;
-			}
-		}
+		appleImage = AppleImage.create(1,1);	// used by isCodecAvailable
 	}
 	
 	/**
 	 * Indicate if a codec is available (assist with interface requirements).
 	 */
 	public boolean isCodecAvailable() {
-		return imageCodec != CODEC_NONE;
-	}
-	
-	/**
-	 * Indicate if the ImageIO codec is avilable.
-	 */
-	protected boolean isCodecImageIo() {
-		return imageCodec == CODEC_IMAGEIO;
-	}
-	
-	/**
-	 * Indicate if the SUN JPEG Codec is avilable.
-	 */
-	protected boolean isCodecJpegCodec() {
-		return imageCodec == CODEC_JPEGCODEC;
+		return appleImage != null;
 	}
 
 	/**
@@ -115,16 +73,17 @@ public class GraphicsFileFilter implements FileFilter {
 	 */
 	public byte[] filter(FileEntry fileEntry) {
 		byte[] fileData = fileEntry.getFileData();
-		BufferedImage image = null;
+		AppleImage image = null;
 		if (isHiresColorMode()) {
-			image = new BufferedImage(280, 192, BufferedImage.TYPE_INT_RGB);
+			image = AppleImage.create(280, 192);
 		} else if (isDoubleHiresMode()) {
-			image = new BufferedImage(560, 192*2, BufferedImage.TYPE_INT_RGB);
+			image = AppleImage.create(560, 192*2);
 		} else if (isSuperHiresMode()) {
-			image = new BufferedImage(640, 400, BufferedImage.TYPE_INT_RGB);
+			image = AppleImage.create(640, 400);
 		} else {
 			return new byte[0];
 		}
+		image.setFileExtension(appleImage.getFileExtension());
 		if (isSuperHiresMode()) {
 			if (fileData.length < 32767) {	// leaves 1 byte of leeway
 				fileData = AppleUtil.unpackBytes(fileData);
@@ -171,13 +130,9 @@ public class GraphicsFileFilter implements FileFilter {
 				}
 			}
 		}
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		try {
-			if (isCodecImageIo()) {
-				ImageIO.write(image, getExtension(), outputStream);
-			} else if (isCodecJpegCodec()) {
-				JPEGCodec.createJPEGEncoder(outputStream).encode(image);
-			}
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			image.save(outputStream);
 			return outputStream.toByteArray();
 		} catch (IOException ex) {
 			return null;
@@ -188,15 +143,15 @@ public class GraphicsFileFilter implements FileFilter {
 	 * Given a specific line in the image, process it in hires black and white
 	 * mode.
 	 */
-	protected void processHiresBlackAndWhiteLine(byte[] lineData, BufferedImage image, int y) {
+	protected void processHiresBlackAndWhiteLine(byte[] lineData, AppleImage image, int y) {
 		for (int x=0; x<280; x++) {
 			int offset = x / 7;	// byte across row
 			int bit = x % 7;		// bit to test
 			byte byt = lineData[offset];
 			if (AppleUtil.isBitSet(byt, bit)) {
-				image.setRGB(x, y, 0xffffff);
+				image.setPoint(x, y, 0xffffff);
 			} else {
-				image.setRGB(x, y, 0x0);
+				image.setPoint(x, y, 0x0);
 			}
 		}
 	}
@@ -223,7 +178,7 @@ public class GraphicsFileFilter implements FileFilter {
 	 * </pre>
 	 * Remember: bits are listed as "highbit", "pixel0", "pixel1"!
 	 */
-	protected void processHiresColorLine(byte[] lineData, BufferedImage image, int y) {
+	protected void processHiresColorLine(byte[] lineData, AppleImage image, int y) {
 		for (int x=0; x<140; x++) {
 			int x0 = x*2;
 			int x1 = x0+1;
@@ -251,8 +206,8 @@ public class GraphicsFileFilter implements FileFilter {
 					color = 0xff8000;	// orange
 				}
 			}
-			if (pixel0) image.setRGB(x0, y, color);
-			if (pixel1) image.setRGB(x1, y, color);
+			if (pixel0) image.setPoint(x0, y, color);
+			if (pixel1) image.setPoint(x1, y, color);
 		}
 	}
 
@@ -261,7 +216,7 @@ public class GraphicsFileFilter implements FileFilter {
 	 * mode.
 	 */
 	protected void processDoubleHiresBlackAndWhiteLine(byte[] lineData1, byte[] lineData2, 
-		BufferedImage image, int y) {
+		AppleImage image, int y) {
 			
 		for (int x=0; x<560; x++) {
 				// alternate bytes - switching memory banks
@@ -270,11 +225,11 @@ public class GraphicsFileFilter implements FileFilter {
 			int bit = x % 7;			// bit to test
 			byte byt = lineData[rowOffset];
 			if (AppleUtil.isBitSet(byt, bit)) {
-				image.setRGB(x, y*2, 0xffffff);
-				image.setRGB(x, y*2+1, 0xffffff);
+				image.setPoint(x, y*2, 0xffffff);
+				image.setPoint(x, y*2+1, 0xffffff);
 			} else {
-				image.setRGB(x, y*2, 0x0);
-				image.setRGB(x, y*2+1, 0x0);
+				image.setPoint(x, y*2, 0x0);
+				image.setPoint(x, y*2+1, 0x0);
 			}
 		}
 	}
@@ -308,7 +263,7 @@ public class GraphicsFileFilter implements FileFilter {
      * </pre>
 	 */
 	protected void processDoubleHiresColorLine(byte[] lineData1, byte[] lineData2, 
-		BufferedImage image, int y) {
+		AppleImage image, int y) {
 		
 		int[] bitValues = { 8,4,2,1 };
 		int[] colorValues = {
@@ -331,8 +286,8 @@ public class GraphicsFileFilter implements FileFilter {
 				}
 			}
 			for (int b = 0; b < 4; b++) {
-				image.setRGB(x+b, y*2, colorValues[colorValue]);
-				image.setRGB(x+b, y*2+1, colorValues[colorValue]);
+				image.setPoint(x+b, y*2, colorValues[colorValue]);
+				image.setPoint(x+b, y*2+1, colorValues[colorValue]);
 			}
 		}
 	}
@@ -346,7 +301,7 @@ public class GraphicsFileFilter implements FileFilter {
      * </pre>
 	 */
 	protected void processSuperHiresLine(byte[] lineData, 
-		BufferedImage image, int y, byte scb, byte[] pallettes) {
+		AppleImage image, int y, byte scb, byte[] pallettes) {
 		
 		int palletteNumber = (scb & 0x0f);
 		boolean fillMode = (scb & 0x20) != 0;
@@ -397,11 +352,11 @@ public class GraphicsFileFilter implements FileFilter {
 			}
 
 			int xPosition = mode320 ? x*2 : x;
-			image.setRGB(xPosition, yPosition, colorValue);
-			image.setRGB(xPosition, yPosition+1, colorValue);
+			image.setPoint(xPosition, yPosition, colorValue);
+			image.setPoint(xPosition, yPosition+1, colorValue);
 			if (mode320) {
-				image.setRGB(xPosition+1, yPosition, colorValue);
-				image.setRGB(xPosition+1, yPosition+1, colorValue);
+				image.setPoint(xPosition+1, yPosition, colorValue);
+				image.setPoint(xPosition+1, yPosition+1, colorValue);
 			}
 		}
 	}
@@ -410,13 +365,7 @@ public class GraphicsFileFilter implements FileFilter {
 	 * Give file extensions.
 	 */
 	public String[] getFileExtensions() {
-		if (isCodecImageIo()) {
-			return new String[] { "PNG", "JPEG"  };
-		} else if (isCodecJpegCodec()) {
-			return new String[] { "JPEG" };
-		} else {
-			return new String[0];
-		}
+		return appleImage.getAvailableExtensions();
 	}
 
 	/**
@@ -434,14 +383,14 @@ public class GraphicsFileFilter implements FileFilter {
 	 * Set the format name.
 	 */
 	public void setExtension(String extension) {
-		this.extension = extension;
+		appleImage.setFileExtension(extension);
 	}
 	
 	/**
 	 * Get the format name.
 	 */
 	public String getExtension() {
-		return extension;
+		return appleImage.getFileExtension();
 	}
 	
 	/**
