@@ -39,7 +39,7 @@
 		<delete dir="${javadoc}"/>
 	</target>
 	
-	<target name="all" depends="init,executableGuiJar,executableCmdJar,sourceZip,javadoc" description="Everything">
+	<target name="all" depends="init,executableGuiJar,executableCmdJar,sourceZip,javadoc,websiteZip" description="Everything">
 	    <!-- Nothing else to do - depends handles it all. -->
 	</target>
 	
@@ -129,12 +129,12 @@
 	
 	<target name="websiteZip" depends="javadoc" description="Build website ZIP archive">
 	    <zip zipfile="${webzip}">
-	        <zipfileset dir="${web}" prefix="htdocs">
+	        <zipfileset dir="${web}">
 	        	<include name="**/*.html"/>
 	        	<include name="**/*.gif"/>
 	        	<include name="**/*.png"/>
 	        </zipfileset>
-	        <zipfileset dir="${javadoc}" prefix="htdocs/javadoc"/>
+	        <zipfileset dir="${javadoc}" prefix="javadoc"/>
 	    </zip>
 	</target>
 </project>
