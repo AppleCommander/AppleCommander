@@ -5,3 +5,7 @@ Applesoft Internals:
 Apple Technical Information Library, March 1997
 * http://archaic-apples.shauny.de/files/apple2/til/A2TIL000.TXT
   (includes Applesoft Internals among other things)
+  
+Applesoft BASIC FAQ:
+* http://www.uni-giessen.de/faq/archiv/apple2.asoft/msg00000.html
+  (homepage of http://www.visi.com/~nathan/a2/faq/asoft.html appears to be gone)
