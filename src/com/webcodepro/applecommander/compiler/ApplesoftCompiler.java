@@ -35,6 +35,7 @@ import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.util.ApplesoftToken;
 import com.webcodepro.applecommander.util.ApplesoftTokenizer;
 import com.webcodepro.applecommander.util.ApplesoftTokens;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Compile the given Applesoft file.  The result will be an assembly
@@ -45,6 +46,7 @@ import com.webcodepro.applecommander.util.ApplesoftTokens;
  * @author Rob Greene
  */
 public class ApplesoftCompiler implements ApplesoftTokens {
+	private TextBundle textBundle = CompilerBundle.getInstance();
 	/**
 	 * Tokenized the Applesoft program.
 	 */
@@ -108,7 +110,7 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 	 */
 	protected void initializeKnownAddresses() {
 		InputStream inputStream = 
-			getClass().getResourceAsStream("AppleMemoryAddresses.properties");
+			getClass().getResourceAsStream("AppleMemoryAddresses.properties"); //$NON-NLS-1$
 		Properties properties = new Properties();
 		try {
 			properties.load(inputStream);
@@ -142,9 +144,9 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 		if (token == null) {
 			// No more tokens
 		} else if (token.isLineNumber()) {
-			sourceLine.append("* ");
+			sourceLine.append("* "); //$NON-NLS-1$
 			sourceLine.append(token.getLineNumber());
-			sourceLine.append(" ");
+			sourceLine.append(" "); //$NON-NLS-1$
 		} else if (token.isToken()) {
 			sourceLine.append(token.getTokenString());
 		} else if (token.isString()) {
@@ -171,11 +173,12 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 		while (hasMoreTokens()) {
 			ApplesoftToken token = nextToken();
 			if (!token.isLineNumber()) {
-				throw new CompileException("Expecting a line number.");
+				throw new CompileException(textBundle.
+						get("ApplesoftCompiler.ExpectLineNumberError")); //$NON-NLS-1$
 			}
-			sourceAssembly.append("LINE");
+			sourceAssembly.append("LINE"); //$NON-NLS-1$
 			sourceAssembly.append(token.getLineNumber());
-			sourceAssembly.append("\n");
+			sourceAssembly.append("\n"); //$NON-NLS-1$
 			do {
 				evaluateCommand();
 				token = peekToken();
@@ -184,9 +187,9 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 				}
 			} while (token != null &&  token.isCommandSeparator());
 			programCode.append(sourceLine);
-			programCode.append("\n");
+			programCode.append("\n"); //$NON-NLS-1$
 			programCode.append(sourceAssembly);
-			programCode.append("\n");
+			programCode.append("\n"); //$NON-NLS-1$
 			sourceLine.setLength(0);
 			sourceAssembly.setLength(0);
 		}
@@ -204,15 +207,15 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 	protected StringBuffer buildUsedAddresses() {
 		StringBuffer buf = new StringBuffer();
 		if (usedAddresses.size() > 0) {
-			buf.append("* Addresses:\n");
+			buf.append("* Addresses:\n"); //$NON-NLS-1$
 			for (int i=0; i<usedAddresses.size(); i++) {
 				String label = (String) usedAddresses.get(i);
 				buf.append(label);
-				buf.append(" = ");
+				buf.append(" = "); //$NON-NLS-1$
 				buf.append((String) knownAddresses.get(label));
-				buf.append("\n");
+				buf.append("\n"); //$NON-NLS-1$
 			}
-			buf.append("\n");
+			buf.append("\n"); //$NON-NLS-1$
 		}
 		return buf;
 	}
@@ -229,21 +232,21 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 		sourceAssembly.setLength(0);
 		for (int i=0; i<variables.size(); i++) {
 			if (i == 0) {
-				sourceAssembly.append("\n");
-				sourceAssembly.append("* Variables:\n");
+				sourceAssembly.append("\n"); //$NON-NLS-1$
+				sourceAssembly.append("* Variables:\n"); //$NON-NLS-1$
 			}
 			Variable variable = (Variable) variables.get(i);
 			if (variable.isConstantInteger()) {
-				addAssembly(variable.getName(), "DW", variable.getValue());
+				addAssembly(variable.getName(), "DW", variable.getValue()); //$NON-NLS-1$
 			} else if (variable.isConstantFloat()) {
 				// FIXME
 			} else if (variable.isConstantString()) {
-				addAssembly(variable.getName(), "ASC", variable.getValue());
-				addAssembly(null, "HEX", "00");
+				addAssembly(variable.getName(), "ASC", variable.getValue()); //$NON-NLS-1$
+				addAssembly(null, "HEX", "00"); //$NON-NLS-1$ //$NON-NLS-2$
 			} else if (variable.isTypeFloat()) {
-				addAssembly(variable.getName(), "HEX", "8400000000");	// = 0.0
+				addAssembly(variable.getName(), "HEX", "8400000000");	// = 0.0 //$NON-NLS-1$ //$NON-NLS-2$
 			} else if (variable.isTypeInteger()) {
-				addAssembly(variable.getName(), "DS", "2");
+				addAssembly(variable.getName(), "DS", "2"); //$NON-NLS-1$ //$NON-NLS-2$
 			} else if (variable.isTypeString()) {
 				// FIXME
 			}
@@ -264,13 +267,19 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 			try {
 				method.invoke(this, new Object[0]);
 			} catch (IllegalArgumentException e) {
-				System.err.println("Unable to locate " + method.getName());
+				System.err.println(textBundle.
+						format("ApplesoftCompiler.UnableToLocateError", //$NON-NLS-1$
+								method.getName()));
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
-				System.err.println("Unable to locate " + method.getName());
+				System.err.println(textBundle.
+						format("ApplesoftCompiler.UnableToLocateError", //$NON-NLS-1$
+								method.getName()));
 				e.printStackTrace();
 			} catch (InvocationTargetException e) {
-				System.err.println("Unable to locate " + method.getName());
+				System.err.println(textBundle.
+						format("ApplesoftCompiler.UnableToLocateError", //$NON-NLS-1$
+								method.getName()));
 				e.printStackTrace();
 			}
 		} else {
@@ -283,7 +292,7 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 	
 	protected Method getMethod(ApplesoftToken token) {
 		StringBuffer buf = new StringBuffer();
-		buf.append("evaluate");
+		buf.append("evaluate"); //$NON-NLS-1$
 		buf.append(token.getTokenString().trim());
 		for (int i=buf.length()-1; i>=0; i--) {
 			if (buf.charAt(i) == '=') {
@@ -314,30 +323,30 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 //			sourceAssembly.append(":\n");
 		}
 		if (mnemonic != null) {
-			sourceAssembly.append(" ");
+			sourceAssembly.append(" "); //$NON-NLS-1$
 			sourceAssembly.append(mnemonic);
 			if (parameter != null) {
-				sourceAssembly.append(" ");
+				sourceAssembly.append(" "); //$NON-NLS-1$
 				sourceAssembly.append(parameter);
 				if (!usedAddresses.contains(parameter) 
 				&& knownAddresses.containsKey(parameter)) {
 					usedAddresses.add(parameter);
 				}
 			}
-			sourceAssembly.append("\n");
+			sourceAssembly.append("\n"); //$NON-NLS-1$
 		}
 	}
 
 	public void evaluateHOME() {
-		addAssembly(null, "JSR", "HOME");
+		addAssembly(null, "JSR", "HOME"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	public void evaluateTEXT() {
-		addAssembly(null, "JSR", "TEXT");
+		addAssembly(null, "JSR", "TEXT"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	public void evaluateRETURN() {
-		addAssembly(null, "RTS", null);
+		addAssembly(null, "RTS", null); //$NON-NLS-1$
 	}
 	
 	public void evaluateEND() {
@@ -345,30 +354,30 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 	}
 	
 	public void evaluateHGR() {
-		addAssembly(null, "JSR", "HGR");
+		addAssembly(null, "JSR", "HGR"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	public void evaluateHGR2() {
-		addAssembly(null, "JSR", "HGR2");
+		addAssembly(null, "JSR", "HGR2"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	public void evaluateGR() {
-		addAssembly(null, "JSR", "GR");
+		addAssembly(null, "JSR", "GR"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	public void evaluateINVERSE() {
-		addAssembly(null, "LDA", "#$3F");
-		addAssembly(null, "STA", "INVFLAG");
+		addAssembly(null, "LDA", "#$3F"); //$NON-NLS-1$ //$NON-NLS-2$
+		addAssembly(null, "STA", "INVFLAG"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	public void evaluateNORMAL() {
-		addAssembly(null, "LDA", "#$FF");
-		addAssembly(null, "STA", "INVFLAG");
+		addAssembly(null, "LDA", "#$FF"); //$NON-NLS-1$ //$NON-NLS-2$
+		addAssembly(null, "STA", "INVFLAG"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	public void evaluateFLASH() {
-		addAssembly(null, "LDA", "#$7F");
-		addAssembly(null, "STA", "INVFLAG");
+		addAssembly(null, "LDA", "#$7F"); //$NON-NLS-1$ //$NON-NLS-2$
+		addAssembly(null, "STA", "INVFLAG"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	protected Variable evaluateExpression() throws CompileException {
@@ -391,24 +400,23 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 			}
 			if (variable == null) {
 				if (isIntegerNumber(value)) {
-					variable = new Variable("INT" + value, Variable.CONST_INTEGER, value);
-				} else if (value.startsWith("\"")) {
-					variable = new Variable("STR" + variables.size(), Variable.CONST_STRING, value);
+					variable = new Variable("INT" + value, Variable.CONST_INTEGER, value); //$NON-NLS-1$
+				} else if (value.startsWith("\"")) { //$NON-NLS-1$
+					variable = new Variable("STR" + variables.size(), Variable.CONST_STRING, value); //$NON-NLS-1$
 				} else {	// assume variable name
-					if (value.endsWith("$")) {
-						variable = new Variable("VAR" + value, Variable.TYPE_STRING, value);
-					} else if (value.endsWith("%") || isIntegerOnlyMath()) {
-						variable = new Variable("VAR" + value, Variable.TYPE_INTEGER, value);
+					if (value.endsWith("$")) { //$NON-NLS-1$
+						variable = new Variable("VAR" + value, Variable.TYPE_STRING, value); //$NON-NLS-1$
+					} else if (value.endsWith("%") || isIntegerOnlyMath()) { //$NON-NLS-1$
+						variable = new Variable("VAR" + value, Variable.TYPE_INTEGER, value); //$NON-NLS-1$
 					} else {
-						variable = new Variable("VAR" + value, Variable.TYPE_FLOAT, value);
+						variable = new Variable("VAR" + value, Variable.TYPE_FLOAT, value); //$NON-NLS-1$
 					}
 				}
 				variables.add(variable);
 			}
 			return variable; 
-		} else {
-			throw new CompileException("Unable to evaluate expression!");
 		}
+		throw new CompileException(textBundle.get("ApplesoftCompiler.UnableToEvaluateError")); //$NON-NLS-1$
 	}
 	
 	protected Variable evaluateNumber() throws CompileException {
@@ -416,7 +424,7 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 		if (variable.isNumber()) {
 			return variable;
 		}
-		throw new CompileException("A number is required.");
+		throw new CompileException(textBundle.get("ApplesoftCompiler.NumberRequiredError")); //$NON-NLS-1$
 	}
 	
 	/**
@@ -426,90 +434,94 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 	protected String getLineNumberLabel() throws CompileException {
 		ApplesoftToken token = nextToken();
 		if (token.isString() && isIntegerNumber(token.getStringValue())) {
-			return "LINE" + token.getStringValue();
+			return "LINE" + token.getStringValue(); //$NON-NLS-1$
 		}
-		throw new CompileException("Expecting a line number but found " 
-			+ token.toString());
+		throw new CompileException(textBundle.
+				format("ApplesoftCompiler.ExpectingLineNumberError",  //$NON-NLS-1$
+						token.toString()));
 	}
 	
 	protected void addLoadByteValue(Variable variable, char register) throws CompileException {
 		if (variable.isConstantInteger()) {
-			addAssembly(null, "LD" + register, "#" + variable.getValue());
+			addAssembly(null, "LD" + register, "#" + variable.getValue()); //$NON-NLS-1$ //$NON-NLS-2$
 		} else if(variable.isTypeInteger()) {
-			addAssembly(null, "LD" + register, variable.getName());
+			addAssembly(null, "LD" + register, variable.getName()); //$NON-NLS-1$
 		} else if (variable.isConstantFloat() || variable.isTypeFloat()) {
-			addAssembly(null, "LDY", "#>" + variable.getName());
-			addAssembly(null, "LDA", "#<" + variable.getName());
-			addAssembly(null, "JSR","MOVFM");
-			addAssembly(null, "JSR", "QINT");
-			addAssembly(null, "LD" + register, "FACLO");
+			addAssembly(null, "LDY", "#>" + variable.getName()); //$NON-NLS-1$ //$NON-NLS-2$
+			addAssembly(null, "LDA", "#<" + variable.getName()); //$NON-NLS-1$ //$NON-NLS-2$
+			addAssembly(null, "JSR","MOVFM"); //$NON-NLS-1$ //$NON-NLS-2$
+			addAssembly(null, "JSR", "QINT"); //$NON-NLS-1$ //$NON-NLS-2$
+			addAssembly(null, "LD" + register, "FACLO"); //$NON-NLS-1$ //$NON-NLS-2$
 		} else {
-			throw new CompileException("Unable to convert to a byte value: "
-				+ variable.getName());
+			throw new CompileException(textBundle.
+					format("ApplesoftCompiler.InvalidByteFormatError", //$NON-NLS-1$
+							variable.getName()));
 		}
 	}
 
 	protected void addLoadWordValue(Variable variable, char registerHi, char registerLo) throws CompileException {
 		if (variable.isConstantInteger()) {
-			addAssembly(null, "LD" + registerHi, "#>" + variable.getValue());
-			addAssembly(null, "LD" + registerLo, "#<" + variable.getValue());
+			addAssembly(null, "LD" + registerHi, "#>" + variable.getValue()); //$NON-NLS-1$ //$NON-NLS-2$
+			addAssembly(null, "LD" + registerLo, "#<" + variable.getValue()); //$NON-NLS-1$ //$NON-NLS-2$
 		} else if (variable.isTypeInteger()) {
-			addAssembly(null, "LD" + registerHi, variable.getName() + "+1");
-			addAssembly(null, "LD" + registerLo, variable.getName());
+			addAssembly(null, "LD" + registerHi, variable.getName() + "+1"); //$NON-NLS-1$ //$NON-NLS-2$
+			addAssembly(null, "LD" + registerLo, variable.getName()); //$NON-NLS-1$
 		} else if (variable.isConstantFloat() || variable.isTypeFloat()) {
 			addLoadFac(variable);
-			addAssembly(null, "JSR", "QINT");
-			addAssembly(null, "LD" + registerHi, "FACMO");
-			addAssembly(null, "LD" + registerLo, "FACLO");
+			addAssembly(null, "JSR", "QINT"); //$NON-NLS-1$ //$NON-NLS-2$
+			addAssembly(null, "LD" + registerHi, "FACMO"); //$NON-NLS-1$ //$NON-NLS-2$
+			addAssembly(null, "LD" + registerLo, "FACLO"); //$NON-NLS-1$ //$NON-NLS-2$
 		} else {
-			throw new CompileException("Unable to convert to a word value: "
-				+ variable.getName());
+			throw new CompileException(textBundle.
+					format("ApplesoftCompiler.InvalidWordFormatError", //$NON-NLS-1$
+							variable.getName()));
 		}
 	}
 
 	protected void addLoadAddress(Variable variable, char registerHi, char registerLo) {
-		addAssembly(null, "LD" + registerHi, "#>" + variable.getName());
-		addAssembly(null, "LD" + registerLo, "#<" + variable.getName());
+		addAssembly(null, "LD" + registerHi, "#>" + variable.getName()); //$NON-NLS-1$ //$NON-NLS-2$
+		addAssembly(null, "LD" + registerLo, "#<" + variable.getName()); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	protected void addLoadFac(Variable variable) throws CompileException {
 		if (variable.isConstantFloat() || variable.isTypeFloat()) {
 			addLoadAddress(variable, 'Y', 'A');
-			addAssembly(null, "JSR","MOVFM");
+			addAssembly(null, "JSR","MOVFM"); //$NON-NLS-1$ //$NON-NLS-2$
 		} else if (variable.isConstantInteger() || variable.isTypeInteger()) {
 			addLoadWordValue(variable, 'A', 'Y');
-			addAssembly(null, "JSR", "GIVAYF");
+			addAssembly(null, "JSR", "GIVAYF"); //$NON-NLS-1$ //$NON-NLS-2$
 		} else {
-			throw new CompileException("Unable to convert to load FAC for: "
-				+ variable.getName());
+			throw new CompileException(textBundle.
+					format("ApplesoftCompiler.InvalidFloatTypeError", //$NON-NLS-1$
+							variable.getName()));
 		}
 	}
 	
 	protected void addCopyFac(Variable variable) throws CompileException {
 		if (variable.isTypeFloat()) {
 			addLoadAddress(variable, 'Y', 'X');
-			addAssembly(null, "JSR", "MOVMF");
+			addAssembly(null, "JSR", "MOVMF"); //$NON-NLS-1$ //$NON-NLS-2$
 		} else {
 			throw new CompileException(
-				"Internal Error: Can only copy floats to numeric variables.");
+					textBundle.get("ApplesoftCompiler.CannotCopyToFloatError")); //$NON-NLS-1$
 		}
 	}
 	
 	public void evaluateHTAB() throws CompileException {
 		addLoadByteValue(evaluateExpression(), 'A');
-		addAssembly(null, "STA", "CH");
+		addAssembly(null, "STA", "CH"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	public void evaluateVTAB() throws CompileException {
 		addLoadByteValue(evaluateExpression(), 'X');
-		addAssembly(null, "DEX", null);
-		addAssembly(null, "STX", "CV");
-		addAssembly(null, "JSR", "LF");
+		addAssembly(null, "DEX", null); //$NON-NLS-1$
+		addAssembly(null, "STX", "CV"); //$NON-NLS-1$ //$NON-NLS-2$
+		addAssembly(null, "JSR", "LF"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	public void evaluateHCOLOR() throws CompileException {
 		addLoadByteValue(evaluateExpression(), 'X');
-		addAssembly(null, "JSR", "SETHCOL");
+		addAssembly(null, "JSR", "SETHCOL"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	public void evaluatePRINT() throws CompileException {
@@ -517,18 +529,18 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 		do {
 			Variable variable = evaluateExpression();
 			if (variable == null) {
-				addAssembly(null, "JSR", "PRCR");
+				addAssembly(null, "JSR", "PRCR"); //$NON-NLS-1$ //$NON-NLS-2$
 			} else if (variable.isConstantFloat() || variable.isTypeFloat()) {
 				addLoadFac(variable);
-				addAssembly(null, "JSR", "PRNTFAC");
+				addAssembly(null, "JSR", "PRNTFAC"); //$NON-NLS-1$ //$NON-NLS-2$
 			} else if (variable.isConstantInteger() || variable.isTypeInteger()) {
 				addLoadWordValue(variable, 'X', 'A');
-				addAssembly(null, "JSR", "LINPRT");
+				addAssembly(null, "JSR", "LINPRT"); //$NON-NLS-1$ //$NON-NLS-2$
 			} else if (variable.isConstantString()) {
 				addLoadAddress(variable, 'Y', 'A');
-				addAssembly(null, "JSR", "STROUT");
+				addAssembly(null, "JSR", "STROUT"); //$NON-NLS-1$ //$NON-NLS-2$
 			} else if (variable.isTypeString()) {
-				throw new CompileException("Unable to print string variables yet.");
+				throw new CompileException(textBundle.get("ApplesoftCompiler.StringPrintUnsupported")); //$NON-NLS-1$
 			}
 			// check if we have separators to skip over...
 			token = peekToken();
@@ -541,14 +553,15 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 	}
 	
 	public void evaluateGOTO() throws CompileException {
-		addAssembly(null, "JMP", getLineNumberLabel());
+		addAssembly(null, "JMP", getLineNumberLabel()); //$NON-NLS-1$
 	}
 	
 	protected void checkSyntax(byte tokenValue, String expectedToken) throws CompileException {
 		ApplesoftToken token = nextToken();
 		if (token.getTokenValue() != tokenValue) {
 			// FIXME: Should this read token from master token list?
-			throw new CompileException("Syntax Error: Expecting " + expectedToken);
+			throw new CompileException(textBundle.
+					format("ApplesoftCompiler.SyntaxError", expectedToken)); //$NON-NLS-1$
 		}
 	}
 
@@ -556,7 +569,8 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 		ApplesoftToken token = nextToken();
 		if (!stringValue.equals(token.getStringValue())) {
 			// FIXME: Should this read token from master token list?
-			throw new CompileException("Syntax Error: Expecting " + expectedToken);
+			throw new CompileException(textBundle.
+					format("ApplesoftCompiler.SyntaxError", expectedToken)); //$NON-NLS-1$
 		}
 	}
 	
@@ -564,43 +578,43 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 		Variable loopVariable = evaluateExpression();
 		if (!loopVariable.isTypeFloat() && !loopVariable.isTypeInteger()) {
 			throw new CompileException(
-				"Applesoft only allows floating-point FOR variables.");
+					textBundle.get("ApplesoftCompiler.ForStatementUnsupportedTypeError")); //$NON-NLS-1$
 		}
-		checkSyntax(EQUALS, "=");
+		checkSyntax(EQUALS, "="); //$NON-NLS-1$
 		Variable startValue = evaluateNumber();
-		checkSyntax(TO, "TO");
+		checkSyntax(TO, "TO"); //$NON-NLS-1$
 		Variable endValue = evaluateNumber();
 		// FIXME: Need to handle STEP
-		String loopName = "FOR" + loopVariables.size();
+		String loopName = "FOR" + loopVariables.size(); //$NON-NLS-1$
 		loopVariables.add(loopName);
 		addLoadFac(startValue);
 		addCopyFac(loopVariable);
 		addAssembly(loopName, null, null);
 		addLoadFac(endValue);
 		addLoadAddress(loopVariable, 'Y', 'A');
-		addAssembly(null, "JSR", "FCOMP");
-		addAssembly(null, "CMP", "#$FF");	// loopVariable > endValue
-		addAssembly(null, "BEQ", "END" + loopName);
+		addAssembly(null, "JSR", "FCOMP"); //$NON-NLS-1$ //$NON-NLS-2$
+		addAssembly(null, "CMP", "#$FF");	// loopVariable > endValue //$NON-NLS-1$ //$NON-NLS-2$
+		addAssembly(null, "BEQ", "END" + loopName); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	public void evaluateHPLOT() throws CompileException {
 		boolean firstCoordinate = true;
 		while (peekToken() != null && !peekToken().isEndOfCommand()) {
 			if (!firstCoordinate) {
-				checkSyntax(TO, "TO");
+				checkSyntax(TO, "TO"); //$NON-NLS-1$
 			}
 			Variable coordX = evaluateNumber();
-			checkSyntax(",", ", (comma)");
+			checkSyntax(",", ", (comma)"); //$NON-NLS-1$ //$NON-NLS-2$
 			Variable coordY = evaluateNumber();
 			if (firstCoordinate) {
 				addLoadWordValue(coordX, 'Y', 'X');
 				addLoadByteValue(coordY, 'A');
-				addAssembly(null, "JSR", "HPOSN");
+				addAssembly(null, "JSR", "HPOSN"); //$NON-NLS-1$ //$NON-NLS-2$
 				firstCoordinate = false;
 			} else {
 				addLoadWordValue(coordX, 'X', 'A');
 				addLoadByteValue(coordY, 'Y');
-				addAssembly(null, "JSR", "HLIN");
+				addAssembly(null, "JSR", "HLIN"); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		}
 	}
@@ -613,20 +627,20 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 			variable = evaluateExpression();
 		}
 		if (variable.isTypeFloat()) {
-			addAssembly(null, "LDY", "#1");
-			addAssembly(null, "JSR", "SNGFLT");
+			addAssembly(null, "LDY", "#1"); //$NON-NLS-1$ //$NON-NLS-2$
+			addAssembly(null, "JSR", "SNGFLT"); //$NON-NLS-1$ //$NON-NLS-2$
 			addLoadAddress(variable, 'Y', 'A');
-			addAssembly(null, "JSR", "FADD");
+			addAssembly(null, "JSR", "FADD"); //$NON-NLS-1$ //$NON-NLS-2$
 			addCopyFac(variable);
 		} else if (variable.isTypeInteger()) {
-			addAssembly(null, "INC", variable.getName());
-			addAssembly(null, "BNE", ":1");
-			addAssembly(null, "INC", variable.getName() + "+1");
-			addAssembly(":1", null, null);
+			addAssembly(null, "INC", variable.getName()); //$NON-NLS-1$
+			addAssembly(null, "BNE", ":1"); //$NON-NLS-1$ //$NON-NLS-2$
+			addAssembly(null, "INC", variable.getName() + "+1"); //$NON-NLS-1$ //$NON-NLS-2$
+			addAssembly(":1", null, null); //$NON-NLS-1$
 		}
 		String loopName = (String) loopVariables.pop();
-		addAssembly(null, "JMP", loopName);
-		addAssembly("END" + loopName, null, null);
+		addAssembly(null, "JMP", loopName); //$NON-NLS-1$
+		addAssembly("END" + loopName, null, null); //$NON-NLS-1$
 	}
 
 	/**
