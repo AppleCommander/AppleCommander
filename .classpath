@@ -2,7 +2,7 @@
 <classpath>
     <classpathentry kind="src" path="src"/>
     <classpathentry kind="var" path="JRE_LIB" sourcepath="JRE_SRC"/>
-    <classpathentry kind="var" path="SWT_JAR"/>
+    <classpathentry kind="var" path="SWT_JAR" sourcepath="SWT_SRC"/>
     <classpathentry kind="var" path="JUNIT_JAR"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
