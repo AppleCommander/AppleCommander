@@ -76,11 +76,13 @@ public class ProdosFormatDisk extends FormattedDisk {
 	}
 
 	/**
-	 * Constructor for ProdosFormatDisk.
+	 * Create a ProdosFormatDisk.
 	 */
-	public ProdosFormatDisk(String filename, String diskName, int imageSize) {
-		this(filename, new byte[imageSize]);
-		volumeHeader.setVolumeName(diskName);
+	public static ProdosFormatDisk[] create(String filename, String diskName, int imageSize) {
+		ProdosFormatDisk disk = new ProdosFormatDisk(filename, new byte[imageSize]);
+		disk.setDiskName(diskName);
+		disk.format();
+		return new ProdosFormatDisk[] { disk };
 	}
 
 	/**
@@ -184,6 +186,13 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 */
 	public String getDiskName() {
 		return "/" + volumeHeader.getVolumeName() + "/";
+	}
+	
+	/**
+	 * Set the name of the disk (volume name).
+	 */
+	public void setDiskName(String volumeName) {
+		volumeHeader.setVolumeName(volumeName);
 	}
 
 	/**
