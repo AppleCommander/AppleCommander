@@ -139,6 +139,7 @@ public class PascalFormatDisk extends FormattedDisk {
 	/**
 	 * Retrieve a list of files.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFiles()
+	 * @author John B. Matthews (for fixing algorithm)
 	 */
 	public List getFiles() {
 		List list = new ArrayList();
@@ -146,10 +147,10 @@ public class PascalFormatDisk extends FormattedDisk {
 		// process directory blocks:
 		int entrySize = ENTRY_SIZE;
 		int offset = entrySize;
-		while (offset < directory.length) {
+		int count = AppleUtil.getWordValue(directory, 16);
+		for (int i=0; i<count; i++) {
 			byte[] entry = new byte[entrySize];
 			System.arraycopy(directory, offset, entry, 0, entry.length);
-			if (entry[6] == 0) break;	// at end
 			list.add(new PascalFileEntry(entry, this));
 			offset+= entrySize;
 		}
