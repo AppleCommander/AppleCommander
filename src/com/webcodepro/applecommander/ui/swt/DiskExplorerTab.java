@@ -19,16 +19,6 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import com.webcodepro.applecommander.storage.AppleUtil;
 import com.webcodepro.applecommander.storage.AppleWorksWordProcessorFileFilter;
 import com.webcodepro.applecommander.storage.ApplesoftFileFilter;
@@ -42,6 +32,16 @@ import com.webcodepro.applecommander.storage.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.TextFileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk.FileColumnHeader;
 import com.webcodepro.applecommander.ui.UserPreferences;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -88,7 +88,7 @@ public class DiskExplorerTab {
 	private ImageManager imageManager;
 
 	private UserPreferences userPreferences = UserPreferences.getInstance();
-	private FormattedDisk disk;
+	private FormattedDisk[] disks;
 	private FileFilter fileFilter;
 	private GraphicsFileFilter graphicsFilter = new GraphicsFileFilter();
 	private AppleWorksWordProcessorFileFilter awpFilter = new AppleWorksWordProcessorFileFilter();
@@ -101,8 +101,8 @@ public class DiskExplorerTab {
 	/**
 	 * Create the DISK INFO tab.
 	 */
-	public DiskExplorerTab(CTabFolder tabFolder, FormattedDisk disk, ImageManager imageManager) {
-		this.disk = disk;
+	public DiskExplorerTab(CTabFolder tabFolder, FormattedDisk[] disks, ImageManager imageManager) {
+		this.disks = disks;
 		this.shell = tabFolder.getShell();
 		this.imageManager = imageManager;
 		
@@ -129,11 +129,7 @@ public class DiskExplorerTab {
 	 */
 	protected void createFilesTab(CTabFolder tabFolder) {
 		CTabItem ctabitem = new CTabItem(tabFolder, SWT.NULL);
-		if (disk.getLogicalDiskNumber() > 0) {
-			ctabitem.setText("Files #" + disk.getLogicalDiskNumber());
-		} else {
-			ctabitem.setText("Files");
-		}
+		ctabitem.setText("Files");
 
 		Composite composite = new Composite(tabFolder, SWT.NULL);
 		ctabitem.setControl(composite);
@@ -173,33 +169,37 @@ public class DiskExplorerTab {
 
 		sashForm.setWeights(new int[] {1,2});
 
-		TreeItem diskItem = new TreeItem(directoryTree, SWT.BORDER);
-		diskItem.setText(disk.getDiskName());
-		diskItem.setData(disk);
-		directoryTree.setSelection(new TreeItem[] { diskItem });
-		
-		if (disk.canHaveDirectories()) {
-			Iterator files = disk.getFiles().iterator();
-			while (files.hasNext()) {
-				FileEntry entry = (FileEntry) files.next();
-				if (entry.isDirectory()) {
-					TreeItem item = new TreeItem(diskItem, SWT.BORDER);
-					item.setText(entry.getFilename());
-					item.setData(entry);
-					addDirectoriesToTree(item, entry);
+		for (int i=0; i<disks.length; i++) {
+			TreeItem diskItem = new TreeItem(directoryTree, SWT.BORDER);
+			diskItem.setText(disks[i].getDiskName());
+			diskItem.setData(disks[i]);
+			directoryTree.setSelection(new TreeItem[] { diskItem });
+			
+			if (disks[i].canHaveDirectories()) {
+				Iterator files = disks[i].getFiles().iterator();
+				while (files.hasNext()) {
+					FileEntry entry = (FileEntry) files.next();
+					if (entry.isDirectory()) {
+						TreeItem item = new TreeItem(diskItem, SWT.BORDER);
+						item.setText(entry.getFilename());
+						item.setData(entry);
+						addDirectoriesToTree(item, entry);
+					}
 				}
 			}
 		}
-		
+			
 		computeColumnWidths(FormattedDisk.FILE_DISPLAY_STANDARD);
 		computeColumnWidths(FormattedDisk.FILE_DISPLAY_NATIVE);
 		computeColumnWidths(FormattedDisk.FILE_DISPLAY_DETAIL);
 
 		formatChanged = true;
-		fillFileTable(disk.getFiles());
+		fillFileTable(disks[0].getFiles());
+		directoryTree.setSelection(new TreeItem[] { directoryTree.getItems()[0] });
 	}
 	/**
 	 * Construct the popup menu for the directory table on the File tab.
+	 * Using the first logical disk as the indicator for all logical disks.
 	 */
 	protected Menu createDirectoryPopupMenu() {
 		Menu menu = new Menu(shell, SWT.POP_UP);
@@ -212,7 +212,7 @@ public class DiskExplorerTab {
 				treeItem[0].setExpanded(true);
 			}
 		});
-		item.setEnabled(disk.canHaveDirectories());
+		item.setEnabled(disks[0].canHaveDirectories());
 
 		item = new MenuItem(menu, SWT.CASCADE);
 		item.setText("Collapse");
@@ -222,7 +222,7 @@ public class DiskExplorerTab {
 				treeItem[0].setExpanded(false);
 			}
 		});
-		item.setEnabled(disk.canHaveDirectories());
+		item.setEnabled(disks[0].canHaveDirectories());
 
 		item = new MenuItem(menu, SWT.SEPARATOR);
 
@@ -234,7 +234,7 @@ public class DiskExplorerTab {
 				setDirectoryExpandedStates(treeItem[0], true);
 			}
 		});
-		item.setEnabled(disk.canHaveDirectories());
+		item.setEnabled(disks[0].canHaveDirectories());
 
 		item = new MenuItem(menu, SWT.CASCADE);
 		item.setText("Collapse All");
@@ -244,7 +244,7 @@ public class DiskExplorerTab {
 				setDirectoryExpandedStates(treeItem[0], false);
 			}
 		});
-		item.setEnabled(disk.canHaveDirectories());
+		item.setEnabled(disks[0].canHaveDirectories());
 		
 		return menu;
 	}
@@ -256,7 +256,7 @@ public class DiskExplorerTab {
 		
 		MenuItem item = new MenuItem(menu, SWT.CASCADE);
 		item.setText("Import...");
-		item.setEnabled(disk.canCreateFile() && disk.canWriteFileData());
+		item.setEnabled(disks[0].canCreateFile() && disks[0].canWriteFileData());
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				// FIXME
@@ -265,14 +265,14 @@ public class DiskExplorerTab {
 
 		item = new MenuItem(menu, SWT.CASCADE);
 		item.setText("Export");
-		item.setEnabled(disk.canReadFileData());
+		item.setEnabled(disks[0].canReadFileData());
 		item.setMenu(createFileExportMenu(SWT.DROP_DOWN));
 
 		item = new MenuItem(menu, SWT.SEPARATOR);
 
 		item = new MenuItem(menu, SWT.CASCADE);
 		item.setText("Delete...");
-		item.setEnabled(disk.canDeleteFile());
+		item.setEnabled(disks[0].canDeleteFile());
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				// FIXME
@@ -507,7 +507,7 @@ public class DiskExplorerTab {
 	 * These can and are over-ridden by user sizing.
 	 */
 	protected void computeColumnWidths(int format) {
-		List headers = disk.getFileColumnHeaders(format);
+		List headers = disks[0].getFileColumnHeaders(format);
 		int[] headerWidths = new int[headers.size()];
 		GC gc = new GC(shell);
 		for (int i=0; i<headers.size(); i++) {
@@ -550,9 +550,9 @@ public class DiskExplorerTab {
 				 */
 				public void widgetSelected(SelectionEvent event) {
 					if (fileTable.getSelectionCount() > 0) {
-						exportToolItem.setEnabled(disk.canReadFileData());
-						importToolItem.setEnabled(disk.canCreateFile() && disk.canWriteFileData());
-						deleteToolItem.setEnabled(disk.canDeleteFile());
+						exportToolItem.setEnabled(disks[0].canReadFileData());
+						importToolItem.setEnabled(disks[0].canCreateFile() && disks[0].canWriteFileData());
+						deleteToolItem.setEnabled(disks[0].canDeleteFile());
 					} else {
 						exportToolItem.setEnabled(false);
 						importToolItem.setEnabled(false);
@@ -567,7 +567,7 @@ public class DiskExplorerTab {
 				}
 			});
 			TableColumn column = null;
-			List headers = disk.getFileColumnHeaders(currentFormat);
+			List headers = disks[0].getFileColumnHeaders(currentFormat);
 			int[] widths = (int[])columnWidths.get(new Integer(currentFormat));
 			for (int i=0; i<headers.size(); i++) {
 				FileColumnHeader header = (FileColumnHeader) headers.get(i);
@@ -652,7 +652,7 @@ public class DiskExplorerTab {
 					if (fileFilter != null) {
 						data = fileFilter.filter(fileEntry);
 					} else {
-						data = disk.getFileData(fileEntry);
+						data = fileEntry.getFormattedDisk().getFileData(fileEntry);
 					}
 					OutputStream outputStream = new FileOutputStream(file);
 					outputStream.write(data);
@@ -742,7 +742,7 @@ public class DiskExplorerTab {
 		item.setImage(imageManager.getDeletedFilesIcon());
 		item.setText("Deleted");
 		item.setToolTipText("Show deleted files");
-		item.setEnabled(disk.supportsDeletedFiles());
+		item.setEnabled(disks[0].supportsDeletedFiles());
 		item.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				ToolItem button = (ToolItem) e.getSource();
@@ -773,14 +773,15 @@ public class DiskExplorerTab {
 		exportToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent event) {
 				if (event.detail != SWT.ARROW) {
-					ExportWizard wizard = new ExportWizard(shell, 
-						imageManager.getExportWizardLogo(), disk);
 					// Get a suggseted filter, if possible:
 					FileEntry fileEntry = (FileEntry) fileTable.getSelection()[0].getData();
 					if (fileEntry != null) {
 						fileFilter = fileEntry.getSuggestedFilter();
 					}
 					// Start wizard:
+					ExportWizard wizard = new ExportWizard(shell, 
+						imageManager.getExportWizardLogo(), 
+						fileEntry.getFormattedDisk());
 					wizard.setFileFilter(fileFilter);
 					wizard.setDirectory(userPreferences.getExportDirectory());
 					wizard.open();
@@ -810,7 +811,7 @@ public class DiskExplorerTab {
 		saveToolItem.setImage(imageManager.getSaveImageIcon());
 		saveToolItem.setText("Save");
 		saveToolItem.setToolTipText("Save disk image");
-		saveToolItem.setEnabled(disk.hasChanged());
+		saveToolItem.setEnabled(disks[0].hasChanged());	// same physical disk
 		saveToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				save();
@@ -846,8 +847,8 @@ public class DiskExplorerTab {
 	 */
 	protected void save() {
 		try {
-			disk.save();
-			saveToolItem.setEnabled(disk.hasChanged());
+			disks[0].save();
+			saveToolItem.setEnabled(disks[0].hasChanged());
 		} catch (IOException ex) {
 			Shell finalShell = shell;
 			String errorMessage = ex.getMessage();
@@ -858,7 +859,7 @@ public class DiskExplorerTab {
 				SWT.ICON_ERROR | SWT.CLOSE);
 			box.setText("Unable to save disk image!");
 			box.setMessage(
-				  "Unable to save '" + disk.getFilename() + "'.\n\n"
+				  "Unable to save '" + disks[0].getFilename() + "'.\n\n"
 			    + "AppleCommander was unable to save the disk\n"
 			    + "image.  The system error given was '"
 			    + errorMessage + "'\n\n"
