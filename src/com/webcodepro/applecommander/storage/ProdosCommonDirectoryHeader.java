@@ -20,7 +20,7 @@
 package com.webcodepro.applecommander.storage;
 
 /**
- * Provide common directory attributes.
+ * Provide common directory header attributes.
  * <p>
  * Date created: Oct 5, 2002 11:17:00 PM
  * @author: Rob Greene
