@@ -1217,9 +1217,11 @@ public class DiskExplorerTab {
 	 */
 	protected void saveAs() {
 		FileDialog fileDialog = new FileDialog(shell, SWT.SAVE);
+		fileDialog.setFilterPath(userPreferences.getSaveDirectory());
 		fileDialog.setFileName(disks[0].getFilename());
 		fileDialog.setText("Please choose a location and name for your disk image:");
 		String fullpath = fileDialog.open();
+		userPreferences.setSaveDirectory(fileDialog.getFilterPath());
 		if (fullpath == null) {
 			return;	// user pressed cancel
 		}
