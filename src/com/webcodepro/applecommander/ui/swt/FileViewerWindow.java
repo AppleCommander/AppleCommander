@@ -57,6 +57,7 @@ import com.webcodepro.applecommander.storage.filters.AppleWorksDataBaseFileFilte
 import com.webcodepro.applecommander.storage.filters.AppleWorksSpreadSheetFileFilter;
 import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFileFilter;
 import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
+import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.HexDumpFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
@@ -233,6 +234,17 @@ public class FileViewerWindow {
 			nativeToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_AS_TEXTFILE));
 			nativeToolItem.setText("Text");
 			nativeToolItem.setToolTipText("Displays file as a text file (F2)");
+			nativeToolItem.setSelection(true);
+			nativeToolItem.addSelectionListener(new SelectionAdapter () {
+				public void widgetSelected(SelectionEvent e) {
+					displayNativeFormat();
+				}
+			});
+		} else if (nativeFilter instanceof AssemblySourceFileFilter) {
+			nativeToolItem = new ToolItem(toolBar, SWT.RADIO);
+			nativeToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_AS_TEXTFILE));
+			nativeToolItem.setText("Assembly");
+			nativeToolItem.setToolTipText("Displays file as assembly source file (F2)");
 			nativeToolItem.setSelection(true);
 			nativeToolItem.addSelectionListener(new SelectionAdapter () {
 				public void widgetSelected(SelectionEvent e) {
@@ -480,6 +492,9 @@ public class FileViewerWindow {
 			content.setMinWidth(imageData[0].width);
 			content.setMinHeight(imageData[0].height);
 		} else if (nativeFilter instanceof TextFileFilter) {
+			String textDump = new String(nativeFilter.filter(fileEntry));
+			createTextWidget(content, textDump);
+		} else if (nativeFilter instanceof AssemblySourceFileFilter) {
 			String textDump = new String(nativeFilter.filter(fileEntry));
 			createTextWidget(content, textDump);
 		} else {
