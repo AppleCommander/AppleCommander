@@ -23,6 +23,7 @@ import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import com.webcodepro.applecommander.util.AppleUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -495,5 +496,16 @@ public class CpmFormatDisk extends FormattedDisk {
 	 */	
 	public boolean supportsDiskMap() {
 		return true;
+	}
+
+
+	/**
+	 * Change to a different ImageOrder.  Remains in CP/M format but
+	 * the underlying order can chage.
+	 * @see ImageOrder
+	 */
+	public void changeImageOrder(ImageOrder imageOrder) {
+		AppleUtil.changeImageOrderByTrackAndSector(getImageOrder(), imageOrder);
+		setImageOrder(imageOrder);
 	}
 }
