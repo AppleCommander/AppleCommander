@@ -1,6 +1,6 @@
 /*
  * AppleCommander - An Apple ][ image utility.
- * Copyright (C) 2002 by Robert Greene
+ * Copyright (C) 2002-3 by Robert Greene
  * robgreene at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it 
@@ -34,6 +34,7 @@ public class UserPreferences {
 	private static final String FILENAME = "AppleCommander.preferences";
 	private static final String IMAGE_DIRECTORY = "imageDirectory";
 	private static final String EXPORT_DIRECTORY = "exportDirectory";
+	private static final String COMPILE_DIRECTORY = "compileDirectory";
 	private static UserPreferences instance;
 	private Properties properties = new Properties();
 	/**
@@ -86,6 +87,12 @@ public class UserPreferences {
 		return properties.getProperty(EXPORT_DIRECTORY);
 	}
 	/**
+	 * Get the compile directory.
+	 */
+	public String getCompileDirectory() {
+		return properties.getProperty(COMPILE_DIRECTORY);
+	}
+	/**
 	 * Set the disk image directory.
 	 */
 	public void setDiskImageDirectory(String diskImageDirectory) {
@@ -96,5 +103,11 @@ public class UserPreferences {
 	 */
 	public void setExportDirectory(String exportDirectory) {
 		properties.setProperty(EXPORT_DIRECTORY, exportDirectory);
+	}
+	/**
+	 * Set the compile directory.
+	 */
+	public void setCompileDirectory(String compileDirectory) {
+		properties.setProperty(COMPILE_DIRECTORY, compileDirectory);
 	}
 }
