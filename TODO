@@ -10,15 +10,16 @@ This is the internal list of items that need to be done.
   being imported. Mostly useful for ProDOS; unless a filetype mapping is 
   introduced.
 * Extract AppleWorks Data Base files.
+* Extract AppleWorks Spread Sheet files.
 
 --- FUTURE ---
+o Import of multiple files fails after multiple imports.
 o Import file specification should only allow address editing if the filetype
   requires it.
 o Save does not allow the disk image location to be chosen for new images. (Maybe
   the wizard should pay more attention?)
 o The information tab does not get updated.  Now that the disk can be modified,
   this page needs to be updated when shown.
-o RTF export of AWP files could be improved.
 o Work on identifying why GCJ introduces slow performance to some areas.
 o Add RDOS writing capability.
 o Add Apple Pascal writing capability.
@@ -31,6 +32,5 @@ o Provide a command-line interface (scripting - ie, mass load).
 o Add drag-and-drop capability.
 o Compile into native executable (hopefully Linux and Windows).
 o Sector/Block editor.
-o Extract various additional document types (ie, other AppleWorks files).
 o Change disk format.
 o Short-cut keys would be nice.
