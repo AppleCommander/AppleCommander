@@ -31,11 +31,15 @@ import com.webcodepro.applecommander.storage.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.TextFileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk.FileColumnHeader;
+import com.webcodepro.applecommander.ui.ImportSpecification;
 import com.webcodepro.applecommander.ui.UserPreferences;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
@@ -259,7 +263,7 @@ public class DiskExplorerTab {
 		item.setEnabled(disks[0].canCreateFile() && disks[0].canWriteFileData());
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				// FIXME
+				importFiles();
 			}
 		});
 
@@ -704,6 +708,50 @@ public class DiskExplorerTab {
 		}
 	}
 	/**
+	 * Start the import wizard and import the selected files.
+	 */
+	protected void importFiles() {
+		// FIXME - assumes 1st disk and does not support directories
+		FormattedDisk disk = disks[0];
+		ImportWizard wizard = new ImportWizard(shell, 
+			imageManager, disk);
+		wizard.open();
+		if (wizard.isWizardCompleted()) {
+			try {
+				List specs = wizard.getImportSpecifications();
+				for (int i=0; i<specs.size(); i++) {
+					ImportSpecification spec = 
+						(ImportSpecification) specs.get(i);
+					ByteArrayOutputStream buffer = 
+						new ByteArrayOutputStream();
+					InputStream input = 
+						new FileInputStream(spec.getSourceFilename());
+					int data;
+					while ((data = input.read()) != -1) {
+						buffer.write(data);
+					}
+					FileEntry fileEntry = disk.createFile();
+					fileEntry.setFilename(spec.getTargetFilename());
+					fileEntry.setFiletype(spec.getFiletype());
+					if (fileEntry.needsAddress()) {
+						fileEntry.setAddress(spec.getAddress());
+					}
+					fileEntry.setFileData(buffer.toByteArray());
+				}
+			} catch (Exception ex) {
+				MessageBox box = new MessageBox(shell, 
+					SWT.ICON_ERROR | SWT.OK);
+				box.setText("Unable to import file(s)!");
+				box.setMessage(
+					  "An error occured during import.\n\n"
+				    + "'" + ex.getMessage() + "'");
+				box.open();
+			}
+			changeCurrentFormat(currentFormat);
+			saveToolItem.setEnabled(true);
+		}
+	}
+	/**
 	 * Sort the file table by the specified columnIndex.
 	 */
 	protected void sortFileTable(int columnIndex) {
@@ -783,11 +831,7 @@ public class DiskExplorerTab {
 		importToolItem.setEnabled(true);
 		importToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
-				// Start wizard:
-				// FIXME - assumes 1st disk and does not support directories
-				ImportWizard wizard = new ImportWizard(shell, 
-					imageManager, disks[0]);
-				wizard.open();
+				importFiles();
 			}
 		});
 		
