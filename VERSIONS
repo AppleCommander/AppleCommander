@@ -1,3 +1,76 @@
+1.3.1 (2003-12-12)
+* Short-cut keys have been implemented.
+  - From AppleCommander window:
+    - CTRL+O = Open a disk image
+    - CTRL+C = Create a new disk image
+    - CTRL+A = About...
+  - From disk window
+    - Toolbar shortcuts:
+      - F2 = Standard file view
+      - F3 = Native file view
+      - F4 = Detail file view
+      - F5 = Show deleted files
+      - CTRL+I = Import files wizard
+      - CTRL+S = Save
+      - CTRL+SHIFT+S = Save As
+    - Directory shortcuts (in addition to toolbar shortcuts)
+      - "+" = expand one level
+      - "-" = close one level
+      - CTRL+"+" = expand fully
+      - CTRL+"-" = close fully
+    - File shortcuts (in addition to toolbar shortcuts)
+      - CTRL+E = Export file wizard
+      - CTRL+C = Compile BASIC program (BETA)
+      - CTRL+V = View file (later version)
+      - CTRL+D = Delete file
+* Spent time ensuring that buttons, context menus, and shortcuts are enabled or
+  disabled as appropriate.
+* Save does not allow the disk image location to be chosen for new images. (Maybe
+  the wizard should pay more attention?)
+  - Implemented Save As
+  - A save on a new image invokes Save As
+* File preview supports:
+  - BASIC programs (Applesoft and Integer BASIC); Applesoft BASIC is colored
+  - Graphics images (same as supported by the graphics export function)
+  - Appleworks (database, spreadsheet, word processor)
+  - Text files
+  - Hex dump of all the above
+  - "Raw" format of all of the above; this includes all data as read from disk
+    including length and starting address as well as full sectors/blocks
+  - Shortcuts available:
+  	- F2 = Native format view (as applicable)
+  	- F3 = Hex dump view
+  	- F4 = Raw hex dump of disk bytes (includes length or address start along
+  	       with all bytes stored on disk - a multiple of 256 or 512 depending
+  	       on disk format)
+  	- CTRL+A = Select all (only text formats)
+  	- CTRL+C = Copy to clipboard (only text formats)
+  	- CTRL+P = Print
+* Printing is available from the file preview.
+* Copy is avilable from file preview except for images.
+* Opening an invalid disk image (or a file that is not a disk image) no longer
+  crashes AppleCommander.
+* Provide a command-line interface - John Matthews "ac" is now supplied as part
+  of the AppleCommander distribution.  If AppleCommander gets no command-line
+  arguments, the GUI version is launched.  Otherwise, AppleCommander reserves
+  the following messages:
+  		-swt = force SWT version
+  		-swing = force Swing version (N/A - may be removed)
+  		-command = force command interpreter (not done - may be superceded by
+  		    the "ac" utility)
+  		-help or -? = general help messages
+  Everything else is passed on to John's "ac" command-line version (from the
+  application help):
+		AppleCommander command line options:
+		-l <imagename> list directory of image.
+		-e <filename> <imagename> export file from image to stdout.
+		-g <filename> <imagename> get raw file from image to stdout.
+		-p <destname> <type> <addr> <imagename> put stdin
+		   in destname on image, using file type and address.
+		-d <filename> <imagename> delete file from image.
+		-p140 <imagename> <volname> create a 140K ProDOS image.
+		-p800 <imagename> <volname> create a 800K ProDOS image.
+
 1.3.0 (2003-12-05)
 * HDV disks are not always created to their full capacity.  AppleCommander, however,
   assumes that the size of the file on disk is the size of the disk.  (Really!)
