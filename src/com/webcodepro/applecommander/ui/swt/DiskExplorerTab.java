@@ -60,9 +60,15 @@ import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.printing.PrintDialog;
+import org.eclipse.swt.printing.Printer;
+import org.eclipse.swt.printing.PrinterData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
@@ -92,6 +98,7 @@ public class DiskExplorerTab {
 	private static final char CTRL_D = 'D' - '@';
 	private static final char CTRL_E = 'E' - '@';
 	private static final char CTRL_I = 'I' - '@';
+	private static final char CTRL_P = 'P' - '@';
 	private static final char CTRL_S = 'S' - '@';
 	private static final char CTRL_V = 'V' - '@';
 
@@ -1132,10 +1139,12 @@ public class DiskExplorerTab {
 		printToolItem.setImage(imageManager.get(ImageManager.ICON_PRINT_FILE));
 		printToolItem.setText("Print");
 		printToolItem.setToolTipText("Print directory listing...");
-		printToolItem.setEnabled(false);
+		printToolItem.setEnabled(true);
 		printToolItem.addSelectionListener(new SelectionAdapter () {
-			public void widgetSelected(SelectionEvent e) {
-				// FIXME
+			public void widgetSelected(SelectionEvent event) {
+				if (event.detail != SWT.ARROW) {
+					print();
+				}
 			}
 		});
 		
@@ -1365,6 +1374,9 @@ public class DiskExplorerTab {
 								case CTRL_I:	// Import Wizard
 									importFiles();
 									break;
+								case CTRL_P:	// Print...
+									print();
+									break;
 								case CTRL_S:	// Save
 									if (saveToolItem.isEnabled()) {
 										save();
@@ -1405,5 +1417,182 @@ public class DiskExplorerTab {
 			fileEntry = (FileEntry) fileTable.getItem(fileTable.getSelectionIndex()).getData();
 		}
 		return fileEntry;
+	}
+	/**
+	 * Internal class that controls printing of a file listing.
+	 */
+	private class Printing implements Runnable {
+		private Printer printer;
+		private int y;
+		private int x;
+		private Rectangle clientArea;
+		private GC gc;
+		private List fileHeaders;
+		private int[] columnWidths;
+		private int[] columnPosition;
+		private Font normalFont;
+		private Font headerFont;
+		private String filename;
+		private int page = 1;
+		private int dpiY;
+		private int dpiX;
+		public Printing(Printer printer) {
+			this.printer = printer;
+		}
+		public void run() {
+			if (printer.startJob(disks[0].getFilename())) {
+				clientArea = printer.getClientArea();
+				dpiY = printer.getDPI().y;
+				dpiX = printer.getDPI().x;
+				// Setup 1" margin:
+				Rectangle trim = printer.computeTrim(0, 0, 0, 0);
+				clientArea.x = dpiX + trim.x; 				
+				clientArea.y = dpiY + trim.y;
+				clientArea.width -= (clientArea.x + trim.width);
+				clientArea.height -= (clientArea.y + trim.height);
+				// Set default values: 
+				y = clientArea.y;
+				x = clientArea.x;
+				gc = new GC(printer);
+				int fontSize = 12;
+				if (currentFormat == FormattedDisk.FILE_DISPLAY_NATIVE) {
+					fontSize = 10;
+				} else if (currentFormat == FormattedDisk.FILE_DISPLAY_DETAIL) {
+					fontSize = 8;
+				}
+				normalFont = new Font(printer, "", fontSize, SWT.NORMAL);
+				headerFont = new Font(printer, "", fontSize, SWT.BOLD);
+				for (int i=0; i<disks.length; i++) {
+					FormattedDisk disk = disks[i];
+					filename = disk.getFilename();
+					fileHeaders =  disk.getFileColumnHeaders(currentFormat);
+					gc.setFont(headerFont);
+					computeHeaderWidths();
+					printFileHeaders();
+					gc.setFont(normalFont);
+					println(disk.getDiskName());
+					printFiles(disk, 1);
+				}
+				if (y != clientArea.y) {	// partial page
+					printFooter();
+					printer.endPage();
+				}
+				printer.endJob();
+			}
+		}
+		protected void computeHeaderWidths() {
+			int totalWidth = 0;
+			int[] widths = new int[fileHeaders.size()];
+			for (int i=0; i<fileHeaders.size(); i++) {
+				FileColumnHeader header = (FileColumnHeader) fileHeaders.get(i);
+				widths[i] = (header.getMaximumWidth() >= header.getTitle().length()) ?
+					header.getMaximumWidth() : header.getTitle().length();
+				totalWidth+= widths[i];
+			}
+			columnWidths = new int[fileHeaders.size()];
+			columnPosition = new int[fileHeaders.size()];
+			int position = clientArea.x;
+			for (int i=0; i<fileHeaders.size(); i++) {
+				columnWidths[i] = (widths[i] * clientArea.width) / totalWidth;
+				columnPosition[i] = position; 
+				position+= columnWidths[i];
+			}
+		}
+		protected void printFileHeaders() {
+			for (int i=0; i<fileHeaders.size(); i++) {
+				FileColumnHeader header = (FileColumnHeader) fileHeaders.get(i);
+				print(i, header.getTitle(), header.getAlignment());
+			}
+			println("");
+		}
+		protected void print(int column, String text, int alignment) {
+			int x0 = columnPosition[column];
+			int x1 = (column+1 < columnPosition.length) ?
+					columnPosition[column+1] : clientArea.width;
+			int w = columnWidths[column];
+			switch (alignment) {
+				case FileColumnHeader.ALIGN_LEFT:
+					x = x0;
+					break;
+				case FileColumnHeader.ALIGN_CENTER:
+					x = x0 + (w - gc.stringExtent(text).x)/2;
+					break;
+				case FileColumnHeader.ALIGN_RIGHT:
+					x = x1 - gc.stringExtent(text).x;
+					break;
+			}
+			gc.drawString(text,x,y);
+		}
+		protected void println(String string) {
+			if (y == clientArea.y) {	// start of page
+				printer.startPage();
+				printHeader();
+				y++;	// hack
+				printFileHeaders();
+			}
+			gc.drawString(string, x, y);
+			x = clientArea.x;
+			y+= gc.stringExtent(string).y;
+			if (y > (clientArea.y + clientArea.height)) {	// filled a page
+				printFooter();
+				printer.endPage();
+				y = clientArea.y;
+			}
+		}
+		protected void printHeader() {
+			Point point = gc.stringExtent(filename);
+			gc.drawString(filename, 
+				clientArea.x + (clientArea.width - point.x)/2, 
+				y - dpiY + point.y);
+		}
+		protected void printFooter() {
+			String text = "Page " + Integer.toString(page);
+			Point point = gc.stringExtent(text);
+			gc.drawString(text, 
+				clientArea.x + (clientArea.width - point.x)/2, 
+				clientArea.y + clientArea.height + dpiY - point.y);
+			page++;
+		}
+		protected void printFiles(DirectoryEntry directory, int level) {
+			Iterator iterator = directory.getFiles().iterator();
+			while (iterator.hasNext()) {
+				FileEntry fileEntry = (FileEntry) iterator.next();
+				if (!fileEntry.isDeleted() || showDeletedFiles) {
+					List columns = fileEntry.getFileColumnData(currentFormat);
+					for (int i=0; i<columns.size(); i++) {
+						FileColumnHeader header = (FileColumnHeader) fileHeaders.get(i);
+						String text = (String)columns.get(i);
+						if ("name".equalsIgnoreCase(header.getTitle())) {
+							for (int l=0; l<level; l++) {
+								text = "  " + text;
+							}
+						}
+						print(i, text, header.getAlignment());
+					}
+					println("");
+					if (fileEntry.isDirectory()) {
+						printFiles((DirectoryEntry)fileEntry, level+1);
+					}
+				}
+			}
+		}
+	}
+	/**
+	 * Print the file listing for this disk. 
+	 */
+	protected void print() {
+		PrintDialog printDialog = new PrintDialog(shell);
+		PrinterData printerData = printDialog.open();
+		if (printerData == null) {
+			// cancelled
+			return;
+		}
+		final Printer printer = new Printer(printerData);
+		new Thread() {
+			public void run() {
+				new Printing(printer).run();
+				printer.dispose();
+			}
+		}.start();
 	}
 }
