@@ -549,13 +549,12 @@ public class DiskExplorerTab {
 				 * Single-click handler.
 				 */
 				public void widgetSelected(SelectionEvent event) {
+					importToolItem.setEnabled(disks[0].canCreateFile() && disks[0].canWriteFileData());
 					if (fileTable.getSelectionCount() > 0) {
 						exportToolItem.setEnabled(disks[0].canReadFileData());
-						importToolItem.setEnabled(disks[0].canCreateFile() && disks[0].canWriteFileData());
 						deleteToolItem.setEnabled(disks[0].canDeleteFile());
 					} else {
 						exportToolItem.setEnabled(false);
-						importToolItem.setEnabled(false);
 						deleteToolItem.setEnabled(false);
 					}
 				}
@@ -604,9 +603,9 @@ public class DiskExplorerTab {
 		formatChanged = false;
 		currentFileList = fileList;
 
-		// disable all file-leve operations:
+		// disable all file-level operations:
 		exportToolItem.setEnabled(false);
-		importToolItem.setEnabled(false);
+		//importToolItem.setEnabled(false);
 		deleteToolItem.setEnabled(false);
 	}
 	/**
@@ -781,10 +780,14 @@ public class DiskExplorerTab {
 		importToolItem.setImage(imageManager.getImportFileIcon());
 		importToolItem.setText("Import...");
 		importToolItem.setToolTipText("Import a file");
-		importToolItem.setEnabled(false);
+		importToolItem.setEnabled(true);
 		importToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
-				// FIXME
+				// Start wizard:
+				// FIXME - assumes 1st disk and does not support directories
+				ImportWizard wizard = new ImportWizard(shell, 
+					imageManager, disks[0]);
+				wizard.open();
 			}
 		});
 		
@@ -805,8 +808,7 @@ public class DiskExplorerTab {
 					}
 					// Start wizard:
 					ExportWizard wizard = new ExportWizard(shell, 
-						imageManager.getExportWizardLogo(), 
-						fileEntry.getFormattedDisk());
+						imageManager, fileEntry.getFormattedDisk());
 					wizard.setFileFilter(fileFilter);
 					wizard.setDirectory(userPreferences.getExportDirectory());
 					wizard.open();
