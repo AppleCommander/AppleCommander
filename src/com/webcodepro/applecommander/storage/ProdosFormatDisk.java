@@ -671,7 +671,11 @@ public class ProdosFormatDisk extends FormattedDisk {
 		int blocksOnDisk = getBitmapLength();
 		while (block < blocksOnDisk) {
 			if (isBlockFree(volumeBitmap,block)) {
-				return block;
+				if ((block+1) * BLOCK_SIZE < getDiskImage().length) {
+					return block;
+				}
+				throw new ProdosDiskSizeDoesNotMatchException(
+					"The ProDOS physical disk size does not match the formatted size.");
 			}
 			block++;
 		}
