@@ -456,7 +456,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 			// the minimum size is guessed a bit - I don't remember, but maybe there
 			// are 8 spare bytes at the end of the graphics screen
 			GraphicsFileFilter filter = new GraphicsFileFilter();
-			if (size >= 8185 && size <= 8192) {
+			if (size >= 8184 && size <= 8192) {
 				filter.setMode(GraphicsFileFilter.MODE_HGR_COLOR);
 				return filter;
 			} else if (size >= 16377 && size <= 16384) {

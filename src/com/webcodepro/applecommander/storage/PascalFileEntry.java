@@ -239,6 +239,10 @@ public class PascalFileEntry implements FileEntry {
 	public FileFilter getSuggestedFilter() {
 		if ("textfile".equals(getFiletype())) {
 			return new TextFileFilter();
+		} else if ("datafile".equals(getFiletype()) && getSize() >= 8184 && getSize() <= 8192) {
+			GraphicsFileFilter filter = new GraphicsFileFilter();
+			filter.setMode(GraphicsFileFilter.MODE_HGR_COLOR);
+			return filter;
 		}
 		return new BinaryFileFilter();
 	}
