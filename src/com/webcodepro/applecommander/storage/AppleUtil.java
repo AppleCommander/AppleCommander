@@ -131,13 +131,7 @@ public class AppleUtil {
 	 * Create an Apple string that is space delimited.
 	 */
 	public static void setString(byte[] buffer, int offset, String string, int length) {
-		for (int i=0; i<length; i++) {
-			char ch = ' ';
-			if (i < string.length()) {
-				ch = string.charAt(i);
-			}
-			buffer[offset+i] = (byte) (ch | 0x80);
-		}
+		setString(buffer, offset, string, length, true);
 	}
 
 	/**
