@@ -20,6 +20,8 @@
 package com.webcodepro.applecommander.ui.swt;
 
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
@@ -27,79 +29,88 @@ import org.eclipse.swt.widgets.Display;
 /**
  * Manage image for the SWT-base AppleCommander.
  * <p>
+ * As of Dec 9 2003, the design has changed.  Instead of "programming" for
+ * each image, there will be a series of public-scoped constants available
+ * to retrieve an image.  This will make adding an image as simple as adding
+ * the constant and adding that constant to the list of images to load, instead
+ * of writing two methods, adding a private method, and adding code to the
+ * constructor. 
+ * <p>
  * Date created: Nov 17, 2002 6:53:08 PM
  * @author: Rob Greene
  */
 public class ImageManager {
-	private Image logoImage;
-	private Image diskIcon;
-	private Image standardFileViewIcon;
-	private Image nativeFileViewIcon;
-	private Image detailFileViewIcon;
-	private Image importFileIcon;
-	private Image exportFileIcon;
-	private Image saveImageIcon;
-	private Image deleteFileIcon;
-	private Image deletedFilesIcon;
-	private Image exportWizardLogo;
-	private Image openDiskIcon;
-	private Image newDiskIcon;
-	private Image aboutIcon;
-	private Image diskImageWizardLogo;
-	private Image importWizardLogo;
-	private Image compileIcon;
-	private Image compileWizardLogo;
-	private Image viewFileIcon;
-	private Image saveAsIcon;
+	public static final String ICON_DISK = "diskicon.gif";
+	public static final String ICON_STANDARD_FILE_VIEW = "standardfileview.gif";
+	public static final String ICON_NATIVE_FILE_VIEW = "nativefileview.gif";
+	public static final String ICON_DETAIL_FILE_VIEW = "detailfileview.gif";
+	public static final String ICON_IMPORT_FILE = "importfile.gif";
+	public static final String ICON_EXPORT_FILE = "exportfile.gif";
+	public static final String ICON_SAVE_DISK_IMAGE = "saveimage.gif";
+	public static final String ICON_DELETE_FILE = "deletefile.gif";
+	public static final String ICON_SHOW_DELETED_FILES = "deletedfiles.gif";
+	public static final String ICON_OPEN_DISK_IMAGE = "opendisk.gif";
+	public static final String ICON_NEW_DISK_IMAGE = "newdisk.gif";
+	public static final String ICON_ABOUT_APPLECOMMANDER = "about.gif";
+	public static final String ICON_COMPILE_FILE = "compile.gif";
+	public static final String ICON_VIEW_FILE = "viewfile.gif";
+	public static final String ICON_SAVE_DISK_IMAGE_AS = "saveas.gif";
+	public static final String ICON_VIEW_AS_DATABASE = "database.gif";
+	public static final String ICON_VIEW_IN_HEX = "hex.gif";
+	public static final String ICON_VIEW_AS_IMAGE = "image.gif";
+	public static final String ICON_PRINT_FILE = "print.gif";
+	public static final String ICON_VIEW_IN_RAW_HEX = "raw.gif";
+	public static final String ICON_VIEW_AS_SPREADSHEET = "spreadsheet.gif";
+	public static final String ICON_VIEW_AS_TEXTFILE = "text.gif";
+	public static final String ICON_VIEW_AS_WORDPROCESSOR = "wordprocessor.gif";
+	public static final String ICON_VIEW_AS_BASIC_PROGRAM = "appleicon.gif";
+
+	public static final String LOGO_EXPORT_WIZARD = "ExportWizardLogo.gif";
+	public static final String LOGO_APPLECOMMANDER = "AppleCommanderLogo.gif";
+	public static final String LOGO_DISK_IMAGE_WIZARD = "DiskImageWizardLogo.gif";
+	public static final String LOGO_IMPORT_WIZARD = "ImportWizardLogo.gif";
+	public static final String LOGO_COMPILE_WIZARD = "CompileWizardLogo.gif";
+	
+	private Map images = new HashMap();
+	private String[] imageNames = {
+		// Icons:
+		ICON_DISK,					ICON_STANDARD_FILE_VIEW,
+		ICON_NATIVE_FILE_VIEW,		ICON_DETAIL_FILE_VIEW,
+		ICON_IMPORT_FILE,			ICON_EXPORT_FILE,
+		ICON_SAVE_DISK_IMAGE,		ICON_DELETE_FILE,
+		ICON_SHOW_DELETED_FILES,	ICON_OPEN_DISK_IMAGE,
+		ICON_NEW_DISK_IMAGE,		ICON_ABOUT_APPLECOMMANDER,
+		ICON_COMPILE_FILE,			ICON_VIEW_FILE,
+		ICON_SAVE_DISK_IMAGE_AS,	ICON_VIEW_AS_DATABASE,
+		ICON_VIEW_IN_HEX,			ICON_VIEW_AS_IMAGE,
+		ICON_PRINT_FILE,			ICON_VIEW_IN_RAW_HEX,
+		ICON_VIEW_AS_SPREADSHEET,	ICON_VIEW_AS_TEXTFILE,
+		ICON_VIEW_AS_WORDPROCESSOR,	ICON_VIEW_AS_BASIC_PROGRAM,
+		// Logos:
+		LOGO_EXPORT_WIZARD,			LOGO_APPLECOMMANDER,
+		LOGO_DISK_IMAGE_WIZARD,		LOGO_IMPORT_WIZARD,
+		LOGO_COMPILE_WIZARD
+	};
 	/**
-	 * Construct the ImageManager.
+	 * Construct the ImageManager and load all images.
 	 */
 	protected ImageManager(Display display) {
-		diskIcon = createImage(display, "diskicon.gif");
-		standardFileViewIcon = createImage(display, "standardfileview.gif");
-		nativeFileViewIcon = createImage(display, "nativefileview.gif");
-		detailFileViewIcon = createImage(display, "detailfileview.gif");
-		importFileIcon = createImage(display, "importfile.gif");
-		exportFileIcon = createImage(display, "exportfile.gif");
-		saveImageIcon = createImage(display, "saveimage.gif");
-		deleteFileIcon = createImage(display, "deletefile.gif");
-		deletedFilesIcon = createImage(display, "deletedfiles.gif");
-		exportWizardLogo = createImage(display, "ExportWizardLogo.gif");
-		logoImage = createImage(display, "AppleCommanderLogo.gif");
-		openDiskIcon = createImage(display, "opendisk.gif");
-		newDiskIcon = createImage(display, "newdisk.gif");
-		aboutIcon = createImage(display, "about.gif");
-		diskImageWizardLogo = createImage(display, "DiskImageWizardLogo.gif");
-		importWizardLogo = createImage(display, "ImportWizardLogo.gif");
-		compileIcon = createImage(display, "compile.gif");
-		compileWizardLogo = createImage(display, "CompileWizardLogo.gif");
-		viewFileIcon = createImage(display, "viewfile.gif");
-		saveAsIcon = createImage(display, "saveas.gif");
+		for (int i=0; i<imageNames.length; i++) {
+			String imageName = imageNames[i];
+			Image image = createImage(display, imageName);
+			images.put(imageName, image);
+		}
 	}
 	/**
 	 * Dispose of resources.
 	 */
 	public void dispose() {
-		diskIcon.dispose();
-		standardFileViewIcon.dispose();
-		nativeFileViewIcon.dispose();
-		detailFileViewIcon.dispose();
-		importFileIcon.dispose();
-		exportFileIcon.dispose();
-		saveImageIcon.dispose();
-		deleteFileIcon.dispose();
-		deletedFilesIcon.dispose();
-		logoImage.dispose();
-		exportWizardLogo.dispose();
-		openDiskIcon.dispose();
-		newDiskIcon.dispose();
-		aboutIcon.dispose();
-		diskImageWizardLogo.dispose();
-		importWizardLogo.dispose();
-		compileIcon.dispose();
-		compileWizardLogo.dispose();
-		viewFileIcon.dispose();
-		saveAsIcon.dispose();
+		for (int i=0; i<imageNames.length; i++) {
+			String imageName = imageNames[i];
+			Image image = (Image) images.get(imageName);
+			image.dispose();
+			images.remove(imageName);
+		}
 	}
 	/**
 	 * Creates an image.
@@ -118,162 +129,9 @@ public class ImageManager {
 		return null;
 	}
 	/**
-	 * Returns the deletedFilesIcon.
-	 * @return Image
+	 * Get an image.
 	 */
-	public Image getDeletedFilesIcon() {
-		return deletedFilesIcon;
-	}
-
-	/**
-	 * Returns the deleteFileIcon.
-	 * @return Image
-	 */
-	public Image getDeleteFileIcon() {
-		return deleteFileIcon;
-	}
-
-	/**
-	 * Returns the detailFileViewIcon.
-	 * @return Image
-	 */
-	public Image getDetailFileViewIcon() {
-		return detailFileViewIcon;
-	}
-
-	/**
-	 * Returns the diskIcon.
-	 * @return Image
-	 */
-	public Image getDiskIcon() {
-		return diskIcon;
-	}
-
-	/**
-	 * Returns the exportFileIcon.
-	 * @return Image
-	 */
-	public Image getExportFileIcon() {
-		return exportFileIcon;
-	}
-
-	/**
-	 * Returns the exportWizardLogo.
-	 * @return Image
-	 */
-	public Image getExportWizardLogo() {
-		return exportWizardLogo;
-	}
-
-	/**
-	 * Returns the importFileIcon.
-	 * @return Image
-	 */
-	public Image getImportFileIcon() {
-		return importFileIcon;
-	}
-
-	/**
-	 * Returns the logoImage.
-	 * @return Image
-	 */
-	public Image getLogoImage() {
-		return logoImage;
-	}
-
-	/**
-	 * Returns the nativeFileViewIcon.
-	 * @return Image
-	 */
-	public Image getNativeFileViewIcon() {
-		return nativeFileViewIcon;
-	}
-
-	/**
-	 * Returns the saveImageIcon.
-	 * @return Image
-	 */
-	public Image getSaveImageIcon() {
-		return saveImageIcon;
-	}
-
-	/**
-	 * Returns the standardFileViewIcon.
-	 * @return Image
-	 */
-	public Image getStandardFileViewIcon() {
-		return standardFileViewIcon;
-	}
-
-	/**
-	 * Returns the aboutIcon.
-	 * @return Image
-	 */
-	public Image getAboutIcon() {
-		return aboutIcon;
-	}
-
-	/**
-	 * Returns the newDiskIcon.
-	 * @return Image
-	 */
-	public Image getNewDiskIcon() {
-		return newDiskIcon;
-	}
-
-	/**
-	 * Returns the openDiskIcon.
-	 * @return Image
-	 */
-	public Image getOpenDiskIcon() {
-		return openDiskIcon;
-	}
-
-	/**
-	 * Returns the diskImageWizardLogo.
-	 * @return Image
-	 */
-	public Image getDiskImageWizardLogo() {
-		return diskImageWizardLogo;
-	}
-	
-	/**
-	 * Returns the importWizardLogo.
-	 * @return Image
-	 */
-	public Image getImportWizardLogo() {
-		return importWizardLogo;
-	}
-	
-	/**
-	 * Returns the compileIcon.
-	 * @return Image
-	 */
-	public Image getCompileIcon() {
-		return compileIcon;
-	}
-	
-	/**
-	 * Returns the compileWizardLogo.
-	 * @return Image
-	 */
-	public Image getCompileWizardLogo() {
-		return compileWizardLogo;
-	}
-
-	/**
-	 * Returns the viewFileIcon.
-	 * @return Image
-	 */
-	public Image getViewFileIcon() {
-		return viewFileIcon;
-	}
-
-	/**
-	 * Returns the saveAsIcon.
-	 * @return Image
-	 */
-	public Image getSaveAsIcon() {
-		return saveAsIcon;
+	public Image get(String imageName) {
+		return (Image) images.get(imageName);
 	}
 }
