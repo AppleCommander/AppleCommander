@@ -1,6 +1,6 @@
 /*
  * AppleCommander - An Apple ][ image utility.
- * Copyright (C) 2002 by Robert Greene
+ * Copyright (C) 2002-3 by Robert Greene
  * robgreene at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it 
@@ -19,6 +19,7 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
+import com.webcodepro.applecommander.compiler.ApplesoftCompiler;
 import com.webcodepro.applecommander.storage.AppleWorksWordProcessorFileFilter;
 import com.webcodepro.applecommander.storage.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.BinaryFileFilter;
@@ -92,6 +93,7 @@ public class DiskExplorerTab {
 	private ToolBar toolBar;
 	private ToolItem exportToolItem;
 	private ToolItem importToolItem;
+	private ToolItem compileToolItem;
 	private ToolItem deleteToolItem;
 	private ToolItem saveToolItem;
 	private ImageManager imageManager;
@@ -127,6 +129,7 @@ public class DiskExplorerTab {
 		exportToolItem.dispose();
 		importToolItem.dispose();
 		deleteToolItem.dispose();
+		compileToolItem.dispose();
 		toolBar.dispose();
 
 		directoryTree = null;
@@ -562,8 +565,11 @@ public class DiskExplorerTab {
 				public void widgetSelected(SelectionEvent event) {
 					importToolItem.setEnabled(disks[0].canCreateFile() && disks[0].canWriteFileData());
 					if (fileTable.getSelectionCount() > 0) {
+						FileEntry fileEntry = (FileEntry) fileTable.getItem(fileTable.getSelectionIndex()).getData();
 						exportToolItem.setEnabled(disks[0].canReadFileData());
 						deleteToolItem.setEnabled(disks[0].canDeleteFile());
+						// FIXME:
+						compileToolItem.setEnabled(fileEntry.canCompile());
 					} else {
 						exportToolItem.setEnabled(false);
 						deleteToolItem.setEnabled(false);
@@ -683,6 +689,69 @@ public class DiskExplorerTab {
 					    + errorMessage + "'\n\n"
 						+ "Sorry!\n\n"
 						+ "Press OK to continue export or CANCEL to cancel export.");
+					int button = box.open();
+					if (button == SWT.CANCEL) break;	// break out of loop
+				}
+			}
+		}
+	}
+	/**
+	 * Compile all selected files.
+	 * FIXME: This is a near duplicate of exportFile.  Can they be merged?
+	 */
+	private void compileFile(String directory) {
+		boolean promptForIndividualFiles = (directory == null);
+		TableItem[] selection = fileTable.getSelection();
+		for (int i=0; i<selection.length; i++) {
+			TableItem tableItem = selection[i];
+			FileEntry fileEntry = (FileEntry) tableItem.getData();
+			String filename = null;
+			if (promptForIndividualFiles) {
+				FileDialog fileDialog = new FileDialog(shell, SWT.SAVE);
+				fileDialog.setFilterPath(userPreferences.getCompileDirectory());
+				fileDialog.setFileName(fileEntry.getFilename() + ".S");
+				filename = fileDialog.open();
+				directory = fileDialog.getFilterPath();
+			} else {
+				filename = directory + File.separator + AppleUtil.
+					getNiceFilename(fileEntry.getFilename() + ".S");
+			}
+			if (filename != null) {
+				userPreferences.setCompileDirectory(directory);
+				try {
+					File file = new File(filename);
+					if (file.exists()) {
+						Shell finalShell = shell;
+						MessageBox box = new MessageBox(finalShell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+						box.setText("File already exists!");
+						box.setMessage(
+							"The file '" + filename + "' already exists. "
+							+ "Do you want to over-write it?");
+						if (box.open() == SWT.NO) {
+							return;	// do not overwrite file
+						}
+					}
+					ApplesoftCompiler compiler = new ApplesoftCompiler(fileEntry);
+					byte[] assembly = compiler.compile();
+					OutputStream outputStream = new FileOutputStream(file);
+					outputStream.write(assembly);
+					outputStream.close();
+				} catch (Exception ex) {
+					Shell finalShell = shell;
+					String errorMessage = ex.getMessage();
+					if (errorMessage == null) {
+						errorMessage = ex.getClass().getName();
+					}
+					MessageBox box = new MessageBox(finalShell, 
+						SWT.ICON_ERROR | SWT.OK | SWT.CANCEL);
+					box.setText("Unable to compile file!");
+					box.setMessage(
+						  "Unable to compile '" + filename + "'.\n\n"
+						+ "AppleCommander was unable to compile the file.\n"
+						+ "The system error given was '"
+						+ errorMessage + "'\n\n"
+						+ "Sorry!\n\n"
+						+ "Press OK to continue compiles or CANCEL to cancel compiles.");
 					int button = box.open();
 					if (button == SWT.CANCEL) break;	// break out of loop
 				}
@@ -932,12 +1001,27 @@ public class DiskExplorerTab {
 		});
 		item = new ToolItem(toolBar, SWT.SEPARATOR);
 
-		item = new ToolItem(toolBar, SWT.PUSH);
-		item.setImage(imageManager.getCompileIcon());
-		item.setText("Compile");
-		item.setToolTipText("Compile a BASIC program");
-		item.setEnabled(false);
-		//FIXME - need a listener
+		compileToolItem = new ToolItem(toolBar, SWT.PUSH);
+		compileToolItem.setImage(imageManager.getCompileIcon());
+		compileToolItem.setText("Compile");
+		compileToolItem.setToolTipText("Compile a BASIC program");
+		compileToolItem.setEnabled(false);
+		compileToolItem.addSelectionListener(new SelectionAdapter () {
+			public void widgetSelected(SelectionEvent event) {
+				if (event.detail != SWT.ARROW) {
+					// Start wizard:
+					FileEntry fileEntry = (FileEntry) fileTable.getSelection()[0].getData();
+					CompileWizard wizard = new CompileWizard(shell, 
+						imageManager, fileEntry.getFormattedDisk());
+					wizard.setDirectory(userPreferences.getCompileDirectory());
+					wizard.open();
+					if (wizard.isWizardCompleted()) {
+						String compileDirectory = wizard.getDirectory();
+						compileFile(compileDirectory);
+					}
+				}
+			}
+		});
 		item = new ToolItem(toolBar, SWT.SEPARATOR);
 
 		deleteToolItem = new ToolItem(toolBar, SWT.PUSH);
