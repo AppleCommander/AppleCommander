@@ -19,6 +19,7 @@ This is the internal list of items that need to be done.
   formats (Orca, APW, etc).
 * File viewer window now scrolls an appropriate amount: PgUp/PgDn, arrows, 
   mousewheel all work (must select content area first of course).
+* Wizard windows no longer show up with the title bar off the screen.
 
 --- FUTURE 1.3.x ---
 o Create reusable show dialog messages (they're scattered all over right now) to clean

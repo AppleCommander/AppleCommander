@@ -40,6 +40,8 @@ public class SwtUtil {
 			(parent.getSize().x - child.getSize().x) / 2;
 		int y = parent.getLocation().y +
 			(parent.getSize().y - child.getSize().y) / 2;
+		if (x < 0) x = 0;
+		if (y < 0) y = 0;
 		child.setLocation(x,y);
 	}
 
