@@ -6,11 +6,13 @@ This is the internal list of items that need to be done.
 * Separated image support for GraphicsFileFilter.  This allows easier preparation
   for compiling AppleCommander as a Windows executable (and allows limited image
   support to boot).
+* Compile into native executable (Windows works now).
+* Work on identifying why GCJ introduces slow performance to some areas.  This
+  appears to be resolved with an early build of GCJ 3.3.
 
 --- FUTURE 1.2.x ---
 o Save does not allow the disk image location to be chosen for new images. (Maybe
   the wizard should pay more attention?)
-o Work on identifying why GCJ introduces slow performance to some areas.
 o Add RDOS writing capability.
 o Add Apple Pascal writing capability.
 o Create subdirectories as appropriate (ProDOS).
@@ -18,7 +20,6 @@ o HDV disks are not always created to their full capacity.  AppleCommander, howe
   assumes that the size of the file on disk is the size of the disk.  (Really!)
   This is likely an issue because the ProDOS bitmap indicates there is a certain
   amount of space and AppleCommander just assumes that the data exists.
-o Compile into native executable (hopefully Linux and Windows).
 o Short-cut keys would be nice.
 o Need to update preferences with import location, disk creation location.
   

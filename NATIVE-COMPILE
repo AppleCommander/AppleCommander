@@ -1,11 +1,3 @@
-Notes on attempts to compile AppleCommander natively... ultimately should
-be directions!
-
-
-Issues (general):
-1) Unable to handle graphics (images) in native mode.  Need to patch code in
-   compile process manually to get a clean compile.
-
 
 *********************
 **     LINUX       **
@@ -20,12 +12,12 @@ builds the SWT swt.so file.
 **     WINDOWS      **
 **********************
 
-Building AppleCommander for Windows using MinGW (2.0.3 with GCJ update).
+Building AppleCommander for Windows using MinGW (2.0.3 with GCJ update to 3.3).
 See build/build-applecommander-mingw for the current script.
 
 1.  Using MinGW, date related support classes are not compiled in.  This is a known
     issue and there is a suggested work-around posted here:
-	http://gcc.gnu.org/ml/java/2002-04/msg00180.html
+        http://gcc.gnu.org/ml/java/2002-04/msg00180.html
     Basically, force a reference to the classes which cause the error - the problem
     lies in classes loaded by reflection, so this forces these classes to be
     compiled in.  The suggested prelude is:
@@ -39,29 +31,37 @@ See build/build-applecommander-mingw for the current script.
         private static Class c7 = gnu.gcj.convert.Output_ASCII.class;
     Presumably, this is just needed in one class - probably the class which contains
     the main method.  I am currently pasting this into AppleCommander.java itself.
+    A better solution would be to do this automatically...
 
-2.  GraphicsFilter still cannot contain references to the JDK 1.4 ImageIO libraries,
-    nor the SUN-specific JPEG classes.  References to these classes need to be commented
-    out -- essentially rendering the graphics filter useless.  The user-interface should
-    auto-detect this and give no options for image codecs.
+*************************
+** MISCELLANEOUS NOTES **
+*************************
 
-    This also suggests that the GraphicsFilter needs to be re-engineered to be less rigid.
-    The filter itself should accept (or detect, I don't know yet) via Reflection what
-    classes are available and choose an appropriate filter.  This would/could change
-    the compile process to just delete the inappropriate filters and the GrapicsFilter
-    class would auto-adjust to the loss by choosing a more appropraite (if less capable)
-    filter.
+Update #1:
+    GraphicsFilter was reengineered to accomodate GCJ.  GCJ is not quite JDK 1.4 compliant
+    and is obviously not a SUN JDK.  The image creation and saving responsibility was moved
+    into subclasses of AppleImage.  AppleImage itself functions as a factory and tries to
+    instantiate possible AppleImage classes via Reflection - this allows code to be compiled
+    without patching the code.  When building with GCJ, the AppleImage classes that do not
+    apply are simply not compiled nor linked into the executable. 
 
-3.  Resources can be compiled/atteched to a specific Java class.  AppleCommander has
-    a number of resources that should be built into the exe class.  This will simplify
+Update #2:
+    Resources can be compiled/atteched to a specific Java class.  AppleCommander has
+    a number of resources that should be built into the exe class.  This simplifies
     the distribution to be the AppleCommander executable and the SWT support DLL.
-    ** DONE **  See the AppleCommander build script.
+    See the AppleCommander build script for details.
 
-4.  UPX appears to be a very good compression tool for executables.  It should be
-    standard practice (and part of the automated build process) to run the final EXE
-    and DLL files through UPX to ensure a small filesize.
-    ** DONE **  See the AppleCommander build script.
+Update #3:
+    UPX is a very good compression tool for executables.  It should be standard practice 
+    (and part of the automated build process) to run the final EXE and DLL files through 
+    UPX to ensure a small filesize.  This has been incorporated into the AppleCommander
+    build script but you may want to review how it is built in as detection can be funky.
 
-5.  There are speed issues with the compiled version of AppleCommander.  They do not
-    appear to be present when run as a normal Java/SWT application.  It has not been
-    determined if this is AppleCommander or SWT-related yet.
+Update #4:
+    There are speed issues with the compiled version of AppleCommander which appear to
+    be releated to GCJ 3.2 but do not show up in GCJ 3.3.  The speed issues do not
+    appear to be present when run as a normal Java/SWT application.  I am unclear what
+    the issue was, but the current assumption is that a bug or optimization to GCJ 3.3
+    was introduced.  Additional note - this version of GCJ 3.3 also is packaged with 
+    SWT 2052 which is a few point releases higher than other versions of SWT, so it also
+    may be SWT releated.
