@@ -28,7 +28,6 @@ import com.webcodepro.applecommander.storage.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.RdosFormatDisk;
 import com.webcodepro.applecommander.storage.UniDosFormatDisk;
 
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 
 /**

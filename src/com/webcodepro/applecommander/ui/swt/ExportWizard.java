@@ -22,7 +22,6 @@ package com.webcodepro.applecommander.ui.swt;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 
 /**

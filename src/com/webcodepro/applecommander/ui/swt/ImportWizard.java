@@ -25,7 +25,6 @@ import com.webcodepro.applecommander.ui.ImportSpecification;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 
 /**
