@@ -28,28 +28,75 @@ import java.util.Date;
  * @author: Rob Greene
  */
 public class ProdosCommonEntry {
-	private byte[] fileEntry;
+	/**
+	 * The standard ProDOS file entry length.
+	 */
+	public static final int ENTRY_LENGTH = 0x27;
+	/**
+	 * Reference to the disk this FileEntry is attached to.
+	 */
+	private ProdosFormatDisk disk;
+	/**
+	 * The block number this FileEntry is stored in.
+	 */
+	private int block;
+	/**
+	 * The offset into the block that the FileEntry is at.
+	 */
+	private int offset;
 
 	/**
 	 * Constructor for ProdosCommonEntry.
 	 */
-	public ProdosCommonEntry(byte[] fileEntry) {
+	public ProdosCommonEntry(ProdosFormatDisk disk, int block, int offset) {
 		super();
-		this.fileEntry = fileEntry;
+		this.disk = disk;
+		this.block = block;
+		this.offset = offset;
 	}
-
+	
 	/**
-	 * Get the fileEntry bytes.
+	 * Get the ProdosFormatDisk that this FileEntry is attached to.
 	 */
-	protected byte[] getFileEntry() {
-		return fileEntry;
+	protected ProdosFormatDisk getDisk() {
+		return disk;
+	}
+	
+	/**
+	 * Read the fileEntry bytes from the disk image.
+	 */
+	protected byte[] readFileEntry() {
+		byte[] data = disk.readBlock(block);
+		byte[] entry = new byte[ENTRY_LENGTH];
+		System.arraycopy(data, offset, entry, 0, ENTRY_LENGTH);
+		return entry;
+	}
+	
+	/**
+	 * Write the fileEntry data to the disk image.
+	 */
+	protected void writeFileEntry(byte[] entry) {
+		byte[] data = disk.readBlock(block);
+		System.arraycopy(entry, 0, data, offset, ENTRY_LENGTH);
+		disk.writeBlock(block, data);
 	}
 
 	/**
 	 * Get storage type.
 	 */
 	protected int getStorageType() {
-		return AppleUtil.getUnsignedByte(getFileEntry()[0]) >> 4;
+		return AppleUtil.getUnsignedByte(readFileEntry()[0]) >> 4;
+	}
+
+	/**
+	 * Set the storage type.
+	 */
+	public void setStorageType(int storageType) {
+		byte[] data = readFileEntry();
+		int value = AppleUtil.getUnsignedByte(data[0]);
+		value = (value & 0x0f) | ((storageType & 0xf) << 4);
+		data[0] = (byte) value;
+		writeFileEntry(data);
 	}
 
 	/**
@@ -60,10 +107,24 @@ public class ProdosCommonEntry {
 	}
 
 	/**
+	 * Sets the storage type to a "seedling" file (only one data block).
+	 */
+	public void setSeedlingFile() {
+		setStorageType(0x01);
+	}
+
+	/**
 	 * Indicates if this is a "sapling" file (2 to 256 data blocks).
 	 */
 	public boolean isSaplingFile() {
 		return getStorageType() == 0x02;
+	}
+
+	/**
+	 * Sets the storage type to a "sapling" file (2 to 256 data blocks).
+	 */
+	public void setSaplingFile() {
+		setStorageType(0x02);
 	}
 
 	/**
@@ -74,10 +135,24 @@ public class ProdosCommonEntry {
 	}
 
 	/**
+	 * Sets the storage type to a "tree" file (257 to 32768 data blocks).
+	 */
+	public void setTreeFile() {
+		setStorageType(0x03);
+	}
+
+	/**
 	 * Indicates if this is a subdirectory header entry.
 	 */
 	public boolean isSubdirectoryHeader() {
 		return getStorageType() == 0x0e;
+	}
+
+	/**
+	 * Sets the storage type to a subdirectory header entry.
+	 */
+	public void setSubdirectoryHeader() {
+		setStorageType(0x0e);
 	}
 
 	/**
@@ -88,31 +163,80 @@ public class ProdosCommonEntry {
 	}
 
 	/**
+	 * Sets the storage type to a volume header entry.
+	 */
+	public void setVolumeHeader() {
+		setStorageType(0x0f);
+	}
+
+	/**
 	 * Get the creation date.
 	 */
 	public Date getCreationDate() {
-		return AppleUtil.getProdosDate(getFileEntry(), 0x18);
+		return AppleUtil.getProdosDate(readFileEntry(), 0x18);
+	}
+
+	/**
+	 * Set the creation date.
+	 */
+	public void setCreationDate(Date date) {
+		byte[] data = readFileEntry();
+		AppleUtil.setProdosDate(data, 0x18, date);
+		writeFileEntry(data);
 	}
 
 	/**
 	 * Get the version of ProDOS that created this file.
 	 */
 	public int getProdosVersion() {
-		return AppleUtil.getUnsignedByte(getFileEntry()[0x1c]);
+		return AppleUtil.getUnsignedByte(readFileEntry()[0x1c]);
+	}
+
+	/**
+	 * Set the version of ProDOS that created this file.
+	 */
+	public void setProdosVersion(int version) {
+		byte[] data = readFileEntry();
+		data[0x1c] = (byte) version;
+		writeFileEntry(data);
 	}
 
 	/**
 	 * Get the minimum version of ProDOS which can access this file.
 	 */
 	public int getMinimumProdosVersion() {
-		return AppleUtil.getUnsignedByte(getFileEntry()[0x1d]);
+		return AppleUtil.getUnsignedByte(readFileEntry()[0x1d]);
+	}
+
+	/**
+	 * Set the minimum version of ProDOS which can access this file.
+	 */
+	public void setMinimumProdosVersion(int version) {
+		byte[] data = readFileEntry();
+		data[0x1d] = (byte) version;
+		writeFileEntry(data);
 	}
 
 	/**
 	 * Get the access byte.
 	 */
 	protected byte getAccess() {
-		return getFileEntry()[0x1e];
+		return readFileEntry()[0x1e];
+	}
+
+	/**
+	 * Set the access byte.
+	 */
+	protected void setAccess(int bit, boolean set) {
+		byte[] data = readFileEntry();
+		byte value = data[0x1e];
+		if (set) {
+			value = AppleUtil.setBit(value, bit);
+		} else {
+			value = AppleUtil.clearBit(value, bit);
+		}
+		data[0x1e] = value;
+		writeFileEntry(data);
 	}
 
 	/**
@@ -123,10 +247,24 @@ public class ProdosCommonEntry {
 	}
 
 	/**
+	 * Set if this file may be destroyed.
+	 */
+	public void setDestroy(boolean destroy) {
+		setAccess(7, destroy);
+	}
+
+	/**
 	 * Indicates if this file may be renamed.
 	 */
 	public boolean canRename() {
 		return AppleUtil.isBitSet(getAccess(), 6);
+	}
+
+	/**
+	 * Set if this file may be renamed.
+	 */
+	public void setRename(boolean rename) {
+		setAccess(6, rename);
 	}
 
 	/**
@@ -137,10 +275,24 @@ public class ProdosCommonEntry {
 	}
 
 	/**
+	 * Set if this file has changed since last backup.
+	 */
+	public void setChanged(boolean changed) {
+		setAccess(5, changed);
+	}
+
+	/**
 	 * Indicates if this file may be written.
 	 */
 	public boolean canWrite() {
 		return AppleUtil.isBitSet(getAccess(), 1);
+	}
+
+	/**
+	 * Set if this file may be written.
+	 */
+	public void setWrite(boolean write) {
+		setAccess(1, write);
 	}
 
 	/**
@@ -150,4 +302,10 @@ public class ProdosCommonEntry {
 		return AppleUtil.isBitSet(getAccess(), 0);
 	}
 
+	/**
+	 * Set if this file may be read.
+	 */
+	public void setRead(boolean read) {
+		setAccess(0, read);
+	}
 }
