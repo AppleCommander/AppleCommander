@@ -549,17 +549,18 @@ public class Disk {
 			for (int i=0; i<CpmFileEntry.ENTRY_LENGTH; i++) {
 				e5count+= bytes[offset+i] == 0xe5 ? 1 : 0;
 			}
-			if (e5count == CpmFileEntry.ENTRY_LENGTH) continue;
-			// Check user number. Should be 0-15 or 0xE5
-			if (bytes[offset] > 15 && bytes[offset] != 0xe5) return false;
-			// Validate filename has highbit off
-			for (int i=0; i<8; i++) {
-				if (bytes[offset+1+i] > 127) return false; 
+			if (e5count != CpmFileEntry.ENTRY_LENGTH) {	// Not all bytes were 0xE5
+				// Check user number. Should be 0-15 or 0xE5
+				if (bytes[offset] > 15 && bytes[offset] != 0xe5) return false;
+				// Validate filename has highbit off
+				for (int i=0; i<8; i++) {
+					if (bytes[offset+1+i] > 127) return false; 
+				}
+				// Extent should be 0-31 (low = 0-31 and high = 0)
+				if (bytes[offset+0xc] > 31 || bytes[offset+0xe] > 0) return false;
+				// Number of used records cannot exceed 0x80
+				if (bytes[offset+0xf] > 0x80) return false;
 			}
-			// Extent should be 0-31 (low = 0-31 and high = 0)
-			if (bytes[offset+0xc] > 31 || bytes[offset+0xe] > 0) return false;
-			// Number of used records cannot exceed 0x80
-			if (bytes[offset+0xf] > 0x80) return false;
 			// Next entry
 			offset+= CpmFileEntry.ENTRY_LENGTH;
 		}
