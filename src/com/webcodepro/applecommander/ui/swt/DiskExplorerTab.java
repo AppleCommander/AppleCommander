@@ -19,27 +19,6 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import com.webcodepro.applecommander.compiler.ApplesoftCompiler;
-import com.webcodepro.applecommander.storage.AppleWorksDataBaseFileFilter;
-import com.webcodepro.applecommander.storage.AppleWorksSpreadSheetFileFilter;
-import com.webcodepro.applecommander.storage.AppleWorksWordProcessorFileFilter;
-import com.webcodepro.applecommander.storage.ApplesoftFileFilter;
-import com.webcodepro.applecommander.storage.BinaryFileFilter;
-import com.webcodepro.applecommander.storage.DirectoryEntry;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FileEntryComparator;
-import com.webcodepro.applecommander.storage.FileFilter;
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.GraphicsFileFilter;
-import com.webcodepro.applecommander.storage.IntegerBasicFileFilter;
-import com.webcodepro.applecommander.storage.ProdosDiskSizeDoesNotMatchException;
-import com.webcodepro.applecommander.storage.ProdosFormatDisk;
-import com.webcodepro.applecommander.storage.TextFileFilter;
-import com.webcodepro.applecommander.storage.FormattedDisk.FileColumnHeader;
-import com.webcodepro.applecommander.ui.ImportSpecification;
-import com.webcodepro.applecommander.ui.UserPreferences;
-import com.webcodepro.applecommander.util.AppleUtil;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -89,6 +68,33 @@ import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 
+import com.webcodepro.applecommander.compiler.ApplesoftCompiler;
+import com.webcodepro.applecommander.storage.AppleWorksDataBaseFileFilter;
+import com.webcodepro.applecommander.storage.AppleWorksSpreadSheetFileFilter;
+import com.webcodepro.applecommander.storage.AppleWorksWordProcessorFileFilter;
+import com.webcodepro.applecommander.storage.ApplesoftFileFilter;
+import com.webcodepro.applecommander.storage.BinaryFileFilter;
+import com.webcodepro.applecommander.storage.DirectoryEntry;
+import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.FileEntry;
+import com.webcodepro.applecommander.storage.FileEntryComparator;
+import com.webcodepro.applecommander.storage.FileFilter;
+import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.GraphicsFileFilter;
+import com.webcodepro.applecommander.storage.IntegerBasicFileFilter;
+import com.webcodepro.applecommander.storage.ProdosDiskSizeDoesNotMatchException;
+import com.webcodepro.applecommander.storage.ProdosFormatDisk;
+import com.webcodepro.applecommander.storage.TextFileFilter;
+import com.webcodepro.applecommander.storage.FormattedDisk.FileColumnHeader;
+import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
+import com.webcodepro.applecommander.storage.physical.DosOrder;
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import com.webcodepro.applecommander.storage.physical.NibbleOrder;
+import com.webcodepro.applecommander.storage.physical.ProdosOrder;
+import com.webcodepro.applecommander.ui.ImportSpecification;
+import com.webcodepro.applecommander.ui.UserPreferences;
+import com.webcodepro.applecommander.util.AppleUtil;
+
 /**
  * Build the Disk File tab for the Disk Window.
  * <p>
@@ -126,6 +132,8 @@ public class DiskExplorerTab {
 	private ToolItem deleteToolItem;
 	private ToolItem saveToolItem;
 	private ToolItem saveAsToolItem;
+	private ToolItem changeOrderToolItem;
+	private Menu changeOrderMenu;
 
 	private UserPreferences userPreferences = UserPreferences.getInstance();
 	private FileFilter fileFilter;
@@ -166,6 +174,7 @@ public class DiskExplorerTab {
 		compileToolItem.dispose();
 		viewFileItem.dispose();
 		toolBar.dispose();
+		changeOrderToolItem.dispose();
 
 		directoryTree = null;
 		fileTable = null;
@@ -1270,6 +1279,34 @@ public class DiskExplorerTab {
 		
 		new ToolItem(toolBar, SWT.SEPARATOR);
 
+		changeOrderToolItem = new ToolItem(toolBar, SWT.DROP_DOWN);
+		changeOrderToolItem.setImage(imageManager.get(ImageManager.ICON_CHANGE_IMAGE_ORDER));
+		changeOrderToolItem.setText("Re-order...");
+		changeOrderToolItem.setToolTipText("Change image order (CTRL+O)");
+		ImageOrder imageOrder = disks[0].getImageOrder();
+		changeOrderToolItem.setEnabled(
+			(imageOrder.isBlockDevice() 
+				&& imageOrder.getBlocksOnDevice() == Disk.PRODOS_BLOCKS_ON_140KB_DISK)
+			|| (imageOrder.isTrackAndSectorDevice() 
+				&& imageOrder.getSectorsPerDisk() == Disk.DOS33_SECTORS_ON_140KB_DISK));
+		changeOrderMenu = createChangeImageOrderMenu(SWT.NONE);
+		changeOrderToolItem.addSelectionListener(
+			new DropDownSelectionListener(changeOrderMenu));
+		changeOrderToolItem.addSelectionListener(new SelectionAdapter () {
+			/** 
+			 * Whenever the button is clicked, force the menu to be shown
+			 */
+			public void widgetSelected(SelectionEvent event) {
+				Rectangle rect = changeOrderToolItem.getBounds();
+				Point pt = new Point(rect.x, rect.y + rect.height);
+				pt = toolBar.toDisplay(pt);
+				changeOrderMenu.setLocation(pt.x, pt.y);
+				changeOrderMenu.setVisible(true);
+			}
+		});
+		
+		new ToolItem(toolBar, SWT.SEPARATOR);
+
 		saveToolItem = new ToolItem(toolBar, SWT.PUSH);
 		saveToolItem.setImage(imageManager.get(ImageManager.ICON_SAVE_DISK_IMAGE));
 		saveToolItem.setText("Save");
@@ -1734,5 +1771,98 @@ public class DiskExplorerTab {
 				printer.dispose();
 			}
 		}.start();
+	}
+	
+	/**
+	 * Change the disk to a new image order.  It is assumed that the order is
+	 * appropriate - that should be handled by the menuing.
+	 */
+	protected void changeImageOrder(String extension, ImageOrder newImageOrder) {
+		try {
+			disks[0].changeImageOrder(newImageOrder);
+			String filename = disks[0].getFilename();
+			if (disks[0].isCompressed()) {	// extra ".gz" at end
+				int chop = filename.lastIndexOf(".", filename.length()-4);
+				filename = filename.substring(0, chop+1) + extension + ".gz";
+			} else {
+				int chop = filename.lastIndexOf(".");
+				filename = filename.substring(0, chop+1) + extension;
+			}
+			disks[0].setFilename(filename);
+			diskWindow.setStandardWindowTitle();
+		} catch (Throwable t) {
+			Shell finalShell = shell;
+			String errorMessage = t.getMessage();
+			if (errorMessage == null) {
+				errorMessage = t.getClass().getName();
+			}
+			MessageBox box = new MessageBox(finalShell, 
+				SWT.ICON_ERROR | SWT.OK);
+			box.setText("Unable to change image order!");
+			box.setMessage(
+				  "Unable to reorder disk image.\n\n"
+				+ "AppleCommander was unable to change the disk order.\n"
+				+ "The system error given was '"
+				+ errorMessage + "'\n\n"
+				+ "Sorry!\n\n"
+				+ "Press OK to continue.");
+			box.open();
+		}
+	}
+
+	/**
+	 * Construct the popup menu for the export button on the toolbar.
+	 */
+	protected Menu createChangeImageOrderMenu(int style) {
+		Menu menu = new Menu(shell, style);
+		menu.addMenuListener(new MenuAdapter() {
+			public void menuShown(MenuEvent event) {
+				Menu theMenu = (Menu) event.getSource();
+				MenuItem[] subItems = theMenu.getItems();
+				// Nibble Order (*.nib)
+				subItems[0].setSelection(disks[0].isNibbleOrder());
+				// DOS Order (*.dsk)
+				subItems[1].setSelection(disks[0].isDosOrder());
+				// ProDOS Order (*.po)
+				subItems[2].setSelection(disks[0].isProdosOrder());
+			}
+		});
+			
+		MenuItem item = new MenuItem(menu, SWT.RADIO);
+		item.setText("Nibble Order (*.nib)");
+		item.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				if (!disks[0].isNibbleOrder()) {
+					NibbleOrder nibbleOrder = new NibbleOrder(
+						new ByteArrayImageLayout(Disk.APPLE_140KB_NIBBLE_DISK));
+					nibbleOrder.format();
+					changeImageOrder("nib", nibbleOrder);
+				}
+			}
+		});
+
+		item = new MenuItem(menu, SWT.RADIO);
+		item.setText("DOS Order (*.dsk)");
+		item.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				if (!disks[0].isDosOrder()) {
+					changeImageOrder("dsk", new DosOrder(
+						new ByteArrayImageLayout(Disk.APPLE_140KB_DISK)));
+				}
+			}
+		});
+
+		item = new MenuItem(menu, SWT.RADIO);
+		item.setText("ProDOS Order (*.po)");
+		item.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				if (!disks[0].isProdosOrder()) {
+					changeImageOrder("po", new ProdosOrder(
+						new ByteArrayImageLayout(Disk.APPLE_140KB_DISK)));
+				}
+			}
+		});
+		
+		return menu;
 	}
 }
