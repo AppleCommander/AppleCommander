@@ -442,13 +442,21 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 		} else if ("PNT".equals(getFiletype())) {
 			if (getAuxiliaryType() == 0x0001) {
 				GraphicsFileFilter filter = new GraphicsFileFilter();
-				filter.setMode(GraphicsFileFilter.MODE_SHR);
+				filter.setMode(GraphicsFileFilter.MODE_SHR_16);
 				return filter;
 			}
 		} else if ("PIC".equals(getFiletype())) {
-			if (getAuxiliaryType() == 0x0000) {
+			int auxType = getAuxiliaryType();
+			int fileSize = getSize();
+			// AUX TYPE $0002 is sometimes mislabeled and should be $0000
+			// the OR attempts to identify these
+			if (auxType == 0x0000 || (auxType == 0x0002 && fileSize == 32768) ) {
 				GraphicsFileFilter filter = new GraphicsFileFilter();
-				filter.setMode(GraphicsFileFilter.MODE_SHR);
+				filter.setMode(GraphicsFileFilter.MODE_SHR_16);
+				return filter;
+			} else if (auxType == 0x0002 && fileSize == 38400) {
+				GraphicsFileFilter filter = new GraphicsFileFilter();
+				filter.setMode(GraphicsFileFilter.MODE_SHR_3200);
 				return filter;
 			}
 		} else if ("BIN".equals(getFiletype())) {
