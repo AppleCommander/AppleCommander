@@ -88,4 +88,11 @@ public interface FileEntry {
 	 * of guessing the appropriate filter.
 	 */
 	public FileFilter getSuggestedFilter();
+	
+	/**
+	 * Get the FormattedDisk associated with this FileEntry.
+	 * This is useful to interfaces that need to retrieve the associated
+	 * disk.
+	 */
+	public FormattedDisk getFormattedDisk();
 }

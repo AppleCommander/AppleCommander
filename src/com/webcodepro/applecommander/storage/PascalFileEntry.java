@@ -206,4 +206,12 @@ public class PascalFileEntry implements FileEntry {
 		return new BinaryFileFilter();
 	}
 
+	/**
+	 * Get the FormattedDisk associated with this FileEntry.
+	 * This is useful to interfaces that need to retrieve the associated
+	 * disk.
+	 */
+	public FormattedDisk getFormattedDisk() {
+		return disk;
+	}
 }

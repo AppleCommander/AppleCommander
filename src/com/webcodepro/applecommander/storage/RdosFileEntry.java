@@ -236,4 +236,13 @@ public class RdosFileEntry implements FileEntry {
 	public boolean isBinaryFile() {
 		return "B".equals(getFiletype());
 	}
+
+	/**
+	 * Get the FormattedDisk associated with this FileEntry.
+	 * This is useful to interfaces that need to retrieve the associated
+	 * disk.
+	 */
+	public FormattedDisk getFormattedDisk() {
+		return disk;
+	}
 }
