@@ -94,6 +94,7 @@ import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.NibbleOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import com.webcodepro.applecommander.ui.ImportSpecification;
+import com.webcodepro.applecommander.ui.TextBundle;
 import com.webcodepro.applecommander.ui.UserPreferences;
 import com.webcodepro.applecommander.ui.swt.util.DropDownSelectionListener;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
@@ -142,9 +143,10 @@ public class DiskExplorerTab {
 	private ToolItem saveToolItem;
 	private ToolItem saveAsToolItem;
 	private ToolItem changeOrderToolItem;
-	private Menu changeOrderMenu;
+	private Menu changeImageOrderMenu;
 
 	private UserPreferences userPreferences = UserPreferences.getInstance();
+	private TextBundle textBundle = TextBundle.getInstance();
 	private FileFilter fileFilter;
 	private GraphicsFileFilter graphicsFilter = new GraphicsFileFilter();
 	private AppleWorksWordProcessorFileFilter awpFilter = new AppleWorksWordProcessorFileFilter();
@@ -194,7 +196,7 @@ public class DiskExplorerTab {
 	 */
 	protected void createFilesTab(CTabFolder tabFolder) {
 		CTabItem ctabitem = new CTabItem(tabFolder, SWT.NULL);
-		ctabitem.setText("Files");
+		ctabitem.setText(textBundle.get("FilesTab")); //$NON-NLS-1$
 
 		Composite composite = new Composite(tabFolder, SWT.NULL);
 		ctabitem.setControl(composite);
@@ -217,7 +219,7 @@ public class DiskExplorerTab {
 			 * Single-click handler.
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				changeCurrentFormat(currentFormat);		// minor hack
+				changeCurrentFormat(getCurrentFormat());		// minor hack
 			}
 			/**
 			 * Double-click handler.
@@ -272,20 +274,20 @@ public class DiskExplorerTab {
 		Menu menu = new Menu(shell, SWT.POP_UP);
 		
 		MenuItem item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("Expand\t+");
+		item.setText(textBundle.get("ExpandMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				TreeItem[] treeItem = directoryTree.getSelection();
+				TreeItem[] treeItem = getDirectoryTree().getSelection();
 				treeItem[0].setExpanded(true);
 			}
 		});
 		item.setEnabled(disks[0].canHaveDirectories());
 
 		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("Collapse\t-");
+		item.setText(textBundle.get("CollapseMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				TreeItem[] treeItem = directoryTree.getSelection();
+				TreeItem[] treeItem = getDirectoryTree().getSelection();
 				treeItem[0].setExpanded(false);
 			}
 		});
@@ -294,20 +296,20 @@ public class DiskExplorerTab {
 		item = new MenuItem(menu, SWT.SEPARATOR);
 
 		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("Expand All\tCtrl +");
+		item.setText(textBundle.get("ExpandAllMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				TreeItem[] treeItem = directoryTree.getSelection();
+				TreeItem[] treeItem = getDirectoryTree().getSelection();
 				setDirectoryExpandedStates(treeItem[0], true);
 			}
 		});
 		item.setEnabled(disks[0].canHaveDirectories());
 
 		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("Collapse All\tCtrl -");
+		item.setText(textBundle.get("CollapseAllMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				TreeItem[] treeItem = directoryTree.getSelection();
+				TreeItem[] treeItem = getDirectoryTree().getSelection();
 				setDirectoryExpandedStates(treeItem[0], false);
 			}
 		});
@@ -316,7 +318,7 @@ public class DiskExplorerTab {
 		item = new MenuItem(menu, SWT.SEPARATOR);
 
 		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("Import...\tCTRL+I");
+		item.setText(textBundle.get("ImportMenuItem")); //$NON-NLS-1$
 		item.setImage(imageManager.get(ImageManager.ICON_IMPORT_FILE));
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
@@ -342,31 +344,31 @@ public class DiskExplorerTab {
 				MenuItem[] subItems = theMenu.getItems();
 				FileEntry fileEntry = getSelectedFileEntry();
 				// View File
-				subItems[0].setEnabled(disks[0].canReadFileData() 
+				subItems[0].setEnabled(getDisk(0).canReadFileData() 
 					&& fileEntry != null && !fileEntry.isDeleted() 
 					&& !fileEntry.isDirectory());
-				subItems[1].setEnabled(disks[0].canReadFileData() 
+				subItems[1].setEnabled(getDisk(0).canReadFileData() 
 					&& fileEntry != null && !fileEntry.isDeleted() 
 					&& !fileEntry.isDirectory());
 				// Compile File
-				subItems[3].setEnabled(disks[0].canReadFileData()
+				subItems[3].setEnabled(getDisk(0).canReadFileData()
 					&& fileEntry != null && fileEntry.canCompile()
 					&& !fileEntry.isDeleted());
 				// Export File
-				subItems[5].setEnabled(disks[0].canReadFileData()
+				subItems[5].setEnabled(getDisk(0).canReadFileData()
 					&& fileEntry != null && !fileEntry.isDeleted()
 					&& !fileEntry.isDirectory());
-				subItems[6].setEnabled(disks[0].canReadFileData()
+				subItems[6].setEnabled(getDisk(0).canReadFileData()
 					&& fileEntry != null && !fileEntry.isDeleted()
 					&& !fileEntry.isDirectory());
 				// Delete File
-				subItems[8].setEnabled(disks[0].canDeleteFile()
+				subItems[8].setEnabled(getDisk(0).canDeleteFile()
 					&& fileEntry != null && !fileEntry.isDeleted());
 			}
 		});
 		
 		MenuItem item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("&View Wizard\tCtrl+V");
+		item.setText(textBundle.get("ViewWizardMenuItem")); //$NON-NLS-1$
 		item.setAccelerator(SWT.CTRL+'V');
 		item.setImage(imageManager.get(ImageManager.ICON_VIEW_FILE));
 		item.addSelectionListener(new SelectionAdapter() {
@@ -374,15 +376,15 @@ public class DiskExplorerTab {
 				viewFile(null);
 			}
 		});
-
+	
 		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("View As");
+		item.setText(textBundle.get("ViewAsMenuItem")); //$NON-NLS-1$
 		item.setMenu(createFileViewMenu(SWT.DROP_DOWN));
-
+	
 		item = new MenuItem(menu, SWT.SEPARATOR);
-
+	
 		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("&Compile...\tCtrl+C");
+		item.setText(textBundle.get("CompileMenuItem")); //$NON-NLS-1$
 		item.setAccelerator(SWT.CTRL+'C');
 		item.setImage(imageManager.get(ImageManager.ICON_COMPILE_FILE));
 		item.addSelectionListener(new SelectionAdapter() {
@@ -394,18 +396,18 @@ public class DiskExplorerTab {
 		item = new MenuItem(menu, SWT.SEPARATOR);
 		
 		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("&Export Wizard...\tCtrl+E");
+		item.setText(textBundle.get("ExportWizardMenuItem")); //$NON-NLS-1$
 		item.setAccelerator(SWT.CTRL+'E');
 		item.setImage(imageManager.get(ImageManager.ICON_EXPORT_FILE));
-
+	
 		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("Export As...");
+		item.setText(textBundle.get("ExportAsMenuItem")); //$NON-NLS-1$
 		item.setMenu(createFileExportMenu(SWT.DROP_DOWN));
-
+	
 		item = new MenuItem(menu, SWT.SEPARATOR);
-
+	
 		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("&Delete...\tCtrl+D");
+		item.setText(textBundle.get("DeleteMenuItem")); //$NON-NLS-1$
 		item.setAccelerator(SWT.CTRL+'D');
 		item.setImage(imageManager.get(ImageManager.ICON_DELETE_FILE));
 		item.addSelectionListener(new SelectionAdapter() {
@@ -423,7 +425,7 @@ public class DiskExplorerTab {
 		Menu menu = new Menu(shell, style);
 		
 		MenuItem item = new MenuItem(menu, SWT.NONE);
-		item.setText("Text");
+		item.setText(textBundle.get("ViewAsTextMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				viewFile(TextFileFilter.class);
@@ -431,7 +433,7 @@ public class DiskExplorerTab {
 		});
 
 		item = new MenuItem(menu, SWT.NONE);
-		item.setText("Graphics");
+		item.setText(textBundle.get("VeiwAsGraphicsMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				viewFile(GraphicsFileFilter.class);
@@ -447,82 +449,82 @@ public class DiskExplorerTab {
 		Menu menu = new Menu(shell, style);
 		
 		MenuItem item = new MenuItem(menu, SWT.NONE);
-		item.setText("Raw disk data...");
+		item.setText(textBundle.get("ExportAsRawDiskDataMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				fileFilter = null;
+				setFileFilter(null);
 				exportFile(null);
 			}
 		});
 
 		item = new MenuItem(menu, SWT.NONE);
-		item.setText("Binary...");
+		item.setText(textBundle.get("ExportAsBinaryMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				fileFilter = new BinaryFileFilter();
+				setFileFilter(new BinaryFileFilter());
 				exportFile(null);
 			}
 		});
 
 		item = new MenuItem(menu, SWT.NONE);
-		item.setText("Applesoft Basic...");
+		item.setText(textBundle.get("ExportAsApplesoftBasicMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				fileFilter = new ApplesoftFileFilter();
+				setFileFilter(new ApplesoftFileFilter());
 				exportFile(null);
 			}
 		});
 
 		item = new MenuItem(menu, SWT.NONE);
-		item.setText("Integer Basic...");
+		item.setText(textBundle.get("ExportAsIntegerBasicMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				fileFilter = new IntegerBasicFileFilter();
+				setFileFilter(new IntegerBasicFileFilter());
 				exportFile(null);
 			}
 		});
 
 		item = new MenuItem(menu, SWT.NONE);
-		item.setText("ASCII Text...");
+		item.setText(textBundle.get("ExportAsAsciiTextMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				fileFilter = new TextFileFilter();
+				setFileFilter(new TextFileFilter());
 				exportFile(null);
 			}
 		});
 
 		item = new MenuItem(menu, SWT.NONE);
-		item.setText("Formatted Assembly...");
+		item.setText(textBundle.get("ExportAsFormattedAssemblyMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				fileFilter = new AssemblySourceFileFilter();
+				setFileFilter(new AssemblySourceFileFilter());
 				exportFile(null);
 			}
 		});
 
 		item = new MenuItem(menu, SWT.NONE);
-		item.setText("Pascal Text...");
+		item.setText(textBundle.get("ExportAsPascalTextMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				fileFilter = new PascalTextFileFilter();
+				setFileFilter(new PascalTextFileFilter());
 				exportFile(null);
 			}
 		});
 
 		item = new MenuItem(menu, SWT.NONE);
-		item.setText("AppleWorks Spreadsheet File...");
+		item.setText(textBundle.get("ExportAsAppleWorksSpreadsheetFileMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				fileFilter = new AppleWorksSpreadSheetFileFilter();
+				setFileFilter(new AppleWorksSpreadSheetFileFilter());
 				exportFile(null);
 			}
 		});
 
 		item = new MenuItem(menu, SWT.NONE);
-		item.setText("AppleWorks Database File...");
+		item.setText(textBundle.get("ExportAsAppleWorksDatabaseFileMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				fileFilter = new AppleWorksDataBaseFileFilter();
+				setFileFilter(new AppleWorksDataBaseFileFilter());
 				exportFile(null);
 			}
 		});
@@ -530,15 +532,15 @@ public class DiskExplorerTab {
 		item = new MenuItem(menu, SWT.SEPARATOR);
 
 		item = new MenuItem(menu, SWT.NONE);
-		item.setText("AppleWorks WordProcessor File...");
+		item.setText(textBundle.get("ExportAsAppleWorksWordProcessorFileMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				fileFilter = awpFilter;
+				setFileFilter(getAwpFilter());
 				exportFile(null);
 			}
 		});
 		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("Rendering");
+		item.setText(textBundle.get("WordProcessorRenderingMenuItem")); //$NON-NLS-1$
 		Menu subMenu = new Menu(shell, SWT.DROP_DOWN);
 		item.setMenu(subMenu);
 		subMenu.addMenuListener(new MenuAdapter() {
@@ -549,57 +551,57 @@ public class DiskExplorerTab {
 			public void menuShown(MenuEvent event) {
 				Menu theMenu = (Menu) event.getSource();
 				MenuItem[] subItems = theMenu.getItems();
-				subItems[0].setSelection(awpFilter.isTextRendering());
-				subItems[1].setSelection(awpFilter.isHtmlRendering());
-				subItems[2].setSelection(awpFilter.isRtfRendering());
+				subItems[0].setSelection(getAwpFilter().isTextRendering());
+				subItems[1].setSelection(getAwpFilter().isHtmlRendering());
+				subItems[2].setSelection(getAwpFilter().isRtfRendering());
 			}
 		});
 		item = new MenuItem(subMenu, SWT.RADIO);
-		item.setText("Text");
+		item.setText(textBundle.get("WordProcessorRenderAsTextMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			/**
 			 * Set the appropriate rendering style.
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				awpFilter.selectTextRendering();
+				getAwpFilter().selectTextRendering();
 			}
 		});
 		item = new MenuItem(subMenu, SWT.RADIO);
-		item.setText("HTML");
+		item.setText(textBundle.get("WordProcessorRenderAsHtmlMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			/**
 			 * Set the appropriate rendering style.
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				awpFilter.selectHtmlRendering();
+				getAwpFilter().selectHtmlRendering();
 			}
 		});
 		item = new MenuItem(subMenu, SWT.RADIO);
-		item.setText("RTF");
+		item.setText(textBundle.get("WordProcessorRenderAsRtfMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			/**
 			 * Set the appropriate rendering style.
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				awpFilter.selectRtfRendering();
+				getAwpFilter().selectRtfRendering();
 			}
 		});
 		
 		item = new MenuItem(menu, SWT.SEPARATOR);
 
 		item = new MenuItem(menu, SWT.NONE);
-		item.setText("Graphics...");
+		item.setText(textBundle.get("ExportAsGraphicsMenuItem")); //$NON-NLS-1$
 		item.setEnabled(graphicsFilter.isCodecAvailable());
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				fileFilter = graphicsFilter;
+				setFileFilter(getGraphicsFilter());
 				exportFile(null);
 			}
 		});
 		
 		// Add graphics mode
 		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("Mode");
+		item.setText(textBundle.get("ExportGraphicsModeMenuItem")); //$NON-NLS-1$
 		item.setEnabled(graphicsFilter.isCodecAvailable());
 		subMenu = new Menu(shell, SWT.DROP_DOWN);
 		item.setMenu(subMenu);
@@ -611,83 +613,83 @@ public class DiskExplorerTab {
 			public void menuShown(MenuEvent event) {
 				Menu theMenu = (Menu) event.getSource();
 				MenuItem[] subItems = theMenu.getItems();
-				subItems[0].setSelection(graphicsFilter.isHiresBlackAndWhiteMode());
-				subItems[1].setSelection(graphicsFilter.isHiresColorMode());
-				subItems[2].setSelection(graphicsFilter.isDoubleHiresBlackAndWhiteMode());
-				subItems[3].setSelection(graphicsFilter.isDoubleHiresColorMode());
-				subItems[4].setSelection(graphicsFilter.isSuperHires16Mode());
-				subItems[5].setSelection(graphicsFilter.isSuperHires3200Mode());
-				subItems[6].setSelection(graphicsFilter.isQuickDraw2Icon());
+				subItems[0].setSelection(getGraphicsFilter().isHiresBlackAndWhiteMode());
+				subItems[1].setSelection(getGraphicsFilter().isHiresColorMode());
+				subItems[2].setSelection(getGraphicsFilter().isDoubleHiresBlackAndWhiteMode());
+				subItems[3].setSelection(getGraphicsFilter().isDoubleHiresColorMode());
+				subItems[4].setSelection(getGraphicsFilter().isSuperHires16Mode());
+				subItems[5].setSelection(getGraphicsFilter().isSuperHires3200Mode());
+				subItems[6].setSelection(getGraphicsFilter().isQuickDraw2Icon());
 			}
 		});
 		item = new MenuItem(subMenu, SWT.RADIO);
-		item.setText("Hi-Res B&W");
+		item.setText(textBundle.get("ExportGraphicsAsHiresBlackAndWhiteMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			/**
 			 * Set the appropriate graphics mode.
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				graphicsFilter.setMode(GraphicsFileFilter.MODE_HGR_BLACK_AND_WHITE);
+				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_HGR_BLACK_AND_WHITE);
 			}
 		});
 		item = new MenuItem(subMenu, SWT.RADIO);
-		item.setText("Hi-Res Color");
+		item.setText(textBundle.get("ExportGraphicsAsHiresColorMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			/**
 			 * Set the appropriate graphics mode.
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				graphicsFilter.setMode(GraphicsFileFilter.MODE_HGR_COLOR);
+				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_HGR_COLOR);
 			}
 		});
 		item = new MenuItem(subMenu, SWT.RADIO);
-		item.setText("Double Hi-Res B&W");
+		item.setText(textBundle.get("ExportGraphicsAsDoubleHiresBlackAndWhiteMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			/**
 			 * Set the appropriate graphics mode.
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				graphicsFilter.setMode(GraphicsFileFilter.MODE_DHR_BLACK_AND_WHITE);
+				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_DHR_BLACK_AND_WHITE);
 			}
 		});
 		item = new MenuItem(subMenu, SWT.RADIO);
-		item.setText("Double Hi-Res COLOR");
+		item.setText(textBundle.get("ExportGraphicsAsDoubleHiresColorMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			/**
 			 * Set the appropriate graphics mode.
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				graphicsFilter.setMode(GraphicsFileFilter.MODE_DHR_COLOR);
+				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_DHR_COLOR);
 			}
 		});
 		item = new MenuItem(subMenu, SWT.RADIO);
-		item.setText("Super Hires");
+		item.setText(textBundle.get("ExportGraphicsAsSuperHiresMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			/**
 			 * Set the appropriate graphics mode.
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				graphicsFilter.setMode(GraphicsFileFilter.MODE_SHR_16);
+				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_SHR_16);
 			}
 		});
 		item = new MenuItem(subMenu, SWT.RADIO);
-		item.setText("Super Hires 3200 color");
+		item.setText(textBundle.get("ExportGraphicsAsSuperHires3200ColorMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			/**
 			 * Set the appropriate graphics mode.
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				graphicsFilter.setMode(GraphicsFileFilter.MODE_SHR_3200);
+				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_SHR_3200);
 			}
 		});
 		item = new MenuItem(subMenu, SWT.RADIO);
-		item.setText("QuickDraw II Icon file (ICN)");
+		item.setText(textBundle.get("ExportGraphicsAsQuickDraw2IconMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			/**
 			 * Set the appropriate graphics mode.
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				graphicsFilter.setMode(GraphicsFileFilter.MODE_QUICKDRAW2_ICON);
+				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_QUICKDRAW2_ICON);
 			}
 		});
 		
@@ -695,7 +697,7 @@ public class DiskExplorerTab {
 		String[] formats = graphicsFilter.getFileExtensions();
 		if (formats != null && formats.length > 0) {
 			item = new MenuItem(menu, SWT.CASCADE);
-			item.setText("Format");
+			item.setText(textBundle.get("ExportGraphicsFormatMenuItem")); //$NON-NLS-1$
 			item.setEnabled(graphicsFilter.isCodecAvailable());
 			subMenu = new Menu(shell, SWT.DROP_DOWN);
 			item.setMenu(subMenu);
@@ -709,7 +711,7 @@ public class DiskExplorerTab {
 					MenuItem[] subItems = theMenu.getItems();
 					for (int i=0; i<subItems.length; i++) {
 						subItems[i].setSelection(subItems[i].getText().
-							equals(graphicsFilter.getExtension()));
+							equals(getGraphicsFilter().getExtension()));
 					}
 				}
 			});
@@ -723,7 +725,7 @@ public class DiskExplorerTab {
 					 */
 					public void widgetSelected(SelectionEvent event) {
 						MenuItem menuItem = (MenuItem) event.getSource();
-						graphicsFilter.setExtension(menuItem.getText());
+						getGraphicsFilter().setExtension(menuItem.getText());
 					}
 				});
 			}
@@ -752,9 +754,12 @@ public class DiskExplorerTab {
 		for (int i=0; i<headers.size(); i++) {
 			FileColumnHeader header = (FileColumnHeader) headers.get(i);
 			if (header.getTitle().length() >= header.getMaximumWidth()) {
-				headerWidths[i] = gc.stringExtent(header.getTitle()).x + gc.stringExtent("WW").x;
+				headerWidths[i] = gc.stringExtent(header.getTitle()).x + 
+					2 * gc.stringExtent(textBundle.get("WidestCharacter")).x;  //$NON-NLS-1$
 			} else {
-				headerWidths[i] = gc.stringExtent("W").x * header.getMaximumWidth();
+				headerWidths[i] = gc.stringExtent(
+						textBundle.get("WidestCharacter")).x  //$NON-NLS-1$
+						* header.getMaximumWidth();
 			}
 		}
 		gc.dispose();
@@ -790,18 +795,18 @@ public class DiskExplorerTab {
 				 * Single-click handler.
 				 */
 				public void widgetSelected(SelectionEvent event) {
-					importToolItem.setEnabled(disks[0].canCreateFile() && disks[0].canWriteFileData());
-					if (fileTable.getSelectionCount() > 0) {
+					getImportToolItem().setEnabled(getDisk(0).canCreateFile() && getDisk(0).canWriteFileData());
+					if (getFileTable().getSelectionCount() > 0) {
 						FileEntry fileEntry = getSelectedFileEntry();
-						exportToolItem.setEnabled(disks[0].canReadFileData());
-						deleteToolItem.setEnabled(disks[0].canDeleteFile());
-						compileToolItem.setEnabled(fileEntry != null && fileEntry.canCompile());
-						viewFileItem.setEnabled(true);
+						getExportToolItem().setEnabled(getDisk(0).canReadFileData());
+						getDeleteToolItem().setEnabled(getDisk(0).canDeleteFile());
+						getCompileToolItem().setEnabled(fileEntry != null && fileEntry.canCompile());
+						getViewFileToolItem().setEnabled(true);
 					} else {
-						exportToolItem.setEnabled(false);
-						deleteToolItem.setEnabled(false);
-						compileToolItem.setEnabled(false);
-						viewFileItem.setEnabled(false);
+						getExportToolItem().setEnabled(false);
+						getDeleteToolItem().setEnabled(false);
+						getCompileToolItem().setEnabled(false);
+						getViewFileToolItem().setEnabled(false);
 					}
 				}
 				/**
@@ -879,7 +884,7 @@ public class DiskExplorerTab {
 	/**
 	 * Export all selected files.
 	 */
-	private void exportFile(String directory) {
+	protected void exportFile(String directory) {
 		boolean promptForIndividualFiles = (directory == null);
 		TableItem[] selection = fileTable.getSelection();
 		for (int i=0; i<selection.length; i++) {
@@ -908,14 +913,11 @@ public class DiskExplorerTab {
 				try {
 					File file = new File(filename);
 					if (file.exists()) {
-						Shell finalShell = shell;
-						MessageBox box = new MessageBox(finalShell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-						box.setText("File already exists!");
-						box.setMessage(
-							"The file '" + filename + "' already exists. "
-							+ "Do you want to over-write it?");
-						if (box.open() == SWT.NO) {
-							return;	// do not overwrite file
+						int answer = SwtUtil.showYesNoDialog(shell, 
+								textBundle.get("FileExistsTitle"), //$NON-NLS-1$
+								textBundle.format("FileExistsMessage", filename)); //$NON-NLS-1$
+						if (answer == SWT.NO) {
+							return; // do not overwrite file
 						}
 					}
 					byte[] data = null;
@@ -928,23 +930,15 @@ public class DiskExplorerTab {
 					outputStream.write(data);
 					outputStream.close();
 				} catch (Exception ex) {
-					Shell finalShell = shell;
 					String errorMessage = ex.getMessage();
 					if (errorMessage == null) {
 						errorMessage = ex.getClass().getName();
 					}
-					MessageBox box = new MessageBox(finalShell, 
-						SWT.ICON_ERROR | SWT.OK | SWT.CANCEL);
-					box.setText("Unable to export file data!");
-					box.setMessage(
-						  "Unable to export '" + filename + "'.\n\n"
-					    + "AppleCommander was unable to save the disk\n"
-					    + "data.  The system error given was '"
-					    + errorMessage + "'\n\n"
-						+ "Sorry!\n\n"
-						+ "Press OK to continue export or CANCEL to cancel export.");
-					int button = box.open();
-					if (button == SWT.CANCEL) break;	// break out of loop
+					int answer = SwtUtil.showOkCancelErrorDialog(shell,
+							textBundle.get("ExportErrorTitle"), //$NON-NLS-1$
+							textBundle.format("ExportErrorMessage",  //$NON-NLS-1$
+									new Object[] { filename, errorMessage }));
+					if (answer == SWT.CANCEL) break;	// break out of loop
 				}
 			}
 		}
@@ -977,25 +971,22 @@ public class DiskExplorerTab {
 			if (promptForIndividualFiles) {
 				FileDialog fileDialog = new FileDialog(shell, SWT.SAVE);
 				fileDialog.setFilterPath(userPreferences.getCompileDirectory());
-				fileDialog.setFileName(fileEntry.getFilename() + ".S");
+				fileDialog.setFileName(fileEntry.getFilename() + ".S"); //$NON-NLS-1$
 				filename = fileDialog.open();
 				directory = fileDialog.getFilterPath();
 			} else {
 				filename = directory + File.separator + AppleUtil.
-					getNiceFilename(fileEntry.getFilename() + ".S");
+					getNiceFilename(fileEntry.getFilename() + ".S"); //$NON-NLS-1$
 			}
 			if (filename != null) {
 				userPreferences.setCompileDirectory(directory);
 				try {
 					File file = new File(filename);
 					if (file.exists()) {
-						Shell finalShell = shell;
-						MessageBox box = new MessageBox(finalShell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-						box.setText("File already exists!");
-						box.setMessage(
-							"The file '" + filename + "' already exists. "
-							+ "Do you want to over-write it?");
-						if (box.open() == SWT.NO) {
+						int answer = SwtUtil.showYesNoDialog(shell,
+								textBundle.get("FileExistsTitle"), //$NON-NLS-1$
+								textBundle.format("FileExistsMessage", filename)); //$NON-NLS-1$
+						if (answer == SWT.NO) {
 							return;	// do not overwrite file
 						}
 					}
@@ -1005,23 +996,15 @@ public class DiskExplorerTab {
 					outputStream.write(assembly);
 					outputStream.close();
 				} catch (Exception ex) {
-					Shell finalShell = shell;
 					String errorMessage = ex.getMessage();
 					if (errorMessage == null) {
 						errorMessage = ex.getClass().getName();
 					}
-					MessageBox box = new MessageBox(finalShell, 
-						SWT.ICON_ERROR | SWT.OK | SWT.CANCEL);
-					box.setText("Unable to compile file!");
-					box.setMessage(
-						  "Unable to compile '" + filename + "'.\n\n"
-						+ "AppleCommander was unable to compile the file.\n"
-						+ "The system error given was '"
-						+ errorMessage + "'\n\n"
-						+ "Sorry!\n\n"
-						+ "Press OK to continue compiles or CANCEL to cancel compiles.");
-					int button = box.open();
-					if (button == SWT.CANCEL) break;	// break out of loop
+					int answer = SwtUtil.showOkCancelErrorDialog(shell,
+							textBundle.get("UnableToCompileTitle"), //$NON-NLS-1$
+							textBundle.format("UnableToCompileMessage", //$NON-NLS-1$
+									new Object[] { filename, errorMessage }));
+					if (answer == SWT.CANCEL) break;	// break out of loop
 				}
 			}
 		}
@@ -1032,16 +1015,14 @@ public class DiskExplorerTab {
 	protected void deleteFile() {
 		TableItem[] selection = fileTable.getSelection();
 
-		MessageBox box = new MessageBox(shell, 
-			SWT.ICON_ERROR | SWT.YES | SWT.NO);
-		box.setText("Are you sure?");
-		box.setMessage(
-			"Are you sure you want to delete "
-			+ ((selection.length > 1) ? "these files" : "this file")
-			+ "?\n\n"
-			+ "Choose YES to proceed or NO to cancel.");
-		int button = box.open();
-		if (button == SWT.YES) {
+		String message = (selection.length > 1) ?
+				textBundle.get("DeletePromptMultipleFiles") : //$NON-NLS-1$
+				textBundle.get("DeletePromptSingleFile") //$NON-NLS-1$
+				+ textBundle.get("DeletePromptTrailer"); //$NON-NLS-1$
+		int answer = SwtUtil.showYesNoDialog(shell,
+				textBundle.get("DeletePromptTitle"), //$NON-NLS-1$
+				message);
+		if (answer == SWT.YES) {
 			for (int i=0; i<selection.length; i++) {
 				TableItem tableItem = selection[i];
 				FileEntry fileEntry = (FileEntry) tableItem.getData();
@@ -1067,7 +1048,7 @@ public class DiskExplorerTab {
 				List specs = wizard.getImportSpecifications();
 				// Progress meter for import wizard:
 				dialog = new Shell(shell, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
-				dialog.setText("Importing files...");
+				dialog.setText(textBundle.get("ImportingFilesTitle")); //$NON-NLS-1$
 				GridLayout layout = new GridLayout();
 				layout.horizontalSpacing = 5;
 				layout.makeColumnsEqualWidth = false;
@@ -1077,13 +1058,13 @@ public class DiskExplorerTab {
 				layout.verticalSpacing = 5;
 				dialog.setLayout(layout);
 				Label label = new Label(dialog, SWT.NONE);
-				label.setText("Processing:");
+				label.setText(textBundle.get("ImportingFilesProcessingLabel")); //$NON-NLS-1$
 				Label countLabel = new Label(dialog, SWT.NONE);
 				GridData gridData = new GridData();
 				gridData.widthHint = 300;
 				countLabel.setLayoutData(gridData);
 				label = new Label(dialog, SWT.NONE);
-				label.setText("Filename:");
+				label.setText(textBundle.get("ImportingFilesFilenameLabel")); //$NON-NLS-1$
 				Label nameLabel = new Label(dialog, SWT.NONE);
 				gridData = new GridData();
 				gridData.widthHint = 300;
@@ -1102,7 +1083,8 @@ public class DiskExplorerTab {
 				for (int i=0; i<specs.size(); i++) {
 					ImportSpecification spec = 
 						(ImportSpecification) specs.get(i);
-					countLabel.setText("File " + (i+1) + " of " + specs.size());
+					countLabel.setText(textBundle.format("FileNofM", //$NON-NLS-1$
+							new Object[] { new Integer(i+1), new Integer(specs.size()) }));
 					nameLabel.setText(spec.getSourceFilename());
 					progressBar.setSelection(i);
 					ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -1120,15 +1102,9 @@ public class DiskExplorerTab {
 						try {
 							fileEntry.setFileData(buffer.toByteArray());
 						} catch (ProdosDiskSizeDoesNotMatchException ex) {
-							MessageBox yesNoPrompt = new MessageBox(shell,
-								SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-							yesNoPrompt.setText("Resize disk?");
-							yesNoPrompt.setMessage("This disk needs to be resized to match "
-								+ "the formatted capacity.  This should be an "
-								+ "ApplePC HDV disk iamge - they typically start "
-								+ "at 0 bytes and grow to the maximum capacity "
-								+ "(32MB).  Resize the disk?");
-							int answer = yesNoPrompt.open();
+							int answer = SwtUtil.showYesNoDialog(shell,
+									textBundle.get("ResizeDiskTitle"), //$NON-NLS-1$
+									textBundle.get("ResizeDiskMessage")); //$NON-NLS-1$
 							if (answer == SWT.YES) {
 								ProdosFormatDisk prodosDisk = (ProdosFormatDisk) 
 									fileEntry.getFormattedDisk();
@@ -1139,13 +1115,9 @@ public class DiskExplorerTab {
 					}
 				}
 			} catch (Exception ex) {
-				MessageBox box = new MessageBox(shell, 
-					SWT.ICON_ERROR | SWT.OK);
-				box.setText("Unable to import file(s)!");
-				box.setMessage(
-					  "An error occured during import.\n\n"
-				    + "'" + ex.getMessage() + "'");
-				box.open();
+				SwtUtil.showErrorDialog(shell,
+						textBundle.get("ImportErrorTitle"), //$NON-NLS-1$
+						textBundle.format("ImportErrorMessage", ex.getMessage())); //$NON-NLS-1$
 			}
 			dialog.close();
 			dialog.dispose();
@@ -1185,8 +1157,8 @@ public class DiskExplorerTab {
 
 		standardFormatToolItem = new ToolItem(toolBar, SWT.RADIO);
 		standardFormatToolItem.setImage(imageManager.get(ImageManager.ICON_STANDARD_FILE_VIEW));
-		standardFormatToolItem.setText("Standard");
-		standardFormatToolItem.setToolTipText("Displays files in standard format (F2)");
+		standardFormatToolItem.setText(textBundle.get("StandardViewToolItem")); //$NON-NLS-1$
+		standardFormatToolItem.setToolTipText(textBundle.get("StandardViewHoverText")); //$NON-NLS-1$
 		standardFormatToolItem.setSelection(true);
 		standardFormatToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
@@ -1195,8 +1167,8 @@ public class DiskExplorerTab {
 		});
 		nativeFormatToolItem = new ToolItem(toolBar, SWT.RADIO);
 		nativeFormatToolItem.setImage(imageManager.get(ImageManager.ICON_NATIVE_FILE_VIEW));
-		nativeFormatToolItem.setText("Native");
-		nativeFormatToolItem.setToolTipText("Displays files in native format for the operating system (F3)");
+		nativeFormatToolItem.setText(textBundle.get("NativeViewToolItem")); //$NON-NLS-1$
+		nativeFormatToolItem.setToolTipText(textBundle.get("NativeViewHoverText")); //$NON-NLS-1$
 		nativeFormatToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				changeCurrentFormat(FormattedDisk.FILE_DISPLAY_NATIVE);
@@ -1204,8 +1176,8 @@ public class DiskExplorerTab {
 		});
 		detailFormatToolItem = new ToolItem(toolBar, SWT.RADIO);
 		detailFormatToolItem.setImage(imageManager.get(ImageManager.ICON_DETAIL_FILE_VIEW));
-		detailFormatToolItem.setText("Detail");
-		detailFormatToolItem.setToolTipText("Displays files in with full details (F4)");
+		detailFormatToolItem.setText(textBundle.get("DetailViewToolItem")); //$NON-NLS-1$
+		detailFormatToolItem.setToolTipText(textBundle.get("DetailViewHoverText")); //$NON-NLS-1$
 		detailFormatToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				changeCurrentFormat(FormattedDisk.FILE_DISPLAY_DETAIL);
@@ -1216,13 +1188,14 @@ public class DiskExplorerTab {
 		
 		showDeletedFilesToolItem = new ToolItem(toolBar, SWT.CHECK);
 		showDeletedFilesToolItem.setImage(imageManager.get(ImageManager.ICON_SHOW_DELETED_FILES));
-		showDeletedFilesToolItem.setText("Deleted");
-		showDeletedFilesToolItem.setToolTipText("Show deleted files (F5)");
+		showDeletedFilesToolItem.setText(textBundle.get("ShowDeletedFilesToolItem")); //$NON-NLS-1$
+		showDeletedFilesToolItem.setToolTipText(textBundle.get("ShowDeletedFilesHoverText")); //$NON-NLS-1$
 		showDeletedFilesToolItem.setEnabled(disks[0].supportsDeletedFiles());
 		showDeletedFilesToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
-				showDeletedFiles = showDeletedFilesToolItem.getSelection();
-				fillFileTable(currentFileList);
+				ToolItem toolItem = (ToolItem) e.getSource();	// show deleted files
+				setShowDeletedFiles(toolItem.getSelection());
+				fillFileTable(getCurrentFileList());
 			}
 		});
 		
@@ -1230,8 +1203,8 @@ public class DiskExplorerTab {
 
 		importToolItem = new ToolItem(toolBar, SWT.PUSH);
 		importToolItem.setImage(imageManager.get(ImageManager.ICON_IMPORT_FILE));
-		importToolItem.setText("Import...");
-		importToolItem.setToolTipText("Import a file (CTRL+I)");
+		importToolItem.setText(textBundle.get("ImportWizardToolItem")); //$NON-NLS-1$
+		importToolItem.setToolTipText(textBundle.get("ImportWizardHoverText")); //$NON-NLS-1$
 		importToolItem.setEnabled(disks[0].canCreateFile() && disks[0].canWriteFileData());
 		importToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
@@ -1241,8 +1214,8 @@ public class DiskExplorerTab {
 		
 		exportToolItem = new ToolItem(toolBar, SWT.DROP_DOWN);
 		exportToolItem.setImage(imageManager.get(ImageManager.ICON_EXPORT_FILE));
-		exportToolItem.setText("Export...");
-		exportToolItem.setToolTipText("Export a file (CTRL+E)");
+		exportToolItem.setText(textBundle.get("ExportWizardToolItem")); //$NON-NLS-1$
+		exportToolItem.setToolTipText(textBundle.get("ExportWizardHoverText")); //$NON-NLS-1$
 		exportToolItem.setEnabled(false);
 		exportToolItem.addSelectionListener(
 			new DropDownSelectionListener(createFileExportMenu(SWT.NONE)));
@@ -1258,8 +1231,8 @@ public class DiskExplorerTab {
 
 		compileToolItem = new ToolItem(toolBar, SWT.PUSH);
 		compileToolItem.setImage(imageManager.get(ImageManager.ICON_COMPILE_FILE));
-		compileToolItem.setText("Compile");
-		compileToolItem.setToolTipText("Compile a BASIC program (CTRL+C)");
+		compileToolItem.setText(textBundle.get("CompileWizardToolItem")); //$NON-NLS-1$
+		compileToolItem.setToolTipText(textBundle.get("CompileWizardHoverText")); //$NON-NLS-1$
 		compileToolItem.setEnabled(false);
 		compileToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent event) {
@@ -1270,8 +1243,8 @@ public class DiskExplorerTab {
 		});
 		viewFileItem = new ToolItem(toolBar, SWT.PUSH);
 		viewFileItem.setImage(imageManager.get(ImageManager.ICON_VIEW_FILE));
-		viewFileItem.setText("View");
-		viewFileItem.setToolTipText("View file (CTRL+V)");
+		viewFileItem.setText(textBundle.get("ViewFileToolItem")); //$NON-NLS-1$
+		viewFileItem.setToolTipText(textBundle.get("ViewFileHoverText")); //$NON-NLS-1$
 		viewFileItem.setEnabled(false);
 		viewFileItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent event) {
@@ -1282,8 +1255,8 @@ public class DiskExplorerTab {
 		});
 		printToolItem = new ToolItem(toolBar, SWT.PUSH);
 		printToolItem.setImage(imageManager.get(ImageManager.ICON_PRINT_FILE));
-		printToolItem.setText("Print");
-		printToolItem.setToolTipText("Print directory listing...");
+		printToolItem.setText(textBundle.get("PrintDirectoryToolItem")); //$NON-NLS-1$
+		printToolItem.setToolTipText(textBundle.get("PrintDirectoryHoverText")); //$NON-NLS-1$
 		printToolItem.setEnabled(true);
 		printToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent event) {
@@ -1297,8 +1270,8 @@ public class DiskExplorerTab {
 
 		deleteToolItem = new ToolItem(toolBar, SWT.PUSH);
 		deleteToolItem.setImage(imageManager.get(ImageManager.ICON_DELETE_FILE));
-		deleteToolItem.setText("Delete");
-		deleteToolItem.setToolTipText("Delete a file (CTRL+D)");
+		deleteToolItem.setText(textBundle.get("DeleteFileToolItem")); //$NON-NLS-1$
+		deleteToolItem.setToolTipText(textBundle.get("DeleteFileHoverText")); //$NON-NLS-1$
 		deleteToolItem.setEnabled(false);
 		deleteToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
@@ -1310,27 +1283,27 @@ public class DiskExplorerTab {
 
 		changeOrderToolItem = new ToolItem(toolBar, SWT.DROP_DOWN);
 		changeOrderToolItem.setImage(imageManager.get(ImageManager.ICON_CHANGE_IMAGE_ORDER));
-		changeOrderToolItem.setText("Re-order...");
-		changeOrderToolItem.setToolTipText("Change image order (CTRL+O)");
+		changeOrderToolItem.setText(textBundle.get("ChangeDiskOrderToolItem")); //$NON-NLS-1$
+		changeOrderToolItem.setToolTipText(textBundle.get("ChangeDiskOrderHoverText")); //$NON-NLS-1$
 		ImageOrder imageOrder = disks[0].getImageOrder();
 		changeOrderToolItem.setEnabled(
 			(imageOrder.isBlockDevice() 
 				&& imageOrder.getBlocksOnDevice() == Disk.PRODOS_BLOCKS_ON_140KB_DISK)
 			|| (imageOrder.isTrackAndSectorDevice() 
 				&& imageOrder.getSectorsPerDisk() == Disk.DOS33_SECTORS_ON_140KB_DISK));
-		changeOrderMenu = createChangeImageOrderMenu(SWT.NONE);
 		changeOrderToolItem.addSelectionListener(
-			new DropDownSelectionListener(changeOrderMenu));
+			new DropDownSelectionListener(getChangeImageOrderMenu()));
 		changeOrderToolItem.addSelectionListener(new SelectionAdapter () {
 			/** 
 			 * Whenever the button is clicked, force the menu to be shown
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				Rectangle rect = changeOrderToolItem.getBounds();
+				ToolItem toolItem = (ToolItem) event.getSource(); // change order tool item
+				Rectangle rect = toolItem.getBounds();
 				Point pt = new Point(rect.x, rect.y + rect.height);
-				pt = toolBar.toDisplay(pt);
-				changeOrderMenu.setLocation(pt.x, pt.y);
-				changeOrderMenu.setVisible(true);
+				pt = getToolBar().toDisplay(pt);
+				getChangeImageOrderMenu().setLocation(pt.x, pt.y);
+				getChangeImageOrderMenu().setVisible(true);
 			}
 		});
 		
@@ -1338,8 +1311,8 @@ public class DiskExplorerTab {
 
 		saveToolItem = new ToolItem(toolBar, SWT.PUSH);
 		saveToolItem.setImage(imageManager.get(ImageManager.ICON_SAVE_DISK_IMAGE));
-		saveToolItem.setText("Save");
-		saveToolItem.setToolTipText("Save disk image (CTRL+S)");
+		saveToolItem.setText(textBundle.get("SaveDiskImageToolItem")); //$NON-NLS-1$
+		saveToolItem.setToolTipText(textBundle.get("SaveDiskImageHoverText")); //$NON-NLS-1$
 		saveToolItem.setEnabled(disks[0].hasChanged());	// same physical disk
 		saveToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
@@ -1349,8 +1322,8 @@ public class DiskExplorerTab {
 
 		saveAsToolItem = new ToolItem(toolBar, SWT.PUSH);
 		saveAsToolItem.setImage(imageManager.get(ImageManager.ICON_SAVE_DISK_IMAGE_AS));
-		saveAsToolItem.setText("Save As");
-		saveAsToolItem.setToolTipText("Save disk image as... (CTRL+SHIFT+S)");
+		saveAsToolItem.setText(textBundle.get("SaveDiskImageAsToolItem")); //$NON-NLS-1$
+		saveAsToolItem.setToolTipText(textBundle.get("SaveDiskImageAsHoverText")); //$NON-NLS-1$
 		saveAsToolItem.setEnabled(true);	// We can always Save As...
 		saveAsToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
@@ -1392,7 +1365,7 @@ public class DiskExplorerTab {
 		FileDialog fileDialog = new FileDialog(shell, SWT.SAVE);
 		fileDialog.setFilterPath(userPreferences.getSaveDirectory());
 		fileDialog.setFileName(disks[0].getFilename());
-		fileDialog.setText("Please choose a location and name for your disk image:");
+		fileDialog.setText(textBundle.get("SaveDiskImageAsPrompt")); //$NON-NLS-1$
 		String fullpath = fileDialog.open();
 		userPreferences.setSaveDirectory(fileDialog.getFilterPath());
 		if (fullpath == null) {
@@ -1436,13 +1409,9 @@ public class DiskExplorerTab {
 		}
 		MessageBox box = new MessageBox(finalShell, 
 			SWT.ICON_ERROR | SWT.CLOSE);
-		box.setText("Unable to save disk image!");
-		box.setMessage(
-			  "Unable to save '" + disks[0].getFilename() + "'.\n\n"
-		    + "AppleCommander was unable to save the disk\n"
-		    + "image.  The system error given was '"
-		    + errorMessage + "'\n\n"
-			+ "Sorry!");
+		box.setText(textBundle.get("SaveDiskImageErrorTitle")); //$NON-NLS-1$
+		box.setMessage(textBundle.format("SaveDiskImageErrorMessage", //$NON-NLS-1$
+				new Object[] { getDisk(0).getFilename(), errorMessage }));
 		box.open();
 	}
 	/**
@@ -1460,22 +1429,22 @@ public class DiskExplorerTab {
 					if ((event.stateMask & SWT.CTRL) != 0) {
 						switch (event.character) {
 							case '-':
-								treeItem = directoryTree.getSelection();
+								treeItem = getDirectoryTree().getSelection();
 								setDirectoryExpandedStates(treeItem[0], false);
 								break;
 							case '+':
-								treeItem = directoryTree.getSelection();
+								treeItem = getDirectoryTree().getSelection();
 								setDirectoryExpandedStates(treeItem[0], true);
 								break;
 						}
 					} else {	// assume no control and no alt
 						switch (event.character) {
 							case '-':
-								treeItem = directoryTree.getSelection();
+								treeItem = getDirectoryTree().getSelection();
 								treeItem[0].setExpanded(false);
 								break;
 							case '+':
-								treeItem = directoryTree.getSelection();
+								treeItem = getDirectoryTree().getSelection();
 								treeItem[0].setExpanded(true);
 								break;
 						}
@@ -1490,8 +1459,8 @@ public class DiskExplorerTab {
 	protected void viewFile(Class fileFilterClass) {
 		FileEntry fileEntry = getSelectedFileEntry();
 		if (fileEntry.isDeleted()) {
-			showErrorDialogBox("Unable to view a deleted file!",
-				"Sorry, you cannot view a deleted file.", null);
+			SwtUtil.showErrorDialog(shell, textBundle.get("DeleteFileErrorTitle"), //$NON-NLS-1$
+				textBundle.get("DeleteFileErrorMessage")); //$NON-NLS-1$
 		} else if (fileEntry.isDirectory()) {
 			TreeItem item = findDirectoryItem(directoryTree.getSelection()[0].getItems(), fileEntry.getFilename(), 1, 0);
 			if (item != null) {
@@ -1507,9 +1476,9 @@ public class DiskExplorerTab {
 			} catch (NullPointerException ex) {
 				// This is expected
 			} catch (InstantiationException e) {
-				showSystemErrorDialogBox(e);
+				SwtUtil.showSystemErrorDialog(shell, e);
 			} catch (IllegalAccessException e) {
-				showSystemErrorDialogBox(e);
+				SwtUtil.showSystemErrorDialog(shell, e);
 			}
 			if (fileFilter != null) {
 				window = new FileViewerWindow(shell, fileEntry, imageManager, fileFilter);
@@ -1518,28 +1487,6 @@ public class DiskExplorerTab {
 			}
 			window.open();
 		}
-	}
-	/**
-	 * Display an error dialog box with the OK button.
-	 * Note that the Throwable message may be embedded in the displayed message.
-	 * TODO: Should this be a shared method somewhere?
-	 */
-	protected void showErrorDialogBox(String title, String message, Throwable throwable) {
-		MessageBox box = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
-		box.setText(title);
-		if (throwable != null) {
-			message.replaceAll("%MESSAGE%", throwable.getMessage());
-		}
-		box.setMessage(message);
-		box.open();
-	}
-	/**
-	 * Display a system-level error dialog box.
-	 */
-	protected void showSystemErrorDialogBox(Throwable throwable) {
-		showErrorDialogBox("A system error occurred!",
-			"A system error occurred.  The message given was '%MESSAGE%'.",
-			throwable);
 	}
 	/**
 	 * Locate a named item in the directory tree.
@@ -1572,12 +1519,12 @@ public class DiskExplorerTab {
 				if (fileEntry != null && event.type == SWT.KeyUp && (event.stateMask & SWT.CTRL) != 0) {
 					switch (event.character) {
 						case CTRL_C:	// Compile Wizard
-							if (compileToolItem.isEnabled()) {
+							if (getCompileToolItem().isEnabled()) {
 								compileFileWizard();
 							}
 							break;
 						case CTRL_D:	// Delete file
-							if (deleteToolItem.isEnabled()) {
+							if (getDeleteToolItem().isEnabled()) {
 								deleteFile();
 							}
 							break;
@@ -1619,7 +1566,7 @@ public class DiskExplorerTab {
 									print();
 									break;
 								case CTRL_S:	// Save
-									if (saveToolItem.isEnabled()) {
+									if (getSaveToolItem().isEnabled()) {
 										save();
 									}
 									break;
@@ -1637,9 +1584,9 @@ public class DiskExplorerTab {
 								changeCurrentFormat(FormattedDisk.FILE_DISPLAY_DETAIL);
 								break;
 							case SWT.F5:	// Show deleted files
-								showDeletedFiles = !showDeletedFilesToolItem.getSelection();
-								showDeletedFilesToolItem.setSelection(showDeletedFiles);
-								fillFileTable(currentFileList);
+								setShowDeletedFiles(!getShowDeletedFilesToolItem().getSelection());
+								getShowDeletedFilesToolItem().setSelection(isShowDeletedFiles());
+								fillFileTable(getCurrentFileList());
 								break;
 						}
 					}
@@ -1681,7 +1628,7 @@ public class DiskExplorerTab {
 			this.printer = printer;
 		}
 		public void run() {
-			if (printer.startJob(disks[0].getFilename())) {
+			if (printer.startJob(getDisk(0).getFilename())) {
 				clientArea = printer.getClientArea();
 				dpiY = printer.getDPI().y;
 				dpiX = printer.getDPI().x;
@@ -1696,17 +1643,17 @@ public class DiskExplorerTab {
 				x = clientArea.x;
 				gc = new GC(printer);
 				int fontSize = 12;
-				if (currentFormat == FormattedDisk.FILE_DISPLAY_NATIVE) {
+				if (getCurrentFormat() == FormattedDisk.FILE_DISPLAY_NATIVE) {
 					fontSize = 10;
-				} else if (currentFormat == FormattedDisk.FILE_DISPLAY_DETAIL) {
+				} else if (getCurrentFormat() == FormattedDisk.FILE_DISPLAY_DETAIL) {
 					fontSize = 8;
 				}
-				normalFont = new Font(printer, "", fontSize, SWT.NORMAL);
-				headerFont = new Font(printer, "", fontSize, SWT.BOLD);
-				for (int i=0; i<disks.length; i++) {
-					FormattedDisk disk = disks[i];
+				normalFont = new Font(printer, new String(), fontSize, SWT.NORMAL);
+				headerFont = new Font(printer, new String(), fontSize, SWT.BOLD);
+				for (int i=0; i<getDisks().length; i++) {
+					FormattedDisk disk = getDisk(i);
 					filename = disk.getFilename();
-					fileHeaders =  disk.getFileColumnHeaders(currentFormat);
+					fileHeaders =  disk.getFileColumnHeaders(getCurrentFormat());
 					gc.setFont(headerFont);
 					computeHeaderWidths();
 					printFileHeaders();
@@ -1744,7 +1691,7 @@ public class DiskExplorerTab {
 				FileColumnHeader header = (FileColumnHeader) fileHeaders.get(i);
 				print(i, header.getTitle(), header.getAlignment());
 			}
-			println("");
+			println(new String());
 		}
 		protected void print(int column, String text, int alignment) {
 			int x0 = columnPosition[column];
@@ -1787,7 +1734,8 @@ public class DiskExplorerTab {
 				y - dpiY + point.y);
 		}
 		protected void printFooter() {
-			String text = "Page " + Integer.toString(page);
+			TextBundle textBundle = TextBundle.getInstance();
+			String text = textBundle.format("PageNumberText", Integer.toString(page)); //$NON-NLS-1$
 			Point point = gc.stringExtent(text);
 			gc.drawString(text, 
 				clientArea.x + (clientArea.width - point.x)/2, 
@@ -1798,19 +1746,19 @@ public class DiskExplorerTab {
 			Iterator iterator = directory.getFiles().iterator();
 			while (iterator.hasNext()) {
 				FileEntry fileEntry = (FileEntry) iterator.next();
-				if (!fileEntry.isDeleted() || showDeletedFiles) {
-					List columns = fileEntry.getFileColumnData(currentFormat);
+				if (!fileEntry.isDeleted() || isShowDeletedFiles()) {
+					List columns = fileEntry.getFileColumnData(getCurrentFormat());
 					for (int i=0; i<columns.size(); i++) {
 						FileColumnHeader header = (FileColumnHeader) fileHeaders.get(i);
 						String text = (String)columns.get(i);
-						if ("name".equalsIgnoreCase(header.getTitle())) {
+						if ("name".equalsIgnoreCase(header.getTitle())) { //$NON-NLS-1$
 							for (int l=0; l<level; l++) {
-								text = "  " + text;
+								text = "  " + text; //$NON-NLS-1$
 							}
 						}
 						print(i, text, header.getAlignment());
 					}
-					println("");
+					println(new String());
 					if (fileEntry.isDirectory()) {
 						printFiles((DirectoryEntry)fileEntry, level+1);
 					}
@@ -1846,10 +1794,10 @@ public class DiskExplorerTab {
 			disks[0].changeImageOrder(newImageOrder);
 			String filename = disks[0].getFilename();
 			if (disks[0].isCompressed()) {	// extra ".gz" at end
-				int chop = filename.lastIndexOf(".", filename.length()-4);
-				filename = filename.substring(0, chop+1) + extension + ".gz";
+				int chop = filename.lastIndexOf(".", filename.length()-4); //$NON-NLS-1$
+				filename = filename.substring(0, chop+1) + extension + ".gz"; //$NON-NLS-1$
 			} else {
-				int chop = filename.lastIndexOf(".");
+				int chop = filename.lastIndexOf("."); //$NON-NLS-1$
 				filename = filename.substring(0, chop+1) + extension;
 			}
 			disks[0].setFilename(filename);
@@ -1862,14 +1810,9 @@ public class DiskExplorerTab {
 			}
 			MessageBox box = new MessageBox(finalShell, 
 				SWT.ICON_ERROR | SWT.OK);
-			box.setText("Unable to change image order!");
-			box.setMessage(
-				  "Unable to reorder disk image.\n\n"
-				+ "AppleCommander was unable to change the disk order.\n"
-				+ "The system error given was '"
-				+ errorMessage + "'\n\n"
-				+ "Sorry!\n\n"
-				+ "Press OK to continue.");
+			box.setText(textBundle.get("ChangeImageOrderErrorTitle")); //$NON-NLS-1$
+			box.setMessage(textBundle.format(
+				"ChangeImageOrderErrorMessage", errorMessage)); //$NON-NLS-1$
 			box.open();
 		}
 	}
@@ -1877,56 +1820,139 @@ public class DiskExplorerTab {
 	/**
 	 * Construct the popup menu for the export button on the toolbar.
 	 */
-	protected Menu createChangeImageOrderMenu(int style) {
-		Menu menu = new Menu(shell, style);
+	protected Menu createChangeImageOrderMenu() {
+		Menu menu = new Menu(shell, SWT.NONE);
 		menu.addMenuListener(new MenuAdapter() {
 			public void menuShown(MenuEvent event) {
 				Menu theMenu = (Menu) event.getSource();
 				MenuItem[] subItems = theMenu.getItems();
 				// Nibble Order (*.nib)
-				subItems[0].setSelection(disks[0].isNibbleOrder());
+				subItems[0].setSelection(getDisk(0).isNibbleOrder());
 				// DOS Order (*.dsk)
-				subItems[1].setSelection(disks[0].isDosOrder());
+				subItems[1].setSelection(getDisk(0).isDosOrder());
 				// ProDOS Order (*.po)
-				subItems[2].setSelection(disks[0].isProdosOrder());
+				subItems[2].setSelection(getDisk(0).isProdosOrder());
 			}
 		});
 			
 		MenuItem item = new MenuItem(menu, SWT.RADIO);
-		item.setText("Nibble Order (*.nib)");
+		item.setText(textBundle.get("ChangeToNibbleOrderMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				if (!disks[0].isNibbleOrder()) {
+				if (!getDisk(0).isNibbleOrder()) {
 					NibbleOrder nibbleOrder = new NibbleOrder(
 						new ByteArrayImageLayout(Disk.APPLE_140KB_NIBBLE_DISK));
 					nibbleOrder.format();
-					changeImageOrder("nib", nibbleOrder);
+					changeImageOrder("nib", nibbleOrder); //$NON-NLS-1$
 				}
 			}
 		});
 
 		item = new MenuItem(menu, SWT.RADIO);
-		item.setText("DOS Order (*.dsk)");
+		item.setText(textBundle.get("ChangeToDosOrderMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				if (!disks[0].isDosOrder()) {
-					changeImageOrder("dsk", new DosOrder(
+				if (!getDisk(0).isDosOrder()) {
+					changeImageOrder("dsk", new DosOrder( //$NON-NLS-1$
 						new ByteArrayImageLayout(Disk.APPLE_140KB_DISK)));
 				}
 			}
 		});
 
 		item = new MenuItem(menu, SWT.RADIO);
-		item.setText("ProDOS Order (*.po)");
+		item.setText(textBundle.get("ChangeToProdosOrderMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				if (!disks[0].isProdosOrder()) {
-					changeImageOrder("po", new ProdosOrder(
+				if (!getDisk(0).isProdosOrder()) {
+					changeImageOrder("po", new ProdosOrder( //$NON-NLS-1$
 						new ByteArrayImageLayout(Disk.APPLE_140KB_DISK)));
 				}
 			}
 		});
 		
 		return menu;
+	}
+	
+	protected void setFileFilter(FileFilter fileFilter) {
+		this.fileFilter = fileFilter;
+	}
+	
+	protected void setShowDeletedFiles(boolean showDeletedFiles) {
+		this.showDeletedFiles = showDeletedFiles;
+	}
+	
+	protected boolean isShowDeletedFiles() {
+		return showDeletedFiles;
+	}
+	
+	protected Menu getChangeImageOrderMenu() {
+		if (changeImageOrderMenu == null) {
+			changeImageOrderMenu = createChangeImageOrderMenu();
+		}
+		return changeImageOrderMenu;
+	}
+	
+	protected ToolBar getToolBar() {
+		return toolBar;
+	}
+	
+	protected FormattedDisk[] getDisks() {
+		return disks;
+	}
+	
+	protected FormattedDisk getDisk(int diskNumber) {
+		return disks[diskNumber];
+	}
+	
+	protected int getCurrentFormat() {
+		return currentFormat;
+	}
+	
+	protected Tree getDirectoryTree() {
+		return directoryTree;
+	}
+	
+	protected AppleWorksWordProcessorFileFilter getAwpFilter() {
+		return awpFilter;
+	}
+	
+	protected GraphicsFileFilter getGraphicsFilter() {
+		return graphicsFilter;
+	}
+	
+	protected ToolItem getImportToolItem() {
+		return importToolItem;
+	}
+	
+	protected ToolItem getExportToolItem() {
+		return exportToolItem;
+	}
+	
+	protected ToolItem getCompileToolItem() {
+		return compileToolItem;
+	}
+	
+	protected Table getFileTable() {
+		return fileTable;
+	}
+	
+	protected ToolItem getDeleteToolItem() {
+		return deleteToolItem;
+	}
+	
+	protected ToolItem getViewFileToolItem() {
+		return viewFileItem;
+	}
+	
+	protected List getCurrentFileList() {
+		return currentFileList;
+	}
+	
+	protected ToolItem getSaveToolItem() {
+		return saveToolItem;
+	}
+	
+	protected ToolItem getShowDeletedFilesToolItem() {
+		return showDeletedFilesToolItem;
 	}
 }

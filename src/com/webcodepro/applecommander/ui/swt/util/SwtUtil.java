@@ -19,6 +19,7 @@
  */
 package com.webcodepro.applecommander.ui.swt.util;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
@@ -27,7 +28,10 @@ import org.eclipse.swt.printing.PrintDialog;
 import org.eclipse.swt.printing.Printer;
 import org.eclipse.swt.printing.PrinterData;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+
+import com.webcodepro.applecommander.ui.TextBundle;
 
 /**
  * SWT-related utility code.
@@ -36,6 +40,8 @@ import org.eclipse.swt.widgets.Shell;
  * @author Rob Greene
  */
 public class SwtUtil {
+	private static TextBundle textBundle = TextBundle.getInstance();
+	
 	/**
 	 * Center the child shell within the parent shell window.
 	 */
@@ -67,6 +73,7 @@ public class SwtUtil {
 		composite.getHorizontalBar().setIncrement(fontWidth);
 		composite.getHorizontalBar().setPageIncrement(pageWidth);
 	}
+	
 	/**
 	 * Display the Print dialog helper method. 
 	 */
@@ -75,5 +82,43 @@ public class SwtUtil {
 		PrinterData printerData = dialog.open();
 		if (printerData == null) return null;
 		return new Printer(printerData);
+	}
+	
+	/**
+	 * Display a dialog box with the question icon and a yes/no button selection.
+	 */
+	public static int showYesNoDialog(Shell shell, String title, String message) {
+		MessageBox messageBox = new MessageBox(shell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+		messageBox.setText(title);
+		messageBox.setMessage(message);
+		return messageBox.open();
+	}
+	
+	/**
+	 * Display a dialog box with the error icon and a ok/cancel button selection.
+	 */
+	public static int showOkCancelErrorDialog(Shell shell, String title, String message) {
+		MessageBox messageBox = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK | SWT.CANCEL);
+		messageBox.setText(title);
+		messageBox.setMessage(message);
+		return messageBox.open();
+	}
+
+	/**
+	 * Display a dialog box with the error icon and only the ok button.
+	 */
+	public static void showErrorDialog(Shell shell, String title, String message) {
+		MessageBox messageBox = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
+		messageBox.setText(title);
+		messageBox.setMessage(message);
+		messageBox.open();
+	}
+
+	/**
+	 * Display a system-level error dialog box.
+	 */
+	public static void showSystemErrorDialog(Shell shell, Throwable throwable) {
+		showErrorDialog(shell, textBundle.get("SystemErrorTitle"), //$NON-NLS-1$
+			textBundle.format("SystemErrorMessage", throwable.getMessage())); //$NON-NLS-1$
 	}
 }
