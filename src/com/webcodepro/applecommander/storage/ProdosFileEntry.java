@@ -443,6 +443,8 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 			return new TextFileFilter();
 		} else if ("AWP".equals(getFiletype())) {
 			return new AppleWorksWordProcessorFileFilter();
+		} else if ("ADB".equals(getFiletype())) {
+			return new AppleWorksDataBaseFileFilter();
 		} else if ("BAS".equals(getFiletype())) {
 			return new ApplesoftFileFilter();
 		} else if ("INT".equals(getFiletype())) {	// supposedly not available in ProDOS, however
