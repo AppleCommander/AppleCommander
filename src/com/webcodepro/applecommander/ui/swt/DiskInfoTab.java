@@ -28,6 +28,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -43,12 +45,24 @@ import org.eclipse.swt.widgets.TableItem;
  * @author: Rob Greene
  */
 public class DiskInfoTab {
+	private Table infoTable;
+	private Composite composite;
+	private FormattedDisk[] formattedDisks;
 	/**
 	 * Create the DISK INFO tab.
 	 */
 	public DiskInfoTab(CTabFolder tabFolder, FormattedDisk[] disks) {
+		this.formattedDisks = disks;
+		
 		CTabItem ctabitem = new CTabItem(tabFolder, SWT.NULL);
 		ctabitem.setText("Disk Info");
+		
+		tabFolder.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				infoTable.removeAll();
+				buildDiskInfoTable(formattedDisks[0]);	// FIXME!
+			}
+		});
 		
 		ScrolledComposite scrolledComposite = new ScrolledComposite(
 			tabFolder, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
@@ -56,7 +70,8 @@ public class DiskInfoTab {
 		scrolledComposite.setExpandVertical(true);
 		ctabitem.setControl(scrolledComposite);
 		
-		Composite composite = new Composite(scrolledComposite, SWT.NONE);
+		composite = new Composite(scrolledComposite, SWT.NONE);
+		createDiskInfoTable();
 		if (disks.length > 1) {
 			RowLayout layout = new RowLayout(SWT.VERTICAL);
 			layout.wrap = false;
@@ -64,11 +79,11 @@ public class DiskInfoTab {
 			for (int i=0; i<disks.length; i++) {
 				Label label = new Label(composite, SWT.NULL);
 				label.setText(disks[i].getDiskName());
-				buildDiskInfoTable(disks[i], composite);
+				buildDiskInfoTable(disks[i]);
 			}
 		} else {
 			composite.setLayout(new FillLayout());
-			buildDiskInfoTable(disks[0], composite);
+			buildDiskInfoTable(disks[0]);
 		}
 		composite.pack();
 		scrolledComposite.setContent(composite);
@@ -76,32 +91,37 @@ public class DiskInfoTab {
 			composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 	}
 	/**
-	 * Build the table describing the given disk.
+	 * Create the table describing the given disk.
 	 */
-	public Table buildDiskInfoTable(FormattedDisk disk, Composite composite) {
-		Table table = new Table(composite, SWT.FULL_SELECTION);
-		table.setHeaderVisible(true);
-		TableColumn column = new TableColumn(table, SWT.LEFT);
+	public void createDiskInfoTable() {
+		infoTable = new Table(composite, SWT.FULL_SELECTION);
+		infoTable.setHeaderVisible(true);
+		TableColumn column = new TableColumn(infoTable, SWT.LEFT);
 		column.setResizable(true);
 		column.setText("Label");
 		column.setWidth(200);
-		column = new TableColumn(table, SWT.LEFT);
+		column = new TableColumn(infoTable, SWT.LEFT);
 		column.setResizable(true);
 		column.setText("Value");
 		column.setWidth(400);
-		
+	}
+	/**
+	 * Build the table describing the given disk.
+	 */
+	public void buildDiskInfoTable(FormattedDisk disk) {
 		Iterator iterator = disk.getDiskInformation().iterator();
 		TableItem item = null;
 		while (iterator.hasNext()) {
 			DiskInformation diskinfo = (DiskInformation) iterator.next();
-			item = new TableItem(table, SWT.NULL);
+			item = new TableItem(infoTable, SWT.NULL);
 			item.setText(new String[] { diskinfo.getLabel(), diskinfo.getValue() });
 		}
-		return table;
 	}
 	/**
 	 * Dispose of resources.
 	 */
 	public void dispose() {
+		infoTable.dispose();
+		composite.dispose();
 	}
 }
