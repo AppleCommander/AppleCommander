@@ -63,6 +63,14 @@ public class AppleUtil {
 	}
 	
 	/**
+	 * Compute the signed value of a word.
+	 */
+	public static int getSignedWordValue(byte[] buffer, int offset) {
+		int value = buffer[offset+1] * 256;
+		return value + getUnsignedByte(buffer[offset]);
+	}
+	
+	/**
 	 * Set a word value.
 	 */
 	public static void setWordValue(byte[] buffer, int offset, int value) {
@@ -403,5 +411,36 @@ public class AppleUtil {
 			}
 		}
 		return decompressedStream.toByteArray();
+	}
+	
+	/**
+	 * Pull a SANE formatted number from the buffer and return it
+	 * as a Java double datatype.  Fortunately, SANE is the IEEE 754
+	 * format which _is_ Java's double datatype.  The Double class
+	 * has an intrinsic longBitsToDouble method to do this.  The
+	 * SANE/IEEE 754 format is setup as such:
+	 * <pre>
+	 *   E SSSSSSSSSSS FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF...F<br>
+	 *   0 1........11 12....................................63<br>
+	 * </pre>
+	 * Where E is the sign bit, S is the exponent bits and F is the
+	 * fraction bits.  The format is discussed within the Double class
+	 * documentation as around the web.  Be aware that the fraction
+	 * bits are base 2.  Meaning that a fraction of .101 is, in reality,
+	 * a binary fraction.  In decimal, this is 1/2 + 0/4 + 1/8 = 5/8
+	 * or .625.
+	 * See http://www.psc.edu/general/software/packages/ieee/ieee.html
+	 * for an example.
+	 * <p>
+	 * Note: SANE numbers, as stored by AppleWorks are in typical
+	 * low/high format.
+	 */
+	public static double getSaneNumber(byte[] buffer, int offset) {
+		long doubleBits = 0;
+		for (int i=8; i>0; i--) {
+			doubleBits <<= 8;
+			doubleBits+= getUnsignedByte(buffer[offset+i-1]);
+		}
+		return Double.longBitsToDouble(doubleBits);
 	}
 }
