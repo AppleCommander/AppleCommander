@@ -84,6 +84,24 @@ public class ProdosCommonDirectoryHeader extends ProdosCommonEntry {
 	}
 	
 	/**
+	 * Increment the number of active entries by one.
+	 */
+	public void incrementFileCount() {
+		byte[] data = readFileEntry();
+		data[0x21]++;
+		writeFileEntry(data);
+	}
+	
+	/**
+	 * Decrement the number of active entries by one.
+	 */
+	public void decrementFileCount() {
+		byte[] data = readFileEntry();
+		if (data[0x21] != 0) data[0x21]--;
+		writeFileEntry(data);
+	}
+	
+	/**
 	 * Get the block number of the bit map.
 	 */
 	public int getBitMapPointer() {
