@@ -49,7 +49,6 @@ public class ExportFileStartPane extends WizardPane {
 	private Composite control;
 	private ExportWizard wizard;
 	private GraphicsFileFilter graphicsFileFilter = new GraphicsFileFilter();
-	private AppleWorksWordProcessorFileFilter awpFilter = new AppleWorksWordProcessorFileFilter();
 	/**
 	 * Constructor for ExportFileStartPane.
 	 */
