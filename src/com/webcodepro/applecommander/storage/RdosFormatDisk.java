@@ -195,6 +195,14 @@ public class RdosFormatDisk extends FormattedDisk {
 	}
 
 	/**
+	 * Create a new FileEntry.
+	 */
+	public FileEntry createFile() throws DiskFullException {
+		// FIXME: Need to implement!
+		return null;
+	}
+
+	/**
 	 * Identify the operating system format of this disk.
 	 */
 	public String getFormat() {
@@ -362,7 +370,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	/**
 	 * Format the disk as an RDOS disk.
 	 * FIXME - RDOS does not "like" an AppleCommander formatted disk.
-	 *         This appears to be because the &amp;CAT command command
+	 *         This appears to be because the &amp;CAT command
 	 *         reads from track 1 sector 9 (whatever RDOS block that
 	 *         would be) and executes that code for the directory.
 	 *         AppleCommander will need to either clone the code or write
@@ -397,5 +405,14 @@ public class RdosFormatDisk extends FormattedDisk {
 	 */
 	public int getLogicalDiskNumber() {
 		return 0;
+	}
+
+	/**
+	 * Returns a valid filename for the given filename.  RDOS
+	 * pretty much allows anything - so it is cut to 24 characters
+	 * and trimmed (trailing whitespace may cause confusion).
+	 */
+	public String getSuggestedFilename(String filename) {
+		return filename.toUpperCase().substring(0, 24).trim();
 	}
 }
