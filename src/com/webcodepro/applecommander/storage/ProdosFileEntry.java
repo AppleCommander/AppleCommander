@@ -34,14 +34,12 @@ import java.util.List;
 public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	private List files;
 	private ProdosSubdirectoryHeader subdirectoryHeader;
-	private ProdosFormatDisk disk;
 
 	/**
 	 * Constructor for ProdosFileEntry.
 	 */
-	public ProdosFileEntry(byte[] fileEntry, ProdosFormatDisk disk) {
-		super(fileEntry);
-		this.disk = disk;
+	public ProdosFileEntry(ProdosFormatDisk disk, int block, int offset) {
+		super(disk, block, offset);
 	}
 
 	/**
@@ -52,7 +50,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	public String getFilename() {
 		String fileName;
 		if (isDeleted()) {
-			fileName = AppleUtil.getString(getFileEntry(), 1, 15);
+			fileName = AppleUtil.getString(readFileEntry(), 1, 15);
 			StringBuffer buf = new StringBuffer();
 			for (int i=0; i<fileName.length(); i++) {
 				char ch = fileName.charAt(i);
@@ -64,7 +62,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 			}
 			fileName = buf.toString();
 		} else {
-			fileName = AppleUtil.getProdosString(getFileEntry(), 0);
+			fileName = AppleUtil.getProdosString(readFileEntry(), 0);
 		}
 		if (isAppleWorksFile()) {
 			int auxtype = getAuxiliaryType();
@@ -106,7 +104,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 * http://www.apple2.org.za/gswv/gsezine/GS.WorldView/ProDOS.File.Types.v2.0.txt
 	 */
 	public String getFiletype() {
-		int filetype = AppleUtil.getUnsignedByte(getFileEntry()[0x10]);
+		int filetype = AppleUtil.getUnsignedByte(readFileEntry()[0x10]);
 		switch (filetype) {
 			case 0x00:	return "UNK";
 			case 0x01:	return "BAD";
@@ -220,7 +218,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 * Intended to force upper/lowercase into the filename.
 	 */
 	public boolean isAppleWorksFile()	{
-		int filetype = AppleUtil.getUnsignedByte(getFileEntry()[0x10]);
+		int filetype = AppleUtil.getUnsignedByte(readFileEntry()[0x10]);
 		return (filetype == 0x19 || filetype == 0x1a || filetype == 0x1b);
 	}
 
@@ -229,21 +227,21 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 * index block (sapling), or master index block (tree).
 	 */
 	public int getKeyPointer() {
-		return AppleUtil.getWordValue(getFileEntry(), 0x11);
+		return AppleUtil.getWordValue(readFileEntry(), 0x11);
 	}
 
 	/**
 	 * Get the number of blocks used.
 	 */
 	public int getBlocksUsed() {
-		return AppleUtil.getWordValue(getFileEntry(), 0x13);
+		return AppleUtil.getWordValue(readFileEntry(), 0x13);
 	}
 
 	/**
 	 * Get the EOF position.  This can indicate the length of a file.
 	 */
 	public int getEofPosition() {
-		return AppleUtil.get3ByteValue(getFileEntry(), 0x15);
+		return AppleUtil.get3ByteValue(readFileEntry(), 0x15);
 	}
 
 
@@ -256,21 +254,21 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 * SYS - load address for system program (usually 0x2000).
 	 */
 	public int getAuxiliaryType() {
-		return AppleUtil.getWordValue(getFileEntry(), 0x1f);
+		return AppleUtil.getWordValue(readFileEntry(), 0x1f);
 	}
 
 	/**
 	 * Get the last modification date.
 	 */
 	public Date getLastModificationDate() {
-		return AppleUtil.getProdosDate(getFileEntry(), 0x21);
+		return AppleUtil.getProdosDate(readFileEntry(), 0x21);
 	}
 
 	/**
 	 * Get the block number of the key block for the directory which describes this file.
 	 */
 	public int getHeaderPointer() {
-		return AppleUtil.getWordValue(getFileEntry(), 0x25);
+		return AppleUtil.getWordValue(readFileEntry(), 0x25);
 	}
 
 	/**
@@ -421,7 +419,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 * Currently, the disk itself handles this.
 	 */
 	public byte[] getFileData() {
-		return disk.getFileData(this);
+		return getDisk().getFileData(this);
 	}
 
 	/**
