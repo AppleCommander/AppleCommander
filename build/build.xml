@@ -21,16 +21,16 @@
 		<mkdir dir="${dist}"/>
 		<mkdir dir="${javadoc}"/>
 		<input message="Please enter the version number for this release of AppleCommander:"
-			addproperty="version"/>
+			addproperty="acVerion"/>
 		<condition property="do.abort">
-			<equals arg1="" arg2="${version}"/>
+			<equals arg1="" arg2="${acVersion}"/>
 		</condition>
 		<fail if="do.abort">Version number is required.</fail>
-		<echo>Making build ${version}...</echo>
-		<property name="guijar" value="${dist}/AppleCommander-${version}.jar"/>
-		<property name="cmdjar" value="${dist}/AppleCommander-${version}ac.jar"/>
-		<property name="srczip" value="${dist}/AppleCommander-${version}-src.zip"/>
-		<property name="webzip" value="${dist}/AppleCommander-${version}-web.zip"/>
+		<echo>Making build ${acVersion}...</echo>
+		<property name="guijar" value="${dist}/AppleCommander-${acVersion}.jar"/>
+		<property name="cmdjar" value="${dist}/AppleCommander-${acVersion}ac.jar"/>
+		<property name="srczip" value="${dist}/AppleCommander-${acVersion}-src.zip"/>
+		<property name="webzip" value="${dist}/AppleCommander-${acVersion}-web.zip"/>
 	</target>
 	
 	<target name="clean" depends="init" description="Wipes out work contents">
@@ -120,7 +120,7 @@
 	</target>
 	
 	<target name="javadoc" depends="init" description="Build javadoc">
-		<javadoc destdir="${javadoc}" author="true" windowtitle="AppleCommander ${version} JavaDoc"
+		<javadoc destdir="${javadoc}" author="true" windowtitle="AppleCommander ${acVersion} JavaDoc"
 				 classpath="${swtjar};${junitjar}">
 			<fileset dir="${source}"/>
 			<fileset dir="${testsrc}"/>
