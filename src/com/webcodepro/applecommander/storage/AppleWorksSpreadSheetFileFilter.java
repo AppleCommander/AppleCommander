@@ -269,7 +269,7 @@ public class AppleWorksSpreadSheetFileFilter implements FileFilter {
 	 * Build a row reference.
 	 */
 	protected String getRowReference(int row) {
-		NumberFormat formatter = NumberFormat.getIntegerInstance();
+		NumberFormat formatter = NumberFormat.getInstance();
 		return formatter.format(row);
 	}
 }
