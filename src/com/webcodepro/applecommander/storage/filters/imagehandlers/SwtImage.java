@@ -71,6 +71,8 @@ public class SwtImage extends AppleImage {
 			format = SWT.IMAGE_GIF;
 		} else if ("JPEG".equals(getFileExtension())) {
 			format = SWT.IMAGE_JPEG;
+		} else if ("PNG".equals(getFileExtension())) {
+			format = SWT.IMAGE_PNG;
 		}
 		imageLoader.save(outputStream, format);
 	}
