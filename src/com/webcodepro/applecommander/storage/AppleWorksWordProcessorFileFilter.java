@@ -52,9 +52,15 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 	private static final int RENDER_AS_HTML = 1;
 	private static final int RENDER_AS_RTF = 2;
 	private int rendering = RENDER_AS_TEXT;
+	/**
+	 * Indicates if we are in a header or footer.  This is somewhat of a 
+	 * hack to generate a RTF file correctly.  If a header is found (and
+	 * presumably a footer), there isn't necessarily a header end code
+	 * included.
+	 */
+	private boolean inHeaderOrFooter = false;
 	/*
 	 * Identifies the codes embedded in the AppleWorks file.
-	 * FIXME: Need to ensure that all codes are defined.
 	 */
 	private static final int CODE_BOLD_ON = 0x01;
 	private static final int CODE_BOLD_OFF = 0x02;
@@ -65,18 +71,61 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 	private static final int CODE_UNDERLINE_ON = 0x07;
 	private static final int CODE_UNDERLINE_OFF = 0x08;
 	private static final int CODE_PAGE_NUMBER = 0x09;
-	private static final int CODE_NONBREAKING_SPACE = 0x0b;
+	private static final int CODE_ENTER_KEYBOARD = 0x0a;
+	private static final int CODE_STICKY_SPACE = 0x0b;
+	private static final int CODE_MAILMERGE_BEGIN = 0x0c;
+	private static final int CODE_RESERVED1 = 0x0d;
 	private static final int CODE_DATE = 0x0e;
 	private static final int CODE_TIME = 0x0f;
+	private static final int CODE_SPECIAL_1 = 0x10;
+	private static final int CODE_SPECIAL_2 = 0x11;
+	private static final int CODE_SPECIAL_3 = 0x12;
+	private static final int CODE_SPECIAL_4 = 0x13;
+	private static final int CODE_SPECIAL_5 = 0x14;
+	private static final int CODE_SPECIAL_6 = 0x15;
+	private static final int CODE_TAB = 0x16;
+	private static final int CODE_TAB_FILL = 0x17;
+	private static final int CODE_RESERVED2 = 0x18;
 	/*
 	 * Identifies the commands embedded in the AppleWorks file.
-	 * FIXME: Need to ensure that all commands are defined.
 	 */
-	private static final int COMMAND_LEFT = 0xe0;
+	private static final int COMMAND_RESERVED = 0xd4;
+	private static final int COMMAND_PAGEHEADER_END = 0xd5;
+	private static final int COMMAND_PAGEFOOTER_END = 0xd6;
 	private static final int COMMAND_RIGHT = 0xd7;
+	private static final int COMMAND_PLATEN_WIDTH = 0xd8;	// 10ths of an inch
+	private static final int COMMAND_MARGIN_LEFT = 0xd9;		// 10ths of an inch
+	private static final int COMMAND_MARGIN_RIGHT = 0xda;	// 10ths of an inch
+	private static final int COMMAND_CHARS_PER_INCH = 0xdb;
+	private static final int COMMAND_PROPORTIONAL_1 = 0xdc;
+	private static final int COMMAND_PROPORTIONAL_2 = 0xdd;
+	private static final int COMMAND_INDENT = 0xde;			// in characters
+	private static final int COMMAND_JUSTIFY = 0xdf;
+	private static final int COMMAND_LEFT = 0xe0;
 	private static final int COMMAND_CENTER = 0xe1;
-	private static final int COMMAND_JUSTIFY = 0xedf;
-	private static final int COMMAND_MULTIPLE_RETURNS = 0xee;
+	private static final int COMMAND_PAPER_LENGTH = 0xe2;	// 10ths of an inch
+	private static final int COMMAND_MARGIN_TOP = 0xe3;		// 10ths of an inch
+	private static final int COMMAND_MARGIN_BOTTON = 0xe4;	// 10ths of an inch
+	private static final int COMMAND_LINES_PER_INCH = 0xe5;
+	private static final int COMMAND_SINGLE_SPACE = 0xe6;
+	private static final int COMMAND_DOUBLE_SPACE = 0xe7;
+	private static final int COMMAND_TRIPLE_SPACE = 0xe8;
+	private static final int COMMAND_NEW_PAGE = 0xe9;
+	private static final int COMMAND_GROUP_BEGIN = 0xea;
+	private static final int COMMAND_GROUP_END = 0xeb;
+	private static final int COMMAND_PAGEHEADER = 0xed;		// may be mixed up
+	private static final int COMMAND_PAGEFOOTER = 0xec;		// with this...
+	private static final int COMMAND_SKIP_LINES = 0xee;
+	private static final int COMMAND_PAGE_NUMBER = 0xef;
+	private static final int COMMAND_PAUSE_EACH_PAGE = 0xf0;
+	private static final int COMMAND_PAUSE_HERE = 0xf1;
+	private static final int COMMAND_SET_MARKER = 0xf2;
+	private static final int COMMAND_PAGE_NUMBER_256 = 0xf3;	// add 256
+	private static final int COMMAND_PAGE_BREAK = 0xf4;		// byte page#
+	private static final int COMMAND_PAGE_BREAK_256 = 0xf5;	// byte page# + 256
+	private static final int COMMAND_PP_PAGE_BREAK = 0xf6;	// break in midl/par.
+	private static final int COMMAND_PP_PAGE_BREAK_256 = 0xf7;	// +256 ??
+	private static final int COMMAND_EOF = 0xff;				// END OF FILE
 
 	/**
 	 * Constructor for AppleWorksWordProcessorFileFilter.
@@ -96,7 +145,7 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 		if (isHtmlRendering()) {
 			printWriter.println("<html><style>BODY { font-family: monospace; }</style><body>");
 		} else if (isRtfRendering()) {
-			printWriter.println("{\\rtf1");
+			printWriter.print("{\\rtf1");
 			printWriter.print("{\\*\\generator AppleCommander ");
 			printWriter.print(AppleCommander.VERSION);
 			printWriter.println(";}");
@@ -107,7 +156,7 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 			int byte0 = AppleUtil.getUnsignedByte(fileData[offset++]);
 			int byte1 = AppleUtil.getUnsignedByte(fileData[offset++]);
 			
-			if (byte0 == 0xff && byte1 == 0xff) {	// end of file
+			if (byte0 == COMMAND_EOF && byte1 == COMMAND_EOF) {
 				break;
 			} else if (byte1 == 0xd0) {			// Carriage return line records
 				handleReturn(printWriter);
@@ -206,7 +255,7 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 			case CODE_UNDERLINE_OFF:
 						printWriter.print("</u>");
 						break;
-			case CODE_NONBREAKING_SPACE:
+			case CODE_STICKY_SPACE:
 						printWriter.print("&nbsp;");
 						break;
 			default:	handleSpecialCodesAsText(printWriter, ch);
@@ -218,6 +267,9 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 	 */
 	protected void handleSpecialCodesAsRtf(PrintWriter printWriter, byte ch) {
 		switch (ch) {
+			case CODE_PAGE_NUMBER:
+						printWriter.print("{\\chpgn}");
+						break;
 			case CODE_BOLD_ON:
 						printWriter.print("\\b ");
 						break;
@@ -230,7 +282,17 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 			case CODE_UNDERLINE_OFF:
 						printWriter.print("\\ulnone");
 						break;
-			case CODE_NONBREAKING_SPACE:
+			case CODE_SUPERSCRIPT_ON:
+						printWriter.print("\\super ");
+						break;
+			case CODE_SUBSCRIPT_ON:
+						printWriter.print("\\sub ");
+						break;
+			case CODE_SUPERSCRIPT_OFF:
+			case CODE_SUBSCRIPT_OFF:
+						printWriter.print("\\nosupersub ");
+						break;
+			case CODE_STICKY_SPACE:
 						printWriter.print(" ");
 						break;
 			default:	handleSpecialCodesAsText(printWriter, ch);
@@ -286,7 +348,23 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 	protected int handleCommandRecordAsRtf(int byte0, int byte1, 
 		PrintWriter printWriter, int offset) {
 		
+		if (inHeaderOrFooter) {
+			printWriter.print("}");
+			inHeaderOrFooter = false;
+		}
 		switch (byte1) {
+			case COMMAND_PAGEHEADER:
+						printWriter.print("{\\header ");
+						inHeaderOrFooter = true;
+						break;
+			case COMMAND_PAGEFOOTER:
+						printWriter.print("{\\footer ");
+						inHeaderOrFooter = true;
+						break;
+			case COMMAND_PAGEHEADER_END:
+			case COMMAND_PAGEFOOTER_END:
+						printWriter.print("}");
+						break;
 			case COMMAND_RIGHT:
 						printWriter.println("\\pard\\qr ");
 						break;
@@ -295,6 +373,14 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 						break;
 			case COMMAND_CENTER:
 						printWriter.println("\\pard\\qc ");
+						break;
+			case COMMAND_JUSTIFY:
+						printWriter.print("\\qj ");
+						break;
+			case COMMAND_PAGE_BREAK:
+			case COMMAND_PAGE_BREAK_256:
+			case COMMAND_NEW_PAGE:
+						printWriter.print("\\page ");
 						break;
 			default:	offset = handleCommandRecordAsText(byte0, byte1, 
 							printWriter, offset);
@@ -309,7 +395,7 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 		PrintWriter printWriter, int offset) {
 			
 		switch (byte1) {	
-			case COMMAND_MULTIPLE_RETURNS:
+			case COMMAND_SKIP_LINES:
 						for (int i=0; i<byte0; i++) {
 							handleReturn(printWriter);
 						}
@@ -325,6 +411,7 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 		String fileName = fileEntry.getFilename().trim();
 		String extension = ".txt";
 		if (isHtmlRendering()) extension = ".html";
+		else if (isRtfRendering()) extension = ".rtf";
 
 		if (!fileName.toLowerCase().endsWith(extension)) {
 			fileName = fileName + extension;
