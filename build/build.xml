@@ -1,36 +1,54 @@
-<project name="AppleCommander" default="executableJar" basedir="..">
+<project name="AppleCommander" default="all" basedir="..">
 	<description>
 		This ANT build script will build the pieces that need to be distributed.
 	</description>
 	
 	<property name="work" value="work"/>
 	<property name="classes" value="${work}/classes"/>
-	<property name="lib" value="${work}/lib"/>
+	<property name="dist" value="${work}/dist"/>
 	<property name="source" value="src"/>
+	<property name="testsrc" value="test"/>
 	<property name="build" value="build"/>
 	<property name="doc" value="documentation"/>
 	<property name="web" value="web"/>
+	<property name="javadoc" value="${work}/javadoc"/>
 	<property name="swtjar" value="C:\Program Files\Eclipse 2.1.x\plugins\org.eclipse.swt.win32_2.1.3\ws\win32\swt.jar"/>
-	<property name="acjar" value="${lib}/AppleCommander.jar"/>
-	<property name="aczip" value="${work}/AppleCommander.zip"/>
+	<property name="junitjar" value="C:\Java\lib\junit3.8.1\junit.jar"/>
 	
 	<target name="init" description="Ensure work directory is present">
 		<mkdir dir="${work}"/>
 		<mkdir dir="${classes}"/>
-		<mkdir dir="${lib}"/>
+		<mkdir dir="${dist}"/>
+		<mkdir dir="${javadoc}"/>
+		<input message="Please enter the version number for this release of AppleCommander:"
+			addproperty="version"/>
+		<condition property="do.abort">
+			<equals arg1="" arg2="${version}"/>
+		</condition>
+		<fail if="do.abort">Version number is required.</fail>
+		<echo>Making build ${version}...</echo>
+		<property name="guijar" value="${dist}/AppleCommander-${version}.jar"/>
+		<property name="cmdjar" value="${dist}/AppleCommander-${version}ac.jar"/>
+		<property name="srczip" value="${dist}/AppleCommander-${version}-src.zip"/>
+		<property name="webzip" value="${dist}/AppleCommander-${version}-web.zip"/>
 	</target>
 	
 	<target name="clean" depends="init" description="Wipes out work contents">
 		<delete dir="${classes}"/>
-		<delete dir="${lib}"/>
+		<delete dir="${dist}"/>
+		<delete dir="${javadoc}"/>
 	</target>
 	
-	<target name="executableJar" depends="init" description="Build executable JAR">
+	<target name="all" depends="init,executableGuiJar,executableCmdJar,sourceZip,javadoc" description="Everything">
+	    <!-- Nothing else to do - depends handles it all. -->
+	</target>
+	
+	<target name="executableGuiJar" depends="init" description="Build GUI executable JAR">
 		<javac srcdir="${source}" destdir="${classes}" target="1.3" classpath="${swtjar}">
 			<include name="**/*.java"/>
 			<exclude name="**/*Test.java"/>
 		</javac>
-		<jar jarfile="${acjar}" manifest="build/manifest.mf">
+		<jar jarfile="${guijar}" manifest="build/manifest.mf">
 			<fileset dir="${classes}"/>
 			<fileset dir="${source}">
 				<include name="**/*.dump"/>
@@ -45,8 +63,30 @@
 		</jar>
 	</target>
 	
+	<target name="executableCmdJar" depends="init" description="Build command-line only executable JAR">
+		<javac srcdir="${source}" destdir="${classes}" target="1.3">
+			<include name="**/*.java"/>
+			<exclude name="**/*Test.java"/>
+		</javac>
+		<jar jarfile="${cmdjar}" manifest="build/manifest.mf">
+			<fileset dir="${classes}">
+				<exclude name="com/webcodepro/applecommander/ui/swt/**"/>
+				<exclude name="com/webcodepro/applecommander/ui/images/**"/>
+			</fileset>
+			<fileset dir="${source}">
+				<include name="**/*.dump"/>
+				<include name="**/*.properties"/>
+			</fileset>
+			<fileset dir=".">
+			    <include name="LICENSE"/>
+			    <include name="TODO"/>
+			    <include name="VERSIONS"/>
+			</fileset>
+		</jar>
+	</target>
+	
 	<target name="sourceZip" depends="init" description="Build source ZIP archive">
-	    <zip zipfile="${aczip}">
+	    <zip zipfile="${srczip}">
 	    	<zipfileset dir=".">
 	    		<include name="ECLIPSE-CONFIG"/>
 	    		<include name="HEADER"/>
@@ -61,6 +101,12 @@
 				<include name="**/*.properties"/>
 				<include name="**/*.gif"/>
 	        </zipfileset>
+	        <zipfileset dir="${testsrc}" prefix="${testsrc}">
+				<include name="**/*.java"/>
+				<include name="**/*.dump"/>
+				<include name="**/*.properties"/>
+				<include name="**/*.gif"/>
+	        </zipfileset>
 	        <zipfileset dir="${build}" prefix="${build}"/>
 	        <zipfileset dir="${doc}" prefix="${doc}">
 	        	<include name="**/*.txt"/>
@@ -70,6 +116,25 @@
 	        	<include name="**/*.gif"/>
 	        	<include name="**/*.png"/>
 	        </zipfileset>
+	    </zip>
+	</target>
+	
+	<target name="javadoc" depends="init" description="Build javadoc">
+		<javadoc destdir="${javadoc}" author="true" windowtitle="AppleCommander ${version} JavaDoc"
+				 classpath="${swtjar};${junitjar}">
+			<fileset dir="${source}"/>
+			<fileset dir="${testsrc}"/>
+		</javadoc>
+    </target>
+	
+	<target name="websiteZip" depends="javadoc" description="Build website ZIP archive">
+	    <zip zipfile="${webzip}">
+	        <zipfileset dir="${web}" prefix="htdocs">
+	        	<include name="**/*.html"/>
+	        	<include name="**/*.gif"/>
+	        	<include name="**/*.png"/>
+	        </zipfileset>
+	        <zipfileset dir="${javadoc}" prefix="htdocs/javadoc"/>
 	    </zip>
 	</target>
 </project>
