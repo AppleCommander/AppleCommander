@@ -19,6 +19,8 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import com.webcodepro.applecommander.ui.AppleCommander;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
@@ -26,17 +28,56 @@ import java.util.Date;
 
 /**
  * Extract the contents of an AWP (AppleWorks word processor) document and
- * convert to a text format.
- * See format documentation at:
+ * convert to a text format.  Currently supported formats are plain text,
+ * HTML, or RTF.  These are not exact duplicates, but they are close 
+ * approximations.  RTF format is suitable for conversion to other word
+ * processors.
+ * <p>
+ * To choose export format, use the appropriately named select method.
+ * <p>
+ * See AWP format documentation at:
  * 	http://www.gno.org/pub/apple2/doc/apple/filetypes/ftn.1a.xxxx
  * <p>
  * Date created: Nov 15, 2002 3:55:21 PM
  * @author: Rob Greene
  */
 public class AppleWorksWordProcessorFileFilter implements FileFilter {
-	public static final int RENDER_AS_TEXT = 0;
-	public static final int RENDER_AS_HTML = 1;
+	/*
+	 * This list identifies the various rendering options.
+	 * As the internal format may change in the future, 
+	 * the internal representation is hidden and the developer
+	 * should use the appropriate select method.
+	 */
+	private static final int RENDER_AS_TEXT = 0;
+	private static final int RENDER_AS_HTML = 1;
+	private static final int RENDER_AS_RTF = 2;
 	private int rendering = RENDER_AS_TEXT;
+	/*
+	 * Identifies the codes embedded in the AppleWorks file.
+	 * FIXME: Need to ensure that all codes are defined.
+	 */
+	private static final int CODE_BOLD_ON = 0x01;
+	private static final int CODE_BOLD_OFF = 0x02;
+	private static final int CODE_SUPERSCRIPT_ON = 0x03;
+	private static final int CODE_SUPERSCRIPT_OFF = 0x04;
+	private static final int CODE_SUBSCRIPT_ON = 0x05;
+	private static final int CODE_SUBSCRIPT_OFF = 0x06;
+	private static final int CODE_UNDERLINE_ON = 0x07;
+	private static final int CODE_UNDERLINE_OFF = 0x08;
+	private static final int CODE_PAGE_NUMBER = 0x09;
+	private static final int CODE_NONBREAKING_SPACE = 0x0b;
+	private static final int CODE_DATE = 0x0e;
+	private static final int CODE_TIME = 0x0f;
+	/*
+	 * Identifies the commands embedded in the AppleWorks file.
+	 * FIXME: Need to ensure that all commands are defined.
+	 */
+	private static final int COMMAND_LEFT = 0xe0;
+	private static final int COMMAND_RIGHT = 0xd7;
+	private static final int COMMAND_CENTER = 0xe1;
+	private static final int COMMAND_JUSTIFY = 0xedf;
+	private static final int COMMAND_MULTIPLE_RETURNS = 0xee;
+
 	/**
 	 * Constructor for AppleWorksWordProcessorFileFilter.
 	 */
@@ -54,6 +95,11 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 		PrintWriter printWriter = new PrintWriter(byteArray, true);
 		if (isHtmlRendering()) {
 			printWriter.println("<html><style>BODY { font-family: monospace; }</style><body>");
+		} else if (isRtfRendering()) {
+			printWriter.println("{\\rtf1");
+			printWriter.print("{\\*\\generator AppleCommander ");
+			printWriter.print(AppleCommander.VERSION);
+			printWriter.println(";}");
 		}
 		boolean version3 = (fileData[183] != 0);
 		int offset = 300 + (version3 ? 2 : 0);	// version 3.0's first line record is invalid
@@ -68,6 +114,10 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 			} else if (byte1 > 0xd0) {				// Command line records
 				if (isHtmlRendering()) {
 					offset = handleCommandRecordAsHtml(byte0, byte1, printWriter, offset);
+				} else if (isRtfRendering()) {
+					offset = handleCommandRecordAsRtf(byte0, byte1, printWriter, offset);
+				} else {
+					offset = handleCommandRecordAsText(byte0, byte1, printWriter, offset);
 				}
 			} else {								// Text records (assumed)
 				offset = handleTextRecord(fileData, printWriter, offset);
@@ -75,6 +125,8 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 		}
 		if (isHtmlRendering()) {
 			printWriter.println("</body></html>");
+		} else if (isRtfRendering()) {
+			printWriter.println("}");
 		}
 		return byteArray.toByteArray();
 	}
@@ -82,7 +134,7 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 	 * Deal with an individual text record.
 	 */
 	protected int handleTextRecord(byte[] fileData, PrintWriter printWriter, int offset) {
-		int byte2 = AppleUtil.getUnsignedByte(fileData[offset++]);
+		/* byte2 */ AppleUtil.getUnsignedByte(fileData[offset++]);
 		int byte3 = AppleUtil.getUnsignedByte(fileData[offset++]);
 		boolean addReturn = (byte3 >= 0x80);
 		int length = (byte3 & 0x7f);
@@ -91,6 +143,8 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 			length--;
 			if (ch < 0x20) {	// special formatting character
 				if (isHtmlRendering()) handleSpecialCodesAsHtml(printWriter, ch);
+				else if (isRtfRendering()) handleSpecialCodesAsRtf(printWriter, ch);
+				else handleSpecialCodesAsText(printWriter, ch);
 			} else {
 				if (isHtmlRendering() && ch == ' ') {
 					int extraSpaces = 0;
@@ -120,6 +174,7 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 	 */
 	protected void handleReturn(PrintWriter printWriter) {
 		if (isHtmlRendering()) printWriter.println("<br>");
+		else if (isRtfRendering()) printWriter.println("\\par");
 		else printWriter.println();
 	}
 	/**
@@ -127,30 +182,75 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 	 */
 	protected void handleSpecialCodesAsHtml(PrintWriter printWriter, byte ch) {
 		switch (ch) {
-			case 0x01:	printWriter.print("<b>");
+			case CODE_BOLD_ON:
+						printWriter.print("<b>");
 						break;
-			case 0x02:	printWriter.print("</b>");
+			case CODE_BOLD_OFF:
+						printWriter.print("</b>");
 						break;
-			case 0x03:	printWriter.print("<sup>");
+			case CODE_SUPERSCRIPT_ON:
+						printWriter.print("<sup>");
 						break;
-			case 0x04:	printWriter.print("</sup>");
+			case CODE_SUPERSCRIPT_OFF:
+						printWriter.print("</sup>");
 						break;
-			case 0x05:	printWriter.print("<sub>");
+			case CODE_SUBSCRIPT_ON:
+						printWriter.print("<sub>");
 						break;
-			case 0x06:	printWriter.print("</sub>");
+			case CODE_SUBSCRIPT_OFF:
+						printWriter.print("</sub>");
 						break;
-			case 0x07:	printWriter.print("<u>");
+			case CODE_UNDERLINE_ON:
+						printWriter.print("<u>");
 						break;
-			case 0x08:	printWriter.print("</u>");
+			case CODE_UNDERLINE_OFF:
+						printWriter.print("</u>");
 						break;
-			case 0x09:	printWriter.print("[Page#]");
+			case CODE_NONBREAKING_SPACE:
+						printWriter.print("&nbsp;");
 						break;
-			case 0x0b:	printWriter.print("&nbsp;");
+			default:	handleSpecialCodesAsText(printWriter, ch);
 						break;
-			case 0x0e:	SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy");
+		}
+	}
+	/**
+	 * Process special coding of a text record.
+	 */
+	protected void handleSpecialCodesAsRtf(PrintWriter printWriter, byte ch) {
+		switch (ch) {
+			case CODE_BOLD_ON:
+						printWriter.print("\\b ");
+						break;
+			case CODE_BOLD_OFF:
+						printWriter.print("\\b0");
+						break;
+			case CODE_UNDERLINE_ON:
+						printWriter.print("\\ul ");
+						break;
+			case CODE_UNDERLINE_OFF:
+						printWriter.print("\\ulnone");
+						break;
+			case CODE_NONBREAKING_SPACE:
+						printWriter.print(" ");
+						break;
+			default:	handleSpecialCodesAsText(printWriter, ch);
+						break;
+		}
+	}
+	/**
+	 * Process special coding of a text record.
+	 */
+	protected void handleSpecialCodesAsText(PrintWriter printWriter, byte ch) {
+		switch (ch) {
+			case CODE_PAGE_NUMBER:
+						printWriter.print("[Page#]");
+						break;
+			case CODE_DATE:
+						SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy");
 						printWriter.print(dateFormat.format(new Date()));
 						break;
-			case 0x0f:	SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+			case CODE_TIME:
+						SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
 						printWriter.print(timeFormat.format(new Date()));
 						break;
 		}
@@ -162,16 +262,56 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 		PrintWriter printWriter, int offset) {
 		
 		switch (byte1) {
-			case 0xd7:	printWriter.println("<style>BODY: text-align: right;</style>");
+			case COMMAND_RIGHT:
+						printWriter.println("<style>BODY: text-align: right;</style>");
 						break;
-			case 0xdf:	printWriter.println("<style>BODY: text-align: justify;</style>");
+			case COMMAND_JUSTIFY:
+						printWriter.println("<style>BODY: text-align: justify;</style>");
 						break;
-			case 0xe0:	printWriter.println("<style>BODY: text-align: left;</style>");
+			case COMMAND_LEFT:
+						printWriter.println("<style>BODY: text-align: left;</style>");
 						break;
-			case 0xe1:	printWriter.println("<style>BODY: text-align: center;</style>");
+			case COMMAND_CENTER:
+						printWriter.println("<style>BODY: text-align: center;</style>");
 						break;
-			case 0xee:	for (int i=0; i<byte0; i++) {
-							printWriter.println("<br>");
+			default:	offset = handleCommandRecordAsText(byte0, byte1, 
+							printWriter, offset);
+						break;
+		}
+		return offset;
+	}
+	/**
+	 * Deal with an individual command line record.
+	 */
+	protected int handleCommandRecordAsRtf(int byte0, int byte1, 
+		PrintWriter printWriter, int offset) {
+		
+		switch (byte1) {
+			case COMMAND_RIGHT:
+						printWriter.println("\\pard\\qr ");
+						break;
+			case COMMAND_LEFT:
+						printWriter.println("\\pard ");
+						break;
+			case COMMAND_CENTER:
+						printWriter.println("\\pard\\qc ");
+						break;
+			default:	offset = handleCommandRecordAsText(byte0, byte1, 
+							printWriter, offset);
+						break;
+		}
+		return offset;
+	}
+	/**
+	 * Deal with an individual command line record.
+	 */
+	protected int handleCommandRecordAsText(int byte0, int byte1,
+		PrintWriter printWriter, int offset) {
+			
+		switch (byte1) {	
+			case COMMAND_MULTIPLE_RETURNS:
+						for (int i=0; i<byte0; i++) {
+							handleReturn(printWriter);
 						}
 						break;
 		}
@@ -194,7 +334,7 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 	/**
 	 * Set the rendering method.
 	 */
-	public void setRendering(int rendering) {
+	protected void setRendering(int rendering) {
 		this.rendering = rendering;
 	}
 	/**
@@ -208,5 +348,29 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 	 */
 	public boolean isHtmlRendering() {
 		return rendering == RENDER_AS_HTML;
+	}
+	/**
+	 * Indicates if this is an RTF rendering.
+	 */
+	public boolean isRtfRendering() {
+		return rendering == RENDER_AS_RTF;
+	}
+	/**
+	 * Selects the text rendering engine.
+	 */
+	public void selectTextRendering() {
+		rendering = RENDER_AS_TEXT;
+	}
+	/**
+	 * Selects the HTML rendering engine.
+	 */
+	public void selectHtmlRendering() {
+		rendering = RENDER_AS_HTML;
+	}
+	/**
+	 * Selects the RTF rendering engine.
+	 */
+	public void selectRtfRendering() {
+		rendering = RENDER_AS_RTF;
 	}
 }
