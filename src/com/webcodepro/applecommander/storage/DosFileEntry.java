@@ -183,6 +183,7 @@ public class DosFileEntry implements FileEntry {
 		}
 		// default to nothing special, just compute from number of sectors
 		int size = (getSectorsUsed()-1) * Disk.SECTOR_SIZE;
+		if (size < 1) size = 0;	// we assume a T/S block is included (may not be)
 		if (rawdata != null) {
 			if ("B".equals(getFiletype())) {
 				// binary

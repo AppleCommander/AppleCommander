@@ -398,7 +398,15 @@ public class DosFormatDisk extends FormattedDisk {
 		DosFileEntry dosEntry = (DosFileEntry) fileEntry;
 		// Size is calculated by sectors used - not actual size - as size varies
 		// on filetype, etc.
-		byte[] fileData = new byte[(dosEntry.getSectorsUsed()-1) * SECTOR_SIZE];
+		int filesize = dosEntry.getSectorsUsed();
+		byte[] fileData = null;
+		if (filesize > 0) {
+			fileData = new byte[(dosEntry.getSectorsUsed()-1) * SECTOR_SIZE];
+		} else {
+			fileData = new byte[0];
+			// don't need to load it - also bypass potential issues
+			return fileData;
+		}
 		int track = dosEntry.getTrack();
 		int sector = dosEntry.getSector();
 		int offset = 0;
