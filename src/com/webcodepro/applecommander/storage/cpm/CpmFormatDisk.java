@@ -25,7 +25,9 @@ import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Manages a disk that is in the Apple CP/M format.
@@ -73,19 +75,22 @@ public class CpmFormatDisk extends FormattedDisk {
 	}
 
 	/**
+	 * Get suggested dimensions for display of bitmap.
+	 * Typically, this will be only used for 5.25" floppies.
+	 * This can return null if there is no suggestion.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getBitmapDimensions()
 	 */
 	public int[] getBitmapDimensions() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	/**
+	 * Get the length of the bitmap.
+	 * This is hard-coded to 128 (0x80).
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getBitmapLength()
 	 */
 	public int getBitmapLength() {
-		// TODO Auto-generated method stub
-		return 0;
+		return 0x80;
 	}
 
 	/**
@@ -206,10 +211,22 @@ public class CpmFormatDisk extends FormattedDisk {
 	 */
 	public List getFiles() {
 		List files = new ArrayList();
+		Map index = new HashMap();
 		for (int i=0; i<64; i++) {
-			CpmFileEntry fileEntry = new CpmFileEntry(this, i*CpmFileEntry.ENTRY_LENGTH);
+			int offset = i*CpmFileEntry.ENTRY_LENGTH;
+			CpmFileEntry fileEntry = new CpmFileEntry(this, offset);
 			if (!fileEntry.isEmpty()) {
-				files.add(fileEntry);
+				// Files are unique by name, type, and user number.
+				String key = fileEntry.getFilename().trim() + "." 
+					+ fileEntry.getFiletype().trim() + ":"
+					+ fileEntry.getUserNumber(0);
+				if (index.containsKey(key)) {
+					fileEntry = (CpmFileEntry) index.get(key);
+					fileEntry.addOffset(offset);
+				} else {
+					files.add(fileEntry);
+					index.put(key, fileEntry);
+				}
 			}
 		}
 		return files;
@@ -248,14 +265,42 @@ public class CpmFormatDisk extends FormattedDisk {
 	 * One block should be the entire directory... 
 	 */
 	public byte[] readCpmBlock(int block) {
+		int[] sectorSkew = { 0x0, 0x6, 0xc, 0x3, 0x9, 0xf, 0xe, 0x5, 
+							 0xb, 0x2, 0x8, 0x7, 0xd, 0x4, 0xa, 0x1 };
 		byte[] data = new byte[1024];
 		int track = 3 + (block / 4);
-		int sector = block % 4;
+		int sector = (block % 4) * 4;
 		for (int i=0; i<4; i++) {
-			System.arraycopy(readSector(track, sector+i), 
+			System.arraycopy(readSector(track, sectorSkew[sector+i]), 
 				0, data, i*SECTOR_SIZE, SECTOR_SIZE);
 		}
 		return data;
+	}
+
+	/**
+	 * Get the standard file column header information.
+	 * This default implementation is intended only for standard mode.
+	 */
+	public List getFileColumnHeaders(int displayMode) {
+		List list = new ArrayList();
+		switch (displayMode) {
+			case FILE_DISPLAY_NATIVE:
+				list.add(new FileColumnHeader("Name", 8, FileColumnHeader.ALIGN_LEFT));
+				list.add(new FileColumnHeader("Type", 3, FileColumnHeader.ALIGN_LEFT));
+				break;
+			case FILE_DISPLAY_DETAIL:
+				list.add(new FileColumnHeader("Name", 8, FileColumnHeader.ALIGN_LEFT));
+				list.add(new FileColumnHeader("Type", 3, FileColumnHeader.ALIGN_LEFT));
+				list.add(new FileColumnHeader("Size (bytes)", 6, FileColumnHeader.ALIGN_RIGHT));
+				list.add(new FileColumnHeader("User#", 4, FileColumnHeader.ALIGN_RIGHT));
+				list.add(new FileColumnHeader("Deleted?", 7, FileColumnHeader.ALIGN_CENTER));
+				list.add(new FileColumnHeader("Locked?", 6, FileColumnHeader.ALIGN_CENTER));
+				break;
+			default:	// FILE_DISPLAY_STANDARD
+				list.addAll(super.getFileColumnHeaders(displayMode));
+				break;
+		}
+		return list;
 	}
 
 }
