@@ -19,27 +19,21 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import java.io.ByteArrayInputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.custom.StyleRange;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.ImageLoader;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
@@ -54,18 +48,17 @@ import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFile
 import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
-import com.webcodepro.applecommander.storage.filters.HexDumpFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
-import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
+import com.webcodepro.applecommander.ui.swt.filteradapter.ApplesoftFilterAdapter;
+import com.webcodepro.applecommander.ui.swt.filteradapter.FilterAdapter;
+import com.webcodepro.applecommander.ui.swt.filteradapter.GraphicsFilterAdapter;
+import com.webcodepro.applecommander.ui.swt.filteradapter.HexFilterAdapter;
+import com.webcodepro.applecommander.ui.swt.filteradapter.RawDumpFilterAdapter;
+import com.webcodepro.applecommander.ui.swt.filteradapter.TextFilterAdapter;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 import com.webcodepro.applecommander.ui.swt.util.contentadapter.ContentTypeAdapter;
-import com.webcodepro.applecommander.ui.swt.util.contentadapter.ImageCanvasAdapter;
-import com.webcodepro.applecommander.ui.swt.util.contentadapter.StyledTextAdapter;
-import com.webcodepro.applecommander.util.AppleUtil;
-import com.webcodepro.applecommander.util.ApplesoftToken;
-import com.webcodepro.applecommander.util.ApplesoftTokenizer;
 
 /**
  * View a particular files content.
@@ -98,15 +91,17 @@ public class FileViewerWindow {
 	private Color blue;
 	private Color green;
 	
-	public ContentTypeAdapter contentTypeAdapter;
+	private ContentTypeAdapter contentTypeAdapter;
+	private Map nativeFilterAdapterMap;
+	private FilterAdapter nativeFilterAdapter;
+	private FilterAdapter hexFilterAdapter;
+	private FilterAdapter rawDumpFilterAdapter;
+	
 	/**
 	 * Construct the file viewer window.
 	 */
 	public FileViewerWindow(Shell parentShell, FileEntry fileEntry, ImageManager imageManager) {
-		this.parentShell = shell;
-		this.fileEntry = fileEntry;
-		this.imageManager = imageManager;
-		this.nativeFilter = fileEntry.getSuggestedFilter();
+		this(parentShell, fileEntry, imageManager, fileEntry.getSuggestedFilter());
 	}
 
 	/**
@@ -117,6 +112,8 @@ public class FileViewerWindow {
 		this.fileEntry = fileEntry;
 		this.imageManager = imageManager;
 		this.nativeFilter = nativeFilter;
+		
+		createFilterAdapterMap();
 	}
 	
 	/**
@@ -138,7 +135,7 @@ public class FileViewerWindow {
 		composite.setLayout(gridLayout);
 		
 		GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
-		createFileToolBar(composite, gridData);
+		createToolBar(composite, gridData);
 
 		content = new ScrolledComposite(composite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
 		gridData = new GridData(GridData.FILL_BOTH);
@@ -150,10 +147,58 @@ public class FileViewerWindow {
 		blue = new Color(shell.getDisplay(), 0, 0, 192);
 		green = new Color(shell.getDisplay(), 0, 192, 0);
 		
-		displayNativeFormat();
+		nativeFilterAdapter.display();
 		
 		shell.open();
 		SwtUtil.setupPagingInformation(content);
+	}
+
+	/**
+	 * Setup all possible specialized FilterAdapters.
+	 */	
+	protected void createFilterAdapterMap() {
+		nativeFilterAdapterMap = new HashMap();
+		
+		nativeFilterAdapterMap.put(ApplesoftFileFilter.class, 
+			new ApplesoftFilterAdapter(this, "Applesoft", 
+				"Displays file as an Applesoft BASIC program (F2)", 
+				imageManager.get(ImageManager.ICON_VIEW_AS_BASIC_PROGRAM)
+			));
+		nativeFilterAdapterMap.put(AppleWorksDataBaseFileFilter.class, 
+			new TextFilterAdapter(this, "Database", 
+				"Displays file as a database file (F2)", 
+				imageManager.get(ImageManager.ICON_VIEW_AS_DATABASE)
+			));
+		nativeFilterAdapterMap.put(AppleWorksSpreadSheetFileFilter.class, 
+			new TextFilterAdapter(this, "Spreadsheet", 
+				"Displays file as a spreadsheet file (F2)", 
+				imageManager.get(ImageManager.ICON_VIEW_AS_SPREADSHEET)
+			));
+		nativeFilterAdapterMap.put(AppleWorksWordProcessorFileFilter.class, 
+			new TextFilterAdapter(this, "Wordprocessor", 
+				"Displays file as a wordprocessor file (F2)", 
+				imageManager.get(ImageManager.ICON_VIEW_AS_WORDPROCESSOR)
+			));
+		nativeFilterAdapterMap.put(AssemblySourceFileFilter.class, 
+			new TextFilterAdapter(this, "Assembly", 
+				"Displays file as assembly source file (F2)", 
+				imageManager.get(ImageManager.ICON_VIEW_AS_TEXTFILE)
+			));
+		nativeFilterAdapterMap.put(GraphicsFileFilter.class, 
+			new GraphicsFilterAdapter(this, "Image", 
+				"Displays file as an image (F2)", 
+				imageManager.get(ImageManager.ICON_VIEW_AS_IMAGE)
+			));
+		nativeFilterAdapterMap.put(IntegerBasicFileFilter.class, 
+			new TextFilterAdapter(this, "Integer BASIC", 
+				"Displays file as an Integer BASIC program (F2)", 
+				imageManager.get(ImageManager.ICON_VIEW_AS_BASIC_PROGRAM)
+			));
+		nativeFilterAdapterMap.put(TextFileFilter.class,
+			new TextFilterAdapter(this, "Text",
+				"Displays file as a text file (F2)",
+				imageManager.get(ImageManager.ICON_VIEW_AS_TEXTFILE)
+			));
 	}
 	
 	/**
@@ -168,319 +213,91 @@ public class FileViewerWindow {
 	}
 
 	/**
-	 * Creates the FILE tab toolbar.
+	 * Creates the toolbar.
 	 */
-	private void createFileToolBar(Composite composite, Object layoutData) {
+	private void createToolBar(Composite composite, Object layoutData) {
 		toolBar = new ToolBar(composite, SWT.FLAT);
 		toolBar.addListener(SWT.KeyUp, createToolbarCommandHandler());
 		if (layoutData != null) toolBar.setLayoutData(layoutData);
 		
-		if (nativeFilter instanceof ApplesoftFileFilter || nativeFilter instanceof IntegerBasicFileFilter) {
-			nativeToolItem = new ToolItem(toolBar, SWT.RADIO);
-			nativeToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_AS_BASIC_PROGRAM));
-			nativeToolItem.setText("BASIC");
-			nativeToolItem.setToolTipText("Displays file as BASIC program (F2)");
-			nativeToolItem.setSelection(true);
-		} else if (nativeFilter instanceof AppleWorksDataBaseFileFilter) {
-			nativeToolItem = new ToolItem(toolBar, SWT.RADIO);
-			nativeToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_AS_DATABASE));
-			nativeToolItem.setText("Database");
-			nativeToolItem.setToolTipText("Displays file as a database file (F2)");
-			nativeToolItem.setSelection(true);
-		} else if (nativeFilter instanceof AppleWorksSpreadSheetFileFilter) {
-			nativeToolItem = new ToolItem(toolBar, SWT.RADIO);
-			nativeToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_AS_SPREADSHEET));
-			nativeToolItem.setText("Spreadsheet");
-			nativeToolItem.setToolTipText("Displays file as a spreadsheet file (F2)");
-			nativeToolItem.setSelection(true);
-		} else if (nativeFilter instanceof AppleWorksWordProcessorFileFilter) {
-			nativeToolItem = new ToolItem(toolBar, SWT.RADIO);
-			nativeToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_AS_WORDPROCESSOR));
-			nativeToolItem.setText("Wordprocessor");
-			nativeToolItem.setToolTipText("Displays file as a wordprocessor file (F2)");
-			nativeToolItem.setSelection(true);
-		} else if (nativeFilter instanceof GraphicsFileFilter) {
-			nativeToolItem = new ToolItem(toolBar, SWT.RADIO);
-			nativeToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_AS_IMAGE));
-			nativeToolItem.setText("Image");
-			nativeToolItem.setToolTipText("Displays file as an image (F2)");
-			nativeToolItem.setSelection(true);
-		} else if (nativeFilter instanceof TextFileFilter) {
-			nativeToolItem = new ToolItem(toolBar, SWT.RADIO);
-			nativeToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_AS_TEXTFILE));
-			nativeToolItem.setText("Text");
-			nativeToolItem.setToolTipText("Displays file as a text file (F2)");
-			nativeToolItem.setSelection(true);
-		} else if (nativeFilter instanceof AssemblySourceFileFilter) {
-			nativeToolItem = new ToolItem(toolBar, SWT.RADIO);
-			nativeToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_AS_TEXTFILE));
-			nativeToolItem.setText("Assembly");
-			nativeToolItem.setToolTipText("Displays file as assembly source file (F2)");
-			nativeToolItem.setSelection(true);
+		if (nativeFilter != null) {
+			nativeFilterAdapter = (FilterAdapter) nativeFilterAdapterMap.get(nativeFilter.getClass());
+			if (nativeFilterAdapter != null) {
+				nativeToolItem = nativeFilterAdapter.create(toolBar);
+				nativeToolItem.setSelection(true);
+			} 
 		}
-		if (nativeToolItem != null) {
-			nativeToolItem.addSelectionListener(new SelectionAdapter () {
-				public void widgetSelected(SelectionEvent e) {
-					displayNativeFormat();
-				}
-			});
+		hexDumpToolItem = createHexDumpToolItem();
+		if (nativeFilterAdapter == null) {
+			// Default button changes for these instances.
+			hexDumpToolItem.setSelection(true);
+			// Prevent NullPointerExceptions if the nativeFilterAdapter does not apply.
+			nativeFilterAdapter = hexFilterAdapter;
 		}
-		
-		// FIXME Refactoring ideas...
-//		thingMap.add(AssemblySourceFileFilter.class, new Thing("Assembly", 
-//			"Displays file as assembly source file (F2)"),
-//			ImageManager.ICON_VIEW_AS_TEXTFILE), true));
-//		// etc		
-//		if (nativeFilter != null) {
-//			Thing thing = (Thing) thingMap.get(nativeFilter.getClass());
-//			thing.create(toolBar);
-//		}
-
-		hexDumpToolItem = new ToolItem(toolBar, SWT.RADIO);
-		hexDumpToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_IN_HEX));
-		hexDumpToolItem.setText("Hex Dump");
-		hexDumpToolItem.setToolTipText("Displays file as a hex dump (F3)");
-		hexDumpToolItem.setSelection(false);
-		hexDumpToolItem.addSelectionListener(new SelectionAdapter () {
-			public void widgetSelected(SelectionEvent e) {
-				displayHexFormat();
-			}
-		});
-
-		rawDumpToolItem = new ToolItem(toolBar, SWT.RADIO);
-		rawDumpToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_IN_RAW_HEX));
-		rawDumpToolItem.setText("Raw Dump");
-		rawDumpToolItem.setToolTipText("Displays file as a raw hex dump (F4)");
-		rawDumpToolItem.setSelection(false);
-		rawDumpToolItem.addSelectionListener(new SelectionAdapter () {
-			public void widgetSelected(SelectionEvent e) {
-				displayRawFormat();
-			}
-		});
-		
+		rawDumpToolItem = createRawDumpToolItem();
 		new ToolItem(toolBar, SWT.SEPARATOR);
-		
-		copyToolItem = new ToolItem(toolBar, SWT.PUSH);
-		copyToolItem.setImage(imageManager.get(ImageManager.ICON_COPY));
-		copyToolItem.setText("Copy");
-		copyToolItem.setToolTipText("Copies selection to the clipboard (CTRL+C)");
-		copyToolItem.setEnabled(true);
-		copyToolItem.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				copy();
-			}
-		});
-
+		copyToolItem = createCopyToolItem();
 		new ToolItem(toolBar, SWT.SEPARATOR);
-		
-		printToolItem = new ToolItem(toolBar, SWT.PUSH);
-		printToolItem.setImage(imageManager.get(ImageManager.ICON_PRINT_FILE));
-		printToolItem.setText("Print");
-		printToolItem.setToolTipText("Print contents... (CTRL+P)");
-		printToolItem.setEnabled(true);
-		printToolItem.addSelectionListener(new SelectionAdapter () {
-			public void widgetSelected(SelectionEvent e) {
-				print();
-			}
-		});
-
+		printToolItem = createPrintToolItem();
 		toolBar.pack();
 	}
 	
 	/**
-	 * Print current file.
+	 * Create the hex dump tool item (button).
 	 */
-	protected void print() {
-		contentTypeAdapter.print();
+	protected ToolItem createHexDumpToolItem() {
+		hexFilterAdapter = new HexFilterAdapter(this, "Hex Dump", 
+				"Displays file as a hex dump (F3)", 
+				imageManager.get(ImageManager.ICON_VIEW_IN_HEX));
+		hexFilterAdapter.setHexSelected();
+		ToolItem toolItem = hexFilterAdapter.create(toolBar);
+		return toolItem;
 	}
 	
 	/**
-	 * Select all text within the widget.
+	 * Create the raw dump tool item (button).
 	 */
-	protected void selectAll() {
-		contentTypeAdapter.selectAll();
-	}
-
-	/**
-	 * Perform copy operation.
-	 */
-	protected void copy() {
-		contentTypeAdapter.copy();
+	protected ToolItem createRawDumpToolItem() {
+		rawDumpFilterAdapter = new RawDumpFilterAdapter(this, "Raw Dump", 
+				"Displays file as a raw hex dump (F4)", 
+				imageManager.get(ImageManager.ICON_VIEW_IN_RAW_HEX));
+		rawDumpFilterAdapter.setDumpSelected();
+		ToolItem toolItem = rawDumpFilterAdapter.create(toolBar);
+		return toolItem;
 	}
 	
 	/**
-	 * Display the file in its native format.
+	 * Create the copy tool item (button).
 	 */
-	protected void displayNativeFormat() {
-		Control oldContent = content.getContent();
-		if (oldContent != null) {
-			oldContent.dispose();
-			content.setContent(null);
-		}
-		
-		if (nativeToolItem != null) nativeToolItem.setSelection(true);
-		hexDumpToolItem.setSelection(false);
-		rawDumpToolItem.setSelection(false);
-		
-		copyToolItem.setEnabled(true);
-		
-		if (nativeFilter instanceof ApplesoftFileFilter) {
-			StyledText styledText = new StyledText(content, SWT.NONE);
-			styledText.setForeground(black);
-			styledText.setFont(courier);
-			styledText.setEditable(false);
-
-			ApplesoftTokenizer tokenizer = new ApplesoftTokenizer(fileEntry);
-			boolean firstLine = true;
-			while (tokenizer.hasMoreTokens()) {
-				ApplesoftToken token = tokenizer.getNextToken();
-				if (token == null) {
-					continue;	// should be end of program...
-				} else if (token.isLineNumber()) {
-					if (firstLine) {
-						firstLine = false;
-					} else {
-						styledText.append("\n");
-					}
-					styledText.append(Integer.toString(token.getLineNumber()));
-					styledText.append(" ");
-				} else if (token.isCommandSeparator() || token.isExpressionSeparator()) {
-					styledText.append(token.getStringValue());
-				} else if (token.isEndOfCommand()) {
-					styledText.append("\n");
-				} else if (token.isString()) {
-					int caretOffset = styledText.getCharCount();
-					styledText.append(token.getStringValue());
-					StyleRange styleRange = new StyleRange();
-					styleRange.start = caretOffset;
-					styleRange.length = token.getStringValue().length();
-					styleRange.foreground = green;
-					styledText.setStyleRange(styleRange);
-				} else if (token.isToken()) {
-					int caretOffset = styledText.getCharCount();
-					styledText.append(token.getTokenString());
-					StyleRange styleRange = new StyleRange();
-					styleRange.start = caretOffset;
-					styleRange.length = token.getTokenString().length();
-					//styleRange.fontStyle = SWT.BOLD;
-					styleRange.foreground = blue;
-					styledText.setStyleRange(styleRange);
-				}
+	protected ToolItem createCopyToolItem() {
+		ToolItem toolItem = new ToolItem(toolBar, SWT.PUSH);
+		toolItem.setImage(imageManager.get(ImageManager.ICON_COPY));
+		toolItem.setText("Copy");
+		toolItem.setToolTipText("Copies selection to the clipboard (CTRL+C)");
+		toolItem.setEnabled(true);
+		toolItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				contentTypeAdapter.copy();
 			}
-			Point size = styledText.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-			content.setContent(styledText);
-			content.setExpandHorizontal(true);
-			content.setExpandVertical(true);
-			content.setMinWidth(size.x);
-			content.setMinHeight(size.y);
-			content.getContent().addListener(SWT.KeyUp, createToolbarCommandHandler());
-			
-			contentTypeAdapter = new StyledTextAdapter(styledText, fileEntry.getFilename());
-		} else if (nativeFilter instanceof IntegerBasicFileFilter) {
-			String basicDump = new String(nativeFilter.filter(fileEntry));
-			createTextWidget(content, basicDump);
-		} else if (nativeFilter instanceof AppleWorksDataBaseFileFilter) {
-			String basicDump = new String(nativeFilter.filter(fileEntry));
-			createTextWidget(content, basicDump);
-		} else if (nativeFilter instanceof AppleWorksSpreadSheetFileFilter) {
-			String basicDump = new String(nativeFilter.filter(fileEntry));
-			createTextWidget(content, basicDump);
-		} else if (nativeFilter instanceof AppleWorksWordProcessorFileFilter) {
-			String basicDump = new String(nativeFilter.filter(fileEntry));
-			createTextWidget(content, basicDump);
-		} else if (nativeFilter instanceof GraphicsFileFilter) {
-			copyToolItem.setEnabled(false);
-
-			byte[] imageBytes = nativeFilter.filter(fileEntry);
-			ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes);
-			ImageLoader imageLoader = new ImageLoader();
-			ImageData[] imageData = imageLoader.load(inputStream);
-			final Image image = new Image(shell.getDisplay(), imageData[0]);
-
-			GridLayout layout = new GridLayout();
-			content.setLayout(layout);
-			GridData gridData = new GridData();
-			gridData.widthHint = imageData[0].width;
-			gridData.heightHint = imageData[0].height;
-			ImageCanvas imageCanvas = new ImageCanvas(content, SWT.NONE, image, gridData);
-			content.setContent(imageCanvas);
-			content.setExpandHorizontal(true);
-			content.setExpandVertical(true);
-			content.setMinWidth(imageData[0].width);
-			content.setMinHeight(imageData[0].height);
-			
-			contentTypeAdapter = new ImageCanvasAdapter(imageCanvas, fileEntry.getFilename());
-		} else if (nativeFilter instanceof TextFileFilter) {
-			String textDump = new String(nativeFilter.filter(fileEntry));
-			createTextWidget(content, textDump);
-		} else if (nativeFilter instanceof AssemblySourceFileFilter) {
-			String textDump = new String(nativeFilter.filter(fileEntry));
-			createTextWidget(content, textDump);
-		} else {
-			displayHexFormat();
-		}
+		});
+		return toolItem;
 	}
 	
 	/**
-	 * Create a StyledText widget for displaying plain text.
+	 * Create the print tool item (button).
 	 */
-	protected void createTextWidget(Composite composite, String text) {
-		copyToolItem.setEnabled(true);
-
-		StyledText styledText = new StyledText(composite, SWT.NONE);
-		styledText.setText(text);
-		styledText.setFont(courier);
-		styledText.setEditable(false);
-		//styledText.setWordWrap(true);		// seems to throw size out-of-whack
-		Point size = styledText.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-		content.setContent(styledText);
-		content.setExpandHorizontal(true);
-		content.setExpandVertical(true);
-		content.setMinWidth(size.x);
-		content.setMinHeight(size.y);
-		content.getContent().addListener(SWT.KeyUp, createToolbarCommandHandler());
-
-		contentTypeAdapter = new StyledTextAdapter(styledText, fileEntry.getFilename());
-	}
-	
-	/**
-	 * Display file content as a hex dump.
-	 */
-	protected void displayHexFormat() {
-		copyToolItem.setEnabled(true);
-
-		Control oldContent = content.getContent();
-		if (oldContent != null) {
-			oldContent.dispose();
-			content.setContent(null);
-		}
-
-		if (nativeToolItem != null) nativeToolItem.setSelection(false);
-		hexDumpToolItem.setSelection(true);
-		rawDumpToolItem.setSelection(false);
-
-		FileFilter filter = new HexDumpFileFilter();
-		String hexDump = new String(filter.filter(fileEntry));
-		createTextWidget(content, hexDump);
-	}
-	
-	/**
-	 * Display file content as hex dump of raw disk bytes.
-	 */
-	protected void displayRawFormat() {
-		Control oldContent = content.getContent();
-		if (oldContent != null) {
-			oldContent.dispose();
-			content.setContent(null);
-		}
-
-		if (nativeToolItem != null) nativeToolItem.setSelection(false);
-		hexDumpToolItem.setSelection(false);
-		rawDumpToolItem.setSelection(true);
-
-		String rawDump = AppleUtil.getHexDump(
-			fileEntry.getFormattedDisk().getFileData(fileEntry));
-		createTextWidget(content, rawDump);
+	protected ToolItem createPrintToolItem() {
+		ToolItem toolItem = new ToolItem(toolBar, SWT.PUSH);
+		toolItem.setImage(imageManager.get(ImageManager.ICON_PRINT_FILE));
+		toolItem.setText("Print");
+		toolItem.setToolTipText("Print contents... (CTRL+P)");
+		toolItem.setEnabled(true);
+		toolItem.addSelectionListener(new SelectionAdapter () {
+			public void widgetSelected(SelectionEvent e) {
+				contentTypeAdapter.print();
+			}
+		});
+		return toolItem;
 	}
 
 	/**
@@ -488,37 +305,73 @@ public class FileViewerWindow {
 	 * actions. The intent is that the listener is then added to 
 	 * multiple visual components.
 	 */
-	private Listener createToolbarCommandHandler() {
+	public Listener createToolbarCommandHandler() {
 		return new Listener() {
 			public void handleEvent(Event event) {
 				if (event.type == SWT.KeyUp) {
 					if ((event.stateMask & SWT.CTRL) != 0) {	// CTRL+key
 						switch (event.character) {
 							case CTRL_C:
-								copy();
+								contentTypeAdapter.copy();
 								break;
 							case CTRL_A:
-								selectAll();
+								contentTypeAdapter.selectAll();
 								break;
 							case CTRL_P:
-								print();
+								contentTypeAdapter.print();
 								break;
 						}
 					} else if ((event.stateMask & SWT.ALT) == 0) { // key alone
 						switch (event.keyCode) {
 							case SWT.F2:	// the "native" file format (image, text, etc)
-								displayNativeFormat();
+								nativeFilterAdapter.display();
+								setFilterToolItemSelection(true, false, false);
 								break;
 							case SWT.F3:	// Hex format
-								displayHexFormat();
+								hexFilterAdapter.display();
+								setFilterToolItemSelection(false, true, false);
 								break;
 							case SWT.F4:	// "Raw" hex format
-								displayRawFormat();
+								rawDumpFilterAdapter.display();
+								setFilterToolItemSelection(false, false, true);
 								break;
 						}
 					}
 				}
 			}
 		};
+	}
+
+	public FileFilter getFileFilter() {
+		return nativeFilter;
+	}
+	public FileEntry getFileEntry() {
+		return fileEntry;
+	}
+	public ToolItem getCopyToolItem() {
+		return copyToolItem;
+	}
+	public ScrolledComposite getComposite() {
+		return content;
+	}
+	public void setContentTypeAdapter(ContentTypeAdapter adapter) {
+		this.contentTypeAdapter = adapter;
+	}
+	public Font getCourierFont() {
+		return courier;
+	}
+	public Color getBlackColor() {
+		return black;
+	}
+	public Color getGreenColor() {
+		return green;
+	}
+	public Color getBlueColor() {
+		return blue;
+	}
+	public void setFilterToolItemSelection(boolean nativeSelected, boolean hexSelected, boolean dumpSelected) {
+		if (nativeToolItem != null) nativeToolItem.setSelection(nativeSelected);
+		hexDumpToolItem.setSelection(hexSelected);
+		rawDumpToolItem.setSelection(dumpSelected);
 	}
 }
