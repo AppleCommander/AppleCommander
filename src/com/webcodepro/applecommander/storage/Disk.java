@@ -79,6 +79,7 @@ public class Disk {
 	private static FilenameFilter[] filenameFilters;
 	private String filename;
 	private boolean newImage = false;
+	private ByteArrayImageLayout diskImageManager;
 	private ImageOrder imageOrder;
 	
 	/**
@@ -147,17 +148,16 @@ public class Disk {
 		}
 		input.close();
 		byte[] diskImage = diskImageByteArray.toByteArray();
-		ByteArrayImageLayout diskImageManager = null;
 		if (diskImage.length >= APPLE_800KB_2IMG_DISK 
 			&& diskImage.length <= APPLE_800KB_2IMG_DISK + 10) {
 			diskImageManager = new UniversalDiskImageLayout(diskImage);
 		} else {
 			diskImageManager = new ByteArrayImageLayout(diskImage);
 		}
-		if (isDosOrder()) {
-			imageOrder = new DosOrder(diskImageManager);
-		} else if (isProdosOrder()) {
+		if (isProdosOrder()) {
 			imageOrder = new ProdosOrder(diskImageManager);
+		} else if (isDosOrder()) {
+			imageOrder = new DosOrder(diskImageManager);
 		} else if (isNibbleOrder()) {
 			imageOrder = new NibbleOrder(diskImageManager);
 		}
@@ -231,7 +231,11 @@ public class Disk {
 	 * @return byte[]
 	 */
 	public ByteArrayImageLayout getDiskImageManager() {
-		return imageOrder.getDiskImageManager();
+		if (imageOrder != null) {
+			return imageOrder.getDiskImageManager();
+		} else {
+			return diskImageManager;
+		}
 	}
 
 	/**
@@ -256,7 +260,8 @@ public class Disk {
 		return filename.toLowerCase().endsWith(".po")
 			|| filename.toLowerCase().endsWith(".po.gz")
 			|| is2ImgOrder()
-			|| filename.toLowerCase().endsWith(".hdv");
+			|| filename.toLowerCase().endsWith(".hdv")
+			|| getPhysicalSize() >= APPLE_800KB_DISK;
 	}
 	
 	/**
@@ -292,7 +297,11 @@ public class Disk {
 	 * Identify the size of this disk.
 	 */
 	public int getPhysicalSize() {
-		return getDiskImageManager().getPhysicalSize();
+		if (getDiskImageManager() != null) {
+			return getDiskImageManager().getPhysicalSize();
+		} else {
+			return getImageOrder().getPhysicalSize();
+		}
 	}
 	
 	/**
