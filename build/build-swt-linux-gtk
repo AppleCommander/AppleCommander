@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# This script will build a static library of the SWT code.  The shared object (*.so)
+# files from the Eclipse distribution are still required, however.
+
+# Note that there will likely be modifications required to the given Eclipse code.
+
+DIR=$(pwd)
+CLASSPATH="$DIR/swt.jar:$DIR/swt-pi.jar"
+FLAGS="-O3"
+mkdir obj
+cd obj
+rm *.o
+find ../org -name "*.java" -exec gcj --classpath=$CLASSPATH $FLAGS -c {} \;
+for FILE in Callback.java OS.java
+do
+    find ../org -name "$FILE" -exec gcj --classpath=$CLASSPATH \
+		$FLAGS -fjni -c {} \;
+done
+
+cd $DIR
+rm swt.a
+ar r swt.a obj/*.o
+
