@@ -29,6 +29,9 @@ import java.util.GregorianCalendar;
  * @author: Rob Greene
  */
 public class AppleUtil {
+	private static byte[] masks = { 
+			(byte)0x01, (byte)0x02, (byte)0x04, (byte)0x08, 
+			(byte)0x10, (byte)0x20, (byte)0x40, (byte)0x80 };
 
 	/**
 	 * Compute the value of a word.
@@ -43,7 +46,15 @@ public class AppleUtil {
 	 */
 	public static int getWordValue(byte low, byte high) {
 		return getUnsignedByte(low) + getUnsignedByte(high)*256;
-	}		
+	}
+	
+	/**
+	 * Set a word value.
+	 */
+	public static void setWordValue(byte[] buffer, int offset, int value) {
+		buffer[offset] = (byte)(value % 256);
+		buffer[offset+1] = (byte)(value / 256);
+	}
 
 	/**
 	 * Compute the value of a 3 byte value. This may be ProDOS specific.
@@ -80,9 +91,21 @@ public class AppleUtil {
 	 * Determine if a specific bit is set.
 	 */
 	public static boolean isBitSet(byte byt, int bit) {
-		byte[] masks = { (byte)0x01, (byte)0x02,(byte)0x04, (byte)0x08, 
-			(byte)0x10, (byte)0x20, (byte)0x40, (byte)0x80 };
 		return (byt & masks[bit]) != 0;
+	}
+	
+	/**
+	 * Set a specific bit (turn it on).
+	 */
+	public static byte setBit(byte byt, int bit) {
+		return (byte) ((byt | masks[bit]) & 0xff);
+	}
+
+	/**
+	 * Clear a specific bit (turn it off).
+	 */
+	public static byte clearBit(byte byt, int bit) {
+		return (byte) ((byt & ~masks[bit]) & 0xff);
 	}
 
 	/**
@@ -96,6 +119,26 @@ public class AppleUtil {
 			value[i] = ch;
 		}
 		return new String(value);
+	}
+	
+	/**
+	 * Create an Apple string that is space delimited.
+	 */
+	public static void setString(byte[] buffer, int offset, String string, int length) {
+		for (int i=0; i<length; i++) {
+			char ch = ' ';
+			if (i < string.length()) {
+				ch = string.charAt(i);
+			}
+			buffer[offset+i] = (byte) (ch | 0x80);
+		}
+	}
+
+	/**
+	 * Create an Apple string that is the same length as the given string.
+	 */
+	public static void setString(byte[] buffer, int offset, String string) {
+		setString(buffer, offset, string, string.length());
 	}
 
 	/**
