@@ -39,7 +39,7 @@ import java.lang.reflect.Method;
  * @author: Rob Greene
  */
 public class AppleCommander {
-	public static final String VERSION = "1.3.1pre";
+	public static final String VERSION = "1.3.1";
 	public static final String COPYRIGHT = "Copyright (c) 2002-2003";
 	/**
 	 * Launch AppleCommander.
@@ -49,8 +49,7 @@ public class AppleCommander {
 			if (isSwtAvailable()) {
 				launchSwtAppleCommander(args);
 			} else {
-				System.err.println("Sorry, the SWT libraries do not appear to be available (yet).");
-				//SwingAppleCommander.main(args);
+				showHelp();
 			}
 		} else {
 			String[] extraArgs = new String[args.length - 1];
@@ -59,10 +58,10 @@ public class AppleCommander {
 				launchSwtAppleCommander(args);
 			} else if ("-swing".equalsIgnoreCase(args[0])) {
 				System.err.println("Sorry, the Swing GUI is not available (yet).");
-				//SwingAppleCommander.main(extraArgs);
 			} else if ("-command".equalsIgnoreCase(args[0])) {
 				System.err.println("Sorry, the command line user interface is not available (yet).");
-				//CommandLineAppleCommander.main(extraArgs);
+			} else if ("-help".equalsIgnoreCase(args[0]) || "-?".equalsIgnoreCase(args[0])) {
+				showHelp();
 			} else {
 				ac.main(args);
 			}
@@ -109,5 +108,20 @@ public class AppleCommander {
 		} catch (ClassNotFoundException ex) {
 			return false;
 		}
+	}
+	/**
+	 * Display help message(s) for AppleCommander.
+	 */
+	protected static void showHelp() {
+		System.err.println("AppleCommander general options:");
+		System.err.println("-swt will launch the SWT version of AppleCommander.");
+		System.err.println("     This requires the SWT jar and dll files to be present.");
+		System.err.println("-swing will launch the Swing version of AppleCommander.");
+		System.err.println("     (This is not implemented yet.)");
+		System.err.println("-command will enter command interpreter mode.  (This is also");
+		System.err.println("     not implemented yet.)");
+		System.err.println("-help will show this help text.");
+		System.err.println();
+		ac.help();
 	}
 }
