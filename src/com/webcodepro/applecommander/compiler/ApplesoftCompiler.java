@@ -45,11 +45,26 @@ import java.util.Stack;
  * @author: Rob Greene
  */
 public class ApplesoftCompiler implements ApplesoftTokens {
+	/**
+	 * Tokenized the Applesoft program.
+	 */
 	private ApplesoftTokenizer tokenizer;
+	/**
+	 * Holds a token that was "peeked" at, if any.  A null indicates
+	 * that there is no value peeked at.
+	 */
 	private ApplesoftToken tokenAlreadySeen;
+	/**
+	 * Used internally to construct the assembly representation of
+	 * the Applesoft code.  This variable should really be passed
+	 * between methods.
+	 */
 	private StringBuffer sourceAssembly = new StringBuffer();
+	/**
+	 * Used internally to construct the original Applesoft source
+	 * line. This variable should really be passed between methods.
+	 */
 	private StringBuffer sourceLine = new StringBuffer();
-	
 	/**
 	 * Contains a list of all known Apple ROM addresses that may be used
 	 * by the compiled program.  This map is keyed by the name of the
@@ -74,6 +89,10 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 	 * Track FOR loop variables.
 	 */
 	private Stack loopVariables = new Stack();
+	/**
+	 * Indicates integer math operations only.
+	 */
+	private boolean integerOnlyMath;
 
 	/**
 	 * Constructor for ApplesoftCompiler.
@@ -369,10 +388,10 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 				} else if (value.startsWith("\"")) {
 					variable = new Variable("STR" + variables.size(), Variable.CONST_STRING, value);
 				} else {	// assume variable name
-					if (value.endsWith("%")) {
-						variable = new Variable("VAR" + value, Variable.TYPE_INTEGER, value);
-					} else if (value.endsWith("$")) {
+					if (value.endsWith("$")) {
 						variable = new Variable("VAR" + value, Variable.TYPE_STRING, value);
+					} else if (value.endsWith("%") || isIntegerOnlyMath()) {
+						variable = new Variable("VAR" + value, Variable.TYPE_INTEGER, value);
 					} else {
 						variable = new Variable("VAR" + value, Variable.TYPE_FLOAT, value);
 					}
@@ -534,7 +553,7 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 	
 	public void evaluateFOR() throws CompileException {
 		Variable loopVariable = evaluateExpression();
-		if (!loopVariable.isTypeFloat()) {
+		if (!loopVariable.isTypeFloat() && !loopVariable.isTypeInteger()) {
 			throw new CompileException(
 				"Applesoft only allows floating-point FOR variables.");
 		}
@@ -578,17 +597,24 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 	}
 	
 	public void evaluateNEXT() throws CompileException {
-		// FIXME: Next ignores variable name given...
+		// FIXME: Next requires variable name given...
 		Variable variable = null;
 		if (!peekToken().isCommandSeparator()) {
 			// FIXME: This does not ensure that we only have a variable!
 			variable = evaluateExpression();
 		}
-		addAssembly(null, "LDY", "#1");
-		addAssembly(null, "JSR", "SNGFLT");
-		addLoadAddress(variable, 'Y', 'A');
-		addAssembly(null, "JSR", "FADD");
-		addCopyFac(variable);
+		if (variable.isTypeFloat()) {
+			addAssembly(null, "LDY", "#1");
+			addAssembly(null, "JSR", "SNGFLT");
+			addLoadAddress(variable, 'Y', 'A');
+			addAssembly(null, "JSR", "FADD");
+			addCopyFac(variable);
+		} else if (variable.isTypeInteger()) {
+			addAssembly(null, "INC", variable.getName());
+			addAssembly(null, "BNE", ":1");
+			addAssembly(null, "INC", variable.getName() + "+1");
+			addAssembly(":1", null, null);
+		}
 		String loopName = (String) loopVariables.pop();
 		addAssembly(null, "JMP", loopName);
 		addAssembly("END" + loopName, null, null);
@@ -604,5 +630,19 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Indicates integer math only. 
+	 */
+	public boolean isIntegerOnlyMath() {
+		return integerOnlyMath;
+	}
+	
+	/**
+	 * Sets integer only math.
+	 */
+	public void setIntegerOnlyMath(boolean integerOnlyMath) {
+		this.integerOnlyMath = integerOnlyMath;
 	}
 }

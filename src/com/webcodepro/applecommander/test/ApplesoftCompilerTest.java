@@ -24,6 +24,8 @@ import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DosFormatDisk;
 import com.webcodepro.applecommander.storage.FileEntry;
 
+import java.io.FileOutputStream;
+
 import junit.framework.TestCase;
 
 /**
@@ -48,7 +50,11 @@ public class ApplesoftCompilerTest extends TestCase {
 			new Disk("C:/My Apple2/Disks/MASTER.DSK").getFormattedDisks()[0];
 		FileEntry fileEntry = disk.getFile("COLORS");
 		ApplesoftCompiler compiler = new ApplesoftCompiler(fileEntry);
+		compiler.setIntegerOnlyMath(true);
 		byte[] assembly = compiler.compile();
 		System.out.println(new String(assembly));
+		FileOutputStream output = new FileOutputStream("C:/Temp/COLORS.s");
+		output.write(assembly);
+		output.close();
 	}
 }
