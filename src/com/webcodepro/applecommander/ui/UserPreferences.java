@@ -31,18 +31,19 @@ import java.util.Properties;
  * @author Rob Greene
  */
 public class UserPreferences {
-	private static final String FILENAME = "AppleCommander.preferences";
-	private static final String IMAGE_DIRECTORY = "imageDirectory";
-	private static final String EXPORT_DIRECTORY = "exportDirectory";
-	private static final String COMPILE_DIRECTORY = "compileDirectory";
-	private static final String SAVE_DIRECTORY = "saveDirectory";
-	private static final String IMPORT_DIRECTORY = "importDirectory";
+	private static final String FILENAME = "AppleCommander.preferences"; //$NON-NLS-1$
+	private static final String IMAGE_DIRECTORY = "imageDirectory"; //$NON-NLS-1$
+	private static final String EXPORT_DIRECTORY = "exportDirectory"; //$NON-NLS-1$
+	private static final String COMPILE_DIRECTORY = "compileDirectory"; //$NON-NLS-1$
+	private static final String SAVE_DIRECTORY = "saveDirectory"; //$NON-NLS-1$
+	private static final String IMPORT_DIRECTORY = "importDirectory"; //$NON-NLS-1$
 	private static UserPreferences instance;
 	private Properties properties = new Properties();
 	/**
 	 * Hide constructor from other classes.
 	 */
 	private UserPreferences() {
+		// empty
 	}
 	/**
 	 * Get the singleton UserPreferences.
@@ -63,6 +64,7 @@ public class UserPreferences {
 			properties.load(inputStream);
 			inputStream.close();
 		} catch (Exception ignored) {
+			// Ignored
 		}
 	}
 	/**
@@ -71,9 +73,11 @@ public class UserPreferences {
 	public void save() {
 		try {
 			FileOutputStream outputStream = new FileOutputStream(FILENAME);
-			properties.store(outputStream, "AppleCommander user preferences");
+			properties.store(outputStream, TextBundle.getInstance().
+				get("UserPreferencesComment")); //$NON-NLS-1$
 			outputStream.close();
 		} catch (Exception ignored) {
+			// Ignored
 		}
 	}
 	/**

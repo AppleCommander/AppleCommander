@@ -19,7 +19,6 @@
  */
 package com.webcodepro.applecommander.ui;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -39,12 +38,12 @@ import java.lang.reflect.Method;
  * @author Rob Greene
  */
 public class AppleCommander {
-	public static final String VERSION = "1.3.4pre";
-	public static final String COPYRIGHT = "Copyright (c) 2002-2004";
+	public static final String VERSION = "1.3.4pre"; //$NON-NLS-1$
+	private static TextBundle textBundle = TextBundle.getInstance();
 	/**
 	 * Launch AppleCommander.
 	 */
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		if (args.length == 0) {
 			if (isSwtAvailable()) {
 				launchSwtAppleCommander(args);
@@ -54,13 +53,14 @@ public class AppleCommander {
 		} else {
 			String[] extraArgs = new String[args.length - 1];
 			System.arraycopy(args, 1, extraArgs, 0, extraArgs.length);
-			if ("-swt".equalsIgnoreCase(args[0])) {
+			if ("-swt".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				launchSwtAppleCommander(args);
-			} else if ("-swing".equalsIgnoreCase(args[0])) {
-				System.err.println("Sorry, the Swing GUI is not available (yet).");
-			} else if ("-command".equalsIgnoreCase(args[0])) {
-				System.err.println("Sorry, the command line user interface is not available (yet).");
-			} else if ("-help".equalsIgnoreCase(args[0]) || "-?".equalsIgnoreCase(args[0])) {
+			} else if ("-swing".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				System.err.println(textBundle.get("SwingVersionNotAvailable")); //$NON-NLS-1$
+			} else if ("-command".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				System.err.println(textBundle.get("CommandLineNotAvailable")); //$NON-NLS-1$
+			} else if ("-help".equalsIgnoreCase(args[0])  //$NON-NLS-1$
+					|| "-?".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				showHelp();
 			} else {
 				ac.main(args);
@@ -77,10 +77,10 @@ public class AppleCommander {
 			Class swtAppleCommander;
 			try {
 				swtAppleCommander =	Class.forName(
-					"com.webcodepro.applecommander.ui.swt.SwtAppleCommander");
+					"com.webcodepro.applecommander.ui.swt.SwtAppleCommander"); //$NON-NLS-1$
 				Object object = swtAppleCommander.newInstance();
 				Method launchMethod = swtAppleCommander.
-					getMethod("launch", null);
+					getMethod("launch", null); //$NON-NLS-1$
 				launchMethod.invoke(object, null);
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
@@ -103,8 +103,8 @@ public class AppleCommander {
 	 */
 	protected static boolean isSwtAvailable() {
 		try {
-			Class.forName("org.eclipse.swt.SWT");
-			Class.forName("com.webcodepro.applecommander.ui.swt.SwtAppleCommander");
+			Class.forName("org.eclipse.swt.SWT"); //$NON-NLS-1$
+			Class.forName("com.webcodepro.applecommander.ui.swt.SwtAppleCommander"); //$NON-NLS-1$
 			return true;
 		} catch (ClassNotFoundException ex) {
 			return false;
@@ -114,14 +114,7 @@ public class AppleCommander {
 	 * Display help message(s) for AppleCommander.
 	 */
 	protected static void showHelp() {
-		System.err.println("AppleCommander general options:");
-		System.err.println("-swt will launch the SWT version of AppleCommander.");
-		System.err.println("     This requires the SWT jar and dll files to be present.");
-		System.err.println("-swing will launch the Swing version of AppleCommander.");
-		System.err.println("     (This is not implemented yet.)");
-		System.err.println("-command will enter command interpreter mode.  (This is also");
-		System.err.println("     not implemented yet.)");
-		System.err.println("-help will show this help text.");
+		System.err.println(textBundle.get("AppleCommanderHelp")); //$NON-NLS-1$
 		System.err.println();
 		ac.help();
 	}

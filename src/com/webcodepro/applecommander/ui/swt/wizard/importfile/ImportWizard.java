@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.ui.ImportSpecification;
+import com.webcodepro.applecommander.ui.TextBundle;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 import com.webcodepro.applecommander.ui.swt.wizard.Wizard;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
@@ -43,12 +44,13 @@ public class ImportWizard extends Wizard {
 	 * Constructor for ImportWizard.
 	 */
 	public ImportWizard(Shell parent, ImageManager imageManager, FormattedDisk disk) {
-		super(parent, imageManager.get(ImageManager.LOGO_IMPORT_WIZARD), "Import Wizard");
+		super(parent, imageManager.get(ImageManager.LOGO_IMPORT_WIZARD), 
+				TextBundle.getInstance().get("ImportWizardTitle")); //$NON-NLS-1$
 		this.disk = disk;
 	}
 	/**
 	 * Create the initial display used in the wizard.
-	 * @see com.webcodepro.applecommander.ui.swt.Wizard#createInitialWizardPane()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.Wizard#createInitialWizardPane()
 	 */
 	public WizardPane createInitialWizardPane() {
 		return new ImportSelectFilesWizardPane(getContentPane(), this);

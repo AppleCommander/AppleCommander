@@ -23,11 +23,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import com.webcodepro.applecommander.ui.TextBundle;
 
 /**
  * This class contains helper methods for dealing with Apple2 data.
@@ -36,6 +38,7 @@ import com.webcodepro.applecommander.storage.physical.ImageOrder;
  * @author Rob Greene
  */
 public class AppleUtil {
+	private static TextBundle textBundle = TextBundle.getInstance();
 	/**
 	 * This is the number of bytes to display per line.
 	 */
@@ -54,11 +57,11 @@ public class AppleUtil {
 			(byte)0x01, (byte)0x02, (byte)0x04, (byte)0x08, 
 			(byte)0x10, (byte)0x20, (byte)0x40, (byte)0x80 };
 	/**
-	 * Valid hex digits used when encuding or decoding hex.
+	 * Valid hex digits used when encoding or decoding hex.
 	 */
-	private static String[] hexDigits = { 
-			"0", "1", "2", "3", "4", "5", "6", "7", 
-			"8", "9", "A", "B", "C", "D", "E", "F" };
+	private static char[] hexDigits = { 
+			'0', '1', '2', '3', '4', '5', '6', '7',
+			'8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
 	/**
 	 * Compute the value of a word.
@@ -123,7 +126,7 @@ public class AppleUtil {
 	 * and remove the sign.
 	 */
 	public static int getUnsignedByte(byte value) {
-		return (int) value & 0xff;
+		return value & 0xff;
 	}
 	
 	/**
@@ -241,9 +244,9 @@ public class AppleUtil {
 	public static void setPascalDate(byte[] buffer, int offset, Date date) {
 		GregorianCalendar gc = new GregorianCalendar();
 		gc.setTime(date);
-		int month = gc.get(GregorianCalendar.MONTH) + 1;
-		int day = gc.get(GregorianCalendar.DAY_OF_MONTH);
-		int year = gc.get(GregorianCalendar.YEAR) % 100;
+		int month = gc.get(Calendar.MONTH) + 1;
+		int day = gc.get(Calendar.DAY_OF_MONTH);
+		int year = gc.get(Calendar.YEAR) % 100;
 		int pascalDate = (month & 0x000f)
 			| ((day << 4) & 0x01f0)
 			| ((year << 9) & 0xfe00);
@@ -273,7 +276,10 @@ public class AppleUtil {
 	public static String getFormattedByte(int byt) {
 		int byt1 = byt & 0x0f;
 		int byt2 = (byt & 0xf0) >> 4;
-		return hexDigits[byt2] + hexDigits[byt1];
+		StringBuffer buf = new StringBuffer(2);
+		buf.append(hexDigits[byt2]);
+		buf.append(hexDigits[byt1]);
+		return buf.toString();
 	}
 	
 	/**
@@ -303,7 +309,7 @@ public class AppleUtil {
 		for (int i=0; i<word.length(); i++) {
 			char ch = word.charAt(i);
 			for (int nybble = 0; nybble < hexDigits.length; nybble++) {
-				if (ch == hexDigits[nybble].charAt(0)) {
+				if (ch == hexDigits[nybble]) {
 					value <<= 4;
 					value += nybble;
 					break;
@@ -346,11 +352,11 @@ public class AppleUtil {
 		if (date != null) {
 			GregorianCalendar gc = new GregorianCalendar();
 			gc.setTime(date);
-			day = gc.get(GregorianCalendar.DAY_OF_MONTH);
-			month = gc.get(GregorianCalendar.MONTH) + 1;
-			year = gc.get(GregorianCalendar.YEAR);
-			minute = gc.get(GregorianCalendar.MINUTE);
-			hour = gc.get(GregorianCalendar.HOUR_OF_DAY);
+			day = gc.get(Calendar.DAY_OF_MONTH);
+			month = gc.get(Calendar.MONTH) + 1;
+			year = gc.get(Calendar.YEAR);
+			minute = gc.get(Calendar.MINUTE);
+			hour = gc.get(Calendar.HOUR_OF_DAY);
 			if (year >= 2000) {
 				year -= 2000;
 			} else {
@@ -424,6 +430,7 @@ public class AppleUtil {
 						try {
 							decompressedStream.write(dataArray);
 						} catch (IOException ignored) {
+							// Ignored
 						}
 					}
 					break;
@@ -436,6 +443,7 @@ public class AppleUtil {
 						try {
 							decompressedStream.write(dataArray);
 						} catch (IOException ignored) {
+							// Ignored
 						}
 					}
 					break;
@@ -532,21 +540,17 @@ public class AppleUtil {
 	public static String getHexDump(byte[] bytes) {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		PrintWriter printer = new PrintWriter(output);
-		printer.print(" Offset  ");
-		printer.print("Hex Data                                          ");
-		printer.println("Characters");
-		printer.print("=======  ");
-		printer.print("================================================  ");
-		printer.println("=================");
+		printer.println(textBundle.get("HexDumpLine1")); //$NON-NLS-1$
+		printer.println(textBundle.get("HexDumpLine2")); //$NON-NLS-1$
 		for (int offset=0; offset<bytes.length; offset+= BYTES_PER_LINE) {
-			printer.print("$");
+			printer.print("$"); //$NON-NLS-1$
 			printer.print(AppleUtil.getFormatted3ByteAddress(offset));
-			printer.print("  ");
+			printer.print("  "); //$NON-NLS-1$
 			for (int b=0; b<BYTES_PER_LINE; b++) {
 				if (b == BYTES_PER_LINE / 2) printer.print(' ');
 				int index = offset+b;
 				printer.print( (index < bytes.length) ?
-					AppleUtil.getFormattedByte(bytes[index]) : "..");
+					AppleUtil.getFormattedByte(bytes[index]) : ".."); //$NON-NLS-1$
 				printer.print(' ');
 			}
 			printer.print(' ');
@@ -566,7 +570,7 @@ public class AppleUtil {
 			}
 			printer.println();
 		}
-		printer.println("** END **");
+		printer.println(textBundle.get("HexDumpEndMessage")); //$NON-NLS-1$
 		printer.flush();
 		printer.close();
 		return output.toString();
@@ -577,8 +581,7 @@ public class AppleUtil {
 	 */
 	public static void changeImageOrderByTrackAndSector(ImageOrder sourceOrder, ImageOrder targetOrder) {
 		if (!sameSectorsPerDisk(sourceOrder, targetOrder)) {
-			throw new IllegalArgumentException("Cannot change ImageOrder unless the " +
-				"source and target are the same size!");
+			throw new IllegalArgumentException(textBundle.get("CannotChangeImageOrder")); //$NON-NLS-1$
 		}
 		for (int track = 0; track < sourceOrder.getTracksPerDisk(); track++) {
 			for (int sector = 0; sector < sourceOrder.getSectorsPerTrack(); sector++) {
@@ -602,8 +605,7 @@ public class AppleUtil {
 		ImageOrder sourceOrder = sourceDisk.getImageOrder();
 		ImageOrder targetOrder = targetDisk.getImageOrder();
 		if (!sameSectorsPerDisk(sourceOrder, targetOrder)) {
-			throw new IllegalArgumentException("Cannot compare disks unless the " +
-				"source and target are the same size!");
+			throw new IllegalArgumentException(textBundle.get("CannotCompareDisks")); //$NON-NLS-1$
 		}
 		for (int track = 0; track < sourceOrder.getTracksPerDisk(); track++) {
 			for (int sector = 0; sector < sourceOrder.getSectorsPerTrack(); sector++) {
@@ -622,8 +624,7 @@ public class AppleUtil {
 	 */
 	public static void changeImageOrderByBlock(ImageOrder sourceOrder, ImageOrder targetOrder) {
 		if (!sameBlocksPerDisk(sourceOrder, targetOrder)) {
-			throw new IllegalArgumentException("Cannot change ImageOrder unless the " +
-				"source and target are the same size!");
+			throw new IllegalArgumentException(textBundle.get("CannotChangeImageOrder")); //$NON-NLS-1$
 		}
 		for (int block = 0; block < sourceOrder.getBlocksOnDevice(); block++) {
 			byte[] blockData = sourceOrder.readBlock(block);
@@ -645,8 +646,7 @@ public class AppleUtil {
 		ImageOrder sourceOrder = sourceDisk.getImageOrder();
 		ImageOrder targetOrder = targetDisk.getImageOrder();
 		if (!sameBlocksPerDisk(sourceOrder, targetOrder)) {
-			throw new IllegalArgumentException("Cannot compare disks unless the " +
-				"source and target are the same size!");
+			throw new IllegalArgumentException(textBundle.get("CannotCompareDisks")); //$NON-NLS-1$
 		}
 		for (int block = 0; block < sourceOrder.getBlocksOnDevice(); block++) {
 				byte[] sourceData = sourceOrder.readBlock(block);

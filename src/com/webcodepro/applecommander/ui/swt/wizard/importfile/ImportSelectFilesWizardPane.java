@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
 import com.webcodepro.applecommander.ui.ImportSpecification;
+import com.webcodepro.applecommander.ui.TextBundle;
 import com.webcodepro.applecommander.ui.UserPreferences;
 import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
@@ -35,6 +36,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * @author Rob Greene
  */
 public class ImportSelectFilesWizardPane extends WizardPane {
+	private TextBundle textBundle = TextBundle.getInstance();
 	private ImportWizard wizard;
 	private Composite control;
 	private Composite parent;
@@ -53,14 +55,14 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 	}
 	/**
 	 * Get the next visible pane.
-	 * @see com.webcodepro.applecommander.ui.swt.WizardPane#getNextPane()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
 	public WizardPane getNextPane() {
 		return null;
 	}
 	/**
 	 * Create the wizard pane.
-	 * @see com.webcodepro.applecommander.ui.swt.WizardPane#open()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#open()
 	 */
 	public void open() {
 		control = new Composite(parent, SWT.NULL);
@@ -75,7 +77,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 		layout.spacing = 3;
 		control.setLayout(layout);
 		Label label = new Label(control, SWT.WRAP);
-		label.setText("Please choose the files to be imported:");
+		label.setText(textBundle.get("ImportWizardPrompt")); //$NON-NLS-1$
 
 		fileTable = new Table(control, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION
 			| SWT.V_SCROLL | SWT.H_SCROLL);
@@ -86,8 +88,8 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 			 * Single click.
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				removeButton.setEnabled(true);
-				editButton.setEnabled(true);
+				getRemoveButton().setEnabled(true);
+				getEditButton().setEnabled(true);
 			}
 			/**
 			 * Double-click.
@@ -98,27 +100,27 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 		});
 		
 		TableColumn column = new TableColumn(fileTable, SWT.LEFT);
-		column.setText("Source");
+		column.setText(textBundle.get("SourceColumnHeader")); //$NON-NLS-1$
 		column.setWidth(130);
 		column = new TableColumn(fileTable, SWT.LEFT);
-		column.setText("Target");
+		column.setText(textBundle.get("TargetColumnHeader")); //$NON-NLS-1$
 		column.setWidth(130);
 		column = new TableColumn(fileTable, SWT.LEFT);
-		column.setText("Type");
+		column.setText(textBundle.get("TypeColumnHeader")); //$NON-NLS-1$
 		column.setWidth(70);
 		
 		Composite buttonPanel = new Composite(control, SWT.NULL);
 		buttonPanel.setLayout(new FillLayout());
 
 		Button chooseButton = new Button(buttonPanel, SWT.PUSH);
-		chooseButton.setText("Choose...");
+		chooseButton.setText(textBundle.get("ChooseButton")); //$NON-NLS-1$
 		chooseButton.setFocus();
 		chooseButton.addSelectionListener(new SelectionAdapter() {
 			/**
 			 * Single click.
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				FileDialog dialog = new FileDialog(parent.getShell(), 
+				FileDialog dialog = new FileDialog(getParent().getShell(), 
 					SWT.OPEN | SWT.MULTI);
 				dialog.setFilterPath(
 					UserPreferences.getInstance().getImportDirectory());
@@ -132,26 +134,26 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 		});
 
 		removeButton = new Button(buttonPanel, SWT.PUSH);
-		removeButton.setText("Remove");
+		removeButton.setText(textBundle.get("RemoveButton")); //$NON-NLS-1$
 		removeButton.setEnabled(false);
 		removeButton.addSelectionListener(new SelectionAdapter() {
 			/**
 			 * Single click.
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				TableItem[] items = fileTable.getSelection();
+				TableItem[] items = getFileTable().getSelection();
 				for (int i=0; i<items.length; i++) {
 					ImportSpecification spec = (ImportSpecification) 
 						items[i].getData();
-					wizard.removeImportSpecification(spec);
+					getWizard().removeImportSpecification(spec);
 				}
-				removeButton.setEnabled(false);
+				getRemoveButton().setEnabled(false);
 				refreshTable();
 			}
 		});
 		
 		editButton = new Button(buttonPanel, SWT.PUSH);
-		editButton.setText("Edit...");
+		editButton.setText(textBundle.get("EditButton")); //$NON-NLS-1$
 		editButton.setEnabled(false);
 		editButton.addSelectionListener(new SelectionAdapter() {
 			/**
@@ -198,7 +200,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 	}
 	/**
 	 * Dispose of all resources.
-	 * @see com.webcodepro.applecommander.ui.swt.WizardPane#dispose()
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
 	 */
 	public void dispose() {
 		fileTable.dispose();
@@ -212,7 +214,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 			fileTable.getSelection()[0].getData();
 		
 		final Shell dialog = new Shell(wizard.getDialog(), SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
-		dialog.setText("File Import Settings");
+		dialog.setText(textBundle.get("FileImportSettingsTitle")); //$NON-NLS-1$
 		GridLayout layout = new GridLayout();
 		layout.horizontalSpacing = 5;
 		layout.makeColumnsEqualWidth = false;
@@ -224,7 +226,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 		
 		// Filename prompt:
 		Label label = new Label(dialog, SWT.NONE);
-		label.setText("Filename:");
+		label.setText(textBundle.get("FilenameLabel")); //$NON-NLS-1$
 		final Text filenameText = new Text(dialog, SWT.BORDER);
 		filenameText.setText(spec.getTargetFilename());
 		filenameText.setTextLimit(30);
@@ -234,7 +236,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 		
 		// Filetype prompt:
 		label = new Label(dialog, SWT.NONE);
-		label.setText("Filetype:");
+		label.setText(textBundle.get("FiletypeLabel")); //$NON-NLS-1$
 		final Combo filetypes = new Combo(dialog, SWT.BORDER | SWT.READ_ONLY);
 		filetypes.setItems(wizard.getDisk().getFiletypes());
 		if (spec.hasFiletype()) {
@@ -243,7 +245,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 		
 		// Address component: (only used for some filetypes)
 		label = new Label(dialog, SWT.NONE);
-		label.setText("Address:");
+		label.setText(textBundle.get("AddressLabel")); //$NON-NLS-1$
 		addressText = new Text(dialog, SWT.BORDER);
 		addressText.setTextLimit(5);
 		addressText.setText(AppleUtil.getFormattedWord(spec.getAddress()));
@@ -257,7 +259,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 		
 		// RAW file image: (probably only used for DOS 3.3)
 		label = new Label(dialog, SWT.NONE);
-		label.setText("RAW binary?");
+		label.setText(textBundle.get("RawBinaryCheckbox")); //$NON-NLS-1$
 		rawCheckbox = new Button(dialog, SWT.CHECK);
 		rawCheckbox.setSelection(spec.isRawFileImport());
 
@@ -266,8 +268,8 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 			public void widgetSelected(SelectionEvent event) {
 				String filetype = filetypes.getItem(
 					filetypes.getSelectionIndex());
-				addressText.setEnabled(
-					wizard.getDisk().needsAddress(filetype));
+				getAddressText().setEnabled(
+					getWizard().getDisk().needsAddress(filetype));
 			}
 		});
 
@@ -280,32 +282,32 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 		composite.setLayoutData(layoutData);
 		composite.setLayout(new FillLayout(SWT.HORIZONTAL));
 		Button button = new Button(composite, SWT.PUSH);
-		button.setText("Cancel");
+		button.setText(textBundle.get("CancelButton")); //$NON-NLS-1$
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				filenameText.dispose();
 				filetypes.dispose();
-				addressText.dispose();
-				rawCheckbox.dispose();
+				getAddressText().dispose();
+				getRawCheckBox().dispose();
 				dialog.close();
 			}
 		});
 		button = new Button(composite, SWT.PUSH);
-		button.setText("OK");
+		button.setText(textBundle.get("OkButton")); //$NON-NLS-1$
 		dialog.setDefaultButton(button);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				spec.setTargetFilename(wizard.getDisk().
+				spec.setTargetFilename(getWizard().getDisk().
 					getSuggestedFilename(filenameText.getText()));
 				spec.setFiletype(filetypes.getItem(
 					filetypes.getSelectionIndex()));
 				spec.setAddress(AppleUtil.convertFormattedWord(
-					addressText.getText()));
-				spec.setRawFileImport(rawCheckbox.getSelection());
+					getAddressText().getText()));
+				spec.setRawFileImport(getRawCheckBox().getSelection());
 				filenameText.dispose();
 				filetypes.dispose();
-				addressText.dispose();
-				rawCheckbox.dispose();
+				getAddressText().dispose();
+				getRawCheckBox().dispose();
 				dialog.close();
 				refreshTable();
 			}
@@ -313,5 +315,33 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 		dialog.pack();
 		SwtUtil.center(wizard.getDialog(), dialog);
 		dialog.open();
+	}
+	
+	protected Button getRemoveButton() {
+		return removeButton;
+	}
+	
+	protected Button getEditButton() {
+		return editButton;
+	}
+	
+	protected Composite getParent() {
+		return parent;
+	}
+	
+	protected Table getFileTable() {
+		return fileTable;
+	}
+	
+	protected ImportWizard getWizard() {
+		return wizard;
+	}
+	
+	protected Text getAddressText() {
+		return addressText;
+	}
+	
+	protected Button getRawCheckBox() {
+		return rawCheckbox;
 	}
 }

@@ -25,7 +25,7 @@ public class ApplesoftToken {
 	}
 	
 	public boolean isCommandSeparator() {
-		return ":".equals(stringValue);
+		return ":".equals(stringValue); //$NON-NLS-1$
 	}
 	
 	public boolean isLineNumber() {
@@ -46,8 +46,8 @@ public class ApplesoftToken {
 	
 	public boolean isExpressionSeparator() {
 		return isCommandSeparator()
-			|| ",".equals(stringValue)
-			|| ";".equals(stringValue);
+			|| ",".equals(stringValue) //$NON-NLS-1$
+			|| ";".equals(stringValue); //$NON-NLS-1$
 	}
 	
 	/**
@@ -85,7 +85,7 @@ public class ApplesoftToken {
 		if (isLineNumber()) {
 			return Integer.toString(getLineNumber());
 		} else if (isToken()) {
-			return getTokenString() + " " + Integer.toHexString(getTokenValue());
+			return getTokenString() + " " + Integer.toHexString(getTokenValue()); //$NON-NLS-1$
 		} else {
 			return getStringValue();
 		}

@@ -40,6 +40,7 @@ import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.Disk.FilenameFilter;
 import com.webcodepro.applecommander.ui.AppleCommander;
+import com.webcodepro.applecommander.ui.TextBundle;
 import com.webcodepro.applecommander.ui.UserPreferences;
 import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
@@ -57,6 +58,7 @@ public class SwtAppleCommander implements Listener {
 	private Shell shell;
 	private ToolBar toolBar;
 	private UserPreferences userPreferences = UserPreferences.getInstance();
+	private TextBundle textBundle = TextBundle.getInstance();
 	private ImageCanvas imageCanvas;
 	private static ImageManager imageManager;
 
@@ -272,7 +274,7 @@ public class SwtAppleCommander implements Listener {
 		box.setMessage(
 			  "AppleCommander\n"
 			+ "Version " + AppleCommander.VERSION + "\n"
-			+ AppleCommander.COPYRIGHT + "\n\n"
+			+ textBundle.get("Copyright") + "\n\n"
 			+ "AppleCommander was created for the express\n"
 			+ "purpose of assisting those-who-remember.\n\n"
 			+ "I wish you many hours of vintage pleasure!\n"

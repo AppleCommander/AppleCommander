@@ -36,30 +36,32 @@ import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 
 public class ac {
+	private static TextBundle textBundle = TextBundle.getInstance();
 
-	public static void main(String[] args)  throws IOException {
+	public static void main(String[] args) {
 		try {
 			if (args.length == 0) {
 				help();
-			} else if ("-l".equalsIgnoreCase(args[0])) {
+			} else if ("-l".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				showDirectory(args[1]);
-			} else if ("-e".equalsIgnoreCase(args[0])) {
+			} else if ("-e".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				getFile(args[1], args[2], true);
-			} else if ("-g".equalsIgnoreCase(args[0])) {
+			} else if ("-g".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				getFile(args[1], args[2], false);
-			} else if ("-p".equalsIgnoreCase(args[0])) {
+			} else if ("-p".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				putFile(args[1], args[2], args[3], args[4]);
-			} else if ("-d".equalsIgnoreCase(args[0])) {
+			} else if ("-d".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				deleteFile(args[1], args[2]);
-			} else if ("-p140".equalsIgnoreCase(args[0])) {
-				createPDisk(args[1], args[2], ProdosFormatDisk.APPLE_140KB_DISK);
-			} else if ("-p800".equalsIgnoreCase(args[0])) {
-				createPDisk(args[1], args[2], ProdosFormatDisk.APPLE_800KB_DISK);
+			} else if ("-p140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				createPDisk(args[1], args[2], Disk.APPLE_140KB_DISK);
+			} else if ("-p800".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				createPDisk(args[1], args[2], Disk.APPLE_800KB_DISK);
 			} else {
 				help();
 			}
 		} catch (Exception ex) {
-			System.err.println("Error: " + ex);
+			System.err.println(textBundle.format("CommandLineErrorMessage",  //$NON-NLS-1$
+					ex.getLocalizedMessage()));
 			ex.printStackTrace();
 			help();
 		}
@@ -93,8 +95,7 @@ public class ac {
 	/**
 	 * Delete the file named fileName from the disk named imageName.
 	 */
-	static void deleteFile(String fileName, String imageName)
-			throws IOException {
+	static void deleteFile(String fileName, String imageName) throws IOException {
 		Disk disk = new Disk(imageName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		for (int i=0; i<formattedDisks.length; i++) {
@@ -105,7 +106,8 @@ public class ac {
 				entry.delete();
 				disk.save();
 			} else {
-				System.err.println(fileName + ": No match.");
+				System.err.println(textBundle.format(
+					"CommandLineNoMatchMessage", fileName)); //$NON-NLS-1$
 			}
 		}
 	}
@@ -114,8 +116,7 @@ public class ac {
 	 * Get the file named filename from the disk named imageName;
 	 * the file is filtered according to its type and sent to <stdout>.
 	 */
-	static void getFile(String fileName, String imageName, boolean filter)
-			throws IOException {
+	static void getFile(String fileName, String imageName, boolean filter) throws IOException {
 		Disk disk = new Disk(imageName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		for (int i=0; i<formattedDisks.length; i++) {
@@ -132,7 +133,8 @@ public class ac {
 					System.out.write(buf, 0, buf.length);
 				}
 			} else {
-				System.err.println(fileName + ": No match.");
+				System.err.println(textBundle.format(
+						"CommandLineNoMatchMessage", fileName)); //$NON-NLS-1$
 			}
 		}
 	}
@@ -174,11 +176,15 @@ public class ac {
 			System.out.println(formattedDisk.getDiskName());
 			List files = formattedDisk.getFiles();
 			if (files != null) {
-				showFiles(files, "");
+				showFiles(files, ""); //$NON-NLS-1$
 			}
-			System.out.print(formattedDisk.getFormat() + " format; ");
-			System.out.print(formattedDisk.getFreeSpace() + " bytes free; ");
-			System.out.println(formattedDisk.getUsedSpace() + " bytes used.");
+			System.out.println(textBundle.format(
+				"CommandLineStatus", //$NON-NLS-1$
+				new Object[] {
+					formattedDisk.getFormat(),
+					new Integer(formattedDisk.getFreeSpace()),
+					new Integer(formattedDisk.getUsedSpace())
+				}));
 			System.out.println();
 		}
 	}
@@ -197,13 +203,13 @@ public class ac {
 				System.out.print(indent);
 				for (int d=0; d<data.size(); d++) {
 					System.out.print(data.get(d));
-					System.out.print(" ");
+					System.out.print(" "); //$NON-NLS-1$
 				}
 				System.out.println();
 			}
 			if (entry.isDirectory()) {
 				showFiles(((DirectoryEntry)entry).getFiles(),
-					indent + "  ");
+					indent + "  "); //$NON-NLS-1$
 			}
 		}
 	}
@@ -224,21 +230,14 @@ public class ac {
 		int i = 0;
 		try {
 			i = Integer.parseInt(s.trim());
-		} catch (NumberFormatException e) {
+		} catch (NumberFormatException ignored) {
+			// ignored
 		}
 		return i;
 	}
 	
 	static void help() {
-		System.err.println("AppleCommander command line options:");
-		System.err.println("-l <imagename> list directory of image.");
-		System.err.println("-e <filename> <imagename> export file from image to stdout.");
-		System.err.println("-g <filename> <imagename> get raw file from image to stdout.");
-		System.err.println("-p <destname> <type> <addr> <imagename> put stdin");
-		System.err.println("   in destname on image, using file type and address.");
-		System.err.println("-d <filename> <imagename> delete file from image.");
-		System.err.println("-p140 <imagename> <volname> create a 140K ProDOS image.");
-		System.err.println("-p800 <imagename> <volname> create a 800K ProDOS image.");
+		System.err.println(textBundle.get("CommandLineHelp")); //$NON-NLS-1$
 	}
 
 }
