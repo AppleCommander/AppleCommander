@@ -182,17 +182,26 @@ public abstract class Wizard {
 	 */
 	public void enableNextButton(boolean state) {
 		nextButton.setEnabled(state);
+		if (!finishButton.isEnabled()) dialog.setDefaultButton(nextButton);
 	}
 	/**
 	 * Enable/disable the finish button.
 	 */
 	public void enableFinishButton(boolean state) {
 		finishButton.setEnabled(state);
+		dialog.setDefaultButton(finishButton);
 	}
 	/**
 	 * Get the content pane.
 	 */
 	protected Composite getContentPane() {
 		return contentPane;
+	}
+	/**
+	 * Get the Wizard dialog Shell object.  Used by WizardPanes if a popup
+	 * window is needed.
+	 */
+	public Shell getDialog() {
+		return dialog;
 	}
 }
