@@ -23,9 +23,11 @@ import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.DosFormatDisk;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -47,26 +49,74 @@ public class DiskWriterTest extends TestCase {
 	}
 
 	public void testWriteToDos33() throws DiskFullException, IOException {
-		FormattedDisk[] disks = DosFormatDisk.create("write-test.dsk");
-		showDirectory(disks, "BEFORE FILE CREATION");
+		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.dsk");
+		writeFiles(disks, "B", "T");
+		disks[0].save();
+	}
+	
+	public void testWriteToProdos140kDisk() throws DiskFullException, IOException {
+		FormattedDisk[] disks = ProdosFormatDisk.create(
+			"write-test-prodos-140k.dsk", "TEST", ProdosFormatDisk.APPLE_140KB_DISK);
+		writeFiles(disks, "BIN", "TXT");
+		disks[0].save();
+	}
+
+	public void testWriteToProdos800kDisk() throws DiskFullException, IOException {
+		FormattedDisk[] disks = ProdosFormatDisk.create(
+			"write-test-prodos-800k.po", "TEST", ProdosFormatDisk.APPLE_800KB_DISK);
+		writeFiles(disks, "BIN", "TXT");
+		disks[0].save();
+	}
+
+	public void testWriteToProdos5mbDisk() throws DiskFullException, IOException {
+		FormattedDisk[] disks = ProdosFormatDisk.create(
+			"write-test-prodos-5mb.hdv", "TEST", ProdosFormatDisk.APPLE_5MB_HARDDISK);
+		writeFiles(disks, "BIN", "TXT");
+		disks[0].save();
+	}
+	
+	protected void writeFiles(FormattedDisk[] disks, String binaryType, 
+		String textType) throws DiskFullException {
 		FormattedDisk disk = disks[0];
-		FileEntry entry = disk.createFile();
-		entry.setFilename("big binary file");
-		entry.setFiletype("B");
-		entry.setFileData(new byte[50000]);
+		showDirectory(disks, "BEFORE FILE CREATION");
+		writeFile(disk, 1, binaryType);
+		writeFile(disk, 2, binaryType);
+		writeFile(disk, 4, binaryType);
+		writeFile(disk, 8, binaryType);
+		writeFile(disk, 16, binaryType);
+		writeFile(disk, 256, binaryType);
+		writeFile(disk, 512, binaryType);
+		writeFile(disk, 1234, binaryType);
+		writeFile(disk, 54321, binaryType);
+		writeFile(disk, 
+			"This is a test text file create from the DiskWriterTest".getBytes(), 
+			textType);
+		if (disk.getPhysicalSize() > disk.APPLE_140KB_DISK) {
+			// create a few big files
+			writeFile(disk, 150000, binaryType);
+			writeFile(disk, 300000, binaryType);
+		}
 		showDirectory(disks, "AFTER FILE CREATION");
-		entry.setFilename("test");
-		entry.setFiletype("T");
-		entry.setFileData(
-			"This is a test text file created from the DiskWriterTest".getBytes());
-		showDirectory(disks, "AFTER FILE MODIFICATION");
-		FileEntry entry2 = disk.createFile();
-		entry2.setFilename("another test text file");
-		entry2.setFiletype("T");
-		entry2.setFileData(
-			"Yo ho ho and a bottle of rum".getBytes());
-		showDirectory(disks, "AFTER SECONDARY FILE CREATION");
-		disk.save();
+	}
+	
+	protected void writeFile(FormattedDisk disk, int size, String fileType)
+		throws DiskFullException {
+		byte[] data = new byte[size];
+		for (int i=0; i<data.length; i++) {
+			data[i] = (byte)(Math.random() * 1024);
+		}
+		writeFile(disk, data, fileType);
+	}
+	
+	protected void writeFile(FormattedDisk disk, byte[] data, String fileType)
+		throws DiskFullException {
+		FileEntry entry = disk.createFile();
+		entry.setFilename("file-" + data.length);
+		entry.setFiletype(fileType);
+		entry.setFileData(data);
+		byte[] data2 = entry.getFileData();
+		assertTrue("File lengths do not match", data.length == data2.length);
+		assertTrue("File contents do not match", Arrays.equals(data, data2));
 	}
 	
 	protected void showDirectory(FormattedDisk[] formattedDisks, String title) {
