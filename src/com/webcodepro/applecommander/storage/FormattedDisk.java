@@ -379,4 +379,11 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	 * a DOS type disk or by blocks in a ProDOS type disk.)
 	 */
 	public abstract void changeImageOrder(ImageOrder imageOrder);
+	
+	/**
+	 * Writes the raw bytes into the file.  This bypasses any special formatting
+	 * of the data (such as prepending the data with a length and/or an address).
+	 * Typically, the FileEntry.setFileData method should be used. 
+	 */
+	public abstract void setFileData(FileEntry fileEntry, byte[] fileData) throws DiskFullException;
 }
