@@ -94,8 +94,13 @@ public class DiskExplorerTab {
 	private static final char CTRL_I = 'I' - '@';
 	private static final char CTRL_S = 'S' - '@';
 	private static final char CTRL_V = 'V' - '@';
-	
+
+	// These are given to us from DiskWindow	
 	private Shell shell;
+	private ImageManager imageManager;
+	private DiskWindow diskWindow;
+	private FormattedDisk[] disks;
+	
 	private SashForm sashForm;
 	private Tree directoryTree;
 	private Table fileTable;
@@ -110,10 +115,9 @@ public class DiskExplorerTab {
 	private ToolItem viewFileItem;
 	private ToolItem deleteToolItem;
 	private ToolItem saveToolItem;
-	private ImageManager imageManager;
+	private ToolItem saveAsToolItem;
 
 	private UserPreferences userPreferences = UserPreferences.getInstance();
-	private FormattedDisk[] disks;
 	private FileFilter fileFilter;
 	private GraphicsFileFilter graphicsFilter = new GraphicsFileFilter();
 	private AppleWorksWordProcessorFileFilter awpFilter = new AppleWorksWordProcessorFileFilter();
@@ -127,10 +131,11 @@ public class DiskExplorerTab {
 	/**
 	 * Create the DISK INFO tab.
 	 */
-	public DiskExplorerTab(CTabFolder tabFolder, FormattedDisk[] disks, ImageManager imageManager) {
+	public DiskExplorerTab(CTabFolder tabFolder, FormattedDisk[] disks, ImageManager imageManager, DiskWindow diskWindow) {
 		this.disks = disks;
 		this.shell = tabFolder.getShell();
 		this.imageManager = imageManager;
+		this.diskWindow = diskWindow;
 		
 		createFilesTab(tabFolder);
 	}
@@ -307,11 +312,15 @@ public class DiskExplorerTab {
 			public void menuShown(MenuEvent event) {
 				Menu theMenu = (Menu) event.getSource();
 				MenuItem[] subItems = theMenu.getItems();
-				FileEntry fileEntry = (FileEntry) fileTable.getItem(fileTable.getSelectionIndex()).getData();
+				FileEntry fileEntry = getSelectedFileEntry();
 				// View File
-				subItems[0].setEnabled(true);		// FIXME
+				subItems[0].setEnabled(fileEntry != null);		// FIXME
 				// Compile File
-				subItems[1].setEnabled(fileEntry.canCompile());
+				subItems[1].setEnabled(fileEntry != null && fileEntry.canCompile());
+				// Export File
+				subItems[3].setEnabled(fileEntry != null);
+				// Delete File
+				subItems[5].setEnabled(fileEntry != null);
 			}
 		});
 		
@@ -626,10 +635,10 @@ public class DiskExplorerTab {
 				public void widgetSelected(SelectionEvent event) {
 					importToolItem.setEnabled(disks[0].canCreateFile() && disks[0].canWriteFileData());
 					if (fileTable.getSelectionCount() > 0) {
-						FileEntry fileEntry = (FileEntry) fileTable.getItem(fileTable.getSelectionIndex()).getData();
+						FileEntry fileEntry = getSelectedFileEntry();
 						exportToolItem.setEnabled(disks[0].canReadFileData());
 						deleteToolItem.setEnabled(disks[0].canDeleteFile());
-						compileToolItem.setEnabled(fileEntry.canCompile());
+						compileToolItem.setEnabled(fileEntry != null && fileEntry.canCompile());
 						// FIXME: Need appropriate logic..
 						viewFileItem.setEnabled(true);
 					} else {
@@ -696,7 +705,7 @@ public class DiskExplorerTab {
 	 */
 	protected void exportFileWizard() {
 		// Get a sugeseted filter, if possible:
-		FileEntry fileEntry = (FileEntry) fileTable.getSelection()[0].getData();
+		FileEntry fileEntry = getSelectedFileEntry();
 		if (fileEntry != null) {
 			fileFilter = fileEntry.getSuggestedFilter();
 		}
@@ -786,7 +795,7 @@ public class DiskExplorerTab {
 	 * Launch the compile file wizard.
 	 */
 	protected void compileFileWizard() {
-		FileEntry fileEntry = (FileEntry) fileTable.getSelection()[0].getData();
+		FileEntry fileEntry = getSelectedFileEntry();
 		CompileWizard wizard = new CompileWizard(shell, 
 			imageManager, fileEntry.getFormattedDisk());
 		wizard.setDirectory(userPreferences.getCompileDirectory());
@@ -1045,7 +1054,8 @@ public class DiskExplorerTab {
 				changeCurrentFormat(FormattedDisk.FILE_DISPLAY_DETAIL);
 			}
 		});
-		ToolItem item = new ToolItem(toolBar, SWT.SEPARATOR);
+		
+		new ToolItem(toolBar, SWT.SEPARATOR);
 		
 		showDeletedFilesToolItem = new ToolItem(toolBar, SWT.CHECK);
 		showDeletedFilesToolItem.setImage(imageManager.getDeletedFilesIcon());
@@ -1058,7 +1068,8 @@ public class DiskExplorerTab {
 				fillFileTable(currentFileList);
 			}
 		});
-		item = new ToolItem(toolBar, SWT.SEPARATOR);
+		
+		new ToolItem(toolBar, SWT.SEPARATOR);
 
 		importToolItem = new ToolItem(toolBar, SWT.PUSH);
 		importToolItem.setImage(imageManager.getImportFileIcon());
@@ -1085,7 +1096,8 @@ public class DiskExplorerTab {
 				}
 			}
 		});
-		item = new ToolItem(toolBar, SWT.SEPARATOR);
+		
+		new ToolItem(toolBar, SWT.SEPARATOR);
 
 		compileToolItem = new ToolItem(toolBar, SWT.PUSH);
 		compileToolItem.setImage(imageManager.getCompileIcon());
@@ -1110,7 +1122,8 @@ public class DiskExplorerTab {
 				}
 			}
 		});
-		item = new ToolItem(toolBar, SWT.SEPARATOR);
+		
+		new ToolItem(toolBar, SWT.SEPARATOR);
 
 		deleteToolItem = new ToolItem(toolBar, SWT.PUSH);
 		deleteToolItem.setImage(imageManager.getDeleteFileIcon());
@@ -1122,7 +1135,8 @@ public class DiskExplorerTab {
 				deleteFile();
 			}
 		});
-		item = new ToolItem(toolBar, SWT.SEPARATOR);
+		
+		new ToolItem(toolBar, SWT.SEPARATOR);
 
 		saveToolItem = new ToolItem(toolBar, SWT.PUSH);
 		saveToolItem.setImage(imageManager.getSaveImageIcon());
@@ -1132,6 +1146,17 @@ public class DiskExplorerTab {
 		saveToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				save();
+			}
+		});
+
+		saveAsToolItem = new ToolItem(toolBar, SWT.PUSH);
+		saveAsToolItem.setImage(imageManager.getSaveAsIcon());
+		saveAsToolItem.setText("Save As");
+		saveAsToolItem.setToolTipText("Save disk image as... (CTRL+SHIFT+S)");
+		saveAsToolItem.setEnabled(true);	// We can always Save As...
+		saveAsToolItem.addSelectionListener(new SelectionAdapter () {
+			public void widgetSelected(SelectionEvent e) {
+				saveAs();
 			}
 		});
 
@@ -1163,29 +1188,62 @@ public class DiskExplorerTab {
 		}
 	}
 	/**
+	 * Handle SaveAs.
+	 */
+	protected void saveAs() {
+		FileDialog fileDialog = new FileDialog(shell, SWT.SAVE);
+		fileDialog.setFileName(disks[0].getFilename());
+		fileDialog.setText("Please choose a location and name for your disk image:");
+		String fullpath = fileDialog.open();
+		if (fullpath == null) {
+			return;	// user pressed cancel
+		}
+		try {
+			disks[0].saveAs(fullpath);
+			diskWindow.setStandardWindowTitle();
+			saveToolItem.setEnabled(disks[0].hasChanged());
+		} catch (IOException ex) {
+			showSaveError(ex);
+		}
+	}
+	/**
 	 * Handle save.
+	 * If this is the first time a disk has been saved (a new image),
+	 * default to the SaveAs behavior.
 	 */
 	protected void save() {
 		try {
+			if (disks[0].isNewImage()) {
+				saveAs();	// no directory -> assume a new/unsaved image
+				return;
+			}
 			disks[0].save();
 			saveToolItem.setEnabled(disks[0].hasChanged());
 		} catch (IOException ex) {
-			Shell finalShell = shell;
-			String errorMessage = ex.getMessage();
-			if (errorMessage == null) {
-				errorMessage = ex.getClass().getName();
-			}
-			MessageBox box = new MessageBox(finalShell, 
-				SWT.ICON_ERROR | SWT.CLOSE);
-			box.setText("Unable to save disk image!");
-			box.setMessage(
-				  "Unable to save '" + disks[0].getFilename() + "'.\n\n"
-			    + "AppleCommander was unable to save the disk\n"
-			    + "image.  The system error given was '"
-			    + errorMessage + "'\n\n"
-				+ "Sorry!");
-			box.open();
+			showSaveError(ex);
 		}
+	}
+	/**
+	 * Display the Save error dialog box.
+	 * @see #save
+	 * @see #saveAs
+	 */
+	protected void showSaveError(IOException ex) {
+		Shell finalShell = shell;
+		String errorMessage = ex.getMessage();
+		if (errorMessage == null) {
+			errorMessage = ex.getClass().getName();
+		}
+		MessageBox box = new MessageBox(finalShell, 
+			SWT.ICON_ERROR | SWT.CLOSE);
+		box.setText("Unable to save disk image!");
+		box.setMessage(
+			  "Unable to save '" + disks[0].getFilename() + "'.\n\n"
+		    + "AppleCommander was unable to save the disk\n"
+		    + "image.  The system error given was '"
+		    + errorMessage + "'\n\n"
+			+ "Sorry!");
+		box.open();
 	}
 	/**
 	 * Create the keyboard handler for the directory pane.
@@ -1236,7 +1294,8 @@ public class DiskExplorerTab {
 	private Listener createFileKeyboardHandler() {
 		return new Listener() {
 			public void handleEvent(Event event) {
-				if (event.type == SWT.KeyUp && (event.stateMask & SWT.CTRL) != 0) {
+				FileEntry fileEntry = getSelectedFileEntry();
+				if (fileEntry != null && event.type == SWT.KeyUp && (event.stateMask & SWT.CTRL) != 0) {
 					switch (event.character) {
 						case CTRL_C:	// Compile Wizard
 							if (compileToolItem.isEnabled()) {
@@ -1271,15 +1330,23 @@ public class DiskExplorerTab {
 			public void handleEvent(Event event) {
 				if (event.type == SWT.KeyUp) {
 					if ((event.stateMask & SWT.CTRL) != 0) {	// CTRL key held
-						switch (event.character) {
-							case CTRL_I:	// Import Wizard
-								importFiles();
-								break;
-							case CTRL_S:	// Save
-								if (saveToolItem.isEnabled()) {
-									save();
-								}
-								break;
+						if ((event.stateMask & SWT.SHIFT) != 0) {	// SHIFT key held
+							switch (event.character) {
+								case CTRL_S:	// Save As...
+									saveAs();
+									break;
+							}
+						} else {
+							switch (event.character) {
+								case CTRL_I:	// Import Wizard
+									importFiles();
+									break;
+								case CTRL_S:	// Save
+									if (saveToolItem.isEnabled()) {
+										save();
+									}
+									break;
+							}
 						}
 					} else {	// No CTRL key
 						switch (event.keyCode) {
@@ -1302,5 +1369,17 @@ public class DiskExplorerTab {
 				}
 			}
 		};
+	}
+	/**
+	 * Get the currently selected FileEntry.  Note that this
+	 * can return null if there are none selected.  Also, if there
+	 * are multiple files selected, this is not complete.
+	 */
+	protected FileEntry getSelectedFileEntry() {
+		FileEntry fileEntry = null;
+		if (fileTable.getSelectionIndex() >= 0) {
+			fileEntry = (FileEntry) fileTable.getItem(fileTable.getSelectionIndex()).getData();
+		}
+		return fileEntry;
 	}
 }
