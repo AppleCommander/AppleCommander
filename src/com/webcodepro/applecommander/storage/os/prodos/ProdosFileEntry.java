@@ -501,7 +501,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 				GraphicsFileFilter filter = new GraphicsFileFilter();
 				filter.setMode(GraphicsFileFilter.MODE_HGR_COLOR);
 				return filter;
-			} else if (filesize >= 16377 && filesize <= 16384) {
+			} else if (filesize >= 16376 && filesize <= 16384) {
 				GraphicsFileFilter filter = new GraphicsFileFilter();
 				filter.setMode(GraphicsFileFilter.MODE_DHR_COLOR);
 				return filter;
