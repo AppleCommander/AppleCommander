@@ -19,14 +19,11 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * Represents a ProDOS file entry on disk.
@@ -35,58 +32,14 @@ import java.util.Properties;
  * @author: Rob Greene
  */
 public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
-	private static ProdosFileType[] fileTypes;
 	private List files;
 	private ProdosSubdirectoryHeader subdirectoryHeader;
 	
-	/**
-	 * This class holds filetype mappings.
-	 */
-	private class ProdosFileType {
-		private byte type;
-		private String string;
-		public ProdosFileType(byte type, String string) {
-			this.type = type;
-			this.string = string;
-		}
-		public byte getType() {
-			return type;
-		}
-		public String getString() {
-			return string;
-		}
-	}
-
 	/**
 	 * Constructor for ProdosFileEntry.
 	 */
 	public ProdosFileEntry(ProdosFormatDisk disk, int block, int offset) {
 		super(disk, block, offset);
-		initialize();
-	}
-	
-	/**
-	 * Initialize all file types.
-	 */
-	protected void initialize() {
-		if (fileTypes != null) return;
-		
-		fileTypes = new ProdosFileType[256];
-		InputStream inputStream = 
-			getClass().getResourceAsStream("ProdosFileTypes.properties");
-		Properties properties = new Properties();
-		try {
-			properties.load(inputStream);
-			for (int i=0; i<256; i++) {
-				String byt = AppleUtil.getFormattedByte(i).toLowerCase();
-				String string = (String) properties.get("filetype." + byt);
-				if (string == null || string.length() == 0) {
-					string = "$" + byt.toUpperCase();
-				}
-				fileTypes[i] = new ProdosFileType((byte)i, string);
-			}
-		} catch (IOException ignored) {
-		}
 	}
 	
 	/**
@@ -179,22 +132,16 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 */
 	public String getFiletype() {
 		int filetype = AppleUtil.getUnsignedByte(readFileEntry()[0x10]);
-		ProdosFileType prodostype = fileTypes[filetype];
-		return prodostype.getString();
+		return getDisk().getFiletype(filetype);
 	}
 
 	/**
 	 * Set the filetype.
 	 */
 	public void setFiletype(String filetype) {
-		for (int i=0; i<fileTypes.length; i++) {
-			if (filetype.equalsIgnoreCase(fileTypes[i].getString())) {
-				byte[] entry = readFileEntry();
-				entry[0x10] = fileTypes[i].getType();
-				writeFileEntry(entry);
-				return;
-			}
-		}
+		byte[] entry = readFileEntry();
+		entry[0x10] = getDisk().getFiletype(filetype);
+		writeFileEntry(entry);
 	}
 	
 	/**
@@ -275,6 +222,14 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	public void setAuxiliaryType(byte[] entry, byte low, byte high) {
 		entry[0x1f] = low;
 		entry[0x20] = high;
+	}
+	
+	/**
+	 * Set the auxiliary type for this file.
+	 */
+	public void setAuxiliaryType(byte[] entry, int auxiliaryType) {
+		setAuxiliaryType(entry, (byte)(auxiliaryType%256), 
+			(byte)(auxiliaryType/256));
 	}
 
 	/**
@@ -519,5 +474,24 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 			// fall through to BinaryFileFilter...
 		}
 		return new BinaryFileFilter();
+	}
+
+	/**
+	 * Indicates if this filetype requires an address component.
+	 * Note that the FormattedDisk also has this method - normally,
+	 * this will defer to the method on FormattedDisk, as it will be
+	 * more generic.
+	 */
+	public boolean needsAddress() {
+		return getDisk().needsAddress(getFiletype());
+	}
+	
+	/**
+	 * Set the address that this file loads at.
+	 */
+	public void setAddress(int address) {
+		byte[] fileEntry = readFileEntry();
+		setAuxiliaryType(fileEntry, address);
+		writeFileEntry(fileEntry);
 	}
 }
