@@ -423,7 +423,7 @@ public class DosFormatDisk extends FormattedDisk {
 		byte[] vtoc = readVtoc();
 		int track = fileEntry.getTrack();
 		int sector = fileEntry.getSector();
-		if (track == 0) {
+		if (track == 0 || track == 255) {
 			track = 1;
 			sector = 0;
 			while (true) {
@@ -493,6 +493,7 @@ public class DosFormatDisk extends FormattedDisk {
 	protected void freeSectors(DosFileEntry dosFileEntry) {
 		byte[] vtoc = readVtoc();
 		int track = dosFileEntry.getTrack();
+		if (track == 255) return;
 		int sector = dosFileEntry.getSector();
 		while (track != 0) {
 			setSectorFree(track,sector,vtoc);
