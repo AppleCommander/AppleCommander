@@ -32,9 +32,6 @@ import java.util.List;
  * @author: Rob Greene
  */
 public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
-	private List files;
-	private ProdosSubdirectoryHeader subdirectoryHeader;
-	
 	/**
 	 * Constructor for ProdosFileEntry.
 	 */
@@ -286,24 +283,6 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	}
 
 	/**
-	 * Retrieve the list of files in this directory.
-	 * Note that if this is not a directory, the return
-	 * value should be null.  If this a directory, the
-	 * return value should always be a list - a directory
-	 * with 0 entries returns an empty list.
-	 */
-	public List getFiles() {
-		return files;
-	}
-
-	/**
-	 * Set the list of files.
-	 */
-	public void setFiles(List files) {
-		this.files = files;
-	}
-
-	/**
 	 * Identify if this file has been deleted.
 	 */
 	public boolean isDeleted() {
@@ -316,20 +295,6 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	public void delete() {
 		getDisk().freeBlocks(this);
 		setStorageType(0);
-	}
-
-	/**
-	 * Set the subdirectory header.
-	 */
-	public void setSubdirectoryHeader(ProdosSubdirectoryHeader subdirectoryHeader) {
-		this.subdirectoryHeader = subdirectoryHeader;
-	}
-	
-	/**
-	 * Get the subdirectory header.
-	 */
-	public ProdosSubdirectoryHeader getSubdirectoryHeader() {
-		return this.subdirectoryHeader;
 	}
 
 	/**
