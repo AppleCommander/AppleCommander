@@ -128,6 +128,14 @@ public class ExportGraphicsTypePane extends WizardPane {
 				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_SHR_3200);
 			}
 		});
+		button = new Button(graphicsModeGroup, SWT.RADIO);
+		button.setText("QuickDraw II Icon (ICN)");
+		button.setSelection(getGraphicsFilter().isQuickDraw2Icon());
+		button.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_QUICKDRAW2_ICON);
+			}
+		});
 		label = new Label(control, SWT.WRAP);
 		label.setText("Please choose the appropriate file format to save image as:");
 		Composite graphicsFormatGroup = new Composite(control, SWT.NULL);
