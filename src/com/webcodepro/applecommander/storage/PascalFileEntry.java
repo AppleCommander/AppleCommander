@@ -19,7 +19,7 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import com.webcodepro.applecommander.util.*;
+import com.webcodepro.applecommander.util.AppleUtil;
 
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -31,7 +31,7 @@ import java.util.List;
  * Represents a Pascal file entry on disk.
  * <p>
  * Date created: Oct 5, 2002 12:22:34 AM
- * @author: Rob Greene
+ * @author Rob Greene
  */
 public class PascalFileEntry implements FileEntry {
 	private byte[] fileEntry;
@@ -181,7 +181,7 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	public List getFileColumnData(int displayMode) {
 		NumberFormat numberFormat = NumberFormat.getNumberInstance();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy");
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yy");
 
 		List list = new ArrayList();
 		switch (displayMode) {
