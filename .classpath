@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+    <classpathentry kind="src" path="src"/>
+    <classpathentry kind="var" path="JRE_LIB" rootpath="JRE_SRCROOT" sourcepath="JRE_SRC"/>
+    <classpathentry kind="src" path="/JUnit"/>
+    <classpathentry kind="lib" path="C:/Program Files/Eclipse 2.0/plugins/org.eclipse.swt.win32_2.0.2/ws/win32/swt.jar"/>
+    <classpathentry kind="output" path="bin"/>
+</classpath>
