@@ -29,6 +29,7 @@ import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
+import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
@@ -388,6 +389,8 @@ public class DosFileEntry implements FileEntry {
 			return new ApplesoftFileFilter();
 		} else if (isIntegerBasicFile()) {
 			return new IntegerBasicFileFilter();
+		} else if (isAssemblySourceFile()) {
+			return new AssemblySourceFileFilter();
 		} else if (isTextFile()) {
 			return new TextFileFilter();
 		} else if (isBinaryFile()) {
@@ -405,6 +408,16 @@ public class DosFileEntry implements FileEntry {
 			// fall through to BinaryFileFilter...
 		}
 		return new BinaryFileFilter();
+	}
+	
+	/**
+	 * Determine if this is an assembly source code file.
+	 */
+	public boolean isAssemblySourceFile() {
+		boolean rightFiletype = isTextFile() || isBinaryFile();
+		if (rightFiletype && getFilename().endsWith(".S")) return true;
+		if (rightFiletype && getFilename().startsWith("T.")) return true;
+		return false;
 	}
 
 	/**

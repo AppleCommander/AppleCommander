@@ -33,6 +33,7 @@ import com.webcodepro.applecommander.storage.filters.AppleWorksDataBaseFileFilte
 import com.webcodepro.applecommander.storage.filters.AppleWorksSpreadSheetFileFilter;
 import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFileFilter;
 import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
+import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
@@ -456,6 +457,10 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 		
 		switch (filetype) {
 		case 0x04:		// TXT
+			if (getFilename().endsWith(".S")) {
+				return new AssemblySourceFileFilter();			
+			}
+			return new TextFileFilter();
 		case 0xb0:		// SRC
 			return new TextFileFilter();
 		case 0x19:		// ADB
