@@ -4,9 +4,8 @@ be directions!
 
 Issues:
 1) Need SWT code and need to compile it for all interested platforms.
-2) Unable to handle graphics in native mode.  Need to patch code in
+2) Unable to handle graphics (images) in native mode.  Need to patch code in
    compile process for this.
-3) Need to find stable Windows compile environment/tool.
 
 
 *********************
@@ -45,18 +44,36 @@ real data as of yet - may have same problems as the Windows code.
 **     WINDOWS      **
 **********************
 
-Using MinGW, am able to compile AppleCommander tests.  Command sequence is 
-similar to this.
+Using MinGW, am able to compile AppleCommander tests.  The date issue is known,
+and there is a suggested work-around posted here:
+	http://gcc.gnu.org/ml/java/2002-04/msg00180.html
+Basically, force a reference to the classes which cause the error - the problem
+lies in classes loaded by reflection, so this forces these classes to be
+compiled in.  The suggested prelude is:
+    // static references to these classes ensure that the linker will include them
+    private static Class c1 = gnu.java.locale.Calendar.class;
+    private static Class c2 = java.util.GregorianCalendar.class;
+    private static Class c3 = gnu.gcj.convert.Input_ASCII.class;
+    private static Class c4 = gnu.gcj.convert.Input_UTF8.class;
+    private static Class c5 = gnu.gcj.convert.Input_8859_1.class;
+    private static Class c6 = gnu.java.locale.LocaleInformation.class;
+    private static Class c7 = gnu.gcj.convert.Output_ASCII.class;
+Presumably, this is just needed in one class - probably the class which contains
+the main method.
+
+MinGW seems to run (at least in text mode) faster than Cygwin.  It also appears
+to be related to date type stuff (just an observation, no real meat here).
+
+Command sequence is similar to this.
 
 1) Compile storage package:
       cd <...>\storage
       gcj --classpath=AppleCommander-1.1.1b.jar -c *.java
-   Unable to build a *.so file as on Linux.
+   Unable to build a *.so file as on Linux with MinGW - but Cygwin does work.
 2) Compile DoIt in test:
       cd ..\test
       gcj --classpath=AppleCommander-1.1.1b.jar -c DoIt.java
       gcj --main=com.webcodepro.applecommander.test.DoIt -o DoIt DoIt.o ..\storage\*.o
       strip -x DoIt.exe
-   The executable is 2.7MB and crashes when gnu.java.locale.Calendar is not
-   found (must be part of MinGW).
+   The executable is 2.7MB and runs to completion!
 
