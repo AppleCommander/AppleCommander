@@ -64,6 +64,7 @@ import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
+import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.ApplesoftToken;
 import com.webcodepro.applecommander.util.ApplesoftTokenizer;
@@ -153,6 +154,7 @@ public class FileViewerWindow {
 		displayNativeFormat();
 		
 		shell.open();
+		SwtUtil.setupPagingInformation(content);
 	}
 	
 	/**
