@@ -43,7 +43,11 @@ public class DiskInfoTab {
 	 */
 	public DiskInfoTab(CTabFolder tabFolder, FormattedDisk disk) {
 		CTabItem ctabitem = new CTabItem(tabFolder, SWT.NULL);
-		ctabitem.setText("Disk Info");
+		if (disk.getLogicalDiskNumber() > 0) {
+			ctabitem.setText("Disk Info #" + disk.getLogicalDiskNumber());
+		} else {
+			ctabitem.setText("Disk Info");
+		}
 		
 		Table table = new Table(tabFolder, SWT.FULL_SELECTION);
 		ctabitem.setControl(table);

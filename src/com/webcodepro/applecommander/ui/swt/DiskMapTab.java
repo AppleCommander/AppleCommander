@@ -71,7 +71,11 @@ public class DiskMapTab {
 	 */
 	protected void createDiskMapTab(CTabFolder tabFolder) {	
 		CTabItem item = new CTabItem(tabFolder, SWT.NULL);
-		item.setText("Disk Map");
+		if (disk.getLogicalDiskNumber() > 0) {
+			item.setText("Disk Map #" + disk.getLogicalDiskNumber());
+		} else {
+			item.setText("Disk Map");
+		}
 		
 		Canvas canvas = new Canvas(tabFolder, SWT.NULL);
 		GridLayout grid = new GridLayout(2, false);

@@ -129,7 +129,11 @@ public class DiskExplorerTab {
 	 */
 	protected void createFilesTab(CTabFolder tabFolder) {
 		CTabItem ctabitem = new CTabItem(tabFolder, SWT.NULL);
-		ctabitem.setText("Files");
+		if (disk.getLogicalDiskNumber() > 0) {
+			ctabitem.setText("Files #" + disk.getLogicalDiskNumber());
+		} else {
+			ctabitem.setText("Files");
+		}
 
 		Composite composite = new Composite(tabFolder, SWT.NULL);
 		ctabitem.setControl(composite);

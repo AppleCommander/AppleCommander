@@ -39,18 +39,18 @@ public class DiskWindow {
 	private ImageManager imageManager;
 	
 	private Shell shell;
-	private FormattedDisk disk;
+	private FormattedDisk[] disks;
 	
-	private DiskInfoTab diskInfoTab;
-	private DiskMapTab diskMapTab;
-	private DiskExplorerTab diskExplorerTab;
+	private DiskInfoTab[] diskInfoTabs;
+	private DiskMapTab[] diskMapTabs;
+	private DiskExplorerTab[] diskExplorerTabs;
 
 	/**
 	 * Construct the disk window.
 	 */
-	public DiskWindow(Shell parentShell, FormattedDisk disk, ImageManager imageManager) {
+	public DiskWindow(Shell parentShell, FormattedDisk[] disks, ImageManager imageManager) {
 		this.parentShell = shell;
-		this.disk = disk;
+		this.disks = disks;
 		this.imageManager = imageManager;
 	}
 	
@@ -61,7 +61,7 @@ public class DiskWindow {
 		shell = new Shell(parentShell, SWT.SHELL_TRIM);
 		shell.setLayout(new FillLayout());
 		shell.setImage(imageManager.getDiskIcon());
-		shell.setText("AppleCommander - " + disk.getFilename());
+		shell.setText("AppleCommander - " + disks[0].getFilename());
 		shell.addDisposeListener(new DisposeListener() {
 				public void widgetDisposed(DisposeEvent event) {
 					dispose(event);
@@ -69,9 +69,15 @@ public class DiskWindow {
 			});
 			
 		CTabFolder tabFolder = new CTabFolder(shell, SWT.BOTTOM);
-		diskExplorerTab = new DiskExplorerTab(tabFolder, disk, imageManager);
-		diskMapTab = new DiskMapTab(tabFolder, disk);
-		diskInfoTab = new DiskInfoTab(tabFolder, disk);
+		diskMapTabs = new DiskMapTab[disks.length];
+		diskInfoTabs = new DiskInfoTab[disks.length];
+		diskExplorerTabs = new DiskExplorerTab[disks.length];
+		for (int i=0; i<disks.length; i++) {
+			diskExplorerTabs[i] = new DiskExplorerTab(tabFolder, disks[i], 
+				imageManager);
+			diskMapTabs[i] = new DiskMapTab(tabFolder, disks[i]);
+			diskInfoTabs[i] = new DiskInfoTab(tabFolder, disks[i]);
+		}
 		tabFolder.setSelection(tabFolder.getItems()[0]);
 		
 		shell.open();
@@ -81,12 +87,14 @@ public class DiskWindow {
 	 * Dispose of all shared resources.
 	 */
 	private void dispose(DisposeEvent event) {
-		diskMapTab.dispose();
-		diskInfoTab.dispose();
+		for (int i=0; i<disks.length; i++) {
+			diskMapTabs[i].dispose();
+			diskInfoTabs[i].dispose();
+		}
 
-		disk = null;
-		diskMapTab = null;
-		diskInfoTab = null;
+		disks = null;
+		diskMapTabs = null;
+		diskInfoTabs = null;
 		System.gc();
 	}
 	
