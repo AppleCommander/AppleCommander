@@ -60,6 +60,10 @@ public class Disk {
 	public static final int APPLE_140KB_DISK = 143360;
 	public static final int APPLE_800KB_DISK = 819200;
 	public static final int APPLE_800KB_2IMG_DISK = APPLE_800KB_DISK + 0x40;
+	public static final int APPLE_5MB_HARDDISK = 5242880;
+	public static final int APPLE_10MB_HARDDISK = 10485760;
+	public static final int APPLE_20MB_HARDDISK = 20971520;
+	public static final int APPLE_32MB_HARDDISK = 33553920;	// short one block!
 
 	private static FilenameFilter[] filenameFilters;
 	private byte[] diskImage;
