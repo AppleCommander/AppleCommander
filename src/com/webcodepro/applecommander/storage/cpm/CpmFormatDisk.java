@@ -22,6 +22,7 @@ package com.webcodepro.applecommander.storage.cpm;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,12 +92,21 @@ public class CpmFormatDisk extends FormattedDisk {
 		}
 	}
 
-	
 	/**
-	 * Create a CP/M formatted disk.
+	 * Construct a CP/M formatted disk.
 	 */
-	public CpmFormatDisk(String filename, byte[] diskImage) {
-		super(filename, diskImage);
+	public CpmFormatDisk(String filename, ImageOrder imageOrder) {
+		super(filename, imageOrder);
+	}
+
+	/**
+	 * Create a CpmFormatDisk.  All CP/M disk images are expected to
+	 * be 140K in size.
+	 */
+	public static CpmFormatDisk[] create(String filename, ImageOrder imageOrder) {
+		CpmFormatDisk disk = new CpmFormatDisk(filename, imageOrder);
+		disk.format();
+		return new CpmFormatDisk[] { disk };
 	}
 
 	/**
@@ -267,6 +277,7 @@ public class CpmFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
+		getImageOrder().format();
 		byte[] sectorData = new byte[SECTOR_SIZE];
 		for (int i=0; i<SECTOR_SIZE; i++) {
 			sectorData[i] = (byte) 0xe5;

@@ -19,6 +19,8 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -122,8 +124,8 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	 * @param filename
 	 * @param diskImage
 	 */
-	public FormattedDisk(String filename, byte[] diskImage) {
-		super(filename, diskImage);
+	public FormattedDisk(String filename, ImageOrder imageOrder) {
+		super(filename, imageOrder);
 	}
 
 	/**

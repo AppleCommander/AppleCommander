@@ -19,6 +19,7 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 
 import java.util.ArrayList;
@@ -108,19 +109,17 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * @param filename
 	 * @param diskImage
 	 */
-	public PascalFormatDisk(String filename, byte[] diskImage) {
-		super(filename, diskImage);
+	public PascalFormatDisk(String filename, ImageOrder imageOrder) {
+		super(filename, imageOrder);
 	}
 
 	/**
 	 * Create a PascalFormatDisk.
 	 */
-	public static PascalFormatDisk[] create(String filename, String volumeName, 
-		int size) {
-			
-		PascalFormatDisk disk = new PascalFormatDisk(filename, new byte[size]);
-		disk.setDiskName(volumeName);
+	public static PascalFormatDisk[] create(String filename, String volumeName, ImageOrder imageOrder) {
+		PascalFormatDisk disk = new PascalFormatDisk(filename, imageOrder);
 		disk.format();
+		disk.setDiskName(volumeName);
 		return new PascalFormatDisk[] { disk };
 	}
 
@@ -445,6 +444,7 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
+		getImageOrder().format();
 		writeBootCode();
 		// Create volume name
 		byte[] directory = readDirectory();

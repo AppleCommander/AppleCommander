@@ -28,6 +28,9 @@ import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.ProdosFormatDisk;
+import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 
 import java.io.IOException;
 import java.util.List;
@@ -210,8 +213,10 @@ public class ac {
 	 */
 	static void createPDisk(String fileName, String volName, int imageSize)
 			throws IOException {
+		ByteArrayImageLayout layout = new ByteArrayImageLayout(imageSize);
+		ImageOrder imageOrder = new ProdosOrder(layout);
 		FormattedDisk[] disks =
-			ProdosFormatDisk.create(fileName, volName, imageSize);
+			ProdosFormatDisk.create(fileName, volName, imageOrder);
 		disks[0].save();
 	}
 	

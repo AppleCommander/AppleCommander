@@ -19,6 +19,7 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 
 import java.util.ArrayList;
@@ -122,16 +123,15 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * @param filename
 	 * @param diskImage
 	 */
-	public RdosFormatDisk(String filename, byte[] diskImage) {
-		super(filename, diskImage);
+	public RdosFormatDisk(String filename, ImageOrder imageOrder) {
+		super(filename, imageOrder);
 	}
 	
 	/**
 	 * Create a RdosFormatDisk.
 	 */
-	public static RdosFormatDisk[] create(String filename) {
-		RdosFormatDisk disk = 
-			new RdosFormatDisk(filename, new byte[APPLE_140KB_DISK]);
+	public static RdosFormatDisk[] create(String filename, ImageOrder imageOrder) {
+		RdosFormatDisk disk = new RdosFormatDisk(filename, imageOrder);
 		disk.format();
 		return new RdosFormatDisk[] { disk };
 	}
@@ -395,6 +395,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
+		getImageOrder().format();
 		writeBootCode();
 		// minor hack - ensure that AppleCommander itself recognizes the
 		// RDOS disk!

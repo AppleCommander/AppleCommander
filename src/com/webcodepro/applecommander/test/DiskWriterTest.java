@@ -29,6 +29,11 @@ import com.webcodepro.applecommander.storage.OzDosFormatDisk;
 import com.webcodepro.applecommander.storage.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.UniDosFormatDisk;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
+import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
+import com.webcodepro.applecommander.storage.physical.DosOrder;
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import com.webcodepro.applecommander.storage.physical.NibbleOrder;
+import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 
 import java.io.IOException;
 import java.util.List;
@@ -46,7 +51,7 @@ public class DiskWriterTest extends TestCase {
 	 * Determine if the created disk images should be saved for later
 	 * perusal.
 	 */
-	private static final boolean saveImage = false;
+	private boolean saveImage = false;
 
 	/**
 	 * Create the DiskWriterTest.
@@ -66,17 +71,34 @@ public class DiskWriterTest extends TestCase {
 	 * Test writing and reading random files to a DOS 3.3 140K disk.
 	 */
 	public void testWriteToDos33() throws DiskFullException, IOException {
-		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.dsk");
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
+		ImageOrder imageOrder = new DosOrder(imageLayout);
+		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.dsk", imageOrder);
 		writeFiles(disks, "B", "T", false);
 		saveDisks(disks);
+	}
+
+	/**
+	 * Test writing and reading random files to a DOS 3.3 140K nibbilized disk.
+	 */
+	public void testWriteToDos33Nibble() throws DiskFullException, IOException {
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_NIBBLE_DISK);
+		ImageOrder imageOrder = new NibbleOrder(imageLayout);
+		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.nib", imageOrder);
+		writeFiles(disks, "B", "T", false);
+		saveImage = true;
+		saveDisks(disks);
+		saveImage = false;
 	}
 
 	/**
 	 * Test writing and reading random files to a ProDOS 140K disk.
 	 */	
 	public void testWriteToProdos140kDisk() throws DiskFullException, IOException {
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
+		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"write-test-prodos-140k.dsk", "TEST", ProdosFormatDisk.APPLE_140KB_DISK);
+			"write-test-prodos-140k.dsk", "TEST", imageOrder);
 		writeFiles(disks, "BIN", "TXT", true);
 		saveDisks(disks);
 	}
@@ -85,8 +107,10 @@ public class DiskWriterTest extends TestCase {
 	 * Test writing and reading random files to a ProDOS 800K disk.
 	 */	
 	public void testWriteToProdos800kDisk() throws DiskFullException, IOException {
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
+		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"write-test-prodos-800k.po", "TEST", ProdosFormatDisk.APPLE_800KB_DISK);
+			"write-test-prodos-800k.po", "TEST", imageOrder);
 		writeFiles(disks, "BIN", "TXT", true);
 		saveDisks(disks);
 	}
@@ -95,8 +119,10 @@ public class DiskWriterTest extends TestCase {
 	 * Test writing and reading random files to a ProDOS 5MB disk.
 	 */	
 	public void testWriteToProdos5mbDisk() throws DiskFullException, IOException {
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_5MB_HARDDISK);
+		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"write-test-prodos-5mb.hdv", "TEST", ProdosFormatDisk.APPLE_5MB_HARDDISK);
+			"write-test-prodos-5mb.hdv", "TEST", imageOrder);
 		writeFiles(disks, "BIN", "TXT", true);
 		saveDisks(disks);
 	}
@@ -105,8 +131,10 @@ public class DiskWriterTest extends TestCase {
 	 * Test creating and deleting many files on a DOS 3.3 140K disk.
 	 */
 	public void testCreateAndDeleteDos33() throws IOException {
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
+		ImageOrder imageOrder = new DosOrder(imageLayout);
 		FormattedDisk[] disks = DosFormatDisk.create(
-			"createanddelete-test-dos33.dsk");
+			"createanddelete-test-dos33.dsk", imageOrder);
 		createAndDeleteFiles(disks, "B");
 		saveDisks(disks);
 	}
@@ -115,8 +143,10 @@ public class DiskWriterTest extends TestCase {
 	 * Test creating and deleting many files on an OzDOS 800K disk.
 	 */
 	public void testCreateAndDeleteOzDos() throws IOException {
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
+		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = OzDosFormatDisk.create(
-			"createanddelete-test-ozdos.po");
+			"createanddelete-test-ozdos.po", imageOrder);
 		createAndDeleteFiles(disks, "B");
 		saveDisks(disks);
 	}
@@ -125,8 +155,10 @@ public class DiskWriterTest extends TestCase {
 	 * Test creating and deleting many files on a UniDOS 800K disk.
 	 */
 	public void testCreateAndDeleteUniDos() throws IOException {
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
+		ImageOrder imageOrder = new DosOrder(imageLayout);
 		FormattedDisk[] disks = UniDosFormatDisk.create(
-			"createanddelete-test-unidos.dsk");
+			"createanddelete-test-unidos.dsk", imageOrder);
 		createAndDeleteFiles(disks, "B");
 		saveDisks(disks);
 	}
@@ -135,9 +167,11 @@ public class DiskWriterTest extends TestCase {
 	 * Test creating and deleting many files on a ProDOS 140K disk.
 	 */
 	public void testCreateAndDeleteProdos140kDisk() throws IOException {
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
+		ImageOrder imageOrder = new DosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"createanddelete-test-prodos-140k.dsk", "TEST", 
-			ProdosFormatDisk.APPLE_140KB_DISK);
+			imageOrder);
 		createAndDeleteFiles(disks, "BIN");
 		saveDisks(disks);
 	}
@@ -146,9 +180,11 @@ public class DiskWriterTest extends TestCase {
 	 * Test creating and deleting many files on a ProDOS 800K disk.
 	 */
 	public void testCreateAndDeleteProdos800kDisk() throws IOException {
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
+		ImageOrder imageOrder = new DosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"createanddelete-test-prodos-800k.dsk", "TEST",
-			ProdosFormatDisk.APPLE_800KB_2IMG_DISK);
+			imageOrder);
 		createAndDeleteFiles(disks, "BIN");
 		saveDisks(disks);
 	}
@@ -159,8 +195,10 @@ public class DiskWriterTest extends TestCase {
 	 */
 	public void testCreateDeleteCreateDosDisk() 
 	throws DiskFullException, IOException {
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
+		ImageOrder imageOrder = new DosOrder(imageLayout);
 		FormattedDisk[] disks = DosFormatDisk.create(
-			"createdeletecreate-test-dos-140k.dsk");
+			"createdeletecreate-test-dos-140k.dsk", imageOrder);
 		createDeleteCreate(disks, "B");
 		saveDisks(disks);
 	}
@@ -171,8 +209,10 @@ public class DiskWriterTest extends TestCase {
 	 */
 	public void testCreateDeleteCreateOzdosDisk() 
 	throws DiskFullException, IOException {
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
+		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = OzDosFormatDisk.create(
-			"createdeletecreate-test-ozdos-800k.po");
+			"createdeletecreate-test-ozdos-800k.po", imageOrder);
 		createDeleteCreate(disks, "B");
 		saveDisks(disks);
 	}
@@ -183,8 +223,10 @@ public class DiskWriterTest extends TestCase {
 	 */
 	public void testCreateDeleteCreateUnidosDisk() 
 	throws DiskFullException, IOException {
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
+		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = UniDosFormatDisk.create(
-			"createdeletecreate-test-unidos-800k.dsk");
+			"createdeletecreate-test-unidos-800k.dsk", imageOrder);
 		createDeleteCreate(disks, "B");
 		saveDisks(disks);
 	}
@@ -195,9 +237,11 @@ public class DiskWriterTest extends TestCase {
 	 */
 	public void testCreateDeleteCreateProdosDisk() 
 	throws DiskFullException, IOException {
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
+		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"createdeletecreate-test-prodos-140k.dsk", "TEST",
-			ProdosFormatDisk.APPLE_140KB_DISK);
+			imageOrder);
 		createDeleteCreate(disks, "BIN");
 		saveDisks(disks);
 	}
@@ -224,7 +268,8 @@ public class DiskWriterTest extends TestCase {
 		writeFile(disk, 
 			"This is a test text file create from the DiskWriterTest".getBytes(), 
 			textType, testText);
-		if (disk.getPhysicalSize() > Disk.APPLE_140KB_DISK) {
+		if (disk.getPhysicalSize() > Disk.APPLE_140KB_DISK
+			&& disk.getPhysicalSize() != Disk.APPLE_140KB_NIBBLE_DISK) {
 			// create a few big files
 			writeFile(disk, 150000, binaryType, true);
 			writeFile(disk, 300000, binaryType, true);

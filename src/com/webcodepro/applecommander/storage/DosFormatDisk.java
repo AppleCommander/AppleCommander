@@ -19,6 +19,7 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 
 import java.util.ArrayList;
@@ -101,17 +102,16 @@ public class DosFormatDisk extends FormattedDisk {
 	 * @param diskImage
 	 * @param order
 	 */
-	public DosFormatDisk(String filename, byte[] diskImage) {
-		super(filename, diskImage);
+	public DosFormatDisk(String filename, ImageOrder imageOrder) {
+		super(filename, imageOrder);
 	}
 
 	/**
 	 * Create a DosFormatDisk.  All DOS disk images are expected to
 	 * be 140K in size.
 	 */
-	public static DosFormatDisk[] create(String filename) {
-		DosFormatDisk disk = 
-			new DosFormatDisk(filename, new byte[APPLE_140KB_DISK]);
+	public static DosFormatDisk[] create(String filename, ImageOrder imageOrder) {
+		DosFormatDisk disk = new DosFormatDisk(filename, imageOrder);
 		disk.format();
 		return new DosFormatDisk[] { disk };
 	}
@@ -537,6 +537,7 @@ public class DosFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
+		getImageOrder().format();
 		format(15, 35, 16);
 	}
 	

@@ -19,6 +19,7 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 
 import java.io.IOException;
@@ -130,8 +131,8 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * @param filename
 	 * @param diskImage
 	 */
-	public ProdosFormatDisk(String filename, byte[] diskImage) {
-		super(filename, diskImage);
+	public ProdosFormatDisk(String filename, ImageOrder imageOrder) {
+		super(filename, imageOrder);
 		volumeHeader = new ProdosVolumeDirectoryHeader(this);
 		initialize();
 	}
@@ -167,10 +168,10 @@ public class ProdosFormatDisk extends FormattedDisk {
 	/**
 	 * Create a ProdosFormatDisk.
 	 */
-	public static ProdosFormatDisk[] create(String filename, String diskName, int imageSize) {
-		ProdosFormatDisk disk = new ProdosFormatDisk(filename, new byte[imageSize]);
-		disk.setDiskName(diskName);
+	public static ProdosFormatDisk[] create(String filename, String diskName, ImageOrder imageOrder) {
+		ProdosFormatDisk disk = new ProdosFormatDisk(filename, imageOrder);
 		disk.format();
+		disk.setDiskName(diskName);
 		return new ProdosFormatDisk[] { disk };
 	}
 
@@ -683,7 +684,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 		int blocksOnDisk = getBitmapLength();
 		while (block < blocksOnDisk) {
 			if (isBlockFree(volumeBitmap,block)) {
-				if ((block+1) * BLOCK_SIZE < getDiskImage().length) {
+				if ((block+1) * BLOCK_SIZE < getPhysicalSize()) {
 					return block;
 				}
 				throw new ProdosDiskSizeDoesNotMatchException(
@@ -771,9 +772,10 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
+		getImageOrder().format();
 		writeBootCode();
 		String volumeName = volumeHeader.getVolumeName();
-		int totalBlocks = getDiskImage().length / BLOCK_SIZE;
+		int totalBlocks = getPhysicalSize() / BLOCK_SIZE;
 		int usedBlocks = (totalBlocks / 4096) + 7;
 		// setup volume directory
 		byte[] data = new byte[BLOCK_SIZE];

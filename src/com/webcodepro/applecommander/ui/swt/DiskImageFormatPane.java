@@ -57,6 +57,7 @@ public class DiskImageFormatPane extends WizardPane {
 		switch (wizard.getFormat()) {
 			case DiskImageWizard.FORMAT_DOS33:
 			case DiskImageWizard.FORMAT_RDOS:
+			case DiskImageWizard.FORMAT_CPM:
 				wizard.setOrder(DiskImageWizard.ORDER_DOS);
 				wizard.setSize(FormattedDisk.APPLE_140KB_DISK);
 				return new DiskImageNamePane(parent, wizard);
@@ -123,6 +124,8 @@ public class DiskImageFormatPane extends WizardPane {
 			+ "that I've seen have been mapped onto a 16 sector disk (leaving 3\n"
 			+ "sectors of each track unused.  The only image size RDOS supports\n"
 			+ "is 140K.");
+		createRadioButton(buttonSubpanel, "CP/M", DiskImageWizard.FORMAT_CPM,
+			"CP/M for the Apple computer.");
 		control.pack();
 	}
 	/**

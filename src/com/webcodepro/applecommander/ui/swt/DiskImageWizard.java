@@ -27,6 +27,12 @@ import com.webcodepro.applecommander.storage.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.RdosFormatDisk;
 import com.webcodepro.applecommander.storage.UniDosFormatDisk;
+import com.webcodepro.applecommander.storage.cpm.CpmFormatDisk;
+import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
+import com.webcodepro.applecommander.storage.physical.DosOrder;
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import com.webcodepro.applecommander.storage.physical.NibbleOrder;
+import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 
 import org.eclipse.swt.widgets.Shell;
 
@@ -43,8 +49,10 @@ public class DiskImageWizard extends Wizard {
 	public static final int FORMAT_PASCAL = 4;
 	public static final int FORMAT_RDOS = 5;
 	public static final int FORMAT_OZDOS = 6;
+	public static final int FORMAT_CPM = 7;
 	public static final int ORDER_DOS = 1;
 	public static final int ORDER_PRODOS = 2;
+	public static final int ORDER_NIBBLE = 3;
 	private int format = FORMAT_DOS33;
 	private int size = FormattedDisk.APPLE_140KB_DISK;
 	private String fileName = "";
@@ -79,19 +87,34 @@ public class DiskImageWizard extends Wizard {
 		if (isCompressed()) {
 			name.append(".gz");
 		}
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(getSize());
+		ImageOrder imageOrder = null;
+		switch (getOrder()) {
+			case ORDER_DOS:
+				imageOrder = new DosOrder(imageLayout);
+				break;
+			case ORDER_NIBBLE:
+				imageOrder = new NibbleOrder(imageLayout);
+				break;
+			case ORDER_PRODOS:
+				imageOrder = new ProdosOrder(imageLayout);
+				break;
+		}
 		switch (format) {
 			case FORMAT_DOS33:
-				return DosFormatDisk.create(name.toString());
+				return DosFormatDisk.create(name.toString(), imageOrder);
 			case FORMAT_OZDOS:
-				return OzDosFormatDisk.create(name.toString());
+				return OzDosFormatDisk.create(name.toString(), imageOrder);
 			case FORMAT_PASCAL:
-				return PascalFormatDisk.create(name.toString(), volumeName, size);
+				return PascalFormatDisk.create(name.toString(), volumeName, imageOrder);
 			case FORMAT_PRODOS:
-				return ProdosFormatDisk.create(name.toString(), volumeName, size);
+				return ProdosFormatDisk.create(name.toString(), volumeName, imageOrder);
 			case FORMAT_RDOS:
-				return RdosFormatDisk.create(name.toString());
+				return RdosFormatDisk.create(name.toString(), imageOrder);
 			case FORMAT_UNIDOS:
-				return UniDosFormatDisk.create(name.toString());
+				return UniDosFormatDisk.create(name.toString(), imageOrder);
+			case FORMAT_CPM:
+				return CpmFormatDisk.create(name.toString(), imageOrder);
 		}
 		return null;
 	}

@@ -19,6 +19,8 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
+
 /**
  * Manages a disk that is in UniDOS format.
  * This is basically DOS 3.3 except that the disk has two volumes of
@@ -48,20 +50,17 @@ public class UniDosFormatDisk extends DosFormatDisk {
 	 * @param filename
 	 * @param diskImage
 	 */
-	public UniDosFormatDisk(String filename, byte[] diskImage, int logicalOffset) {
-		super(filename, diskImage);
+	public UniDosFormatDisk(String filename, ImageOrder imageOrder, int logicalOffset) {
+		super(filename, imageOrder);
 		this.logicalOffset = logicalOffset;
 	}
 	/**
 	 * Create a UniDosFormatDisk.
 	 */
-	public static DosFormatDisk[] create(String filename) {
-		byte[] diskImage = new byte[APPLE_800KB_2IMG_DISK];
-		UniDosFormatDisk disk1 = new UniDosFormatDisk(filename,
-			diskImage, UNIDOS_DISK_1);
+	public static DosFormatDisk[] create(String filename, ImageOrder imageOrder) {
+		UniDosFormatDisk disk1 = new UniDosFormatDisk(filename, imageOrder, UNIDOS_DISK_1);
+		UniDosFormatDisk disk2 = new UniDosFormatDisk(filename, imageOrder, UNIDOS_DISK_2);
 		disk1.format();
-		UniDosFormatDisk disk2 = new UniDosFormatDisk(filename,
-			diskImage, UNIDOS_DISK_2);
 		disk2.format();
 		return new UniDosFormatDisk[] { disk1, disk2 };
 	}
@@ -77,15 +76,6 @@ public class UniDosFormatDisk extends DosFormatDisk {
 		} else {
 			return super.getDiskName();
 		}
-	}
-
-	/**
-	 * Modify the disk offset by the logical disk offset.  This allows
-	 * simple support for two DOS volumes on a UniDOS disk.
-	 * @see com.webcodepro.applecommander.storage.Disk#getOffset(int, int)
-	 */
-	protected int getOffset(int track, int sector) throws IllegalArgumentException {
-		return super.getOffset(track, sector) + logicalOffset;
 	}
 
 	/**
@@ -106,6 +96,7 @@ public class UniDosFormatDisk extends DosFormatDisk {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
+		getImageOrder().format();
 		format(31, 50, 32);
 	}
 }

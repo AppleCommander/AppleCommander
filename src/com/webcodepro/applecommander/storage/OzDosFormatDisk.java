@@ -19,6 +19,8 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
+
 /**
  * Manages a disk that is in OzDOS format.
  * This is basically DOS 3.3 except that the disk has two volumes of
@@ -50,20 +52,17 @@ public class OzDosFormatDisk extends DosFormatDisk {
 	 * @param filename
 	 * @param diskImage
 	 */
-	public OzDosFormatDisk(String filename, byte[] diskImage, int logicalOffset) {
-		super(filename, diskImage);
+	public OzDosFormatDisk(String filename, ImageOrder imageOrder, int logicalOffset) {
+		super(filename, imageOrder);
 		this.logicalOffset = logicalOffset;
 	}
 	/**
 	 * Create a OzDosFormatDisk.
 	 */
-	public static DosFormatDisk[] create(String filename) {
-		byte[] diskImage = new byte[APPLE_800KB_2IMG_DISK];
-		OzDosFormatDisk disk1 = new OzDosFormatDisk(filename,
-			diskImage, OZDOS_DISK_1);
+	public static DosFormatDisk[] create(String filename, ImageOrder imageOrder) {
+		OzDosFormatDisk disk1 = new OzDosFormatDisk(filename, imageOrder, OZDOS_DISK_1);
+		OzDosFormatDisk disk2 = new OzDosFormatDisk(filename, imageOrder, OZDOS_DISK_2);
 		disk1.format();
-		OzDosFormatDisk disk2 = new OzDosFormatDisk(filename,
-			diskImage, OZDOS_DISK_2);
 		disk2.format();
 		return new OzDosFormatDisk[] { disk1, disk2 };
 	}
@@ -94,27 +93,11 @@ public class OzDosFormatDisk extends DosFormatDisk {
 		}
 	}
 	/**
-	 * Compute the track and sector offset into the disk image.
-	 * This varies with OzDOS.
-	 */
-	protected int getOffset(int track, int sector) throws IllegalArgumentException {
-		if ((track * 32 + sector) * SECTOR_SIZE > getPhysicalSize()) {
-			throw new IllegalArgumentException(
-				"The track (" + track + ") and sector (" + sector 
-				+ ") do not match the disk image size.");
-		} else if (isProdosOrder()) {
-			return ((track * 32) + sector) * BLOCK_SIZE + logicalOffset;
-		} else {
-			// Note that DOS format is unexpected.
-			throw new IllegalArgumentException(
-				"Unknown disk format.");
-		}
-	}
-	/**
 	 * Format the disk as OzDOS.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
+		getImageOrder().format();
 		format(31, 50, 32);
 	}
 }

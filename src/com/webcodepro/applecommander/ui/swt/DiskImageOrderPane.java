@@ -19,6 +19,8 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
+import com.webcodepro.applecommander.storage.Disk;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -87,6 +89,13 @@ public class DiskImageOrderPane extends WizardPane {
 		createRadioButton(buttonSubpanel, "ProDOS ordered", 
 			DiskImageWizard.ORDER_PRODOS,
 			"Indicates that image data should be stored by block.");
+		if (wizard.getSize() == Disk.APPLE_140KB_DISK) {
+			createRadioButton(buttonSubpanel, "Nibble ordered",
+				DiskImageWizard.ORDER_NIBBLE,
+				"Indicates that this is a disk stored as a nibble image.  This is "
+				+ "an image that consists of disk bytes.  It is only available for "
+				+ "140KB 5.25\" disks.");
+		}
 		
 		label = new Label(control, SWT.WRAP);
 		if (wizard.isHardDisk()) {
