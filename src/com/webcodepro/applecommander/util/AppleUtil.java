@@ -22,8 +22,12 @@ package com.webcodepro.applecommander.util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
+import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
 
 /**
  * This class contains helper methods for dealing with Apple2 data.
@@ -564,5 +568,91 @@ public class AppleUtil {
 		printer.flush();
 		printer.close();
 		return output.toString();
+	}
+	
+	/**
+	 * Change ImageOrder from source order to target order by copying sector by sector.
+	 */
+	public static void changeImageOrderByTrackAndSector(ImageOrder sourceOrder, ImageOrder targetOrder) {
+		if (!sameSectorsPerDisk(sourceOrder, targetOrder)) {
+			throw new IllegalArgumentException("Cannot change ImageOrder unless the " +
+				"source and target are the same size!");
+		}
+		for (int track = 0; track < sourceOrder.getTracksPerDisk(); track++) {
+			for (int sector = 0; sector < sourceOrder.getSectorsPerTrack(); sector++) {
+				byte[] data = sourceOrder.readSector(track, sector);
+				targetOrder.writeSector(track, sector, data);
+			}
+		}
+	}
+	
+	/**
+	 * Answers true if the two disks have the same sectors per disk.
+	 */
+	protected static boolean sameSectorsPerDisk(ImageOrder sourceOrder, ImageOrder targetOrder) {
+		return sourceOrder.getSectorsPerDisk() == targetOrder.getSectorsPerDisk();
+	}
+	
+	/**
+	 * Compare two disks by track and sector.
+	 */
+	public static boolean disksEqualByTrackAndSector(FormattedDisk sourceDisk, FormattedDisk targetDisk) {
+		ImageOrder sourceOrder = sourceDisk.getImageOrder();
+		ImageOrder targetOrder = targetDisk.getImageOrder();
+		if (!sameSectorsPerDisk(sourceOrder, targetOrder)) {
+			throw new IllegalArgumentException("Cannot compare disks unless the " +
+				"source and target are the same size!");
+		}
+		for (int track = 0; track < sourceOrder.getTracksPerDisk(); track++) {
+			for (int sector = 0; sector < sourceOrder.getSectorsPerTrack(); sector++) {
+				byte[] sourceData = sourceOrder.readSector(track, sector);
+				byte[] targetData = targetOrder.readSector(track, sector);
+				if (!Arrays.equals(sourceData, targetData)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Change ImageOrder from source order to target order by copying block by block.
+	 */
+	public static void changeImageOrderByBlock(ImageOrder sourceOrder, ImageOrder targetOrder) {
+		if (!sameBlocksPerDisk(sourceOrder, targetOrder)) {
+			throw new IllegalArgumentException("Cannot change ImageOrder unless the " +
+				"source and target are the same size!");
+		}
+		for (int block = 0; block < sourceOrder.getBlocksOnDevice(); block++) {
+			byte[] blockData = sourceOrder.readBlock(block);
+			targetOrder.writeBlock(block, blockData);
+		}
+	}
+
+	/**
+	 * Answers true if the two disks have the same number of blocks per disk.
+	 */
+	protected static boolean sameBlocksPerDisk(ImageOrder sourceOrder, ImageOrder targetOrder) {
+		return sourceOrder.getBlocksOnDevice() == targetOrder.getBlocksOnDevice();
+	}
+
+	/**
+	 * Compare two disks block by block.
+	 */
+	public static boolean disksEqualByBlock(FormattedDisk sourceDisk, FormattedDisk targetDisk) {
+		ImageOrder sourceOrder = sourceDisk.getImageOrder();
+		ImageOrder targetOrder = targetDisk.getImageOrder();
+		if (!sameBlocksPerDisk(sourceOrder, targetOrder)) {
+			throw new IllegalArgumentException("Cannot compare disks unless the " +
+				"source and target are the same size!");
+		}
+		for (int block = 0; block < sourceOrder.getBlocksOnDevice(); block++) {
+				byte[] sourceData = sourceOrder.readBlock(block);
+				byte[] targetData = targetOrder.readBlock(block);
+				if (!Arrays.equals(sourceData, targetData)) {
+					return false;
+				}
+		}
+		return true;
 	}
 }
