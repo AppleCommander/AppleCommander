@@ -1,0 +1,103 @@
+<editmodel:ClassDiagramEditModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:editmodel="editmodel.xmi" id="BESSIERobAppleCommander0" metadata="nsuml-1.4" initialized="true" showWireOptions="15">
+  <children xsi:type="editmodel:ClassEditModel" location="243,185" size="163,103" id="BESSIERobAppleCommander560" packageIndication="3" runTimeClassModel="BESSIERobAppleCommander571;BESSIERobAppleCommander561;BESSIERobAppleCommander565;BESSIERobAppleCommander567">
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="140,54" viewSorter="Name">
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander565"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander567"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander571"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <sourceConnections xsi:type="editmodel:GeneralizationEditModel" id="BESSIERobAppleCommander1852" connectionRouterKind="Manual" source="//@children.0" target="//@children.4/@sourceConnections.0" targetEnd="//@children.0/@sourceConnections.0/@children.1" sourceEnd="//@children.0/@sourceConnections.0/@children.0">
+      <children xsi:type="editmodel:AssociationEndEditModel" location="81,0" anchorKind="FixedAtEdge"/>
+      <children xsi:type="editmodel:AssociationEndEditModel"/>
+    </sourceConnections>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" location="1178,185" size="178,103" id="BESSIERobAppleCommander689" packageIndication="3" runTimeClassModel="BESSIERobAppleCommander690;BESSIERobAppleCommander700;BESSIERobAppleCommander696;BESSIERobAppleCommander694">
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="140,54" viewSorter="Name">
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander694"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander696"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander700"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <sourceConnections xsi:type="editmodel:GeneralizationEditModel" id="BESSIERobAppleCommander1924" connectionRouterKind="Manual" source="//@children.1" target="//@children.4/@sourceConnections.0" targetEnd="//@children.1/@sourceConnections.0/@children.1" sourceEnd="//@children.1/@sourceConnections.0/@children.0">
+      <children xsi:type="editmodel:AssociationEndEditModel" location="89,0" anchorKind="FixedAtEdge"/>
+      <children xsi:type="editmodel:AssociationEndEditModel"/>
+    </sourceConnections>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" location="877,185" size="271,157" id="BESSIERobAppleCommander515" packageIndication="3" runTimeClassModel="BESSIERobAppleCommander524;BESSIERobAppleCommander557;BESSIERobAppleCommander555;BESSIERobAppleCommander528;BESSIERobAppleCommander516;BESSIERobAppleCommander539;BESSIERobAppleCommander522;BESSIERobAppleCommander543;BESSIERobAppleCommander552;BESSIERobAppleCommander549;BESSIERobAppleCommander518;BESSIERobAppleCommander536;BESSIERobAppleCommander520">
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="204,108" viewSorter="Name">
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander522"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander524"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander549"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander557"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander555"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander552"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <sourceConnections xsi:type="editmodel:GeneralizationEditModel" id="BESSIERobAppleCommander1908" connectionRouterKind="Manual" source="//@children.2" target="//@children.4/@sourceConnections.0" targetEnd="//@children.2/@sourceConnections.0/@children.1" sourceEnd="//@children.2/@sourceConnections.0/@children.0">
+      <children xsi:type="editmodel:AssociationEndEditModel" location="135,0" anchorKind="FixedAtEdge"/>
+      <children xsi:type="editmodel:AssociationEndEditModel"/>
+    </sourceConnections>
+  </children>
+  <children xsi:type="editmodel:InterfaceEditModel" location="592,50" size="163,85" targetConnections="//@children.4/@sourceConnections.0" id="BESSIERobAppleCommander43" packageIndication="3" runTimeClassModel="BESSIERobAppleCommander511;BESSIERobAppleCommander507">
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="140,36" viewSorter="Name">
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander507"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander511"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" location="50,185" size="163,103" id="BESSIERobAppleCommander575" packageIndication="3" runTimeClassModel="BESSIERobAppleCommander582;BESSIERobAppleCommander576;BESSIERobAppleCommander578">
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="140,54" viewSorter="Name">
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander576"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander578"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander582"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <sourceConnections xsi:type="editmodel:GeneralizationEditModel" targetConnections="//@children.0/@sourceConnections.0 //@children.6/@sourceConnections.0 //@children.5/@sourceConnections.0 //@children.2/@sourceConnections.0 //@children.1/@sourceConnections.0" id="BESSIERobAppleCommander1847" connectionRouterKind="GeneralizationManhattan" source="//@children.4" target="//@children.3" targetEnd="//@children.4/@sourceConnections.0/@children.1" sourceEnd="//@children.4/@sourceConnections.0/@children.0">
+      <children xsi:type="editmodel:AssociationEndEditModel" location="81,0" anchorKind="FixedAtEdge"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="81,85" anchorKind="FixedAtEdge"/>
+    </sourceConnections>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" location="684,185" size="163,103" id="BESSIERobAppleCommander704" packageIndication="3" runTimeClassModel="BESSIERobAppleCommander711;BESSIERobAppleCommander707;BESSIERobAppleCommander705">
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="140,54" viewSorter="Name">
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander705"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander707"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander711"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <sourceConnections xsi:type="editmodel:GeneralizationEditModel" id="BESSIERobAppleCommander1903" connectionRouterKind="Manual" source="//@children.5" target="//@children.4/@sourceConnections.0" targetEnd="//@children.5/@sourceConnections.0/@children.1" sourceEnd="//@children.5/@sourceConnections.0/@children.0">
+      <children xsi:type="editmodel:AssociationEndEditModel" location="81,0" anchorKind="FixedAtEdge"/>
+      <children xsi:type="editmodel:AssociationEndEditModel"/>
+    </sourceConnections>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" location="436,185" size="218,319" id="BESSIERobAppleCommander586" packageIndication="3" runTimeClassModel="BESSIERobAppleCommander591;BESSIERobAppleCommander686;BESSIERobAppleCommander606;BESSIERobAppleCommander607;BESSIERobAppleCommander629;BESSIERobAppleCommander613;BESSIERobAppleCommander597;BESSIERobAppleCommander635;BESSIERobAppleCommander671;BESSIERobAppleCommander676;BESSIERobAppleCommander615;BESSIERobAppleCommander684;BESSIERobAppleCommander609;BESSIERobAppleCommander604;BESSIERobAppleCommander651;BESSIERobAppleCommander669;BESSIERobAppleCommander595;BESSIERobAppleCommander674;BESSIERobAppleCommander663;BESSIERobAppleCommander617;BESSIERobAppleCommander678;BESSIERobAppleCommander602;BESSIERobAppleCommander682;BESSIERobAppleCommander666;BESSIERobAppleCommander660;BESSIERobAppleCommander643;BESSIERobAppleCommander621;BESSIERobAppleCommander593;BESSIERobAppleCommander598;BESSIERobAppleCommander611;BESSIERobAppleCommander680;BESSIERobAppleCommander587;BESSIERobAppleCommander600;BESSIERobAppleCommander589">
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="195,270" viewSorter="Name">
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander607"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander617"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander669"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander660"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander663"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander611"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander678"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander680"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander686"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander674"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander676"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander684"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander682"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander666"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander671"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <sourceConnections xsi:type="editmodel:GeneralizationEditModel" id="BESSIERobAppleCommander1860" connectionRouterKind="Manual" source="//@children.6" target="//@children.4/@sourceConnections.0" targetEnd="//@children.6/@sourceConnections.0/@children.1" sourceEnd="//@children.6/@sourceConnections.0/@children.0">
+      <children xsi:type="editmodel:AssociationEndEditModel" location="109,0" anchorKind="FixedAtEdge"/>
+      <children xsi:type="editmodel:AssociationEndEditModel"/>
+    </sourceConnections>
+  </children>
+</editmodel:ClassDiagramEditModel>

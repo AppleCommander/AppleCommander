@@ -1,0 +1,163 @@
+<editmodel:ClassDiagramEditModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:editmodel="editmodel.xmi" id="BESSIERobAppleCommander0" metadata="nsuml-1.4" initialized="true" showWireOptions="15">
+  <children xsi:type="editmodel:InterfaceEditModel" location="270,50" size="187,355" targetConnections="//@children.1/@sourceConnections.0" id="BESSIERobAppleCommander2" packageIndication="3" runTimeClassModel="BESSIERobAppleCommander45;BESSIERobAppleCommander15;BESSIERobAppleCommander22;BESSIERobAppleCommander30;BESSIERobAppleCommander48;BESSIERobAppleCommander38;BESSIERobAppleCommander7;BESSIERobAppleCommander10;BESSIERobAppleCommander24;BESSIERobAppleCommander32;BESSIERobAppleCommander20;BESSIERobAppleCommander3;BESSIERobAppleCommander42;BESSIERobAppleCommander28;BESSIERobAppleCommander17;BESSIERobAppleCommander35;BESSIERobAppleCommander12">
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="164,306" viewSorter="Name">
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander30"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander32"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander35"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander3"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander24"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander10"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander45"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander48"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander20"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander42"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander28"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander22"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander15"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander38"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander7"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander12"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander17"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" location="50,455" size="142,29" id="BESSIERobAppleCommander186" packageIndication="3" shortShow="true" runTimeClassModel="BESSIERobAppleCommander202;BESSIERobAppleCommander194;BESSIERobAppleCommander269;BESSIERobAppleCommander216;BESSIERobAppleCommander231;BESSIERobAppleCommander257;BESSIERobAppleCommander279;BESSIERobAppleCommander187;BESSIERobAppleCommander244;BESSIERobAppleCommander241;BESSIERobAppleCommander248;BESSIERobAppleCommander251;BESSIERobAppleCommander214;BESSIERobAppleCommander233;BESSIERobAppleCommander211;BESSIERobAppleCommander200;BESSIERobAppleCommander239;BESSIERobAppleCommander272;BESSIERobAppleCommander228;BESSIERobAppleCommander206;BESSIERobAppleCommander264;BESSIERobAppleCommander275;BESSIERobAppleCommander253;BESSIERobAppleCommander190;BESSIERobAppleCommander246;BESSIERobAppleCommander191;BESSIERobAppleCommander204;BESSIERobAppleCommander209;BESSIERobAppleCommander221;BESSIERobAppleCommander226;BESSIERobAppleCommander267;BESSIERobAppleCommander262;BESSIERobAppleCommander260;BESSIERobAppleCommander192;BESSIERobAppleCommander218;BESSIERobAppleCommander255;BESSIERobAppleCommander223">
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="164,576" viewSorter="Name">
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander194"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander262"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander231"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander221"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander226"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander269"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander272"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander202"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander255"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander209"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander244"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander216"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander239"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander204"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander251"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander267"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander279"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander214"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander260"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander253"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander246"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander233"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander223"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander228"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander275"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander206"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander257"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander211"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander218"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander241"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander248"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander264"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <sourceConnections xsi:type="editmodel:GeneralizationEditModel" targetConnections="//@children.4/@sourceConnections.0 //@children.2/@sourceConnections.0 //@children.3/@sourceConnections.0" id="BESSIERobAppleCommander1662" connectionRouterKind="GeneralizationManhattan" source="//@children.1" target="//@children.0" targetEnd="//@children.1/@sourceConnections.0/@children.1" sourceEnd="//@children.1/@sourceConnections.0/@children.0">
+      <children xsi:type="editmodel:AssociationEndEditModel" location="71,0" anchorKind="FixedAtEdge"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="93,355" anchorKind="FixedAtEdge"/>
+    </sourceConnections>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" location="373,455" size="140,29" id="BESSIERobAppleCommander137" packageIndication="3" shortShow="true" runTimeClassModel="BESSIERobAppleCommander150;BESSIERobAppleCommander178;BESSIERobAppleCommander172;BESSIERobAppleCommander162;BESSIERobAppleCommander183;BESSIERobAppleCommander141;BESSIERobAppleCommander156;BESSIERobAppleCommander166;BESSIERobAppleCommander154;BESSIERobAppleCommander143;BESSIERobAppleCommander148;BESSIERobAppleCommander175;BESSIERobAppleCommander164;BESSIERobAppleCommander158;BESSIERobAppleCommander170;BESSIERobAppleCommander168;BESSIERobAppleCommander181;BESSIERobAppleCommander160;BESSIERobAppleCommander152;BESSIERobAppleCommander138">
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="164,324" viewSorter="Name">
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander143"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander164"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander160"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander175"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander178"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander152"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander168"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander156"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander148"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander183"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander150"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander154"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander172"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander162"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander181"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander170"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander166"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander158"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <sourceConnections xsi:type="editmodel:GeneralizationEditModel" id="BESSIERobAppleCommander1737" connectionRouterKind="Manual" source="//@children.2" target="//@children.1/@sourceConnections.0" targetEnd="//@children.2/@sourceConnections.0/@children.1" sourceEnd="//@children.2/@sourceConnections.0/@children.0">
+      <children xsi:type="editmodel:AssociationEndEditModel" location="70,0" anchorKind="FixedAtEdge"/>
+      <children xsi:type="editmodel:AssociationEndEditModel"/>
+    </sourceConnections>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" location="543,455" size="129,29" id="BESSIERobAppleCommander293" packageIndication="3" shortShow="true" runTimeClassModel="BESSIERobAppleCommander332;BESSIERobAppleCommander324;BESSIERobAppleCommander310;BESSIERobAppleCommander338;BESSIERobAppleCommander322;BESSIERobAppleCommander340;BESSIERobAppleCommander299;BESSIERobAppleCommander306;BESSIERobAppleCommander334;BESSIERobAppleCommander312;BESSIERobAppleCommander326;BESSIERobAppleCommander294;BESSIERobAppleCommander304;BESSIERobAppleCommander316;BESSIERobAppleCommander297;BESSIERobAppleCommander342;BESSIERobAppleCommander320;BESSIERobAppleCommander308;BESSIERobAppleCommander329;BESSIERobAppleCommander318;BESSIERobAppleCommander336;BESSIERobAppleCommander314">
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="164,360" viewSorter="Name">
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander299"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander308"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander326"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander329"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander310"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander322"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander314"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander342"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander312"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander318"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander304"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander306"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander332"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander336"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander340"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander324"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander320"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander338"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander316"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander334"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <sourceConnections xsi:type="editmodel:GeneralizationEditModel" id="BESSIERobAppleCommander1760" connectionRouterKind="Manual" source="//@children.3" target="//@children.1/@sourceConnections.0" targetEnd="//@children.3/@sourceConnections.0/@children.1" sourceEnd="//@children.3/@sourceConnections.0/@children.0">
+      <children xsi:type="editmodel:AssociationEndEditModel" location="64,0" anchorKind="FixedAtEdge"/>
+      <children xsi:type="editmodel:AssociationEndEditModel"/>
+    </sourceConnections>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" location="222,455" size="121,29" id="BESSIERobAppleCommander51" packageIndication="3" shortShow="true" runTimeClassModel="BESSIERobAppleCommander104;BESSIERobAppleCommander52;BESSIERobAppleCommander74;BESSIERobAppleCommander134;BESSIERobAppleCommander128;BESSIERobAppleCommander96;BESSIERobAppleCommander59;BESSIERobAppleCommander102;BESSIERobAppleCommander89;BESSIERobAppleCommander81;BESSIERobAppleCommander58;BESSIERobAppleCommander120;BESSIERobAppleCommander68;BESSIERobAppleCommander114;BESSIERobAppleCommander130;BESSIERobAppleCommander112;BESSIERobAppleCommander56;BESSIERobAppleCommander93;BESSIERobAppleCommander91;BESSIERobAppleCommander72;BESSIERobAppleCommander132;BESSIERobAppleCommander86;BESSIERobAppleCommander126;BESSIERobAppleCommander54;BESSIERobAppleCommander107;BESSIERobAppleCommander65;BESSIERobAppleCommander76;BESSIERobAppleCommander57;BESSIERobAppleCommander79;BESSIERobAppleCommander98;BESSIERobAppleCommander84;BESSIERobAppleCommander109;BESSIERobAppleCommander100;BESSIERobAppleCommander117;BESSIERobAppleCommander124">
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="164,504" viewSorter="Name">
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander59"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander102"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander104"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander117"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander74"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander98"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander79"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander134"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander72"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander112"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander91"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander89"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander124"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander107"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander128"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander132"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander100"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander96"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander130"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander84"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander126"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander120"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander76"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander81"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander86"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander114"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander93"/>
+      <children xsi:type="editmodel:MethodEditModel" id="BESSIERobAppleCommander109"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel" viewSorter="Name"/>
+    <sourceConnections xsi:type="editmodel:GeneralizationEditModel" id="BESSIERobAppleCommander1701" connectionRouterKind="Manual" source="//@children.4" target="//@children.1/@sourceConnections.0" targetEnd="//@children.4/@sourceConnections.0/@children.1" sourceEnd="//@children.4/@sourceConnections.0/@children.0">
+      <children xsi:type="editmodel:AssociationEndEditModel" location="60,0" anchorKind="FixedAtEdge"/>
+      <children xsi:type="editmodel:AssociationEndEditModel"/>
+    </sourceConnections>
+  </children>
+</editmodel:ClassDiagramEditModel>
