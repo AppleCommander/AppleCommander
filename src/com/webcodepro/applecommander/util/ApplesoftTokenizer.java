@@ -94,6 +94,8 @@ public class ApplesoftTokenizer {
 				nextAddress = AppleUtil.getWordValue(fileData, offset);
 				offset+= 2;
 				if (nextAddress == 0) {
+					// At end of file, ensure we don't try to continue processing...
+					offset = fileData.length;
 					return null;
 				}
 				int lineNumber = AppleUtil.getWordValue(fileData, offset);
