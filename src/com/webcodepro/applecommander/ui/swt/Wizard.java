@@ -149,6 +149,7 @@ public abstract class Wizard {
 	 */
 	public void open() {
 		createDialog();
+		SwtUtil.center(parent, dialog);
 		dialog.open();
 		Display display = dialog.getDisplay();
 		while (!dialog.isDisposed()) {
