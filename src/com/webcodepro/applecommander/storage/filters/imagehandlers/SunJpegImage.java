@@ -19,11 +19,11 @@
  */
 package com.webcodepro.applecommander.storage.filters.imagehandlers;
 
-import com.sun.image.codec.jpeg.JPEGCodec;
-
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
+
+import com.sun.image.codec.jpeg.JPEGCodec;
 
 /**
  * SunJpegImage is a specific implementation of AppleImage that handles all

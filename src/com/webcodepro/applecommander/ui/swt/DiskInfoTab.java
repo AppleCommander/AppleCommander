@@ -19,9 +19,6 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.FormattedDisk.DiskInformation;
-
 import java.util.Iterator;
 
 import org.eclipse.swt.SWT;
@@ -37,6 +34,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+
+import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.FormattedDisk.DiskInformation;
 
 /**
  * Build the Disk Info tab for the Disk Window.

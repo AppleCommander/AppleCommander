@@ -19,11 +19,6 @@
  */
 package com.webcodepro.applecommander.compiler;
 
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.util.ApplesoftToken;
-import com.webcodepro.applecommander.util.ApplesoftTokenizer;
-import com.webcodepro.applecommander.util.ApplesoftTokens;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -35,6 +30,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Stack;
+
+import com.webcodepro.applecommander.storage.FileEntry;
+import com.webcodepro.applecommander.util.ApplesoftToken;
+import com.webcodepro.applecommander.util.ApplesoftTokenizer;
+import com.webcodepro.applecommander.util.ApplesoftTokens;
 
 /**
  * Compile the given Applesoft file.  The result will be an assembly

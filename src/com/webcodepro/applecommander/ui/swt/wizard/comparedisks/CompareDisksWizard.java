@@ -21,9 +21,9 @@ package com.webcodepro.applecommander.ui.swt.wizard.comparedisks;
 
 import org.eclipse.swt.widgets.Shell;
 
-import com.webcodepro.applecommander.ui.swt.ImageManager;
-import com.webcodepro.applecommander.ui.swt.Wizard;
-import com.webcodepro.applecommander.ui.swt.WizardPane;
+import com.webcodepro.applecommander.ui.swt.util.ImageManager;
+import com.webcodepro.applecommander.ui.swt.wizard.Wizard;
+import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 
 /**
  * Compare disks wizard.

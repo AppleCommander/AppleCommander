@@ -19,16 +19,6 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import com.webcodepro.applecommander.storage.cpm.CpmFileEntry;
-import com.webcodepro.applecommander.storage.cpm.CpmFormatDisk;
-import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
-import com.webcodepro.applecommander.storage.physical.DosOrder;
-import com.webcodepro.applecommander.storage.physical.NibbleOrder;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import com.webcodepro.applecommander.storage.physical.ProdosOrder;
-import com.webcodepro.applecommander.storage.physical.UniversalDiskImageLayout;
-import com.webcodepro.applecommander.util.AppleUtil;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,6 +28,22 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+
+import com.webcodepro.applecommander.storage.os.cpm.CpmFileEntry;
+import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
+import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
+import com.webcodepro.applecommander.storage.os.dos33.OzDosFormatDisk;
+import com.webcodepro.applecommander.storage.os.dos33.UniDosFormatDisk;
+import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
+import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
+import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
+import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
+import com.webcodepro.applecommander.storage.physical.DosOrder;
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import com.webcodepro.applecommander.storage.physical.NibbleOrder;
+import com.webcodepro.applecommander.storage.physical.ProdosOrder;
+import com.webcodepro.applecommander.storage.physical.UniversalDiskImageLayout;
+import com.webcodepro.applecommander.util.AppleUtil;
 
 /**
  * Abstract representation of an Apple2 disk (floppy, 800k, hard disk).

@@ -33,7 +33,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import com.webcodepro.applecommander.ui.swt.WizardPane;
+import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 
 /**
  * Provides the wizard pane which gets the disks to compare.

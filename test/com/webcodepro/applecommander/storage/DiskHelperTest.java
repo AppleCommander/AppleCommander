@@ -19,16 +19,12 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import com.webcodepro.applecommander.storage.ApplesoftFileFilter;
-import com.webcodepro.applecommander.storage.BinaryFileFilter;
-import com.webcodepro.applecommander.storage.DirectoryEntry;
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.GraphicsFileFilter;
-import com.webcodepro.applecommander.storage.IntegerBasicFileFilter;
-import com.webcodepro.applecommander.storage.TextFileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
+import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
+import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
+import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
+import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
+import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 
 import java.io.IOException;
 import java.util.List;

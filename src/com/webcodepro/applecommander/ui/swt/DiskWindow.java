@@ -19,14 +19,15 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import com.webcodepro.applecommander.storage.FormattedDisk;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Shell;
+
+import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 
 /**
  * Displays disk information on the screen.

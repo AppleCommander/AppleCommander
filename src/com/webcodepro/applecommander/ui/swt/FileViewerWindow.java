@@ -19,20 +19,6 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import com.webcodepro.applecommander.storage.AppleWorksDataBaseFileFilter;
-import com.webcodepro.applecommander.storage.AppleWorksSpreadSheetFileFilter;
-import com.webcodepro.applecommander.storage.AppleWorksWordProcessorFileFilter;
-import com.webcodepro.applecommander.storage.ApplesoftFileFilter;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FileFilter;
-import com.webcodepro.applecommander.storage.GraphicsFileFilter;
-import com.webcodepro.applecommander.storage.HexDumpFileFilter;
-import com.webcodepro.applecommander.storage.IntegerBasicFileFilter;
-import com.webcodepro.applecommander.storage.TextFileFilter;
-import com.webcodepro.applecommander.util.AppleUtil;
-import com.webcodepro.applecommander.util.ApplesoftToken;
-import com.webcodepro.applecommander.util.ApplesoftTokenizer;
-
 import java.io.ByteArrayInputStream;
 
 import org.eclipse.swt.SWT;
@@ -64,6 +50,22 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
+
+import com.webcodepro.applecommander.storage.FileEntry;
+import com.webcodepro.applecommander.storage.FileFilter;
+import com.webcodepro.applecommander.storage.filters.AppleWorksDataBaseFileFilter;
+import com.webcodepro.applecommander.storage.filters.AppleWorksSpreadSheetFileFilter;
+import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFileFilter;
+import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
+import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
+import com.webcodepro.applecommander.storage.filters.HexDumpFileFilter;
+import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
+import com.webcodepro.applecommander.storage.filters.TextFileFilter;
+import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
+import com.webcodepro.applecommander.ui.swt.util.ImageManager;
+import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.ApplesoftToken;
+import com.webcodepro.applecommander.util.ApplesoftTokenizer;
 
 /**
  * View a particular files content.

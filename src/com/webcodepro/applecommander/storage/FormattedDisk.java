@@ -19,14 +19,14 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
 
 /**
  * Abstract representation of a formatted Apple2 disk (floppy, 800k, hard disk).

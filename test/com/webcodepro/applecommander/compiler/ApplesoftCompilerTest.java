@@ -19,10 +19,9 @@
  */
 package com.webcodepro.applecommander.compiler;
 
-import com.webcodepro.applecommander.compiler.ApplesoftCompiler;
 import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.DosFormatDisk;
 import com.webcodepro.applecommander.storage.FileEntry;
+import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 
 import java.io.FileOutputStream;
 

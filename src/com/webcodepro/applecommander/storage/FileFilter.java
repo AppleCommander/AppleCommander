@@ -19,6 +19,7 @@
  */
 package com.webcodepro.applecommander.storage;
 
+
 /**
  * A file filter taks a buffer of bytes and filters or converts the bytes
  * into another format.  An example would be to filter Apple text by

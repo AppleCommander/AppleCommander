@@ -19,26 +19,21 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import com.webcodepro.applecommander.storage.DirectoryEntry;
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.DiskFullException;
-import com.webcodepro.applecommander.storage.DosFormatDisk;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.OzDosFormatDisk;
-import com.webcodepro.applecommander.storage.ProdosFormatDisk;
-import com.webcodepro.applecommander.storage.UniDosFormatDisk;
+import java.io.IOException;
+import java.util.List;
+
+import junit.framework.TestCase;
+
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
+import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
+import com.webcodepro.applecommander.storage.os.dos33.OzDosFormatDisk;
+import com.webcodepro.applecommander.storage.os.dos33.UniDosFormatDisk;
+import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
 import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.NibbleOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
-
-import java.io.IOException;
-import java.util.List;
-
-import junit.framework.TestCase;
 
 /**
  * Test Disk and FormattedDisk for write.

@@ -23,13 +23,13 @@ import junit.framework.TestCase;
 
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DiskFullException;
-import com.webcodepro.applecommander.storage.DosFormatDisk;
 import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.ProdosFormatDisk;
+import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
 import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.NibbleOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
+import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 
 /**
  * Test AppleUtil.

@@ -27,7 +27,7 @@ import org.eclipse.swt.widgets.Text;
 
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.ui.swt.WizardPane;
+import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 import com.webcodepro.applecommander.util.AppleUtil;
 
 /**

@@ -19,13 +19,6 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.Disk.FilenameFilter;
-import com.webcodepro.applecommander.ui.AppleCommander;
-import com.webcodepro.applecommander.ui.UserPreferences;
-import com.webcodepro.applecommander.ui.swt.wizard.comparedisks.CompareDisksWizard;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -42,6 +35,16 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
+
+import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.Disk.FilenameFilter;
+import com.webcodepro.applecommander.ui.AppleCommander;
+import com.webcodepro.applecommander.ui.UserPreferences;
+import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
+import com.webcodepro.applecommander.ui.swt.util.ImageManager;
+import com.webcodepro.applecommander.ui.swt.wizard.comparedisks.CompareDisksWizard;
+import com.webcodepro.applecommander.ui.swt.wizard.diskimage.DiskImageWizard;
 
 /**
  * Main class for the SwtAppleCommander interface.
