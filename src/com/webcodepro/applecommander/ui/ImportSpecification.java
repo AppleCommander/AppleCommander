@@ -47,6 +47,12 @@ public class ImportSpecification {
 		return address;
 	}
 	/**
+	 * Indicates if a filetype has been set.
+	 */
+	public boolean hasFiletype() {
+		return filetype != null && filetype.length() > 0;
+	}
+	/**
 	 * Returns the filetype.
 	 * @return String
 	 */
