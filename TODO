@@ -26,11 +26,12 @@ This is the internal list of items that need to be done.
   block).  An ImageOrder holds data in an image layout - this allows the generic
   byte array and 2IMG layouts to be abstracted away from an images order.  This
   does add interaction complexity but actually simplified the Disk class.
+o Viewing or double-clicking on a directory will navigate into that directory.
+o Viewing a deleted file can no longer crashes AppleCommander - a warning message
+  is displayed.
 !!!! ROB:
 o Add the ability to change physical order too (DOS <=> ProDOS <=> Nibble).
-o Viewing or double-clicking on a directory crashes AppleCommander.
 o Add a View As menu pick and drop-down on toolbar.  (ie, view as Text or binary)
-o Viewing a deleted file can (always?) crash AppleCommander.
 o Need to update Export Graphics wizard as well as export right-click options.
 
 --- FUTURE 1.3.x ---
