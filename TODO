@@ -33,9 +33,9 @@ This is the internal list of items that need to be done.
 * Add the ability to change physical order too (DOS <=> ProDOS <=> Nibble)
   on 140KB images.
 * Add ability to compare disks - regardless of physical order.
+* Started using Gimp for images (instead of Microsoft Photo Draw 2).
 !!!! ROB:
 o Add a View As menu pick and drop-down on toolbar.  (ie, view as Text or binary)
-o Fix compare disks logo.
 
 --- FUTURE 1.3.x ---
 o BUG: Import of binary file does not set starting address.
