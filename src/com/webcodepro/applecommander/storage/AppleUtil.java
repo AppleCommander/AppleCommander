@@ -451,4 +451,50 @@ public class AppleUtil {
 		}
 		return Double.longBitsToDouble(doubleBits);
 	}
+	
+	/**
+	 * Convert a double number to an Applesoft float.  This is a 5 byte
+	 * number.  See "Applesoft: Internals" for more details and review
+	 * the Merlin-generated Applesoft source code.
+	 * <p>
+	 * Since the number is
+	 * 5 bytes long, a float will not work - hence the double.  Some
+	 * precision is lost, but (hopefully) nothing significant!
+	 * <p>
+	 * More specificially, the mapping is as follows:<br>
+	 * (Applesoft)<br>
+	 * <tt>EEEEEEEE SFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF</tt><br>
+	 * (IEEE 754 - Java)<br>
+	 * <tt>SEEEEEEE EEEEFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF</tt><br>
+	 * The mapping will blank the following Double bits:<br>
+	 * <tt>S000EEEE EEEEFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFF0000 00000000 00000000</tt><br>
+	 */
+	public static byte[] getApplesoftFloat(double number) {
+		// get bit representation:
+		long value = Double.doubleToRawLongBits(Math.abs(number));
+		// make Applesoft number:
+		long exponentMask =	0x0ff0000000000000L;
+		long exponentAdj =		0x0820000000000000L;
+		long signAdj =			0x0000000000000000L;
+		if (number < 0) {
+			signAdj =			0x0080000000000000L;
+		}
+		long fractionMask =	0x000ffffffff00000L;
+		long result = ((value & exponentMask) + exponentAdj) << 4
+			| signAdj
+			| (value & fractionMask) << 3;
+		// convert to bytes and return:
+		long byte1Mask = 	0xff00000000000000L;
+		long byte2Mask =	0x00ff000000000000L;
+		long byte3Mask =	0x0000ff0000000000L;
+		long byte4Mask =	0x000000ff00000000L;
+		long byte5Mask =	0x00000000ff000000L;
+		return new byte[] {
+			(byte) ((result & byte1Mask) >> 56 & 0xff),
+			(byte) ((result & byte2Mask) >> 48 & 0xff),
+			(byte) ((result & byte3Mask) >> 40 & 0xff),
+			(byte) ((result & byte4Mask) >> 32 & 0xff),
+			(byte) ((result & byte5Mask) >> 24 & 0xff)
+		};
+	}
 }
