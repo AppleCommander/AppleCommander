@@ -40,15 +40,21 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * The number of Pascal blocks on a 140K disk.
 	 */
 	public static final int PASCAL_BLOCKS_ON_140K_DISK = 280;
+	
+	// filetypes used elsewhere in the code:
+	private static final String TEXTFILE = "textfile";
+	private static final String CODEFILE = "codefile";
+	private static final String DATAFILE = "datafile";
+	
 	/**
 	 * The know filetypes for a Pascal disk.
 	 */
 	private static final String[] filetypes = {
 			"xdskfile",
-			"codefile",
-			"textfile",
+			CODEFILE,
+			TEXTFILE,
 			"infofile",
-			"datafile",
+			DATAFILE,
 			"graffile",
 			"fotofile",
 			"securedir" };
@@ -466,6 +472,26 @@ public class PascalFormatDisk extends FormattedDisk {
 			i++;
 		}
 		return newName.toString().toUpperCase().trim();
+	}
+
+	/**
+	 * Returns a valid filetype for the given filename.  The most simple
+	 * format will just assume a filetype of binary.  This method is
+	 * available for the interface to make an intelligent first guess
+	 * as to the filetype.
+	 */
+	public String getSuggestedFiletype(String filename) {
+		String filetype = DATAFILE;
+		int pos = filename.lastIndexOf(".");
+		if (pos > 0) {
+			String what = filename.substring(pos+1);
+			if ("txt".equalsIgnoreCase(what)) {
+				filetype = TEXTFILE;
+			} else if ("pas".equalsIgnoreCase(what)) {
+				filetype = CODEFILE;
+			}
+		}
+		return filetype;
 	}
 
 	/**

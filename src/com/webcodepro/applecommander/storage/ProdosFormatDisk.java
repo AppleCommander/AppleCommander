@@ -776,6 +776,25 @@ public class ProdosFormatDisk extends FormattedDisk {
 	}
 
 	/**
+	 * Returns a valid filetype for the given filename.  The most simple
+	 * format will just assume a filetype of binary.  This method is
+	 * available for the interface to make an intelligent first guess
+	 * as to the filetype.
+	 */
+	public String getSuggestedFiletype(String filename) {
+		String filetype = "BIN";
+		int pos = filename.lastIndexOf(".");
+		if (pos > 0) {
+			String what = filename.substring(pos+1);
+			ProdosFileType type = findFileType(what);
+			if (type != null) {
+				filetype = type.getString();
+			}
+		}
+		return filetype;
+	}
+
+	/**
 	 * Return the filetype of this file.  This will be three characters,
 	 * according to ProDOS - a "$xx" if unknown.
 	 */

@@ -645,6 +645,24 @@ public class DosFormatDisk extends FormattedDisk {
 	}
 
 	/**
+	 * Returns a valid filetype for the given filename.  The most simple
+	 * format will just assume a filetype of binary.  This method is
+	 * available for the interface to make an intelligent first guess
+	 * as to the filetype.
+	 */
+	public String getSuggestedFiletype(String filename) {
+		String filetype = "B";
+		int pos = filename.lastIndexOf(".");
+		if (pos > 0) {
+			String what = filename.substring(pos+1);
+			if ("txt".equalsIgnoreCase(what)) {
+				filetype = "T";
+			}
+		}
+		return filetype;
+	}
+
+	/**
 	 * Returns a list of possible file types.  Since the filetype is
 	 * specific to each operating system, a simple String is used.
 	 */
