@@ -1,28 +1,39 @@
 #!/bin/sh
 
-SWT_BASE_DIR="../swt-build"
-SWT_JAR="$SWT_BASE_DIR/swt.jar"
-CLASSES="./AppleCommander.jar"
-APPLECOMMANDER_FILES=$(find . -name "*.class" -print | sed 's/^\.\///')
+#SWT_CLASSES=$(cd org; find . -name "*.class" -print | sed 's#^\./#org/#')
 
-for i in $APPLECOMMANDER_FILES
-do
-	OBJ_FILE=$(echo $i | sed 's/\//_/g' | sed 's/\.class$/\.o/')
-	echo Compiling $i to $OBJ_FILE
-	gcj --classpath=$SWT_JAR --classpath=$CLASSES -g0 -c -o $OBJ_FILE $i
-	echo
-done
+#for i in $SWT_CLASSES
+#do
+#	OBJ_FILE=$(echo $i | sed 's/\//_/g' | sed 's/\.class$/\.o/')
+#	echo Compiling $i to $OBJ_FILE
+#	gcj -fjni -g0 -c -o $OBJ_FILE $i
+#done
 
 #gcj -c --resource=org.eclipse.swt.internal.SWTMessages \
 #	-o SWTMessages.o org/eclipse/swt/internal/SWTMessages.properties
 
-gcj --classpath=$SWT_JAR --classpath=$CLASSES --main=com.webcodepro.ui.swt.SwtAppleCommander \
-	-o AppleCommander *.o -L$SWT_BASE_DIR -lswt
 
-#echo Cleaning up
-#rm -fr org
-#rm -fr META-INF
-#rm -f version.txt
-#rm -f *.o
+APPLECOMMANDER_FILES=$(cd com; find . -name "*.java" -print | sed 's#^\./#com/#')
+
+for i in $APPLECOMMANDER_FILES
+do
+	OBJ_FILE=$(echo $i | sed 's/\//_/g' | sed 's/\.java$/\.o/')
+	echo Compiling $i to $OBJ_FILE
+	gcj --classpath="swt.jar;AppleCommander.jar" -g0 -c -o $OBJ_FILE $i
+done
+
+gcj -c --resource=com.webcodepro.applecommander.storage.FormattedDisk \
+	-o FormattedDisk.o com/webcodepro/applecommander/storage/AppleCommander-boot.dump
+gcj -c --resource=com.webcodepro.applecommander.storage.ProdosFileEntry \
+	-o ProdosFileEntry.o com/webcodepro/applecommander/storage/ProdosFileTypes.properties
+gcj -c --resource=com.webcodepro.applecommander.ui.swt.ImageManager \
+	-o ImageManager.o com/webcodepro/applecommander/ui/images/*.gif
+
+#gcj -mwindows --classpath="swt.jar;AppleCommander.jar" \
+#	--main=com.webcodepro.applecommander.ui.swt.SwtAppleCommander \
+#	-o AppleCommander *.o -L. -lswt
+gcj -mwindows --classpath="swt.jar;AppleCommander.jar" \
+	--main=com.webcodepro.applecommander.ui.AppleCommander \
+	-o AppleCommander *.o -L. -lswt
 
 echo Done.
