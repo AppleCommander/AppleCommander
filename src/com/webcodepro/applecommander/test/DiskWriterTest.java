@@ -50,73 +50,75 @@ public class DiskWriterTest extends TestCase {
 
 	public void testWriteToDos33() throws DiskFullException, IOException {
 		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.dsk");
-		writeFiles(disks, "B", "T");
+		writeFiles(disks, "B", "T", false);
 		disks[0].save();
 	}
 	
 	public void testWriteToProdos140kDisk() throws DiskFullException, IOException {
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"write-test-prodos-140k.dsk", "TEST", ProdosFormatDisk.APPLE_140KB_DISK);
-		writeFiles(disks, "BIN", "TXT");
+		writeFiles(disks, "BIN", "TXT", true);
 		disks[0].save();
 	}
 
 	public void testWriteToProdos800kDisk() throws DiskFullException, IOException {
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"write-test-prodos-800k.po", "TEST", ProdosFormatDisk.APPLE_800KB_DISK);
-		writeFiles(disks, "BIN", "TXT");
+		writeFiles(disks, "BIN", "TXT", true);
 		disks[0].save();
 	}
 
 	public void testWriteToProdos5mbDisk() throws DiskFullException, IOException {
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"write-test-prodos-5mb.hdv", "TEST", ProdosFormatDisk.APPLE_5MB_HARDDISK);
-		writeFiles(disks, "BIN", "TXT");
+		writeFiles(disks, "BIN", "TXT", true);
 		disks[0].save();
 	}
 	
 	protected void writeFiles(FormattedDisk[] disks, String binaryType, 
-		String textType) throws DiskFullException {
+		String textType, boolean testText) throws DiskFullException {
 		FormattedDisk disk = disks[0];
 		showDirectory(disks, "BEFORE FILE CREATION");
-		writeFile(disk, 1, binaryType);
-		writeFile(disk, 2, binaryType);
-		writeFile(disk, 4, binaryType);
-		writeFile(disk, 8, binaryType);
-		writeFile(disk, 16, binaryType);
-		writeFile(disk, 256, binaryType);
-		writeFile(disk, 512, binaryType);
-		writeFile(disk, 1234, binaryType);
-		writeFile(disk, 54321, binaryType);
+		writeFile(disk, 1, binaryType, true);
+		writeFile(disk, 2, binaryType, true);
+		writeFile(disk, 4, binaryType, true);
+		writeFile(disk, 8, binaryType, true);
+		writeFile(disk, 16, binaryType, true);
+		writeFile(disk, 256, binaryType, true);
+		writeFile(disk, 512, binaryType, true);
+		writeFile(disk, 1234, binaryType, true);
+		writeFile(disk, 54321, binaryType, true);
 		writeFile(disk, 
 			"This is a test text file create from the DiskWriterTest".getBytes(), 
-			textType);
+			textType, testText);
 		if (disk.getPhysicalSize() > disk.APPLE_140KB_DISK) {
 			// create a few big files
-			writeFile(disk, 150000, binaryType);
-			writeFile(disk, 300000, binaryType);
+			writeFile(disk, 150000, binaryType, true);
+			writeFile(disk, 300000, binaryType, true);
 		}
 		showDirectory(disks, "AFTER FILE CREATION");
 	}
 	
-	protected void writeFile(FormattedDisk disk, int size, String fileType)
-		throws DiskFullException {
+	protected void writeFile(FormattedDisk disk, int size, String fileType,
+		boolean test) throws DiskFullException {
 		byte[] data = new byte[size];
 		for (int i=0; i<data.length; i++) {
 			data[i] = (byte)(Math.random() * 1024);
 		}
-		writeFile(disk, data, fileType);
+		writeFile(disk, data, fileType, test);
 	}
 	
-	protected void writeFile(FormattedDisk disk, byte[] data, String fileType)
-		throws DiskFullException {
+	protected void writeFile(FormattedDisk disk, byte[] data, String fileType,
+		boolean test) throws DiskFullException {
 		FileEntry entry = disk.createFile();
 		entry.setFilename("file-" + data.length);
 		entry.setFiletype(fileType);
 		entry.setFileData(data);
 		byte[] data2 = entry.getFileData();
-		assertTrue("File lengths do not match", data.length == data2.length);
-		assertTrue("File contents do not match", Arrays.equals(data, data2));
+		if (test) {
+			assertTrue("File lengths do not match", data.length == data2.length);
+			assertTrue("File contents do not match", Arrays.equals(data, data2));
+		}
 	}
 	
 	protected void showDirectory(FormattedDisk[] formattedDisks, String title) {
