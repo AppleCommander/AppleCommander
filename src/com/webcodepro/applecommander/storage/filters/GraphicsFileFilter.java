@@ -64,7 +64,8 @@ public class GraphicsFileFilter implements FileFilter {
 	public static final int MODE_QUICKDRAW2_ICON = 7;
 	
 	private int mode = MODE_HGR_COLOR;
-	private AppleImage appleImage;	
+	
+	private static AppleImage referenceImage = AppleImage.create(1,1);
 	
 	/**
 	 * Constructor for GraphicsFileFilter.
@@ -77,7 +78,7 @@ public class GraphicsFileFilter implements FileFilter {
 	 * Indicate if a codec is available (assist with interface requirements).
 	 */
 	public static boolean isCodecAvailable() {
-		return AppleImage.create(1,1) != null;
+		return referenceImage != null;
 	}
 
 	/**
@@ -165,7 +166,7 @@ public class GraphicsFileFilter implements FileFilter {
 			}
 		}
 		try {
-			image.setFileExtension(appleImage.getFileExtension());
+			image.setFileExtension(referenceImage.getFileExtension());
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			image.save(outputStream);
 			return outputStream.toByteArray();
@@ -499,8 +500,8 @@ public class GraphicsFileFilter implements FileFilter {
 	/**
 	 * Give file extensions.
 	 */
-	public String[] getFileExtensions() {
-		return appleImage.getAvailableExtensions();
+	public static String[] getFileExtensions() {
+		return referenceImage.getAvailableExtensions();
 	}
 
 	/**
@@ -518,14 +519,14 @@ public class GraphicsFileFilter implements FileFilter {
 	 * Set the format name.
 	 */
 	public void setExtension(String extension) {
-		appleImage.setFileExtension(extension);
+		referenceImage.setFileExtension(extension);
 	}
 	
 	/**
 	 * Get the format name.
 	 */
 	public String getExtension() {
-		return appleImage.getFileExtension();
+		return referenceImage.getFileExtension();
 	}
 	
 	/**
