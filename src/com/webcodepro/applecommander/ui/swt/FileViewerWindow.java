@@ -25,14 +25,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.custom.StyledTextPrintOptions;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
@@ -40,9 +38,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.printing.PrintDialog;
-import org.eclipse.swt.printing.Printer;
-import org.eclipse.swt.printing.PrinterData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
@@ -65,6 +60,9 @@ import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
+import com.webcodepro.applecommander.ui.swt.util.contentadapter.ContentTypeAdapter;
+import com.webcodepro.applecommander.ui.swt.util.contentadapter.ImageCanvasAdapter;
+import com.webcodepro.applecommander.ui.swt.util.contentadapter.StyledTextAdapter;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.ApplesoftToken;
 import com.webcodepro.applecommander.util.ApplesoftTokenizer;
@@ -99,7 +97,8 @@ public class FileViewerWindow {
 	private Color black;
 	private Color blue;
 	private Color green;
-
+	
+	public ContentTypeAdapter contentTypeAdapter;
 	/**
 	 * Construct the file viewer window.
 	 */
@@ -182,78 +181,60 @@ public class FileViewerWindow {
 			nativeToolItem.setText("BASIC");
 			nativeToolItem.setToolTipText("Displays file as BASIC program (F2)");
 			nativeToolItem.setSelection(true);
-			nativeToolItem.addSelectionListener(new SelectionAdapter () {
-				public void widgetSelected(SelectionEvent e) {
-					displayNativeFormat();
-				}
-			});
 		} else if (nativeFilter instanceof AppleWorksDataBaseFileFilter) {
 			nativeToolItem = new ToolItem(toolBar, SWT.RADIO);
 			nativeToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_AS_DATABASE));
 			nativeToolItem.setText("Database");
 			nativeToolItem.setToolTipText("Displays file as a database file (F2)");
 			nativeToolItem.setSelection(true);
-			nativeToolItem.addSelectionListener(new SelectionAdapter () {
-				public void widgetSelected(SelectionEvent e) {
-					displayNativeFormat();
-				}
-			});
 		} else if (nativeFilter instanceof AppleWorksSpreadSheetFileFilter) {
 			nativeToolItem = new ToolItem(toolBar, SWT.RADIO);
 			nativeToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_AS_SPREADSHEET));
 			nativeToolItem.setText("Spreadsheet");
 			nativeToolItem.setToolTipText("Displays file as a spreadsheet file (F2)");
 			nativeToolItem.setSelection(true);
-			nativeToolItem.addSelectionListener(new SelectionAdapter () {
-				public void widgetSelected(SelectionEvent e) {
-					displayNativeFormat();
-				}
-			});
 		} else if (nativeFilter instanceof AppleWorksWordProcessorFileFilter) {
 			nativeToolItem = new ToolItem(toolBar, SWT.RADIO);
 			nativeToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_AS_WORDPROCESSOR));
 			nativeToolItem.setText("Wordprocessor");
 			nativeToolItem.setToolTipText("Displays file as a wordprocessor file (F2)");
 			nativeToolItem.setSelection(true);
-			nativeToolItem.addSelectionListener(new SelectionAdapter () {
-				public void widgetSelected(SelectionEvent e) {
-					displayNativeFormat();
-				}
-			});
 		} else if (nativeFilter instanceof GraphicsFileFilter) {
 			nativeToolItem = new ToolItem(toolBar, SWT.RADIO);
 			nativeToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_AS_IMAGE));
 			nativeToolItem.setText("Image");
 			nativeToolItem.setToolTipText("Displays file as an image (F2)");
 			nativeToolItem.setSelection(true);
-			nativeToolItem.addSelectionListener(new SelectionAdapter () {
-				public void widgetSelected(SelectionEvent e) {
-					displayNativeFormat();
-				}
-			});
 		} else if (nativeFilter instanceof TextFileFilter) {
 			nativeToolItem = new ToolItem(toolBar, SWT.RADIO);
 			nativeToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_AS_TEXTFILE));
 			nativeToolItem.setText("Text");
 			nativeToolItem.setToolTipText("Displays file as a text file (F2)");
 			nativeToolItem.setSelection(true);
-			nativeToolItem.addSelectionListener(new SelectionAdapter () {
-				public void widgetSelected(SelectionEvent e) {
-					displayNativeFormat();
-				}
-			});
 		} else if (nativeFilter instanceof AssemblySourceFileFilter) {
 			nativeToolItem = new ToolItem(toolBar, SWT.RADIO);
 			nativeToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_AS_TEXTFILE));
 			nativeToolItem.setText("Assembly");
 			nativeToolItem.setToolTipText("Displays file as assembly source file (F2)");
 			nativeToolItem.setSelection(true);
+		}
+		if (nativeToolItem != null) {
 			nativeToolItem.addSelectionListener(new SelectionAdapter () {
 				public void widgetSelected(SelectionEvent e) {
 					displayNativeFormat();
 				}
 			});
 		}
+		
+		// FIXME Refactoring ideas...
+//		thingMap.add(AssemblySourceFileFilter.class, new Thing("Assembly", 
+//			"Displays file as assembly source file (F2)"),
+//			ImageManager.ICON_VIEW_AS_TEXTFILE), true));
+//		// etc		
+//		if (nativeFilter != null) {
+//			Thing thing = (Thing) thingMap.get(nativeFilter.getClass());
+//			thing.create(toolBar);
+//		}
 
 		hexDumpToolItem = new ToolItem(toolBar, SWT.RADIO);
 		hexDumpToolItem.setImage(imageManager.get(ImageManager.ICON_VIEW_IN_HEX));
@@ -310,89 +291,21 @@ public class FileViewerWindow {
 	 * Print current file.
 	 */
 	protected void print() {
-		PrintDialog dialog = new PrintDialog(shell);
-		PrinterData printerData = dialog.open();
-		if (printerData == null) return;
-		final Printer printer = new Printer(printerData);
-		
-		final Control control = content.getContent();
-		if (control instanceof StyledText) {
-			StyledText styledText = (StyledText) control;
-			StyledTextPrintOptions options = new StyledTextPrintOptions();
-			options.jobName = fileEntry.getFilename();
-			options.printLineBackground = true;
-			options.printTextBackground = true;
-			options.printTextFontStyle = true;
-			options.printTextForeground = true;
-			options.footer = "\t<page>";
-			options.header = "\t" + fileEntry.getFilename();
-			 
-			final Runnable runnable = styledText.print(printer, options);
-			new Thread(new Runnable() {
-				public void run() {
-					runnable.run();
-					printer.dispose();
-				}
-			}).start();
-		} else if (control instanceof ImageCanvas) {
-			new Thread(new Runnable() {
-				public void run() {
-					printer.startJob(fileEntry.getFilename());
-					printer.startPage();
-					Point dpi = printer.getDPI();
-					ImageCanvas imageCanvas = (ImageCanvas) control;
-					Image image = imageCanvas.getImage();
-					int imageWidth = image.getImageData().width;
-					int imageHeight = image.getImageData().height;
-					int printedWidth = imageWidth * (dpi.x / 96);
-					int printedHeight = imageHeight * (dpi.y / 96);
-					GC gc = new GC(printer);
-					gc.drawImage(image,
-						0, 0, imageWidth, imageHeight,
-						0, 0, printedWidth, printedHeight);
-					printer.endPage();
-					printer.endJob();
-					gc.dispose();
-					printer.dispose();
-				}
-			}).start();
-		}
+		contentTypeAdapter.print();
 	}
 	
 	/**
 	 * Select all text within the widget.
 	 */
 	protected void selectAll() {
-		Control control = content.getContent();
-		if (control instanceof StyledText) {	// only applies to StyledText
-			StyledText styledText = (StyledText) control;
-			styledText.selectAll();
-		}
+		contentTypeAdapter.selectAll();
 	}
 
 	/**
 	 * Perform copy operation.
 	 */
 	protected void copy() {
-		Control control = content.getContent();
-		if (control instanceof StyledText) {
-			StyledText styledText = (StyledText) control;
-			// If there is no selection, copy everything
-			if (styledText.getSelectionCount() == 0) {
-				Point selection = styledText.getSelection();
-				styledText.selectAll();
-				styledText.copy();
-				styledText.setSelection(selection);
-			} else {	// copy current selection
-				styledText.copy();
-			}
-		} else if (control instanceof ImageCanvas) {
-			// TODO: Can SWT copy an image to the clipboard?
-//			Clipboard clipboard = new Clipboard(shell.getDisplay());
-//			String[] typeNames = clipboard.getAvailableTypeNames();
-			// look at the typeNames - nothing that looks like an image?!
-//			clipboard.dispose();
-		}
+		contentTypeAdapter.copy();
 	}
 	
 	/**
@@ -461,6 +374,8 @@ public class FileViewerWindow {
 			content.setMinWidth(size.x);
 			content.setMinHeight(size.y);
 			content.getContent().addListener(SWT.KeyUp, createToolbarCommandHandler());
+			
+			contentTypeAdapter = new StyledTextAdapter(styledText, fileEntry.getFilename());
 		} else if (nativeFilter instanceof IntegerBasicFileFilter) {
 			String basicDump = new String(nativeFilter.filter(fileEntry));
 			createTextWidget(content, basicDump);
@@ -493,6 +408,8 @@ public class FileViewerWindow {
 			content.setExpandVertical(true);
 			content.setMinWidth(imageData[0].width);
 			content.setMinHeight(imageData[0].height);
+			
+			contentTypeAdapter = new ImageCanvasAdapter(imageCanvas, fileEntry.getFilename());
 		} else if (nativeFilter instanceof TextFileFilter) {
 			String textDump = new String(nativeFilter.filter(fileEntry));
 			createTextWidget(content, textDump);
@@ -522,6 +439,8 @@ public class FileViewerWindow {
 		content.setMinWidth(size.x);
 		content.setMinHeight(size.y);
 		content.getContent().addListener(SWT.KeyUp, createToolbarCommandHandler());
+
+		contentTypeAdapter = new StyledTextAdapter(styledText, fileEntry.getFilename());
 	}
 	
 	/**
