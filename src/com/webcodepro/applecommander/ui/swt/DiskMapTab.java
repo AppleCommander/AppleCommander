@@ -246,8 +246,6 @@ public class DiskMapTab {
 	 * Display message to user regarding no disk map being available.
 	 */
 	private void paintNoMap(PaintEvent event) {
-		Canvas canvas = (Canvas) event.widget;
-		Rectangle bounds = canvas.getClientArea();
 		event.gc.drawString("A disk map is unavailable.", 0,  0);
 	}
 	/**
@@ -286,7 +284,6 @@ public class DiskMapTab {
 	 * Paint a map with the given dimensions.
 	 */
 	private void paintDiskMap(int xdim, int ydim, PaintEvent event) {
-		int bitmapLength = disk.getBitmapLength();
 		Canvas canvas = (Canvas) event.widget;
 		Rectangle area = canvas.getClientArea();
 		area.width-= 2;
