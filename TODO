@@ -32,9 +32,10 @@ This is the internal list of items that need to be done.
 * Updated Export Graphics wizard and export right-click options.
 * Add the ability to change physical order too (DOS <=> ProDOS <=> Nibble)
   on 140KB images.
+* Add ability to compare disks - regardless of physical order.
 !!!! ROB:
 o Add a View As menu pick and drop-down on toolbar.  (ie, view as Text or binary)
-o Add ability to compare disks - regardless of physical order.
+o Fix compare disks logo.
 
 --- FUTURE 1.3.x ---
 o BUG: Import of binary file does not set starting address.
