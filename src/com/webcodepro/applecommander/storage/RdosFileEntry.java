@@ -84,6 +84,13 @@ public class RdosFileEntry implements FileEntry {
 	}
 
 	/**
+	 * Set the name of this file.
+	 */
+	public void setFilename(String filename) {
+		// FIXME: Need to implement!
+	}
+
+	/**
 	 * Return the maximum filename length.
 	 */
 	public int getMaximumFilenameLength() {
@@ -96,12 +103,26 @@ public class RdosFileEntry implements FileEntry {
 	public String getFiletype() {
 		return isDeleted() ? " " : AppleUtil.getString(fileEntry, 0x18, 1);
 	}
+
+	/**
+	 * Set the filetype.
+	 */
+	public void setFiletype(String filetype) {
+		// FIXME: Implement!
+	}
 	
 	/**
 	 * Locked doesn't appear to be a concept under RDOS.
 	 */
 	public boolean isLocked() {
 		return false;
+	}
+
+	/**
+	 * Set the lock indicator.
+	 */
+	public void setLocked(boolean lock) {
+		// FIXME: Implement!
 	}
 	
 	/**
@@ -131,6 +152,13 @@ public class RdosFileEntry implements FileEntry {
 	 */
 	public boolean isDeleted() {
 		return AppleUtil.getUnsignedByte(fileEntry[0]) == 0x80;
+	}
+
+	/**
+	 * Delete the file.
+	 */
+	public void delete() {
+		// FIXME: Need to implement!
 	}
 	
 	/**
@@ -184,6 +212,14 @@ public class RdosFileEntry implements FileEntry {
 		byte[] filedata = new byte[getSize()];
 		System.arraycopy(rawdata, 0, filedata, 0, filedata.length);
 		return filedata;
+	}
+
+	/**
+	 * Set file data.  This, essentially, is saving data to disk using this
+	 * file entry.
+	 */
+	public void setFileData(byte[] data) throws DiskFullException {
+		// FIXME: Implement!
 	}
 
 	/**

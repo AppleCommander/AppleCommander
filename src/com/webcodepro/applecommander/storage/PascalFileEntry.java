@@ -64,6 +64,13 @@ public class PascalFileEntry implements FileEntry {
 	public String getFilename() {
 		return AppleUtil.getPascalString(fileEntry, 6);
 	}
+
+	/**
+	 * Set the name of this file.
+	 */
+	public void setFilename(String filename) {
+		// FIXME: Need to implement!
+	}
 	
 	/**
 	 * Return the maximum filename length.
@@ -92,12 +99,26 @@ public class PascalFileEntry implements FileEntry {
 			return filetypes[filetype-1];
 		}
 	}
+
+	/**
+	 * Set the filetype.
+	 */
+	public void setFiletype(String filetype) {
+		// FIXME: Implement!
+	}
 	
 	/**
 	 * Identify if this file is locked - not applicable in Pascal?
 	 */
 	public boolean isLocked() {
 		return false;
+	}
+
+	/**
+	 * Set the lock indicator.
+	 */
+	public void setLocked(boolean lock) {
+		// FIXME: Implement!
 	}
 	
 	/**
@@ -143,6 +164,13 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	public boolean isDeleted() {
 		return false;
+	}
+
+	/**
+	 * Delete the file.
+	 */
+	public void delete() {
+		// FIXME: Need to implement!
 	}
 	
 	/**
@@ -199,6 +227,14 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	public byte[] getFileData() {
 		return disk.getFileData(this);
+	}
+
+	/**
+	 * Set file data.  This, essentially, is saving data to disk using this
+	 * file entry.
+	 */
+	public void setFileData(byte[] data) throws DiskFullException {
+		// FIXME: Implement!
 	}
 	
 	/**
