@@ -19,6 +19,8 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import com.webcodepro.applecommander.storage.cpm.CpmFileEntry;
+import com.webcodepro.applecommander.storage.cpm.CpmFormatDisk;
 import com.webcodepro.applecommander.util.AppleUtil;
 
 import java.io.ByteArrayOutputStream;
@@ -195,6 +197,9 @@ public class Disk {
 		} else if (isRdosFormat()) {
 			return new FormattedDisk[]
 				{ new RdosFormatDisk(filename, diskImage) };
+		} else if (isCpmFormat()) {
+			return new FormattedDisk[]
+				{ new CpmFormatDisk(filename, diskImage) };
 		}
 		return null;
 	}
@@ -525,6 +530,40 @@ public class Disk {
 		return directory[0] == 0 && directory[1] == 0
 			&& directory[2] == 6 && directory[3] == 0
 			&& directory[4] == 0 && directory[5] == 0;
+	}
+	
+	/**
+	 * Test the disk format to see if this is a CP/M formatted disk.
+	 * Check the first 256 bytes of the CP/M directory for validity.
+	 */
+	public boolean isCpmFormat() {
+		byte[] directory = readSector(3, 0);
+		int bytes[] = new int[256];
+		for (int i=0; i<directory.length; i++) {
+			bytes[i] = AppleUtil.getUnsignedByte(directory[i]);
+		}
+		int offset = 0;
+		while (offset < directory.length) {
+			// Check if this is an empty directory entry (and ignore it)
+			int e5count = 0;
+			for (int i=0; i<CpmFileEntry.ENTRY_LENGTH; i++) {
+				e5count+= bytes[offset+i] == 0xe5 ? 1 : 0;
+			}
+			if (e5count == CpmFileEntry.ENTRY_LENGTH) continue;
+			// Check user number. Should be 0-15 or 0xE5
+			if (bytes[offset] > 15 && bytes[offset] != 0xe5) return false;
+			// Validate filename has highbit off
+			for (int i=0; i<8; i++) {
+				if (bytes[offset+1+i] > 127) return false; 
+			}
+			// Extent should be 0-31 (low = 0-31 and high = 0)
+			if (bytes[offset+0xc] > 31 || bytes[offset+0xe] > 0) return false;
+			// Number of used records cannot exceed 0x80
+			if (bytes[offset+0xf] > 0x80) return false;
+			// Next entry
+			offset+= CpmFileEntry.ENTRY_LENGTH;
+		}
+		return true;
 	}
 	
 	/**
