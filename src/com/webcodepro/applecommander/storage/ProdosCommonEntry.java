@@ -80,6 +80,17 @@ public class ProdosCommonEntry {
 	}
 	
 	/**
+	 * Indicates if this entry is empty - filled with $00.
+	 */
+	public boolean isEmpty() {
+		byte[] entry = readFileEntry();
+		for (int i=0; i<entry.length; i++) {
+			if (entry[i] != 0x00) return false;
+		}
+		return true;
+	}
+	
+	/**
 	 * Write the fileEntry data to the disk image.
 	 */
 	protected void writeFileEntry(byte[] entry) {
