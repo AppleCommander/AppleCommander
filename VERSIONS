@@ -1,3 +1,28 @@
+1.2.2 (2003-03-15)
+* ProDOS disks now re-use deleted file entries.  Prior to this fix,
+  deleted entries were never re-used.  If importing many files, a 
+  "Disk Full" error would be generated rather quickly.
+* ProDOS file entries do not generate spurious file entries.  There
+  was no method of detecting unused entries in pre-1.2.2 code.
+* Import file specification should only allow address editing if the filetype
+  requires it.
+* Fixed parsing of filetype definitions for ProDOS volumes.
+* Need to be able to import into a directory in ProDOS.  This will most
+  likely involve adding an interface indicating a (writable) directory.
+  This interface would be applied to both disks as well as file entries,
+  if appropriate.
+* ProDOS subdirectories need to allocate another block as they fill up; otherwise
+  the directory is limited to the number of entries that fit within the allocated
+  space.
+* Import now sports a progress indicator and identifies which file is being
+  imported.
+* Popup dialogs are now centered above the controlling window instead of popping
+  up randomly.
+* Added a Hex Dump file filter that displays offset into file, hex bytes, and
+  the ASCII code.
+* AppleCommander is now being built by an ANT script instead of by the
+  Eclipse menu pick.
+
 1.2.1 (2003-03-01)
 * Now carries margin setting through, sets font to Courier New (more
   realistic formatting), and fixes boldface not being turned off
