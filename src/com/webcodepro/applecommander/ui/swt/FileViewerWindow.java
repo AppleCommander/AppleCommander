@@ -49,6 +49,7 @@ import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
+import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 import com.webcodepro.applecommander.ui.swt.filteradapter.ApplesoftFilterAdapter;
 import com.webcodepro.applecommander.ui.swt.filteradapter.FilterAdapter;
@@ -193,6 +194,11 @@ public class FileViewerWindow {
 			new TextFilterAdapter(this, "Integer BASIC", 
 				"Displays file as an Integer BASIC program (F2)", 
 				imageManager.get(ImageManager.ICON_VIEW_AS_BASIC_PROGRAM)
+			));
+		nativeFilterAdapterMap.put(PascalTextFileFilter.class, 
+			new TextFilterAdapter(this, "Pascal Text", 
+				"Displays file as Pascal text file (F2)", 
+				imageManager.get(ImageManager.ICON_VIEW_AS_TEXTFILE)
 			));
 		nativeFilterAdapterMap.put(TextFileFilter.class,
 			new TextFilterAdapter(this, "Text",
