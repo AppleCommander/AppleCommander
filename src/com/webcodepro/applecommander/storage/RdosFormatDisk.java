@@ -413,6 +413,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * and trimmed (trailing whitespace may cause confusion).
 	 */
 	public String getSuggestedFilename(String filename) {
-		return filename.toUpperCase().substring(0, 24).trim();
+		int len = Math.min(filename.length(), 24);
+		return filename.toUpperCase().substring(0, len).trim();
 	}
 }

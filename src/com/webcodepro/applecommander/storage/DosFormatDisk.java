@@ -634,6 +634,7 @@ public class DosFormatDisk extends FormattedDisk {
 	 * and trimmed (trailing whitespace may cause confusion).
 	 */
 	public String getSuggestedFilename(String filename) {
-		return filename.toUpperCase().substring(0, 30).trim();
+		int len = Math.min(filename.length(), 30);
+		return filename.toUpperCase().substring(0, len).trim();
 	}
 }
