@@ -2,9 +2,9 @@ Notes on attempts to compile AppleCommander natively... ultimately should
 be directions!
 
 
-Issues:
+Issues (general):
 1) Unable to handle graphics (images) in native mode.  Need to patch code in
-   compile process for this.
+   compile process manually to get a clean compile.
 
 
 *********************
@@ -20,39 +20,48 @@ builds the SWT swt.so file.
 **     WINDOWS      **
 **********************
 
-Using MinGW, am able to compile AppleCommander tests.  The date issue is known,
-and there is a suggested work-around posted here:
+Building AppleCommander for Windows using MinGW (2.0.3 with GCJ update).
+See build/build-applecommander-mingw for the current script.
+
+1.  Using MinGW, date related support classes are not compiled in.  This is a known
+    issue and there is a suggested work-around posted here:
 	http://gcc.gnu.org/ml/java/2002-04/msg00180.html
-Basically, force a reference to the classes which cause the error - the problem
-lies in classes loaded by reflection, so this forces these classes to be
-compiled in.  The suggested prelude is:
-    // static references to these classes ensure that the linker will include them
-    private static Class c1 = gnu.java.locale.Calendar.class;
-    private static Class c2 = java.util.GregorianCalendar.class;
-    private static Class c3 = gnu.gcj.convert.Input_ASCII.class;
-    private static Class c4 = gnu.gcj.convert.Input_UTF8.class;
-    private static Class c5 = gnu.gcj.convert.Input_8859_1.class;
-    private static Class c6 = gnu.java.locale.LocaleInformation.class;
-    private static Class c7 = gnu.gcj.convert.Output_ASCII.class;
-Presumably, this is just needed in one class - probably the class which contains
-the main method.
+    Basically, force a reference to the classes which cause the error - the problem
+    lies in classes loaded by reflection, so this forces these classes to be
+    compiled in.  The suggested prelude is:
+        // static references to these classes ensure that the linker will include them
+        private static Class c1 = gnu.java.locale.Calendar.class;
+        private static Class c2 = java.util.GregorianCalendar.class;
+        private static Class c3 = gnu.gcj.convert.Input_ASCII.class;
+        private static Class c4 = gnu.gcj.convert.Input_UTF8.class;
+        private static Class c5 = gnu.gcj.convert.Input_8859_1.class;
+        private static Class c6 = gnu.java.locale.LocaleInformation.class;
+        private static Class c7 = gnu.gcj.convert.Output_ASCII.class;
+    Presumably, this is just needed in one class - probably the class which contains
+    the main method.  I am currently pasting this into AppleCommander.java itself.
 
-MinGW seems to run (at least in text mode) faster than Cygwin.  It also appears
-to be related to date type stuff (just an observation, no real meat here).
+2.  GraphicsFilter still cannot contain references to the JDK 1.4 ImageIO libraries,
+    nor the SUN-specific JPEG classes.  References to these classes need to be commented
+    out -- essentially rendering the graphics filter useless.  The user-interface should
+    auto-detect this and give no options for image codecs.
 
-Command sequence is similar to this.
+    This also suggests that the GraphicsFilter needs to be re-engineered to be less rigid.
+    The filter itself should accept (or detect, I don't know yet) via Reflection what
+    classes are available and choose an appropriate filter.  This would/could change
+    the compile process to just delete the inappropriate filters and the GrapicsFilter
+    class would auto-adjust to the loss by choosing a more appropraite (if less capable)
+    filter.
 
-1) Compile storage package:
-      cd <...>\storage
-      gcj --classpath=AppleCommander-1.1.1b.jar -c *.java
-   Unable to build a *.so file as on Linux with MinGW - but Cygwin does work.
-2) Compile DoIt in test:
-      cd ..\test
-      gcj --classpath=AppleCommander-1.1.1b.jar -c DoIt.java
-      gcj --main=com.webcodepro.applecommander.test.DoIt -o DoIt DoIt.o ..\storage\*.o
-      strip -x DoIt.exe
-   The executable is 2.7MB and runs to completion!
-3) If all of AppleCommander is built, the resulting executable cannot use
-   Runtime.loadLibrary because that method is not implemented.  Either need
-   to wait for GCJ to be updated or need to compile the native code into
-   executable (and this may or may not work).
+3.  Resources can be compiled/atteched to a specific Java class.  AppleCommander has
+    a number of resources that should be built into the exe class.  This will simplify
+    the distribution to be the AppleCommander executable and the SWT support DLL.
+    ** DONE **  See the AppleCommander build script.
+
+4.  UPX appears to be a very good compression tool for executables.  It should be
+    standard practice (and part of the automated build process) to run the final EXE
+    and DLL files through UPX to ensure a small filesize.
+    ** DONE **  See the AppleCommander build script.
+
+5.  There are speed issues with the compiled version of AppleCommander.  They do not
+    appear to be present when run as a normal Java/SWT application.  It has not been
+    determined if this is AppleCommander or SWT-related yet.
