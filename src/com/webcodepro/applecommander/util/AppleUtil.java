@@ -297,8 +297,10 @@ public class AppleUtil {
 	 * a hex string that may start with a '$' and has 1 - 4 digits.
 	 */
 	public static int convertFormattedWord(String word) {
+		if (word == null) return 0;
 		int value = 0;
-		for (int i=0; word != null && i<word.length(); i++) {
+		word = word.toUpperCase();
+		for (int i=0; i<word.length(); i++) {
 			char ch = word.charAt(i);
 			for (int nybble = 0; nybble < hexDigits.length; nybble++) {
 				if (ch == hexDigits[nybble].charAt(0)) {
