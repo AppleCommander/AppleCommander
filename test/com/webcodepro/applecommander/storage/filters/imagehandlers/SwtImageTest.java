@@ -1,4 +1,4 @@
-package com.webcodepro.applecommander.test;
+package com.webcodepro.applecommander.storage.filters.imagehandlers;
 
 import com.webcodepro.applecommander.storage.filters.imagehandlers.SwtImage;
 

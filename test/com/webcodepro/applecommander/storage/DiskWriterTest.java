@@ -17,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc., 
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package com.webcodepro.applecommander.test;
+package com.webcodepro.applecommander.storage;
 
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.Disk;
