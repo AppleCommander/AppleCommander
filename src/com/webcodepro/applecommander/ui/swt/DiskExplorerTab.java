@@ -249,6 +249,17 @@ public class DiskExplorerTab {
 			}
 		});
 		item.setEnabled(disks[0].canHaveDirectories());
+
+		item = new MenuItem(menu, SWT.SEPARATOR);
+
+		item = new MenuItem(menu, SWT.CASCADE);
+		item.setText("Import...");
+		item.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				importFiles();
+			}
+		});
+		item.setEnabled(disks[0].canCreateFile() && disks[0].canWriteFileData());
 		
 		return menu;
 	}
@@ -259,15 +270,6 @@ public class DiskExplorerTab {
 		Menu menu = new Menu(shell, SWT.POP_UP);
 		
 		MenuItem item = new MenuItem(menu, SWT.CASCADE);
-		item.setText("Import...");
-		item.setEnabled(disks[0].canCreateFile() && disks[0].canWriteFileData());
-		item.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent event) {
-				importFiles();
-			}
-		});
-
-		item = new MenuItem(menu, SWT.CASCADE);
 		item.setText("Export");
 		item.setEnabled(disks[0].canReadFileData());
 		item.setMenu(createFileExportMenu(SWT.DROP_DOWN));
