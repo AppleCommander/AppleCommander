@@ -56,4 +56,5 @@ o Make formatted images bootable.  May need user to supply a "master" disk from
   which files or data is copied.
 o Can AppleCommander read a CF card with ProDOS volumes on it?  This is an IDE device
   connected either via USB or a card reader.  Requires some level of OS integration...
-  some form of raw disk access.
+  some form of raw disk access.  There is the possibility of finding a USB-level driver
+  or of reading raw data from a disk.  Unix is most likely, unsure of Windows.
