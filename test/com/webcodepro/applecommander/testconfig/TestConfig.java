@@ -20,6 +20,7 @@
 package com.webcodepro.applecommander.testconfig;
 
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.Properties;
 
 /**
@@ -29,7 +30,7 @@ import java.util.Properties;
  * @author Rob
  */
 public class TestConfig {
-	private static final String FILENAME = "TestConfig.preferences"; //$NON-NLS-1$
+	private static final String FILENAME = "TestConfig.properties"; //$NON-NLS-1$
 	private static final String DISK_DIRECTORY = "DiskDir"; //$NON-NLS-1$
 	private static final String TEMP_DIRECTORY = "TempDir"; //$NON-NLS-1$
 	private static TestConfig instance;
@@ -55,7 +56,7 @@ public class TestConfig {
 	 */
 	private void load() {
 		try {
-			FileInputStream inputStream = new FileInputStream(FILENAME);
+			InputStream inputStream = getClass().getResourceAsStream(FILENAME);
 			properties.load(inputStream);
 			inputStream.close();
 		} catch (Exception ignored) {
