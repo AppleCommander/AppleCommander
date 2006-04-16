@@ -2,6 +2,8 @@
  * AppleCommander - An Apple ][ image utility.
  * Copyright (C) 2002 by Robert Greene
  * robgreene at users.sourceforge.net
+ * Copyright (C) 2004 by John B.  Matthews
+ * jmatthews at wight dot edu
  *
  * This program is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU General Public License as published by the 
@@ -52,22 +54,22 @@ public class PascalFormatDisk extends FormattedDisk {
 	public static final int PASCAL_BLOCKS_ON_140K_DISK = 280;
 	
 	// filetypes used elsewhere in the code:
-	private static final String TEXTFILE = "textfile"; //$NON-NLS-1$
-	private static final String CODEFILE = "codefile"; //$NON-NLS-1$
-	private static final String DATAFILE = "datafile"; //$NON-NLS-1$
+	private static final String TEXTFILE = "TEXT"; //$NON-NLS-1$
+	private static final String CODEFILE = "CODE"; //$NON-NLS-1$
+	private static final String DATAFILE = "DATA"; //$NON-NLS-1$
 	
 	/**
-	 * The know filetypes for a Pascal disk.
+	 * The known filetypes for a Pascal disk.
 	 */
 	private static final String[] filetypes = {
-			"xdskfile", //$NON-NLS-1$
+			"xdskfile", 	//$NON-NLS-1$
 			CODEFILE,
 			TEXTFILE,
-			"infofile", //$NON-NLS-1$
+			"INFO", 		//$NON-NLS-1$
 			DATAFILE,
-			"graffile", //$NON-NLS-1$
-			"fotofile", //$NON-NLS-1$
-			"securedir" }; //$NON-NLS-1$
+			"GRAF",			//$NON-NLS-1$
+			"FOTO", 		//$NON-NLS-1$
+			"securedir" }; 	//$NON-NLS-1$
 
 	/**
 	 * Use this inner interface for managing the disk usage data.
@@ -146,8 +148,8 @@ public class PascalFormatDisk extends FormattedDisk {
 		byte[] directory = readDirectory();
 		// process directory blocks:
 		int entrySize = ENTRY_SIZE;
-		int offset = entrySize;
 		int count = AppleUtil.getWordValue(directory, 16);
+		int offset = entrySize;
 		for (int i=0; i<count; i++) {
 			byte[] entry = new byte[entrySize];
 			System.arraycopy(directory, offset, entry, 0, entry.length);
@@ -157,11 +159,89 @@ public class PascalFormatDisk extends FormattedDisk {
 		return list;
 	}
 
+ 	/**
+	 * Retrieve the entire directory.
+	 * @author John B. Matthews
+	 */
+	public List getDirectory() {
+		List list = new ArrayList();
+		byte[] directory = readDirectory();
+		int count = AppleUtil.getWordValue(directory, 16);
+		int offset = 0;
+		for (int i = 0; i <= count; i++) {
+			byte[] entry = new byte[ENTRY_SIZE];
+			System.arraycopy(directory, offset, entry, 0, entry.length);
+			list.add(new PascalFileEntry(entry, this));
+			offset += ENTRY_SIZE;
+		}
+		return list;
+	}
+
+	/**
+	 * Write the revised directory.
+	 * @author John B. Matthews
+	 */
+	public void putDirectory(List list) {
+		byte[] directory = new byte[2048];
+		int count = list.size();
+		int offset = 0;
+		for (int i = 0; i < count; i++) {
+			byte[] entry = ((PascalFileEntry) list.get(i)).toBytes();
+			System.arraycopy(entry, 0, directory, offset, entry.length);
+			offset += ENTRY_SIZE;
+		}
+		writeDirectory(directory);
+	}
+
 	/**
 	 * Create a new FileEntry.
+	 * @author John B. Matthews
 	 */
-	public FileEntry createFile() throws DiskFullException {
-		throw new DiskFullException(textBundle.get("FileCreationNotSupported")); //$NON-NLS-1$
+ 	public FileEntry createFile() throws DiskFullException {
+		// find index of largest free space
+		int count = 0; int index = 0; int max = 0;
+		int last = 0; int first = 0; int free = 0;
+		List dir = getDirectory();
+		count = dir.size();
+		for (int i = 1; i < count; i++) {
+			last = ((PascalFileEntry) dir.get(i - 1)).getLastBlock();
+			first = ((PascalFileEntry) dir.get(i)).getFirstBlock();
+			free = first - last;
+			if (free > max) {
+				max = free; index = i;
+			}
+		}
+		// check after last entry, too
+		last = ((PascalFileEntry) dir.get(count - 1)).getLastBlock();
+		first = getBlocksOnDisk();
+		free = first - last;
+		if (free > max) {
+			max = free; index = count;
+		}
+		if (free > 0 && count < 78) {
+			// update file count in the volume entry
+			PascalFileEntry volEntry = (PascalFileEntry) dir.get(0);
+			volEntry.setFileCount(count);
+			dir.set(0, volEntry);
+			// add new entry to list
+			dir.add(index, new PascalFileEntry(new byte[ENTRY_SIZE], this));
+			PascalFileEntry entry = (PascalFileEntry) dir.get(index);
+			// fill in plausible values; will rely index, first and last
+			first = ((PascalFileEntry) dir.get(index - 1)).getLastBlock();
+			entry.setFirstBlock(first);
+			entry.setLastBlock(first + max);
+			entry.setFiletype("data");
+			entry.setFilename("x");
+			entry.setBytesUsedInLastBlock(512);
+			entry.setModificationDate(new Date());
+			entry.setEntryIndex(index);
+			dir.set(index, entry);
+			// write it back to disk
+			putDirectory(dir);
+			return entry;
+		} else {
+			throw new DiskFullException("Disk full.");
+		}
 	}
 
 	/**
@@ -180,7 +260,7 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * to something specific about the disk.
 	 */
 	public boolean canCreateFile() {
-		return false;
+		return true;
 	}
 	
 	/**
@@ -263,6 +343,13 @@ public class PascalFormatDisk extends FormattedDisk {
 	public int getFilesOnDisk() {
 		return AppleUtil.getWordValue(getVolumeEntry(), 16);
 	}
+
+ 	/**
+ 	 * Return the fisrt block.
+ 	 */
+	public int getFirstBlock() {
+		return AppleUtil.getWordValue(getVolumeEntry(), 18);
+ 	}
 
 	/**
 	 * Return the last access date.
@@ -363,6 +450,8 @@ public class PascalFormatDisk extends FormattedDisk {
 				textBundle.get("PascalFormatDisk.LastAccessDate"), getLastAccessDate())); //$NON-NLS-1$
 		list.add(new DiskInformation(
 				textBundle.get("PascalFormatDisk.MostRecentDateSetting"), getMostRecentDateSetting())); //$NON-NLS-1$
+		list.add(new DiskInformation("First Block", getFirstBlock()));
+		list.add(new DiskInformation("Volume Date", getLastAccessDate()));
 		return list;
 	}
 
@@ -429,14 +518,14 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * Indicates if this disk image can write data to a file.
 	 */
 	public boolean canWriteFileData() {
-		return false;	// FIXME - not implemented
+		return true;
 	}
 	
 	/**
 	 * Indicates if this disk image can delete a file.
 	 */
 	public boolean canDeleteFile() {
-		return false;	// FIXME - not implemented
+		return true;
 	}
 
 	/**
@@ -479,7 +568,7 @@ public class PascalFormatDisk extends FormattedDisk {
 			// volume name should have been set in constructor!
 		AppleUtil.setWordValue(directory, 14, PASCAL_BLOCKS_ON_140K_DISK);
 		AppleUtil.setWordValue(directory, 16, 0);	// no files
-		AppleUtil.setPascalDate(directory, 18, new Date());	// last access time
+		AppleUtil.setWordValue(directory, 18, 0);	// first block
 		AppleUtil.setPascalDate(directory, 20, new Date());	// most recent date setting
 		writeDirectory(directory);
 	}

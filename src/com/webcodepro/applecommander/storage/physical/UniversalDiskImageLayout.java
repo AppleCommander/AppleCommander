@@ -47,21 +47,21 @@ public class UniversalDiskImageLayout extends ByteArrayImageLayout {
 	 * Construct a UniversalDiskImageLayout.
 	 */
 	public UniversalDiskImageLayout(int size) {
-		super(size + 0x40);
+		super(size + OFFSET);
 	}
 
 	/**
 	 * Extract a portion of the disk image.
 	 */
 	public byte[] readBytes(int start, int length) {
-		return super.readBytes(start + 0x40, length);
+		return super.readBytes(start + OFFSET, length);
 	}
 	
 	/**
 	 * Write data to the disk image.
 	 */
 	public void writeBytes(int start, byte[] bytes) {
-		super.writeBytes(start + 0x40, bytes);
+		super.writeBytes(start + OFFSET, bytes);
 	}
 
 }

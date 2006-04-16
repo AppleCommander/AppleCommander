@@ -23,6 +23,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Properties;
 
+import com.webcodepro.applecommander.util.Host;
+
 /**
  * Provide a generalized and common mechanism to handle user preferences throughout
  * all AppleCommander user interfaces.
@@ -60,7 +62,8 @@ public class UserPreferences {
 	 */
 	private void load() {
 		try {
-			FileInputStream inputStream = new FileInputStream(FILENAME);
+			FileInputStream inputStream =
+				new FileInputStream(Host.getPrefDir() + FILENAME);
 			properties.load(inputStream);
 			inputStream.close();
 		} catch (Exception ignored) {
@@ -72,7 +75,8 @@ public class UserPreferences {
 	 */
 	public void save() {
 		try {
-			FileOutputStream outputStream = new FileOutputStream(FILENAME);
+			FileOutputStream outputStream =
+				new FileOutputStream(Host.getPrefDir() + FILENAME);
 			properties.store(outputStream, UiBundle.getInstance().
 				get("UserPreferencesComment")); //$NON-NLS-1$
 			outputStream.close();

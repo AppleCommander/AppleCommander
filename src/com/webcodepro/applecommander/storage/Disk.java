@@ -154,8 +154,12 @@ public class Disk {
 			new ByteArrayOutputStream(diskSize);
 		StreamUtil.copy(input, diskImageByteArray);
 		byte[] diskImage = diskImageByteArray.toByteArray();
-		if (diskImage.length >= APPLE_800KB_2IMG_DISK 
-			&& diskImage.length <= APPLE_800KB_2IMG_DISK + 10) {
+		int offset = UniversalDiskImageLayout.OFFSET;
+		if (diskImage.length == APPLE_800KB_DISK + offset ||
+			diskImage.length == APPLE_5MB_HARDDISK + offset ||
+			diskImage.length == APPLE_10MB_HARDDISK + offset ||
+			diskImage.length == APPLE_20MB_HARDDISK + offset ||
+			diskImage.length == APPLE_32MB_HARDDISK + offset) {
 			diskImageManager = new UniversalDiskImageLayout(diskImage);
 		} else {
 			diskImageManager = new ByteArrayImageLayout(diskImage);

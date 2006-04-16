@@ -410,8 +410,7 @@ public class GraphicsFileFilter implements FileFilter {
 	 * Construct a series of icons based on the QuickDraw II Icon file format.
 	 * In ProDOS, this is the ICN ($Ca) file format.
 	 * <p>
-	 * See <a href='http://www.gno.org/pub/apple2/doc/apple/filetypes/ftn.ca.xxxx'>this
-	 * page</a> for details.
+	 * @see <a href="http://web.pdx.edu/~heiss/technotes/ftyp/ft.about.html">File Types</a>
 	 */
 	public AppleImage[] buildQuickDraw2Icons(FileEntry fileEntry) {
 		List icons = new ArrayList();

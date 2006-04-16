@@ -214,7 +214,7 @@ public class AppleUtil {
 	public static void setPascalString(byte[] buffer, int offset, String string, int maxLength) {
 		int len = Math.min(string.length(), maxLength);
 		buffer[offset] = (byte) (len & 0xff);
-		setString(buffer, offset+1, string, len);
+		setString(buffer, offset+1, string, len, false);
 	}
 	
 	/**

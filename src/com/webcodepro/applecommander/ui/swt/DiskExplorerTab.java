@@ -103,6 +103,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.compilefile.CompileWizard;
 import com.webcodepro.applecommander.ui.swt.wizard.exportfile.ExportWizard;
 import com.webcodepro.applecommander.ui.swt.wizard.importfile.ImportWizard;
 import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.Host;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 
@@ -1376,7 +1377,7 @@ public class DiskExplorerTab {
 	protected void saveAs() {
 		FileDialog fileDialog = new FileDialog(shell, SWT.SAVE);
 		fileDialog.setFilterPath(userPreferences.getSaveDirectory());
-		fileDialog.setFileName(disks[0].getFilename());
+		fileDialog.setFileName(Host.getFileName(disks[0].getFilename()));
 		fileDialog.setText(textBundle.get("SaveDiskImageAsPrompt")); //$NON-NLS-1$
 		String fullpath = fileDialog.open();
 		userPreferences.setSaveDirectory(fileDialog.getFilterPath());

@@ -77,6 +77,7 @@ public class IntegerBasicFileFilter implements FileFilter {
 	/**
 	 * Process the given FileEntry and return a text image of the Integer BASIC file.
 	 * @see com.webcodepro.applecommander.storage.FileFilter#filter(FileEntry)
+	 * author John B. Matthews
 	 */
 	public byte[] filter(FileEntry fileEntry) {
 		byte[] fileData = fileEntry.getFileData();

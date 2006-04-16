@@ -2,6 +2,8 @@
  * AppleCommander - An Apple ][ image utility.
  * Copyright (C) 2002 by Robert Greene
  * robgreene at users.sourceforge.net
+ * Copyright (C) 2004 by John B. Matthews
+ * jmatthews at wight dot edu
  *
  * This program is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU General Public License as published by the 
@@ -19,9 +21,11 @@
  */
 package com.webcodepro.applecommander.storage.os.pascal;
 
+import java.io.ByteArrayOutputStream;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -48,7 +52,9 @@ public class PascalFileEntry implements FileEntry {
 	private TextBundle textBundle = StorageBundle.getInstance();
 	private byte[] fileEntry;
 	private PascalFormatDisk disk;
-
+	private int index = 0;
+	private boolean deleted = false;
+	
 	/**
 	 * Constructor for PascalFileEntry.
 	 */
@@ -59,19 +65,33 @@ public class PascalFileEntry implements FileEntry {
 	}
 	
 	/**
-	 * Get the block number of the files 1st block.
+	 * Get the block number of the file's 1st block.
 	 */
 	public int getFirstBlock() {
 		return AppleUtil.getWordValue(fileEntry, 0);
 	}
-	
+
+ 	/**
+	 * Set the block number of the file's 1st block.
+	 */
+	public void setFirstBlock(int first) {
+		AppleUtil.setWordValue(fileEntry, 0, first);
+	}
+
 	/**
-	 * Get the block number of the files last block +1.
+	 * Get the block number of the file's last block + 1.
 	 */
 	public int getLastBlock() {
 		return AppleUtil.getWordValue(fileEntry, 2);
 	}
 
+ 	/**
+	 * Set the block number of the file's last block + 1.
+	 */
+	public void setLastBlock(int last) {
+		AppleUtil.setWordValue(fileEntry, 2, last);
+	}
+	
 	/**
 	 * Return the name of this file.
 	 */
@@ -83,7 +103,7 @@ public class PascalFileEntry implements FileEntry {
 	 * Set the name of this file.
 	 */
 	public void setFilename(String filename) {
-		// FIXME: Need to implement!
+		AppleUtil.setPascalString(fileEntry, 6, filename.toUpperCase(), 15);
 	}
 	
 	/**
@@ -107,23 +127,40 @@ public class PascalFileEntry implements FileEntry {
 
 	/**
 	 * Set the filetype.
+	 * @author John B. Matthews
 	 */
 	public void setFiletype(String filetype) {
-		// FIXME: Implement!
+		if ("bad".equalsIgnoreCase(filetype)) {
+			AppleUtil.setWordValue(fileEntry, 4, 1);
+		} else if ("code".equalsIgnoreCase(filetype)) {
+			AppleUtil.setWordValue(fileEntry, 4, 2);
+		} else if ("text".equalsIgnoreCase(filetype)) {
+			AppleUtil.setWordValue(fileEntry, 4, 3);
+		} else if ("info".equalsIgnoreCase(filetype)) {
+			AppleUtil.setWordValue(fileEntry, 4, 4);
+		} else if ("data".equalsIgnoreCase(filetype)) {
+			AppleUtil.setWordValue(fileEntry, 4, 5);
+		} else if ("graf".equalsIgnoreCase(filetype)) {
+			AppleUtil.setWordValue(fileEntry, 4, 6);
+		} else if ("foto".equalsIgnoreCase(filetype)) {
+			AppleUtil.setWordValue(fileEntry, 4, 7);
+		} else {
+			AppleUtil.setWordValue(fileEntry, 4, 0);
+		}
 	}
 	
 	/**
-	 * Identify if this file is locked - not applicable in Pascal?
+	 * Identify if this file is locked
 	 */
 	public boolean isLocked() {
-		return false;
+		return false; // Not applicable to UCSD file system
 	}
 
 	/**
 	 * Set the lock indicator.
 	 */
 	public void setLocked(boolean lock) {
-		// FIXME: Implement!
+		// Not applicable to UCSD file system
 	}
 	
 	/**
@@ -131,6 +168,13 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	public int getBytesUsedInLastBlock() {
 		return AppleUtil.getWordValue(fileEntry, 22);
+	}
+	
+	/**
+	 * Set the number of bytes used in files last block.
+	 */
+	public void setBytesUsedInLastBlock(int value) {
+		AppleUtil.setWordValue(fileEntry, 22, value);
 	}
 	
 	/**
@@ -164,18 +208,38 @@ public class PascalFileEntry implements FileEntry {
 	}
 	
 	/**
-	 * Pascal file entries are removed upon deletion.
-	 * Thus, a file entry cannot be marked as deleted.
+	 * Pascal file entries are removed upon deletion,
+	 * so a file entry need not be marked as deleted.
+	 * But the GUI still has a copy of the file list in
+	 * memory, so we mark it deleted in delete(). 
 	 */
 	public boolean isDeleted() {
-		return false;
+		return deleted;
 	}
 
 	/**
 	 * Delete the file.
 	 */
 	public void delete() {
-		// FIXME: Need to implement!
+		int index = 0;
+		String dname = this.getFilename();
+		List dir = disk.getDirectory();
+		int count = dir.size();
+		// find the index of the matching entry
+		for (int i = 1; i < count; i++) {
+			String fname = ((PascalFileEntry) dir.get(i)).getFilename();
+			if (dname.equals(fname)) {
+				index = i;
+			}
+		}
+		if (index != 0) {
+			dir.remove(index);
+			PascalFileEntry volEntry = (PascalFileEntry) dir.get(0);
+			volEntry.setFileCount(count - 2); // inlcudes the volume entry
+			dir.set(0, volEntry);
+			disk.putDirectory(dir);
+			deleted = true;
+		}
 	}
 	
 	/**
@@ -183,6 +247,13 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	public Date getModificationDate() {
 		return AppleUtil.getPascalDate(fileEntry, 24);
+	}
+
+	/**
+	 * Set the file modification date.
+	 */
+	public void setModificationDate(Date date) {
+		AppleUtil.setPascalDate(fileEntry, 24, date);
 	}
 
 	/**
@@ -236,11 +307,130 @@ public class PascalFileEntry implements FileEntry {
 	}
 
 	/**
-	 * Set file data.  This, essentially, is saving data to disk using this
-	 * file entry.
+	 * Filter text: change CR/LF to CR; compress leading SP.
+	 * author John B. Matthews
+	 */
+	private byte[] filterText(byte[] data)  {
+		final byte LF  = 0x0a; final byte CR = 0x0d;
+		final byte DLE = 0x10; final byte SP = 0x20;
+		ByteArrayOutputStream buf = new ByteArrayOutputStream(data.length);
+		int index = 0;
+		while (index < data.length) {
+			byte b = data[index];
+			if (b == CR || b == LF) {
+				buf.write(CR);
+				index++;
+				if (b == CR && index < data.length && data[index] == LF) index++;
+				byte spaceCount = SP;
+				while (index < data.length && data[index] == SP) {
+					spaceCount++; index++;
+				}
+				if (spaceCount > SP) {
+					buf.write(DLE);
+					buf.write(spaceCount);
+				}
+			} else {
+				buf.write(b);
+				index++;
+			}
+		}
+		return buf.toByteArray();
+	}
+
+	/**
+	 * Delete this temporary entry, inserted by PascalFormatDisk.createFile(),
+	 * and exit via DiskFullException.
+	 * @author John B. Matthews
+	 */
+	private void storageError(String s) throws DiskFullException {
+		if (this.index > 0) {
+			List dir = disk.getDirectory();
+			int count = dir.size();
+			dir.remove(this.index);
+			PascalFileEntry volEntry = (PascalFileEntry) dir.get(0);
+			volEntry.setFileCount(count - 2);
+			dir.set(0, volEntry);
+			disk.putDirectory(dir);
+			throw new DiskFullException(s);
+		}
+	}
+
+	/**
+	 * Find index of last CR < 1023 bytes from offset.
+	 * @author John B. Matthews
+	 */
+	private int findEOL(byte[] data, int offset) throws DiskFullException  {
+		int i = offset + 1022;
+		while (i > offset) {
+			if (data[i] == 13) {
+				return i;
+			}
+			i--;
+		}
+		storageError("Lines must be < 1024 characters.");
+		return 0;
+	}
+
+	/**
+	 * Set file data for this file entry. Because the directory entry may
+	 * have been changed, use this.index to determine which entry to update.
+	 * author John B. Matthews.
+	 * @see #setEntryIndex
+	 * @see PascalFormatDisk#createFile
 	 */
 	public void setFileData(byte[] data) throws DiskFullException {
-		// FIXME: Implement!
+		int first = getFirstBlock();
+		int last = getLastBlock();
+		if (fileEntry[4] == 3) { // text
+			data = filterText(data);
+			byte[] buf = new byte[1024];
+			int offset = 0;
+			int pages = 0;
+			disk.writeBlock(first, buf); pages++;
+			while (offset + 1023 < data.length) {
+				if ((pages * 2) > (last - first - 2)) {
+					storageError("Not enough room.");
+				}
+				int crPtr = findEOL(data, offset);
+				System.arraycopy(data, offset, buf, 0, crPtr - offset + 1);
+				disk.writeBlock(first + pages * 2, buf); pages++;
+				Arrays.fill(buf, (byte) 0);
+				offset = crPtr + 1;
+			}
+			if (offset < data.length) {
+				System.arraycopy(data, offset, buf, 0, data.length - offset);
+				disk.writeBlock(first + pages * 2, buf); pages++;
+			}
+			setLastBlock(first + pages * 2);
+			setBytesUsedInLastBlock(512);
+		} else { // data or code
+			if (data.length > (last - first) * 512) {
+				storageError("Not enough room.");
+			}
+			byte[] buf = new byte[512];
+			int blocks = data.length / 512;
+			int bytes = data.length % 512;
+			for (int i = 0; i < blocks; i++) {
+				System.arraycopy(data, i * 512, buf, 0, 512);
+				disk.writeBlock(first + i, buf);
+			}
+			if (bytes > 0) {
+				Arrays.fill(buf, (byte) 0);
+				System.arraycopy(data, blocks * 512, buf, 0, bytes);
+				disk.writeBlock(first + blocks, buf);
+				setLastBlock(first + blocks + 1);
+				setBytesUsedInLastBlock(bytes);
+			} else {
+				setLastBlock(first + blocks);
+				setBytesUsedInLastBlock(512);
+			}
+		}
+		// update this directory entry
+		if (this.index > 0) {
+			List dir = disk.getDirectory();
+			dir.set(this.index, this);
+			disk.putDirectory(dir);
+		}
 	}
 	
 	/**
@@ -249,12 +439,12 @@ public class PascalFileEntry implements FileEntry {
 	 * of guessing the appropriate filter.
 	 */
 	public FileFilter getSuggestedFilter() {
-		if ("textfile".equals(getFiletype())) { //$NON-NLS-1$
+		if ("TEXT".equals(getFiletype())) { //$NON-NLS-1$
 			if (getFilename().toLowerCase().endsWith(".text")) { //$NON-NLS-1$
 				return new PascalTextFileFilter();
 			}
 			return new TextFileFilter();
-		} else if ("datafile".equals(getFiletype()) && getSize() >= 8184 && getSize() <= 8192) { //$NON-NLS-1$
+		} else if ("DATA".equals(getFiletype()) && getSize() >= 8184 && getSize() <= 8192) { //$NON-NLS-1$
 			GraphicsFileFilter filter = new GraphicsFileFilter();
 			filter.setMode(GraphicsFileFilter.MODE_HGR_COLOR);
 			return filter;
@@ -269,6 +459,14 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	public FormattedDisk getFormattedDisk() {
 		return disk;
+	}
+
+	/**
+	 * Get the byte[] associated with this FileEntry.
+	 * This is need to manipuate the directory as a whole.
+	 */
+	public byte[] toBytes() {
+		return fileEntry;
 	}
 
 	/**
@@ -293,5 +491,24 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	public boolean canCompile() {
 		return false;
+	}
+
+	/**
+	 * Remember the index of a newly created file entry.
+	 * Required to update the entry after setFileData,
+	 * which may change any or all of the new entry's fields.
+	 * author John B. Matthews
+	 */
+	public void setEntryIndex(int index) {
+		this.index = index;
+	}
+
+	/**
+	 * Set the file count in a volume entry.
+	 * Use only on the volume entry: dir.get(0).
+	 * author John B. Matthews
+	 */
+	public void setFileCount(int count) {
+		AppleUtil.setWordValue(fileEntry, 16, count);
 	}
 }

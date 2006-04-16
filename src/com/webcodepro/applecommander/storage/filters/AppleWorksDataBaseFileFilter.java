@@ -206,8 +206,8 @@ public class AppleWorksDataBaseFileFilter implements FileFilter {
 		offset+= (reportCount * REPORT_LENGTH);
 		// process data:
 		for (int i=0; i<recordCount+1; i++) {
-			int length = AppleUtil.getWordValue(fileData, offset)
-					+ 2;		// does not include this word!
+			// length = record length + 2 bytes for the length word itself.
+			int length = AppleUtil.getWordValue(fileData, offset) + 2;
 			int data = offset + 2;
 			int column = 0;
 			while (AppleUtil.getUnsignedByte(fileData[data]) != DATA_CONTROL_END) {
@@ -236,6 +236,7 @@ public class AppleWorksDataBaseFileFilter implements FileFilter {
 						printWriter.print("\",\""); //$NON-NLS-1$
 						repeats--;
 					}
+					data++; // move on to the next column
 				}
 				column++;
 			}
