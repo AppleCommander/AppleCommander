@@ -65,11 +65,11 @@ public class PascalFormatDisk extends FormattedDisk {
 			"xdskfile", 	//$NON-NLS-1$
 			CODEFILE,
 			TEXTFILE,
-			"INFO", 		//$NON-NLS-1$
+			"INFO",		//$NON-NLS-1$
 			DATAFILE,
-			"GRAF",			//$NON-NLS-1$
+			"GRAF",		//$NON-NLS-1$
 			"FOTO", 		//$NON-NLS-1$
-			"securedir" }; 	//$NON-NLS-1$
+			"securedir" };	//$NON-NLS-1$
 
 	/**
 	 * Use this inner interface for managing the disk usage data.
