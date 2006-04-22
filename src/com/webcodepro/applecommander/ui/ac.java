@@ -66,13 +66,13 @@ public class ac {
 			} else if ("-i".equalsIgnoreCase(args[0])) {
 				getDiskInfo(args[1]);
 			} else if ("-dos140".equalsIgnoreCase(args[0])) {
-				createDosDisk(args[1], DosFormatDisk.APPLE_140KB_DISK);
+				createDosDisk(args[1], Disk.APPLE_140KB_DISK);
 			} else if ("-pas140".equalsIgnoreCase(args[0])) {
-				createPasDisk(args[1], args[2], PascalFormatDisk.APPLE_140KB_DISK);
+				createPasDisk(args[1], args[2], Disk.APPLE_140KB_DISK);
 			} else if ("-pro140".equalsIgnoreCase(args[0])) {
-				createProDisk(args[1], args[2], ProdosFormatDisk.APPLE_140KB_DISK);
+				createProDisk(args[1], args[2], Disk.APPLE_140KB_DISK);
 			} else if ("-pro800".equalsIgnoreCase(args[0])) {
-				createProDisk(args[1], args[2], ProdosFormatDisk.APPLE_800KB_DISK);
+				createProDisk(args[1], args[2], Disk.APPLE_800KB_DISK);
 			} else {
 				help();
 			}
