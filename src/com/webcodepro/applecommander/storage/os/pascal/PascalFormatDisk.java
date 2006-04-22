@@ -230,8 +230,8 @@ public class PascalFormatDisk extends FormattedDisk {
 			first = ((PascalFileEntry) dir.get(index - 1)).getLastBlock();
 			entry.setFirstBlock(first);
 			entry.setLastBlock(first + max);
-			entry.setFiletype("data");
-			entry.setFilename("x");
+			entry.setFiletype("data"); //$NON-NLS-1$
+			entry.setFilename("x"); //$NON-NLS-1$
 			entry.setBytesUsedInLastBlock(512);
 			entry.setModificationDate(new Date());
 			entry.setEntryIndex(index);
@@ -240,7 +240,7 @@ public class PascalFormatDisk extends FormattedDisk {
 			putDirectory(dir);
 			return entry;
 		} else {
-			throw new DiskFullException("Disk full.");
+			throw new DiskFullException(textBundle.get("PascalFormatDisk.DiskFull")); //$NON-NLS-1$
 		}
 	}
 
@@ -450,8 +450,8 @@ public class PascalFormatDisk extends FormattedDisk {
 				textBundle.get("PascalFormatDisk.LastAccessDate"), getLastAccessDate())); //$NON-NLS-1$
 		list.add(new DiskInformation(
 				textBundle.get("PascalFormatDisk.MostRecentDateSetting"), getMostRecentDateSetting())); //$NON-NLS-1$
-		list.add(new DiskInformation("First Block", getFirstBlock()));
-		list.add(new DiskInformation("Volume Date", getLastAccessDate()));
+		list.add(new DiskInformation(textBundle.get("PascalFormatDisk.FirstBlock"), getFirstBlock())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("PascalFormatDisk.VolumeDate"), getLastAccessDate())); //$NON-NLS-1$
 		return list;
 	}
 

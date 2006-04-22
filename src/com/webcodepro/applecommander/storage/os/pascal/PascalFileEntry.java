@@ -130,19 +130,19 @@ public class PascalFileEntry implements FileEntry {
 	 * @author John B. Matthews
 	 */
 	public void setFiletype(String filetype) {
-		if ("bad".equalsIgnoreCase(filetype)) {
+		if ("bad".equalsIgnoreCase(filetype)) { //$NON-NLS-1$
 			AppleUtil.setWordValue(fileEntry, 4, 1);
-		} else if ("code".equalsIgnoreCase(filetype)) {
+		} else if ("code".equalsIgnoreCase(filetype)) { //$NON-NLS-1$
 			AppleUtil.setWordValue(fileEntry, 4, 2);
-		} else if ("text".equalsIgnoreCase(filetype)) {
+		} else if ("text".equalsIgnoreCase(filetype)) { //$NON-NLS-1$
 			AppleUtil.setWordValue(fileEntry, 4, 3);
-		} else if ("info".equalsIgnoreCase(filetype)) {
+		} else if ("info".equalsIgnoreCase(filetype)) { //$NON-NLS-1$
 			AppleUtil.setWordValue(fileEntry, 4, 4);
-		} else if ("data".equalsIgnoreCase(filetype)) {
+		} else if ("data".equalsIgnoreCase(filetype)) { //$NON-NLS-1$
 			AppleUtil.setWordValue(fileEntry, 4, 5);
-		} else if ("graf".equalsIgnoreCase(filetype)) {
+		} else if ("graf".equalsIgnoreCase(filetype)) { //$NON-NLS-1$
 			AppleUtil.setWordValue(fileEntry, 4, 6);
-		} else if ("foto".equalsIgnoreCase(filetype)) {
+		} else if ("foto".equalsIgnoreCase(filetype)) { //$NON-NLS-1$
 			AppleUtil.setWordValue(fileEntry, 4, 7);
 		} else {
 			AppleUtil.setWordValue(fileEntry, 4, 0);
@@ -367,7 +367,7 @@ public class PascalFileEntry implements FileEntry {
 			}
 			i--;
 		}
-		storageError("Lines must be < 1024 characters.");
+		storageError(textBundle.get("PascalFileEntry.LineLengthError")); //$NON-NLS-1$
 		return 0;
 	}
 
@@ -389,7 +389,7 @@ public class PascalFileEntry implements FileEntry {
 			disk.writeBlock(first, buf); pages++;
 			while (offset + 1023 < data.length) {
 				if ((pages * 2) > (last - first - 2)) {
-					storageError("Not enough room.");
+					storageError(textBundle.get("PascalFileEntry.NotEnoughRoom")); //$NON-NLS-1$
 				}
 				int crPtr = findEOL(data, offset);
 				System.arraycopy(data, offset, buf, 0, crPtr - offset + 1);
@@ -405,7 +405,7 @@ public class PascalFileEntry implements FileEntry {
 			setBytesUsedInLastBlock(512);
 		} else { // data or code
 			if (data.length > (last - first) * 512) {
-				storageError("Not enough room.");
+				storageError(textBundle.get("PascalFileEntry.NotEnoughRoom")); //$NON-NLS-1$
 			}
 			byte[] buf = new byte[512];
 			int blocks = data.length / 512;
