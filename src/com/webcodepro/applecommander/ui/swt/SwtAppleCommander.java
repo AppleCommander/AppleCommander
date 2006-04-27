@@ -240,7 +240,7 @@ public class SwtAppleCommander implements Listener {
 
 		item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(imageManager.get(ImageManager.ICON_COMPARE_DISKS));
-		item.setText(textBundle.get("CreateButton")); //$NON-NLS-1$
+		item.setText(textBundle.get("CompareButton")); //$NON-NLS-1$
 		item.setToolTipText(textBundle.get("SwtAppleCommander.CompareDiskImageTooltip")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
