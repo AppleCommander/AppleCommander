@@ -456,10 +456,10 @@ public class Disk {
 	
 	/**
 	 * Test the disk format to see if this is a Pascal formatted
-	 * disk.
+	 * disk. Pascal disks may be either 140K or 800K.
 	 */
 	public boolean isPascalFormat() {
-		if (!is140KbDisk()) return false;
+		if (!(is140KbDisk() || is800KbDisk())) return false;
 		byte[] directory = readBlock(2);
 		return directory[0] == 0 && directory[1] == 0
 			&& directory[2] == 6 && directory[3] == 0
