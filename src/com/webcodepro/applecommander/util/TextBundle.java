@@ -24,7 +24,7 @@ import java.util.ResourceBundle;
 
 /**
  * Manage the user-interface specific ResourceBundle.  Initally, this is to actually clean up the
- * text.  Utilmately, it should allow AppleCommander to be translated into other languages.
+ * text.  Ultimately, it should allow AppleCommander to be translated into other languages.
  * <p>
  * Note that TextBundle serves as a generic resource for the util package.  Other
  * groupings are used and will have their own subclasses for TextBundle.
