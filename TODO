@@ -2,24 +2,6 @@ THINGS TO DO
 ============
 This is the internal list of items that need to be done.
 
--- 1.3.4 --
-* Started using the SWT S-Leak application to test for application resource leakage.
-* Reports of a few issues with 800K images.  UniDOS in particular doesn't appear to be
-  recognized appropriately.  This was due to a mix-up in setting the the image ordering.
-* Fixed the bug where the import of a binary file does not set the address for DOS images.
-* Fixed bug that where a file cound not be exported as raw binary.  (Crashed AppleCommander.)
-* Raw binary files may now be imported - just check the raw image checkbox in the import
-  wizard.
-* Prepare for internationalization (I18N).  Started as a simplification process but it
-  got carried away.  Text is stored in text bundles throughout the code.  The files
-  end with ____Bundle.properties.  The groupings are Storage, Compiler, Ui, and
-  Text; directories relate to the package.  Contributions are more than welcome
-  seeing as I know very little German and it's unlikely that I'll get my wife to
-  spend time translating to Spanish.
-* Updates per Eclipse 3.0 recommendations.
-* Resolve OS X issues where window cannot come to the foreground. (J Matthews)
-* Add Apple Pascal writing capability. (J Matthews)
-
 --- FUTURE ---
 o Create subdirectories as appropriate (ProDOS).
 o Create reusable show dialog messages (they're scattered all over right now) to clean
