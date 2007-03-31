@@ -2,7 +2,7 @@ THINGS TO DO
 ============
 This is the internal list of items that need to be done.
 
--- 1.3.4 -- ** Maybe I18N is sufficient for 1.4.0? **
+-- 1.3.4 --
 * Started using the SWT S-Leak application to test for application resource leakage.
 * Reports of a few issues with 800K images.  UniDOS in particular doesn't appear to be
   recognized appropriately.  This was due to a mix-up in setting the the image ordering.
@@ -17,11 +17,13 @@ This is the internal list of items that need to be done.
   seeing as I know very little German and it's unlikely that I'll get my wife to
   spend time translating to Spanish.
 * Updates per Eclipse 3.0 recommendations.
+* Resolve OS X issues where window cannot come to the foreground. (J Matthews)
+* Add Apple Pascal writing capability. (J Matthews)
+
+--- FUTURE ---
 o Create subdirectories as appropriate (ProDOS).
 o Create reusable show dialog messages (they're scattered all over right now) to clean
   up code a bit.
-
---- FUTURE 1.3.x ---
 ? Compile of BASIC programs
 ? Enhance the BASIC compiler with a few more commands...
 o Improve file preview for Integer BASIC files.
@@ -29,16 +31,12 @@ o Improve file preview for AppleWorks Word Processor files (make implementation
   generic to a Word Processor, if possible).
 o SWT image handlers do not appear to work correctly.  BMP works - but color seems
   off.  GIF/PNG/JPEG give errors or a black image.
-o Resolve OS X issues where window cannot come to the foreground.
 o Fix scrollbar for FileViewer!  PgUp/PgDn doesn't seem to work.
- 
---- FUTURE 1.4.x (or later) ---
 o Change layout of DiskExplorer window to not be tabbed.  Information could/should be
   a popup window.  File browsing and disk free space can be shown or hidden by toolbar
   buttons (see Denis Molony's prototype for example).  Can add file tracking at this 
   point.  Possibly toggle sector/block editor?
 o Add RDOS writing capability.
-o Add Apple Pascal writing capability.
 o Add CP/M writing capability.
 o Add drag-and-drop capability.
 o Provide a Swing GUI so people are not "limited" to SWT.  This may be tossed; although
@@ -50,6 +48,7 @@ o Sector/Block editor.
 o Open zip files; be able to browse disk images from the zip file. This should be
   a different type of window (Archive Window?) that allows disk images to be
   opened into a Disk Window.  (Saves would have to be to the file system.)
+o Anytime a SHK or SDK file is opened, open into a new browser.
 o Open SHK files?  Similar operation to zip files.
 o Open SDK files?  Opens directly into a Disk Window.
 o Make formatted images bootable.  May need user to supply a "master" disk from
