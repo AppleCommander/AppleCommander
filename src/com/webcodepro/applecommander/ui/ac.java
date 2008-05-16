@@ -3,7 +3,7 @@
  * Copyright (C) 2002 by Robert Greene
  * robgreene at users.sourceforge.net
  * Copyright (C) 2003, 2004 by John B.  Matthews
- * jmatthews at wight dot edu
+ * matthewsj at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU General Public License as published by the 
