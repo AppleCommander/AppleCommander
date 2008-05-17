@@ -49,11 +49,11 @@ public class ac {
 		try {
 			if (args.length == 0) {
 				help();
-			} else if ("-ls".equalsIgnoreCase(args[0])) {
+			} else if ("-ls".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				showDirectory(args[1], FormattedDisk.FILE_DISPLAY_STANDARD);
-			} else if ("-l".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+			} else if ("-l".equalsIgnoreCase(args[0])) {  //$NON-NLS-1$
 				showDirectory(args[1], FormattedDisk.FILE_DISPLAY_NATIVE);
-			} else if ("-ll".equalsIgnoreCase(args[0])) {
+			} else if ("-ll".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				showDirectory(args[1], FormattedDisk.FILE_DISPLAY_DETAIL);
 			} else if ("-e".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				getFile(args[1], args[2], true);
@@ -63,15 +63,17 @@ public class ac {
 				putFile(args[1], args[2], args[3], args[4]);
 			} else if ("-d".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				deleteFile(args[1], args[2]);
-			} else if ("-i".equalsIgnoreCase(args[0])) {
+			} else if ("-i".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				getDiskInfo(args[1]);
-			} else if ("-dos140".equalsIgnoreCase(args[0])) {
+			} else if ("-cc65".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				putCC65(args[1], args[2], args[3]);
+			} else if ("-dos140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				createDosDisk(args[1], Disk.APPLE_140KB_DISK);
-			} else if ("-pas140".equalsIgnoreCase(args[0])) {
+			} else if ("-pas140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				createPasDisk(args[1], args[2], Disk.APPLE_140KB_DISK);
-			} else if ("-pro140".equalsIgnoreCase(args[0])) {
+			} else if ("-pro140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				createProDisk(args[1], args[2], Disk.APPLE_140KB_DISK);
-			} else if ("-pro800".equalsIgnoreCase(args[0])) {
+			} else if ("-pro800".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				createProDisk(args[1], args[2], Disk.APPLE_800KB_DISK);
 			} else {
 				help();
@@ -109,6 +111,19 @@ public class ac {
 		}
 		entry.setFileData(buf.toByteArray());
 		formattedDisk.save();
+	}
+	
+	/**
+	 * Put <stdin> into the file named fileName on the disk named imageName;
+	 * Assume a cc65 style four-byte header with start address in bytes 0-1.
+	 */
+	static void putCC65(String fileName, String fileType, String imageName)
+			throws IOException, DiskFullException {
+		
+		byte[] header = new byte[4];
+		int byteCount = System.in.read(header, 0, 4);
+		int address = header[1] * 256 + header[0];
+		putFile(fileName, fileType, Integer.toString(address), imageName);
 	}
 	
 	/**
