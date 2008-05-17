@@ -47,6 +47,7 @@ import com.webcodepro.applecommander.util.TextBundle;
  * <p>
  * Date created: Oct 5, 2002 12:22:34 AM
  * @author Rob Greene
+ * @author John B. Matthews
  */
 public class PascalFileEntry implements FileEntry {
 	private TextBundle textBundle = StorageBundle.getInstance();
@@ -127,7 +128,6 @@ public class PascalFileEntry implements FileEntry {
 
 	/**
 	 * Set the filetype.
-	 * @author John B. Matthews
 	 */
 	public void setFiletype(String filetype) {
 		if ("bad".equalsIgnoreCase(filetype)) { //$NON-NLS-1$

@@ -41,6 +41,7 @@ import com.webcodepro.applecommander.util.TextBundle;
  * <p>
  * Date created: Oct 4, 2002 11:56:50 PM
  * @author Rob Greene
+ * @author John B. Matthews [getFiles(), get/putDirectory(), createFile()]
  */
 public class PascalFormatDisk extends FormattedDisk {
 	private TextBundle textBundle = StorageBundle.getInstance();
@@ -141,7 +142,6 @@ public class PascalFormatDisk extends FormattedDisk {
 	/**
 	 * Retrieve a list of files.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFiles()
-	 * @author John B. Matthews (for fixing algorithm)
 	 */
 	public List getFiles() {
 		List list = new ArrayList();
@@ -161,7 +161,6 @@ public class PascalFormatDisk extends FormattedDisk {
 
  	/**
 	 * Retrieve the entire directory.
-	 * @author John B. Matthews
 	 */
 	public List getDirectory() {
 		List list = new ArrayList();
@@ -179,7 +178,6 @@ public class PascalFormatDisk extends FormattedDisk {
 
 	/**
 	 * Write the revised directory.
-	 * @author John B. Matthews
 	 */
 	public void putDirectory(List list) {
 		byte[] directory = new byte[2048];
@@ -195,7 +193,6 @@ public class PascalFormatDisk extends FormattedDisk {
 
 	/**
 	 * Create a new FileEntry.
-	 * @author John B. Matthews
 	 */
  	public FileEntry createFile() throws DiskFullException {
 		// find index of largest free space

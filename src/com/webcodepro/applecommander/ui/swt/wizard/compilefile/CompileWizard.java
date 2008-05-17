@@ -59,14 +59,14 @@ public class CompileWizard extends Wizard {
 	}
 
 	/**
-	 * @return
+	 * @return the directory
 	 */
 	public String getDirectory() {
 		return directory;
 	}
 
 	/**
-	 * @param string
+	 * @param string the directory
 	 */
 	public void setDirectory(String string) {
 		directory = string;
