@@ -91,8 +91,7 @@ public class ac {
 	 * Put <stdin> into the file named fileName on the disk named imageName;
 	 * Note: only volume level supported; input size unlimited.
 	 */
-	static void putFile(String fileName, String fileType,
-			String address, String imageName)
+	static void putFile(String imageName, String fileName, String fileType, String address)
 			throws IOException, DiskFullException {
 		
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
@@ -118,19 +117,19 @@ public class ac {
 	 * Put <stdin> into the file named fileName on the disk named imageName;
 	 * Assume a cc65 style four-byte header with start address in bytes 0-1.
 	 */
-	static void putCC65(String fileName, String fileType, String imageName)
+	static void putCC65(String imageName, String fileName, String fileType)
 			throws IOException, DiskFullException {
 		
 		byte[] header = new byte[4];
 		int byteCount = System.in.read(header, 0, 4);
 		int address = AppleUtil.getWordValue(header, 0);
-		putFile(fileName, fileType, Integer.toString(address), imageName);
+		putFile(imageName, fileName, fileType, Integer.toString(address));
 	}
 	
 	/**
 	 * Delete the file named fileName from the disk named imageName.
 	 */
-	static void deleteFile(String fileName, String imageName) throws IOException {
+	static void deleteFile(String imageName, String fileName) throws IOException {
 		Disk disk = new Disk(imageName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		for (int i=0; i<formattedDisks.length; i++) {
@@ -151,7 +150,7 @@ public class ac {
 	 * Get the file named filename from the disk named imageName;
 	 * the file is filtered according to its type and sent to <stdout>.
 	 */
-	static void getFile(String fileName, String imageName, boolean filter) throws IOException {
+	static void getFile(String imageName, String fileName, boolean filter) throws IOException {
 		Disk disk = new Disk(imageName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		for (int i=0; i<formattedDisks.length; i++) {
@@ -303,9 +302,11 @@ public class ac {
 	static int stringToInt(String s) {
 		int i = 0;
 		try {
-			s = s.trim();
-			if (s.startsWith("$")) {
+			s = s.trim().toLowerCase();
+			if (s.startsWith("$")) { // 6502, Motorola
 				i = Integer.parseInt(s.substring(1), 0x10);
+			} else if (s.startsWith("0x")) { // Java, C
+				i = Integer.parseInt(s.substring(2), 0x10);
 			} else {
 			    i = Integer.parseInt(s);
 			}
