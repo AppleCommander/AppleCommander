@@ -303,9 +303,14 @@ public class ac {
 	static int stringToInt(String s) {
 		int i = 0;
 		try {
-			i = Integer.parseInt(s.trim());
-		} catch (NumberFormatException ignored) {
-			// ignored
+			s = s.trim();
+			if (s.startsWith("$")) {
+				i = Integer.parseInt(s.substring(1), 0x10);
+			} else {
+			    i = Integer.parseInt(s);
+			}
+		} catch (NumberFormatException nfe) {
+			i = 0x2000;
 		}
 		return i;
 	}
