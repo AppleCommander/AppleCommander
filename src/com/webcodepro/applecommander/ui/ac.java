@@ -40,6 +40,7 @@ import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
 import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
+import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 
 public class ac {
@@ -122,7 +123,7 @@ public class ac {
 		
 		byte[] header = new byte[4];
 		int byteCount = System.in.read(header, 0, 4);
-		int address = header[1] * 256 + header[0];
+		int address = AppleUtil.getWordValue(header, 0);
 		putFile(fileName, fileType, Integer.toString(address), imageName);
 	}
 	
