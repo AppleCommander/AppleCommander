@@ -106,10 +106,10 @@ public class ac {
 		FileEntry entry = formattedDisk.createFile();
 		entry.setFilename(fileName);
 		entry.setFiletype(fileType);
+		entry.setFileData(buf.toByteArray());
 		if (entry.needsAddress()) {
 			entry.setAddress(stringToInt(address));
 		}
-		entry.setFileData(buf.toByteArray());
 		formattedDisk.save();
 	}
 	

@@ -357,6 +357,8 @@ public class DosFileEntry implements FileEntry {
 	 * Note: The address can be set before the data is saved or
 	 * after the data is saved.  This is an attempt to make the
 	 * API more easily usable.
+	 * 
+	 * Empirically, the data must be set before the address is set.
 	 */
 	public void setFileData(byte[] data) throws DiskFullException {
 		if (isBinaryFile()) {
@@ -365,7 +367,7 @@ public class DosFileEntry implements FileEntry {
 				AppleUtil.setWordValue(filedata, 0, address.intValue());
 				address = null;
 			} else {
-				AppleUtil.setWordValue(filedata, 0, 0);		// Needs to be set via setAddress
+				AppleUtil.setWordValue(filedata, 0, 0); // Needs to be set via setAddress
 			}
 			AppleUtil.setWordValue(filedata, 2, data.length);
 			System.arraycopy(data, 0, filedata, 4, data.length);

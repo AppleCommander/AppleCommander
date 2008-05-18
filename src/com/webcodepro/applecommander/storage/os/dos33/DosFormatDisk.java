@@ -161,7 +161,7 @@ public class DosFormatDisk extends FormattedDisk {
 		byte[] vtoc = readVtoc();
 		int track = AppleUtil.getUnsignedByte(vtoc[1]);
 		int sector = AppleUtil.getUnsignedByte(vtoc[2]);
-		while (track != 0) {	// iterate through all catalog sectors
+		while (sector != 0) { // bug fix: iterate through all catalog _sectors_
 			byte[] catalogSector = readSector(track, sector);
 			int offset = 0x0b;
 			while (offset < 0xff) {	// iterate through all entries
