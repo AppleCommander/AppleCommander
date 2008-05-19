@@ -61,7 +61,8 @@ public class ac {
 			} else if ("-g".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				getFile(args[1], args[2], false);
 			} else if ("-p".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				putFile(args[1], args[2], args[3], args[4]);
+				putFile(args[1], args[2], args[3],
+					(args.length > 4 ? args[4] : "0x2000"));
 			} else if ("-d".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				deleteFile(args[1], args[2]);
 			} else if ("-i".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
@@ -121,9 +122,10 @@ public class ac {
 			throws IOException, DiskFullException {
 		
 		byte[] header = new byte[4];
-		int byteCount = System.in.read(header, 0, 4);
-		int address = AppleUtil.getWordValue(header, 0);
-		putFile(imageName, fileName, fileType, Integer.toString(address));
+		if (System.in.read(header, 0, 4) == 4) {
+			int address = AppleUtil.getWordValue(header, 0);
+			putFile(imageName, fileName, fileType, Integer.toString(address));
+		}
 	}
 	
 	/**
@@ -303,7 +305,7 @@ public class ac {
 		int i = 0;
 		try {
 			s = s.trim().toLowerCase();
-			if (s.startsWith("$")) { // 6502, Motorola
+			if (s.startsWith("$")) { // 650, Motorola
 				i = Integer.parseInt(s.substring(1), 0x10);
 			} else if (s.startsWith("0x")) { // Java, C
 				i = Integer.parseInt(s.substring(2), 0x10);
