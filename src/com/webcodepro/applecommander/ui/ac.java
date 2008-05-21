@@ -73,6 +73,8 @@ public class ac {
 				createDosDisk(args[1], Disk.APPLE_140KB_DISK);
 			} else if ("-pas140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				createPasDisk(args[1], args[2], Disk.APPLE_140KB_DISK);
+			} else if ("-pas800".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				createPasDisk(args[1], args[2], Disk.APPLE_800KB_DISK);
 			} else if ("-pro140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				createProDisk(args[1], args[2], Disk.APPLE_140KB_DISK);
 			} else if ("-pro800".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
