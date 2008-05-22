@@ -307,7 +307,7 @@ public class ac {
 		int i = 0;
 		try {
 			s = s.trim().toLowerCase();
-			if (s.startsWith("$")) { // 650, Motorola
+			if (s.startsWith("$")) { // 6502, Motorola
 				i = Integer.parseInt(s.substring(1), 0x10);
 			} else if (s.startsWith("0x")) { // Java, C
 				i = Integer.parseInt(s.substring(2), 0x10);
