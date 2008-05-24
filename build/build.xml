@@ -1,6 +1,6 @@
 <project name="AppleCommander" default="all" basedir="..">
 	<description>
-		This ANT build script will build the pieces that need to be distributed.
+		This script builds the distribution components.
 	</description>
 	
 	<property name="work" value="work"/>
@@ -12,23 +12,41 @@
 	<property name="doc" value="documentation"/>
 	<property name="web" value="web"/>
 	<property name="javadoc" value="${work}/javadoc"/>
-	<property name="swtjar" value="C:\Program Files\Eclipse 2.1.x\plugins\org.eclipse.swt.win32_2.1.3\ws\win32\swt.jar"/>
-	<property name="junitjar" value="C:\Java\lib\junit3.8.1\junit.jar"/>
-	
-	<target name="init" description="Ensure work directory is present">
+	<condition property="swtjar"
+		value="C:\Program Files\Eclipse 2.1.x\plugins\org.eclipse.swt.win32_2.1.3\ws\win32\swt.jar"
+		else="/Users/Shared/eclipse/plugins/org.eclipse.swt.carbon.macosx_3.2.2.v3236.jar">
+		<os family="windows"/>
+	</condition>	
+	<condition property="junitjar"
+		value="C:\Java\lib\junit3.8.1\junit.jar"
+		else="/Users/Shared/junit/junit.jar">
+		<os family="windows"/>
+	</condition>	
+
+	<target name="version" description="Get version from source.">
+		<property name="main.path" value="src/com/webcodepro/applecommander/ui"/>
+		<loadfile srcfile="${main.path}/AppleCommander.java" property="acVersion">
+			<filterchain>
+				<linecontainsregexp>
+					<regexp pattern='^.*String VERSION = ".*";.*$'/>
+				</linecontainsregexp>
+				<tokenfilter>
+					<replaceregex pattern='^.*String VERSION = "(.*)";.*$' replace='\1'/>
+				</tokenfilter>
+				<striplinebreaks/>
+			</filterchain>
+		</loadfile>
+		<echo>Building version ${acVersion}...</echo>
+	</target>
+
+	<target name="init" depends="version" description="Ensure work directory is present">
 		<mkdir dir="${work}"/>
 		<mkdir dir="${classes}"/>
 		<mkdir dir="${dist}"/>
 		<mkdir dir="${javadoc}"/>
-		<input message="Please enter the version number for this release of AppleCommander:"
-			addproperty="acVersion"/>
-		<condition property="do.abort">
-			<equals arg1="" arg2="${acVersion}"/>
-		</condition>
-		<fail if="do.abort">Version number is required.</fail>
-		<echo>Making build ${acVersion}...</echo>
 		<property name="guijar" value="${dist}/AppleCommander-${acVersion}.jar"/>
 		<property name="cmdjar" value="${dist}/AppleCommander-${acVersion}-ac.jar"/>
+		<property name="maczip" value="${dist}/AppleCommander-${acVersion}-mac.zip"/>
 		<property name="srczip" value="${dist}/AppleCommander-${acVersion}-src.zip"/>
 		<property name="webzip" value="${dist}/AppleCommander-${acVersion}-web.zip"/>
 	</target>
@@ -39,7 +57,11 @@
 		<delete dir="${javadoc}"/>
 	</target>
 	
-	<target name="all" depends="init,executableGuiJar,executableCmdJar,sourceZip,javadoc,websiteZip" description="Everything">
+	<target name="all" depends="init,jars,macBundle,sourceZip,javadoc,websiteZip" description="Everything">
+	    <!-- Nothing else to do - depends handles it all. -->
+	</target>
+	
+	<target name="jars" depends="init,executableGuiJar,executableCmdJar" description="Build executable jars">
 	    <!-- Nothing else to do - depends handles it all. -->
 	</target>
 	
@@ -85,6 +107,23 @@
 		</jar>
 	</target>
 	
+	<target name="macBundle" depends="init,jars" description="Build Mac application bundle.">
+		<property name="mac.dir" value="mac"/>
+		<property name="mac.app" value="${mac.dir}/AppleCommander.app"/>
+		<property name="mac.Contents" value="${mac.app}/Contents"/>
+		<property name="mac.Java" value="${mac.Contents}/Resources/Java"/>
+		<touch file="${mac.dir}/Info.plist"/>
+		<filter token="version" value="${acVersion}"/>
+		<copy file="${mac.dir}/Info.plist" todir="${mac.Contents}" filtering="true"/>
+		<copy file="${guijar}" tofile="${mac.Java}/AppleCommander.jar"/>
+		<copy file="${cmdjar}" tofile="${user.home}/bin/ac.jar"/>
+	    <zip destfile="${maczip}">
+	        <zipfileset dir="${mac.app}" prefix="AppleCommander.app"/>
+			<zipfileset dir="${mac.app}" prefix="AppleCommander.app"
+				includes="Contents/MacOS/JavaApplicationStub" filemode="755"/>
+	    </zip>
+	</target>
+
 	<target name="sourceZip" depends="init" description="Build source ZIP archive">
 	    <zip zipfile="${srczip}">
 	    	<zipfileset dir=".">
