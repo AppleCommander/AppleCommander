@@ -28,6 +28,7 @@ import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.storage.os.dos33.OzDosFormatDisk;
 import com.webcodepro.applecommander.storage.os.dos33.UniDosFormatDisk;
+import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
 import com.webcodepro.applecommander.storage.physical.DosOrder;
@@ -81,7 +82,30 @@ public class DiskWriterTest extends TestCase {
 		ImageOrder imageOrder = new NibbleOrder(imageLayout);
 		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.nib", imageOrder); //$NON-NLS-1$
 		writeFiles(disks, "B", "T", false); //$NON-NLS-1$ //$NON-NLS-2$
-		saveImage = true;
+		saveDisks(disks);
+	}
+
+	/**
+	 * Test writing and reading random files to a ProDOS 140K disk.
+	 */	
+	public void testWriteToPascal140kDisk() throws DiskFullException, IOException {
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
+		ImageOrder imageOrder = new ProdosOrder(imageLayout);
+		FormattedDisk[] disks = PascalFormatDisk.create(
+			"write-test-pascal-140k.po", "TEST", imageOrder); //$NON-NLS-1$ //$NON-NLS-2$
+		writeFiles(disks, "code", "text", false); //$NON-NLS-1$ //$NON-NLS-2$
+		saveDisks(disks);
+	}
+
+	/**
+	 * Test writing and reading random files to a ProDOS 140K disk.
+	 */	
+	public void testWriteToPascal800kDisk() throws DiskFullException, IOException {
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
+		ImageOrder imageOrder = new ProdosOrder(imageLayout);
+		FormattedDisk[] disks = PascalFormatDisk.create(
+			"write-test-pascal-800k.po", "TEST", imageOrder); //$NON-NLS-1$ //$NON-NLS-2$
+		//writeFiles(disks, "code", "text", false); //$NON-NLS-1$ //$NON-NLS-2$
 		saveDisks(disks);
 		saveImage = false;
 	}
@@ -159,6 +183,32 @@ public class DiskWriterTest extends TestCase {
 	}
 
 	/**
+	 * Test creating and deleting many files on a Pascal 140K disk.
+	 */
+	public void testCreateAndDeletePascal140kDisk() throws IOException {
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
+		ImageOrder imageOrder = new ProdosOrder(imageLayout);
+		FormattedDisk[] disks = PascalFormatDisk.create(
+			"createanddelete-test-pascal-140k.po", "TEST",  //$NON-NLS-1$ //$NON-NLS-2$
+			imageOrder);
+		createAndDeleteFiles(disks, "CODE"); //$NON-NLS-1$
+		saveDisks(disks);
+	}
+
+	/**
+	 * Test creating and deleting many files on a Pascal 800K disk.
+	 */
+	public void testCreateAndDeletePascal800kDisk() throws IOException {
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
+		ImageOrder imageOrder = new ProdosOrder(imageLayout);
+		FormattedDisk[] disks = PascalFormatDisk.create(
+			"createanddelete-test-pascal-800k.po", "TEST",  //$NON-NLS-1$ //$NON-NLS-2$
+			imageOrder);
+		createAndDeleteFiles(disks, "CODE"); //$NON-NLS-1$
+		saveDisks(disks);
+	}
+
+	/**
 	 * Test creating and deleting many files on a ProDOS 140K disk.
 	 */
 	public void testCreateAndDeleteProdos140kDisk() throws IOException {
@@ -176,9 +226,9 @@ public class DiskWriterTest extends TestCase {
 	 */
 	public void testCreateAndDeleteProdos800kDisk() throws IOException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
-		ImageOrder imageOrder = new DosOrder(imageLayout);
+		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"createanddelete-test-prodos-800k.dsk", "TEST", //$NON-NLS-1$ //$NON-NLS-2$
+			"createanddelete-test-prodos-800k.po", "TEST", //$NON-NLS-1$ //$NON-NLS-2$
 			imageOrder);
 		createAndDeleteFiles(disks, "BIN"); //$NON-NLS-1$
 		saveDisks(disks);
@@ -226,6 +276,21 @@ public class DiskWriterTest extends TestCase {
 		saveDisks(disks);
 	}
 
+	/**
+	 * Test creating, deleting, and then creating another file which re-uses
+	 * the old directory entry on a Pascal 140K disk.
+	 */
+	public void testCreateDeleteCreatePascalDisk() 
+	throws DiskFullException, IOException {
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
+		ImageOrder imageOrder = new ProdosOrder(imageLayout);
+		FormattedDisk[] disks = PascalFormatDisk.create(
+			"createdeletecreate-test-pascal-140k.po", "TEST", //$NON-NLS-1$ //$NON-NLS-2$
+			imageOrder);
+		createDeleteCreate(disks, "CODE"); //$NON-NLS-1$
+		saveDisks(disks);
+	}
+	
 	/**
 	 * Test creating, deleting, and then creating another file which re-uses
 	 * the old directory entry on a ProDOS 140K disk.

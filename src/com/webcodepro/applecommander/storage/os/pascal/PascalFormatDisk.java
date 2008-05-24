@@ -49,10 +49,6 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * The size of the Pascal file entry.
 	 */
 	public static final int ENTRY_SIZE = 26;
-	/**
-	 * The number of Pascal blocks on a 140K disk.
-	 */
-	public static final int PASCAL_BLOCKS_ON_140K_DISK = 280;
 	
 	// filetypes used elsewhere in the code:
 	private static final String TEXTFILE = "TEXT"; //$NON-NLS-1$
@@ -66,9 +62,9 @@ public class PascalFormatDisk extends FormattedDisk {
 			"xdskfile", 	//$NON-NLS-1$
 			CODEFILE,
 			TEXTFILE,
-			"INFO",		//$NON-NLS-1$
+			"INFO",			//$NON-NLS-1$
 			DATAFILE,
-			"GRAF",		//$NON-NLS-1$
+			"GRAF",			//$NON-NLS-1$
 			"FOTO", 		//$NON-NLS-1$
 			"securedir" };	//$NON-NLS-1$
 
@@ -563,7 +559,8 @@ public class PascalFormatDisk extends FormattedDisk {
 		AppleUtil.setWordValue(directory, 2, 6);	// last directory block
 		AppleUtil.setWordValue(directory, 4, 0);	// entry type (0=vol header)
 			// volume name should have been set in constructor!
-		AppleUtil.setWordValue(directory, 14, PASCAL_BLOCKS_ON_140K_DISK);
+		int blocks = getImageOrder().getBlocksOnDevice();
+		AppleUtil.setWordValue(directory, 14, blocks);
 		AppleUtil.setWordValue(directory, 16, 0);	// no files
 		AppleUtil.setWordValue(directory, 18, 0);	// first block
 		AppleUtil.setPascalDate(directory, 20, new Date());	// most recent date setting
