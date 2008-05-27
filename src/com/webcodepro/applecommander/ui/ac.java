@@ -43,6 +43,30 @@ import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 
+/**
+ * ac provides a command line interface to key AppleCommander functions.
+ * Text similar to this is produced in response to the -h option.
+ * <pre>
+ *   AppleCommander command line options [<i>version</i>]:
+ *   -i  &lt;imagename&gt; display information about image.
+ *   -ls &lt;imagename&gt; list brief directory of image.
+ *   -l  &lt;imagename&gt; list directory of image.
+ *   -ll &lt;imagename&gt; list detailed directory of image.
+ *   -e  &lt;imagename&gt; &lt;filename&gt; export file from image to stdout.
+ *   -g  &lt;imagename&gt; &lt;filename&gt; get raw file from image to stdout.
+ *   -p  &lt;imagename&gt; &lt;filename&gt; &lt;type&gt; [[$|0x]&lt;addr&gt;] put stdin
+ *       in filename on image, using file type and address [0x2000].
+ *   -d  &lt;imagename&gt; &lt;filename&gt; delete file from image.
+ *   -cc65 &lt;imagename&gt; &lt;filename&gt; &lt;type&gt; put stdin with cc65 header
+ *         in filename on image, using file type and address from header.
+ *   -dos140 &lt;imagename&gt; create a 140K DOS 3.3 image.
+ *   -pro140 &lt;imagename&gt; &lt;volname&gt; create a 140K ProDOS image.
+ *   -pro800 &lt;imagename&gt; &lt;volname&gt; create an 800K ProDOS image.
+ *   -pas140 &lt;imagename&gt; &lt;volname&gt; create a 140K Pascal image.
+ *   -pas800 &lt;imagename&gt; &lt;volname&gt; create an 800K Pascal image.
+ * </pre>
+ * @author John B. Matthews
+ */
 public class ac {
 	private static TextBundle textBundle = UiBundle.getInstance();
 
