@@ -90,7 +90,7 @@
 			<include name="**/*.java"/>
 			<exclude name="**/*Test.java"/>
 		</javac>
-		<jar jarfile="${cmdjar}" manifest="build/manifest.mf">
+		<jar jarfile="${cmdjar}" manifest="build/ac.mf">
 			<fileset dir="${classes}">
 				<exclude name="com/webcodepro/applecommander/ui/swt/**"/>
 				<exclude name="com/webcodepro/applecommander/ui/images/**"/>
