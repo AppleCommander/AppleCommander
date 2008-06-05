@@ -33,6 +33,8 @@ import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskInformation;
+import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
+import com.webcodepro.applecommander.storage.filters.HexDumpFileFilter;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
@@ -197,6 +199,8 @@ public class ac {
 			if (entry != null) {
 				if (filter) {
 					FileFilter ff = entry.getSuggestedFilter();
+					if (ff instanceof BinaryFileFilter)
+						ff = new HexDumpFileFilter();
 					byte[] buf = ff.filter(entry);
 					System.out.write(buf, 0, buf.length);
 				} else {
@@ -205,7 +209,7 @@ public class ac {
 				}
 			} else {
 				System.err.println(textBundle.format(
-						"CommandLineNoMatchMessage", fileName)); //$NON-NLS-1$
+					"CommandLineNoMatchMessage", fileName)); //$NON-NLS-1$
 			}
 		}
 	}
