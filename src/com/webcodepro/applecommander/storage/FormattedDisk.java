@@ -137,6 +137,12 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	public abstract String getDiskName();
 	
 	/**
+	 * Set the name of the disk to volumeName.
+	 */
+	public void setDiskName(String volumeName) {
+	}
+
+	/**
 	 * Identify the operating system format of this disk.
 	 */
 	public abstract String getFormat();
