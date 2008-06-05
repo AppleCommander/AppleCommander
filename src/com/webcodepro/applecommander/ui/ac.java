@@ -57,6 +57,9 @@ import com.webcodepro.applecommander.util.TextBundle;
  *   -p  &lt;imagename&gt; &lt;filename&gt; &lt;type&gt; [[$|0x]&lt;addr&gt;] put stdin
  *       in filename on image, using file type and address [0x2000].
  *   -d  &lt;imagename&gt; &lt;filename&gt; delete file from image.
+ *   -k  &lt;imagename&gt; &lt;filename&gt; lock file on image.
+ *   -u  &lt;imagename&gt; &lt;filename&gt; unlock file on image.
+ *   -n  &lt;imagename&gt; &lt;volname&gt; change volume name (ProDOS or Pascal).
  *   -cc65 &lt;imagename&gt; &lt;filename&gt; &lt;type&gt; put stdin with cc65 header
  *         in filename on image, using file type and address from header.
  *   -dos140 &lt;imagename&gt; create a 140K DOS 3.3 image.
@@ -74,6 +77,8 @@ public class ac {
 		try {
 			if (args.length == 0) {
 				help();
+			} else if ("-i".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				getDiskInfo(args[1]);
 			} else if ("-ls".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				showDirectory(args[1], FormattedDisk.FILE_DISPLAY_STANDARD);
 			} else if ("-l".equalsIgnoreCase(args[0])) {  //$NON-NLS-1$
@@ -89,8 +94,12 @@ public class ac {
 					(args.length > 4 ? args[4] : "0x2000"));
 			} else if ("-d".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				deleteFile(args[1], args[2]);
-			} else if ("-i".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				getDiskInfo(args[1]);
+			} else if ("-k".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				setFileLocked(args[1], args[2], true);
+			} else if ("-u".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				setFileLocked(args[1], args[2], false);
+			} else if ("-n".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				setDiskName(args[1], args[2]);
 			} else if ("-cc65".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				putCC65(args[1], args[2], args[3]);
 			} else if ("-dos140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
@@ -290,6 +299,42 @@ public class ac {
  			}
  		}
  	}
+
+	/**
+	 * Set the lockState of the file named fileName on the disk named imageName.
+	 * Proposed by David Schmidt.
+	 */
+	static void setFileLocked(String imageName, String fileName, boolean lockState)
+			throws IOException {
+		Disk disk = new Disk(imageName);
+		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+		for (int i = 0; i < formattedDisks.length; i++) {
+			FormattedDisk formattedDisk = formattedDisks[i];
+			List files = formattedDisk.getFiles();
+			FileEntry entry = getEntry(files, fileName);
+			if (entry != null) {
+				entry.setLocked(lockState);
+				disk.save();
+			} else {
+				System.err.println(textBundle.format(
+					"CommandLineNoMatchMessage", fileName)); //$NON-NLS-1$
+			}
+		}
+	}
+    
+	/**
+	 * Set the volume name for a given disk image.
+	 * Only effective for ProDOS or Pascal disks; others ignored.
+	 * Proposed by David Schmidt.
+	 */
+	static void setDiskName(String imageName, String volName)
+	        throws IOException {
+	    Disk disk = new Disk(imageName);
+	    FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+	    FormattedDisk formattedDisk = formattedDisks[0];
+	    formattedDisk.setDiskName(volName);
+	    formattedDisks[0].save();
+	}
 
 	/**
 	 * Create a DOS disk image.
