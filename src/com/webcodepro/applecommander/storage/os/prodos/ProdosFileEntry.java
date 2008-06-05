@@ -294,9 +294,9 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 * Set the lock indicator.
 	 */
 	public void setLocked(boolean lock) {
-		setCanDestroy(lock);
-		setCanRename(lock);
-		setCanWrite(lock);
+		setCanDestroy(!lock);
+		setCanRename(!lock);
+		setCanWrite(!lock);
 	}
 
 	/**
