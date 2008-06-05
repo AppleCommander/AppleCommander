@@ -107,7 +107,6 @@ public class DiskWriterTest extends TestCase {
 			"write-test-pascal-800k.po", "TEST", imageOrder); //$NON-NLS-1$ //$NON-NLS-2$
 		//writeFiles(disks, "code", "text", false); //$NON-NLS-1$ //$NON-NLS-2$
 		saveDisks(disks);
-		saveImage = false;
 	}
 
 	/**
@@ -174,7 +173,7 @@ public class DiskWriterTest extends TestCase {
 	 * Test creating and deleting many files on a UniDOS 800K disk.
 	 */
 	public void testCreateAndDeleteUniDos() throws IOException {
-		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
 		ImageOrder imageOrder = new DosOrder(imageLayout);
 		FormattedDisk[] disks = UniDosFormatDisk.create(
 			"createanddelete-test-unidos.dsk", imageOrder); //$NON-NLS-1$
@@ -268,8 +267,8 @@ public class DiskWriterTest extends TestCase {
 	 */
 	public void testCreateDeleteCreateUnidosDisk() 
 	throws DiskFullException, IOException {
-		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
-		ImageOrder imageOrder = new ProdosOrder(imageLayout);
+		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
+		ImageOrder imageOrder = new DosOrder(imageLayout);
 		FormattedDisk[] disks = UniDosFormatDisk.create(
 			"createdeletecreate-test-unidos-800k.dsk", imageOrder); //$NON-NLS-1$
 		createDeleteCreate(disks, "B"); //$NON-NLS-1$
