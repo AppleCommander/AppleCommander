@@ -65,7 +65,15 @@
 	</target>
 	
 	<target name="jars" depends="init,executableGuiJar,executableCmdJar" description="Build executable jars">
-	    <!-- Nothing else to do - depends handles it all. -->
+		<!-- In ACBuild.properties => keyconf=${user.home}/.secret alias=name -->
+		<!-- See man keytool, http://java.sun.com/j2se/1.5.0/docs/tooldocs/ -->
+		<loadfile srcfile="${keyconf}" property="password"/>
+		<signjar alias="${alias}" storepass="${password}">
+			<fileset dir="${basedir}">
+				<include name="${cmdjar}"/>
+				<include name="${guijar}"/>
+			</fileset>
+		</signjar>
 	</target>
 	
 	<target name="executableGuiJar" depends="init" description="Build GUI executable JAR">
