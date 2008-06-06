@@ -10,8 +10,9 @@ When developing in Eclipse, the SWT library needs to be available.  AppleCommand
 has been configured to expect an SWT_JAR environment variable.  To set this up,
 go to Window->Preferences->Java->Classpath Variables.  Click on New button and enter 
 SWT_JAR for the variable name.  Choose the File button to set the path and locate
-the swt.jar.  It will be located at:
+the swt.jar.  It will be located, on Windows or Mac respectively, at:
 	<ECLIPSE_HOME>/plugins/org.eclipse.swt.win32.win32.x86_3.3.0.v3346.jar
+	<ECLIPSE_HOME>/plugins/plugins/org.eclipse.swt_3.2.2.v3236b.jar
 (Or something similar - obviously, the version numbers will change.)
 Click OK and close out of each dialog.  Answer YES to the prompt regarding 
 recompiling your entire workspace.
@@ -22,4 +23,6 @@ Running AppleCommander within Eclipse
 To launch AppleCommander from within Eclipse, the DLL file associated with SWT
 needs to be located by the JVM.  To do this, add the following flag to VM arguments:
 	-Djava.library.path="<ECLIPSE_HOME>\plugins\org.eclipse.swt.win32_2.0.2\os\win32\x86"
+On Mac, the corresponding libraries are nearby; they can be added to the project properties:
+	<ECLIPSE_HOME>/plugins/org.eclipse.swt.carbon.macosx_3.2.2.v3236.jar
 
