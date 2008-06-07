@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006 John B. Matthews
- * jmatthews at wright dot edu
+ * matthewsj at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU General Public License as published by the 
