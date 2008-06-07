@@ -123,9 +123,11 @@
 		<property name="mac.app" value="${mac.dir}/AppleCommander.app"/>
 		<property name="mac.Contents" value="${mac.app}/Contents"/>
 		<property name="mac.Java" value="${mac.Contents}/Resources/Java"/>
-		<touch file="${mac.dir}/Info.plist"/>
-		<filter token="version" value="${acVersion}"/>
-		<copy file="${mac.dir}/Info.plist" todir="${mac.Contents}" filtering="true"/>
+		<copy file="${mac.dir}/Info.plist" todir="${mac.Contents}" overwrite="true">
+			<filterset>
+				<filter token="version" value="${acVersion}"/>
+			</filterset>
+		</copy>
 		<copy file="${guijar}" tofile="${mac.Java}/AppleCommander.jar"/>
 		<copy file="${cmdjar}" tofile="${user.home}/bin/ac.jar"/>
 	    <zip destfile="${maczip}">
