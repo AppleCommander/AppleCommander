@@ -25,6 +25,9 @@
 		else="${junitPathMac}">
 		<os family="windows"/>
 	</condition>	
+	<condition property="signing-needed">
+		<available file="${keyconf}" property="keyconf-exists" />
+	</condition>
 
 	<target name="version" description="Get version from source.">
 		<property name="main.path" value="src/com/webcodepro/applecommander/ui"/>
@@ -60,11 +63,15 @@
 		<delete dir="${javadoc}"/>
 	</target>
 	
-	<target name="all" depends="init,jars,macBundle,sourceZip,javadoc,websiteZip" description="Everything">
+	<target name="all" depends="init,jars,signJars,macBundle,sourceZip,javadoc,websiteZip" description="Everything">
 	    <!-- Nothing else to do - depends handles it all. -->
 	</target>
 	
 	<target name="jars" depends="init,executableGuiJar,executableCmdJar" description="Build executable jars">
+	    <!-- Nothing else to do - depends handles it all. -->
+	</target>
+	
+	<target name="signJars" depends="init" if="signing-needed" description="Signs the jars">
 		<!-- In ACBuild.properties => keyconf=${user.home}/.secret alias=name -->
 		<!-- See man keytool, http://java.sun.com/j2se/1.5.0/docs/tooldocs/ -->
 		<loadfile srcfile="${keyconf}" property="password"/>
