@@ -63,11 +63,11 @@
 		<delete dir="${javadoc}"/>
 	</target>
 	
-	<target name="all" depends="init,jars,signJars,macBundle,sourceZip,javadoc,websiteZip" description="Everything">
+	<target name="all" depends="init,jars,macBundle,sourceZip,javadoc,websiteZip" description="Everything">
 	    <!-- Nothing else to do - depends handles it all. -->
 	</target>
 	
-	<target name="jars" depends="init,executableGuiJar,executableCmdJar" description="Build executable jars">
+	<target name="jars" depends="init,executableGuiJar,executableCmdJar,signJars" description="Build executable jars">
 	    <!-- Nothing else to do - depends handles it all. -->
 	</target>
 	
