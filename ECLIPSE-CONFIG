@@ -1,28 +1,63 @@
-This document describes how to setup Eclipse with AppleCommander.  Essentially,
-these are the general SWT-related setup tasks that need to be done.  This file
-is specifically written for Windows running Eclipse 3.3.  Configuring for other
-environments should be similar.
+Configuring Eclipse
+===================
+This document describes how to setup Eclipse with AppleCommander.
+It describes configurations for Windows with Eclipse 3.3 or Mac with
+Eclipse 3.2. Configurations for other environments should be similar.
 
+SWT_JAR Classpath Variable
+==========================
+When developing in Eclipse, the SWT library needs to be available.
+AppleCommander has been configured to expect an SWT_JAR environment variable.
 
-SWT_JAR variable
-================
-When developing in Eclipse, the SWT library needs to be available.  AppleCommander
-has been configured to expect an SWT_JAR environment variable.  To set this up,
-go to Window->Preferences->Java->Classpath Variables.  Click on New button and enter 
-SWT_JAR for the variable name.  Choose the File button to set the path and locate
-the swt.jar.  It will be located, on Windows or Mac respectively, at:
+On Windows, go to Window -> Preferences -> Java -> Classpath Variables.
+Click on New button and enter SWT_JAR for the variable name. Choose the
+File button to set the path and locate the swt.jar. A similarly named
+file will be located at:
 	<ECLIPSE_HOME>/plugins/org.eclipse.swt.win32.win32.x86_3.3.0.v3346.jar
-	<ECLIPSE_HOME>/plugins/plugins/org.eclipse.swt_3.2.2.v3236b.jar
-(Or something similar - obviously, the version numbers will change.)
-Click OK and close out of each dialog.  Answer YES to the prompt regarding 
-recompiling your entire workspace.
 
+On Mac, go to Eclipse -> Preferences -> Java -> Classpath Variables to
+add a new variable. The corresponding library will look like this:
+	<ECLIPSE_HOME>/plugins/plugins/org.eclipse.swt_3.2.2.v3236b.jar
+
+Click OK and close out of each dialog.  Answer YES to the prompt
+regarding recompiling your entire workspace.
 
 Running AppleCommander within Eclipse
 =====================================
-To launch AppleCommander from within Eclipse, the DLL file associated with SWT
-needs to be located by the JVM.  To do this, add the following flag to VM arguments:
+On Windows, the DLL file associated with SWT needs to be located by the JVM. 
+To do this, add the following flag to VM arguments:
 	-Djava.library.path="<ECLIPSE_HOME>\plugins\org.eclipse.swt.win32_2.0.2\os\win32\x86"
-On Mac, the corresponding libraries are nearby; they can be added to the project properties:
+
+On Mac, the corresponding library is nearby; it can be added to the build
+as a Classpath Variable (e.g. MAC_JAR, below):
 	<ECLIPSE_HOME>/plugins/org.eclipse.swt.carbon.macosx_3.2.2.v3236.jar
 
+Java Build Path
+===============
+The Java path build path may be edited by selecting Project ->
+Properties -> Java Build Path. Also, look at the Java Build Path help
+page. A typical .classpath might look like this:
+
+On Windows:
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="var" path="SWT_JAR"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
+</classpath>
+
+
+On Mac:
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="var" path="SWT_JAR"/>
+	<classpathentry kind="var" path="MAC_JAR"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3.8.1"/>
+</classpath>
