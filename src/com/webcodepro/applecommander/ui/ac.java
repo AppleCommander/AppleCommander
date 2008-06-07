@@ -248,6 +248,7 @@ public class ac {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 			for (int i = 0; i < formattedDisks.length; i++) {
 				FormattedDisk formattedDisk = formattedDisks[i];
+				System.out.print(args[d] + " ");
 				System.out.println(formattedDisk.getDiskName());
 				List files = formattedDisk.getFiles();
 				if (files != null) {
