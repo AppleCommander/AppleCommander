@@ -49,6 +49,8 @@ public class AppleCommander {
 		if (args.length == 0) {
 			if (isSwtAvailable()) {
 				launchSwtAppleCommander(args);
+			} else if (isSwingAvailable()) {
+				launchSwingAppleCommander(args);
 			} else {
 				showHelp();
 			}
@@ -58,7 +60,8 @@ public class AppleCommander {
 			if ("-swt".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				launchSwtAppleCommander(args);
 			} else if ("-swing".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				System.err.println(textBundle.get("SwingVersionNotAvailable")); //$NON-NLS-1$
+                                System.err.println(textBundle.get("SwingVersionNotAvailable")); //$NON-NLS-1$
+			        launchSwingAppleCommander(args);
 			} else if ("-command".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				System.err.println(textBundle.get("CommandLineNotAvailable")); //$NON-NLS-1$
 			} else if ("-help".equalsIgnoreCase(args[0])  //$NON-NLS-1$
@@ -111,6 +114,48 @@ public class AppleCommander {
 		} catch (ClassNotFoundException ex) {
 			return false;
 		}
+	}
+	/**
+	 * Test to see if Swing is available.
+	 */
+	protected static boolean isSwingAvailable() {
+		try {
+			Class.forName("com.webcodepro.applecommander.ui.swing.SwingAppleCommander"); //$NON-NLS-1$
+			return true;
+		} catch (ClassNotFoundException ex) {
+			return false;
+		}
+	}
+	/**
+	 * Launch the Swing version of AppleCommander.  This method
+	 * uses reflection to load SwingAppleCommander to minimize which
+	 * classes get loaded.  This is particularly important for the
+	 * command-line version.
+	 */
+	protected static void launchSwingAppleCommander(String[] args) {
+			Class swtAppleCommander;
+			try {
+				swtAppleCommander =	Class.forName(
+					"com.webcodepro.applecommander.ui.swing.SwingAppleCommander"); //$NON-NLS-1$
+				Object object = swtAppleCommander.newInstance();
+				Method launchMethod = swtAppleCommander.
+					getMethod("launch", null); //$NON-NLS-1$
+				launchMethod.invoke(object, null);
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				e.printStackTrace();
+			} catch (NoSuchMethodException e) {
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			}
 	}
 	/**
 	 * Display help message(s) for AppleCommander.
