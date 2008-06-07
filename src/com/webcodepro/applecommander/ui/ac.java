@@ -49,26 +49,26 @@ import com.webcodepro.applecommander.util.TextBundle;
  * ac provides a command line interface to key AppleCommander functions.
  * Text similar to this is produced in response to the -h option.
  * <pre>
- *   AppleCommander command line options [<i>version</i>]:
- *   -i  &lt;imagename&gt; display information about image.
- *   -ls &lt;imagename&gt; list brief directory of image.
- *   -l  &lt;imagename&gt; list directory of image.
- *   -ll &lt;imagename&gt; list detailed directory of image.
- *   -e  &lt;imagename&gt; &lt;filename&gt; export file from image to stdout.
- *   -g  &lt;imagename&gt; &lt;filename&gt; get raw file from image to stdout.
- *   -p  &lt;imagename&gt; &lt;filename&gt; &lt;type&gt; [[$|0x]&lt;addr&gt;] put stdin
- *       in filename on image, using file type and address [0x2000].
- *   -d  &lt;imagename&gt; &lt;filename&gt; delete file from image.
- *   -k  &lt;imagename&gt; &lt;filename&gt; lock file on image.
- *   -u  &lt;imagename&gt; &lt;filename&gt; unlock file on image.
- *   -n  &lt;imagename&gt; &lt;volname&gt; change volume name (ProDOS or Pascal).
- *   -cc65 &lt;imagename&gt; &lt;filename&gt; &lt;type&gt; put stdin with cc65 header
- *         in filename on image, using file type and address from header.
- *   -dos140 &lt;imagename&gt; create a 140K DOS 3.3 image.
- *   -pro140 &lt;imagename&gt; &lt;volname&gt; create a 140K ProDOS image.
- *   -pro800 &lt;imagename&gt; &lt;volname&gt; create an 800K ProDOS image.
- *   -pas140 &lt;imagename&gt; &lt;volname&gt; create a 140K Pascal image.
- *   -pas800 &lt;imagename&gt; &lt;volname&gt; create an 800K Pascal image.
+ * CommandLineHelp = AppleCommander command line options [{0}]:
+ * -i  &lt;imagename> [&lt;imagename>] display information about image(s).
+ * -ls &lt;imagename> [&lt;imagename>] list brief directory of image(s).
+ * -l  &lt;imagename> [&lt;imagename>] list directory of image(s).
+ * -ll &lt;imagename> [&lt;imagename>] list detailed directory of image(s).
+ * -e  &lt;imagename> &lt;filename> export file from image to stdout.
+ * -g  &lt;imagename> &lt;filename> get raw file from image to stdout.
+ * -p  &lt;imagename> &lt;filename> &lt;type> [[$|0x]&lt;addr>] put stdin
+ *     in filename on image, using file type and address [0x2000].
+ * -d  &lt;imagename> &lt;filename> delete file from image.
+ * -k  &lt;imagename> &lt;filename> lock file on image.
+ * -u  &lt;imagename> &lt;filename> unlock file on image.
+ * -n  &lt;imagename> &lt;volname> change volume name (ProDOS or Pascal).
+ * -cc65 &lt;imagename> &lt;filename> &lt;type> put stdin with cc65 header
+ *       in filename on image, using file type and address from header.
+ * -dos140 &lt;imagename> create a 140K DOS 3.3 image.
+ * -pro140 &lt;imagename> &lt;volname> create a 140K ProDOS image.
+ * -pro800 &lt;imagename> &lt;volname> create an 800K ProDOS image.
+ * -pas140 &lt;imagename> &lt;volname> create a 140K Pascal image.
+ * -pas800 &lt;imagename> &lt;volname> create an 800K Pascal image.
  * </pre>
  * @author John B. Matthews
  */
@@ -80,13 +80,13 @@ public class ac {
 			if (args.length == 0) {
 				help();
 			} else if ("-i".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				getDiskInfo(args[1]);
+				getDiskInfo(args);
 			} else if ("-ls".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				showDirectory(args[1], FormattedDisk.FILE_DISPLAY_STANDARD);
+				showDirectory(args, FormattedDisk.FILE_DISPLAY_STANDARD);
 			} else if ("-l".equalsIgnoreCase(args[0])) {  //$NON-NLS-1$
-				showDirectory(args[1], FormattedDisk.FILE_DISPLAY_NATIVE);
+				showDirectory(args, FormattedDisk.FILE_DISPLAY_NATIVE);
 			} else if ("-ll".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				showDirectory(args[1], FormattedDisk.FILE_DISPLAY_DETAIL);
+				showDirectory(args, FormattedDisk.FILE_DISPLAY_DETAIL);
 			} else if ("-e".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				getFile(args[1], args[2], true);
 			} else if ("-g".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
@@ -126,7 +126,7 @@ public class ac {
 	}
 
 	/**
-	 * Put <stdin> into the file named fileName on the disk named imageName;
+	 * Put &lt;stdin> into the file named fileName on the disk named imageName;
 	 * Note: only volume level supported; input size unlimited.
 	 */
 	static void putFile(String imageName, String fileName, String fileType, String address)
@@ -152,7 +152,7 @@ public class ac {
 	}
 	
 	/**
-	 * Put <stdin> into the file named fileName on the disk named imageName;
+	 * Put &lt;stdin> into the file named fileName on the disk named imageName;
 	 * Assume a cc65 style four-byte header with start address in bytes 0-1.
 	 */
 	static void putCC65(String imageName, String fileName, String fileType)
@@ -171,7 +171,7 @@ public class ac {
 	static void deleteFile(String imageName, String fileName) throws IOException {
 		Disk disk = new Disk(imageName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-		for (int i=0; i<formattedDisks.length; i++) {
+		for (int i = 0; i < formattedDisks.length; i++) {
 			FormattedDisk formattedDisk = formattedDisks[i];
 			List files = formattedDisk.getFiles();
 			FileEntry entry = getEntry(files, fileName);
@@ -187,12 +187,12 @@ public class ac {
 	
 	/**
 	 * Get the file named filename from the disk named imageName;
-	 * the file is filtered according to its type and sent to <stdout>.
+	 * the file is filtered according to its type and sent to &lt;stdout>.
 	 */
 	static void getFile(String imageName, String fileName, boolean filter) throws IOException {
 		Disk disk = new Disk(imageName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-		for (int i=0; i<formattedDisks.length; i++) {
+		for (int i = 0; i < formattedDisks.length; i++) {
 			FormattedDisk formattedDisk = formattedDisks[i];
 			List files = formattedDisk.getFiles();
 			FileEntry entry = getEntry(files, fileName);
@@ -222,7 +222,7 @@ public class ac {
 	static FileEntry getEntry(List files, String fileName) {
 		FileEntry theEntry = null;
 		if (files != null) {
-			for (int i=0; i<files.size(); i++) {
+			for (int i = 0; i < files.size(); i++) {
 				FileEntry entry = (FileEntry) files.get(i);
 				String entryName = entry.getFilename();
 				if (!entry.isDeleted() && 
@@ -240,27 +240,28 @@ public class ac {
 	}
 	
 	/**
-	 * Display a directory listing of the disk named imageName.
+	 * Display a directory listing of each disk in args.
 	 */
-	static void showDirectory(String imageName, int display) throws IOException {
-		Disk disk = new Disk(imageName);
-		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-		for (int i=0; i<formattedDisks.length; i++) {
-			FormattedDisk formattedDisk = formattedDisks[i];
-			System.out.println();
-			System.out.println(formattedDisk.getDiskName());
-			List files = formattedDisk.getFiles();
-			if (files != null) {
-				showFiles(files, "", display); //$NON-NLS-1$
+	static void showDirectory(String[] args, int display) throws IOException {
+		for (int d = 1; d < args.length; d++) {
+			Disk disk = new Disk(args[d]);
+			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+			for (int i = 0; i < formattedDisks.length; i++) {
+				FormattedDisk formattedDisk = formattedDisks[i];
+				System.out.println(formattedDisk.getDiskName());
+				List files = formattedDisk.getFiles();
+				if (files != null) {
+					showFiles(files, "", display); //$NON-NLS-1$
+				}
+				System.out.println(textBundle.format(
+					"CommandLineStatus", //$NON-NLS-1$
+					new Object[] {
+						formattedDisk.getFormat(),
+						new Integer(formattedDisk.getFreeSpace()),
+						new Integer(formattedDisk.getUsedSpace())
+					}));
+				System.out.println();
 			}
-			System.out.println(textBundle.format(
-				"CommandLineStatus", //$NON-NLS-1$
-				new Object[] {
-					formattedDisk.getFormat(),
-					new Integer(formattedDisk.getFreeSpace()),
-					new Integer(formattedDisk.getUsedSpace())
-				}));
-			System.out.println();
 		}
 	}
 	
@@ -270,12 +271,12 @@ public class ac {
 	 * this really returns the first file with the given filename.
 	 */
 	static void showFiles(List files, String indent, int display) {
-		for (int i=0; i<files.size(); i++) {
+		for (int i = 0; i < files.size(); i++) {
 			FileEntry entry = (FileEntry) files.get(i);
 			if (!entry.isDeleted()) {
 				List data = entry.getFileColumnData(display);
 				System.out.print(indent);
-				for (int d=0; d<data.size(); d++) {
+				for (int d = 0; d < data.size(); d++) {
 					System.out.print(data.get(d));
 					System.out.print(" "); //$NON-NLS-1$
 				}
@@ -289,19 +290,22 @@ public class ac {
 	}
 
 	/**
-	 * Display information about the given disk image.
+	 * Display information about each disk in args.
 	 */
-	static void getDiskInfo(String imageName) throws IOException {
-		Disk disk = new Disk(imageName);
-		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-		for (int i=0; i<formattedDisks.length; i++) {
-			FormattedDisk formattedDisk = formattedDisks[i];
-			Iterator iterator = formattedDisk.getDiskInformation().iterator();
-			while (iterator.hasNext()) {
-				DiskInformation diskinfo = (DiskInformation) iterator.next();
-				System.out.println(diskinfo.getLabel() + ": " + diskinfo.getValue());
- 			}
- 		}
+	static void getDiskInfo(String[] args) throws IOException {
+		for (int d = 1; d < args.length; d++) {
+			Disk disk = new Disk(args[d]);
+			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+			for (int i = 0; i < formattedDisks.length; i++) {
+				FormattedDisk formattedDisk = formattedDisks[i];
+				Iterator iterator = formattedDisk.getDiskInformation().iterator();
+				while (iterator.hasNext()) {
+					DiskInformation diskinfo = (DiskInformation) iterator.next();
+					System.out.println(diskinfo.getLabel() + ": " + diskinfo.getValue());
+	 			}
+	 		}
+			System.out.println();
+		}
  	}
 
 	/**
