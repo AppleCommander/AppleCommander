@@ -27,6 +27,9 @@ package com.webcodepro.applecommander.storage;
  * @author Rob Greene
  */
 public class DiskFullException extends Exception {
+
+	private static final long serialVersionUID = 0xFFFFFFFF80000000L;
+
 	/**
 	 * Constructor for DiskFullException.
 	 */

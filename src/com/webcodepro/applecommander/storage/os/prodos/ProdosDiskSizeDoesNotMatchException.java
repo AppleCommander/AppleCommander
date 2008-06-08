@@ -31,6 +31,9 @@ import com.webcodepro.applecommander.storage.DiskFullException;
  * @author Rob Greene
  */
 public class ProdosDiskSizeDoesNotMatchException extends DiskFullException {
+
+	private static final long serialVersionUID = 0xFFFFFFFF80000000L;
+
 	/**
 	 * Constructor for ProdosDiskSizeDoesNotMatchException.
 	 */

@@ -44,7 +44,10 @@ public class Host {
 		if (macOSX) {
 			prefDir = userHome + "/Library/Preferences/";
 		}
-		else if (linux){
+		else if (linux) {
+			prefDir = "";
+		}
+		else if (windows) {
 			prefDir = "";
 		}
 		else {

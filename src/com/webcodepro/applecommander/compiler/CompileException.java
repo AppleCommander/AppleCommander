@@ -24,6 +24,9 @@ package com.webcodepro.applecommander.compiler;
  * @author Rob
  */
 public class CompileException extends Exception {
+
+	private static final long serialVersionUID = 0xFFFFFFFF80000000L;
+
 	/**
 	 * Create a CompileException. 
 	 */
