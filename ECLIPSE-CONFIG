@@ -24,21 +24,22 @@ regarding recompiling your entire workspace.
 
 Running AppleCommander within Eclipse
 =====================================
+On either platform, you can create a new run configuration by selecting Run ->
+Open Run Dialog. Create a new Java Application for Project AppleCommander, 
+Main class com.webcodepro.applecommander.ui.AppleCommander, and Arguments -swt.
+
 On Windows, the DLL file associated with SWT needs to be located by the JVM. 
 To do this, add the following flag to VM arguments:
 	-Djava.library.path="<ECLIPSE_HOME>\plugins\org.eclipse.swt.win32_2.0.2\os\win32\x86"
 
-On Mac, the corresponding library is nearby; it can be added to the build
-as a Classpath Variable (e.g. MAC_JAR, below):
-	<ECLIPSE_HOME>/plugins/org.eclipse.swt.carbon.macosx_3.2.2.v3236.jar
+On Mac, no additional configuration is necessary.
 
 Java Build Path
 ===============
 The project's Java build path may be edited by selecting Project ->
 Properties -> Java Build Path. Also, look at the Java Build Path help
-page. A typical .classpath might look like this:
+page. A typical .classpath might look like this On either Windows or Mac:
 
-On either Windows or Mac:
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
