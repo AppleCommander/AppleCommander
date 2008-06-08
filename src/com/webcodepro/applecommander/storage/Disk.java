@@ -88,6 +88,7 @@ public class Disk {
 	public static final int APPLE_32MB_HARDDISK = 33553920;	// short one block!
 
 	private static FilenameFilter[] filenameFilters;
+	private static String[] allFileExtensions = null;
 	private TextBundle textBundle = StorageBundle.getInstance();
 	private String filename;
 	private boolean newImage = false;
@@ -106,6 +107,17 @@ public class Disk {
 		return filenameFilters;
 	}
 	
+	/**
+	 * Get the supported file extensions supported by the Disk interface.
+	 * This is used by the Swing UI to populate the open file dialog box.
+	 */
+	public static String[] getAllExtensions() {
+		if (allFileExtensions == null) {
+			new Disk();
+		}
+		return allFileExtensions;
+	}
+
 	/**
 	 * Constructor for a Disk - used only to generate FilenameFilter objects.
 	 */
@@ -127,6 +139,21 @@ public class Disk {
 				"*.do.gz; *.dsk.gz; *.po.gz; *.2mg.gz; *.2img.gz"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.AllFiles"),  //$NON-NLS-1$
 				"*.*") //$NON-NLS-1$
+		};
+		allFileExtensions = new String[] {
+				".do",		//$NON-NLS-1$
+			    ".dsk",		//$NON-NLS-1$
+			    ".po",		//$NON-NLS-1$
+			    ".nib",		//$NON-NLS-1$
+			    ".2mg",		//$NON-NLS-1$
+			    ".2img",	//$NON-NLS-1$
+			    ".hdv",		//$NON-NLS-1$
+			    ".do.gz",	//$NON-NLS-1$
+			    ".dsk.gz",	//$NON-NLS-1$
+			    ".po.gz",	//$NON-NLS-1$
+			    ".nib.gz",	//$NON-NLS-1$
+			    ".2mg.gz",	//$NON-NLS-1$
+			    ".2img.gz"	//$NON-NLS-1$ 
 		};
 	}
 	

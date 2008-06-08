@@ -23,18 +23,30 @@ import java.awt.BorderLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JToolBar;
+import javax.swing.filechooser.FileFilter;
 
+import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.Disk.FilenameFilter;
+import com.webcodepro.applecommander.ui.AppleCommander;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.UserPreferences;
 import com.webcodepro.applecommander.util.TextBundle;
 
 public class SwingAppleCommander extends JFrame implements ActionListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3302293994498495537L;
 	private UserPreferences userPreferences = UserPreferences.getInstance();
 	private TextBundle textBundle = UiBundle.getInstance();
 
@@ -54,21 +66,25 @@ public class SwingAppleCommander extends JFrame implements ActionListener {
 		aButton.setToolTipText(textBundle.get("SwtAppleCommander.OpenDiskImageTooltip")); //$NON-NLS-1$
 		aButton.setHorizontalTextPosition(JLabel.CENTER);
 		aButton.setVerticalTextPosition(JLabel.BOTTOM);
+	    aButton.addActionListener(this);
 		toolBar.add(aButton);
 		JButton aButton2 = new JButton(textBundle.get("CreateButton"), new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/com/webcodepro/applecommander/ui/images/newdisk.gif")))); //$NON-NLS-1$
 		aButton2.setToolTipText(textBundle.get("SwtAppleCommander.CreateDiskImageTooltip")); //$NON-NLS-1$
 		aButton2.setHorizontalTextPosition(JLabel.CENTER);
 		aButton2.setVerticalTextPosition(JLabel.BOTTOM);
+	    aButton2.addActionListener(this);
 		toolBar.add(aButton2);
 		JButton aButton3 = new JButton(textBundle.get("CompareButton"), new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/com/webcodepro/applecommander/ui/images/comparedisks.gif")))); //$NON-NLS-1$
 		aButton3.setToolTipText(textBundle.get("SwtAppleCommander.CompareDiskImageTooltip")); //$NON-NLS-1$
 		aButton3.setHorizontalTextPosition(JLabel.CENTER);
 		aButton3.setVerticalTextPosition(JLabel.BOTTOM);
+	    aButton3.addActionListener(this);
 		toolBar.add(aButton3);
 		JButton aButton4 = new JButton(textBundle.get("AboutButton"), new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/com/webcodepro/applecommander/ui/images/about.gif")))); //$NON-NLS-1$
 		aButton4.setToolTipText(textBundle.get("SwtAppleCommander.AboutTooltip")); //$NON-NLS-1$
 		aButton4.setHorizontalTextPosition(JLabel.CENTER);
 		aButton4.setVerticalTextPosition(JLabel.BOTTOM);
+	    aButton4.addActionListener(this);
 		toolBar.add(aButton4);
 		SwingAppleCommander application = new SwingAppleCommander();
 		application.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/com/webcodepro/applecommander/ui/images/diskicon.gif"))); //$NON-NLS-1$
@@ -80,7 +96,6 @@ public class SwingAppleCommander extends JFrame implements ActionListener {
 
 		application.pack();
 		application.setVisible(true);
-		UserPreferences.getInstance().save();
     }
 
 	/**
@@ -91,7 +106,56 @@ public class SwingAppleCommander extends JFrame implements ActionListener {
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
+		if (e.getActionCommand().equals(textBundle.get("AboutButton"))) { //$NON-NLS-1$
+			showAboutAppleCommander();
+		} else if (e.getActionCommand().equals(textBundle.get("OpenButton"))) { //$NON-NLS-1$
+			openFile();
+		}
 	}
 
+	/**
+	 * Open a file.
+	 */
+	protected void openFile() {
+		JFileChooser jc = new JFileChooser();
+		jc.setCurrentDirectory(new File(userPreferences.getDiskImageDirectory()));
+		EmulatorFileFilter ff = new EmulatorFileFilter();
+		jc.setFileFilter(ff);
+		int rc = jc.showDialog(this, textBundle.get("Open")); //$NON-NLS-1$
+		if (rc == 0) {
+			userPreferences.setDiskImageDirectory(jc.getSelectedFile().getParent());
+			UserPreferences.getInstance().save();
+		}
+	}
+
+/*
+		fileDialog.setFilterNames(names);
+		fileDialog.setFilterExtensions(extensions);
+		fileDialog.setFilterPath(userPreferences.getDiskImageDirectory());
+		String fullpath = fileDialog.open();
+	
+		if (fullpath != null) {
+			userPreferences.setDiskImageDirectory(fileDialog.getFilterPath());
+			try {
+				Disk disk = new Disk(fullpath);
+				FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+				if (formattedDisks != null) {
+					DiskWindow window = new DiskWindow(shell, formattedDisks, imageManager);
+					window.open();
+				} else {
+					showUnrecognizedDiskFormatMessage(fullpath);
+				}
+			} catch (Exception ignored) {
+				ignored.printStackTrace();
+				showUnrecognizedDiskFormatMessage(fullpath);
+			}
+		}
+*/
+
+	public void showAboutAppleCommander() {
+		JOptionPane.showMessageDialog(null,
+			textBundle.format("SwtAppleCommander.AboutMessage", //$NON-NLS-1$
+			new Object[] { AppleCommander.VERSION, textBundle.get("Copyright") }), textBundle.get("SwtAppleCommander.AboutTitle"), //$NON-NLS-1$
+			JOptionPane.INFORMATION_MESSAGE);
+	}
 }
