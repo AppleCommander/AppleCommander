@@ -30,13 +30,14 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
-import javax.swing.filechooser.FileFilter;
 
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.Disk.FilenameFilter;
 import com.webcodepro.applecommander.ui.AppleCommander;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.UserPreferences;
@@ -49,7 +50,8 @@ public class SwingAppleCommander extends JFrame implements ActionListener {
 	private static final long serialVersionUID = -3302293994498495537L;
 	private UserPreferences userPreferences = UserPreferences.getInstance();
 	private TextBundle textBundle = UiBundle.getInstance();
-
+	private JTabbedPane tabPane;
+	private JLabel titleLabel;
 	/**
 	 * Launch SwingAppleCommander.
 	 */
@@ -61,7 +63,12 @@ public class SwingAppleCommander extends JFrame implements ActionListener {
 	 * Launch SwingAppleCommander.
 	 */
 	public void launch() {
+		JMenuBar menuBar = createMenuBar();
 		JToolBar toolBar = new JToolBar();
+		JPanel topPanel = new JPanel(new BorderLayout());
+		tabPane = new JTabbedPane(JTabbedPane.TOP);
+		topPanel.add(menuBar,BorderLayout.NORTH);
+		topPanel.add(toolBar,BorderLayout.SOUTH);
 		JButton aButton = new JButton(textBundle.get("OpenButton"), new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/com/webcodepro/applecommander/ui/images/opendisk.gif")))); //$NON-NLS-1$
 		aButton.setToolTipText(textBundle.get("SwtAppleCommander.OpenDiskImageTooltip")); //$NON-NLS-1$
 		aButton.setHorizontalTextPosition(JLabel.CENTER);
@@ -89,9 +96,10 @@ public class SwingAppleCommander extends JFrame implements ActionListener {
 		SwingAppleCommander application = new SwingAppleCommander();
 		application.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/com/webcodepro/applecommander/ui/images/diskicon.gif"))); //$NON-NLS-1$
 		application.setTitle(textBundle.get("SwtAppleCommander.AppleCommander"));
-		JLabel label = new JLabel(new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/com/webcodepro/applecommander/ui/images/AppleCommanderLogo.gif"))));
-		application.getContentPane().add(label, BorderLayout.CENTER);
-		application.getContentPane().add(toolBar, BorderLayout.NORTH);
+		titleLabel = new JLabel(new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/com/webcodepro/applecommander/ui/images/AppleCommanderLogo.gif"))));
+		addTitleTabPane();
+		application.getContentPane().add(topPanel, BorderLayout.NORTH);
+		application.getContentPane().add(tabPane, BorderLayout.CENTER);
 		application.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
 
 		application.pack();
@@ -108,9 +116,53 @@ public class SwingAppleCommander extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getActionCommand().equals(textBundle.get("AboutButton"))) { //$NON-NLS-1$
 			showAboutAppleCommander();
-		} else if (e.getActionCommand().equals(textBundle.get("OpenButton"))) { //$NON-NLS-1$
+		} else if ((e.getActionCommand().equals(textBundle.get("OpenButton"))) || //$NON-NLS-1$
+			(e.getActionCommand().equals(textBundle.get("SwingAppleCommander.MenuFileOpen")))) {
 			openFile();
+		} else if (e.getActionCommand().equals(textBundle.get("SwingAppleCommander.MenuFileClose"))) {
+			closeFile();
+		} else if (e.getActionCommand().equals(textBundle.get("SwingAppleCommander.MenuFileQuit"))) { //$NON-NLS-1$
+			UserPreferences.getInstance().save();
+			setVisible(false);
+			dispose();
+			System.exit(0);
+		} else {
+			System.out.println("Unhandled action: "+e.getActionCommand());
 		}
+	}
+
+	/**
+	 * Set up the menu bar
+	 */
+	JMenuBar createMenuBar() {
+		JMenuBar menuBar = new JMenuBar();
+		// File
+		JMenu menuFile = new JMenu(textBundle.get("SwingAppleCommander.MenuFile")); //$NON-NLS-1$
+		// File->Open
+	    JMenuItem openItem = new JMenuItem(textBundle.get("SwingAppleCommander.MenuFileOpen")); //$NON-NLS-1$
+	    openItem.addActionListener(this);
+		menuFile.add(openItem);
+		// File->Close
+	    JMenuItem closeItem = new JMenuItem(textBundle.get("SwingAppleCommander.MenuFileClose")); //$NON-NLS-1$
+	    closeItem.addActionListener(this);
+		menuFile.add(closeItem);
+		// File->New
+	    JMenuItem newItem = new JMenuItem(textBundle.get("SwingAppleCommander.MenuFileNew")); //$NON-NLS-1$
+	    newItem.addActionListener(this);
+		menuFile.add(newItem);
+		// File->Exit
+	    JMenuItem quitItem = new JMenuItem(textBundle.get("SwingAppleCommander.MenuFileQuit")); //$NON-NLS-1$
+	    quitItem.addActionListener(this);
+		menuFile.add(quitItem);
+		menuBar.add(menuFile);
+		return menuBar;
+	}
+
+	/**
+	 * Add the title tab.
+	 */
+	void addTitleTabPane() {
+		tabPane.add(textBundle.get("SwtAppleCommander.AppleCommander"),titleLabel);
 	}
 
 	/**
@@ -125,6 +177,23 @@ public class SwingAppleCommander extends JFrame implements ActionListener {
 		if (rc == 0) {
 			userPreferences.setDiskImageDirectory(jc.getSelectedFile().getParent());
 			UserPreferences.getInstance().save();
+			if (tabPane.getTitleAt(0).equals(textBundle.get("SwtAppleCommander.AppleCommander"))) {
+				tabPane.remove(0);
+			}
+			tabPane.add(jc.getSelectedFile().getName(),new DiskExplorer());
+			tabPane.setSelectedIndex(tabPane.getTabCount()-1);
+		}
+	}
+
+	/**
+	 * Close a file.
+	 */
+	protected void closeFile() {
+		if (!tabPane.getTitleAt(0).equals(textBundle.get("SwtAppleCommander.AppleCommander"))) {
+			tabPane.remove(tabPane.getSelectedIndex());
+		}
+		if (tabPane.getTabCount() == 0) {
+			addTitleTabPane();
 		}
 	}
 
