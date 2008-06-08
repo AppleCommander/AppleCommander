@@ -1,8 +1,8 @@
 Configuring Eclipse
 ===================
 This document describes how to setup Eclipse with AppleCommander.
-It describes configurations for Windows with Eclipse 3.3 or Mac with
-Eclipse 3.2. Configurations for other environments should be similar.
+It describes configurations for Windows or Mac with Eclipse 3.3.x.
+Configurations for other environments should be similar.
 
 SWT_JAR Classpath Variable
 ==========================
@@ -17,7 +17,7 @@ file will be located at:
 
 On Mac, go to Eclipse -> Preferences -> Java -> Classpath Variables to
 add a new variable. The corresponding library will look like this:
-	<ECLIPSE_HOME>/plugins/plugins/org.eclipse.swt_3.2.2.v3236b.jar
+	<ECLIPSE_HOME>//plugins/org.eclipse.swt.carbon.macosx_3.3.3.v3349.jar
 
 Click OK and close out of each dialog.  Answer YES to the prompt
 regarding recompiling your entire workspace.
@@ -34,30 +34,17 @@ as a Classpath Variable (e.g. MAC_JAR, below):
 
 Java Build Path
 ===============
-The Java path build path may be edited by selecting Project ->
+The project's Java build path may be edited by selecting Project ->
 Properties -> Java Build Path. Also, look at the Java Build Path help
 page. A typical .classpath might look like this:
 
-On Windows:
+On either Windows or Mac:
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="output" path="bin"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="var" path="SWT_JAR"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
-</classpath>
-
-
-On Mac:
-<?xml version="1.0" encoding="UTF-8"?>
-<classpath>
 	<classpathentry kind="output" path="bin"/>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="var" path="SWT_JAR"/>
-	<classpathentry kind="var" path="MAC_JAR"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3.8.1"/>
 </classpath>
