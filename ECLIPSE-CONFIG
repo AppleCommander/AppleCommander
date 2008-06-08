@@ -16,8 +16,8 @@ file will be located at:
 	<ECLIPSE_HOME>/plugins/org.eclipse.swt.win32.win32.x86_3.3.0.v3346.jar
 
 On Mac, go to Eclipse -> Preferences -> Java -> Classpath Variables to
-add a new variable. The corresponding library will look like this:
-	<ECLIPSE_HOME>//plugins/org.eclipse.swt.carbon.macosx_3.3.3.v3349.jar
+add the SWT_JAR variable. The corresponding library will look like this:
+	<ECLIPSE_HOME>/plugins/org.eclipse.swt.carbon.macosx_3.3.3.v3349.jar
 
 Click OK and close out of each dialog.  Answer YES to the prompt
 regarding recompiling your entire workspace.
