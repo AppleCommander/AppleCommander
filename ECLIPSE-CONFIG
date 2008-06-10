@@ -34,6 +34,10 @@ To do this, add the following flag to VM arguments:
 
 On Mac, no additional configuration is necessary.
 
+The ant file build/build.xml specifies version 1.3 for source and target.
+Compatible settings may be specified under Project -> Properties -> Java Compiler
+using the Compiler compliance level menu.
+
 Java Build Path
 ===============
 The project's Java build path may be edited by selecting Project ->
