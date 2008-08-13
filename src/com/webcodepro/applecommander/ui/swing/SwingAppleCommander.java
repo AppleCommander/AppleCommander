@@ -177,14 +177,17 @@ public class SwingAppleCommander extends JFrame implements ActionListener {
 		if (rc == 0) {
 			userPreferences.setDiskImageDirectory(jc.getSelectedFile().getParent());
 			UserPreferences.getInstance().save();
-			if (tabPane.getTitleAt(0).equals(textBundle.get("SwtAppleCommander.AppleCommander"))) {
-				tabPane.remove(0);
-			}
-			tabPane.add(jc.getSelectedFile().getName(),new DiskExplorer());
-			tabPane.setSelectedIndex(tabPane.getTabCount()-1);
+			addDiskExplorerTab(jc.getSelectedFile());
 		}
 	}
 
+	protected void addDiskExplorerTab(File file) {
+		if (tabPane.getTitleAt(0).equals(textBundle.get("SwtAppleCommander.AppleCommander"))) {
+			tabPane.remove(0);
+		}
+		tabPane.add(file.getName(),new DiskExplorer());
+		tabPane.setSelectedIndex(tabPane.getTabCount()-1);
+	}
 	/**
 	 * Close a file.
 	 */
