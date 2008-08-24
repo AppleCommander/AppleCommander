@@ -92,7 +92,7 @@ public class DiskImageNamePane extends WizardPane {
 			public void handleEvent(Event e) {
 				String s = edit(fileName.getText(), e);
 				wizard.setFileName(s);
- 				setButtonStatus();
+				setButtonStatus();
 			}
 		});
 		if (wizard.isFormatProdos() || wizard.isFormatPascal()) {
@@ -113,7 +113,7 @@ public class DiskImageNamePane extends WizardPane {
 					e.text = e.text.toUpperCase();
 					String s = edit(volumeName.getText(), e);
 					wizard.setVolumeName(s);
-	 				setButtonStatus();
+					setButtonStatus();
 				}
 			});
 		}
@@ -125,8 +125,13 @@ public class DiskImageNamePane extends WizardPane {
 	 * @return the modified name
 	 */
 	private String edit(String name, Event e) {
-		if (e.character != '\b') return name + e.text;
-		else return name.substring(0, name.length() - 1);
+		if (e.character == '\b') {
+			return name.substring(0, e.start)
+				+ name.substring(e.end);
+		} else {
+			return name.substring(0, e.start)
+				+ e.text + name.substring(e.end);
+		}
 	}
 	/**
 	 * Enable the Next button when data has been entered into all fields.
