@@ -20,12 +20,12 @@
 package com.webcodepro.applecommander.ui.swt.wizard.diskimage;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
 import com.webcodepro.applecommander.ui.UiBundle;
@@ -37,7 +37,7 @@ import com.webcodepro.applecommander.util.TextBundle;
  * volume name, if appropriate.
  * <br>
  * Created on Dec 16, 2002.
- * @author Rob Greene
+ * @author Rob Greene, John B. Matthews
  */
 public class DiskImageNamePane extends WizardPane {
 	private TextBundle textBundle = UiBundle.getInstance();
@@ -61,6 +61,9 @@ public class DiskImageNamePane extends WizardPane {
 	}
 	/**
 	 * Create the wizard pane.
+	 * Listen for Verify events on the Text widgets.
+	 * Require upper case for optional volume name.
+	 * Preserve names when navigating among panes.
 	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#open()
 	 */
 	public void open() {
@@ -78,50 +81,66 @@ public class DiskImageNamePane extends WizardPane {
 		Label label = new Label(control, SWT.WRAP);
 		label.setText(
 			textBundle.get("DiskImageNamePrompt")); //$NON-NLS-1$
-		final Text filename = new Text(control, SWT.BORDER);
-		filename.setFocus();
+		final Text fileName = new Text(control, SWT.BORDER);
+		fileName.setFocus();
 		RowData rowData = new RowData();
 		rowData.width = parent.getClientArea().width - 50;
-		filename.setLayoutData(rowData);
-		filename.setText(wizard.getFileName());
-		filename.addKeyListener(new KeyAdapter() {
-			public void keyPressed(KeyEvent event) {
-				getWizard().setFileName(filename.getText());
-				setButtonStatus();
+		fileName.setLayoutData(rowData);
+		fileName.setText(wizard.getFileName());
+		setButtonStatus();
+		fileName.addListener(SWT.Verify, new Listener() {
+			public void handleEvent(Event e) {
+				String s = edit(fileName.getText(), e);
+				wizard.setFileName(s);
+ 				setButtonStatus();
 			}
 		});
 		if (wizard.isFormatProdos() || wizard.isFormatPascal()) {
 			int maxLength = wizard.isFormatProdos() ? 15 : 7;
 			label = new Label(control, SWT.WRAP);
 			Object[] objects = new Object[2];
-			objects[0] = wizard.isFormatProdos() ? textBundle.get("Prodos")  //$NON-NLS-1$
+			objects[0] = wizard.isFormatProdos()
+					? textBundle.get("Prodos")  //$NON-NLS-1$
 					: textBundle.get("Pascal"); //$NON-NLS-1$
 			objects[1] = new Integer(maxLength);
 			label.setText(textBundle.format(
 					"DiskImageNameLengthText", objects)); //$NON-NLS-1$
-			final Text volumename = new Text(control, SWT.BORDER);
-			volumename.setText(wizard.getVolumeName());
-			volumename.setTextLimit(maxLength);
-			volumename.addKeyListener(new KeyAdapter() {
-				public void keyPressed(KeyEvent event) {
-					getWizard().setVolumeName(volumename.getText().toUpperCase());
-					setButtonStatus();
+			final Text volumeName = new Text(control, SWT.BORDER);
+			volumeName.setText(wizard.getVolumeName());
+			volumeName.setTextLimit(maxLength);
+			volumeName.addListener(SWT.Verify, new Listener() {
+				public void handleEvent(Event e) {
+					e.text = e.text.toUpperCase();
+					String s = edit(volumeName.getText(), e);
+					wizard.setVolumeName(s);
+	 				setButtonStatus();
 				}
 			});
 		}
 	}
 	/**
+	 * Edit a name in response to a Verify event.
+	 * @param name the existing name
+	 * @param e the verification event
+	 * @return the modified name
+	 */
+	private String edit(String name, Event e) {
+		if (e.character != '\b') return name + e.text;
+		else return name.substring(0, name.length() - 1);
+	}
+	/**
 	 * Enable the Next button when data has been entered into all fields.
 	 */
 	protected void setButtonStatus() {
-		String volumeName = wizard.getVolumeName();
-		String fileName = wizard.getFileName();
+		String vName = wizard.getVolumeName();
+		String fName = wizard.getFileName();
 		if (wizard.isFormatProdos() || wizard.isFormatPascal()) {
 			wizard.enableNextButton(
-				fileName != null && fileName.length() > 0
-				&& volumeName != null && volumeName.length() > 0);
+				fName != null && fName.length() > 0
+				&& vName != null && vName.length() > 0
+				&& vName.charAt(0) >= 'A' && vName.charAt(0) <= 'Z');
 		} else {
-			wizard.enableNextButton(fileName != null && fileName.length() > 0);
+			wizard.enableNextButton(fName != null && fName.length() > 0);
 		}
 	}
 	/**
