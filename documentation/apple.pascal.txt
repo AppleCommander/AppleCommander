@@ -61,7 +61,7 @@ The first entry is the volume name.  It has the following format:
      +6   string[7]: volume name (with length byte)
      +14  word: number of blocks on disk
      +16  word: number of files on disk
-     +18  word: first block of file
+     +18  word: first block of volume
      +20  word: most recent date setting
      +22  4 bytes: reserved
 
