@@ -180,9 +180,15 @@
 	
 	<target name="javadoc" depends="init" description="Build javadoc">
 		<javadoc destdir="${javadoc}" author="true" windowtitle="AppleCommander ${acVersion} JavaDoc"
-				 classpath="${swtjar};${junitjar}">
-			<fileset dir="${source}"/>
-			<fileset dir="${testsrc}"/>
+				classpath="${swtjar};${junitjar}">
+			<fileset dir="${source}">
+				<exclude name="**/*gif"/>
+				<exclude name="**/*dump"/>
+				<exclude name="**/*properties"/>
+			</fileset>
+			<fileset dir="${testsrc}">
+				<exclude name="**/*properties"/>
+			</fileset>
 		</javadoc>
     </target>
 	
