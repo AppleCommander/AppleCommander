@@ -46,7 +46,6 @@ public class BusinessBASICFileFilter implements FileFilter {
 	 * @see com.webcodepro.applecommander.storage.FileFilter#filter(FileEntry)
 	 */
 	public byte[] filter(FileEntry fileEntry) {
-	    System.out.println("BusinessBASICFileFilter.filter() entry.");
 		ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
 		PrintWriter printWriter = new PrintWriter(byteArray, true);
 		BusinessBASICTokenizer tokenizer = new BusinessBASICTokenizer(fileEntry);
