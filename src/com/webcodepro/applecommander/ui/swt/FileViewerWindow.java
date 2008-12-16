@@ -47,12 +47,14 @@ import com.webcodepro.applecommander.storage.filters.AppleWorksSpreadSheetFileFi
 import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFileFilter;
 import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
+import com.webcodepro.applecommander.storage.filters.BusinessBASICFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.filteradapter.ApplesoftFilterAdapter;
+import com.webcodepro.applecommander.ui.swt.filteradapter.BusinessBASICFilterAdapter;
 import com.webcodepro.applecommander.ui.swt.filteradapter.FilterAdapter;
 import com.webcodepro.applecommander.ui.swt.filteradapter.GraphicsFilterAdapter;
 import com.webcodepro.applecommander.ui.swt.filteradapter.HexFilterAdapter;
@@ -166,6 +168,11 @@ public class FileViewerWindow {
 		
 		nativeFilterAdapterMap.put(ApplesoftFileFilter.class, 
 			new ApplesoftFilterAdapter(this, textBundle.get("FileViewerWindow.ApplesoftButton"),  //$NON-NLS-1$
+				textBundle.get("FileViewerWindow.ApplesoftTooltip"),  //$NON-NLS-1$
+				imageManager.get(ImageManager.ICON_VIEW_AS_BASIC_PROGRAM)
+			));
+		nativeFilterAdapterMap.put(BusinessBASICFileFilter.class, 
+			new BusinessBASICFilterAdapter(this, textBundle.get("FileViewerWindow.ApplesoftButton"),  //$NON-NLS-1$
 				textBundle.get("FileViewerWindow.ApplesoftTooltip"),  //$NON-NLS-1$
 				imageManager.get(ImageManager.ICON_VIEW_AS_BASIC_PROGRAM)
 			));

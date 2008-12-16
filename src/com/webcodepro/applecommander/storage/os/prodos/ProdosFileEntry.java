@@ -36,6 +36,7 @@ import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFile
 import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
+import com.webcodepro.applecommander.storage.filters.BusinessBASICFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
@@ -471,6 +472,8 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 				return new AssemblySourceFileFilter();			
 			}
 			return new TextFileFilter();
+                case 0x09:              // BA3
+			return new BusinessBASICFileFilter();
 		case 0xb0:		// SRC
 			return new TextFileFilter();
 		case 0x19:		// ADB

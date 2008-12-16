@@ -129,6 +129,16 @@ public class AppleUtil {
 	}
 	
 	/**
+	 * Extract out an unsigned byte as an int.
+	 * All Java bytes are signed; need to convert to an int
+	 * and remove the sign.
+	 */
+	public static int getUnsignedByte(byte[] buffer, int offset) {
+		if (offset+1 > buffer.length) return 0;
+		else return getUnsignedByte(buffer[offset]);
+	}
+
+	/**
 	 * Count the number of bits set in a byte.
 	 */
 	public static int getBitCount(byte byt) {
