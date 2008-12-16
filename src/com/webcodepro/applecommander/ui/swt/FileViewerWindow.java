@@ -172,8 +172,8 @@ public class FileViewerWindow {
 				imageManager.get(ImageManager.ICON_VIEW_AS_BASIC_PROGRAM)
 			));
 		nativeFilterAdapterMap.put(BusinessBASICFileFilter.class, 
-			new BusinessBASICFilterAdapter(this, textBundle.get("FileViewerWindow.ApplesoftButton"),  //$NON-NLS-1$
-				textBundle.get("FileViewerWindow.ApplesoftTooltip"),  //$NON-NLS-1$
+			new BusinessBASICFilterAdapter(this, textBundle.get("FileViewerWindow.BusinessBASICButton"),  //$NON-NLS-1$
+				textBundle.get("FileViewerWindow.BusinessBASICTooltip"),  //$NON-NLS-1$
 				imageManager.get(ImageManager.ICON_VIEW_AS_BASIC_PROGRAM)
 			));
 		nativeFilterAdapterMap.put(AppleWorksDataBaseFileFilter.class, 

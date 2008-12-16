@@ -82,6 +82,7 @@ import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFile
 import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
+import com.webcodepro.applecommander.storage.filters.BusinessBASICFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
@@ -493,6 +494,15 @@ public class DiskExplorerTab {
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				setFileFilter(new IntegerBasicFileFilter());
+				exportFile(null);
+			}
+		});
+
+		item = new MenuItem(menu, SWT.NONE);
+		item.setText(textBundle.get("ExportAsBusinessBASICMenuItem")); //$NON-NLS-1$
+		item.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				setFileFilter(new BusinessBASICFileFilter());
 				exportFile(null);
 			}
 		});

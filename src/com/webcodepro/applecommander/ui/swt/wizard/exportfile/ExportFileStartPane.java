@@ -33,6 +33,7 @@ import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFile
 import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
+import com.webcodepro.applecommander.storage.filters.BusinessBASICFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.HexDumpFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
@@ -148,6 +149,14 @@ public class ExportFileStartPane extends WizardPane {
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				getWizard().setFileFilter(new IntegerBasicFileFilter());
+			}
+		});
+		button = new Button(buttonSubpanel, SWT.RADIO);
+		button.setText(textBundle.get("ExportFileAsBusinessBASICFile")); //$NON-NLS-1$
+		button.setSelection(wizard.getFileFilter() instanceof BusinessBASICFileFilter);
+		button.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				getWizard().setFileFilter(new BusinessBASICFileFilter());
 			}
 		});
 		button = new Button(buttonSubpanel, SWT.RADIO);
