@@ -30,7 +30,7 @@ import com.webcodepro.applecommander.util.TextBundle;
  * launch.  Additionally, there are some command-line interface switches
  * available - see the about method.
  * <p>
- * Regarding SWT, this appliation launcher tries to not be SWT dependent.
+ * Regarding SWT, this application launcher tries to not be SWT dependent.
  * That means that SwtAppleCommander is launched purely by reflection.
  * NOTE: This may yet prove to be a worthless trick.  If it is, remove
  * the crud.  However, as the VERSION and COPYRIGHT are in this class and
@@ -40,7 +40,7 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author Rob Greene
  */
 public class AppleCommander {
-	public static final String VERSION = "1.3.5.2"; //$NON-NLS-1$
+	public static final String VERSION = "1.3.5.3"; //$NON-NLS-1$
 	private static TextBundle textBundle = UiBundle.getInstance();
 	/**
 	 * Launch AppleCommander.
