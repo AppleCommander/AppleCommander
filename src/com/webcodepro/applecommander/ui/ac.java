@@ -22,7 +22,10 @@
 package com.webcodepro.applecommander.ui;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
 
@@ -56,6 +59,7 @@ import com.webcodepro.applecommander.util.TextBundle;
  * -l  &lt;imagename&gt; [&lt;imagename&gt;] list directory of image(s).
  * -ll &lt;imagename&gt; [&lt;imagename&gt;] list detailed directory of image(s).
  * -e  &lt;imagename&gt; &lt;filename&gt; export file from image to stdout.
+ * -x  &lt;imagename&gt; [&lt;directory&gt;] export all files from image to directory.
  * -g  &lt;imagename&gt; &lt;filename&gt; get raw file from image to stdout.
  * -p  &lt;imagename&gt; &lt;filename&gt; &lt;type&gt; [[$|0x]&lt;addr&gt;] put stdin
  *     in filename on image, using file type and address [0x2000].
@@ -91,6 +95,8 @@ public class ac {
 				showDirectory(args, FormattedDisk.FILE_DISPLAY_DETAIL);
 			} else if ("-e".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				getFile(args[1], args[2], true);
+			} else if ("-x".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				getFiles(args[1], (args.length > 2 ? args[2] : ""));
 			} else if ("-g".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				getFile(args[1], args[2], false);
 			} else if ("-p".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
@@ -214,6 +220,38 @@ public class ac {
 			} else {
 				System.err.println(textBundle.format(
 					"CommandLineNoMatchMessage", fileName)); //$NON-NLS-1$
+			}
+		}
+	}
+
+	/**
+	 * Extract all files in the image according to their respective filetype.
+	 */
+	static void getFiles(String imageName, String directory) throws IOException {
+		Disk disk = new Disk(imageName);
+		if (directory.length() > 0) {
+			// Add a final directory separator if the user didn't supply one
+			if (!directory.endsWith(System.getProperty("file.separator")))
+				directory = directory + System.getProperty("file.separator");
+		}
+		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+		for (int i = 0; i < formattedDisks.length; i++) {
+			FormattedDisk formattedDisk = formattedDisks[i];
+			List files = formattedDisk.getFiles();
+			Iterator it = files.iterator();
+			while (it.hasNext()) {
+				FileEntry entry = (FileEntry) it.next();
+				if ((entry != null) && (!entry.isDeleted())) {
+					FileFilter ff = entry.getSuggestedFilter();
+					if (ff instanceof BinaryFileFilter)
+						ff = new HexDumpFileFilter();
+					byte[] buf = ff.filter(entry);
+					String filename = ff.getSuggestedFileName(entry);
+					File file = new File(directory + filename);
+					OutputStream output = new FileOutputStream(file);
+					output.write(buf, 0, buf.length);
+					output.close();
+				}
 			}
 		}
 	}
