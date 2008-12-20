@@ -59,7 +59,7 @@ import com.webcodepro.applecommander.util.TextBundle;
  * -l  &lt;imagename&gt; [&lt;imagename&gt;] list directory of image(s).
  * -ll &lt;imagename&gt; [&lt;imagename&gt;] list detailed directory of image(s).
  * -e  &lt;imagename&gt; &lt;filename&gt; export file from image to stdout.
- * -x  &lt;imagename&gt; &lt;directory&gt; extract all files from image to directory.
+ * -x  &lt;imagename&gt; [&lt;directory&gt;] extract all files from image to directory.
  * -g  &lt;imagename&gt; &lt;filename&gt; get raw file from image to stdout.
  * -p  &lt;imagename&gt; &lt;filename&gt; &lt;type&gt; [[$|0x]&lt;addr&gt;] put stdin
  *     in filename on image, using file type and address [0x2000].
