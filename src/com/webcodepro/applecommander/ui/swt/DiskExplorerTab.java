@@ -87,6 +87,7 @@ import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
+import com.webcodepro.applecommander.storage.filters.GutenbergFileFilter;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosDiskSizeDoesNotMatchException;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
@@ -153,6 +154,7 @@ public class DiskExplorerTab {
 	private FileFilter fileFilter;
 	private GraphicsFileFilter graphicsFilter = new GraphicsFileFilter();
 	private AppleWorksWordProcessorFileFilter awpFilter = new AppleWorksWordProcessorFileFilter();
+	private GutenbergFileFilter wpFilter = new GutenbergFileFilter();
 
 	private int currentFormat = FormattedDisk.FILE_DISPLAY_STANDARD;
 	private boolean formatChanged;
@@ -612,6 +614,62 @@ public class DiskExplorerTab {
 		
 		item = new MenuItem(menu, SWT.SEPARATOR);
 
+		item = new MenuItem(menu, SWT.CASCADE);
+		item.setText(textBundle.get("GutenbergRenderingMenuItem")); //$NON-NLS-1$
+		Menu subMenu2 = new Menu(shell, SWT.DROP_DOWN);
+		item.setMenu(subMenu2);
+		subMenu.addMenuListener(new MenuAdapter() {
+			/**
+			 * Toggle all sub-menu MenuItems to the proper state to reflect
+			 * the current file extension chosen.
+			 */
+			public void menuShown(MenuEvent event) {
+				Menu theMenu = (Menu) event.getSource();
+				MenuItem[] subItems = theMenu.getItems();
+				subItems[0].setSelection(getWPFilter().isTextRendering());
+				subItems[1].setSelection(getWPFilter().isHtmlRendering());
+				subItems[2].setSelection(getWPFilter().isRtfRendering());
+			}
+		});
+		item = new MenuItem(subMenu2, SWT.RADIO);
+		item.setText(textBundle.get("WordProcessorRenderAsTextMenuItem")); //$NON-NLS-1$
+		item.addSelectionListener(new SelectionAdapter() {
+			/**
+			 * Set the appropriate rendering style.
+			 */
+			public void widgetSelected(SelectionEvent event) {
+				getWPFilter().selectTextRendering();
+				setFileFilter(getWPFilter());
+				exportFile(null);
+			}
+		});
+		item = new MenuItem(subMenu2, SWT.RADIO);
+		item.setText(textBundle.get("WordProcessorRenderAsHtmlMenuItem")); //$NON-NLS-1$
+		item.addSelectionListener(new SelectionAdapter() {
+			/**
+			 * Set the appropriate rendering style.
+			 */
+			public void widgetSelected(SelectionEvent event) {
+				getWPFilter().selectHtmlRendering();
+				setFileFilter(getWPFilter());
+				exportFile(null);
+			}
+		});
+		item = new MenuItem(subMenu2, SWT.RADIO);
+		item.setText(textBundle.get("WordProcessorRenderAsRtfMenuItem")); //$NON-NLS-1$
+		item.addSelectionListener(new SelectionAdapter() {
+			/**
+			 * Set the appropriate rendering style.
+			 */
+			public void widgetSelected(SelectionEvent event) {
+				getWPFilter().selectRtfRendering();
+				setFileFilter(getWPFilter());
+				exportFile(null);
+			}
+		});
+		
+		item = new MenuItem(menu, SWT.SEPARATOR);
+
 		item = new MenuItem(menu, SWT.NONE);
 		item.setText(textBundle.get("ExportAsGraphicsMenuItem")); //$NON-NLS-1$
 		item.setEnabled(GraphicsFileFilter.isCodecAvailable());
@@ -953,6 +1011,7 @@ public class DiskExplorerTab {
 					outputStream.write(data);
 					outputStream.close();
 				} catch (Exception ex) {
+				    ex.printStackTrace();
 					String errorMessage = ex.getMessage();
 					if (errorMessage == null) {
 						errorMessage = ex.getClass().getName();
@@ -1596,6 +1655,7 @@ public class DiskExplorerTab {
 							}
 						}
 					} else {	// No CTRL key
+					    if ((event.stateMask & SWT.ALT) != SWT.ALT) {	// Ignore ALT key combinations like alt-F4!
 						switch (event.keyCode) {
 							case SWT.F2:	// Standard file display
 								changeCurrentFormat(FormattedDisk.FILE_DISPLAY_STANDARD);
@@ -1611,6 +1671,7 @@ public class DiskExplorerTab {
 								getShowDeletedFilesToolItem().setSelection(isShowDeletedFiles());
 								fillFileTable(getCurrentFileList());
 								break;
+							}
 						}
 					}
 				}
@@ -1937,6 +1998,10 @@ public class DiskExplorerTab {
 	
 	protected AppleWorksWordProcessorFileFilter getAwpFilter() {
 		return awpFilter;
+	}
+	
+	protected GutenbergFileFilter getWPFilter() {
+		return wpFilter;
 	}
 	
 	protected GraphicsFileFilter getGraphicsFilter() {

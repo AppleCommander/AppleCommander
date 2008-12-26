@@ -34,6 +34,7 @@ import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.storage.os.dos33.OzDosFormatDisk;
 import com.webcodepro.applecommander.storage.os.dos33.UniDosFormatDisk;
+import com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
@@ -191,7 +192,7 @@ public class Disk {
 		if (isProdosOrder()) {
 			imageOrder = new ProdosOrder(diskImageManager);
 		} else if (isDosOrder()) {
-			imageOrder = new DosOrder(diskImageManager);
+		    	imageOrder = new DosOrder(diskImageManager);
 		} else if (isNibbleOrder()) {
 			imageOrder = new NibbleOrder(diskImageManager);
 		}
@@ -256,10 +257,13 @@ public class Disk {
 		} else if (isCpmFormat()) {
 			return new FormattedDisk[]
 				{ new CpmFormatDisk(filename, imageOrder) };
+		} else if (isWPFormat()) {
+			return new FormattedDisk[]
+				{ new GutenbergFormatDisk(filename, imageOrder) };
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Returns the diskImage.
 	 * @return byte[]
@@ -554,6 +558,20 @@ public class Disk {
 		byte[] block = readSector(0, 0x0d);
 		String id = AppleUtil.getString(block, 0xe0, 4);
 		return "RDOS".equals(id); //$NON-NLS-1$
+	}
+	
+	/**
+	 * Test the disk format to see if this is a WP formatted
+	 * disk.
+	 */
+	public boolean isWPFormat() {
+		if (!is140KbDisk()) return false;
+		byte[] vtoc = readSector(17, 7);
+		return (imageOrder.isSizeApprox(APPLE_140KB_DISK)
+				 || imageOrder.isSizeApprox(APPLE_140KB_NIBBLE_DISK))						 
+			&& vtoc[0x00] == 17		// expect catalog to start on track 17
+			&& vtoc[0x01] == 7		// expect catalog to start on sector 7
+			&& vtoc[0x0f] == -115;		// expect 0x8d's every 16 bytes
 	}
 	
 	/**

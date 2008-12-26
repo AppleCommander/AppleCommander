@@ -52,6 +52,7 @@ import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
+import com.webcodepro.applecommander.storage.filters.GutenbergFileFilter;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.filteradapter.ApplesoftFilterAdapter;
 import com.webcodepro.applecommander.ui.swt.filteradapter.BusinessBASICFilterAdapter;
@@ -187,10 +188,15 @@ public class FileViewerWindow {
 				imageManager.get(ImageManager.ICON_VIEW_AS_SPREADSHEET)
 			));
 		nativeFilterAdapterMap.put(AppleWorksWordProcessorFileFilter.class, 
-			new TextFilterAdapter(this, textBundle.get("FileViewerWindow.WordprocessorButton"),  //$NON-NLS-1$
-				textBundle.get("FileViewerWindow.WordprocessorTooltip"),  //$NON-NLS-1$
-				imageManager.get(ImageManager.ICON_VIEW_AS_WORDPROCESSOR)
-			));
+				new TextFilterAdapter(this, textBundle.get("FileViewerWindow.WordprocessorButton"),  //$NON-NLS-1$
+					textBundle.get("FileViewerWindow.WordprocessorTooltip"),  //$NON-NLS-1$
+					imageManager.get(ImageManager.ICON_VIEW_AS_WORDPROCESSOR)
+				));
+		nativeFilterAdapterMap.put(GutenbergFileFilter.class, 
+				new TextFilterAdapter(this, textBundle.get("FileViewerWindow.WordprocessorButton"),  //$NON-NLS-1$
+					textBundle.get("FileViewerWindow.WordprocessorTooltip"),  //$NON-NLS-1$
+					imageManager.get(ImageManager.ICON_VIEW_AS_WORDPROCESSOR)
+				));
 		nativeFilterAdapterMap.put(AssemblySourceFileFilter.class, 
 			new TextFilterAdapter(this, textBundle.get("FileViewerWindow.AssemblyButton"),  //$NON-NLS-1$
 				textBundle.get("FileViewerWindow.AssemblyTooltip"),  //$NON-NLS-1$
