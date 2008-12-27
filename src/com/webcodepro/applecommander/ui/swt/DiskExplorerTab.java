@@ -154,7 +154,7 @@ public class DiskExplorerTab {
 	private FileFilter fileFilter;
 	private GraphicsFileFilter graphicsFilter = new GraphicsFileFilter();
 	private AppleWorksWordProcessorFileFilter awpFilter = new AppleWorksWordProcessorFileFilter();
-	private GutenbergFileFilter wpFilter = new GutenbergFileFilter();
+	private GutenbergFileFilter gutenbergFilter = new GutenbergFileFilter();
 
 	private int currentFormat = FormattedDisk.FILE_DISPLAY_STANDARD;
 	private boolean formatChanged;
@@ -536,6 +536,47 @@ public class DiskExplorerTab {
 			}
 		});
 
+		item = new MenuItem(menu, SWT.CASCADE);
+		item.setText(textBundle.get("GutenbergRenderingMenuItem")); //$NON-NLS-1$
+		Menu subMenu2 = new Menu(shell, SWT.DROP_DOWN);
+		item.setMenu(subMenu2);
+		item = new MenuItem(subMenu2, SWT.NONE);
+		item.setText(textBundle.get("WordProcessorRenderAsTextMenuItem")); //$NON-NLS-1$
+		item.addSelectionListener(new SelectionAdapter() {
+			/**
+			 * Set the appropriate rendering style.
+			 */
+			public void widgetSelected(SelectionEvent event) {
+				getGutenbergFilter().selectTextRendering();
+				setFileFilter(getGutenbergFilter());
+				exportFile(null);
+			}
+		});
+		item = new MenuItem(subMenu2, SWT.NONE);
+		item.setText(textBundle.get("WordProcessorRenderAsHtmlMenuItem")); //$NON-NLS-1$
+		item.addSelectionListener(new SelectionAdapter() {
+			/**
+			 * Set the appropriate rendering style.
+			 */
+			public void widgetSelected(SelectionEvent event) {
+				getGutenbergFilter().selectHtmlRendering();
+				setFileFilter(getGutenbergFilter());
+				exportFile(null);
+			}
+		});
+		item = new MenuItem(subMenu2, SWT.NONE);
+		item.setText(textBundle.get("WordProcessorRenderAsRtfMenuItem")); //$NON-NLS-1$
+		item.addSelectionListener(new SelectionAdapter() {
+			/**
+			 * Set the appropriate rendering style.
+			 */
+			public void widgetSelected(SelectionEvent event) {
+				getGutenbergFilter().selectRtfRendering();
+				setFileFilter(getGutenbergFilter());
+				exportFile(null);
+			}
+		});
+		
 		item = new MenuItem(menu, SWT.NONE);
 		item.setText(textBundle.get("ExportAsAppleWorksSpreadsheetFileMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
@@ -609,62 +650,6 @@ public class DiskExplorerTab {
 			 */
 			public void widgetSelected(SelectionEvent event) {
 				getAwpFilter().selectRtfRendering();
-			}
-		});
-		
-		item = new MenuItem(menu, SWT.SEPARATOR);
-
-		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText(textBundle.get("GutenbergRenderingMenuItem")); //$NON-NLS-1$
-		Menu subMenu2 = new Menu(shell, SWT.DROP_DOWN);
-		item.setMenu(subMenu2);
-		subMenu.addMenuListener(new MenuAdapter() {
-			/**
-			 * Toggle all sub-menu MenuItems to the proper state to reflect
-			 * the current file extension chosen.
-			 */
-			public void menuShown(MenuEvent event) {
-				Menu theMenu = (Menu) event.getSource();
-				MenuItem[] subItems = theMenu.getItems();
-				subItems[0].setSelection(getWPFilter().isTextRendering());
-				subItems[1].setSelection(getWPFilter().isHtmlRendering());
-				subItems[2].setSelection(getWPFilter().isRtfRendering());
-			}
-		});
-		item = new MenuItem(subMenu2, SWT.RADIO);
-		item.setText(textBundle.get("WordProcessorRenderAsTextMenuItem")); //$NON-NLS-1$
-		item.addSelectionListener(new SelectionAdapter() {
-			/**
-			 * Set the appropriate rendering style.
-			 */
-			public void widgetSelected(SelectionEvent event) {
-				getWPFilter().selectTextRendering();
-				setFileFilter(getWPFilter());
-				exportFile(null);
-			}
-		});
-		item = new MenuItem(subMenu2, SWT.RADIO);
-		item.setText(textBundle.get("WordProcessorRenderAsHtmlMenuItem")); //$NON-NLS-1$
-		item.addSelectionListener(new SelectionAdapter() {
-			/**
-			 * Set the appropriate rendering style.
-			 */
-			public void widgetSelected(SelectionEvent event) {
-				getWPFilter().selectHtmlRendering();
-				setFileFilter(getWPFilter());
-				exportFile(null);
-			}
-		});
-		item = new MenuItem(subMenu2, SWT.RADIO);
-		item.setText(textBundle.get("WordProcessorRenderAsRtfMenuItem")); //$NON-NLS-1$
-		item.addSelectionListener(new SelectionAdapter() {
-			/**
-			 * Set the appropriate rendering style.
-			 */
-			public void widgetSelected(SelectionEvent event) {
-				getWPFilter().selectRtfRendering();
-				setFileFilter(getWPFilter());
-				exportFile(null);
 			}
 		});
 		
@@ -2000,8 +1985,8 @@ public class DiskExplorerTab {
 		return awpFilter;
 	}
 	
-	protected GutenbergFileFilter getWPFilter() {
-		return wpFilter;
+	protected GutenbergFileFilter getGutenbergFilter() {
+		return gutenbergFilter;
 	}
 	
 	protected GraphicsFileFilter getGraphicsFilter() {

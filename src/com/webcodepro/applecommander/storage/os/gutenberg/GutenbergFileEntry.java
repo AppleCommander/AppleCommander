@@ -34,10 +34,10 @@ import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 
 /**
- * Represents a DOS file entry on disk.
+ * Represents a Gutenberg word processing file entry on disk.
  * <p>
- * Date created: Oct 4, 2002 5:15:25 PM
- * @author Rob Greene
+ * Date created: Dec 17, 2008 04:29:23 PM
+ * @author David Schmidt
  */
 public class GutenbergFileEntry implements FileEntry {
 	private TextBundle textBundle = StorageBundle.getInstance();

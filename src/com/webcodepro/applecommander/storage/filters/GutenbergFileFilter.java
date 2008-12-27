@@ -21,14 +21,11 @@ package com.webcodepro.applecommander.storage.filters;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.StringTokenizer;
 
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.ui.AppleCommander;
-import com.webcodepro.applecommander.util.AppleUtil;
 
 /**
  * Extract the contents of an ancient word processor file (might be Word
@@ -52,7 +49,7 @@ public class GutenbergFileFilter implements FileFilter {
 	private static final int RENDER_AS_TEXT = 0;
 	private static final int RENDER_AS_HTML = 1;
 	private static final int RENDER_AS_RTF = 2;
-	private int rendering = RENDER_AS_HTML;
+	private int rendering = RENDER_AS_RTF;
 	/**
 	 * Constructor for GutenbergFileFilter.
 	 */
@@ -108,8 +105,8 @@ public class GutenbergFileFilter implements FileFilter {
 		cooked=cooked.replaceAll("<[n|N]2>(.*)", "<h2>$1</h2>");	//$NON-NLS-1$ $NON-NLS-2$ Another kind of heading?  Give it boundaries
 		cooked=cooked.replaceAll("<[n|N]3>(.*)", "<h3>$1</h3>");	//$NON-NLS-1$ $NON-NLS-2$ Another kind of heading?  Give it boundaries
 		cooked=cooked.replaceAll("<[t|T]1>", "<p>");	//$NON-NLS-1$ $NON-NLS-2$ Tab level 1
-		cooked=cooked.replaceAll("<[t|T]2>(.*)", "<blockquote>$1</blockquote>");	//$NON-NLS-1$ $NON-NLS-2$ Tab level 2
-		cooked=cooked.replaceAll("<[t|T]3>(.*)", "<blockquote><blockquote>$1</blockquote></blockquote>");	//$NON-NLS-1$ $NON-NLS-2$ Tab level 3
+		cooked=cooked.replaceAll("<[t|T]2>(.*)", "<p><bq1>$1</bq1>");	//$NON-NLS-1$ $NON-NLS-2$ Tab level 2
+		cooked=cooked.replaceAll("<[t|T]3>(.*)", "<p><bq2>$1</bq2>");	//$NON-NLS-1$ $NON-NLS-2$ Tab level 3
 		cooked=cooked.replaceAll("\\x0f", "</i>");				//$NON-NLS-1$ $NON-NLS-2$ Italics off
 		cooked=cooked.replaceAll("\\x01(.*)", " <i>$1</i>");	//$NON-NLS-1$ $NON-NLS-2$ Italics on
 		cooked=cooked.replaceAll("\\x02(.*)", " <i>$1</i>");	//$NON-NLS-1$ $NON-NLS-2$ Italics on
@@ -158,7 +155,7 @@ public class GutenbergFileFilter implements FileFilter {
 								output.print("<i>"); //$NON-NLS-1$ 
 								break;
 							case RENDER_AS_RTF:
-								output.println("\\i "); //$NON-NLS-1$
+								output.print("\\i "); //$NON-NLS-1$
 								break;
 							default:
 								break;
@@ -174,7 +171,7 @@ public class GutenbergFileFilter implements FileFilter {
 								output.print("</i>"); //$NON-NLS-1$
 								break;
 							case RENDER_AS_RTF:
-								output.println("\\i0 "); //$NON-NLS-1$
+								output.print("\\i0 "); //$NON-NLS-1$
 								break;
 							default:
 								break;
@@ -189,7 +186,7 @@ public class GutenbergFileFilter implements FileFilter {
 								output.print("<p>"); //$NON-NLS-1$
 								break;
 							case RENDER_AS_RTF:
-								output.println("\\par "); //$NON-NLS-1$
+								output.print("\\par \\par \\li0 "); //$NON-NLS-1$
 								break;
 							default:
 								break;
@@ -205,7 +202,7 @@ public class GutenbergFileFilter implements FileFilter {
 								output.print("<u>"); //$NON-NLS-1$
 								break;
 							case RENDER_AS_RTF:
-								output.println("\\ul "); //$NON-NLS-1$
+								output.print("\\ul "); //$NON-NLS-1$
 								break;
 							default:
 								break;
@@ -221,7 +218,7 @@ public class GutenbergFileFilter implements FileFilter {
 								output.print("</u>"); //$NON-NLS-1$
 								break;
 							case RENDER_AS_RTF:
-								output.println("\\ulnone "); //$NON-NLS-1$
+								output.print("\\ulnone "); //$NON-NLS-1$
 								break;
 							default:
 								break;
@@ -237,7 +234,7 @@ public class GutenbergFileFilter implements FileFilter {
 								output.print("<b>"); //$NON-NLS-1$
 								break;
 							case RENDER_AS_RTF:
-								output.println("\\b "); //$NON-NLS-1$
+								output.print("\\b "); //$NON-NLS-1$
 								break;
 							default:
 								break;
@@ -253,7 +250,7 @@ public class GutenbergFileFilter implements FileFilter {
 								output.print("</b>"); //$NON-NLS-1$
 								break;
 							case RENDER_AS_RTF:
-								output.println("\\b0 "); //$NON-NLS-1$
+								output.print("\\b0 "); //$NON-NLS-1$
 								break;
 							default:
 								break;
@@ -269,7 +266,7 @@ public class GutenbergFileFilter implements FileFilter {
 								output.print("<sup>"); //$NON-NLS-1$
 								break;
 							case RENDER_AS_RTF:
-								output.println("\\super "); //$NON-NLS-1$
+								output.print("\\super "); //$NON-NLS-1$
 								break;
 							default:
 								break;
@@ -285,7 +282,7 @@ public class GutenbergFileFilter implements FileFilter {
 								output.print("</sup>"); //$NON-NLS-1$
 								break;
 							case RENDER_AS_RTF:
-								output.println("\\nosupersub"); //$NON-NLS-1$
+								output.print("\\nosupersub "); //$NON-NLS-1$
 								break;
 							default:
 								break;
@@ -300,7 +297,7 @@ public class GutenbergFileFilter implements FileFilter {
 								output.print("<center>"); //$NON-NLS-1$
 								break;
 							case RENDER_AS_RTF:
-								output.println("\\pard\\qc "); //$NON-NLS-1$
+								output.print("\\pard\\qc "); //$NON-NLS-1$
 								break;
 							default:
 								break;
@@ -317,7 +314,7 @@ public class GutenbergFileFilter implements FileFilter {
 								output.print("</center>"); //$NON-NLS-1$
 								break;
 							case RENDER_AS_RTF:
-								output.println("\\par \\pard "); //$NON-NLS-1$
+								output.print("\\par \\pard "); //$NON-NLS-1$
 								break;
 							default:
 								break;
@@ -343,13 +340,13 @@ public class GutenbergFileFilter implements FileFilter {
 								break;
 							case RENDER_AS_RTF:
 								if (t.equalsIgnoreCase("h1")) //$NON-NLS-1$
-									output.print("\\pard\\s1\\b\\fs48 "); //$NON-NLS-1$
+									output.print("\\par\\par\\pard\\s1\\b\\fs48 "); //$NON-NLS-1$
 								else if (t.equalsIgnoreCase("h2")) //$NON-NLS-1$
-									output.print("\\pard\\s2\\b\\fs36 "); //$NON-NLS-1$
+									output.print("\\par\\par\\pard\\s2\\b\\fs36 "); //$NON-NLS-1$
 								else if (t.equalsIgnoreCase("h3")) //$NON-NLS-1$
-									output.print("\\pard\\s3\\b\\fs27 "); //$NON-NLS-1$
+									output.print("\\par\\par\\pard\\s3\\b\\fs27 "); //$NON-NLS-1$
 								else if (t.equalsIgnoreCase("h4")) //$NON-NLS-1$
-									output.print("\\pard\\s4\\b\\fs24 "); //$NON-NLS-1$
+									output.print("\\par\\par\\pard\\s4\\b\\fs24 "); //$NON-NLS-1$
 								break;
 							default:
 								output.println();
@@ -380,15 +377,21 @@ public class GutenbergFileFilter implements FileFilter {
 								break;
 						}
 					}
-					else if (t.startsWith("blockquote"))	// Indent $NON-NLS-1$
+					else if (t.startsWith("bq"))	// Indent $NON-NLS-1$
 					{
 						switch (rendering)
 						{
 							case RENDER_AS_HTML:
-								output.print("<blockquote>"); //$NON-NLS-1$
+								if (t.equals("bq1")) //$NON-NLS-1$
+									output.print("<blockquote>"); //$NON-NLS-1$
+								else if (t.equals("bq2")) //$NON-NLS-1$
+									output.print("<blockquote><blockquote>"); //$NON-NLS-1$
 								break;
 							case RENDER_AS_RTF:
-								output.println(""); //$NON-NLS-1$
+								if (t.equals("bq1")) //$NON-NLS-1$
+									output.print("\\pard\\li720 "); //$NON-NLS-1$
+								else if (t.equals("bq2")) //$NON-NLS-1$
+									output.print("\\pard\\li1440 "); //$NON-NLS-1$
 								break;
 							default:
 								output.print("     "); //$NON-NLS-1$
@@ -396,15 +399,18 @@ public class GutenbergFileFilter implements FileFilter {
 						}
 						ignoreBr = true;
 					}
-					else if (t.startsWith("/blockquote"))	// Outdent $NON-NLS-1$
+					else if (t.startsWith("/bq"))	// Outdent $NON-NLS-1$
 					{
 						switch (rendering)
 						{
 							case RENDER_AS_HTML:
-								output.print("</blockquote>"); //$NON-NLS-1$
+								if (t.equals("/bq1")) //$NON-NLS-1$
+									output.print("</blockquote>"); //$NON-NLS-1$
+								else if (t.equals("/bq2")) //$NON-NLS-1$
+									output.print("</blockquote></blockquote>"); //$NON-NLS-1$
 								break;
 							case RENDER_AS_RTF:
-								output.println(""); //$NON-NLS-1$
+								//output.println("\\par\\li0 "); //$NON-NLS-1$
 								break;
 							default:
 								break;
@@ -436,15 +442,16 @@ public class GutenbergFileFilter implements FileFilter {
 						output.print("</u>"); //$NON-NLS-1$
 					if (inSuperscript)
 						output.print("</sup>"); //$NON-NLS-1$
+					break;
 				case RENDER_AS_RTF:
 					if (inItalics)
 						output.print("\\i0 "); //$NON-NLS-1$
 					if (inBold)
 						output.print("\\b0 "); //$NON-NLS-1$
 					if (inUnderline)
-						output.print("\\ulnone"); //$NON-NLS-1$
+						output.print("\\ulnone "); //$NON-NLS-1$
 					if (inSuperscript)
-						output.print("\\nosupersub"); //$NON-NLS-1$
+						output.print("\\nosupersub "); //$NON-NLS-1$
 					break;
 				default:
 					break;
