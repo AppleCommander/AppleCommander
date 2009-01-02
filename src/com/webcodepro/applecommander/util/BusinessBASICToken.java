@@ -10,46 +10,54 @@ public class BusinessBASICToken {
 	private byte tokenValue;
 	private String tokenString;
 	private String stringValue;
-	
+
 	public BusinessBASICToken(int lineNumber) {
 		this.lineNumber = lineNumber;
 	}
-	
+
 	public BusinessBASICToken(byte tokenValue, String tokenString) {
 		this.tokenValue = tokenValue;
 		this.tokenString = tokenString;
 	}
-	
+
 	public BusinessBASICToken(String stringValue) {
 		this.stringValue = stringValue;
 	}
-	
+
 	public boolean isCommandSeparator() {
 		return ":".equals(stringValue); //$NON-NLS-1$
 	}
-	
+
 	public boolean isLineNumber() {
 		return !isToken() && !isString();
 	}
-	
+
 	public boolean isEndOfCommand() {
 		return isLineNumber() || isCommandSeparator();
 	}
-	
+
 	public boolean isToken() {
 		return tokenString != null;
 	}
-	
+
 	public boolean isString() {
 		return stringValue != null;
 	}
-	
+
 	public boolean isExpressionSeparator() {
 		return isCommandSeparator()
 			|| ",".equals(stringValue) //$NON-NLS-1$
 			|| ";".equals(stringValue); //$NON-NLS-1$
 	}
-	
+
+	public boolean isIndenter() {
+		return isToken() && tokenString.equals(" FOR "); //$NON-NLS-1$
+	}
+
+	public boolean isOutdenter() {
+		return isToken() && tokenString.equals(" NEXT "); //$NON-NLS-1$
+	}
+
 	/**
 	 * Get the line number.
 	 */

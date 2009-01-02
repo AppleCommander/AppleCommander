@@ -31,6 +31,7 @@ import com.webcodepro.applecommander.util.BusinessBASICTokenizer;
  * Filter the given file as an Apple /// Business BASIC file.
  * <p>
  * Date created: Dec 15, 2008 11:12:10 PM
+ * 
  * @author David Schmidt
  */
 public class BusinessBASICFileFilter implements FileFilter {
@@ -42,7 +43,9 @@ public class BusinessBASICFileFilter implements FileFilter {
 	}
 
 	/**
-	 * Process the given FileEntry and return a text image of the Business BASIC file.
+	 * Process the given FileEntry and return a text image of the Business BASIC
+	 * file.
+	 * 
 	 * @see com.webcodepro.applecommander.storage.FileFilter#filter(FileEntry)
 	 */
 	public byte[] filter(FileEntry fileEntry) {
@@ -50,6 +53,7 @@ public class BusinessBASICFileFilter implements FileFilter {
 		PrintWriter printWriter = new PrintWriter(byteArray, true);
 		BusinessBASICTokenizer tokenizer = new BusinessBASICTokenizer(fileEntry);
 		boolean firstLine = true;
+		int nest = 0;
 		while (tokenizer.hasMoreTokens()) {
 			BusinessBASICToken token = tokenizer.getNextToken();
 			if (token == null) {
@@ -61,11 +65,21 @@ public class BusinessBASICFileFilter implements FileFilter {
 					printWriter.println();
 				}
 				printWriter.print(token.getLineNumber());
-				printWriter.print(" "); //$NON-NLS-1$
+				if (nest > 0) {
+					for (int i = 1; i < nest; i++)
+						printWriter.print("  "); //$NON-NLS-1$
+					}
+				/*
+				if (token.isIndenter())
+					nest ++;
+				else if (token.isOutdenter())
+					nest --;
+				*/
+				//printWriter.print(" "); //$NON-NLS-1$
 			} else if (token.isToken()) {
 				printWriter.print(token.getTokenString());
 			} else {
-				printWriter.print(token.getStringValue());
+				printWriter.print(" "+token.getStringValue());
 			}
 		}
 		printWriter.close();

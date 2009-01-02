@@ -29,7 +29,6 @@ import com.webcodepro.applecommander.ui.swt.FileViewerWindow;
 import com.webcodepro.applecommander.ui.swt.util.contentadapter.StyledTextAdapter;
 import com.webcodepro.applecommander.util.BusinessBASICToken;
 import com.webcodepro.applecommander.util.BusinessBASICTokenizer;
-import com.webcodepro.applecommander.util.BusinessBASICTokenizer;
 
 /**
  * Provides a view of a syntax-colored Apple /// Business BASIC program listing.
@@ -71,6 +70,8 @@ public class BusinessBASICFilterAdapter extends FilterAdapter {
 
 		BusinessBASICTokenizer tokenizer = new BusinessBASICTokenizer(getFileEntry());
 		boolean firstLine = true;
+		boolean firstData = true;
+		int nestLevels = 0;
 		while (tokenizer.hasMoreTokens()) {
 			BusinessBASICToken token = tokenizer.getNextToken();
 			if (token == null) {
@@ -81,13 +82,22 @@ public class BusinessBASICFilterAdapter extends FilterAdapter {
 				} else {
 					styledText.append("\n"); //$NON-NLS-1$
 				}
+				firstData = true;
 				styledText.append(Integer.toString(token.getLineNumber()));
-				styledText.append(" "); //$NON-NLS-1$
+				styledText.append("  "); //$NON-NLS-1$
+				if (nestLevels > 0) {
+					for (int i = 0; i < nestLevels; i++)
+						styledText.append("  "); //$NON-NLS-1$
+					}
 			} else if (token.isCommandSeparator() || token.isExpressionSeparator()) {
 				styledText.append(token.getStringValue());
+				firstData = false;
 			} else if (token.isEndOfCommand()) {
 				styledText.append("\n"); //$NON-NLS-1$
+				firstData = false;
 			} else if (token.isString()) {
+				if (firstData)
+					styledText.append(" "); //$NON-NLS-1$
 				int caretOffset = styledText.getCharCount();
 				styledText.append(token.getStringValue());
 				StyleRange styleRange = new StyleRange();
@@ -95,6 +105,7 @@ public class BusinessBASICFilterAdapter extends FilterAdapter {
 				styleRange.length = token.getStringValue().length();
 				styleRange.foreground = getGreenColor();
 				styledText.setStyleRange(styleRange);
+				firstData = false;
 			} else if (token.isToken()) {
 				int caretOffset = styledText.getCharCount();
 				styledText.append(token.getTokenString());
@@ -104,6 +115,11 @@ public class BusinessBASICFilterAdapter extends FilterAdapter {
 				//styleRange.fontStyle = SWT.BOLD;
 				styleRange.foreground = getBlueColor();
 				styledText.setStyleRange(styleRange);
+				firstData = false;
+				if (token.isIndenter()) {
+					nestLevels ++; }
+				else if (token.isOutdenter()) {
+					nestLevels --; }
 			}
 		}
 	}

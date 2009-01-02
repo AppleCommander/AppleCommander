@@ -1,7 +1,7 @@
 /*
  * AppleCommander - An Apple ][ image utility.
  * Copyright (C) 2008 by David Schmidt
- * robgreene at users.sourceforge.net
+ * david__schmidt at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU General Public License as published by the 
@@ -41,7 +41,7 @@ import com.webcodepro.applecommander.storage.FileEntry;
 public class BusinessBASICTokenizer {
 	private static String tokens[] = {	// starts at $80
 		" END ",      " FOR ",      " NEXT ",     " INPUT ",    " OUTPUT ",   " DIM ",      " READ ",     " WRITE ",   //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" OPEN ",     " CLOSE ",    " *error* ",  " TEXT ",     " *error* ",  " *error* ",  " *error* ",  " *error* ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		" OPEN ",     " CLOSE ",    " *error* ",  " TEXT ",     " *error* ",  " BYE ",      " *error* ",  " *error* ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
 		" *error* ",  " *error* ",  " *error* ",  " WINDOW ",   " INVOKE ",   " PERFORM ",  " *error* ",  " *error* ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
 		" FRE ",      " HPOS ",     " VPOS ",     " ERRLIN ",   " ERR ",      " KBD ",      " EOF ",      " TIME$ ",   //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
 		" DATE$ ",    " PREFIX$ ",  " EXFN. ",    " EXFN%. ",   " OUTREC ",   " INDENT ",   " *error* ",  " *error* ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
@@ -78,21 +78,21 @@ public class BusinessBASICTokenizer {
 	public BusinessBASICTokenizer(FileEntry fileEntry) {
 		this(fileEntry.getFileData());
 	}
-	
+
 	/**
 	 * Constructor for BusinessBASICTokenizer.
 	 */
 	public BusinessBASICTokenizer(byte[] fileData) {
 		this.fileData = fileData;
 	}
-	
+
 	/**
 	 * Indicates if there are more tokens in the Business BASIC program.
 	 */
 	public boolean hasMoreTokens() {
 		return (offset < fileData.length);
 	}
-	
+
 	/**
 	 * Answer with the next token in the Business BASIC program.  This may be 
 	 * code, string pieces, line numbers.
