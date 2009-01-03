@@ -51,11 +51,11 @@ public class BusinessBASICToken {
 	}
 
 	public boolean isIndenter() {
-		return isToken() && tokenString.equals(" FOR "); //$NON-NLS-1$
+		return isToken() && tokenString.equals("FOR"); //$NON-NLS-1$
 	}
 
 	public boolean isOutdenter() {
-		return isToken() && tokenString.equals(" NEXT "); //$NON-NLS-1$
+		return isToken() && tokenString.equals("NEXT"); //$NON-NLS-1$
 	}
 
 	/**

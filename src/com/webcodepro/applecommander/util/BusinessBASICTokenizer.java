@@ -40,33 +40,33 @@ import com.webcodepro.applecommander.storage.FileEntry;
  */
 public class BusinessBASICTokenizer {
 	private static String tokens[] = {	// starts at $80
-		" END ",      " FOR ",      " NEXT ",     " INPUT ",    " OUTPUT ",   " DIM ",      " READ ",     " WRITE ",   //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" OPEN ",     " CLOSE ",    " *error* ",  " TEXT ",     " *error* ",  " BYE ",      " *error* ",  " *error* ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" *error* ",  " *error* ",  " *error* ",  " WINDOW ",   " INVOKE ",   " PERFORM ",  " *error* ",  " *error* ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" FRE ",      " HPOS ",     " VPOS ",     " ERRLIN ",   " ERR ",      " KBD ",      " EOF ",      " TIME$ ",   //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" DATE$ ",    " PREFIX$ ",  " EXFN. ",    " EXFN%. ",   " OUTREC ",   " INDENT ",   " *error* ",  " *error* ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" *error* ",  " *error* ",  " *error* ",  " *error* ",  " *error* ",  " POP ",      " HOME ",     " *error* ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" SUB$( ",    " OFF ",      " TRACE ",    " NOTRACE ",  " NORMAL ",   " INVERSE ",  " SCALE( ",   " RESUME ",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" *error* ",  " LET ",      " GOTO ",     " IF ",       " RESTORE ",  " SWAP ",     " GOSUB ",    " RETURN ",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" REM ",      " STOP ",     " ON ",       " *error* ",  " LOAD ",     " SAVE ",     " DELETE ",   " RUN ",     //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" RENAME ",   " LOCK ",     " UNLOCK ",   " CREATE ",   " EXEC ",     " CHAIN ",    " *error* ",  " *error* ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" *error* ",  " CATALOG ",  " *error* ",  " *error* ",  " DATA ",     " IMAGE ",    " CAT ",      " DEF ",     //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" *error* ",  " PRINT ",    " DEL ",      " ELSE ",     " CONT ",     " LIST ",     " CLEAR ",    " GET ",     //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" NEW ",      " TAB ",      " TO ",       " SPC( ",     " USING ",    " THEN ",     " *error* ",  " MOD ",     //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" STEP ",     " AND ",      " OR ",       " EXTENSION "," DIV ",      " *error* ",  " FN ",       " NOT ",     //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" *error* ",  " *error* ",  " *error* ",  " *error* ",  " *error* ",  " *error* ",  " *error* ",  " *error* ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" *error* ",  " *error* ",  " *error* ",  " *error* ",  " *error* ",  " *error* ",  " *error* ",  " tf7 ",     //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" TAB( ",     " TO ",       " SPC( ",     " USING ",    " THEN ",     " *error* ",  " MOD ",      " STEP ",    //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" AND ",      " OR ",       " EXTENSION "," DIV ",      " *error* ",  " FN ",       " NOT ",      " *error* ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" *error* ",  " *error* ",  " *error* ",  " *error* ",  " *error* ",  " *error* ",  " *error* ",  " *error* ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" *error* ",  " *error* ",  " *error* ",  " *error* ",  " AS ",       " SGN( ",     " INT( ",     " ABS( ",    //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" *error* ",  " TYP( ",     " REC( ",     " *error* ",  " *error* ",  " *error* ",  " *error* ",  " *error* ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" *error* ",  " *error* ",  " *error* ",  " *error* ",  " *error* ",  " PDL( ",     " BUTTON( ",  " SQR( ",    //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" RND( ",     " LOG( ",     " EXP( ",     " COS( ",     " SIN( ",     " TAN( ",     " ATN( ",     " *error* ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" *error* ",  " *error* ",  " *error* ",  " *error* ",  " *error* ",  " *error* ",  " *error* ",  " *error* ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" *error* ",  " *error* ",  " *error* ",  " STR$( ",    " HEX$( ",    " CHR$( ",    " LEN( ",     " VAL( ",    //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" ASC( ",     " TEN( ",     " *error* ",  " *error* ",  " CONV( ",    " CONV&( ",   " CONV$( ",   " CONV%( ",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		" LEFT$( ",   " RIGHT$( ",  " MID$( ",    " INSTR$( ",  " *error* ",  " *error* ",  " *error* ",  " *error* "};//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"END",      "FOR",      "NEXT",     "INPUT",    "OUTPUT",   "DIM",      "READ",     "WRITE",   //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"OPEN",     "CLOSE",    "*error*",  "TEXT",     "*error*",  "BYE",      "*error*",  "*error*", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"*error*",  "*error*",  "*error*",  "WINDOW",   "INVOKE",   "PERFORM",  "*error*",  "*error*", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"FRE",      "HPOS",     "VPOS",     "ERRLIN",   "ERR",      "KBD",      "EOF",      "TIME$",   //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"DATE$",    "PREFIX$",  "EXFN.",    "EXFN%.",   "OUTREC",   "INDENT",   "*error*",  "*error*", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"*error*",  "*error*",  "*error*",  "*error*",  "*error*",  "POP",      "HOME",     "*error*", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"SUB$(",    "OFF",      "TRACE",    "NOTRACE",  "NORMAL",   "INVERSE",  "SCALE(",   "RESUME",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"*error*",  "LET",      "GOTO",     "IF",       "RESTORE",  "SWAP",     "GOSUB",    "RETURN",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"REM",      "STOP",     "ON",       "*error*",  "LOAD",     "SAVE",     "DELETE",   "RUN",     //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"RENAME",   "LOCK",     "UNLOCK",   "CREATE",   "EXEC",     "CHAIN",    "*error*",  "*error*", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"*error*",  "CATALOG",  "*error*",  "*error*",  "DATA",     "IMAGE",    "CAT",      "DEF",     //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"*error*",  "PRINT",    "DEL",      "ELSE",     "CONT",     "LIST",     "CLEAR",    "GET",     //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"NEW",      "TAB",      "TO",       "SPC(",     "USING",    "THEN",     "*error*",  "MOD",     //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"STEP",     "AND",      "OR",       "EXTENSION"," DIV",      "*error*",  "FN",       "NOT",     //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"*error*",  "*error*",  "*error*",  "*error*",  "*error*",  "*error*",  "*error*",  "*error*", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"*error*",  "*error*",  "*error*",  "*error*",  "*error*",  "*error*",  "*error*",  "tf7",     //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"TAB(",     "TO",       "SPC(",     "USING",    "THEN",     "*error*",  "MOD",      "STEP",    //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"AND",      "OR",       "EXTENSION"," DIV",      "*error*",  "FN",       "NOT",      "*error*", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"*error*",  "*error*",  "*error*",  "*error*",  "*error*",  "*error*",  "*error*",  "*error*", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"*error*",  "*error*",  "*error*",  "*error*",  "AS",       "SGN(",     "INT(",     "ABS(",    //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"*error*",  "TYP(",     "REC(",     "*error*",  "*error*",  "*error*",  "*error*",  "*error*", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"*error*",  "*error*",  "*error*",  "*error*",  "*error*",  "PDL(",     "BUTTON(",  "SQR(",    //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"RND(",     "LOG(",     "EXP(",     "COS(",     "SIN(",     "TAN(",     "ATN(",     "*error*", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"*error*",  "*error*",  "*error*",  "*error*",  "*error*",  "*error*",  "*error*",  "*error*", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"*error*",  "*error*",  "*error*",  "STR$(",    "HEX$(",    "CHR$(",    "LEN(",     "VAL(",    //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"ASC(",     "TEN(",     "*error*",  "*error*",  "CONV(",    "CONV&(",   "CONV$(",   "CONV%(",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"LEFT$(",   "RIGHT$(",  "MID$(",    "INSTR$(",  "*error*",  "*error*",  "*error*",  "*error*"};//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
 
 	private byte[] fileData;
 	private int offset = 2;

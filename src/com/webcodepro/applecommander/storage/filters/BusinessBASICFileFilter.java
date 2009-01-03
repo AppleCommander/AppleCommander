@@ -53,7 +53,8 @@ public class BusinessBASICFileFilter implements FileFilter {
 		PrintWriter printWriter = new PrintWriter(byteArray, true);
 		BusinessBASICTokenizer tokenizer = new BusinessBASICTokenizer(fileEntry);
 		boolean firstLine = true;
-		int nest = 0;
+		boolean firstData = true;
+		int nestLevels = 0;
 		while (tokenizer.hasMoreTokens()) {
 			BusinessBASICToken token = tokenizer.getNextToken();
 			if (token == null) {
@@ -64,22 +65,30 @@ public class BusinessBASICFileFilter implements FileFilter {
 				} else {
 					printWriter.println();
 				}
+				firstData = true;
 				printWriter.print(token.getLineNumber());
-				if (nest > 0) {
-					for (int i = 1; i < nest; i++)
+				printWriter.print("   "); //$NON-NLS-1$
+				if (nestLevels > 0) {
+					for (int i = 0; i < nestLevels; i++)
 						printWriter.print("  "); //$NON-NLS-1$
 					}
-				/*
-				if (token.isIndenter())
-					nest ++;
-				else if (token.isOutdenter())
-					nest --;
-				*/
-				//printWriter.print(" "); //$NON-NLS-1$
 			} else if (token.isToken()) {
+				if (!firstData)
+					printWriter.print(" "); //$NON-NLS-1$
 				printWriter.print(token.getTokenString());
+				firstData = false;
+				if (token.isIndenter()) {
+					nestLevels ++; }
+				else if (token.isOutdenter()) {
+					nestLevels --; }
+			} else if (token.isCommandSeparator() || token.isExpressionSeparator()) {
+				printWriter.print(token.getStringValue());
+				firstData = true;
 			} else {
-				printWriter.print(" "+token.getStringValue());
+				if (!firstData)
+					printWriter.print(" "); //$NON-NLS-1$
+				printWriter.print(token.getStringValue().trim());
+				firstData = false;
 			}
 		}
 		printWriter.close();

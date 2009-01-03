@@ -1,7 +1,7 @@
 /*
  * AppleCommander - An Apple ][ image utility.
- * Copyright (C) 2002-2004 by Robert Greene
- * robgreene at users.sourceforge.net
+ * Copyright (C) 2008 by David Schmidt
+ * david__schmidt at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU General Public License as published by the 
@@ -33,7 +33,7 @@ import com.webcodepro.applecommander.util.BusinessBASICTokenizer;
 /**
  * Provides a view of a syntax-colored Apple /// Business BASIC program listing.
  * 
- * @author Rob Greene
+ * @author David Schmidt
  */
 public class BusinessBASICFilterAdapter extends FilterAdapter {
 	private StyledText styledText;
@@ -84,29 +84,31 @@ public class BusinessBASICFilterAdapter extends FilterAdapter {
 				}
 				firstData = true;
 				styledText.append(Integer.toString(token.getLineNumber()));
-				styledText.append("  "); //$NON-NLS-1$
+				styledText.append("   "); //$NON-NLS-1$
 				if (nestLevels > 0) {
 					for (int i = 0; i < nestLevels; i++)
 						styledText.append("  "); //$NON-NLS-1$
 					}
 			} else if (token.isCommandSeparator() || token.isExpressionSeparator()) {
 				styledText.append(token.getStringValue());
-				firstData = false;
+				firstData = true;
 			} else if (token.isEndOfCommand()) {
 				styledText.append("\n"); //$NON-NLS-1$
 				firstData = false;
 			} else if (token.isString()) {
-				if (firstData)
+				if (!firstData)
 					styledText.append(" "); //$NON-NLS-1$
 				int caretOffset = styledText.getCharCount();
-				styledText.append(token.getStringValue());
+				styledText.append(token.getStringValue().trim());
 				StyleRange styleRange = new StyleRange();
 				styleRange.start = caretOffset;
-				styleRange.length = token.getStringValue().length();
+				styleRange.length = token.getStringValue().trim().length();
 				styleRange.foreground = getGreenColor();
 				styledText.setStyleRange(styleRange);
 				firstData = false;
 			} else if (token.isToken()) {
+				if (!firstData)
+					styledText.append(" "); //$NON-NLS-1$
 				int caretOffset = styledText.getCharCount();
 				styledText.append(token.getTokenString());
 				StyleRange styleRange = new StyleRange();
