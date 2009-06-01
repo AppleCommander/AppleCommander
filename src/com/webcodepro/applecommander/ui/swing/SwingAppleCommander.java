@@ -170,7 +170,11 @@ public class SwingAppleCommander extends JFrame implements ActionListener {
 	 */
 	protected void openFile() {
 		JFileChooser jc = new JFileChooser();
-		jc.setCurrentDirectory(new File(userPreferences.getDiskImageDirectory()));
+		String pathName = userPreferences.getDiskImageDirectory();
+		if (null == pathName) {
+			pathName = ""; //$NON-NLS-1$
+			}
+		jc.setCurrentDirectory(new File(pathName));
 		EmulatorFileFilter ff = new EmulatorFileFilter();
 		jc.setFileFilter(ff);
 		int rc = jc.showDialog(this, textBundle.get("Open")); //$NON-NLS-1$
