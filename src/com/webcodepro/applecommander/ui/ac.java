@@ -2,7 +2,7 @@
  * ac - an AppleCommander command line utility
  * Copyright (C) 2002 by Robert Greene
  * robgreene at users.sourceforge.net
- * Copyright (C) 2003, 2004 by John B.  Matthews
+ * Copyright (C) 2003, 2004 by John B. Matthews
  * matthewsj at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it 
@@ -231,8 +231,8 @@ public class ac {
 		Disk disk = new Disk(imageName);
 		if (directory.length() > 0) {
 			// Add a final directory separator if the user didn't supply one
-			if (!directory.endsWith(System.getProperty("file.separator")))
-				directory = directory + System.getProperty("file.separator");
+			if (!directory.endsWith(File.separator))
+				directory = directory + File.separator;
 		}
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		for (int i = 0; i < formattedDisks.length; i++) {
@@ -262,18 +262,18 @@ public class ac {
 	 * file with the given filename.
 	 */
 	static FileEntry getEntry(List files, String fileName) {
-		FileEntry theEntry = null;
+		FileEntry entry = null;
 		if (files != null) {
 			for (int i = 0; i < files.size(); i++) {
-				FileEntry entry = (FileEntry) files.get(i);
+				entry = (FileEntry) files.get(i);
 				String entryName = entry.getFilename();
 				if (!entry.isDeleted() && fileName.equalsIgnoreCase(entryName)) {
 					return entry;
 				}
 				if (entry.isDirectory()) {
-					theEntry = getEntry(((DirectoryEntry) entry).getFiles(), fileName);
-					if (theEntry != null) {
-						return theEntry;
+					entry = getEntry(((DirectoryEntry) entry).getFiles(), fileName);
+					if (entry != null) {
+						return entry;
 					}
 				}
 			}
