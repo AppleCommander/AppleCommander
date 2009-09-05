@@ -94,24 +94,24 @@ public class ac {
 			} else if ("-ll".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				showDirectory(args, FormattedDisk.FILE_DISPLAY_DETAIL);
 			} else if ("-e".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				getFile(args[1], args[2], true);
+				getFile(args[1], new Name(args[2]), true);
 			} else if ("-x".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				getFiles(args[1], (args.length > 2 ? args[2] : ""));
 			} else if ("-g".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				getFile(args[1], args[2], false);
+				getFile(args[1], new Name(args[2]), false);
 			} else if ("-p".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				putFile(args[1], args[2], args[3],
+				putFile(args[1], new Name(args[2]), args[3],
 					(args.length > 4 ? args[4] : "0x2000"));
 			} else if ("-d".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				deleteFile(args[1], args[2]);
+				deleteFile(args[1], new Name(args[2]));
 			} else if ("-k".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				setFileLocked(args[1], args[2], true);
+				setFileLocked(args[1], new Name(args[2]), true);
 			} else if ("-u".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				setFileLocked(args[1], args[2], false);
+				setFileLocked(args[1], new Name(args[2]), false);
 			} else if ("-n".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				setDiskName(args[1], args[2]);
 			} else if ("-cc65".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				putCC65(args[1], args[2], args[3]);
+				putCC65(args[1], new Name(args[2]), args[3]);
 			} else if ("-dos140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				createDosDisk(args[1], Disk.APPLE_140KB_DISK);
 			} else if ("-pas140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
@@ -137,7 +137,7 @@ public class ac {
 	 * Put &lt;stdin> into the file named fileName on the disk named imageName;
 	 * Note: only volume level supported; input size unlimited.
 	 */
-	static void putFile(String imageName, String fileName, String fileType,
+	static void putFile(String imageName, Name name, String fileType,
 		String address) throws IOException, DiskFullException {
 
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
@@ -149,8 +149,13 @@ public class ac {
 		Disk disk = new Disk(imageName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		FormattedDisk formattedDisk = formattedDisks[0];
-		FileEntry entry = formattedDisk.createFile();
-		entry.setFilename(fileName);
+		FileEntry entry;
+		if (name.path.length > 1) {
+			entry = name.getParent(formattedDisk).createFile();
+		} else {
+			entry = formattedDisk.createFile();
+		}
+		entry.setFilename(name.name);
 		entry.setFiletype(fileType);
 		entry.setFileData(buf.toByteArray());
 		if (entry.needsAddress()) {
@@ -163,33 +168,33 @@ public class ac {
 	 * Put &lt;stdin> into the file named fileName on the disk named imageName;
 	 * Assume a cc65 style four-byte header with start address in bytes 0-1.
 	 */
-	static void putCC65(String imageName, String fileName, String fileType)
+	static void putCC65(String imageName, Name name, String fileType)
 		throws IOException, DiskFullException {
 
 		byte[] header = new byte[4];
 		if (System.in.read(header, 0, 4) == 4) {
 			int address = AppleUtil.getWordValue(header, 0);
-			putFile(imageName, fileName, fileType, Integer.toString(address));
+			putFile(imageName, name, fileType, Integer.toString(address));
 		}
 	}
 
 	/**
 	 * Delete the file named fileName from the disk named imageName.
 	 */
-	static void deleteFile(String imageName, String fileName)
+	static void deleteFile(String imageName, Name name)
 		throws IOException {
 		Disk disk = new Disk(imageName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		for (int i = 0; i < formattedDisks.length; i++) {
 			FormattedDisk formattedDisk = formattedDisks[i];
 			List files = formattedDisk.getFiles();
-			FileEntry entry = getEntry(files, fileName);
+			FileEntry entry = name.getEntry(files);
 			if (entry != null) {
 				entry.delete();
 				disk.save();
 			} else {
 				System.err.println(textBundle.format(
-					"CommandLineNoMatchMessage", fileName)); //$NON-NLS-1$
+					"CommandLineNoMatchMessage", name.fullName)); //$NON-NLS-1$
 			}
 		}
 	}
@@ -198,14 +203,14 @@ public class ac {
 	 * Get the file named filename from the disk named imageName; the file is
 	 * filtered according to its type and sent to &lt;stdout>.
 	 */
-	static void getFile(String imageName, String fileName, boolean filter)
+	static void getFile(String imageName, Name name, boolean filter)
 		throws IOException {
 		Disk disk = new Disk(imageName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		for (int i = 0; i < formattedDisks.length; i++) {
 			FormattedDisk formattedDisk = formattedDisks[i];
 			List files = formattedDisk.getFiles();
-			FileEntry entry = getEntry(files, fileName);
+			FileEntry entry = name.getEntry(files);
 			if (entry != null) {
 				if (filter) {
 					FileFilter ff = entry.getSuggestedFilter();
@@ -219,7 +224,7 @@ public class ac {
 				}
 			} else {
 				System.err.println(textBundle.format(
-					"CommandLineNoMatchMessage", fileName)); //$NON-NLS-1$
+					"CommandLineNoMatchMessage", name.fullName)); //$NON-NLS-1$
 			}
 		}
 	}
@@ -260,6 +265,7 @@ public class ac {
 	 * Recursive routine to locate a specific file by filename; In the instance
 	 * of a system with directories (e.g. ProDOS), this really returns the first
 	 * file with the given filename.
+	 * @deprecated
 	 */
 	static FileEntry getEntry(List files, String fileName) {
 		FileEntry entry = null;
@@ -343,8 +349,7 @@ public class ac {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 			for (int i = 0; i < formattedDisks.length; i++) {
 				FormattedDisk formattedDisk = formattedDisks[i];
-				Iterator iterator = formattedDisk.getDiskInformation()
-					.iterator();
+				Iterator iterator = formattedDisk.getDiskInformation().iterator();
 				while (iterator.hasNext()) {
 					DiskInformation diskinfo = (DiskInformation) iterator.next();
 					System.out.println(diskinfo.getLabel() + ": " + diskinfo.getValue());
@@ -358,20 +363,20 @@ public class ac {
 	 * Set the lockState of the file named fileName on the disk named imageName.
 	 * Proposed by David Schmidt.
 	 */
-	static void setFileLocked(String imageName, String fileName,
+	static void setFileLocked(String imageName, Name name,
 		boolean lockState) throws IOException {
 		Disk disk = new Disk(imageName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		for (int i = 0; i < formattedDisks.length; i++) {
 			FormattedDisk formattedDisk = formattedDisks[i];
 			List files = formattedDisk.getFiles();
-			FileEntry entry = getEntry(files, fileName);
+			FileEntry entry = name.getEntry(files);
 			if (entry != null) {
 				entry.setLocked(lockState);
 				disk.save();
 			} else {
 				System.err.println(textBundle.format(
-					"CommandLineNoMatchMessage", fileName)); //$NON-NLS-1$
+					"CommandLineNoMatchMessage", name.fullName)); //$NON-NLS-1$
 			}
 		}
 	}
@@ -444,4 +449,58 @@ public class ac {
 			"CommandLineHelp", AppleCommander.VERSION)); //$NON-NLS-1$
 	}
 
+	private static class Name {
+		private String fullName;
+		private String name;
+		private String[] path;
+		
+		public Name(String s) {
+			this.fullName = s;
+			if (s.startsWith("/")) {
+				fullName = s.substring(1, s.length());
+			}
+			this.path = s.split("/");
+			this.name = path[path.length - 1];
+		}
+		
+		public FileEntry getEntry(List files) {
+			if (files == null) return null;
+			FileEntry entry = null;
+			for (int i = 0; i < path.length - 1; i++) {
+				String dirName = path[i];
+				for (int j = 0; j < files.size(); j++) {
+					entry = (FileEntry) files.get(j);
+					String entryName = entry.getFilename();
+					if (entry.isDirectory() && dirName.equalsIgnoreCase(entryName)) {
+						files = ((DirectoryEntry) entry).getFiles();
+					}
+				}
+			}
+			for (int i = 0; i < files.size(); i++) {
+				entry = (FileEntry) files.get(i);
+				String entryName = entry.getFilename();
+				if (!entry.isDeleted() && name.equalsIgnoreCase(entryName)) {
+					return entry;
+				}
+			}
+			return null;
+		}
+		
+		public DirectoryEntry getParent(FormattedDisk formattedDisk) {
+			List files =formattedDisk.getFiles();
+			DirectoryEntry dir = null;
+			for (int i = 0; i < path.length - 1; i++) {
+				String dirName = path[i];
+				for (int j = 0; j < files.size(); j++) {
+					FileEntry entry = (FileEntry) files.get(j);
+					String entryName = entry.getFilename();
+					if (entry.isDirectory() && dirName.equalsIgnoreCase(entryName)) {
+						dir = (DirectoryEntry) entry;
+						files = dir.getFiles();
+					}
+				}
+			}
+			return dir;
+		}
+	}
 }
