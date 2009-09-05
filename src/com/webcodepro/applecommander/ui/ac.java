@@ -149,19 +149,16 @@ public class ac {
 		Disk disk = new Disk(imageName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		FormattedDisk formattedDisk = formattedDisks[0];
-		FileEntry entry;
-		if (name.path.length > 1) {
-			entry = name.getParent(formattedDisk).createFile();
-		} else {
-			entry = formattedDisk.createFile();
+		FileEntry entry = name.createEntry(formattedDisk);
+		if (entry != null) {
+			entry.setFilename(name.name);
+			entry.setFiletype(fileType);
+			entry.setFileData(buf.toByteArray());
+			if (entry.needsAddress()) {
+				entry.setAddress(stringToInt(address));
+			}
+			formattedDisk.save();
 		}
-		entry.setFilename(name.name);
-		entry.setFiletype(fileType);
-		entry.setFileData(buf.toByteArray());
-		if (entry.needsAddress()) {
-			entry.setAddress(stringToInt(address));
-		}
-		formattedDisk.save();
 	}
 
 	/**
@@ -187,8 +184,7 @@ public class ac {
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		for (int i = 0; i < formattedDisks.length; i++) {
 			FormattedDisk formattedDisk = formattedDisks[i];
-			List files = formattedDisk.getFiles();
-			FileEntry entry = name.getEntry(files);
+			FileEntry entry = name.getEntry(formattedDisk);
 			if (entry != null) {
 				entry.delete();
 				disk.save();
@@ -209,8 +205,7 @@ public class ac {
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		for (int i = 0; i < formattedDisks.length; i++) {
 			FormattedDisk formattedDisk = formattedDisks[i];
-			List files = formattedDisk.getFiles();
-			FileEntry entry = name.getEntry(files);
+			FileEntry entry = name.getEntry(formattedDisk);
 			if (entry != null) {
 				if (filter) {
 					FileFilter ff = entry.getSuggestedFilter();
@@ -369,8 +364,7 @@ public class ac {
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		for (int i = 0; i < formattedDisks.length; i++) {
 			FormattedDisk formattedDisk = formattedDisks[i];
-			List files = formattedDisk.getFiles();
-			FileEntry entry = name.getEntry(files);
+			FileEntry entry = name.getEntry(formattedDisk);
 			if (entry != null) {
 				entry.setLocked(lockState);
 				disk.save();
@@ -463,8 +457,8 @@ public class ac {
 			this.name = path[path.length - 1];
 		}
 		
-		public FileEntry getEntry(List files) {
-			if (files == null) return null;
+		public FileEntry getEntry(FormattedDisk formattedDisk) {
+			List files = formattedDisk.getFiles();
 			FileEntry entry = null;
 			for (int i = 0; i < path.length - 1; i++) {
 				String dirName = path[i];
@@ -486,8 +480,11 @@ public class ac {
 			return null;
 		}
 		
-		public DirectoryEntry getParent(FormattedDisk formattedDisk) {
-			List files =formattedDisk.getFiles();
+		public FileEntry createEntry(FormattedDisk formattedDisk) throws DiskFullException {
+			if (path.length == 1) {
+				return formattedDisk.createFile();
+			}
+			List files = formattedDisk.getFiles();
 			DirectoryEntry dir = null;
 			for (int i = 0; i < path.length - 1; i++) {
 				String dirName = path[i];
@@ -500,7 +497,13 @@ public class ac {
 					}
 				}
 			}
-			return dir;
+			if (dir != null) {
+				return dir.createFile();
+			} else {
+				System.err.println(textBundle.format(
+					"CommandLineNoMatchMessage", fullName)); //$NON-NLS-1$
+				return null;
+			}
 		}
 	}
 }
