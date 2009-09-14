@@ -94,7 +94,7 @@ public class RdosFileEntry implements FileEntry {
 	 * Return the name of this file.
 	 */
 	public String getFilename() {
-		return isDeleted() ? textBundle.get("RdosFileEntry.NotInUse") : AppleUtil.getString(fileEntry, 0, 24); //$NON-NLS-1$
+		return isDeleted() ? textBundle.get("RdosFileEntry.NotInUse") : AppleUtil.getString(fileEntry, 0, 24).trim(); //$NON-NLS-1$
 	}
 
 	/**
