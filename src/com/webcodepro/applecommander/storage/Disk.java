@@ -34,6 +34,7 @@ import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.storage.os.dos33.OzDosFormatDisk;
 import com.webcodepro.applecommander.storage.os.dos33.UniDosFormatDisk;
+import com.webcodepro.applecommander.storage.os.nakedos.NakedosFormatDisk;
 import com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
@@ -248,6 +249,9 @@ public class Disk {
 		} else if (isDosFormat()) {
 			return new FormattedDisk[]
 				{ new DosFormatDisk(filename, imageOrder) };
+		} else if (isNakedosFormat()) {
+			return new FormattedDisk[]
+				{ new NakedosFormatDisk(filename, imageOrder) };
 		} else if (isPascalFormat()) {
 			return new FormattedDisk[]
 				{ new PascalFormatDisk(filename, imageOrder) };
@@ -482,6 +486,31 @@ public class Disk {
 			&& vtoc[0x137] == 1;	// bytes per sector (high byte)
 	}
 	
+	/**
+	 * Test the disk format to see if this is a NakedOS formatted
+	 * disk.  
+	 */
+	public boolean isNakedosFormat() {
+		if (!is140KbDisk()) return false;
+		byte[] vtoc = readSector(0, 3); // VTOC starts on sector 9 (mapped to 3)
+		return (imageOrder.isSizeApprox(APPLE_140KB_DISK)
+				 || imageOrder.isSizeApprox(APPLE_140KB_NIBBLE_DISK))						 
+			&& vtoc[0xd0] == -2		// expect DOS as reserved
+			&& vtoc[0xd1] == -2		// expect DOS as reserved
+			&& vtoc[0xd2] == -2		// expect DOS as reserved
+			&& vtoc[0xd3] == -2		// expect DOS as reserved
+			&& vtoc[0xd4] == -2		// expect DOS as reserved
+			&& vtoc[0xd5] == -2		// expect DOS as reserved
+			&& vtoc[0xd6] == -2		// expect DOS as reserved
+			&& vtoc[0xd7] == -2		// expect DOS as reserved
+			&& vtoc[0xd8] == -2		// expect DOS as reserved
+			&& vtoc[0xd9] == -2		// expect DOS as reserved
+			&& vtoc[0xda] == -2		// expect DOS as reserved
+			&& vtoc[0xdb] == -2		// expect DOS as reserved
+			&& vtoc[0xdc] != -2		// expect something besides DOS next
+			;
+	}
+
 	/**
 	 * Test the disk format to see if this is a Pascal formatted
 	 * disk. Pascal disks may be either 140K or 800K.
