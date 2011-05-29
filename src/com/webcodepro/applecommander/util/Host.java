@@ -45,10 +45,10 @@ public class Host {
 			prefDir = userHome + "/Library/Preferences/";
 		}
 		else if (linux) {
-			prefDir = "";
+			prefDir = userHome + "/.";
 		}
 		else if (windows) {
-			prefDir = userHome + "/.";
+			prefDir = userHome;
 		}
 		else {
 			prefDir = "";
