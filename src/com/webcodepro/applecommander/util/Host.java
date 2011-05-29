@@ -48,7 +48,7 @@ public class Host {
 			prefDir = "";
 		}
 		else if (windows) {
-			prefDir = "";
+			prefDir = userHome + "/.";
 		}
 		else {
 			prefDir = "";
