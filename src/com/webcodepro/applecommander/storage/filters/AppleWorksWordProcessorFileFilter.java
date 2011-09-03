@@ -197,7 +197,7 @@ public class AppleWorksWordProcessorFileFilter implements FileFilter {
 		int byte3 = AppleUtil.getUnsignedByte(fileData[offset++]);
 		boolean addReturn = (byte3 >= 0x80);
 		int length = (byte3 & 0x7f);
-		while (length > 0) {
+		while ((length > 0) && (offset < fileData.length)) {
 			byte ch = fileData[offset++];
 			length--;
 			if (ch < 0x20) {	// special formatting character
