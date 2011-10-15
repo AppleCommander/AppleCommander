@@ -55,7 +55,7 @@ public class PascalFileEntry implements FileEntry {
 	private PascalFormatDisk disk;
 	private int index = 0;
 	private boolean deleted = false;
-	
+
 	/**
 	 * Constructor for PascalFileEntry.
 	 */
@@ -64,7 +64,7 @@ public class PascalFileEntry implements FileEntry {
 		this.fileEntry = fileEntry;
 		this.disk = disk;
 	}
-	
+
 	/**
 	 * Get the block number of the file's 1st block.
 	 */
@@ -92,7 +92,7 @@ public class PascalFileEntry implements FileEntry {
 	public void setLastBlock(int last) {
 		AppleUtil.setWordValue(fileEntry, 2, last);
 	}
-	
+
 	/**
 	 * Return the name of this file.
 	 */
@@ -106,7 +106,7 @@ public class PascalFileEntry implements FileEntry {
 	public void setFilename(String filename) {
 		AppleUtil.setPascalString(fileEntry, 6, filename.toUpperCase(), 15);
 	}
-	
+
 	/**
 	 * Return the maximum filename length.
 	 */
@@ -148,7 +148,7 @@ public class PascalFileEntry implements FileEntry {
 			AppleUtil.setWordValue(fileEntry, 4, 0);
 		}
 	}
-	
+
 	/**
 	 * Identify if this file is locked
 	 */
@@ -162,21 +162,21 @@ public class PascalFileEntry implements FileEntry {
 	public void setLocked(boolean lock) {
 		// Not applicable to UCSD file system
 	}
-	
+
 	/**
 	 * Get the number of bytes used in files last block.
 	 */
 	public int getBytesUsedInLastBlock() {
 		return AppleUtil.getWordValue(fileEntry, 22);
 	}
-	
+
 	/**
 	 * Set the number of bytes used in files last block.
 	 */
 	public void setBytesUsedInLastBlock(int value) {
 		AppleUtil.setWordValue(fileEntry, 22, value);
 	}
-	
+
 	/**
 	 * Compute the size of this file (in bytes).
 	 */
@@ -184,21 +184,21 @@ public class PascalFileEntry implements FileEntry {
 		int blocks = getBlocksUsed() - 1;
 		return blocks*Disk.BLOCK_SIZE + getBytesUsedInLastBlock();
 	}
-	
+
 	/**
 	 * Compute the blocks used.
 	 */
 	public int getBlocksUsed() {
 		return AppleUtil.getWordValue(fileEntry, 2) - AppleUtil.getWordValue(fileEntry, 0);
 	}
-	
+
 	/**
 	 * Pascal does not support directories.
 	 */
 	public boolean isDirectory() {
 		return false;
 	}
-	
+
 	/**
 	 * Retrieve the list of files in this directory.
 	 * Always returns null, as Pascal does not support directories.
@@ -206,7 +206,7 @@ public class PascalFileEntry implements FileEntry {
 	public List getFiles() {
 		return null;
 	}
-	
+
 	/**
 	 * Pascal file entries are removed upon deletion,
 	 * so a file entry need not be marked as deleted.
@@ -241,7 +241,7 @@ public class PascalFileEntry implements FileEntry {
 			deleted = true;
 		}
 	}
-	
+
 	/**
 	 * Get the file modification date.
 	 */
@@ -383,23 +383,46 @@ public class PascalFileEntry implements FileEntry {
 		int last = getLastBlock();
 		if (fileEntry[4] == 3) { // text
 			data = filterText(data);
-			byte[] buf = new byte[1024];
+			byte[] buf1 = new byte[512];
+			byte[] buf2 = new byte[512];
 			int offset = 0;
 			int pages = 0;
-			disk.writeBlock(first, buf); pages++;
+			disk.writeBlock(first, buf1);
+			disk.writeBlock(first+1,buf2);
+			pages++;
 			while (offset + 1023 < data.length) {
 				if ((pages * 2) > (last - first - 2)) {
 					storageError(textBundle.get("PascalFileEntry.NotEnoughRoom")); //$NON-NLS-1$
 				}
 				int crPtr = findEOL(data, offset);
-				System.arraycopy(data, offset, buf, 0, crPtr - offset + 1);
-				disk.writeBlock(first + pages * 2, buf); pages++;
-				Arrays.fill(buf, (byte) 0);
+				System.arraycopy(data, offset, buf1, 0, crPtr - offset + 1 - 512);
+				System.arraycopy(data, offset+512, buf2, 0, crPtr - offset + 1 - 512);
+				disk.writeBlock(first + (pages * 2), buf1);
+				disk.writeBlock(first + (pages * 2) + 1, buf2);
+				pages++;
+				Arrays.fill(buf1, (byte) 0);
+				Arrays.fill(buf2, (byte) 0);
 				offset = crPtr + 1;
 			}
 			if (offset < data.length) {
-				System.arraycopy(data, offset, buf, 0, data.length - offset);
-				disk.writeBlock(first + pages * 2, buf); pages++;
+				int len1 = data.length - offset;
+				int len2 = 0;
+				if (len1 > 512)
+				{
+					len2 = 512 - len1;
+					len1 = 512;
+				}
+				System.arraycopy(data, offset, buf1, 0, len1);
+				if (len2 > 0)
+				{
+					System.arraycopy(data, offset+512, buf2, 0, len2);
+				}
+				disk.writeBlock(first + (pages * 2), buf1);
+				if (len2 > 0)
+				{
+					disk.writeBlock(first + (pages * 2) + 1, buf2);
+				}
+				pages++;
 			}
 			setLastBlock(first + pages * 2);
 			setBytesUsedInLastBlock(512);
@@ -432,7 +455,7 @@ public class PascalFileEntry implements FileEntry {
 			disk.putDirectory(dir);
 		}
 	}
-	
+
 	/**
 	 * Get the suggested FileFilter.  This appears to be operating system
 	 * specific, so each operating system needs to implement some manner
@@ -478,7 +501,7 @@ public class PascalFileEntry implements FileEntry {
 	public boolean needsAddress() {
 		return false;
 	}
-	
+
 	/**
 	 * Set the address that this file loads at.
 	 */
