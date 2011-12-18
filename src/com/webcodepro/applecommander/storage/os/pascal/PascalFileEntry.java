@@ -390,12 +390,12 @@ public class PascalFileEntry implements FileEntry {
 			disk.writeBlock(first, buf1);
 			disk.writeBlock(first+1,buf2);
 			pages++;
-			while (offset + 1023 < data.length) {
+			while (offset + 1023 < data.length) {  // We have at least a full page of data (1024 bytes)
 				if ((pages * 2) > (last - first - 2)) {
 					storageError(textBundle.get("PascalFileEntry.NotEnoughRoom")); //$NON-NLS-1$
 				}
 				int crPtr = findEOL(data, offset);
-				System.arraycopy(data, offset, buf1, 0, crPtr - offset + 1 - 512);
+				System.arraycopy(data, offset, buf1, 0, 512);
 				System.arraycopy(data, offset+512, buf2, 0, crPtr - offset + 1 - 512);
 				disk.writeBlock(first + (pages * 2), buf1);
 				disk.writeBlock(first + (pages * 2) + 1, buf2);
@@ -404,22 +404,22 @@ public class PascalFileEntry implements FileEntry {
 				Arrays.fill(buf2, (byte) 0);
 				offset = crPtr + 1;
 			}
-			if (offset < data.length) {
+			if (offset < data.length) {  // We have less than a page of data left over
 				int len1 = data.length - offset;
 				int len2 = 0;
 				if (len1 > 512)
-				{
-					len2 = 512 - len1;
-					len1 = 512;
+				{  // That final page spans both blocks
+					len2 = len1 - 512;  // Second block gets the remainder of the partial page length minus 512 bytes 
+					len1 = 512;  // The first block will write the first 512 bytes
 				}
 				System.arraycopy(data, offset, buf1, 0, len1);
 				if (len2 > 0)
-				{
+				{ 
 					System.arraycopy(data, offset+512, buf2, 0, len2);
 				}
-				disk.writeBlock(first + (pages * 2), buf1);
+				disk.writeBlock(first + (pages * 2), buf1); // Copy out the first block
 				if (len2 > 0)
-				{
+				{  // Copy out the second block, if needed 
 					disk.writeBlock(first + (pages * 2) + 1, buf2);
 				}
 				pages++;
