@@ -123,7 +123,12 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 		if (isDeleted()) {
 			AppleUtil.setString(fileEntry, 1, filename.toUpperCase(), 15);
 		} else {
-			AppleUtil.setProdosString(fileEntry, 0, filename.toUpperCase(), 15);
+			if (isGEOSFile()) {
+				// No need to upper-case or be picky about GEOS filenames
+				AppleUtil.setProdosString(fileEntry, 0, filename, 15);
+			} else {
+				AppleUtil.setProdosString(fileEntry, 0, filename.toUpperCase(), 15);
+			}
 		}
 		if (isAppleWorksFile()) {
 			byte lowByte = 0;
@@ -171,6 +176,14 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	public boolean isAppleWorksFile()	{
 		int filetype = AppleUtil.getUnsignedByte(readFileEntry()[0x10]);
 		return (filetype == 0x19 || filetype == 0x1a || filetype == 0x1b);
+	}
+
+	/**
+	 * Indicate if this is a GEOS file.
+	 */
+	public boolean isGEOSFile()	{
+		int filetype = AppleUtil.getUnsignedByte(readFileEntry()[0x10]);
+		return (filetype >= 0x80 && filetype <= 0x8f);
 	}
 
 	/**
@@ -235,7 +248,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	public int getAuxiliaryType() {
 		return AppleUtil.getWordValue(readFileEntry(), 0x1f);
 	}
-	
+
 	/**
 	 * Set the auxiliary type for this file.
 	 */
@@ -243,7 +256,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 		entry[0x1f] = low;
 		entry[0x20] = high;
 	}
-	
+
 	/**
 	 * Set the auxiliary type for this file.
 	 */
@@ -258,7 +271,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	public Date getLastModificationDate() {
 		return AppleUtil.getProdosDate(readFileEntry(), 0x21);
 	}
-	
+
 	/**
 	 * Set the last modification date.
 	 */
@@ -472,7 +485,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 				return new AssemblySourceFileFilter();			
 			}
 			return new TextFileFilter();
-                case 0x09:              // BA3
+		case 0x09:		// BA3
 			return new BusinessBASICFileFilter();
 		case 0xb0:		// SRC
 			return new TextFileFilter();

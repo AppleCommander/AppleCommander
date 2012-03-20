@@ -151,8 +151,8 @@ public class ac {
 		FormattedDisk formattedDisk = formattedDisks[0];
 		FileEntry entry = name.createEntry(formattedDisk);
 		if (entry != null) {
-			entry.setFilename(name.name);
 			entry.setFiletype(fileType);
+			entry.setFilename(name.name);
 			entry.setFileData(buf.toByteArray());
 			if (entry.needsAddress()) {
 				entry.setAddress(stringToInt(address));

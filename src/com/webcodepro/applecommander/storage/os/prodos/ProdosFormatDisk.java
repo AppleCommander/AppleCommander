@@ -494,7 +494,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	public boolean canReadFileData() {
 		return true;
 	}
-	
+
 	/**
 	 * Identify if this disk format is capable of having directories.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#canHaveDirectories()
@@ -509,7 +509,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	public boolean canWriteFileData() {
 		return true;
 	}
-	
+
 	/**
 	 * Indicates if this disk image can delete a file.
 	 */
@@ -551,35 +551,50 @@ public class ProdosFormatDisk extends FormattedDisk {
 	}
 
 	/**
-	 * Free blocks used by a DosFileEntry.
+	 * Free blocks used by a ProdosFileEntry.
 	 */
 	protected void freeBlocks(ProdosFileEntry prodosFileEntry) {
 		byte[] bitmap = readVolumeBitMap();
 		int block = prodosFileEntry.getKeyPointer();
 		if (block == 0) return;	// new entry
+		if (prodosFileEntry.isGEOSFile()) {
+			// A GEOS file allocates another block, pointed to by the aux bytes.
+			setBlockFree(bitmap,prodosFileEntry.getAuxiliaryType());
+		}
 		setBlockFree(bitmap,block);
 		if (prodosFileEntry.isSaplingFile()) {
-			freeBlocksInIndex(bitmap,block);
+			freeBlocksInIndex(bitmap,block,false);
 		} else if (prodosFileEntry.isTreeFile()) {
 			byte[] masterIndexBlock = readBlock(block);
 			for (int i=0; i<0x100; i++) {
-				int indexBlockNumber = AppleUtil.getWordValue(
-					masterIndexBlock[i], masterIndexBlock[i+0x100]);
-				if (indexBlockNumber > 0) freeBlocksInIndex(bitmap,indexBlockNumber);
+				if (!prodosFileEntry.isGEOSFile() ||
+				(prodosFileEntry.isGEOSFile() && (i < 0xfe)))
+				{
+					// As long as we're not deleting a GEOS file, delete all index entries.
+					// GEOS uses records 0xfe and 0xff for space calculations, not pointers.
+					int indexBlockNumber = AppleUtil.getWordValue(
+							masterIndexBlock[i], masterIndexBlock[i+0x100]);
+					if (indexBlockNumber > 0) freeBlocksInIndex(bitmap,indexBlockNumber,prodosFileEntry.isGEOSFile());
+				}
 			}
 		}
 		writeVolumeBitMap(bitmap);
 	}
-	
+
 	/**
 	 * Free the given index block and the data blocks it points to.
 	 */
-	private void freeBlocksInIndex(byte[] bitmap, int indexBlockNumber) {
+	private void freeBlocksInIndex(byte[] bitmap, int indexBlockNumber, boolean isGEOS) {
 		setBlockFree(bitmap, indexBlockNumber);
 		byte[] indexBlock = readBlock(indexBlockNumber);
 		for (int i=0; i<0x100; i++) {
-			int blockNumber = AppleUtil.getWordValue(indexBlock[i], indexBlock[i+0x100]);
-			if (blockNumber > 0) setBlockFree(bitmap, blockNumber);
+			if (!isGEOS ||
+					(isGEOS && (i < 0xfe))) {
+				// As long as we're not deleting a GEOS file, delete all entries.
+				// GEOS uses records 0xfe and 0xff for space calculations, not pointers.
+				int blockNumber = AppleUtil.getWordValue(indexBlock[i], indexBlock[i+0x100]);
+				if (blockNumber > 0) setBlockFree(bitmap, blockNumber);
+			}
 		}
 	}
 
@@ -605,19 +620,118 @@ public class ProdosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Set the data associated with the specified ProdosFileEntry into sectors
-	 * on the disk.
+	 * on the disk.  Automatically grows the filesystem structures from seedling
+	 * to sapling to tree. 
 	 */
 	protected void setFileData(ProdosFileEntry fileEntry, byte[] fileData) 
 		throws DiskFullException {
-			
-		// compute free space and see if the data will fit!
-		int numberOfDataBlocks = (fileData.length + BLOCK_SIZE - 1) / BLOCK_SIZE;
-		int numberOfBlocks = numberOfDataBlocks;
-		if (numberOfBlocks > 1) {
-			numberOfBlocks+= ((numberOfDataBlocks-1) / 256) + 1;	// that's 128K
-			if (numberOfDataBlocks > 256) {
-				numberOfBlocks++;
+
+		if (fileEntry.isGEOSFile()) {
+			// If this is a GEOS file, things are a bit different.
+			setGEOSFileData(fileEntry, fileData);
+		} else {
+			// compute free space and see if the data will fit!
+			int numberOfDataBlocks = (fileData.length + BLOCK_SIZE - 1) / BLOCK_SIZE;
+			int numberOfBlocks = numberOfDataBlocks;
+			if (numberOfBlocks > 1) {
+				numberOfBlocks+= ((numberOfDataBlocks-1) / 256) + 1;	// that's 128K
+				if (numberOfDataBlocks > 256) {
+					numberOfBlocks++;
+				}
 			}
+			if (numberOfBlocks > getFreeBlocks() + fileEntry.getBlocksUsed()) {
+				throw new DiskFullException(textBundle.
+						format("ProdosFormatDisk.NotEnoughSpaceOnDiskError", //$NON-NLS-1$
+								numberOfBlocks, getFreeBlocks()));
+			}
+			// free "old" data and just rewrite stuff...
+			freeBlocks(fileEntry);
+			byte[] bitmap = readVolumeBitMap();
+			int blockNumber = fileEntry.getKeyPointer();
+			if (blockNumber == 0) {
+				blockNumber = findFreeBlock(bitmap);
+			}
+			int indexBlockNumber = 0;
+			byte[] indexBlockData = null;
+			int masterIndexBlockNumber = 0;
+			byte[] masterIndexBlockData = new byte[BLOCK_SIZE];
+			int offset = 0;
+			int blockCount = 0;
+			while (offset < fileData.length) {
+				if (blockCount > 0) blockNumber = findFreeBlock(bitmap);
+				setBlockUsed(bitmap, blockNumber);
+				blockCount++;
+				byte[] blockData = new byte[BLOCK_SIZE];
+				int length = Math.min(BLOCK_SIZE, fileData.length - offset);
+				System.arraycopy(fileData,offset,blockData,0,length);
+				writeBlock(blockNumber, blockData);
+				if (numberOfDataBlocks > 1) {
+					// growing to a tree file
+					if (offset > 0 && (offset / BLOCK_SIZE) % 256 == 0) {
+						if (masterIndexBlockNumber == 0) {
+							masterIndexBlockNumber = findFreeBlock(bitmap);
+							setBlockUsed(bitmap, masterIndexBlockNumber);
+							blockCount++;
+						}
+						writeBlock(indexBlockNumber, indexBlockData);
+						indexBlockData = null;
+						indexBlockNumber = 0;
+					}
+					// new index block
+					if (indexBlockData == null) {	// sapling files
+						indexBlockNumber = findFreeBlock(bitmap);
+						indexBlockData = new byte[BLOCK_SIZE];
+						setBlockUsed(bitmap, indexBlockNumber);
+						blockCount++;
+						// This is only used for Tree files (but we always record it):
+						int position = (offset / (BLOCK_SIZE * 256));
+						byte low = (byte)(indexBlockNumber % 256);
+						byte high = (byte)(indexBlockNumber / 256);
+						masterIndexBlockData[position] = low;
+						masterIndexBlockData[position + 0x100] = high;
+					}
+					// record last block position in index block
+					int position = (offset / BLOCK_SIZE) % 256;
+					byte low = (byte)(blockNumber % 256);
+					byte high = (byte)(blockNumber / 256);
+					indexBlockData[position] = low;
+					indexBlockData[position + 0x100] = high;
+				}
+				offset+= BLOCK_SIZE;
+			}
+			if (numberOfDataBlocks == 1) {
+				fileEntry.setKeyPointer(blockNumber);
+				fileEntry.setSeedlingFile();
+			} else if (numberOfDataBlocks <= 256) {
+				writeBlock(indexBlockNumber, indexBlockData);
+				fileEntry.setKeyPointer(indexBlockNumber);
+				fileEntry.setSaplingFile();
+			} else {
+				writeBlock(indexBlockNumber, indexBlockData);
+				writeBlock(masterIndexBlockNumber, masterIndexBlockData);
+				fileEntry.setKeyPointer(masterIndexBlockNumber);
+				fileEntry.setTreeFile();
+			}
+			fileEntry.setBlocksUsed(blockCount);
+			fileEntry.setEofPosition(fileData.length);
+			fileEntry.setLastModificationDate(new Date());
+			writeVolumeBitMap(bitmap);
+		}
+	}
+	
+	/**
+	 * Set the data associated with the specified ProdosFileEntry into sectors
+	 * on the disk.  Take GEOS file structures into account.
+	 */
+	protected void setGEOSFileData(ProdosFileEntry fileEntry, byte[] fileData) 
+		throws DiskFullException {
+
+		// compute free space and see if the data will fit!
+		int numberOfDataBlocks = (fileData.length - 1) / BLOCK_SIZE;
+		int numberOfBlocks = numberOfDataBlocks;
+		numberOfBlocks+= ((numberOfDataBlocks-1) / 254) + 1;	// GEOS uses the last two blocks for eof calculations
+		if (numberOfDataBlocks > 254) {
+			numberOfBlocks++;
 		}
 		if (numberOfBlocks > getFreeBlocks() + fileEntry.getBlocksUsed()) {
 			throw new DiskFullException(textBundle.
@@ -627,77 +741,129 @@ public class ProdosFormatDisk extends FormattedDisk {
 		// free "old" data and just rewrite stuff...
 		freeBlocks(fileEntry);
 		byte[] bitmap = readVolumeBitMap();
-		int blockNumber = fileEntry.getKeyPointer();
-		if (blockNumber == 0) {
-			blockNumber = findFreeBlock(bitmap);
+
+		// Place the first BLOCK_SIZE bytes of data in a block pointed to by the aux address.
+		int headerBlockNumber = findFreeBlock(bitmap);
+		byte[] headerData = new byte[BLOCK_SIZE];
+		setBlockUsed(bitmap, headerBlockNumber);
+		System.arraycopy(fileData,0,headerData,0,BLOCK_SIZE);
+		writeBlock(headerBlockNumber, headerData);
+		fileEntry.setAddress(headerBlockNumber);
+
+		if (AppleUtil.getUnsignedByte(fileData[0x180]) >> 4 == 2) {
+			setGEOSSaplingData(bitmap, fileEntry, fileData);
+		} else {
+			setGEOSTreeData(bitmap, fileEntry, fileData);
 		}
-		int indexBlockNumber = 0;
-		byte[] indexBlockData = null;
-		int masterIndexBlockNumber = 0;
-		byte[] masterIndexBlockData = new byte[BLOCK_SIZE];
-		int offset = 0;
-		int blockCount = 0;
+	}
+
+	/**
+	 * Set the GEOS "sapling" file data.
+	 */
+	protected void setGEOSSaplingData(byte[] bitmap, ProdosFileEntry fileEntry, byte[] fileData)
+		throws DiskFullException {
+
+		int indexBlockNumber = findFreeBlock(bitmap);
+		setBlockUsed(bitmap, indexBlockNumber);
+		byte[] indexBlockData = new byte[BLOCK_SIZE];
+		int offset = BLOCK_SIZE;
+		int blockNumber = 0;
+		int blockCount = 1; // The header block counts for one
 		while (offset < fileData.length) {
-			if (blockCount > 0) blockNumber = findFreeBlock(bitmap);
+			blockNumber = findFreeBlock(bitmap);
 			setBlockUsed(bitmap, blockNumber);
 			blockCount++;
 			byte[] blockData = new byte[BLOCK_SIZE];
 			int length = Math.min(BLOCK_SIZE, fileData.length - offset);
 			System.arraycopy(fileData,offset,blockData,0,length);
 			writeBlock(blockNumber, blockData);
-			if (numberOfDataBlocks > 1) {
-				// growing to a tree file
-				if (offset > 0 && (offset / BLOCK_SIZE) % 256 == 0) {
-					if (masterIndexBlockNumber == 0) {
-						masterIndexBlockNumber = findFreeBlock(bitmap);
-						setBlockUsed(bitmap, masterIndexBlockNumber);
-						blockCount++;
-					}
-					writeBlock(indexBlockNumber, indexBlockData);
-					indexBlockData = null;
-					indexBlockNumber = 0;
-				}
-				// new index block
-				if (indexBlockData == null) {	// sapling files
-					indexBlockNumber = findFreeBlock(bitmap);
-					indexBlockData = new byte[BLOCK_SIZE];
-					setBlockUsed(bitmap, indexBlockNumber);
-					blockCount++;
-					// This is only used for Tree files (but we always record it):
-					int position = (offset / (BLOCK_SIZE * 256));
-					byte low = (byte)(indexBlockNumber % 256);
-					byte high = (byte)(indexBlockNumber / 256);
-					masterIndexBlockData[position] = low;
-					masterIndexBlockData[position + 0x100] = high;
-				}
-				// record last block position in index block
-				int position = (offset / BLOCK_SIZE) % 256;
-				byte low = (byte)(blockNumber % 256);
-				byte high = (byte)(blockNumber / 256);
-				indexBlockData[position] = low;
-				indexBlockData[position + 0x100] = high;
-			}
+			// record last block position in index block
+			int position = ((offset - BLOCK_SIZE) / BLOCK_SIZE) % 256;
+			byte low = (byte)(blockNumber % 256);
+			byte high = (byte)(blockNumber / 256);
+			indexBlockData[position] = low;
+			indexBlockData[position + 0x100] = high;
 			offset+= BLOCK_SIZE;
 		}
-		if (numberOfDataBlocks == 1) {
-			fileEntry.setKeyPointer(blockNumber);
-			fileEntry.setSeedlingFile();
-		} else if (numberOfDataBlocks <= 256) {
-			writeBlock(indexBlockNumber, indexBlockData);
-			fileEntry.setKeyPointer(indexBlockNumber);
-			fileEntry.setSaplingFile();
-		} else {
-			writeBlock(indexBlockNumber, indexBlockData);
-			writeBlock(masterIndexBlockNumber, masterIndexBlockData);
-			fileEntry.setKeyPointer(masterIndexBlockNumber);
-			fileEntry.setTreeFile();
-		}
+		indexBlockData[255] = (byte)((fileData.length - BLOCK_SIZE) % 256); // Lo file eof
+		indexBlockData[511] = (byte)((fileData.length - BLOCK_SIZE) / 256); // Med file eof
+		writeBlock(indexBlockNumber, indexBlockData);
+		fileEntry.setKeyPointer(indexBlockNumber);
+		fileEntry.setSaplingFile();
 		fileEntry.setBlocksUsed(blockCount);
-		fileEntry.setEofPosition(fileData.length);
+		fileEntry.setEofPosition(fileData.length - BLOCK_SIZE);
 		fileEntry.setLastModificationDate(new Date());
 		writeVolumeBitMap(bitmap);
 	}
-	
+
+	/**
+	 * Set the GEOS "tree" file data.
+	 */
+	protected void setGEOSTreeData(byte[] bitmap, ProdosFileEntry fileEntry, byte[] fileData)
+		throws DiskFullException {
+
+		int masterIndexBlockNumber = findFreeBlock(bitmap);
+		setBlockUsed(bitmap, masterIndexBlockNumber);
+		byte[] masterIndexBlockData = new byte[BLOCK_SIZE];
+		int offset = BLOCK_SIZE;
+		int blockCount = 2; // Start by counting the header block and master index
+		int eofCount = 0;
+		for (int masterIterator = 0; masterIterator < 254; masterIterator++) {
+			if ((fileData[0x100+masterIterator] != 0xff) && (offset < fileData.length)){
+				byte[] lengthData = new byte[BLOCK_SIZE];
+				System.arraycopy(fileData,offset,lengthData,0,BLOCK_SIZE);
+				offset += BLOCK_SIZE;
+				int recordLength = AppleUtil.getUnsignedByte(lengthData[0xff]) 
+				+ AppleUtil.getUnsignedByte(lengthData[0x1ff])*256;
+				int indexBlockNumber = findFreeBlock(bitmap);
+				setBlockUsed(bitmap, indexBlockNumber);
+				blockCount +=1;
+				byte[] indexBlockData = new byte[BLOCK_SIZE];
+				int blockNumber = 0;
+				int startingPoint = offset;
+				while (offset < startingPoint + recordLength) {
+					blockNumber = findFreeBlock(bitmap);
+					setBlockUsed(bitmap, blockNumber);
+					blockCount +=1;
+					byte[] blockData = new byte[BLOCK_SIZE];
+					int length = Math.min(BLOCK_SIZE, recordLength - offset + startingPoint);
+					System.arraycopy(fileData,offset,blockData,0,length);
+					writeBlock(blockNumber, blockData);
+					eofCount += length;
+					// record last block position in index block
+					int position = ((offset-startingPoint) / BLOCK_SIZE) % 256;
+					byte low = (byte)(blockNumber % 256);
+					byte high = (byte)(blockNumber / 256);
+					indexBlockData[position] = low;
+					indexBlockData[position + 0x100] = high;
+					offset+= BLOCK_SIZE;
+				}
+				indexBlockData[0xff] =   (byte) (recordLength & 0x0000ff);
+				indexBlockData[0x1ff] = (byte)((recordLength & 0x00ff00) >> 8);
+				indexBlockData[0x1fe] = (byte)((recordLength & 0xff0000) >> 16);
+				writeBlock(indexBlockNumber, indexBlockData);
+				byte low = (byte)(indexBlockNumber % 256);
+				byte high = (byte)(indexBlockNumber / 256);
+				masterIndexBlockData[masterIterator] = low;
+				masterIndexBlockData[masterIterator + 0x100] = high;
+
+			} else if (fileData[0x100+masterIterator] == 0xff) {
+				masterIndexBlockData[masterIterator] = (byte)0xff;
+				masterIndexBlockData[masterIterator+0x100] = (byte)0xff;
+			}
+		}
+		masterIndexBlockData[0x0ff] = (byte) (eofCount & 0x0000ff);
+		masterIndexBlockData[0x1ff] = (byte)((eofCount & 0x00ff00) >> 8);
+		masterIndexBlockData[0x1fe] = (byte)((eofCount & 0xff0000) >> 16);
+		writeBlock(masterIndexBlockNumber, masterIndexBlockData);
+		fileEntry.setKeyPointer(masterIndexBlockNumber);
+		fileEntry.setTreeFile();
+		fileEntry.setBlocksUsed(blockCount);
+		fileEntry.setEofPosition(eofCount);
+		fileEntry.setLastModificationDate(new Date());
+		writeVolumeBitMap(bitmap);
+	}
+
 	/**
 	 * Locate a free block in the Volume Bitmap.
 	 */
