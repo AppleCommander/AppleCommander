@@ -755,6 +755,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 		} else {
 			setGEOSTreeData(bitmap, fileEntry, fileData);
 		}
+		fileEntry.setGEOSMeta(headerData);
 	}
 
 	/**

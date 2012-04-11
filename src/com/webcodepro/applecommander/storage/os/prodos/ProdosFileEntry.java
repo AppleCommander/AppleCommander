@@ -123,12 +123,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 		if (isDeleted()) {
 			AppleUtil.setString(fileEntry, 1, filename.toUpperCase(), 15);
 		} else {
-			if (isGEOSFile()) {
-				// No need to upper-case or be picky about GEOS filenames
-				AppleUtil.setProdosString(fileEntry, 0, filename, 15);
-			} else {
-				AppleUtil.setProdosString(fileEntry, 0, filename.toUpperCase(), 15);
-			}
+			AppleUtil.setProdosString(fileEntry, 0, filename.toUpperCase(), 15);
 		}
 		if (isAppleWorksFile()) {
 			byte lowByte = 0;
@@ -144,6 +139,23 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 			}
 			setAuxiliaryType(fileEntry, lowByte, highByte);
 		}
+		writeFileEntry(fileEntry);
+	}
+
+	/**
+	 * Copy GEOS-specific metadata to the directory entry verbatim:
+	 * Bytes $00-$10 ($11 bytes)
+	 * Bytes $18-$1d ($06 bytes)
+	 * Bytes $21-$24 ($04 bytes)
+	 */
+	public void setGEOSMeta(byte[] metaData) {
+		byte[] fileEntry = readFileEntry();
+		// GEOS metadata lives at $180 offset from the beginning of the first block.
+		// Copy that to the file entry, skipping the bytes that are locally created
+		// (i.e. pointers, etc.)
+		System.arraycopy(metaData,0x180+0x00,fileEntry,0x00,0x11);
+		System.arraycopy(metaData,0x180+0x18,fileEntry,0x18,0x06);
+		System.arraycopy(metaData,0x180+0x21,fileEntry,0x21,0x04);
 		writeFileEntry(fileEntry);
 	}
 
