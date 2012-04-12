@@ -69,6 +69,7 @@ import com.webcodepro.applecommander.util.TextBundle;
  * -n  &lt;imagename&gt; &lt;volname&gt; change volume name (ProDOS or Pascal).
  * -cc65 &lt;imagename&gt; &lt;filename&gt; &lt;type&gt; put stdin with cc65 header
  *       in filename on image, using file type and address from header.
+ * -geos &lt;imagename&gt; interpret stdin as a ProDOS GEOS transfer file and place on image
  * -dos140 &lt;imagename&gt; create a 140K DOS 3.3 image.
  * -pro140 &lt;imagename&gt; &lt;volname&gt; create a 140K ProDOS image.
  * -pro800 &lt;imagename&gt; &lt;volname&gt; create an 800K ProDOS image.
@@ -112,6 +113,8 @@ public class ac {
 				setDiskName(args[1], args[2]);
 			} else if ("-cc65".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				putCC65(args[1], new Name(args[2]), args[3]);
+			} else if ("-geos".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				putGEOS(args[1]);
 			} else if ("-dos140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				createDosDisk(args[1], Disk.APPLE_140KB_DISK);
 			} else if ("-pas140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
@@ -173,6 +176,15 @@ public class ac {
 			int address = AppleUtil.getWordValue(header, 0);
 			putFile(imageName, name, fileType, Integer.toString(address));
 		}
+	}
+
+	/**
+	 * Interpret &lt;stdin> as a GEOS file and place it on the disk named imageName.
+	 * This would only make sense for a ProDOS-formatted disk.
+	 */
+	static void putGEOS(String imageName)
+		throws IOException, DiskFullException {
+		putFile(imageName, new Name("GEOS-Should Be ProDOS"), "GEO", "0"); //$NON-NLS-2$ $NON-NLS-3$
 	}
 
 	/**
