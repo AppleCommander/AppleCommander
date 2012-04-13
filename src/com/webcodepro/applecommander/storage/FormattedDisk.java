@@ -25,7 +25,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.TextBundle;
 
@@ -315,7 +314,7 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	 */
 	protected void writeBootCode() {
 		InputStream inputStream = getClass().
-			getResourceAsStream("AppleCommander-boot.dump"); //$NON-NLS-1$
+			getResourceAsStream("/com/webcodepro/applecommander/storage/AppleCommander-boot.dump"); //$NON-NLS-1$
 		if (inputStream != null) {
 			byte[] bootCode = new byte[SECTOR_SIZE];
 			try {
