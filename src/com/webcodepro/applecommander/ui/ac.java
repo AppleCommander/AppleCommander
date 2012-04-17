@@ -69,7 +69,7 @@ import com.webcodepro.applecommander.util.TextBundle;
  * -n  &lt;imagename&gt; &lt;volname&gt; change volume name (ProDOS or Pascal).
  * -cc65 &lt;imagename&gt; &lt;filename&gt; &lt;type&gt; put stdin with cc65 header
  *       in filename on image, using file type and address from header.
- * -geos &lt;imagename&gt; interpret stdin as a ProDOS GEOS transfer file and place on image
+ * -geos &lt;imagename&gt; interpret stdin as a ProDOS GEOS transfer file and place on image.
  * -dos140 &lt;imagename&gt; create a 140K DOS 3.3 image.
  * -pro140 &lt;imagename&gt; &lt;volname&gt; create a 140K ProDOS image.
  * -pro800 &lt;imagename&gt; &lt;volname&gt; create an 800K ProDOS image.
