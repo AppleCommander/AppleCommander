@@ -632,4 +632,79 @@ public class Disk {
 	protected void setImageOrder(ImageOrder imageOrder) {
 		this.imageOrder = imageOrder;
 	}
+
+	/**
+	 * Change to a different ImageOrder. Remains in DOS 3.3 format but the
+	 * underlying order can chage.
+	 * 
+	 * @see ImageOrder
+	 */
+	public void makeDosOrder()
+	{
+		DosOrder doso = new DosOrder(new ByteArrayImageLayout(Disk.APPLE_140KB_DISK));
+		changeImageOrderByTrackAndSector(getImageOrder(), doso);
+		setImageOrder(doso);
+	}
+
+	/**
+	 * Change to a different ImageOrder. Remains in ProDOS format but the
+	 * underlying order can change.
+	 * 
+	 * @see ImageOrder
+	 */
+	public void makeProdosOrder()
+	{
+		ProdosOrder pdo = new ProdosOrder(new ByteArrayImageLayout(Disk.APPLE_140KB_DISK));
+		changeImageOrderByBlock(getImageOrder(), pdo);
+		setImageOrder(pdo);
+	}
+
+	/**
+	 * Change ImageOrder from source order to target order by copying sector by
+	 * sector.
+	 */
+	private void changeImageOrderByTrackAndSector(ImageOrder sourceOrder, ImageOrder targetOrder)
+	{
+		if (!sameSectorsPerDisk(sourceOrder, targetOrder)) {
+			throw new IllegalArgumentException(textBundle.get("Disk.ResizeDiskError"));
+		}
+		for (int track = 0; track < sourceOrder.getTracksPerDisk(); track++) {
+			for (int sector = 0; sector < sourceOrder.getSectorsPerTrack(); sector++) {
+				byte[] data = sourceOrder.readSector(track, sector);
+				targetOrder.writeSector(track, sector, data);
+			}
+		}
+	}
+
+	/**
+	 * Change ImageOrder from source order to target order by copying block by
+	 * block.
+	 */
+	private void changeImageOrderByBlock(ImageOrder sourceOrder, ImageOrder targetOrder)
+	{
+		if (!sameBlocksPerDisk(sourceOrder, targetOrder)) {
+			throw new IllegalArgumentException(textBundle.get("Disk.ResizeDiskError"));
+		}
+		for (int block = 0; block < sourceOrder.getBlocksOnDevice(); block++) {
+			byte[] blockData = sourceOrder.readBlock(block);
+			targetOrder.writeBlock(block, blockData);
+		}
+	}
+
+	/**
+	 * Answers true if the two disks have the same number of blocks per disk.
+	 */
+	private static boolean sameBlocksPerDisk(ImageOrder sourceOrder, ImageOrder targetOrder)
+	{
+		return sourceOrder.getBlocksOnDevice() == targetOrder.getBlocksOnDevice();
+	}
+
+	/**
+	 * Answers true if the two disks have the same number of sectors per disk.
+	 */
+	private static boolean sameSectorsPerDisk(ImageOrder sourceOrder, ImageOrder targetOrder)
+	{
+		return sourceOrder.getSectorsPerDisk() == targetOrder.getSectorsPerDisk();
+	}
+
 }
