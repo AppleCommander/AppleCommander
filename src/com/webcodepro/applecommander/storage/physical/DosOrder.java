@@ -122,4 +122,11 @@ public class DosOrder extends ImageOrder {
 		System.arraycopy(data, Disk.SECTOR_SIZE, sectorData, 0, Disk.SECTOR_SIZE);
 		writeSector(track, sector2, sectorData);
 	}
+
+	/**
+	 * Return the name of this image order.
+	 */
+	public String getName() {
+		return textBundle.get("DosOrder.OrderName"); //$NON-NLS-1$ 
+	}
 }

@@ -109,6 +109,11 @@ public abstract class ImageOrder {
 	}
 
 	/**
+	 * Return the name of this image order.
+	 */
+	public abstract String getName();
+	
+	/**
 	 * Read the block from the disk image.
 	 */
 	public abstract byte[] readBlock(int block);

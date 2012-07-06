@@ -20,6 +20,8 @@
 package com.webcodepro.applecommander.storage.physical;
 
 import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.StorageBundle;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Supports disk images stored in ProDOS physical order.
@@ -27,6 +29,7 @@ import com.webcodepro.applecommander.storage.Disk;
  * @author Rob Greene (RobGreene@users.sourceforge.net)
  */
 public class ProdosOrder extends ImageOrder {
+	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * This table contains the block offset for a particular DOS sector.
 	 */
@@ -100,5 +103,12 @@ public class ProdosOrder extends ImageOrder {
 		int offset = blockOffsets[sector];
 		System.arraycopy(bytes, 0, blockData, offset * Disk.SECTOR_SIZE, bytes.length);
 		writeBlock(block, blockData);
+	}
+
+	/**
+	 * Return the name of this image order.
+	 */
+	public String getName() {
+		return textBundle.get("ProdosOrder.OrderName"); //$NON-NLS-1$ 
 	}
 }

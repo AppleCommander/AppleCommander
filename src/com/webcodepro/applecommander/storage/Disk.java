@@ -96,7 +96,7 @@ public class Disk {
 	private boolean newImage = false;
 	private ByteArrayImageLayout diskImageManager;
 	private ImageOrder imageOrder;
-	
+
 	/**
 	 * Get the supported file filters supported by the Disk interface.
 	 * This is due to the fact that FilenameFilter is an innerclass of Disk -
@@ -108,7 +108,7 @@ public class Disk {
 		}
 		return filenameFilters;
 	}
-	
+
 	/**
 	 * Get the supported file extensions supported by the Disk interface.
 	 * This is used by the Swing UI to populate the open file dialog box.
@@ -138,7 +138,7 @@ public class Disk {
 			new FilenameFilter(textBundle.get("Disk.ApplePcImages"),  //$NON-NLS-1$
 				"*.hdv"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.CompressedImages"),  //$NON-NLS-1$
-				"*.do.gz; *.dsk.gz; *.po.gz; *.2mg.gz; *.2img.gz"), //$NON-NLS-1$
+				".sdk; *.do.gz; *.dsk.gz; *.po.gz; *.2mg.gz; *.2img.gz"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.AllFiles"),  //$NON-NLS-1$
 				"*.*") //$NON-NLS-1$
 		};
@@ -147,6 +147,7 @@ public class Disk {
 			    ".dsk",		//$NON-NLS-1$
 			    ".po",		//$NON-NLS-1$
 			    ".nib",		//$NON-NLS-1$
+			    ".sdk",		//$NON-NLS-1$
 			    ".2mg",		//$NON-NLS-1$
 			    ".2img",	//$NON-NLS-1$
 			    ".hdv",		//$NON-NLS-1$
@@ -158,7 +159,7 @@ public class Disk {
 			    ".2img.gz"	//$NON-NLS-1$ 
 		};
 	}
-	
+
 	/**
 	 * Construct a Disk with the given byte array.
 	 */
@@ -167,7 +168,7 @@ public class Disk {
 		this.filename = filename;
 		this.newImage = true;
 	}
-	
+
 	/**
 	 * Construct a Disk and load the specified file.
 	 * Read in the entire contents of the file.
@@ -175,30 +176,95 @@ public class Disk {
 	public Disk(String filename) throws IOException {
 		this.filename = filename;
 		File file = new File(filename);
-		InputStream input = new FileInputStream(file);
-		if (isCompressed()) {
-			input = new GZIPInputStream(input);
+		int diskSize = 0;
+		byte[] diskImage = null;
+		if (isSDK()) {
+			// If we have an SDK, unpack it and branch around all this nonsense
+			diskImage = com.webcodepro.shrinkit.Utilities.unpackSDKFile(filename);
+			diskSize = diskImage.length;
+		} else {
+			diskSize = (int) file.length();
+			InputStream input = new FileInputStream(file);
+			if (isCompressed()) {
+				input = new GZIPInputStream(input);
+			}
+			ByteArrayOutputStream diskImageByteArray = new ByteArrayOutputStream(diskSize);
+			StreamUtil.copy(input, diskImageByteArray);
+			diskImage = diskImageByteArray.toByteArray();
 		}
-		int diskSize = (int) file.length();
-		ByteArrayOutputStream diskImageByteArray = 
-			new ByteArrayOutputStream(diskSize);
-		StreamUtil.copy(input, diskImageByteArray);
-		byte[] diskImage = diskImageByteArray.toByteArray();
-		if ((diskImage[00] == '2') && (diskImage[01] == 'I') &&
-			(diskImage[02] == 'M') && (diskImage[03] == 'G')) {
+		boolean is2img = false;
+		/* Does it have the 2IMG header? */
+		if ((diskImage[00] == 0x32) && (diskImage[01] == 0x49) && (diskImage[02] == 0x4D) && (diskImage[03]) == 0x47)
+			is2img = true;
+		int offset = UniversalDiskImageLayout.OFFSET;
+		if (is2img == true || diskImage.length == APPLE_800KB_DISK + offset || diskImage.length == APPLE_5MB_HARDDISK + offset || diskImage.length == APPLE_10MB_HARDDISK + offset || diskImage.length == APPLE_20MB_HARDDISK + offset || diskImage.length == APPLE_32MB_HARDDISK + offset) {
 			diskImageManager = new UniversalDiskImageLayout(diskImage);
 		} else {
 			diskImageManager = new ByteArrayImageLayout(diskImage);
 		}
-		if (isProdosOrder()) {
-			imageOrder = new ProdosOrder(diskImageManager);
-		} else if (isDosOrder()) {
-		    	imageOrder = new DosOrder(diskImageManager);
-		} else if (isNibbleOrder()) {
-			imageOrder = new NibbleOrder(diskImageManager);
+
+		ImageOrder dosOrder = new DosOrder(diskImageManager);
+		ImageOrder proDosOrder = new ProdosOrder(diskImageManager);
+
+		/*
+		 * First step: test physical disk orders for viable file systems.
+		 */
+		int rc = -1;
+		if (diskSize == APPLE_140KB_DISK) {
+			// First, test the really-really likely orders/formats for
+			// 5-1/4" disks.
+			imageOrder = dosOrder;
+			if (isProdosFormat() || isDosFormat()) {
+				rc = 0;
+			} else {
+				imageOrder = proDosOrder;
+				if (isProdosFormat() || isDosFormat()) {
+					rc = 0;
+				}
+			}
+			if (rc == -1) {
+				/*
+				 * Ok, it's not one of those. Now, let's go back to DOS
+				 * order, and see if we recognize other things. If not,
+				 * we'll fall through to other processing later.
+				 */
+				imageOrder = dosOrder;
+				rc = testImageOrder();
+			}
+		}
+		if (rc == -1) {
+			imageOrder = proDosOrder;
+			rc = testImageOrder();
+			if (rc == -1) {
+				/*
+				 * Couldn't find anything recognizable. Final step: 
+				 * just punt and start testing filenames.
+				 */
+				if (isProdosOrder() || is2ImgOrder()) {
+					imageOrder = proDosOrder;
+				} else if (isDosOrder()) {
+					imageOrder = dosOrder;
+				} else if (isNibbleOrder()) {
+					imageOrder = new NibbleOrder(diskImageManager);
+				} else {
+					imageOrder = proDosOrder;
+				}
+			}
 		}
 	}
 	
+	/**
+	 * Test the image order to see if we can recognize a file system. Returns: 0
+	 * on recognition; -1 on failure.
+	 */
+	public int testImageOrder()
+	{
+		int rc = (true == isProdosFormat() ? 1 : 0) + (true == isDosFormat() ? 2 : 0) + (true == isCpmFormat() ? 4 : 0) + (true == isUniDosFormat() ? 8 : 0) + (true == isPascalFormat() ? 16 : 0) + (true == isOzDosFormat() ? 32 : 0);
+		if (rc == 0)
+			rc = -1;
+		return rc;
+	}
+
 	/**
 	 * Save a Disk image to its file.
 	 */
@@ -295,12 +361,28 @@ public class Disk {
 	}
 	
 	/**
+	 * Returns the name of the underlying image order.
+	 * @return String
+	 */
+	public String getOrderName() {
+		return (imageOrder == null) ? textBundle.get("FormattedDisk.Unknown") : imageOrder.getName(); 
+	}
+	
+	/**
 	 * Indicate if this disk is GZIP compressed.
 	 */
 	public boolean isCompressed() {
 		return filename.toLowerCase().endsWith(".gz"); //$NON-NLS-1$
 	}
 	
+	/**
+	 * Indicate if this disk is a ShrinkIt-compressed disk image.
+	 */
+	public boolean isSDK()
+	{
+		return filename.toLowerCase().endsWith(".sdk"); //$NON-NLS-1$
+	}
+
 	/**
 	 * Indicate if this disk is ProDOS ordered (beginning with block 0).
 	 */
@@ -634,8 +716,8 @@ public class Disk {
 	}
 
 	/**
-	 * Change to a different ImageOrder. Remains in DOS 3.3 format but the
-	 * underlying order can chage.
+	 * Change underlying image order to DOS ImageOrder.
+	 * Assumes this is a 140k disk image.
 	 * 
 	 * @see ImageOrder
 	 */

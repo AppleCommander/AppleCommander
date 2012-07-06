@@ -195,10 +195,7 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 		list.add(new DiskInformation(textBundle.get("FormattedDisk.PhysicalSizeInKb"), getPhysicalSize() / 1024)); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("FormattedDisk.FreeSpaceInKb"), getFreeSpace() / 1024)); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("FormattedDisk.UsedSpaceInKb"), getUsedSpace() / 1024)); //$NON-NLS-1$
-		list.add(new DiskInformation(textBundle.get("FormattedDisk.ArchiveOrder"),  //$NON-NLS-1$
-					is2ImgOrder() ? textBundle.get("FormattedDisk.2Img") : //$NON-NLS-1$
-					isDosOrder() ? textBundle.get("Dos33") :  //$NON-NLS-1$
-					isProdosOrder() ? textBundle.get("Prodos") : textBundle.get("FormattedDisk.Unknown"))); //$NON-NLS-1$ //$NON-NLS-2$
+		list.add(new DiskInformation(textBundle.get("FormattedDisk.ArchiveOrder"),  getOrderName())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("FormattedDisk.DiskFormat"), getFormat())); //$NON-NLS-1$
 		return list;
 	}

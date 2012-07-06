@@ -84,7 +84,7 @@
 	</target>
 	
 	<target name="executableGuiJar" depends="init" description="Build GUI executable JAR">
-		<javac srcdir="${source}" destdir="${classes}" target="1.3" source="1.3" classpath="${swtjar}">
+		<javac srcdir="${source}" destdir="${classes}" target="1.5" source="1.5" classpath="${swtjar}">
 			<include name="**/*.java"/>
 			<exclude name="**/*Test.java"/>
 		</javac>
