@@ -253,7 +253,8 @@ public class ac {
 			Iterator it = files.iterator();
 			while (it.hasNext()) {
 				FileEntry entry = (FileEntry) it.next();
-				if ((entry != null) && (!entry.isDeleted())) {
+				// FIXME: dumping files within (ProDOS) directories isn't handled.  For now, ignore them.
+				if ((entry != null) && (!entry.isDeleted()) && (!entry.isDirectory())) {
 					FileFilter ff = entry.getSuggestedFilter();
 					if (ff instanceof BinaryFileFilter)
 						ff = new HexDumpFileFilter();
