@@ -95,7 +95,7 @@ public class Disk {
 	private String filename;
 	private boolean newImage = false;
 	private ByteArrayImageLayout diskImageManager;
-	private ImageOrder imageOrder;
+	private ImageOrder imageOrder = null;
 
 	/**
 	 * Get the supported file filters supported by the Disk interface.
@@ -175,14 +175,15 @@ public class Disk {
 	 */
 	public Disk(String filename) throws IOException {
 		this.filename = filename;
-		File file = new File(filename);
 		int diskSize = 0;
 		byte[] diskImage = null;
+
 		if (isSDK()) {
-			// If we have an SDK, unpack it and branch around all this nonsense
+			// If we have an SDK, unpack it and send along the byte array
 			diskImage = com.webcodepro.shrinkit.Utilities.unpackSDKFile(filename);
 			diskSize = diskImage.length;
 		} else {
+			File file = new File(filename);
 			diskSize = (int) file.length();
 			InputStream input = new FileInputStream(file);
 			if (isCompressed()) {
@@ -206,48 +207,52 @@ public class Disk {
 		ImageOrder dosOrder = new DosOrder(diskImageManager);
 		ImageOrder proDosOrder = new ProdosOrder(diskImageManager);
 
-		/*
-		 * First step: test physical disk orders for viable file systems.
-		 */
-		int rc = -1;
-		if (diskSize == APPLE_140KB_DISK) {
-			// First, test the really-really likely orders/formats for
-			// 5-1/4" disks.
-			imageOrder = dosOrder;
-			if (isProdosFormat() || isDosFormat()) {
-				rc = 0;
-			} else {
-				imageOrder = proDosOrder;
+		if (isSDK()) {
+			imageOrder = proDosOrder; // SDKs are always in ProDOS order
+		} else {
+			/*
+			 * First step: test physical disk orders for viable file systems.
+			 */
+			int rc = -1;
+			if (diskSize == APPLE_140KB_DISK) {
+				// First, test the really-really likely orders/formats for
+				// 5-1/4" disks.
+				imageOrder = dosOrder;
 				if (isProdosFormat() || isDosFormat()) {
 					rc = 0;
+				} else {
+					imageOrder = proDosOrder;
+					if (isProdosFormat() || isDosFormat()) {
+						rc = 0;
+					}
+				}
+				if (rc == -1) {
+					/*
+					 * Ok, it's not one of those. Now, let's go back to DOS
+					 * order, and see if we recognize other things. If not,
+					 * we'll fall through to other processing later.
+					 */
+					imageOrder = dosOrder;
+					rc = testImageOrder();
 				}
 			}
 			if (rc == -1) {
-				/*
-				 * Ok, it's not one of those. Now, let's go back to DOS
-				 * order, and see if we recognize other things. If not,
-				 * we'll fall through to other processing later.
-				 */
-				imageOrder = dosOrder;
+				imageOrder = proDosOrder;
 				rc = testImageOrder();
-			}
-		}
-		if (rc == -1) {
-			imageOrder = proDosOrder;
-			rc = testImageOrder();
-			if (rc == -1) {
-				/*
-				 * Couldn't find anything recognizable. Final step: 
-				 * just punt and start testing filenames.
-				 */
-				if (isProdosOrder() || is2ImgOrder()) {
-					imageOrder = proDosOrder;
-				} else if (isDosOrder()) {
-					imageOrder = dosOrder;
-				} else if (isNibbleOrder()) {
-					imageOrder = new NibbleOrder(diskImageManager);
-				} else {
-					imageOrder = proDosOrder;
+				if (rc == -1) {
+					/*
+				 	* Couldn't find anything recognizable. Final step: 
+				 	* just punt and start testing filenames.
+				 	*/
+					if (isProdosOrder() || is2ImgOrder()) {
+						imageOrder = proDosOrder;
+					} else if (isDosOrder()) {
+						imageOrder = dosOrder;
+					} else if (isNibbleOrder()) {
+						imageOrder = new NibbleOrder(diskImageManager);
+					} else {
+						imageOrder = proDosOrder;
+					}
 				}
 			}
 		}
@@ -486,9 +491,14 @@ public class Disk {
 	 */
 	public boolean isProdosFormat() {
 		byte[] prodosVolumeDirectory = readBlock(2);
+		int volDirEntryLength = prodosVolumeDirectory[0x23];
+		int volDirEntriesPerBlock = prodosVolumeDirectory[0x24];
+
 		return prodosVolumeDirectory[0] == 0 &&
 			prodosVolumeDirectory[1] == 0 &&
-			(prodosVolumeDirectory[4]&0xf0) == 0xf0;
+			(prodosVolumeDirectory[4]&0xf0) == 0xf0 &&
+			(volDirEntryLength * volDirEntriesPerBlock <= 512)
+			;
 	}
 	
 	/**
@@ -497,17 +507,44 @@ public class Disk {
 	 * different characteristics.  This just tests 140KB images.
 	 */
 	public boolean isDosFormat() {
-		if (!is140KbDisk()) return false;
-		byte[] vtoc = readSector(17, 0);
-		return (imageOrder.isSizeApprox(APPLE_140KB_DISK)
-				 || imageOrder.isSizeApprox(APPLE_140KB_NIBBLE_DISK))						 
-			&& vtoc[0x01] == 17		// expect catalog to start on track 17
-// can vary	&& vtoc[0x02] == 15		// expect catalog to start on sector 15 (140KB disk only!)
-			&& vtoc[0x27] == 122	// expect 122 tract/sector pairs per sector
-			&& vtoc[0x34] == 35		// expect 35 tracks per disk (140KB disk only!)
-			&& vtoc[0x35] == 16;		// expect 16 sectors per disk (140KB disk only!)
-//			&& vtoc[0x36] == 0		// bytes per sector (low byte)
-//			&& vtoc[0x37] == 1;		// bytes per sector (high byte)
+		boolean good = false;
+		if (!is140KbDisk()) {
+			return false;
+		}
+		try {
+			byte[] vtoc = readSector(17, 0);
+			good = (imageOrder.isSizeApprox(APPLE_140KB_DISK)
+					 || imageOrder.isSizeApprox(APPLE_140KB_NIBBLE_DISK))						 
+						&& vtoc[0x01] == 17		// expect catalog to start on track 17
+			// can vary	&& vtoc[0x02] == 15		// expect catalog to start on sector 15 (140KB disk only!)
+						&& vtoc[0x27] == 122	// expect 122 track/sector pairs per sector
+						&& vtoc[0x34] == 35		// expect 35 tracks per disk (140KB disk only!)
+						&& vtoc[0x35] == 16		// expect 16 sectors per disk (140KB disk only!)
+						;
+			if (good) {
+				int catTrack = vtoc[0x01]; // Pull out the first catalog track/sector
+				int catSect = vtoc[0x02];
+				byte[] cat = readSector(catTrack, catSect);
+				if (catTrack == cat[1] && catSect == cat[2] + 1) {
+					// Still good... let's follow one more
+					catTrack = cat[1];
+					catSect = cat[2];
+					cat = readSector(catTrack, catSect);
+					if (catTrack == cat[1] && catSect == cat[2] + 1) {
+						good = true;
+					} else {
+						good = false;
+					}
+				}
+			}
+		} catch (Exception ex) {
+			/*
+			 *  If we get various exceptions from reading tracks and sectors, then we
+			 *  definitely don't have a valid DOS image. 
+			 */
+			good = false;
+		}
+		return good;
 	}
 
 	/**
