@@ -497,8 +497,7 @@ public class Disk {
 		return prodosVolumeDirectory[0] == 0 &&
 			prodosVolumeDirectory[1] == 0 &&
 			(prodosVolumeDirectory[4]&0xf0) == 0xf0 &&
-			(volDirEntryLength * volDirEntriesPerBlock <= 512)
-			;
+			(volDirEntryLength * volDirEntriesPerBlock <= BLOCK_SIZE);
 	}
 	
 	/**
