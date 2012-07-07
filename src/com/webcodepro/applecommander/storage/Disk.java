@@ -518,7 +518,7 @@ public class Disk {
 						&& vtoc[0x01] == 17		// expect catalog to start on track 17
 			// can vary	&& vtoc[0x02] == 15		// expect catalog to start on sector 15 (140KB disk only!)
 						&& vtoc[0x27] == 122	// expect 122 track/sector pairs per sector
-						&& vtoc[0x34] == 35		// expect 35 tracks per disk (140KB disk only!)
+						&& (vtoc[0x34] == 35 || vtoc[0x34] == 40) // expect 35 or 40 tracks per disk (140KB disk only!)
 						&& vtoc[0x35] == 16		// expect 16 sectors per disk (140KB disk only!)
 						;
 			if (good) {
