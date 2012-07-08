@@ -23,8 +23,10 @@ package com.webcodepro.applecommander.ui;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
@@ -106,9 +108,9 @@ public class ac {
 			} else if ("-d".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				deleteFile(args[1], new Name(args[2]));
 			} else if ("-k".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				setFileLocked(args[1], new Name(args[2]), true);
+				setFileLocked(args[1], args[2], true);
 			} else if ("-u".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				setFileLocked(args[1], new Name(args[2]), false);
+				setFileLocked(args[1], args[2], false);
 			} else if ("-n".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				setDiskName(args[1], args[2]);
 			} else if ("-cc65".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
@@ -133,6 +135,40 @@ public class ac {
 				ex.getLocalizedMessage()));
 			ex.printStackTrace();
 			help();
+		}
+	}
+
+	/**
+	 * Put fileName from the local filesytem into the file named fileOnImageName on the disk named imageName;
+	 * Note: only volume level supported; input size unlimited.
+	 */
+	public static void putFile(String fileName, String imageName, String fileOnImageName, String fileType,
+		String address) throws IOException, DiskFullException {
+		Name name = new Name(fileOnImageName);
+		File file = new File(fileName);
+		if (!file.canRead())
+		{
+			throw new IOException("Unable to read input file named "+fileName+".");
+		}
+		ByteArrayOutputStream buf = new ByteArrayOutputStream();
+		byte[] inb = new byte[1024];
+		int byteCount = 0;
+		InputStream is = new FileInputStream(file);
+		while ((byteCount = is.read(inb)) > 0) {
+			buf.write(inb, 0, byteCount);
+		}
+		Disk disk = new Disk(imageName);
+		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+		FormattedDisk formattedDisk = formattedDisks[0];
+		FileEntry entry = name.createEntry(formattedDisk);
+		if (entry != null) {
+			entry.setFiletype(fileType);
+			entry.setFilename(name.name);
+			entry.setFileData(buf.toByteArray());
+			if (entry.needsAddress()) {
+				entry.setAddress(stringToInt(address));
+			}
+			formattedDisk.save();
 		}
 	}
 
@@ -371,6 +407,14 @@ public class ac {
 	 * Set the lockState of the file named fileName on the disk named imageName.
 	 * Proposed by David Schmidt.
 	 */
+	public static void setFileLocked(String imageName, String name, boolean lockState) throws IOException {
+		setFileLocked(imageName, new Name(name), lockState);
+	}
+
+	/**
+	 * Set the lockState of the file named fileName on the disk named imageName.
+	 * Proposed by David Schmidt.
+	 */
 	static void setFileLocked(String imageName, Name name,
 		boolean lockState) throws IOException {
 		Disk disk = new Disk(imageName);
@@ -392,7 +436,7 @@ public class ac {
 	 * Set the volume name for a given disk image. Only effective for ProDOS or
 	 * Pascal disks; others ignored. Proposed by David Schmidt.
 	 */
-	static void setDiskName(String imageName, String volName)
+	public static void setDiskName(String imageName, String volName)
 		throws IOException {
 		Disk disk = new Disk(imageName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
