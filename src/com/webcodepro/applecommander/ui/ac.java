@@ -142,8 +142,7 @@ public class ac {
 	 * Put fileName from the local filesytem into the file named fileOnImageName on the disk named imageName;
 	 * Note: only volume level supported; input size unlimited.
 	 */
-	public static void putFile(String fileName, String imageName, String fileOnImageName, String fileType,
-		String address) throws IOException, DiskFullException {
+	public static void putFile(String fileName, String imageName, String fileOnImageName, String fileType, String address) throws IOException, DiskFullException {
 		Name name = new Name(fileOnImageName);
 		File file = new File(fileName);
 		if (!file.canRead())
@@ -197,6 +196,20 @@ public class ac {
 				entry.setAddress(stringToInt(address));
 			}
 			formattedDisk.save();
+		}
+	}
+
+	/**
+	 * Put file fileName into the file named fileOnImageName on the disk named imageName;
+	 * Assume a cc65 style four-byte header with start address in bytes 0-1.
+	 */
+	public static void putCC65(String fileName, String imageName, String fileOnImageName, String fileType)
+		throws IOException, DiskFullException {
+
+		byte[] header = new byte[4];
+		if (System.in.read(header, 0, 4) == 4) {
+			int address = AppleUtil.getWordValue(header, 0);
+			putFile(fileName, imageName, fileOnImageName, fileType, Integer.toString(address));
 		}
 	}
 
