@@ -1,3 +1,11 @@
+If you install libswt-gtk using the distribution's package manager,
+launch AppleCommander using a script such as this:
+
+#!/bin/sh
+java -Djava.library.path=/usr/lib/jni \
+     -cp /usr/lib/java/swt-gtk-3.5.1.jar:AppleCommander-1.3.5.11.jar \
+     com.webcodepro.applecommander.ui.AppleCommander -swt
+
 This is a highly experimental Linux GTK compile of AppleCommander.  This version does
 not require Java nor does it require the SWT distribution - it is compiled into a 
 native Linux executable.
