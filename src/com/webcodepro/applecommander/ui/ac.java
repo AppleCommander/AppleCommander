@@ -77,6 +77,8 @@ import com.webcodepro.applecommander.util.TextBundle;
  * -pro800 &lt;imagename&gt; &lt;volname&gt; create an 800K ProDOS image.
  * -pas140 &lt;imagename&gt; &lt;volname&gt; create a 140K Pascal image.
  * -pas800 &lt;imagename&gt; &lt;volname&gt; create an 800K Pascal image.
+ * -unshrink &lt;shrinksdk&gt; &lt;imagename&gt; uncompress a ShrinkIt disk image
+ *           into a normal disk image.
  * </pre>
  * 
  * @author John B. Matthews
@@ -127,6 +129,8 @@ public class ac {
 				createProDisk(args[1], args[2], Disk.APPLE_140KB_DISK);
 			} else if ("-pro800".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				createProDisk(args[1], args[2], Disk.APPLE_800KB_DISK);
+			} else if ("-unshrink".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				unshrink(args[1], args[2]);
 			} else {
 				help();
 			}
@@ -185,18 +189,22 @@ public class ac {
 			buf.write(inb, 0, byteCount);
 		}
 		Disk disk = new Disk(imageName);
-		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-		FormattedDisk formattedDisk = formattedDisks[0];
-		FileEntry entry = name.createEntry(formattedDisk);
-		if (entry != null) {
-			entry.setFiletype(fileType);
-			entry.setFilename(name.name);
-			entry.setFileData(buf.toByteArray());
-			if (entry.needsAddress()) {
-				entry.setAddress(stringToInt(address));
+		if (!disk.isSDK()) {
+			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+			FormattedDisk formattedDisk = formattedDisks[0];
+			FileEntry entry = name.createEntry(formattedDisk);
+			if (entry != null) {
+				entry.setFiletype(fileType);
+				entry.setFilename(name.name);
+				entry.setFileData(buf.toByteArray());
+				if (entry.needsAddress()) {
+					entry.setAddress(stringToInt(address));
+				}
+				formattedDisk.save();
 			}
-			formattedDisk.save();
 		}
+		else
+			throw new IOException(textBundle.get("CommandLineSDKReadOnly"));
 	}
 
 	/**
@@ -242,18 +250,22 @@ public class ac {
 	static void deleteFile(String imageName, Name name)
 		throws IOException {
 		Disk disk = new Disk(imageName);
-		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-		for (int i = 0; i < formattedDisks.length; i++) {
-			FormattedDisk formattedDisk = formattedDisks[i];
-			FileEntry entry = name.getEntry(formattedDisk);
-			if (entry != null) {
-				entry.delete();
-				disk.save();
-			} else {
-				System.err.println(textBundle.format(
-					"CommandLineNoMatchMessage", name.fullName)); //$NON-NLS-1$
+		if (!disk.isSDK()) {
+			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+			for (int i = 0; i < formattedDisks.length; i++) {
+				FormattedDisk formattedDisk = formattedDisks[i];
+				FileEntry entry = name.getEntry(formattedDisk);
+				if (entry != null) {
+					entry.delete();
+					disk.save();
+				} else {
+					System.err.println(textBundle.format(
+							"CommandLineNoMatchMessage", name.fullName)); //$NON-NLS-1$
+				}
 			}
 		}
+		else
+			throw new IOException(textBundle.get("CommandLineSDKReadOnly"));
 	}
 
 	/**
@@ -431,18 +443,22 @@ public class ac {
 	static void setFileLocked(String imageName, Name name,
 		boolean lockState) throws IOException {
 		Disk disk = new Disk(imageName);
-		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-		for (int i = 0; i < formattedDisks.length; i++) {
-			FormattedDisk formattedDisk = formattedDisks[i];
-			FileEntry entry = name.getEntry(formattedDisk);
-			if (entry != null) {
-				entry.setLocked(lockState);
-				disk.save();
-			} else {
-				System.err.println(textBundle.format(
-					"CommandLineNoMatchMessage", name.fullName)); //$NON-NLS-1$
+		if (!disk.isSDK()) {
+			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+			for (int i = 0; i < formattedDisks.length; i++) {
+				FormattedDisk formattedDisk = formattedDisks[i];
+				FileEntry entry = name.getEntry(formattedDisk);
+				if (entry != null) {
+					entry.setLocked(lockState);
+					disk.save();
+				} else {
+					System.err.println(textBundle.format(
+						"CommandLineNoMatchMessage", name.fullName)); //$NON-NLS-1$
+				}
 			}
 		}
+		else
+			throw new IOException(textBundle.get("CommandLineSDKReadOnly"));
 	}
 
 	/**
@@ -452,10 +468,14 @@ public class ac {
 	public static void setDiskName(String imageName, String volName)
 		throws IOException {
 		Disk disk = new Disk(imageName);
-		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-		FormattedDisk formattedDisk = formattedDisks[0];
-		formattedDisk.setDiskName(volName);
-		formattedDisks[0].save();
+		if (!disk.isSDK()) {
+			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+			FormattedDisk formattedDisk = formattedDisks[0];
+			formattedDisk.setDiskName(volName);
+			formattedDisks[0].save();
+		}
+		else
+			throw new IOException(textBundle.get("CommandLineSDKReadOnly"));
 	}
 
 	/**
@@ -489,6 +509,30 @@ public class ac {
 		ImageOrder imageOrder = new ProdosOrder(layout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(fileName, volName, imageOrder);
 		disks[0].save();
+	}
+
+	/**
+	 * Unshrink the ShrinkIt data depending on what kind it is:
+	 * 
+	 * SDK disk image - unpack it to a disk image
+	 * ShrinkIt file bundle [future] - unpack files onto a disk image sized to fit
+	 */
+	static void unshrink(String shrinkName, String imageName)
+		throws IOException {
+		unshrink(shrinkName, imageName, 0);
+	}
+
+	/**
+	 * Unshrink the ShrinkIt data depending on what kind it is:
+	 * 
+	 * SDK disk image - unpack it to a disk image
+	 * ShrinkIt file bundle [future] - unpack files onto a disk image of reqeusted size
+	 */
+	static void unshrink(String shrinkName, String imageName, int imageSize)
+		throws IOException {
+		Disk disk = new Disk(shrinkName);
+		disk.setFilename(imageName);
+		disk.save();
 	}
 
 	static int stringToInt(String s) {
