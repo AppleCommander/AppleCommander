@@ -13,6 +13,8 @@ public interface ByteConstants {
 	public static final byte[] NUFILE_ID = { 0x4e, (byte)0xf5, 0x46, (byte)0xe9, 0x6c, (byte)0xe5 };
 	/** Header Block identifier "magic" bytes. */
 	public static final byte[] NUFX_ID = { 0x4e, (byte)0xf5, 0x46, (byte)0xd8 };
+	/** Binary II identifier "magic" bytes. */
+	public static final byte[] BXY_ID = { 0x0a, 0x47, 0x4c };
 	/** Apple IIgs Toolbox TimeRec seconds byte position. */
 	public static final int TIMEREC_SECOND = 0;
 	/** Apple IIgs Toolbox TimeRec seconds byte position. */

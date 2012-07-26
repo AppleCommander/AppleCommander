@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import com.webcodepro.shrinkit.CRC16;
+import com.webcodepro.shrinkit.NuFileArchive;
 
 /**
  * A simple class to hide the source of byte data.
@@ -69,18 +70,49 @@ public class LittleEndianByteInputStream extends InputStream implements ByteCons
 	}
 
 	/**
-	 * Test that the NuFile id is embedded in the LittleEndianByteInputStream.
+	 * Test the beginning of the data stream for a magic signature, for up to a total
+	 * of 2k bytes of leading garbage
 	 */
-	public boolean checkNuFileId() throws IOException {
-		byte[] data = readBytes(6);
-		return Arrays.equals(data, NUFILE_ID);
+	public int seekFileType() throws IOException {
+		return seekFileType(6);
 	}
 	/**
-	 * Test that the NuFx id is embedded in the LittleEndianByteInputStream.
+	 * Test the beginning of the data stream for a magic signature, specifying the
+	 * maximum size of a signature to test for
 	 */
-	public boolean checkNuFxId() throws IOException {
-		byte[] data = readBytes(4);
-		return Arrays.equals(data, NUFX_ID);
+	public int seekFileType(int max) throws IOException {
+		byte[] data = new byte[2048];
+		byte[] testNUFILE = new byte[6];
+		byte[] testNUFX = new byte[4];
+		byte[] testBXY = new byte[3];
+		int type = 0, i, pos = 0;
+		for (i = 0;i<data.length;i++) {
+			data[i] = 0;
+		}
+		for (i = 0; i < max; i++) {
+			data[i] = (byte)readByte();
+		}
+		while (pos < data.length-max) {
+			if (max == 6) {
+				System.arraycopy(data, pos, testNUFILE, 0, NUFILE_ID.length);
+				if (Arrays.equals(testNUFILE,NUFILE_ID)) {
+					type = NuFileArchive.NUFILE_ARCHIVE;
+					break;
+				}
+			}
+			System.arraycopy(data, pos, testNUFX, 0, NUFX_ID.length);
+			System.arraycopy(data, pos, testBXY, 0, BXY_ID.length);
+			if (Arrays.equals(testNUFX, NUFX_ID)) {
+				type = NuFileArchive.NUFX_ARCHIVE;
+				break;
+			} else if (Arrays.equals(testBXY,BXY_ID)) {
+				type = NuFileArchive.BXY_ARCHIVE;
+				break;
+			}
+			data[pos+max] = (byte)readByte();
+			pos++;
+		}
+		return type;
 	}
 	/**
 	 * Read the two bytes in as a "Word" which needs to be stored as a Java int.

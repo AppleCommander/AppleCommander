@@ -66,12 +66,57 @@ public class Utilities
 					System.out.println(ex);
 				}
 			}
-			dataThread.readThreadData(new LittleEndianByteInputStream(dataThread.getRawInputStream()));
-			InputStream fis = dataThread.getInputStream();
-			int dmgLen = (int)(dataThread.getThreadEof());
-			buffer = new byte[dmgLen];
-			fis.read(buffer,0,dmgLen);
-			fis.close();
+			if (null != dataThread) {
+				dataThread.readThreadData(new LittleEndianByteInputStream(dataThread.getRawInputStream()));
+				InputStream fis = dataThread.getInputStream();
+				int dmgLen = (int)(dataThread.getThreadEof());
+				buffer = new byte[dmgLen];
+				fis.read(buffer,0,dmgLen);
+				fis.close();
+			}
+		}
+		return buffer;
+	}
+
+	/**
+	 * Interpret a SHK NuFile/NuFX/Shrinkit archive as a full disk image.
+	 *
+	 * @return byte[] buffer containing full disk of data; null if unable to read
+	 * @throws IllegalArgumentException if the filename is not able to be read
+	 * @throws IOException the file has some malformed-ness about it
+	 */
+	public static byte[] unpackSHKFile(String fileName) throws IOException {
+		TextBundle textBundle = StorageBundle.getInstance();
+		byte buffer[] = null;
+		ThreadRecord dataThread = null;
+		File file = new File(fileName);
+		if (file.isDirectory() || !file.canRead()) {
+			throw new IllegalArgumentException(textBundle.format("NotAFile", fileName, 1)); //$NON-NLS-1$ 
+		}
+		InputStream is = new FileInputStream(file);
+		NuFileArchive a = new NuFileArchive(is);
+		for (HeaderBlock b : a.getHeaderBlocks()) {
+			for (ThreadRecord r : b.getThreadRecords()) {
+				try
+				{
+					if (r.getThreadKind() == ThreadKind.DISK_IMAGE)
+					{
+						dataThread = r;
+					}
+				}
+				catch (Exception ex)
+				{
+					System.out.println(ex);
+				}
+			}
+			if (null != dataThread) {
+				dataThread.readThreadData(new LittleEndianByteInputStream(dataThread.getRawInputStream()));
+				InputStream fis = dataThread.getInputStream();
+				int dmgLen = (int)(dataThread.getThreadEof());
+				buffer = new byte[dmgLen];
+				fis.read(buffer,0,dmgLen);
+				fis.close();
+			}
 		}
 		return buffer;
 	}

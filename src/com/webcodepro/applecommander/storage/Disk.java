@@ -138,7 +138,7 @@ public class Disk {
 			new FilenameFilter(textBundle.get("Disk.ApplePcImages"),  //$NON-NLS-1$
 				"*.hdv"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.CompressedImages"),  //$NON-NLS-1$
-				".sdk; *.do.gz; *.dsk.gz; *.po.gz; *.2mg.gz; *.2img.gz"), //$NON-NLS-1$
+				"*.sdk; *.shk; *.do.gz; *.dsk.gz; *.po.gz; *.2mg.gz; *.2img.gz"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.AllFiles"),  //$NON-NLS-1$
 				"*.*") //$NON-NLS-1$
 		};
@@ -148,6 +148,7 @@ public class Disk {
 			    ".po",		//$NON-NLS-1$
 			    ".nib",		//$NON-NLS-1$
 			    ".sdk",		//$NON-NLS-1$
+			    ".shk",		//$NON-NLS-1$
 			    ".2mg",		//$NON-NLS-1$
 			    ".2img",	//$NON-NLS-1$
 			    ".hdv",		//$NON-NLS-1$
@@ -182,6 +183,11 @@ public class Disk {
 			// If we have an SDK, unpack it and send along the byte array
 			diskImage = com.webcodepro.shrinkit.Utilities.unpackSDKFile(filename);
 			diskSize = diskImage.length;
+		} else if (isSHK()) {
+			// If we have an SHK, unpack it and send along the byte array
+			diskImage = com.webcodepro.shrinkit.Utilities.unpackSHKFile(filename);
+			throw new IOException("SHK unpacking is not implemented yet."); // TODO - remove me
+			//TODO - diskSize = diskImage.length;
 		} else {
 			File file = new File(filename);
 			diskSize = (int) file.length();
@@ -386,6 +392,14 @@ public class Disk {
 	public boolean isSDK()
 	{
 		return filename.toLowerCase().endsWith(".sdk"); //$NON-NLS-1$
+	}
+
+	/**
+	 * Indicate if this disk is a ShrinkIt-compressed package.
+	 */
+	public boolean isSHK()
+	{
+		return filename.toLowerCase().endsWith(".shk"); //$NON-NLS-1$
 	}
 
 	/**

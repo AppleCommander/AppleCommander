@@ -44,7 +44,9 @@ public class HeaderBlock {
 	 * the Header Block size varies significantly.
 	 */
 	public HeaderBlock(LittleEndianByteInputStream bs) throws IOException {
-		bs.checkNuFxId();
+		int type = bs.seekFileType(4);
+		if (type == 0)
+			throw new IOException("Unable to decode this archive.");  // FIXME - NLS
 		headerCrc = bs.readWord();
 		attribCount = bs.readWord();
 		versionNumber = bs.readWord();

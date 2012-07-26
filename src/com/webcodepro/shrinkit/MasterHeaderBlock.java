@@ -3,6 +3,7 @@ package com.webcodepro.shrinkit;
 import java.io.IOException;
 import java.util.Date;
 
+import com.webcodepro.shrinkit.io.ByteConstants;
 import com.webcodepro.shrinkit.io.LittleEndianByteInputStream;
 
 /**
@@ -25,25 +26,24 @@ public class MasterHeaderBlock {
 	private Date archiveModWhen;
 	private int masterVersion;
 	private long masterEof;
-	private byte[] nuFileId = {0,0,0,0,0,0};
 
 	/**
 	 * Create the Master Header Block, based on the LittleEndianByteInputStream.
 	 */
 	public MasterHeaderBlock(LittleEndianByteInputStream bs) throws IOException {
-		int headerOffset = 0;
-		nuFileId = bs.readBytes(6);
+		int fileType = 0, headerOffset = 0;
+		fileType = bs.seekFileType();
 		
-		if (checkId(nuFileId,BXY_ID)) {
-			bs.readBytes(127 - NUFILE_ID.length);
+		if (fileType == NuFileArchive.BXY_ARCHIVE) {
+			bs.readBytes(127 - ByteConstants.NUFILE_ID.length);
 			headerOffset = 128;
 			int count = bs.read();
 			if (count != 0)
-				throw new IOException("This is actually a Binary II archive with multiple files in it.");
-			nuFileId = bs.readBytes(6);
+				throw new IOException("This is actually a Binary II archive with multiple files in it."); // FIXME - NLS
+			fileType = bs.seekFileType();
 		}
-		if (!checkId(nuFileId,NUFILE_ID)) {
-			throw new IOException("Unable to decode this archive.");
+		if (!(fileType == NuFileArchive.NUFILE_ARCHIVE)) {
+			throw new IOException("Unable to decode this archive."); // FIXME - NLS
 		}
 		masterCrc = bs.readWord();
 		bs.resetCrc();	// CRC is computed from this point to the end of the header
@@ -105,22 +105,4 @@ public class MasterHeaderBlock {
 	public boolean isValidCrc() {
 		return validCrc;
 	}
-	/**
-	 * Test that the requested constant is present.
-	 */
-	private boolean checkId(byte[] data, byte[] constant) {
-		for (int i = 0; i < constant.length; i++){
-			if (data[i] != constant[i])
-				return false;
-		}
-		return true;
-	}
-
-	/** Master Header Block identifier "magic" bytes. */
-	public static final byte[] NUFILE_ID = { 0x4e, (byte)0xf5, 0x46, (byte)0xe9, 0x6c, (byte)0xe5 };
-	/** Header Block identifier "magic" bytes. */
-	public static final byte[] NUFX_ID = { 0x4e, (byte)0xf5, 0x46, (byte)0xd8 };
-	/** Binay II identifier "magic" bytes. */
-	public static final byte[] BXY_ID = { 0x0a, 0x47, 0x4c };
-
 }

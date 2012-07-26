@@ -151,7 +151,7 @@ public class ac {
 		File file = new File(fileName);
 		if (!file.canRead())
 		{
-			throw new IOException("Unable to read input file named "+fileName+".");
+			throw new IOException("Unable to read input file named "+fileName+"."); // FIXME - NLS
 		}
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
 		byte[] inb = new byte[1024];
@@ -204,7 +204,7 @@ public class ac {
 			}
 		}
 		else
-			throw new IOException(textBundle.get("CommandLineSDKReadOnly"));
+			throw new IOException(textBundle.get("CommandLineSDKReadOnly"));  //$NON-NLS-1$
 	}
 
 	/**
