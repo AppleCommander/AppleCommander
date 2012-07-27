@@ -312,8 +312,7 @@ public class ac {
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		for (int i = 0; i < formattedDisks.length; i++) {
 			FormattedDisk formattedDisk = formattedDisks[i];
-			List files = formattedDisk.getFiles();
-			writeFiles(files, directory);			
+			writeFiles(formattedDisk.getFiles(), directory);			
 		}
 	}
 
@@ -340,7 +339,6 @@ public class ac {
 				writeFiles(((DirectoryEntry) entry).getFiles(),directory+entry.getFilename()+File.separator);
 			}
 		}
-
 	}
 	
 	/**
