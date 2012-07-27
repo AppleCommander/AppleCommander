@@ -306,30 +306,43 @@ public class ac {
 			// Add a final directory separator if the user didn't supply one
 			if (!directory.endsWith(File.separator))
 				directory = directory + File.separator;
+		} else {
+			directory = "."+File.separator;
 		}
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		for (int i = 0; i < formattedDisks.length; i++) {
 			FormattedDisk formattedDisk = formattedDisks[i];
 			List files = formattedDisk.getFiles();
-			Iterator it = files.iterator();
-			while (it.hasNext()) {
-				FileEntry entry = (FileEntry) it.next();
-				// FIXME: dumping files within (ProDOS) directories isn't handled.  For now, ignore them.
-				if ((entry != null) && (!entry.isDeleted()) && (!entry.isDirectory())) {
-					FileFilter ff = entry.getSuggestedFilter();
-					if (ff instanceof BinaryFileFilter)
-						ff = new HexDumpFileFilter();
-					byte[] buf = ff.filter(entry);
-					String filename = ff.getSuggestedFileName(entry);
-					File file = new File(directory + filename);
-					OutputStream output = new FileOutputStream(file);
-					output.write(buf, 0, buf.length);
-					output.close();
-				}
-			}
+			writeFiles(files, directory);			
 		}
 	}
 
+	/**
+	 * Recursive routine to write directory and file entries.
+	 */
+	static void writeFiles(List files, String directory) throws IOException {
+		Iterator it = files.iterator();
+		while (it.hasNext()) {
+			FileEntry entry = (FileEntry) it.next();
+			if ((entry != null) && (!entry.isDeleted()) && (!entry.isDirectory())) {
+				FileFilter ff = entry.getSuggestedFilter();
+				if (ff instanceof BinaryFileFilter)
+					ff = new HexDumpFileFilter();
+				byte[] buf = ff.filter(entry);
+				String filename = ff.getSuggestedFileName(entry);
+				File file = new File(directory + filename);
+				File dir = new File(directory);
+				dir.mkdirs();
+				OutputStream output = new FileOutputStream(file);
+				output.write(buf, 0, buf.length);
+				output.close();
+			} else if (entry.isDirectory()) {
+				writeFiles(((DirectoryEntry) entry).getFiles(),directory+entry.getFilename()+File.separator);
+			}
+		}
+
+	}
+	
 	/**
 	 * Recursive routine to locate a specific file by filename; In the instance
 	 * of a system with directories (e.g. ProDOS), this really returns the first
