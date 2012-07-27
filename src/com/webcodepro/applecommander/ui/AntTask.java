@@ -19,24 +19,64 @@ package com.webcodepro.applecommander.ui;
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+import java.io.File;
 import java.io.IOException;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.FormattedDisk;
 
 public class AntTask extends Task
 {
 	public void execute() throws BuildException
 	{
 		/*
-		 * Commands: p, cc65, n, k 
-		 * p: <imagename> <filename> <type> [<address>]
+		 * Commands: 
 		 * cc65: <imagename> <filename> <type> 
+		 * d: <imagename> <filename>
+		 * e: <imagename> <filename>
+		 * i: <imagename>
+		 * k/u: <imagename> <filename>
+		 * ls/l/ll: <imagename>
 		 * n: <imagename> <volname> 
-		 * k: <imagename> <filename>
-		 * 
+		 * p: <imagename> <filename> <type> [<address>]
+		 * x: <imagename> <outputpath>
+		 * dos140: <imagename> <volname>
+		 * pro140/pro800: <imagename> <volname>
+		 * pas140/pas800: <imagename> <volname>
+		 * unshrink: <filename> <imagename>
 		 */
-		if (_command.equals("p") || (_command.equals("cc65")))
+		if (_command.equals("i"))
+		{
+			try
+			{
+				String[] onlyOneImage = { "nonsense", _imageName };
+				com.webcodepro.applecommander.ui.ac.getDiskInfo(onlyOneImage);
+			}
+			catch (Exception ex)
+			{
+				if (_failonerror)
+					throw new BuildException(ex);
+				else
+					System.out.println(ex.getMessage());
+			}
+		}
+		else if (_command.equals("e") || _command.equals("g"))
+		{
+			try
+			{
+				com.webcodepro.applecommander.ui.ac.getFile(_imageName, _fileName, _command.equals("e"));
+			}
+			catch (Exception ex)
+			{
+				if (_failonerror)
+					throw new BuildException(ex);
+				else
+					System.out.println(ex.getMessage());
+			}
+		}
+		else if (_command.equals("p") || (_command.equals("cc65")))
 		{
 			try
 			{
@@ -47,42 +87,157 @@ public class AntTask extends Task
 			}
 			catch (Exception ex)
 			{
-				throw new BuildException(ex);
+				if (_failonerror)
+					throw new BuildException(ex);
+				else
+					System.out.println(ex.getMessage());
+			}
+		}
+		else if (_command.equals("d"))
+		{
+			try
+			{
+				com.webcodepro.applecommander.ui.ac.deleteFile(_imageName, _fileName);
+			}
+			catch (IOException io)
+			{
+				if (_failonerror)
+					throw new BuildException(io);
+				else
+					System.out.println(io.getMessage());
+			}
+		}
+		else if (_command.equals("n"))
+		{
+			try
+			{
+				com.webcodepro.applecommander.ui.ac.setDiskName(_imageName, _volName);
+			}
+			catch (IOException io)
+			{
+				if (_failonerror)
+					throw new BuildException(io);
+				else
+					System.out.println(io.getMessage());
+			}
+		}
+		else if (_command.equals("k") || _command.equals("u"))
+		{
+			try
+			{
+				if (_command.equals("k"))
+					com.webcodepro.applecommander.ui.ac.setFileLocked(_imageName, _fileName, true);
+				else // Assume unlock
+					com.webcodepro.applecommander.ui.ac.setFileLocked(_imageName, _fileName, false);
+			}
+			catch (IOException io)
+			{
+				if (_failonerror)
+					throw new BuildException(io);
+				else
+					System.out.println(io.getMessage());
+			}
+		}
+		else if (_command.equals("ls") || _command.equals("l") || _command.equals("ll"))
+		{
+			try
+			{
+				String[] onlyOneImage = { "nonsense", _imageName };
+				if (_command.equals("ls"))
+					com.webcodepro.applecommander.ui.ac.showDirectory(onlyOneImage, FormattedDisk.FILE_DISPLAY_STANDARD);
+				else if (_command.equals("l"))
+					com.webcodepro.applecommander.ui.ac.showDirectory(onlyOneImage, FormattedDisk.FILE_DISPLAY_NATIVE);
+				else // Assume "ll"
+					com.webcodepro.applecommander.ui.ac.showDirectory(onlyOneImage, FormattedDisk.FILE_DISPLAY_DETAIL);
+			}
+			catch (IOException io)
+			{
+				if (_failonerror)
+					throw new BuildException(io);
+				else
+					System.out.println(io.getMessage());
+			}
+		}
+		else if (_command.equals("dos140"))
+		{
+			try
+			{
+				com.webcodepro.applecommander.ui.ac.createDosDisk(_imageName, Disk.APPLE_140KB_DISK);
+			}
+			catch (IOException io)
+			{
+				if (_failonerror)
+					throw new BuildException(io);
+				else
+					System.out.println(io.getMessage());
+			}
+		}
+		else if ((_command.equals("pro800") || _command.equals("pro140")))
+		{
+			try
+			{
+				if (_command.equals("pro800"))
+					com.webcodepro.applecommander.ui.ac.createProDisk(_imageName, _volName, Disk.APPLE_800KB_DISK);
+				else
+					com.webcodepro.applecommander.ui.ac.createProDisk(_imageName, _volName, Disk.APPLE_140KB_DISK);
+			}
+			catch (IOException io)
+			{
+				if (_failonerror)
+					throw new BuildException(io);
+				else
+					System.out.println(io.getMessage());
+			}
+		}
+		else if ((_command.equals("pas800") || _command.equals("pas140")))
+		{
+			try
+			{
+				if (_command.equals("pas800"))
+					com.webcodepro.applecommander.ui.ac.createPasDisk(_imageName, _volName, Disk.APPLE_800KB_DISK);
+				else
+					com.webcodepro.applecommander.ui.ac.createPasDisk(_imageName, _volName, Disk.APPLE_140KB_DISK);
+			}
+			catch (IOException io)
+			{
+				if (_failonerror)
+					throw new BuildException(io);
+				else
+					System.out.println(io.getMessage());
+			}
+		}
+		else if (_command.equals("x"))
+		{
+			try
+			{
+				com.webcodepro.applecommander.ui.ac.getFiles(_imageName, _outputPath);
+			}
+			catch (IOException io)
+			{
+				if (_failonerror)
+					throw new BuildException(io);
+				else
+					System.out.println(io.getMessage());
+			}
+		}
+		else if (_command.equals("unshrink"))
+		{
+			try
+			{
+				com.webcodepro.applecommander.ui.ac.unshrink(_fileName, _imageName);
+			}
+			catch (IOException io)
+			{
+				if (_failonerror)
+					throw new BuildException(io);
+				else
+					System.out.println(io.getMessage());
 			}
 		}
 		else
 		{
-			if (_command.equals("n"))
-			{
-				try
-				{
-					com.webcodepro.applecommander.ui.ac.setDiskName(_imageName, _volName);
-				}
-				catch (IOException io)
-				{
-					throw new BuildException(io);
-				}
-			}
-			else
-			{
-				if (_command.equals("k"))
-				{
-					try
-					{
-						com.webcodepro.applecommander.ui.ac.setFileLocked(_imageName, _fileName, true);
-					}
-					catch (IOException io)
-					{
-						throw new BuildException(io);
-					}
-				}
-				else
-				{
-					throw new BuildException("Command \""+_command+"\" not implemented.");
-				}
-			}
+			throw new BuildException("Command \"" + _command + "\" not implemented.");
 		}
-
 	}
 
 	public void setCommand(String command)
@@ -105,6 +260,11 @@ public class AntTask extends Task
 		_fileName = fileName;
 	}
 
+	public void setOutputPath(String outputPath)
+	{
+		_outputPath = outputPath;
+	}
+
 	public void setVolumeName(String volumeName)
 	{
 		_volName = volumeName;
@@ -120,6 +280,16 @@ public class AntTask extends Task
 		_address = address;
 	}
 
+	public void setFailOnError(String failonerror)
+	{
+		if (failonerror.equalsIgnoreCase("true"))
+			_failonerror = true;
+		if (failonerror.equalsIgnoreCase("false"))
+			_failonerror = false;
+	}
+
+	boolean _failonerror = true;
+
 	String _input = null;
 
 	String _command = null;
@@ -128,7 +298,9 @@ public class AntTask extends Task
 
 	String _fileName = null;
 
-	String _volName = null;
+	String _volName = "ACDISK";
+
+	String _outputPath = null;
 
 	String _type = null;
 

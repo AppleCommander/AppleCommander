@@ -99,16 +99,16 @@ public class ac {
 			} else if ("-ll".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				showDirectory(args, FormattedDisk.FILE_DISPLAY_DETAIL);
 			} else if ("-e".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				getFile(args[1], new Name(args[2]), true);
+				getFile(args[1], args[2], true);
 			} else if ("-x".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				getFiles(args[1], (args.length > 2 ? args[2] : ""));
 			} else if ("-g".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				getFile(args[1], new Name(args[2]), false);
+				getFile(args[1], args[2], false);
 			} else if ("-p".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				putFile(args[1], new Name(args[2]), args[3],
 					(args.length > 4 ? args[4] : "0x2000"));
 			} else if ("-d".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				deleteFile(args[1], new Name(args[2]));
+				deleteFile(args[1], args[2]);
 			} else if ("-k".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				setFileLocked(args[1], args[2], true);
 			} else if ("-u".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
@@ -247,9 +247,10 @@ public class ac {
 	/**
 	 * Delete the file named fileName from the disk named imageName.
 	 */
-	static void deleteFile(String imageName, Name name)
+	static void deleteFile(String imageName, String fileName)
 		throws IOException {
 		Disk disk = new Disk(imageName);
+		Name name = new Name(fileName);
 		if (!disk.isSDK()) {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 			for (int i = 0; i < formattedDisks.length; i++) {
@@ -272,9 +273,10 @@ public class ac {
 	 * Get the file named filename from the disk named imageName; the file is
 	 * filtered according to its type and sent to &lt;stdout>.
 	 */
-	static void getFile(String imageName, Name name, boolean filter)
+	static void getFile(String imageName, String fileName, boolean filter)
 		throws IOException {
 		Disk disk = new Disk(imageName);
+		Name name = new Name(fileName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		for (int i = 0; i < formattedDisks.length; i++) {
 			FormattedDisk formattedDisk = formattedDisks[i];
@@ -302,7 +304,7 @@ public class ac {
 	 */
 	static void getFiles(String imageName, String directory) throws IOException {
 		Disk disk = new Disk(imageName);
-		if (directory.length() > 0) {
+		if ((directory != null) && (directory.length() > 0)) {
 			// Add a final directory separator if the user didn't supply one
 			if (!directory.endsWith(File.separator))
 				directory = directory + File.separator;
