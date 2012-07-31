@@ -37,6 +37,7 @@ public class HeaderBlock {
 	private byte[] attribBytes;
 	private String filename;
 	private String rawFilename;
+	private long headerSize = 0;
 	private List<ThreadRecord> threads = new ArrayList<ThreadRecord>();
 	
 	/**
@@ -88,7 +89,10 @@ public class HeaderBlock {
 	 */
 	public void readThreads(LittleEndianByteInputStream bs) throws IOException {
 		for (long l=0; l<totalThreads; l++) threads.add(new ThreadRecord(this, bs));
-		for (ThreadRecord r : threads) r.readThreadData(bs);
+		for (ThreadRecord r : threads) {
+			r.readThreadData(bs);
+			headerSize += r.getThreadEof();
+		}
 	}
 
 	/**
@@ -241,5 +245,8 @@ public class HeaderBlock {
 	}
 	public void setThreadRecords(List<ThreadRecord> threads) {
 		this.threads = threads;
+	}
+	public long getHeaderSize() {
+		return headerSize;
 	}
 }

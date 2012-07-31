@@ -539,7 +539,7 @@ public class ac {
 	 * Unshrink the ShrinkIt data depending on what kind it is:
 	 * 
 	 * SDK disk image - unpack it to a disk image
-	 * ShrinkIt file bundle [future] - unpack files onto a disk image of reqeusted size
+	 * ShrinkIt file bundle [future] - unpack files onto a disk image of requested size
 	 */
 	static void unshrink(String shrinkName, String imageName, int imageSize)
 		throws IOException {

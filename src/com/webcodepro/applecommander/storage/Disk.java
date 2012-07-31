@@ -74,7 +74,7 @@ public class Disk {
 			return names;
 		}
 	}
-	
+
 	public static final int BLOCK_SIZE = 512;
 	public static final int SECTOR_SIZE = 256;
 	public static final int PRODOS_BLOCKS_ON_140KB_DISK = 280;
@@ -179,15 +179,10 @@ public class Disk {
 		int diskSize = 0;
 		byte[] diskImage = null;
 
-		if (isSDK()) {
+		if (isSDK() || isSHK()) {
 			// If we have an SDK, unpack it and send along the byte array
-			diskImage = com.webcodepro.shrinkit.Utilities.unpackSDKFile(filename);
-			diskSize = diskImage.length;
-		} else if (isSHK()) {
-			// If we have an SHK, unpack it and send along the byte array
 			diskImage = com.webcodepro.shrinkit.Utilities.unpackSHKFile(filename);
-			throw new IOException("SHK unpacking is not implemented yet."); // TODO - remove me
-			//TODO - diskSize = diskImage.length;
+			diskSize = diskImage.length;
 		} else {
 			File file = new File(filename);
 			diskSize = (int) file.length();
@@ -789,6 +784,29 @@ public class Disk {
 		ProdosOrder pdo = new ProdosOrder(new ByteArrayImageLayout(Disk.APPLE_140KB_DISK));
 		changeImageOrderByBlock(getImageOrder(), pdo);
 		setImageOrder(pdo);
+	}
+
+	/**
+	 * Find the standard sized disk that will fit the requested number of bytes.
+	 * @returns int size of the disk if it will satisfy the request, -1 otherwise 
+	 */
+	public static int sizeToFit(long bytes) {
+		if (bytes < APPLE_140KB_DISK) {
+			return APPLE_140KB_DISK;
+		} else if (bytes < APPLE_800KB_DISK) {
+			return APPLE_800KB_DISK;
+		} else if (bytes < APPLE_5MB_HARDDISK) {
+			return APPLE_5MB_HARDDISK;
+		} else if (bytes < APPLE_10MB_HARDDISK) {
+			return APPLE_10MB_HARDDISK;
+		} else if (bytes < APPLE_20MB_HARDDISK) {
+			return APPLE_20MB_HARDDISK;
+		} else if (bytes < APPLE_32MB_HARDDISK) {
+			return APPLE_20MB_HARDDISK;
+		} else if (bytes < APPLE_32MB_HARDDISK) {
+			return APPLE_32MB_HARDDISK;
+		}
+		return -1;
 	}
 
 	/**

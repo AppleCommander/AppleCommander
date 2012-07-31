@@ -173,7 +173,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	}
 
 	/**
-	 * Set the filetype.
+	 * Set the filetype based on a string value.
 	 */
 	public void setFiletype(String filetype) {
 		byte[] entry = readFileEntry();
@@ -181,6 +181,15 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 		writeFileEntry(entry);
 	}
 	
+	/**
+	 * Set the filetype based on a long - thunk into a byte
+	 */
+	public void setFiletype(long fileType) {
+		byte[] entry = readFileEntry();
+		entry[0x10] = (byte)fileType;
+		writeFileEntry(entry);
+	}
+
 	/**
 	 * Indicate if this is an AppleWorks file.
 	 * Intended to force upper/lowercase into the filename.
@@ -259,6 +268,15 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 */
 	public int getAuxiliaryType() {
 		return AppleUtil.getWordValue(readFileEntry(), 0x1f);
+	}
+
+	/**
+	 * Set the auxiliary type for this file.
+	 */
+	public void setAuxiliaryType(int auxiliaryType) {
+		byte[] entry = readFileEntry();
+		setAuxiliaryType(entry, auxiliaryType);
+		writeFileEntry(entry);
 	}
 
 	/**
