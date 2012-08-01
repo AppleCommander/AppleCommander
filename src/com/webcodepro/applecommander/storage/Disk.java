@@ -178,6 +178,7 @@ public class Disk {
 		this.filename = filename;
 		int diskSize = 0;
 		byte[] diskImage = null;
+		byte[] diskImageDC42 = null;
 
 		if (isSDK() || isSHK()) {
 			// If we have an SDK, unpack it and send along the byte array
@@ -194,13 +195,31 @@ public class Disk {
 			StreamUtil.copy(input, diskImageByteArray);
 			diskImage = diskImageByteArray.toByteArray();
 		}
-		boolean is2img = false;
+		int offset = 0;
+		boolean is2img = false, isDC42 = false;
 		/* Does it have the 2IMG header? */
-		if ((diskImage[00] == 0x32) && (diskImage[01] == 0x49) && (diskImage[02] == 0x4D) && (diskImage[03]) == 0x47)
+		if ((diskImage[00] == 0x32) && (diskImage[01] == 0x49) && (diskImage[02] == 0x4D) && (diskImage[03]) == 0x47) {
 			is2img = true;
-		int offset = UniversalDiskImageLayout.OFFSET;
+			offset = UniversalDiskImageLayout.OFFSET;
+		}
+		/* Does it have the DiskCopy 4.2 header? */
+		else if (((diskImage[0x52] == 0x01) && (diskImage[0x53] == 0x00)) &&
+				((diskImage[0x51] == 0x02) || (diskImage[0x51] == 0x22) || (diskImage[0x51] == 0x24))) {
+			isDC42 = true;
+			offset = 84;
+			long end = AppleUtil.getLongValue(diskImage,0x40);
+			if (end < diskImage.length - 83) {
+				diskImageDC42 = new byte[(int)end];
+				System.arraycopy(diskImage, 84, diskImageDC42, 0, (int)end);
+				diskImageManager = new ByteArrayImageLayout(diskImageDC42);
+			}
+			else
+				throw new IllegalArgumentException(textBundle.get("Disk.ResizeDiskError")); // FIXME - need a better explanation of this
+		}
 		if (is2img == true || diskImage.length == APPLE_800KB_DISK + offset || diskImage.length == APPLE_5MB_HARDDISK + offset || diskImage.length == APPLE_10MB_HARDDISK + offset || diskImage.length == APPLE_20MB_HARDDISK + offset || diskImage.length == APPLE_32MB_HARDDISK + offset) {
 			diskImageManager = new UniversalDiskImageLayout(diskImage);
+		} else if (isDC42) {
+			diskImageManager = new ByteArrayImageLayout(diskImageDC42);
 		} else {
 			diskImageManager = new ByteArrayImageLayout(diskImage);
 		}

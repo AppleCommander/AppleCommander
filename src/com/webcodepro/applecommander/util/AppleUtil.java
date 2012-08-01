@@ -111,6 +111,20 @@ public class AppleUtil {
 	}
 	
 	/**
+	 * Compute the value of a 4 byte value. This is specific to DC42 processing.
+	 * Pulls value from buffer given the offset, MSB first. 
+	 */
+	public static long getLongValue(byte[] buffer, int offset) {
+		if (offset+3 > buffer.length) {
+			return 0;
+		}
+		return getUnsignedByte(buffer[offset+3]) 
+			+ getUnsignedByte(buffer[offset+2])*256
+			+ getUnsignedByte(buffer[offset+1])*65536
+			+ getUnsignedByte(buffer[offset])*16777216;
+	}
+	
+	/**
 	 * Set the value of a 3 byte value.
 	 */
 	public static void set3ByteValue(byte[] buffer, int offset, int value) {
