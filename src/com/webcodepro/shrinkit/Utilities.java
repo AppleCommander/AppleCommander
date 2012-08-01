@@ -23,10 +23,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
 
 import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
@@ -46,36 +44,45 @@ public class Utilities
 {
 	/**
 	 * Interpret a NuFile/NuFX/Shrinkit archive as a full disk image.
-	 * Note that a disk within a shk (Disk Disintegrator Deluxe 5.0_D1.SHK) should
-	 * be interpreted directly as that disk image.
-	 *
-	 * @return byte[] buffer containing full disk of data; null if unable to read
-	 * @throws IllegalArgumentException if the filename is not able to be read
-	 * @throws IOException the file has some malformed-ness about it
+	 * 
+	 * @return byte[] buffer containing full disk of data; null if unable to
+	 *         read
+	 * @throws IllegalArgumentException
+	 *             if the filename is not able to be read
+	 * @throws IOException
+	 *             the file has some malformed-ness about it
 	 */
-	public static byte[] unpackSHKFile(String fileName) throws IOException {
+	public static byte[] unpackSHKFile(String fileName) throws IOException
+	{
 		TextBundle textBundle = StorageBundle.getInstance();
 		byte dmgBuffer[] = null;
 		File file = new File(fileName);
-		if (file.isDirectory() || !file.canRead()) {
+		if (file.isDirectory() || !file.canRead())
+		{
 			throw new IllegalArgumentException(textBundle.format("NotAFile", fileName, 1)); //$NON-NLS-1$ 
 		}
 		InputStream is = new FileInputStream(file);
 		NuFileArchive a = new NuFileArchive(is);
+		// If we need to build a disk to hold files (i.e. .shk vs. .sdk), how big would that disk need to be?
 		int newDiskSize = Disk.sizeToFit(a.getArchiveSize());
 		ByteArrayImageLayout layout = new ByteArrayImageLayout(newDiskSize);
 		ImageOrder imageOrder = new ProdosOrder(layout);
-		FormattedDisk[] disks = ProdosFormatDisk.create(fileName, "APPLECOMMANDER", imageOrder);
-		ProdosFormatDisk pdDisk = (ProdosFormatDisk)disks[0];
+		// Create a new disk in anticipation of unpacking files - we don't actually know if we'll need it yet, though.
+		FormattedDisk[] disks = ProdosFormatDisk.create(fileName, "APPLECOMMANDER", imageOrder); //$NON-NLS-1$
+		// Make some typing easier... get a handle to the disk we created, with ProdosFormatDisk extensions. 
+		ProdosFormatDisk pdDisk = (ProdosFormatDisk) disks[0];
 		ThreadRecord dataFork, resourceFork;
-		for (HeaderBlock b : a.getHeaderBlocks()) {
+		for (HeaderBlock b : a.getHeaderBlocks())
+		{
 			ProdosFileEntry newFile = null;
 			dataFork = null;
 			resourceFork = null;
-			for (ThreadRecord r : b.getThreadRecords()) {
+			for (ThreadRecord r : b.getThreadRecords())
+			{
 				try
 				{
-					switch (r.getThreadKind()) {
+					switch (r.getThreadKind())
+					{
 					case ASCII_TEXT:
 						break;
 					case ALLOCATED_SPACE:
@@ -85,7 +92,7 @@ public class Utilities
 					case CREATE_DIRECTORY:
 						break;
 					case DATA_FORK:
-						// This is a normal-ish file
+						// This is a normal-ish file - hang on to the thread record
 						dataFork = r;
 						break;
 					case DISK_IMAGE:
@@ -98,7 +105,6 @@ public class Utilities
 					case FILENAME:
 						break;
 					default:
-						System.out.println("ERRR, What?");
 						// Hmmm, this should not occur - but let us not fret about it.
 						break;
 					}
@@ -110,46 +116,60 @@ public class Utilities
 			}
 			try
 			{
-			if (dataFork != null) {
-				newFile = (ProdosFileEntry) pdDisk.createFile();
-				if (newFile != null) {
-					if (resourceFork != null) {
-						newFile.setFileData(readThread(dataFork),readThread(resourceFork));
-						newFile.setStorageType(0x05);
-					} else {
-						newFile.setFileData(readThread(dataFork));
+				if (dataFork != null)
+				{
+					newFile = (ProdosFileEntry) pdDisk.createFile();
+					if (newFile != null)
+					{
+						if (resourceFork != null)
+						{
+							// If we have a resource fork in addition to a data fork,
+							// then we've got a GSOS storage type $5. 
+							newFile.setFileData(readThread(dataFork), readThread(resourceFork));
+							newFile.setStorageType(0x05);
+						}
+						else
+						{
+							// We have a traditional file, no resource fork.
+							newFile.setFileData(readThread(dataFork));
+						}
+						newFile.setFilename(b.getFilename());
+						newFile.setFiletype(b.getFileType());
+						newFile.setAuxiliaryType((int) b.getExtraType());
+						// TODO: dates differ by a month or so from what CiderPress reports.  
+						newFile.setCreationDate(b.getCreateWhen());
+						newFile.setLastModificationDate(b.getModWhen());
+						newFile = null;
 					}
-					newFile.setFilename(b.getFilename());
-					newFile.setFiletype(b.getFileType());
-					newFile.setAuxiliaryType((int)b.getExtraType());
-					newFile.setCreationDate(b.getCreateWhen());
-					newFile.setLastModificationDate(b.getModWhen());
-					newFile = null;
 				}
 			}
-			} 
 			catch (Exception ex)
 			{
-				System.out.println(ex);				
+				System.out.println(ex);
 			}
 		}
 		if (dmgBuffer != null)
+		{
+			// Disk images take precedence... if they have both disk images and files, just return the disk.
 			return dmgBuffer;
+		}
 		else
-			return imageOrder.readBytes(0,newDiskSize);
+			return imageOrder.readBytes(0, newDiskSize);
 	}
 
 	/**
 	 * readThread
 	 * 
 	 * Reads the data from a thread
+	 * 
 	 * @returns byte[] buffer
 	 */
-	public static byte[] readThread(ThreadRecord thread) throws IOException {
+	public static byte[] readThread(ThreadRecord thread) throws IOException
+	{
 		thread.readThreadData(new LittleEndianByteInputStream(thread.getRawInputStream()));
 		InputStream fis = thread.getInputStream();
-		byte[] buffer = new byte[(int)(thread.getThreadEof())];
-		fis.read(buffer,0,buffer.length);
+		byte[] buffer = new byte[(int) (thread.getThreadEof())];
+		fis.read(buffer, 0, buffer.length);
 		fis.close();
 		return buffer;
 	}
