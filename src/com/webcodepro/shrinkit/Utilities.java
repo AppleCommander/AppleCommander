@@ -67,8 +67,11 @@ public class Utilities
 		ImageOrder imageOrder = new ProdosOrder(layout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(fileName, "APPLECOMMANDER", imageOrder);
 		ProdosFormatDisk pdDisk = (ProdosFormatDisk)disks[0];
+		ThreadRecord dataFork, resourceFork;
 		for (HeaderBlock b : a.getHeaderBlocks()) {
 			ProdosFileEntry newFile = null;
+			dataFork = null;
+			resourceFork = null;
 			for (ThreadRecord r : b.getThreadRecords()) {
 				try
 				{
@@ -83,19 +86,19 @@ public class Utilities
 						break;
 					case DATA_FORK:
 						// This is a normal-ish file
-						newFile = (ProdosFileEntry) pdDisk.createFile();
-						if (newFile != null) {
-							newFile.setFileData(readThread(r));
-						}
+						dataFork = r;
 						break;
 					case DISK_IMAGE:
 						dmgBuffer = readThread(r);
 						break;
 					case RESOURCE_FORK:
+						// This is a resource fork - we're talking GSOS FST here
+						resourceFork = r;
 						break;
 					case FILENAME:
 						break;
 					default:
+						System.out.println("ERRR, What?");
 						// Hmmm, this should not occur - but let us not fret about it.
 						break;
 					}
@@ -105,13 +108,29 @@ public class Utilities
 					System.out.println(ex);
 				}
 			}
-			if (newFile != null) {
-				newFile.setFilename(b.getFilename());
-				newFile.setFiletype(b.getFileType());
-				newFile.setAuxiliaryType((int)b.getExtraType());
-				newFile.setCreationDate(b.getCreateWhen());
-				newFile.setLastModificationDate(b.getModWhen());
-				newFile = null;
+			try
+			{
+			if (dataFork != null) {
+				newFile = (ProdosFileEntry) pdDisk.createFile();
+				if (newFile != null) {
+					if (resourceFork != null) {
+						newFile.setFileData(readThread(dataFork),readThread(resourceFork));
+						newFile.setStorageType(0x05);
+					} else {
+						newFile.setFileData(readThread(dataFork));
+					}
+					newFile.setFilename(b.getFilename());
+					newFile.setFiletype(b.getFileType());
+					newFile.setAuxiliaryType((int)b.getExtraType());
+					newFile.setCreationDate(b.getCreateWhen());
+					newFile.setLastModificationDate(b.getModWhen());
+					newFile = null;
+				}
+			}
+			} 
+			catch (Exception ex)
+			{
+				System.out.println(ex);				
 			}
 		}
 		if (dmgBuffer != null)

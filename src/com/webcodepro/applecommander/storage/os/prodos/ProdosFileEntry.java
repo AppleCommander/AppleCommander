@@ -208,6 +208,14 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	}
 
 	/**
+	 * Indicate if this is a GEOS file.
+	 */
+	public boolean isForkedFile()	{
+		int storageType = AppleUtil.getUnsignedByte(readFileEntry()[0x00]);
+		return ((storageType & 0x50) == 0x50);
+	}
+
+	/**
 	 * Get the key pointer.  This is either the data block (seedling),
 	 * index block (sapling), or master index block (tree).
 	 */
@@ -497,6 +505,15 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 */
 	public void setFileData(byte[] data) throws DiskFullException {
 		getDisk().setFileData(this, data);
+	}
+
+	/**
+	 * Set the file data, with the expectation that both data and resource forks
+	 * are present (storage type $05).  See:
+	 * http://www.1000bit.it/support/manuali/apple/technotes/pdos/tn.pdos.25.html
+	 */
+	public void setFileData(byte[] dataFork, byte[] resourceFork) throws DiskFullException {
+		getDisk().setFileData(this, dataFork, resourceFork);
 	}
 
 	/**

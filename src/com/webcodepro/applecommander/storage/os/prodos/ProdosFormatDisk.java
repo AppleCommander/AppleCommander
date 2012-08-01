@@ -721,6 +721,178 @@ public class ProdosFormatDisk extends FormattedDisk {
 	
 	/**
 	 * Set the data associated with the specified ProdosFileEntry into sectors
+	 * on the disk.  Automatically grows the filesystem structures from seedling
+	 * to sapling to tree. 
+	 */
+	// TODO: the writing of a single fork can be factored out... it is very common to routines nearby.
+	protected void setFileData(ProdosFileEntry fileEntry, byte[] dataFork, byte[] resourceFork) 
+		throws DiskFullException {
+
+		// compute free space and see if the data will fit!
+		int numberOfDataBlocks = (dataFork.length + BLOCK_SIZE - 1) / BLOCK_SIZE +
+			(resourceFork.length + BLOCK_SIZE - 1) / BLOCK_SIZE;
+		int numberOfBlocks = numberOfDataBlocks;
+		if (numberOfBlocks > 1) {
+			numberOfBlocks+= ((numberOfDataBlocks-1) / 256) + 1;	// that's 128K
+			if (numberOfDataBlocks > 256) {
+				numberOfBlocks++;
+			}
+		}
+		if (numberOfBlocks > getFreeBlocks() + fileEntry.getBlocksUsed()) {
+			throw new DiskFullException(textBundle.
+					format("ProdosFormatDisk.NotEnoughSpaceOnDiskError", //$NON-NLS-1$
+							numberOfBlocks, getFreeBlocks()));
+		}
+		// free "old" data and just rewrite stuff...
+		freeBlocks(fileEntry);
+		byte[] bitmap = readVolumeBitMap();
+		int blockNumber = fileEntry.getKeyPointer();
+		if (blockNumber == 0) {
+			blockNumber = findFreeBlock(bitmap);
+		}
+		int blockCount = 0;
+		int extendedKeyBlockNumber = findFreeBlock(bitmap);
+		setBlockUsed(bitmap, extendedKeyBlockNumber);
+		byte[] extendedKeyBlockData = new byte[BLOCK_SIZE];
+		int indexBlockNumber = 0;
+		byte[] indexBlockData = null;
+		int masterIndexBlockNumber = 0;
+		byte[] masterIndexBlockData = new byte[BLOCK_SIZE];
+
+		int offset = 0;
+		numberOfDataBlocks = (dataFork.length + BLOCK_SIZE - 1) / BLOCK_SIZE ;
+		while (offset < dataFork.length) {
+			blockNumber = findFreeBlock(bitmap);
+			setBlockUsed(bitmap, blockNumber);
+			blockCount++;
+			byte[] blockData = new byte[BLOCK_SIZE];
+			int length = Math.min(BLOCK_SIZE, dataFork.length - offset);
+			System.arraycopy(dataFork,offset,blockData,0,length);
+			writeBlock(blockNumber, blockData);
+			if (numberOfDataBlocks > 1) {
+				// growing to a tree file
+				if (offset > 0 && (offset / BLOCK_SIZE) % 256 == 0) {
+					if (masterIndexBlockNumber == 0) {
+						masterIndexBlockNumber = findFreeBlock(bitmap);
+						setBlockUsed(bitmap, masterIndexBlockNumber);
+						blockCount++;
+					}
+					writeBlock(indexBlockNumber, indexBlockData);
+					indexBlockData = null;
+					indexBlockNumber = 0;
+				}
+				// new index block
+				if (indexBlockData == null) {	// sapling files
+					indexBlockNumber = findFreeBlock(bitmap);
+					indexBlockData = new byte[BLOCK_SIZE];
+					setBlockUsed(bitmap, indexBlockNumber);
+					blockCount++;
+					// This is only used for Tree files (but we always record it):
+					int position = (offset / (BLOCK_SIZE * 256));
+					byte low = (byte)(indexBlockNumber % 256);
+					byte high = (byte)(indexBlockNumber / 256);
+					masterIndexBlockData[position] = low;
+					masterIndexBlockData[position + 0x100] = high;
+				}
+				// record last block position in index block
+				int position = (offset / BLOCK_SIZE) % 256;
+				byte low = (byte)(blockNumber % 256);
+				byte high = (byte)(blockNumber / 256);
+				indexBlockData[position] = low;
+				indexBlockData[position + 0x100] = high;
+			}
+			offset+= BLOCK_SIZE;
+		}
+		AppleUtil.setWordValue(extendedKeyBlockData,0x03,numberOfDataBlocks); // Set the number of blocks used
+		AppleUtil.set3ByteValue(extendedKeyBlockData,0x05,	dataFork.length); // Set the number of bytes used
+		if (numberOfDataBlocks == 1) {
+			extendedKeyBlockData[0] = 1; // Set the seedling ProDOS storage type
+			AppleUtil.setWordValue(extendedKeyBlockData,1,blockNumber); // Set the master block number
+		} else if (numberOfDataBlocks <= 256) {
+			writeBlock(indexBlockNumber, indexBlockData);
+			AppleUtil.setWordValue(extendedKeyBlockData,1,indexBlockNumber); // Set the master block number
+			extendedKeyBlockData[0] = 2; // Set the sapling ProDOS storage type
+		} else {
+			writeBlock(indexBlockNumber, indexBlockData);
+			writeBlock(masterIndexBlockNumber, masterIndexBlockData);
+			AppleUtil.setWordValue(extendedKeyBlockData,1,masterIndexBlockNumber); // Set the master block number
+			extendedKeyBlockData[0] = 3; // Set the tree ProDOS storage type
+		}
+		blockCount++; // To account for extendedKeyBlock 
+
+		offset = 0;
+		indexBlockNumber = 0;
+		indexBlockData = null;
+		masterIndexBlockNumber = 0;
+		numberOfDataBlocks = (resourceFork.length + BLOCK_SIZE - 1) / BLOCK_SIZE;
+		while (offset < resourceFork.length) {
+			if (blockCount > 0) blockNumber = findFreeBlock(bitmap);
+			setBlockUsed(bitmap, blockNumber);
+			blockCount++;
+			byte[] blockData = new byte[BLOCK_SIZE];
+			int length = Math.min(BLOCK_SIZE, resourceFork.length - offset);
+			System.arraycopy(resourceFork,offset,blockData,0,length);
+			writeBlock(blockNumber, blockData);
+			if (numberOfDataBlocks > 1) {
+				// growing to a tree file
+				if (offset > 0 && (offset / BLOCK_SIZE) % 256 == 0) {
+					if (masterIndexBlockNumber == 0) {
+						masterIndexBlockNumber = findFreeBlock(bitmap);
+						setBlockUsed(bitmap, masterIndexBlockNumber);
+						blockCount++;
+					}
+					writeBlock(indexBlockNumber, indexBlockData);
+					indexBlockData = null;
+					indexBlockNumber = 0;
+				}
+				// new index block
+				if (indexBlockData == null) {	// sapling files
+					indexBlockNumber = findFreeBlock(bitmap);
+					indexBlockData = new byte[BLOCK_SIZE];
+					setBlockUsed(bitmap, indexBlockNumber);
+					blockCount++;
+					// This is only used for Tree files (but we always record it):
+					int position = (offset / (BLOCK_SIZE * 256));
+					byte low = (byte)(indexBlockNumber % 256);
+					byte high = (byte)(indexBlockNumber / 256);
+					masterIndexBlockData[position] = low;
+					masterIndexBlockData[position + 0x100] = high;
+				}
+				// record last block position in index block
+				int position = (offset / BLOCK_SIZE) % 256;
+				byte low = (byte)(blockNumber % 256);
+				byte high = (byte)(blockNumber / 256);
+				indexBlockData[position] = low;
+				indexBlockData[position + 0x100] = high;
+			}
+			offset+= BLOCK_SIZE;
+		}
+		AppleUtil.setWordValue(extendedKeyBlockData,0x103,numberOfDataBlocks); // Set the number of blocks used
+		AppleUtil.set3ByteValue(extendedKeyBlockData,0x105,	resourceFork.length); // Set the number of bytes used
+		if (numberOfDataBlocks == 1) {
+			extendedKeyBlockData[0x100] = 1; // Set the seedling ProDOS storage type
+			AppleUtil.setWordValue(extendedKeyBlockData,0x101,blockNumber); // Set the master block number
+		} else if (numberOfDataBlocks <= 256) {
+			writeBlock(indexBlockNumber, indexBlockData);
+			AppleUtil.setWordValue(extendedKeyBlockData,0x101,indexBlockNumber); // Set the master block number
+			extendedKeyBlockData[0x100] = 2; // Set the sapling ProDOS storage type
+		} else {
+			writeBlock(indexBlockNumber, indexBlockData);
+			writeBlock(masterIndexBlockNumber, masterIndexBlockData);
+			AppleUtil.setWordValue(extendedKeyBlockData,0x101,masterIndexBlockNumber); // Set the master block number
+			extendedKeyBlockData[0x100] = 3; // Set the tree ProDOS storage type
+		}
+		writeBlock(extendedKeyBlockNumber, extendedKeyBlockData);
+
+		fileEntry.setKeyPointer(extendedKeyBlockNumber);
+		fileEntry.setBlocksUsed(blockCount);
+		fileEntry.setEofPosition(dataFork.length+resourceFork.length);
+		fileEntry.setLastModificationDate(new Date());
+		writeVolumeBitMap(bitmap);
+	}
+	
+	/**
+	 * Set the data associated with the specified ProdosFileEntry into sectors
 	 * on the disk.  Take GEOS file structures into account.
 	 */
 	protected void setGEOSFileData(ProdosFileEntry fileEntry, byte[] fileData) 
@@ -1153,6 +1325,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory()
 	 */
 	public DirectoryEntry createDirectory() throws DiskFullException {
+		System.out.println("What?!?");
 		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$
 	}
 }
