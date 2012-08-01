@@ -1325,7 +1325,6 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory()
 	 */
 	public DirectoryEntry createDirectory() throws DiskFullException {
-		System.out.println("What?!?");
 		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$
 	}
 }
