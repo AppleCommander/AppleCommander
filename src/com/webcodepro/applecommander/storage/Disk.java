@@ -94,6 +94,7 @@ public class Disk {
 	private TextBundle textBundle = StorageBundle.getInstance();
 	private String filename;
 	private boolean newImage = false;
+	private boolean isDC42 = false;
 	private ByteArrayImageLayout diskImageManager;
 	private ImageOrder imageOrder = null;
 
@@ -196,15 +197,13 @@ public class Disk {
 			diskImage = diskImageByteArray.toByteArray();
 		}
 		int offset = 0;
-		boolean is2img = false, isDC42 = false;
+		boolean is2img = false;
 		/* Does it have the 2IMG header? */
-		if ((diskImage[00] == 0x32) && (diskImage[01] == 0x49) && (diskImage[02] == 0x4D) && (diskImage[03]) == 0x47) {
+		if ((diskImage[0] == 0x32) && (diskImage[1] == 0x49) && (diskImage[2] == 0x4D) && (diskImage[3]) == 0x47) {
 			is2img = true;
-			offset = UniversalDiskImageLayout.OFFSET;
 		}
 		/* Does it have the DiskCopy 4.2 header? */
-		else if (((diskImage[0x52] == 0x01) && (diskImage[0x53] == 0x00)) &&
-				((diskImage[0x51] == 0x02) || (diskImage[0x51] == 0x22) || (diskImage[0x51] == 0x24))) {
+		else if (Disk.isDC42(diskImage)) {
 			isDC42 = true;
 			offset = 84;
 			long end = AppleUtil.getLongValue(diskImage,0x40);
@@ -214,9 +213,13 @@ public class Disk {
 				diskImageManager = new ByteArrayImageLayout(diskImageDC42);
 			}
 			else
-				throw new IllegalArgumentException(textBundle.get("Disk.ResizeDiskError")); // FIXME - need a better explanation of this
+				throw new IllegalArgumentException(textBundle.get("CommandLineDC42Bad")); //$NON-NLS-1$
 		}
-		if (is2img == true || diskImage.length == APPLE_800KB_DISK + offset || diskImage.length == APPLE_5MB_HARDDISK + offset || diskImage.length == APPLE_10MB_HARDDISK + offset || diskImage.length == APPLE_20MB_HARDDISK + offset || diskImage.length == APPLE_32MB_HARDDISK + offset) {
+		if (is2img == true || diskImage.length == APPLE_800KB_DISK + UniversalDiskImageLayout.OFFSET 
+				|| diskImage.length == APPLE_5MB_HARDDISK + UniversalDiskImageLayout.OFFSET 
+				|| diskImage.length == APPLE_10MB_HARDDISK + UniversalDiskImageLayout.OFFSET 
+				|| diskImage.length == APPLE_20MB_HARDDISK + UniversalDiskImageLayout.OFFSET 
+				|| diskImage.length == APPLE_32MB_HARDDISK + UniversalDiskImageLayout.OFFSET) {
 			diskImageManager = new UniversalDiskImageLayout(diskImage);
 		} else if (isDC42) {
 			diskImageManager = new ByteArrayImageLayout(diskImageDC42);
@@ -360,8 +363,8 @@ public class Disk {
 	}
 
 	/**
-	 * Returns the diskImage.
-	 * @return byte[]
+	 * Returns the diskImageManager.
+	 * @return ByteArrayImageLayout diskImageManager The disk Image Manager of this disk
 	 */
 	public ByteArrayImageLayout getDiskImageManager() {
 		if (imageOrder != null) {
@@ -748,7 +751,21 @@ public class Disk {
 			&& vtoc[0x01] == 7		// expect catalog to start on sector 7
 			&& vtoc[0x0f] == -115;		// expect 0x8d's every 16 bytes
 	}
-	
+
+	/**
+	 * Indicates if a given byte sequence is likely to be a DiskCopy 42 stream.
+	 * 
+	 * @return boolean liklihood it is a DC42 stream
+	 */
+	private static boolean isDC42(byte[] buffer) {
+		boolean truth = ((buffer[0x52] == 0x01) && (buffer[0x53] == 0x00)) &&
+		((buffer[0x51] == 0x02) || (buffer[0x51] == 0x22) || (buffer[0x51] == 0x24));
+		return (((buffer[0x52] == 0x01) && (buffer[0x53] == 0x00)) &&
+				((buffer[0x51] == 0x02) || (buffer[0x51] == 0x22) || (buffer[0x51] == 0x24)));
+	}
+	public boolean isDC42() {
+		return isDC42;
+	}
 	/**
 	 * Indicates if the disk has changed. Triggered when data is
 	 * written and cleared when data is saved.
@@ -766,7 +783,7 @@ public class Disk {
 	}
 	
 	/**
-	 * Answer with the phyiscal ordering of the disk.
+	 * Answer with the physical ordering of the disk.
 	 */
 	public ImageOrder getImageOrder() {
 		return imageOrder;

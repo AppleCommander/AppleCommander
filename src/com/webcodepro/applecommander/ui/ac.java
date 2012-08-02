@@ -77,8 +77,8 @@ import com.webcodepro.applecommander.util.TextBundle;
  * -pro800 &lt;imagename&gt; &lt;volname&gt; create an 800K ProDOS image.
  * -pas140 &lt;imagename&gt; &lt;volname&gt; create a 140K Pascal image.
  * -pas800 &lt;imagename&gt; &lt;volname&gt; create an 800K Pascal image.
- * -unshrink &lt;shrinksdk&gt; &lt;imagename&gt; uncompress a ShrinkIt disk image
- *           into a normal disk image.
+ * -convert &lt;filename&gt; &lt;imagename&gt; uncompress a ShrinkIt file or disk image
+ *           or convert a DiskCopy 4.2 image into a ProDOS disk image.
  * </pre>
  * 
  * @author John B. Matthews
@@ -129,8 +129,8 @@ public class ac {
 				createProDisk(args[1], args[2], Disk.APPLE_140KB_DISK);
 			} else if ("-pro800".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				createProDisk(args[1], args[2], Disk.APPLE_800KB_DISK);
-			} else if ("-unshrink".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				unshrink(args[1], args[2]);
+			} else if ("-convert".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				convert(args[1], args[2]);
 			} else {
 				help();
 			}
@@ -176,7 +176,7 @@ public class ac {
 	}
 
 	/**
-	 * Put &lt;stdin> into the file named fileName on the disk named imageName;
+	 * Put &lt;stdin&gt. into the file named fileName on the disk named imageName;
 	 * Note: only volume level supported; input size unlimited.
 	 */
 	static void putFile(String imageName, Name name, String fileType,
@@ -189,9 +189,11 @@ public class ac {
 			buf.write(inb, 0, byteCount);
 		}
 		Disk disk = new Disk(imageName);
-		if (!disk.isSDK()) {
-			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-			FormattedDisk formattedDisk = formattedDisks[0];
+		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+		if (formattedDisks == null)
+			System.out.println("Dude, formattedDisks is null!");
+		FormattedDisk formattedDisk = formattedDisks[0];
+		if (!disk.isSDK() && !disk.isDC42()) {
 			FileEntry entry = name.createEntry(formattedDisk);
 			if (entry != null) {
 				entry.setFiletype(fileType);
@@ -251,7 +253,7 @@ public class ac {
 		throws IOException {
 		Disk disk = new Disk(imageName);
 		Name name = new Name(fileName);
-		if (!disk.isSDK()) {
+		if (!disk.isSDK() && !disk.isDC42()) {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 			for (int i = 0; i < formattedDisks.length; i++) {
 				FormattedDisk formattedDisk = formattedDisks[i];
@@ -456,7 +458,7 @@ public class ac {
 	static void setFileLocked(String imageName, Name name,
 		boolean lockState) throws IOException {
 		Disk disk = new Disk(imageName);
-		if (!disk.isSDK()) {
+		if (!disk.isSDK() && !disk.isDC42()) {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 			for (int i = 0; i < formattedDisks.length; i++) {
 				FormattedDisk formattedDisk = formattedDisks[i];
@@ -481,7 +483,7 @@ public class ac {
 	public static void setDiskName(String imageName, String volName)
 		throws IOException {
 		Disk disk = new Disk(imageName);
-		if (!disk.isSDK()) {
+		if (!disk.isSDK() && !disk.isDC42()) {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 			FormattedDisk formattedDisk = formattedDisks[0];
 			formattedDisk.setDiskName(volName);
@@ -525,23 +527,25 @@ public class ac {
 	}
 
 	/**
-	 * Unshrink the ShrinkIt data depending on what kind it is:
+	 * Unshrink or otherwise interpret incoming data depending on what kind it is:
 	 * 
+	 * DiskCopy 4.2 image - convert it to a ProDOS image
 	 * SDK disk image - unpack it to a disk image
 	 * ShrinkIt file bundle [future] - unpack files onto a disk image sized to fit
 	 */
-	static void unshrink(String shrinkName, String imageName)
+	static void convert(String shrinkName, String imageName)
 		throws IOException {
-		unshrink(shrinkName, imageName, 0);
+		convert(shrinkName, imageName, 0);
 	}
 
 	/**
-	 * Unshrink the ShrinkIt data depending on what kind it is:
+	 * Unshrink or otherwise interpret incoming data depending on what kind it is:
 	 * 
+	 * DiskCopy 4.2 image - convert it to a ProDOS image
 	 * SDK disk image - unpack it to a disk image
-	 * ShrinkIt file bundle [future] - unpack files onto a disk image of requested size
+	 * ShrinkIt file bundle [future] - unpack files onto a disk image sized to fit
 	 */
-	static void unshrink(String shrinkName, String imageName, int imageSize)
+	static void convert(String shrinkName, String imageName, int imageSize)
 		throws IOException {
 		Disk disk = new Disk(shrinkName);
 		disk.setFilename(imageName);

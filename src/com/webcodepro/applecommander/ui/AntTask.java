@@ -45,7 +45,7 @@ public class AntTask extends Task
 		 * dos140: <imagename> <volname>
 		 * pro140/pro800: <imagename> <volname>
 		 * pas140/pas800: <imagename> <volname>
-		 * unshrink: <filename> <imagename>
+		 * convert: <filename> <imagename>
 		 */
 		if (_command.equals("i"))
 		{
@@ -81,7 +81,9 @@ public class AntTask extends Task
 			try
 			{
 				if (_command.equals("p"))
+				{
 					com.webcodepro.applecommander.ui.ac.putFile(_input, _imageName, _fileName, _type, _address);
+				}
 				else
 					com.webcodepro.applecommander.ui.ac.putCC65(_input, _imageName, _fileName, _type);
 			}
@@ -220,11 +222,11 @@ public class AntTask extends Task
 					System.out.println(io.getMessage());
 			}
 		}
-		else if (_command.equals("unshrink"))
+		else if (_command.equals("convert"))
 		{
 			try
 			{
-				com.webcodepro.applecommander.ui.ac.unshrink(_fileName, _imageName);
+				com.webcodepro.applecommander.ui.ac.convert(_fileName, _imageName);
 			}
 			catch (IOException io)
 			{

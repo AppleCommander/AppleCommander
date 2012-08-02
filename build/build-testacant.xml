@@ -41,9 +41,9 @@
 		<!-- Now, copy a file to the images -->
 		<appleCommander command="p" input="manifest.mf" imagename="${dos140image}" filename="MANIFEST" type="T" />
 		<appleCommander command="p" input="manifest.mf" imagename="${pas140image}" filename="MANIFEST" type="text" />
-		<appleCommander command="p" input="manifest.mf" imagename="${pas800image}" filename="MANIFEST" type="text" />
+		<appleCommander command="p" input="manifest.mf" failonerror="false" imagename="${pas800image}" filename="MANIFEST" type="text" />
 		<appleCommander command="p" input="manifest.mf" imagename="${pro140image}" filename="MANIFEST" type="txt" />
-		<appleCommander command="p" input="${pas140image}" imagename="${pro800image}" filename="BIG140IMG" type="bin" />
+		<appleCommander command="p" input="${pas140image}" failonerror="false" imagename="${pro800image}" filename="BIG140IMG" type="bin" />
 		<!-- Now, copy a file that should not fit on the images -->
 		<echo message="Here we expect messages from [appleCommander] complaining about file space requirements not being met..."/>
 		<appleCommander failonerror="false" command="p" input="${pro800image}" imagename="${dos140image}" filename="BLOWUP" type="T" />
@@ -81,10 +81,8 @@
 		<appleCommander command="g" imagename="${pro140image}" filename="TEST" />
 		<appleCommander command="x" imagename="${pro140image}" outputpath="${projdir}/work/dist" />
 		<echo message="Files should be exported to the current working directory now." />
-		<!-- Now, try out unshrinking -->
-		<!--
-		<appleCommander command="unshrink" filename="DiskCommander.GS.sdk" imagename="${projdir}/work/dist/test.po" />
-		-->
+		<!-- Now, try out converting -->
+		<appleCommander command="convert" filename="C:\David\Asimov\images\gs\utils\DiskCommander.GS.sdk" imagename="${projdir}/work/dist/test.po" />
 	</target>
 
 	<target name="clean" description="Get rid of testing artifacts.">
