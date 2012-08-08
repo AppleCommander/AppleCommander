@@ -574,7 +574,7 @@ public class ac {
 			"CommandLineHelp", AppleCommander.VERSION)); //$NON-NLS-1$
 	}
 
-	private static class Name {
+	public static class Name {
 		private String fullName;
 		private String name;
 		private String[] path;
@@ -616,15 +616,29 @@ public class ac {
 				return formattedDisk.createFile();
 			}
 			List files = formattedDisk.getFiles();
-			DirectoryEntry dir = null;
+			DirectoryEntry dir = null, parentDir = null;
 			for (int i = 0; i < path.length - 1; i++) {
 				String dirName = path[i];
+				dir = null;
 				for (int j = 0; j < files.size(); j++) {
 					FileEntry entry = (FileEntry) files.get(j);
 					String entryName = entry.getFilename();
-					if (entry.isDirectory() && dirName.equalsIgnoreCase(entryName)) {
+					if (!entry.isDeleted() && entry.isDirectory() && dirName.equalsIgnoreCase(entryName)) {
 						dir = (DirectoryEntry) entry;
+						parentDir = dir;
 						files = dir.getFiles();
+					}
+				}
+				if (dir == null) {
+					if (parentDir != null) {
+						// If there's a parent directory in the mix, add
+						// the new child directory to that.
+						dir = parentDir.createDirectory(dirName);
+						parentDir = dir;
+					} else {
+						// Add the directory to the root of the filesystem
+						dir = formattedDisk.createDirectory(dirName);
+						parentDir = dir;
 					}
 				}
 			}

@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
@@ -32,6 +33,7 @@ import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
+import com.webcodepro.applecommander.ui.ac.Name;
 import com.webcodepro.applecommander.util.TextBundle;
 import com.webcodepro.shrinkit.io.LittleEndianByteInputStream;
 
@@ -118,7 +120,8 @@ public class Utilities
 			{
 				if (dataFork != null)
 				{
-					newFile = (ProdosFileEntry) pdDisk.createFile();
+					Name name = new Name(b.getFilename());
+					newFile = (ProdosFileEntry)name.createEntry(pdDisk);
 					if (newFile != null)
 					{
 						if (resourceFork != null)

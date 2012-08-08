@@ -69,14 +69,14 @@ public class ProdosCommonDirectoryHeader extends ProdosCommonEntry {
 	}
 	
 	/**
-	 * Get the number of active entries in the volume directory.
+	 * Get the number of active entries in the directory.
 	 */
 	public int getFileCount() {
 		return AppleUtil.getWordValue(readFileEntry(), 0x21);
 	}
 
 	/**
-	 * Set the number of active entries in the volume directory.
+	 * Set the number of active entries in the directory.
 	 */
 	public void setFileCount(int fileCount) {
 		byte[] data = readFileEntry();
@@ -119,14 +119,14 @@ public class ProdosCommonDirectoryHeader extends ProdosCommonEntry {
 	}
 	
 	/**
-	 * Get the total number of blocks on this volume.
+	 * Get the total number of blocks on this volume (only valid for volume directory block).
 	 */
 	public int getTotalBlocks() {
 		return AppleUtil.getWordValue(readFileEntry(), 0x25);
 	}
 
 	/**
-	 * Set the total number of blocks on this volume.
+	 * Set the total number of blocks on this volume (only valid for volume directory block).
 	 */
 	public void setTotalBlocks(int totalBlocks) {
 		byte[] data = readFileEntry();

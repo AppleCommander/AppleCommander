@@ -81,7 +81,7 @@ public class ProdosCommonEntry {
 		System.arraycopy(data, offset, entry, 0, ENTRY_LENGTH);
 		return entry;
 	}
-	
+
 	/**
 	 * Indicates if this entry is empty - filled with $00.
 	 */
@@ -160,6 +160,20 @@ public class ProdosCommonEntry {
 	 */
 	public void setTreeFile() {
 		setStorageType(0x03);
+	}
+
+	/**
+	 * Indicates if this is a subdirectory entry.
+	 */
+	public boolean isSubdirectory() {
+		return getStorageType() == 0x0d;
+	}
+
+	/**
+	 * Sets the storage type to a subdirectory entry.
+	 */
+	public void setSubdirectory() {
+		setStorageType(0x0d);
 	}
 
 	/**

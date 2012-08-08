@@ -745,4 +745,12 @@ public class DosFormatDisk extends FormattedDisk {
 	public DirectoryEntry createDirectory() throws DiskFullException {
 		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$
 	}
+
+	/**
+	 * Create a new DirectoryEntry.
+	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory()
+	 */
+	public DirectoryEntry createDirectory(String name) throws DiskFullException	{
+		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$
+	}
 }

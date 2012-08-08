@@ -47,7 +47,7 @@ public interface DirectoryEntry {
 	/**
 	 * Create a new DirectoryEntry.
 	 */
-	public DirectoryEntry createDirectory() throws DiskFullException;
+	public DirectoryEntry createDirectory(String name) throws DiskFullException;
 
 	/**
 	 * Identify if additional directories can be created.  This

@@ -1315,7 +1315,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	public void setFileData(FileEntry fileEntry, byte[] fileData) throws DiskFullException {
 		setFileData((ProdosFileEntry)fileEntry, fileData);
 	}
-	
+
 	protected ProdosVolumeDirectoryHeader getVolumeHeader() {
 		return volumeHeader;
 	}
@@ -1324,7 +1324,81 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * Create a new DirectoryEntry.
 	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory()
 	 */
-	public DirectoryEntry createDirectory() throws DiskFullException {
-		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$
+	public DirectoryEntry createDirectory(String name) throws DiskFullException {
+		return createDirectory(getVolumeHeader(), name);
+	}
+
+	/**
+	 * Create a new DirectoryEntry.
+	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory()
+	 */
+	public DirectoryEntry createDirectory(ProdosCommonDirectoryHeader directory, String name) throws DiskFullException {
+		int blockNumber = directory.getFileEntryBlock();
+		while (blockNumber != 0) {
+			byte[] block = readBlock(blockNumber);
+			int offset = 4;
+			while (offset+ProdosCommonEntry.ENTRY_LENGTH < BLOCK_SIZE) {
+				int value = AppleUtil.getUnsignedByte(block[offset]);
+				if ((value & 0xf0) == 0) {
+					// First, create a new block to contain our subdirectory
+					byte[] volumeBitmap = readVolumeBitMap();
+					int newDirBlockNumber = findFreeBlock(volumeBitmap);
+					setBlockUsed(volumeBitmap, newDirBlockNumber);
+					// Clean out the block - it may have been recycled, and control structures need to be gone
+					byte[] cleanBlock = new byte[512];
+					for (int i = 0;i<512;i++)
+						cleanBlock[i] = 0;
+					writeBlock(newDirBlockNumber, cleanBlock);
+					writeVolumeBitMap(volumeBitmap);
+					ProdosSubdirectoryHeader newHeader = new ProdosSubdirectoryHeader(this, newDirBlockNumber);
+					ProdosFileEntry subdirEntry = (ProdosFileEntry)createFile(newHeader);
+					subdirEntry.setFilename(name);
+					newHeader.setHousekeeping();
+					newHeader.setCreationDate(new Date());
+					newHeader.setParentPointer(blockNumber);
+					// Now, add an entry for this subdirectory 
+					ProdosDirectoryEntry fileEntry = 
+						new ProdosDirectoryEntry(this, blockNumber, offset, newHeader);
+					fileEntry.setBlocksUsed(1); // Mark ourselves as the one block in use in this new subdirectory
+					fileEntry.setEofPosition(BLOCK_SIZE);
+					fileEntry.setKeyPointer(newDirBlockNumber);
+					fileEntry.setCreationDate(new Date());
+					fileEntry.setLastModificationDate(new Date());
+					fileEntry.setProdosVersion(0);
+					fileEntry.setMinimumProdosVersion(0);
+					fileEntry.setCanDestroy(true);
+					fileEntry.setCanRead(true);
+					fileEntry.setCanRename(true);
+					fileEntry.setCanWrite(true);
+					fileEntry.setSubdirectory();
+					fileEntry.setHeaderPointer(blockNumber);
+					fileEntry.setFilename(name);
+					fileEntry.setFiletype(0x0f); // Filetype = subdirectory
+					directory.incrementFileCount();
+					return fileEntry;
+				}
+				offset+= ProdosCommonEntry.ENTRY_LENGTH;
+			}
+			int nextBlockNumber = AppleUtil.getWordValue(block, NEXT_BLOCK_POINTER);
+			if (nextBlockNumber == 0 && directory instanceof ProdosSubdirectoryHeader) {
+				byte[] volumeBitmap = readVolumeBitMap();
+				nextBlockNumber = findFreeBlock(volumeBitmap);
+				setBlockUsed(volumeBitmap, nextBlockNumber);
+				writeVolumeBitMap(volumeBitmap);
+				byte[] oldBlock = readBlock(blockNumber);
+				AppleUtil.setWordValue(oldBlock, NEXT_BLOCK_POINTER, nextBlockNumber);
+				writeBlock(blockNumber, oldBlock);
+				byte[] nextBlock = new byte[BLOCK_SIZE];
+				AppleUtil.setWordValue(nextBlock, PREV_BLOCK_POINTER, blockNumber);
+				writeBlock(nextBlockNumber, nextBlock);
+				ProdosSubdirectoryHeader header = (ProdosSubdirectoryHeader) directory;
+				int blockCount = header.getProdosDirectoryEntry().getBlocksUsed();
+				blockCount++;
+				header.getProdosDirectoryEntry().setBlocksUsed(blockCount);
+				header.getProdosDirectoryEntry().setEofPosition(blockCount * BLOCK_SIZE);
+			}
+			blockNumber = nextBlockNumber;
+		}
+		throw new DiskFullException(textBundle.get("ProdosFormatDisk.UnableToAllocateSpaceError")); //$NON-NLS-1$
 	}
 }

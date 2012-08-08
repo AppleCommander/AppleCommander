@@ -22,7 +22,7 @@ package com.webcodepro.applecommander.storage.os.prodos;
 import com.webcodepro.applecommander.util.AppleUtil;
 
 /**
- * Provides commone subdirectory attributes.
+ * Provides common subdirectory attributes.
  * <p>
  * Date created: Oct 5, 2002 11:17:57 PM
  * @author Rob Greene
@@ -53,6 +53,15 @@ public class ProdosSubdirectoryHeader extends ProdosCommonDirectoryHeader {
 	}
 	
 	/**
+	 * Set the block number of the parent directory which contains the
+	 * file entry for this subdirectory.
+	 */
+	public void setParentPointer(int block) {
+		byte[] data = readFileEntry();
+		AppleUtil.setWordValue(data, 0x23, block);
+	}
+	
+	/**
 	 * Return the number of the file entry within the parent block.
 	 */
 	public int getParentEntry() {
@@ -78,5 +87,18 @@ public class ProdosSubdirectoryHeader extends ProdosCommonDirectoryHeader {
 	 */
 	public ProdosDirectoryEntry getProdosDirectoryEntry() {
 		return directoryEntry;
+	}
+
+	/**
+	 * Set up some housekeeping bits
+	 */
+	public void setHousekeeping() {
+		byte[] data = readFileEntry();
+		data[0x00] = (byte) (0xe0 | (data[0x00] & 0x0f)); // Subdirectories have the high nibble set to 0x0e
+		data[0x10] = 0x75; // Reserved - must be $75
+		data[0x1f] = (byte) ENTRY_LENGTH;
+		data[0x20] = 0x0d;
+		AppleUtil.setWordValue(data, 0x21, 0); // Set file count to zero
+		writeFileEntry(data);
 	}
 }
