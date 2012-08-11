@@ -108,7 +108,21 @@ public class HeaderBlock {
 			ThreadRecord r = findThreadRecord(ThreadKind.FILENAME);
 			if (r != null) filename = r.getText();
 			if (filename == null) filename = rawFilename;
+			if (filename.contains(":")) {
+				filename = filename.replace(":","/");
+			}
 		}
+		return filename;
+	}
+	
+	/**
+	 * Final element in the path, in those cases where a filename actually holds a path name
+	 */
+	public String getFinalFilename() {
+		String filename = getFilename();
+		String[] path;
+		path = filename.split("/");
+		filename = path[path.length - 1];
 		return filename;
 	}
 	

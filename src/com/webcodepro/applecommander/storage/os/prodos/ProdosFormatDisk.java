@@ -632,6 +632,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 		} else {
 			// compute free space and see if the data will fit!
 			int numberOfDataBlocks = (fileData.length + BLOCK_SIZE - 1) / BLOCK_SIZE;
+			if (fileData.length == 0) numberOfDataBlocks = 1;
 			int numberOfBlocks = numberOfDataBlocks;
 			if (numberOfBlocks > 1) {
 				numberOfBlocks+= ((numberOfDataBlocks-1) / 256) + 1;	// that's 128K
@@ -657,7 +658,8 @@ public class ProdosFormatDisk extends FormattedDisk {
 			byte[] masterIndexBlockData = new byte[BLOCK_SIZE];
 			int offset = 0;
 			int blockCount = 0;
-			while (offset < fileData.length) {
+			// Need to let a file length go through once
+			while ((offset < fileData.length) || ((fileData.length == 0) && (offset == 0))){
 				if (blockCount > 0) blockNumber = findFreeBlock(bitmap);
 				setBlockUsed(bitmap, blockNumber);
 				blockCount++;

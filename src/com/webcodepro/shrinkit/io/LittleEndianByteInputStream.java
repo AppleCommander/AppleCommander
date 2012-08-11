@@ -62,6 +62,9 @@ public class LittleEndianByteInputStream extends InputStream implements ByteCons
 		byte[] data = new byte[bytes];
 		int read = inputStream.read(data);
 		bytesRead+= read;
+		// In the case where we have a zero-byte file, 'read' stays at -1, which is not correct.  Fix it.
+		if ((bytes == 0) && (read == -1))
+			read = 0;
 		if (read < bytes) {
 			throw new IOException("Requested " + bytes + " bytes, but " + read + " read");
 		}

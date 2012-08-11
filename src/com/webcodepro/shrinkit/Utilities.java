@@ -136,7 +136,7 @@ public class Utilities
 							// We have a traditional file, no resource fork.
 							newFile.setFileData(readThread(dataFork));
 						}
-						newFile.setFilename(b.getFilename());
+						newFile.setFilename(b.getFinalFilename());
 						newFile.setFiletype(b.getFileType());
 						newFile.setAuxiliaryType((int) b.getExtraType());
 						// TODO: dates differ by a month or so from what CiderPress reports.  

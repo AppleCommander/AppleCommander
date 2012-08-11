@@ -181,7 +181,7 @@ public class Disk {
 		byte[] diskImage = null;
 		byte[] diskImageDC42 = null;
 
-		if (isSDK() || isSHK()) {
+		if (isSDK() || isSHK() || isBXY()) {
 			// If we have an SDK, unpack it and send along the byte array
 			// If we have a SHK, build a new disk and unpack the contents on to it
 			diskImage = com.webcodepro.shrinkit.Utilities.unpackSHKFile(filename);
@@ -422,6 +422,14 @@ public class Disk {
 	public boolean isSHK()
 	{
 		return filename.toLowerCase().endsWith(".shk"); //$NON-NLS-1$
+	}
+
+	/**
+	 * Indicate if this disk is a ShrinkIt-compressed binary II archive.
+	 */
+	public boolean isBXY()
+	{
+		return filename.toLowerCase().endsWith(".bxy"); //$NON-NLS-1$
 	}
 
 	/**
