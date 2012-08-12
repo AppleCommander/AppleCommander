@@ -130,7 +130,10 @@ public class ac {
 			} else if ("-pro800".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				createProDisk(args[1], args[2], Disk.APPLE_800KB_DISK);
 			} else if ("-convert".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				convert(args[1], args[2]);
+				if (args.length > 3)
+					convert(args[1], args[2], Integer.parseInt(args[3]));
+				else
+					convert(args[1], args[2]);
 			} else {
 				help();
 			}
@@ -543,11 +546,11 @@ public class ac {
 	 * 
 	 * DiskCopy 4.2 image - convert it to a ProDOS image
 	 * SDK disk image - unpack it to a disk image
-	 * ShrinkIt file bundle [future] - unpack files onto a disk image sized to fit
+	 * ShrinkIt file bundle - unpack files onto a disk image sized to fit
 	 */
 	static void convert(String shrinkName, String imageName, int imageSize)
 		throws IOException {
-		Disk disk = new Disk(shrinkName);
+		Disk disk = new Disk(shrinkName, imageSize);
 		disk.setFilename(imageName);
 		disk.save();
 	}

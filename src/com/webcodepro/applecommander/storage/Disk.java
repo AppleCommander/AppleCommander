@@ -176,6 +176,14 @@ public class Disk {
 	 * Read in the entire contents of the file.
 	 */
 	public Disk(String filename) throws IOException {
+		this(filename, 0);
+	}
+
+	/**
+	 * Construct a Disk and load the specified file.
+	 * Read in the entire contents of the file.
+	 */
+	public Disk(String filename, int startBlocks) throws IOException {
 		this.filename = filename;
 		int diskSize = 0;
 		byte[] diskImage = null;
@@ -184,7 +192,7 @@ public class Disk {
 		if (isSDK() || isSHK() || isBXY()) {
 			// If we have an SDK, unpack it and send along the byte array
 			// If we have a SHK, build a new disk and unpack the contents on to it
-			diskImage = com.webcodepro.shrinkit.Utilities.unpackSHKFile(filename);
+			diskImage = com.webcodepro.shrinkit.Utilities.unpackSHKFile(filename, startBlocks);
 			diskSize = diskImage.length;
 			// Since we don't want to overwrite their shrinkit with a raw ProDOS image,
 			// add a .po extension to it
