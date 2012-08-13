@@ -76,7 +76,7 @@ public class Utilities
 		File file = new File(fileName);
 		if (file.isDirectory() || !file.canRead())
 		{
-			throw new IllegalArgumentException(textBundle.format("NotAFile", fileName, 1)); //$NON-NLS-1$ 
+			throw new IOException(textBundle.format("NotAFile", fileName, 1)); //$NON-NLS-1$ 
 		}
 		InputStream is = new FileInputStream(file);
 		NuFileArchive a = new NuFileArchive(is);
