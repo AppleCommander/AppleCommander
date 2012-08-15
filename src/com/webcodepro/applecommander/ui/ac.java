@@ -534,7 +534,7 @@ public class ac {
 	 * 
 	 * DiskCopy 4.2 image - convert it to a ProDOS image
 	 * SDK disk image - unpack it to a disk image
-	 * ShrinkIt file bundle [future] - unpack files onto a disk image sized to fit
+	 * ShrinkIt file bundle - unpack files onto a disk image sized to fit
 	 */
 	static void convert(String shrinkName, String imageName)
 		throws IOException {
@@ -546,7 +546,7 @@ public class ac {
 	 * 
 	 * DiskCopy 4.2 image - convert it to a ProDOS image
 	 * SDK disk image - unpack it to a disk image
-	 * ShrinkIt file bundle - unpack files onto a disk image sized to fit
+	 * ShrinkIt file bundle - unpack files onto a disk image sized to fit, or as specified in numbers of blocks
 	 */
 	static void convert(String shrinkName, String imageName, int imageSize)
 		throws IOException {

@@ -45,7 +45,7 @@ public class AntTask extends Task
 		 * dos140: <imagename> <volname>
 		 * pro140/pro800: <imagename> <volname>
 		 * pas140/pas800: <imagename> <volname>
-		 * convert: <filename> <imagename>
+		 * convert: <filename> <imagename> [<sizeblocks>]
 		 */
 		if (_command.equals("i"))
 		{
@@ -226,7 +226,7 @@ public class AntTask extends Task
 		{
 			try
 			{
-				com.webcodepro.applecommander.ui.ac.convert(_fileName, _imageName);
+				com.webcodepro.applecommander.ui.ac.convert(_fileName, _imageName, Integer.parseInt(_sizeBlocks));
 			}
 			catch (IOException io)
 			{
@@ -282,6 +282,11 @@ public class AntTask extends Task
 		_address = address;
 	}
 
+	public void setSizeBlocks(String sizeBlocks)
+	{
+		_sizeBlocks = sizeBlocks;
+	}
+
 	public void setFailOnError(String failonerror)
 	{
 		if (failonerror.equalsIgnoreCase("true"))
@@ -307,4 +312,6 @@ public class AntTask extends Task
 	String _type = null;
 
 	String _address = "0x2000";
+
+	String _sizeBlocks = "0";
 }

@@ -82,7 +82,7 @@
 		<appleCommander command="x" imagename="${pro140image}" outputpath="${projdir}/work/dist" />
 		<echo message="Files should be exported to the current working directory now." />
 		<!-- Now, try out converting -->
-		<appleCommander command="convert" filename="C:\David\Asimov\images\gs\utils\DiskCommander.GS.sdk" imagename="${projdir}/work/dist/test.po" />
+		<appleCommander command="convert" filename="images\gs\utils\DISK.WITCH3.1.0.SHK" imagename="${projdir}/work/dist/test.po" sizeblocks="2000"/>
 	</target>
 
 	<target name="clean" description="Get rid of testing artifacts.">
