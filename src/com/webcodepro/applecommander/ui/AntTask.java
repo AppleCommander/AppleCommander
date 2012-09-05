@@ -19,7 +19,6 @@ package com.webcodepro.applecommander.ui;
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-import java.io.File;
 import java.io.IOException;
 
 import org.apache.tools.ant.BuildException;
@@ -267,9 +266,9 @@ public class AntTask extends Task
 		_outputPath = outputPath;
 	}
 
-	public void setVolumeName(String volumeName)
+	public void setVolName(String volName)
 	{
-		_volName = volumeName;
+		_volName = volName;
 	}
 
 	public void setType(String type)
