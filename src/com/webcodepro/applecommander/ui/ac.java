@@ -499,7 +499,7 @@ public class ac {
 	/**
 	 * Create a DOS disk image.
 	 */
-	static void createDosDisk(String fileName, int imageSize)
+	public static void createDosDisk(String fileName, int imageSize)
 		throws IOException {
 		ByteArrayImageLayout layout = new ByteArrayImageLayout(imageSize);
 		ImageOrder imageOrder = new DosOrder(layout);
@@ -510,7 +510,7 @@ public class ac {
 	/**
 	 * Create a Pascal disk image.
 	 */
-	static void createPasDisk(String fileName, String volName, int imageSize)
+	public static void createPasDisk(String fileName, String volName, int imageSize)
 		throws IOException {
 		ByteArrayImageLayout layout = new ByteArrayImageLayout(imageSize);
 		ImageOrder imageOrder = new ProdosOrder(layout);
@@ -521,7 +521,7 @@ public class ac {
 	/**
 	 * Create a ProDOS disk image.
 	 */
-	static void createProDisk(String fileName, String volName, int imageSize)
+	public static void createProDisk(String fileName, String volName, int imageSize)
 		throws IOException {
 		ByteArrayImageLayout layout = new ByteArrayImageLayout(imageSize);
 		ImageOrder imageOrder = new ProdosOrder(layout);
