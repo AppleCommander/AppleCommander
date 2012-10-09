@@ -264,6 +264,21 @@ public class Disk {
 				}
 				if (rc == -1) {
 					/*
+				 	* Check filenames for something deterministic.
+				 	*/
+					if (isProdosOrder() || is2ImgOrder()) {
+						imageOrder = proDosOrder;
+						rc = 0;
+					} else if (isDosOrder()) {
+						imageOrder = dosOrder;
+						rc = 0;
+					} else if (isNibbleOrder()) {
+						imageOrder = new NibbleOrder(diskImageManager);
+						rc = 0;
+					}
+				}
+				if (rc == -1) {
+					/*
 					 * Ok, it's not one of those. Now, let's go back to DOS
 					 * order, and see if we recognize other things. If not,
 					 * we'll fall through to other processing later.
