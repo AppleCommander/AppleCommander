@@ -80,9 +80,10 @@
 		<echo message="Here are the contents of a file, native:"/>
 		<appleCommander command="g" imagename="${pro140image}" filename="TEST" />
 		<appleCommander command="x" imagename="${pro140image}" outputpath="${projdir}/work/dist" />
+		<appleCommander command="p" input="${pro140image}" imagename="${pro800image}" filename="TEST.po" type="bin" />
+		<appleCommander command="g" imagename="${pro800image}" filename="TEST.po" output="${projdir}/work/dist/TEST.po"/>
+		<echo message="Files TEST.po and ${pro140image} should match." />
 		<echo message="Files should be exported to the current working directory now." />
-		<!-- Now, try out converting -->
-		<appleCommander command="convert" filename="images\gs\utils\DISK.WITCH3.1.0.SHK" imagename="${projdir}/work/dist/test.po" sizeblocks="2000"/>
 	</target>
 
 	<target name="clean" description="Get rid of testing artifacts.">
