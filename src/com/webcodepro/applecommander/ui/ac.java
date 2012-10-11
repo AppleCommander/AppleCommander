@@ -28,6 +28,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
 
@@ -99,11 +100,11 @@ public class ac {
 			} else if ("-ll".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				showDirectory(args, FormattedDisk.FILE_DISPLAY_DETAIL);
 			} else if ("-e".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				getFile(args[1], args[2], true);
+				getFile(args[1], args[2], true, System.out);
 			} else if ("-x".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				getFiles(args[1], (args.length > 2 ? args[2] : ""));
 			} else if ("-g".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				getFile(args[1], args[2], false);
+				getFile(args[1], args[2], false, System.out);
 			} else if ("-p".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				putFile(args[1], new Name(args[2]), args[3],
 					(args.length > 4 ? args[4] : "0x2000"));
@@ -206,7 +207,10 @@ public class ac {
 					entry.setAddress(stringToInt(address));
 				}
 				formattedDisk.save();
+			} else {
+				throw new IOException("Unable to create entry...");
 			}
+				
 		}
 		else
 			throw new IOException(textBundle.get("CommandLineSDKReadOnly"));  //$NON-NLS-1$
@@ -278,11 +282,13 @@ public class ac {
 	 * Get the file named filename from the disk named imageName; the file is
 	 * filtered according to its type and sent to &lt;stdout>.
 	 */
-	static void getFile(String imageName, String fileName, boolean filter)
+	static void getFile(String imageName, String fileName, boolean filter, PrintStream out)
 		throws IOException {
 		Disk disk = new Disk(imageName);
 		Name name = new Name(fileName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+		if (out == null)
+			out = System.out;
 		for (int i = 0; i < formattedDisks.length; i++) {
 			FormattedDisk formattedDisk = formattedDisks[i];
 			FileEntry entry = name.getEntry(formattedDisk);
@@ -292,10 +298,10 @@ public class ac {
 					if (ff instanceof BinaryFileFilter)
 						ff = new HexDumpFileFilter();
 					byte[] buf = ff.filter(entry);
-					System.out.write(buf, 0, buf.length);
+					out.write(buf, 0, buf.length);
 				} else {
 					byte[] buf = entry.getFileData();
-					System.out.write(buf, 0, buf.length);
+					out.write(buf, 0, buf.length);
 				}
 			} else {
 				System.err.println(textBundle.format(

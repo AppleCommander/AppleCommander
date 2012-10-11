@@ -19,7 +19,9 @@ package com.webcodepro.applecommander.ui;
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
@@ -63,9 +65,14 @@ public class AntTask extends Task
 		}
 		else if (_command.equals("e") || _command.equals("g"))
 		{
+			PrintStream outfile = System.out;
 			try
 			{
-				com.webcodepro.applecommander.ui.ac.getFile(_imageName, _fileName, _command.equals("e"));
+				if (_output != null)
+				{
+					outfile = new PrintStream(new FileOutputStream(_output));
+				}
+				com.webcodepro.applecommander.ui.ac.getFile(_imageName, _fileName, _command.equals("e"), outfile);
 			}
 			catch (Exception ex)
 			{
@@ -251,6 +258,11 @@ public class AntTask extends Task
 		_input = input;
 	}
 
+	public void setOutput(String output)
+	{
+		_output = output;
+	}
+
 	public void setImageName(String imageName)
 	{
 		_imageName = imageName;
@@ -297,6 +309,8 @@ public class AntTask extends Task
 	boolean _failonerror = true;
 
 	String _input = null;
+
+	String _output = null;
 
 	String _command = null;
 
