@@ -61,9 +61,11 @@ import com.webcodepro.applecommander.util.TextBundle;
  * -ls &lt;imagename&gt; [&lt;imagename&gt;] list brief directory of image(s).
  * -l  &lt;imagename&gt; [&lt;imagename&gt;] list directory of image(s).
  * -ll &lt;imagename&gt; [&lt;imagename&gt;] list detailed directory of image(s).
- * -e  &lt;imagename&gt; &lt;filename&gt; export file from image to stdout.
+ * -e  &lt;imagename&gt; &lt;filename&gt; [&lt;output&gt;] export file from image to stdout
+ *     or to an output file. 
  * -x  &lt;imagename&gt; [&lt;directory&gt;] extract all files from image to directory.
- * -g  &lt;imagename&gt; &lt;filename&gt; get raw file from image to stdout.
+ * -g  &lt;imagename&gt; &lt;filename&gt; [&lt;output&gt;] get raw file from image to stdout
+ *     or to an output file. 
  * -p  &lt;imagename&gt; &lt;filename&gt; &lt;type&gt; [[$|0x]&lt;addr&gt;] put stdin
  *     in filename on image, using file type and address [0x2000].
  * -d  &lt;imagename&gt; &lt;filename&gt; delete file from image.
@@ -100,11 +102,13 @@ public class ac {
 			} else if ("-ll".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				showDirectory(args, FormattedDisk.FILE_DISPLAY_DETAIL);
 			} else if ("-e".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				getFile(args[1], args[2], true, System.out);
+				getFile(args[1], args[2], true,
+					(args.length > 3 ? new PrintStream(new FileOutputStream(args[3])) : System.out));
 			} else if ("-x".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				getFiles(args[1], (args.length > 2 ? args[2] : ""));
 			} else if ("-g".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				getFile(args[1], args[2], false, System.out);
+				getFile(args[1], args[2], false,
+					(args.length > 3 ? new PrintStream(new FileOutputStream(args[3])) : System.out));
 			} else if ("-p".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				putFile(args[1], new Name(args[2]), args[3],
 					(args.length > 4 ? args[4] : "0x2000"));
