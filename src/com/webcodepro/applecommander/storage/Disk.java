@@ -165,7 +165,7 @@ public class Disk {
 	/**
 	 * Construct a Disk with the given byte array.
 	 */
-	protected Disk(String filename, ImageOrder imageOrder) {
+	public Disk(String filename, ImageOrder imageOrder) {
 		this.imageOrder = imageOrder;
 		this.filename = filename;
 		this.newImage = true;
