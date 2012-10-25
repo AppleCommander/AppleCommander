@@ -165,7 +165,8 @@ public class Disk {
 	/**
 	 * Construct a Disk with the given byte array.
 	 */
-	public Disk(String filename, ImageOrder imageOrder) {
+
+	protected Disk(String filename, ImageOrder imageOrder) {
 		this.imageOrder = imageOrder;
 		this.filename = filename;
 		this.newImage = true;
@@ -176,7 +177,15 @@ public class Disk {
 	 * Read in the entire contents of the file.
 	 */
 	public Disk(String filename) throws IOException {
-		this(filename, 0);
+		this(filename, 0, false);
+	}
+
+	/**
+	 * Construct a Disk and load the specified file.
+	 * Read in the entire contents of the file.
+	 */
+	public Disk(String filename, boolean knownProDOSOrder) throws IOException {
+		this(filename, 0, knownProDOSOrder);
 	}
 
 	/**
@@ -184,6 +193,14 @@ public class Disk {
 	 * Read in the entire contents of the file.
 	 */
 	public Disk(String filename, int startBlocks) throws IOException {
+		this(filename, startBlocks, false);
+	}
+
+	/**
+	 * Construct a Disk and load the specified file.
+	 * Read in the entire contents of the file.
+	 */
+	public Disk(String filename, int startBlocks, boolean knownProDOSOrder) throws IOException {
 		this.filename = filename;
 		int diskSize = 0;
 		byte[] diskImage = null;
@@ -254,11 +271,11 @@ public class Disk {
 				// First, test the really-really likely orders/formats for
 				// 5-1/4" disks.
 				imageOrder = dosOrder;
-				if (isProdosFormat() || isDosFormat()) {
+				if ((isProdosFormat() || isDosFormat()) && !knownProDOSOrder) {
 					rc = 0;
 				} else {
 					imageOrder = proDosOrder;
-					if (isProdosFormat() || isDosFormat()) {
+					if (knownProDOSOrder || isProdosFormat() || isDosFormat()) {
 						rc = 0;
 					}
 				}
