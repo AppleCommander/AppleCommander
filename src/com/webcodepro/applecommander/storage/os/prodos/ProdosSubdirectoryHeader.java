@@ -59,6 +59,7 @@ public class ProdosSubdirectoryHeader extends ProdosCommonDirectoryHeader {
 	public void setParentPointer(int block) {
 		byte[] data = readFileEntry();
 		AppleUtil.setWordValue(data, 0x23, block);
+		writeFileEntry(data);
 	}
 	
 	/**
