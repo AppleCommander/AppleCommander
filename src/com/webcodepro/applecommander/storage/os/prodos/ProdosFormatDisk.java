@@ -1338,6 +1338,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 		int blockNumber = directory.getFileEntryBlock();
 		while (blockNumber != 0) {
 			byte[] block = readBlock(blockNumber);
+			int entryNum = 0;
 			int offset = 4;
 			while (offset+ProdosCommonEntry.ENTRY_LENGTH < BLOCK_SIZE) {
 				int value = AppleUtil.getUnsignedByte(block[offset]);
@@ -1358,6 +1359,8 @@ public class ProdosFormatDisk extends FormattedDisk {
 					newHeader.setHousekeeping();
 					newHeader.setCreationDate(new Date());
 					newHeader.setParentPointer(blockNumber);
+					newHeader.setParentEntry(entryNum);
+					newHeader.setParentEntryLength(ProdosCommonEntry.ENTRY_LENGTH);
 					// Now, add an entry for this subdirectory 
 					ProdosDirectoryEntry fileEntry = 
 						new ProdosDirectoryEntry(this, blockNumber, offset, newHeader);
@@ -1380,6 +1383,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 					return fileEntry;
 				}
 				offset+= ProdosCommonEntry.ENTRY_LENGTH;
+				entryNum++;
 			}
 			int nextBlockNumber = AppleUtil.getWordValue(block, NEXT_BLOCK_POINTER);
 			if (nextBlockNumber == 0 && directory instanceof ProdosSubdirectoryHeader) {
