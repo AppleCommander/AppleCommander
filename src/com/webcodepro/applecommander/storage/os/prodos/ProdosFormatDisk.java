@@ -1338,7 +1338,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 		int blockNumber = directory.getFileEntryBlock();
 		while (blockNumber != 0) {
 			byte[] block = readBlock(blockNumber);
-			int entryNum = 0;
+			int entryNum = 1; // Beneath ProDOS says this starts at zero, but subsequent correction says it starts at 1.
 			int offset = 4;
 			while (offset+ProdosCommonEntry.ENTRY_LENGTH < BLOCK_SIZE) {
 				int value = AppleUtil.getUnsignedByte(block[offset]);
