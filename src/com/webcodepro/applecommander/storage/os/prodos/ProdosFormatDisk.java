@@ -730,9 +730,14 @@ public class ProdosFormatDisk extends FormattedDisk {
 	protected void setFileData(ProdosFileEntry fileEntry, byte[] dataFork, byte[] resourceFork) 
 		throws DiskFullException {
 
+		int dataLength = 0, resourceLength = 0;
+		if (dataFork != null)
+			dataLength = dataFork.length;
+		if (resourceFork != null)
+			resourceLength = resourceFork.length;
 		// compute free space and see if the data will fit!
-		int numberOfDataBlocks = (dataFork.length + BLOCK_SIZE - 1) / BLOCK_SIZE +
-			(resourceFork.length + BLOCK_SIZE - 1) / BLOCK_SIZE;
+		int numberOfDataBlocks = (dataLength + BLOCK_SIZE - 1) / BLOCK_SIZE +
+			(resourceLength + BLOCK_SIZE - 1) / BLOCK_SIZE;
 		int numberOfBlocks = numberOfDataBlocks;
 		if (numberOfBlocks > 1) {
 			numberOfBlocks+= ((numberOfDataBlocks-1) / 256) + 1;	// that's 128K
@@ -762,13 +767,13 @@ public class ProdosFormatDisk extends FormattedDisk {
 		byte[] masterIndexBlockData = new byte[BLOCK_SIZE];
 
 		int offset = 0;
-		numberOfDataBlocks = (dataFork.length + BLOCK_SIZE - 1) / BLOCK_SIZE ;
-		while (offset < dataFork.length) {
+		numberOfDataBlocks = (dataLength + BLOCK_SIZE - 1) / BLOCK_SIZE ;
+		while (offset < dataLength) {
 			blockNumber = findFreeBlock(bitmap);
 			setBlockUsed(bitmap, blockNumber);
 			blockCount++;
 			byte[] blockData = new byte[BLOCK_SIZE];
-			int length = Math.min(BLOCK_SIZE, dataFork.length - offset);
+			int length = Math.min(BLOCK_SIZE, dataLength - offset);
 			System.arraycopy(dataFork,offset,blockData,0,length);
 			writeBlock(blockNumber, blockData);
 			if (numberOfDataBlocks > 1) {
@@ -806,8 +811,8 @@ public class ProdosFormatDisk extends FormattedDisk {
 			offset+= BLOCK_SIZE;
 		}
 		AppleUtil.setWordValue(extendedKeyBlockData,0x03,numberOfDataBlocks); // Set the number of blocks used
-		AppleUtil.set3ByteValue(extendedKeyBlockData,0x05,	dataFork.length); // Set the number of bytes used
-		if (numberOfDataBlocks == 1) {
+		AppleUtil.set3ByteValue(extendedKeyBlockData,0x05,	dataLength); // Set the number of bytes used
+		if ((numberOfDataBlocks == 0) || (numberOfDataBlocks == 1)) {
 			extendedKeyBlockData[0] = 1; // Set the seedling ProDOS storage type
 			AppleUtil.setWordValue(extendedKeyBlockData,1,blockNumber); // Set the master block number
 		} else if (numberOfDataBlocks <= 256) {
@@ -826,13 +831,13 @@ public class ProdosFormatDisk extends FormattedDisk {
 		indexBlockNumber = 0;
 		indexBlockData = null;
 		masterIndexBlockNumber = 0;
-		numberOfDataBlocks = (resourceFork.length + BLOCK_SIZE - 1) / BLOCK_SIZE;
-		while (offset < resourceFork.length) {
+		numberOfDataBlocks = (resourceLength + BLOCK_SIZE - 1) / BLOCK_SIZE;
+		while (offset < resourceLength) {
 			if (blockCount > 0) blockNumber = findFreeBlock(bitmap);
 			setBlockUsed(bitmap, blockNumber);
 			blockCount++;
 			byte[] blockData = new byte[BLOCK_SIZE];
-			int length = Math.min(BLOCK_SIZE, resourceFork.length - offset);
+			int length = Math.min(BLOCK_SIZE, resourceLength - offset);
 			System.arraycopy(resourceFork,offset,blockData,0,length);
 			writeBlock(blockNumber, blockData);
 			if (numberOfDataBlocks > 1) {
@@ -870,8 +875,8 @@ public class ProdosFormatDisk extends FormattedDisk {
 			offset+= BLOCK_SIZE;
 		}
 		AppleUtil.setWordValue(extendedKeyBlockData,0x103,numberOfDataBlocks); // Set the number of blocks used
-		AppleUtil.set3ByteValue(extendedKeyBlockData,0x105,	resourceFork.length); // Set the number of bytes used
-		if (numberOfDataBlocks == 1) {
+		AppleUtil.set3ByteValue(extendedKeyBlockData,0x105,	resourceLength); // Set the number of bytes used
+		if ((numberOfDataBlocks == 0) || (numberOfDataBlocks == 1)) {
 			extendedKeyBlockData[0x100] = 1; // Set the seedling ProDOS storage type
 			AppleUtil.setWordValue(extendedKeyBlockData,0x101,blockNumber); // Set the master block number
 		} else if (numberOfDataBlocks <= 256) {
@@ -888,7 +893,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 
 		fileEntry.setKeyPointer(extendedKeyBlockNumber);
 		fileEntry.setBlocksUsed(blockCount);
-		fileEntry.setEofPosition(dataFork.length+resourceFork.length);
+		fileEntry.setEofPosition(dataLength+resourceLength);
 		fileEntry.setLastModificationDate(new Date());
 		writeVolumeBitMap(bitmap);
 	}

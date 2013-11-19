@@ -135,7 +135,7 @@ public class Utilities
 			}
 			try
 			{
-				if (dataFork != null)
+				if ((dataFork != null) || (resourceFork != null))
 				{
 					Name name = new Name(b.getFilename());
 					newFile = (ProdosFileEntry)name.createEntry(pdDisk);
@@ -182,15 +182,19 @@ public class Utilities
 	 * 
 	 * Reads the data from a thread
 	 * 
-	 * @returns byte[] buffer
+	 * @returns byte[] buffer, possibly null
 	 */
 	public static byte[] readThread(ThreadRecord thread) throws IOException
 	{
-		thread.readThreadData(new LittleEndianByteInputStream(thread.getRawInputStream()));
-		InputStream fis = thread.getInputStream();
-		byte[] buffer = new byte[(int) (thread.getThreadEof())];
-		fis.read(buffer, 0, buffer.length);
-		fis.close();
+		byte[] buffer = null;
+		if (thread != null)
+		{
+			thread.readThreadData(new LittleEndianByteInputStream(thread.getRawInputStream()));
+			InputStream fis = thread.getInputStream();
+			buffer = new byte[(int) (thread.getThreadEof())];
+			fis.read(buffer, 0, buffer.length);
+			fis.close();
+		}
 		return buffer;
 	}
 }
