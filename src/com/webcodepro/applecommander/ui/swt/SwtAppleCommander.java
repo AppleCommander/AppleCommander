@@ -118,7 +118,7 @@ public class SwtAppleCommander implements Listener {
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.marginHeight = 5;
 		gridLayout.marginWidth = 5;
-		shell.setLayout(gridLayout);
+		shell.setLayout(gridLayout);	
 
 		GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
 		gridData.grabExcessHorizontalSpace = true;
@@ -144,6 +144,9 @@ public class SwtAppleCommander implements Listener {
 		imageCanvas.dispose();
 		toolBar.dispose();
 		imageManager.dispose();
+        if (System.getProperty("os.name").startsWith("Mac OS X")) {
+    		System.exit(0);
+        }
 	}
 	
 	/**
