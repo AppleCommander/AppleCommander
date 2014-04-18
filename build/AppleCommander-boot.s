@@ -74,7 +74,14 @@ YOFFSET = 13
 ; This also avoids problems with sector ordering.
 ; Zero is always zero!
 ;
-.byte 1
+; Added a little chicanery for the Apple /// to branch around
+; since it starts executing at the zeroeth byte, not the first.
+; This has the effect of setting carry based on machine type. 
+;
+.byte $01
+	SEC
+	BCS $0807	; The General setup section, below
+	JMP $A132	; Apple /// code to pull in the next sector
 ;
 ; General setup.
 ;
@@ -190,7 +197,7 @@ DATA2:
 ; Text message to display at bottom of screen.
 ;
 MESSAGE:
-	asccr "THIS DISK CREATED WITH APPLECOMMANDER"
+	asccr "APPLECOMMANDER CREATED THIS DISK"
 	asccr "VISIT APPLECOMMANDER.SF.NET"
 	.byte $8d
 	asc "INSERT ANOTHER DISK AND PRESS ANY KEY"
