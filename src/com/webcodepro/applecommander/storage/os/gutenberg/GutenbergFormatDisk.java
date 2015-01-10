@@ -139,9 +139,9 @@ public class GutenbergFormatDisk extends FormattedDisk {
 		int sector = VTOC_SECTOR;
 		while (track < 40) { // iterate through all catalog sectors
 			byte[] catalogSector = readSector(track, sector);
-			int offset = 0x20;  // First entry is 0x20 deep
+			int offset = 0x10;  // First entry is 0x10 deep, except for the first one
 			while (offset < 0xff) {	// iterate through all entries
-				if (catalogSector[offset] != -96) {
+				if ((catalogSector[offset] != -96) && ((track != CATALOG_TRACK) || (track == CATALOG_TRACK && offset > 0x10))) {
 					list.add(new GutenbergFileEntry(this, track, sector, offset));
 				}
 				offset+= GutenbergFileEntry.FILE_DESCRIPTIVE_ENTRY_LENGTH;
