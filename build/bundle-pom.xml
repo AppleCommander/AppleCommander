@@ -1,0 +1,37 @@
+<!--
+AppleCommander does not use Maven at this time.  This POM is simply to make the 
+JAR libraries avaialable via Maven Central.  
+
+Please visit applecommander.sf.net for more information.
+-->
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>net.sf.applecommander</groupId>
+    <artifactId>AppleCommander</artifactId>
+    <version>1.3.5.14</version>
+    <packaging>jar</packaging>
+
+    <name>AppleCommander</name>
+    <description>AppleCommander is a general utility for Apple II disk images.</description>
+    <url>http://applecommander.sourceforge.net/</url>
+
+    <licenses>
+        <license>
+            <name>The GNU General Public License (GPL) Version 2, June 1991</name>
+            <url>https://www.gnu.org/licenses/gpl-2.0.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>robgreene</id>
+            <email>robgreene@gmail.com</email>
+        </developer>
+        <!-- There are others, but not adding them unless they request it. -->
+    </developers>
+
+    <scm>
+        <url>http://applecommander.cvs.sourceforge.net/viewvc/applecommander/AppleCommander/</url>
+    </scm>
+</project>
