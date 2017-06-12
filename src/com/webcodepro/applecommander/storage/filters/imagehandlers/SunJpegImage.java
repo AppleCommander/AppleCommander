@@ -23,7 +23,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import com.sun.image.codec.jpeg.JPEGCodec;
+import javax.imageio.*;
 
 /**
  * SunJpegImage is a specific implementation of AppleImage that handles all
@@ -60,7 +60,7 @@ public class SunJpegImage extends AppleImage {
 	 * Save the image.
 	 */
 	public void save(OutputStream outputStream) throws IOException {
-		JPEGCodec.createJPEGEncoder(outputStream).encode(image);
+	    ImageIO.write(image, "jpg", outputStream);
 	}
 	/**
 	 * Return the width of the image.
