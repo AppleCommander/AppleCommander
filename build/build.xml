@@ -29,6 +29,10 @@
 		<available file="${keyconf}" property="keyconf-exists" />
 	</condition>
 
+	<taskdef name="jarbundler"
+		classname="com.ultramixer.jarbundler.JarBundler"
+		classpath="mac/jarbundler-core-3.3.0.jar" />
+
 	<target name="version" description="Get version from source.">
 		<property name="main.path" value="src/com/webcodepro/applecommander/ui"/>
 		<loadfile srcfile="${main.path}/AppleCommander.java" property="acVersion">
@@ -128,21 +132,43 @@
 	
 	<target name="macBundle" depends="init,jars" description="Build Mac application bundle.">
 		<property name="mac.dir" value="mac"/>
+		<!--
 		<property name="mac.app" value="${mac.dir}/AppleCommander.app"/>
 		<property name="mac.Contents" value="${mac.app}/Contents"/>
 		<property name="mac.Java" value="${mac.Contents}/Resources/Java"/>
+		-->
+		<!--
 		<copy file="${mac.dir}/Info.plist" todir="${mac.Contents}" overwrite="true">
 			<filterset>
 				<filter token="version" value="${acVersion}"/>
 			</filterset>
 		</copy>
+		-->
+		<jarbundler dir="${dist}" verbose="true" showPlist="true"
+			name="AppleCommander"
+			mainclass="com.webcodepro.applecommander.ui.AppleCommander"
+			bundleid="com.webcodepro.applecommander"
+			jar="${dist}/AppleCommander-${acVersion}.jar"
+			version="${acVersion}" build="${acVersion}"
+			stubfile="mac/universalJavaApplicationStub"
+			icon="mac/AppleCommander.app/Contents/Resources/AppleCommander.icns"
+			useJavaXKey="true"
+			developmentregion="English"
+			copyright="Copyright 2002-2008 Rob Greene and John B. Matthews."
+			jvmversion="1.4*"
+			/>
+
+		<!--
 		<copy file="${guijar}" tofile="${mac.Java}/AppleCommander.jar"/>
 		<copy file="${cmdjar}" tofile="${user.home}/bin/ac.jar"/>
+		-->
+		<!--
 	    <zip destfile="${maczip}">
 	        <zipfileset dir="${mac.app}" prefix="AppleCommander.app"/>
 			<zipfileset dir="${mac.app}" prefix="AppleCommander.app"
 				includes="Contents/MacOS/JavaApplicationStub" filemode="755"/>
 	    </zip>
+		-->
 	</target>
 
 	<target name="sourceZip" depends="init" description="Build source ZIP archive">
