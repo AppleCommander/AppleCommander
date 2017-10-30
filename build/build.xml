@@ -150,12 +150,12 @@
 			bundleid="com.webcodepro.applecommander"
 			jar="${dist}/AppleCommander-${acVersion}.jar"
 			version="${acVersion}" build="${acVersion}"
-			stubfile="mac/universalJavaApplicationStub"
-			icon="mac/AppleCommander.app/Contents/Resources/AppleCommander.icns"
+			stubfile="${mac.dir}/universalJavaApplicationStub"
+			icon="${mac.dir}/AppleCommander.icns"
 			useJavaXKey="true"
 			developmentregion="English"
 			copyright="Copyright 2002-2008 Rob Greene and John B. Matthews."
-			jvmversion="1.4*"
+			jvmversion="1.6+"
 			/>
 
 		<!--
