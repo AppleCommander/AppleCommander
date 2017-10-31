@@ -132,17 +132,10 @@
 	
 	<target name="macBundle" depends="init,jars" description="Build Mac application bundle.">
 		<property name="mac.dir" value="mac"/>
+		<property name="mac.app" value="${dist}/AppleCommander.app"/>
 		<!--
-		<property name="mac.app" value="${mac.dir}/AppleCommander.app"/>
 		<property name="mac.Contents" value="${mac.app}/Contents"/>
 		<property name="mac.Java" value="${mac.Contents}/Resources/Java"/>
-		-->
-		<!--
-		<copy file="${mac.dir}/Info.plist" todir="${mac.Contents}" overwrite="true">
-			<filterset>
-				<filter token="version" value="${acVersion}"/>
-			</filterset>
-		</copy>
 		-->
 		<jarbundler dir="${dist}" verbose="true" showPlist="true"
 			name="AppleCommander"
@@ -159,7 +152,8 @@
 			/>
 
 		<!--
-		<copy file="${guijar}" tofile="${mac.Java}/AppleCommander.jar"/>
+		     TODO: Let's not re-enable this.  We can do it better.
+
 		<copy file="${cmdjar}" tofile="${user.home}/bin/ac.jar"/>
 		-->
 		<!--
