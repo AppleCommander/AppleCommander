@@ -13,6 +13,8 @@
 	<property name="web" value="web"/>
 	<property name="javadoc" value="${work}/javadoc"/>
 	<property name="builddir" value="${basedir}/build" />
+	<property name="mac.dir" value="${basedir}/mac"/>
+	<property name="mac.work" value="${work}/mac/AppleCommander-mac" />
 	<property file="${builddir}/ACBuild.properties"/>
 	<property file="${builddir}/ACBuild-default.properties"/>
 	<condition property="swtjar"
@@ -131,38 +133,35 @@
 	</target>
 	
 	<target name="macBundle" depends="init,jars" description="Build Mac application bundle.">
-		<property name="mac.dir" value="mac"/>
 		<property name="mac.app" value="${dist}/AppleCommander.app"/>
+
 		<!--
-		<property name="mac.Contents" value="${mac.app}/Contents"/>
-		<property name="mac.Java" value="${mac.Contents}/Resources/Java"/>
+		     NB: This seems like the only obvious way to turn ${swtjar}
+		     into something we can install using jarbundler to both
+		     copy and add to classpath.  If you have a better way… :)
 		-->
-		<jarbundler dir="${dist}" verbose="true" showPlist="true"
-			name="AppleCommander"
+		<copy file="${swtjar}" todir="${mac.dir}/swt" />
+
+		<mkdir dir="${mac.work}" />
+		<jarbundler dir="${mac.work}"
+			name="AppleCommander" version="${acVersion}"
+			verbose="true" showPlist="true"
 			mainclass="com.webcodepro.applecommander.ui.AppleCommander"
 			bundleid="com.webcodepro.applecommander"
-			jar="${dist}/AppleCommander-${acVersion}.jar"
-			version="${acVersion}" build="${acVersion}"
 			stubfile="${mac.dir}/universalJavaApplicationStub"
 			icon="${mac.dir}/AppleCommander.icns"
-			useJavaXKey="true"
-			developmentregion="English"
-			copyright="Copyright 2002-2008 Rob Greene and John B. Matthews."
-			jvmversion="1.6+"
-			/>
+			jvmversion="1.6+" useJavaXKey="true" developmentregion="English"
+			copyright="Copyright 2002-2008 Rob Greene and John B. Matthews.">
+			<jarfilelist dir="${dist}" files="AppleCommander-${acVersion}.jar" />
+			<jarfileset dir="${mac.dir}/swt" />
+		</jarbundler>
 
-		<!--
-		     TODO: Let's not re-enable this.  We can do it better.
-
-		<copy file="${cmdjar}" tofile="${user.home}/bin/ac.jar"/>
-		-->
-		<!--
 	    <zip destfile="${maczip}">
-	        <zipfileset dir="${mac.app}" prefix="AppleCommander.app"/>
-			<zipfileset dir="${mac.app}" prefix="AppleCommander.app"
-				includes="Contents/MacOS/JavaApplicationStub" filemode="755"/>
+			<zipfileset dir="${mac.work}" prefix="AppleCommander-${acVersion}-mac" />
+			<zipfileset dir="${dist}" prefix="AppleCommander-${acVersion}-mac">
+				<include name="AppleCommander-${acVersion}-ac.jar" />
+			</zipfileset>
 	    </zip>
-		-->
 	</target>
 
 	<target name="sourceZip" depends="init" description="Build source ZIP archive">
