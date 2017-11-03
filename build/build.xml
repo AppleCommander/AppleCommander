@@ -71,8 +71,8 @@
 		<property name="antjar" value="${antJarPathMac}" />
 		<property name="swtjar" value="${swtJarPathMac}" />
 		<property name="juintjar" value="${junitPathMac}" />
-		<condition property="buildMacGui" value="true">
-			<istrue value="buildGui" />
+		<condition property="noMacGui" value="true">
+			<isset property="noGui" />
 		</condition>
 	</target>
 
@@ -121,7 +121,7 @@
 		</signjar>
 	</target>
 
-	<target name="executableGuiJar" depends="init" if="buildGui"
+	<target name="executableGuiJar" depends="init" unless="noGui"
 		description="Build GUI executable JAR">
 		<javac srcdir="${source}" destdir="${classes}" classpath="${antjar}:${swtjar}">
 			<include name="**/*.java"/>
@@ -141,9 +141,11 @@
 			</fileset>
 		</jar>
 	</target>
-	
-	<target name="executableCmdJar" depends="init" description="Build command-line only executable JAR">
-		<javac srcdir="${source}" destdir="${classes}" classpath="${antjar}">
+
+	<target name="executableCmdJar" depends="init"
+		description="Build command-line only executable JAR">
+		<!-- SWT needs to be in classpath if executableGuiCmdJar didn't run -->
+		<javac srcdir="${source}" destdir="${classes}" classpath="${antjar}:${swtjar}">
 			<include name="**/*.java"/>
 			<exclude name="**/*Test.java"/>
 			<compilerarg value="-XDignore.symbol.file"/>
@@ -165,8 +167,9 @@
 		</jar>
 	</target>
 
-	<target name="macBundle" depends="init,jars" if="buildMacGui"
+	<target name="macBundle" depends="init,jars" if="isMac" unless="noMacGui"
 		description="Build Mac application bundle.">
+		<echo>${isMac} ${noMacGui}</echo>
 		<property name="mac.dir" value="mac"/>
 		<property name="mac.app" value="${mac.dir}/AppleCommander.app"/>
 		<property name="mac.Contents" value="${mac.app}/Contents"/>
