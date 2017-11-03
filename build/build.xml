@@ -71,6 +71,9 @@
 		<property name="antjar" value="${antJarPathMac}" />
 		<property name="swtjar" value="${swtJarPathMac}" />
 		<property name="juintjar" value="${junitPathMac}" />
+		<condition property="buildMacGui" value="true">
+			<istrue value="buildGui" />
+		</condition>
 	</target>
 
 	<target name="init-unix" if="isUnix">
@@ -117,8 +120,9 @@
 			</fileset>
 		</signjar>
 	</target>
-	
-	<target name="executableGuiJar" depends="init" description="Build GUI executable JAR">
+
+	<target name="executableGuiJar" depends="init" if="buildGui"
+		description="Build GUI executable JAR">
 		<javac srcdir="${source}" destdir="${classes}" classpath="${antjar}:${swtjar}">
 			<include name="**/*.java"/>
 			<exclude name="**/*Test.java"/>
@@ -160,8 +164,9 @@
 			</fileset>
 		</jar>
 	</target>
-	
-	<target name="macBundle" depends="init,jars" description="Build Mac application bundle.">
+
+	<target name="macBundle" depends="init,jars" if="buildMacGui"
+		description="Build Mac application bundle.">
 		<property name="mac.dir" value="mac"/>
 		<property name="mac.app" value="${mac.dir}/AppleCommander.app"/>
 		<property name="mac.Contents" value="${mac.app}/Contents"/>
