@@ -32,24 +32,6 @@
 			</not>
 		</and>
 	</condition>
-	<condition property="swtjar" value="${swtJarPathWin}">
-		<isset property="isWin" />
-	</condition>
-	<condition property="swtjar" value="${swtJarPathMac}">
-		<isset property="isMac" />
-	</condition>
-	<condition property="swtjar" value="${swtJarPathUnix}">
-		<isset property="isUnix" />
-	</condition>
-	<condition property="juintjar" value="${junitPathWin}">
-		<isset property="isWin" />
-	</condition>
-	<condition property="juintjar" value="${junitPathMac}">
-		<isset property="isMac" />
-	</condition>
-	<condition property="juintjar" value="${junitPathUnix}">
-		<isset property="isUnix" />
-	</condition>
 	<condition property="signing-needed">
 		<available file="${keyconf}" property="keyconf-exists" />
 	</condition>
@@ -70,7 +52,23 @@
 		<echo>Building version ${acVersion}...</echo>
 	</target>
 
-	<target name="init" depends="version" description="Ensure work directory is present">
+	<target name="init-win" if="isWin">
+		<property name="swtjar" value="${swtJarPathWin}" />
+		<property name="juintjar" value="${junitPathWin}" />
+	</target>
+
+	<target name="init-mac" if="isMac">
+		<property name="swtjar" value="${swtJarPathMac}" />
+		<property name="juintjar" value="${junitPathMac}" />
+	</target>
+
+	<target name="init-unix" if="isUnix">
+		<property name="swtjar" value="${swtJarPathUnix}" />
+		<property name="juintjar" value="${junitPathUnix}" />
+	</target>
+
+	<target name="init" depends="version,init-win,init-mac,init-unix"
+		description="Ensure work directory is present">
 		<mkdir dir="${work}"/>
 		<mkdir dir="${classes}"/>
 		<mkdir dir="${dist}"/>
