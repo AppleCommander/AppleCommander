@@ -15,16 +15,41 @@
 	<property name="builddir" value="${basedir}/build" />
 	<property file="${builddir}/ACBuild.properties"/>
 	<property file="${builddir}/ACBuild-default.properties"/>
-	<condition property="swtjar"
-		value="${swtJarPathWin}"
-		else="${swtJarPathMac}">
-		<os family="windows"/>
-	</condition>	
-	<condition property="junitjar"
-		value="${junitPathWin}"
-		else="${junitPathMac}">
-		<os family="windows"/>
-	</condition>	
+	<condition property="isWin" value="true">
+		<os family="windows" />
+	</condition>
+	<condition property="isMac" value="true">
+		<and>
+			<os family="mac" />
+			<os family="unix" />
+		</and>
+	</condition>
+	<condition property="isUnix" value="true">
+		<and>
+			<os family="unix" />
+			<not>
+				<os family="mac" />
+			</not>
+		</and>
+	</condition>
+	<condition property="swtjar" value="${swtJarPathWin}">
+		<isset property="isWin" />
+	</condition>
+	<condition property="swtjar" value="${swtJarPathMac}">
+		<isset property="isMac" />
+	</condition>
+	<condition property="swtjar" value="${swtJarPathUnix}">
+		<isset property="isUnix" />
+	</condition>
+	<condition property="juintjar" value="${junitPathWin}">
+		<isset property="isWin" />
+	</condition>
+	<condition property="juintjar" value="${junitPathMac}">
+		<isset property="isMac" />
+	</condition>
+	<condition property="juintjar" value="${junitPathUnix}">
+		<isset property="isUnix" />
+	</condition>
 	<condition property="signing-needed">
 		<available file="${keyconf}" property="keyconf-exists" />
 	</condition>
