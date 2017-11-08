@@ -18,3 +18,5 @@ mac/AppleCommander.app/Contents/Info.plist
 .settings/org.eclipse.jdt.core.prefs
 build/ACBuild.properties
 build/AppleCommander.preferences
+*.o
+*.lst
