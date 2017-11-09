@@ -79,14 +79,14 @@ public class AppleCommander {
 	 * command-line version.
 	 */
 	protected static void launchSwtAppleCommander(String[] args) {
-			Class swtAppleCommander;
+			Class<?> swtAppleCommander;
 			try {
 				swtAppleCommander =	Class.forName(
 					"com.webcodepro.applecommander.ui.swt.SwtAppleCommander"); //$NON-NLS-1$
 				Object object = swtAppleCommander.newInstance();
 				Method launchMethod = swtAppleCommander.
-					getMethod("launch", null); //$NON-NLS-1$
-				launchMethod.invoke(object, null);
+					getMethod("launch", (Class[]) null); //$NON-NLS-1$
+				launchMethod.invoke(object, (Object[]) null);
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			} catch (SecurityException e) {
@@ -133,14 +133,14 @@ public class AppleCommander {
 	 * command-line version.
 	 */
 	protected static void launchSwingAppleCommander(String[] args) {
-			Class swtAppleCommander;
+			Class<?> swtAppleCommander;
 			try {
 				swtAppleCommander =	Class.forName(
 					"com.webcodepro.applecommander.ui.swing.SwingAppleCommander"); //$NON-NLS-1$
 				Object object = swtAppleCommander.newInstance();
 				Method launchMethod = swtAppleCommander.
-					getMethod("launch", null); //$NON-NLS-1$
-				launchMethod.invoke(object, null);
+					getMethod("launch", (Class[]) null); //$NON-NLS-1$
+				launchMethod.invoke(object, (Object[]) null);
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			} catch (SecurityException e) {

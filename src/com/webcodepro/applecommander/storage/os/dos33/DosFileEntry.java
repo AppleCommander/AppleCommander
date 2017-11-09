@@ -263,10 +263,10 @@ public class DosFileEntry implements FileEntry {
 	 * This default implementation is intended only for standard mode.
 	 * displayMode is specified in FormattedDisk.
 	 */
-	public List getFileColumnData(int displayMode) {
+	public List<String> getFileColumnData(int displayMode) {
 		NumberFormat numberFormat = NumberFormat.getNumberInstance();
 
-		List list = new ArrayList();
+		List<String> list = new ArrayList<>();
 		switch (displayMode) {
 			case FormattedDisk.FILE_DISPLAY_NATIVE:
 				list.add(isLocked() ? "*" : " "); //$NON-NLS-1$ //$NON-NLS-2$

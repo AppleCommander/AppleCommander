@@ -93,6 +93,7 @@
 		<javac srcdir="${source}" destdir="${classes}" classpath="${swtjar}">
 			<include name="**/*.java"/>
 			<exclude name="**/*Test.java"/>
+			<compilerarg value="-Xlint:unchecked"/>
 		</javac>
 		<jar jarfile="${guijar}" manifest="build/manifest.mf">
 			<fileset dir="${classes}"/>
@@ -113,6 +114,7 @@
 		<javac srcdir="${source}" destdir="${classes}" >
 			<include name="**/*.java"/>
 			<exclude name="**/*Test.java"/>
+			<compilerarg value="-Xlint:unchecked"/>
 			<compilerarg value="-XDignore.symbol.file"/>
 		</javac>
 		<jar jarfile="${cmdjar}" manifest="build/ac.mf">

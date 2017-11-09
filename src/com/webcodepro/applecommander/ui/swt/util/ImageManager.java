@@ -75,7 +75,7 @@ public class ImageManager {
 	public static final String LOGO_COMPILE_WIZARD = "CompileWizardLogo.gif"; //$NON-NLS-1$
 	public static final String LOGO_COMPARE_IMAGE_WIZARD = "CompareImageWizardLogo.gif"; //$NON-NLS-1$
 	
-	private Map images = new HashMap();
+	private Map<String,Image> images = new HashMap<>();
 	private String[] imageNames = {
 		// Icons:
 		ICON_DISK,					ICON_STANDARD_FILE_VIEW,
