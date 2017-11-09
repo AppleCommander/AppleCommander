@@ -413,7 +413,7 @@ public class GraphicsFileFilter implements FileFilter {
 	 * @see <a href="http://web.pdx.edu/~heiss/technotes/ftyp/ft.about.html">File Types</a>
 	 */
 	public AppleImage[] buildQuickDraw2Icons(FileEntry fileEntry) {
-		List icons = new ArrayList();
+		List<AppleImage> icons = new ArrayList<>();
 		int offset = 26;	// skip file header
 		byte[] filedata = fileEntry.getFileData();
 		while (offset < filedata.length) {

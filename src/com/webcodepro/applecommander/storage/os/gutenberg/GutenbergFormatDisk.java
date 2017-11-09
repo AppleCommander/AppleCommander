@@ -133,8 +133,8 @@ public class GutenbergFormatDisk extends FormattedDisk {
 	 * Retrieve a list of files.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFiles()
 	 */
-	public List getFiles() {
-		List list = new ArrayList();
+	public List<FileEntry> getFiles() {
+		List<FileEntry> list = new ArrayList<>();
 		int track = CATALOG_TRACK;
 		int sector = VTOC_SECTOR;
 		while (track < 40) { // iterate through all catalog sectors
@@ -309,8 +309,8 @@ public class GutenbergFormatDisk extends FormattedDisk {
 	/**
 	 * Get WP-specific disk information.
 	 */
-	public List getDiskInformation() {
-		List list = super.getDiskInformation();
+	public List<DiskInformation> getDiskInformation() {
+		List<DiskInformation> list = super.getDiskInformation();
 		return list;
 	}
 
@@ -318,8 +318,8 @@ public class GutenbergFormatDisk extends FormattedDisk {
 	 * Get the standard file column header information.
 	 * This default implementation is intended only for standard mode.
 	 */
-	public List getFileColumnHeaders(int displayMode) {
-		List list = new ArrayList();
+	public List<FileColumnHeader> getFileColumnHeaders(int displayMode) {
+		List<FileColumnHeader> list = new ArrayList<>();
 		switch (displayMode) {
 			case FILE_DISPLAY_NATIVE:
 				list.add(new FileColumnHeader(" ", 1, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$

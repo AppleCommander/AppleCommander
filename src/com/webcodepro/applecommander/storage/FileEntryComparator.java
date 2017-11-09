@@ -29,7 +29,7 @@ import java.util.Comparator;
  * Date created: Oct 27, 2002 8:24:39 PM
  * @author Rob Greene
  */
-public class FileEntryComparator implements Comparator {
+public class FileEntryComparator implements Comparator<FileEntry> {
 	private int columnIndex;
 	private int displayMode;
 	
@@ -45,11 +45,12 @@ public class FileEntryComparator implements Comparator {
 	 * Compare two FileEntry objects.
 	 * @see java.util.Comparator#compare(Object, Object)
 	 */
-	public int compare(Object o1, Object o2) {
+	public int compare(FileEntry o1, FileEntry o2) {
+		// FIXME?: This safety check is safe to remove now?
 		if (!(o1 instanceof FileEntry) || !(o2 instanceof FileEntry)) {
 			return 0;
 		}
-		
+
 		if (o1 == null || o2 == null) {
 			return ((o1 == null) ? -1 : 0) + ((o2 == null) ? 1 : 0);
 		}

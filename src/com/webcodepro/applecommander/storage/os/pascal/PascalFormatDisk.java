@@ -139,8 +139,8 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * Retrieve a list of files.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFiles()
 	 */
-	public List getFiles() {
-		List list = new ArrayList();
+	public List<FileEntry> getFiles() {
+		List<FileEntry> list = new ArrayList<>();
 		byte[] directory = readDirectory();
 		// process directory blocks:
 		int entrySize = ENTRY_SIZE;
@@ -158,8 +158,8 @@ public class PascalFormatDisk extends FormattedDisk {
  	/**
 	 * Retrieve the entire directory.
 	 */
-	public List getDirectory() {
-		List list = new ArrayList();
+	public List<PascalFileEntry> getDirectory() {
+		List<PascalFileEntry> list = new ArrayList<>();
 		byte[] directory = readDirectory();
 		int count = AppleUtil.getWordValue(directory, 16);
 		int offset = 0;
@@ -194,7 +194,7 @@ public class PascalFormatDisk extends FormattedDisk {
 		// find index of largest free space
 		int count = 0; int index = 0; int max = 0;
 		int last = 0; int first = 0; int free = 0;
-		List dir = getDirectory();
+		List<PascalFileEntry> dir = getDirectory();
 		count = dir.size();
 		for (int i = 1; i < count; i++) {
 			last = ((PascalFileEntry) dir.get(i - 1)).getLastBlock();
@@ -432,8 +432,8 @@ public class PascalFormatDisk extends FormattedDisk {
 	/**
 	 * Get Pascal-specific disk information.
 	 */
-	public List getDiskInformation() {
-		List list = super.getDiskInformation();
+	public List<DiskInformation> getDiskInformation() {
+		List<DiskInformation> list = super.getDiskInformation();
 		list.add(new DiskInformation(textBundle.get("TotalBlocks"), getBlocksOnDisk())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("FreeBlocks"), getFreeBlocks())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("UsedBlocks"), getUsedBlocks())); //$NON-NLS-1$
@@ -452,8 +452,8 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * Get the standard file column header information.
 	 * This default implementation is intended only for standard mode.
 	 */
-	public List getFileColumnHeaders(int displayMode) {
-		List list = new ArrayList();
+	public List<FileColumnHeader> getFileColumnHeaders(int displayMode) {
+		List<FileColumnHeader> list = new ArrayList<>();
 		switch (displayMode) {
 			case FILE_DISPLAY_NATIVE:
 				list.add(new FileColumnHeader(textBundle.get("Modified"), 8, //$NON-NLS-1$

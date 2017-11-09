@@ -203,7 +203,7 @@ public class PascalFileEntry implements FileEntry {
 	 * Retrieve the list of files in this directory.
 	 * Always returns null, as Pascal does not support directories.
 	 */
-	public List getFiles() {
+	public List<PascalFileEntry> getFiles() {
 		return null;
 	}
 
@@ -223,7 +223,7 @@ public class PascalFileEntry implements FileEntry {
 	public void delete() {
 		int index = 0;
 		String dname = this.getFilename();
-		List dir = disk.getDirectory();
+		List<PascalFileEntry> dir = disk.getDirectory();
 		int count = dir.size();
 		// find the index of the matching entry
 		for (int i = 1; i < count; i++) {
@@ -261,12 +261,12 @@ public class PascalFileEntry implements FileEntry {
 	 * This default implementation is intended only for standard mode.
 	 * displayMode is specified in FormattedDisk.
 	 */
-	public List getFileColumnData(int displayMode) {
+	public List<String> getFileColumnData(int displayMode) {
 		NumberFormat numberFormat = NumberFormat.getNumberInstance();
 		SimpleDateFormat dateFormat = new SimpleDateFormat(
 				textBundle.get("PascalFileEntry.PascalDateFormat")); //$NON-NLS-1$
 
-		List list = new ArrayList();
+		List<String> list = new ArrayList<>();
 		switch (displayMode) {
 			case FormattedDisk.FILE_DISPLAY_NATIVE:
 				list.add(dateFormat.format(getModificationDate()));
@@ -344,7 +344,7 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	private void storageError(String s) throws DiskFullException {
 		if (this.index > 0) {
-			List dir = disk.getDirectory();
+			List<PascalFileEntry> dir = disk.getDirectory();
 			int count = dir.size();
 			dir.remove(this.index);
 			PascalFileEntry volEntry = (PascalFileEntry) dir.get(0);
@@ -452,7 +452,7 @@ public class PascalFileEntry implements FileEntry {
 		}
 		// update this directory entry
 		if (this.index > 0) {
-			List dir = disk.getDirectory();
+			List<PascalFileEntry> dir = disk.getDirectory();
 			dir.set(this.index, this);
 			disk.putDirectory(dir);
 		}
