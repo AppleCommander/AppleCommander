@@ -61,7 +61,7 @@ public class ProdosDirectoryEntry extends ProdosFileEntry implements DirectoryEn
 	 * return value should always be a list - a directory
 	 * with 0 entries returns an empty list.
 	 */
-	public List getFiles() {
+	public List<FileEntry> getFiles() {
 		return getDisk().getFiles(getSubdirectoryHeader().getFileEntryBlock());
 	}
 

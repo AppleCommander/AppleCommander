@@ -39,7 +39,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  */
 public class ImportWizard extends Wizard {
 	private FormattedDisk disk;
-	private List importSpecifications;
+	private List<ImportSpecification> importSpecifications;
 	/**
 	 * Constructor for ImportWizard.
 	 */
@@ -70,9 +70,9 @@ public class ImportWizard extends Wizard {
 	/**
 	 * Get the list of ImportSpecifications.
 	 */
-	public List getImportSpecifications() {
+	public List<ImportSpecification> getImportSpecifications() {
 		if (importSpecifications == null) {
-			importSpecifications = new ArrayList();
+			importSpecifications = new ArrayList<>();
 		}
 		return importSpecifications;
 	}

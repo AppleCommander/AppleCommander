@@ -397,12 +397,12 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 * This default implementation is intended only for standard mode.
 	 * displayMode is specified in FormattedDisk.
 	 */
-	public List getFileColumnData(int displayMode) {
+	public List<String> getFileColumnData(int displayMode) {
 		NumberFormat numberFormat = NumberFormat.getNumberInstance();
 		SimpleDateFormat dateFormat = new SimpleDateFormat(
 				textBundle.get("DateFormat")); //$NON-NLS-1$
 
-		List list = new ArrayList();
+		List<String> list = new ArrayList<>();
 		switch (displayMode) {
 			case FormattedDisk.FILE_DISPLAY_NATIVE:
 				list.add(isLocked() ? "*" : " "); //$NON-NLS-1$ //$NON-NLS-2$

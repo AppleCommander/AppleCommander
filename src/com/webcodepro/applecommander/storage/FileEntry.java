@@ -84,7 +84,7 @@ public interface FileEntry {
 	 * This default implementation is intended only for standard mode.
 	 * displayMode is specified in FormattedDisk.
 	 */
-	public List getFileColumnData(int displayMode);
+	public List<String> getFileColumnData(int displayMode);
 	
 	/**
 	 * Get file data.  This handles any operating-system specific issues.

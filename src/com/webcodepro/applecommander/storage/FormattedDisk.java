@@ -185,8 +185,8 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	 * each disk format can build this as appropriate.  Each subclass should
 	 * override this method and add its own detail.
 	 */
-	public List getDiskInformation() {
-		List list = new ArrayList();
+	public List<DiskInformation> getDiskInformation() {
+		List<DiskInformation> list = new ArrayList<>();
 		list.add(new DiskInformation(textBundle.get("FormattedDisk.FileName"), getFilename())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("FormattedDisk.DiskName"), getDiskName())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("FormattedDisk.PhysicalSizeInBytes"), getPhysicalSize())); //$NON-NLS-1$
@@ -204,8 +204,8 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	 * Get the standard file column header information.
 	 * This default implementation is intended only for standard mode.
 	 */
-	public List getFileColumnHeaders(int displayMode) {
-		List list = new ArrayList();
+	public List<FileColumnHeader> getFileColumnHeaders(int displayMode) {
+		List<FileColumnHeader> list = new ArrayList<>();
 		list.add(new FileColumnHeader(textBundle
 				.get("Name"), 30, FileColumnHeader.ALIGN_LEFT)); //$NON-NLS-1$
 		list.add(new FileColumnHeader(textBundle

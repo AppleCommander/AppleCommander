@@ -182,8 +182,8 @@ public class RdosFormatDisk extends FormattedDisk {
 	/**
 	 * Retrieve a list of files.
 	 */
-	public List getFiles() {
-		List files = new ArrayList();
+	public List<FileEntry> getFiles() {
+		List<FileEntry> files = new ArrayList<>();
 		for (int b=13; b<23; b++) {
 			byte[] data = readRdosBlock(b);
 			for (int i=0; i<data.length; i+= ENTRY_LENGTH) {
@@ -297,8 +297,8 @@ public class RdosFormatDisk extends FormattedDisk {
 	/**
 	 * Get Pascal-specific disk information.
 	 */
-	public List getDiskInformation() {
-		List list = super.getDiskInformation();
+	public List<DiskInformation> getDiskInformation() {
+		List<DiskInformation> list = super.getDiskInformation();
 		list.add(new DiskInformation(textBundle.get("TotalBlocks"), BLOCKS_ON_DISK)); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("FreeBlocks"), getFreeBlocks())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("UsedBlocks"), getUsedBlocks())); //$NON-NLS-1$
@@ -309,8 +309,8 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * Get the standard file column header information.
 	 * This default implementation is intended only for standard mode.
 	 */
-	public List getFileColumnHeaders(int displayMode) {
-		List list = new ArrayList();
+	public List<FileColumnHeader> getFileColumnHeaders(int displayMode) {
+		List<FileColumnHeader> list = new ArrayList<>();
 		switch (displayMode) {
 			case FILE_DISPLAY_NATIVE:
 				list.add(new FileColumnHeader(textBundle.get("Type"), 1, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
