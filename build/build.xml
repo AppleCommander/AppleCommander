@@ -18,6 +18,8 @@
 	<property name="web" value="web"/>
 	<property name="javadoc" value="${work}/javadoc"/>
 	<property name="builddir" value="${basedir}/build" />
+	<property name="mac.dir" value="${basedir}/mac"/>
+	<property name="mac.work" value="${work}/mac/AppleCommander-mac" />
 	<property file="${builddir}/ACBuild.properties"/>
 	<property file="${builddir}/ACBuild-default.properties"/>
 
@@ -44,6 +46,10 @@
 	<condition property="signing-needed">
 		<available file="${keyconf}" property="keyconf-exists" />
 	</condition>
+
+	<taskdef name="jarbundler"
+		classname="com.ultramixer.jarbundler.JarBundler"
+		classpath="mac/jarbundler-core-3.3.0.jar" />
 
 	<target name="version" description="Get version from source.">
 		<property name="main.path" value="src/com/webcodepro/applecommander/ui"/>
@@ -171,22 +177,34 @@
 
 	<target name="macBundle" depends="init,jars" if="isMac" unless="noMacGui"
 		description="Build Mac application bundle.">
-		<echo>${isMac} ${noMacGui}</echo>
-		<property name="mac.dir" value="mac"/>
-		<property name="mac.app" value="${mac.dir}/AppleCommander.app"/>
-		<property name="mac.Contents" value="${mac.app}/Contents"/>
-		<property name="mac.Java" value="${mac.Contents}/Resources/Java"/>
-		<copy file="${mac.dir}/Info.plist" todir="${mac.Contents}" overwrite="true">
-			<filterset>
-				<filter token="version" value="${acVersion}"/>
-			</filterset>
-		</copy>
-		<copy file="${guijar}" tofile="${mac.Java}/AppleCommander.jar"/>
-		<copy file="${cmdjar}" tofile="${user.home}/bin/ac.jar"/>
+		<property name="mac.app" value="${dist}/AppleCommander.app"/>
+
+		<!--
+		     NB: This seems like the only obvious way to turn ${swtjar}
+		     into something we can install using jarbundler to both
+		     copy and add to classpath.  If you have a better way… :)
+		-->
+		<copy file="${swtjar}" todir="${mac.dir}/swt" />
+
+		<mkdir dir="${mac.work}" />
+		<jarbundler dir="${mac.work}"
+			name="AppleCommander" version="${acVersion}"
+			verbose="true" showPlist="true"
+			mainclass="com.webcodepro.applecommander.ui.AppleCommander"
+			bundleid="com.webcodepro.applecommander"
+			stubfile="${mac.dir}/universalJavaApplicationStub"
+			icon="${mac.dir}/AppleCommander.icns"
+			jvmversion="1.6+" useJavaXKey="true" developmentregion="English"
+			copyright="Copyright 2002-2008 Rob Greene and John B. Matthews.">
+			<jarfilelist dir="${dist}" files="AppleCommander-${acVersion}.jar" />
+			<jarfileset dir="${mac.dir}/swt" />
+		</jarbundler>
+
 	    <zip destfile="${maczip}">
-	        <zipfileset dir="${mac.app}" prefix="AppleCommander.app"/>
-			<zipfileset dir="${mac.app}" prefix="AppleCommander.app"
-				includes="Contents/MacOS/JavaApplicationStub" filemode="755"/>
+			<zipfileset dir="${mac.work}" prefix="AppleCommander-${acVersion}-mac" />
+			<zipfileset dir="${dist}" prefix="AppleCommander-${acVersion}-mac">
+				<include name="AppleCommander-${acVersion}-ac.jar" />
+			</zipfileset>
 	    </zip>
 	</target>
 
