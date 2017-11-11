@@ -19,7 +19,6 @@
 	<property name="javadoc" value="${work}/javadoc"/>
 	<property name="builddir" value="${basedir}/build" />
 	<property name="mac.dir" value="${basedir}/mac"/>
-	<property name="mac.work" value="${work}/mac/AppleCommander-mac" />
 	<property file="${builddir}/ACBuild.properties"/>
 	<property file="${builddir}/ACBuild-default.properties"/>
 
@@ -184,10 +183,9 @@
 		     into something we can install using jarbundler to both
 		     copy and add to classpath.  If you have a better way… :)
 		-->
-		<copy file="${swtjar}" todir="${mac.dir}/swt" />
+		<copy file="${swtjar}" tofile="${work}/swt/swt.jar" />
 
-		<mkdir dir="${mac.work}" />
-		<jarbundler dir="${mac.work}"
+		<jarbundler dir="${dist}"
 			name="AppleCommander" version="${acVersion}"
 			verbose="true" showPlist="true"
 			mainclass="com.webcodepro.applecommander.ui.AppleCommander"
@@ -197,15 +195,15 @@
 			jvmversion="1.6+" useJavaXKey="true" developmentregion="English"
 			copyright="Copyright 2002-2008 Rob Greene and John B. Matthews.">
 			<jarfilelist dir="${dist}" files="AppleCommander-${acVersion}.jar" />
-			<jarfileset dir="${mac.dir}/swt" />
+			<jarfilelist dir="${work}/swt" files="swt.jar" />
 		</jarbundler>
 
-	    <zip destfile="${maczip}">
-			<zipfileset dir="${mac.work}" prefix="AppleCommander-${acVersion}-mac" />
-			<zipfileset dir="${dist}" prefix="AppleCommander-${acVersion}-mac">
-				<include name="AppleCommander-${acVersion}-ac.jar" />
+		<zip destfile="${maczip}">
+			<zipfileset dir="${dist}/AppleCommander.app" prefix="AppleCommander-${acVersion}-mac/AppleCommander.app" />
+			<zipfileset dir="${dist}" prefix="AppleCommander-${acVersion}-mac/jars">
+				<include name="AppleCommander-${acVersion}*.jar" />
 			</zipfileset>
-	    </zip>
+		</zip>
 	</target>
 
 	<target name="sourceZip" depends="init" description="Build source ZIP archive">

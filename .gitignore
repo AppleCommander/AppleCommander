@@ -12,8 +12,6 @@ TODO.local
 work
 TestImage.*
 **/Thumbs.db
-mac/AppleCommander.app/Contents/Resources/Java/AppleCommander.jar
-mac/AppleCommander.app/Contents/Info.plist
 .settings/org.eclipse.jdt.ui.prefs
 .settings/org.eclipse.jdt.core.prefs
 build/ACBuild.properties
