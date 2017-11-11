@@ -48,7 +48,7 @@ public abstract class Wizard {
 	private Shell dialog;
 	private Image logo;
 	private String title;
-	private Stack wizardPanes = new Stack();
+	private Stack<WizardPane> wizardPanes = new Stack<>();
 	private boolean wizardCompleted;
 	private Button backButton;
 	private Button nextButton;
@@ -109,8 +109,8 @@ public abstract class Wizard {
 		backButton.setText(textBundle.get("BackButton")); //$NON-NLS-1$
 		backButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				WizardPane current = (WizardPane) getWizardPanes().pop();
-				WizardPane previous = (WizardPane) getWizardPanes().peek();
+				WizardPane current = getWizardPanes().pop();
+				WizardPane previous = getWizardPanes().peek();
 				getBackButton().setEnabled(getWizardPanes().size() > 1);
 				current.dispose();
 				previous.open();
@@ -220,7 +220,7 @@ public abstract class Wizard {
 	/**
 	 * @return Returns the wizardPanes.
 	 */
-	protected Stack getWizardPanes() {
+	protected Stack<WizardPane> getWizardPanes() {
 		return wizardPanes;
 	}
 	/**

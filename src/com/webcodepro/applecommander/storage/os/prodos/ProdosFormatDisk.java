@@ -257,7 +257,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * Retrieve a list of files.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFiles()
 	 */
-	public List getFiles() {
+	public List<FileEntry> getFiles() {
 		return getFiles(VOLUME_DIRECTORY_BLOCK);
 	}
 
@@ -265,8 +265,8 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * Build a list of files, starting in the given block number.
 	 * This works for the master as well as the subdirectories.
 	 */		
-	protected List getFiles(int blockNumber) {
-		List files = new ArrayList();
+	protected List<FileEntry> getFiles(int blockNumber) {
+		List<FileEntry> files = new ArrayList<>();
 		while (blockNumber != 0) {
 			byte[] block = readBlock(blockNumber);
 			int offset = 4;
@@ -400,8 +400,8 @@ public class ProdosFormatDisk extends FormattedDisk {
 	/**
 	 * Get Pascal-specific disk information.
 	 */
-	public List getDiskInformation() {
-		List list = super.getDiskInformation();
+	public List<DiskInformation> getDiskInformation() {
+		List<DiskInformation> list = super.getDiskInformation();
 		list.add(new DiskInformation(textBundle.get("TotalBlocks"),  //$NON-NLS-1$
 				volumeHeader.getTotalBlocks()));
 		list.add(new DiskInformation(textBundle.get("FreeBlocks"),  //$NON-NLS-1$
@@ -429,8 +429,8 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * Get the standard file column header information.
 	 * This default implementation is intended only for standard mode.
 	 */
-	public List getFileColumnHeaders(int displayMode) {
-		List list = new ArrayList();
+	public List<FileColumnHeader> getFileColumnHeaders(int displayMode) {
+		List<FileColumnHeader> list = new ArrayList<>();
 		switch (displayMode) {
 			case FILE_DISPLAY_NATIVE:
 				list.add(new FileColumnHeader(" ", 1, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$

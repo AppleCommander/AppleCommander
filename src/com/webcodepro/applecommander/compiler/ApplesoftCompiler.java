@@ -72,25 +72,25 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 	 * by the compiled program.  This map is keyed by the name of the
 	 * address and the value is the address.
 	 */
-	private Map knownAddresses = new HashMap();
+	private Map<String,String> knownAddresses = new HashMap<>();
 	/**
 	 * Lists the names of all addresses used by the compiled program.
 	 * To identify the value, use the knownAddresses map.
 	 */
-	private List usedAddresses = new ArrayList();
+	private List<String> usedAddresses = new ArrayList<>();
 	/**
 	 * Contains a list of all variables declared or used by the
 	 * program.
 	 */
-	private List variables = new ArrayList();
+	private List<Variable> variables = new ArrayList<>();
 	/**
 	 * Dynamically created map of commands to Methods.
 	 */
-	private Map commandMethods = new HashMap();
+	private Map<String,Method> commandMethods = new HashMap<>();
 	/**
 	 * Track FOR loop variables.
 	 */
-	private Stack loopVariables = new Stack();
+	private Stack<String> loopVariables = new Stack<>();
 	/**
 	 * Indicates integer math operations only.
 	 */

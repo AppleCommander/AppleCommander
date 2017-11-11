@@ -134,8 +134,8 @@ public class DosFormatDisk extends FormattedDisk {
 	 * Retrieve a list of files.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFiles()
 	 */
-	public List getFiles() {
-		List list = new ArrayList();
+	public List<FileEntry> getFiles() {
+		List<FileEntry> list = new ArrayList<>();
 		byte[] vtoc = readVtoc();
 		int track = AppleUtil.getUnsignedByte(vtoc[1]);
 		int sector = AppleUtil.getUnsignedByte(vtoc[2]);
@@ -319,8 +319,8 @@ public class DosFormatDisk extends FormattedDisk {
 	/**
 	 * Get DOS-specific disk information.
 	 */
-	public List getDiskInformation() {
-		List list = super.getDiskInformation();
+	public List<DiskInformation> getDiskInformation() {
+		List<DiskInformation> list = super.getDiskInformation();
 		list.add(new DiskInformation(textBundle.get("DosFormatDisk.TotalSectors"), getTotalSectors())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("DosFormatDisk.FreeSectors"), getFreeSectors())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("DosFormatDisk.UsedSectors"), getUsedSectors())); //$NON-NLS-1$
@@ -333,8 +333,8 @@ public class DosFormatDisk extends FormattedDisk {
 	 * Get the standard file column header information.
 	 * This default implementation is intended only for standard mode.
 	 */
-	public List getFileColumnHeaders(int displayMode) {
-		List list = new ArrayList();
+	public List<FileColumnHeader> getFileColumnHeaders(int displayMode) {
+		List<FileColumnHeader> list = new ArrayList<>();
 		switch (displayMode) {
 			case FILE_DISPLAY_NATIVE:
 				list.add(new FileColumnHeader(" ", 1, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$

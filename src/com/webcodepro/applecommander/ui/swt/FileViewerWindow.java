@@ -99,7 +99,7 @@ public class FileViewerWindow {
 	private Color green;
 	
 	private ContentTypeAdapter contentTypeAdapter;
-	private Map nativeFilterAdapterMap;
+	private Map<Class<?>,FilterAdapter> nativeFilterAdapterMap;
 	private FilterAdapter nativeFilterAdapter;
 	private FilterAdapter hexFilterAdapter;
 	private FilterAdapter rawDumpFilterAdapter;
@@ -165,7 +165,7 @@ public class FileViewerWindow {
 	 * Setup all possible specialized FilterAdapters.
 	 */	
 	protected void createFilterAdapterMap() {
-		nativeFilterAdapterMap = new HashMap();
+		nativeFilterAdapterMap = new HashMap<>();
 		
 		nativeFilterAdapterMap.put(ApplesoftFileFilter.class, 
 			new ApplesoftFilterAdapter(this, textBundle.get("FileViewerWindow.ApplesoftButton"),  //$NON-NLS-1$

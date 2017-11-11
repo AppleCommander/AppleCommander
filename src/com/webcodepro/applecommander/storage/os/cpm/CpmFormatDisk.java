@@ -152,7 +152,7 @@ public class CpmFormatDisk extends FormattedDisk {
 	 * Compute the number of CP/M blocks that are currently used.
 	 */
 	public int getBlocksUsed() {
-		List files = getFiles();
+		List<FileEntry> files = getFiles();
 		int blocksUsed = 0;
 		for (int i=0; i<files.size(); i++) {
 			CpmFileEntry fileEntry = (CpmFileEntry) files.get(i);
@@ -192,7 +192,7 @@ public class CpmFormatDisk extends FormattedDisk {
 			usage[i] = true;
 		}
 		// fill in space used by files
-		List files = getFiles();
+		List<FileEntry> files = getFiles();
 		for (int i=0; i<files.size(); i++) {
 			CpmFileEntry fileEntry = (CpmFileEntry) files.get(i);
 			int[] allocation = fileEntry.getAllocations();
@@ -379,9 +379,9 @@ public class CpmFormatDisk extends FormattedDisk {
 	 * Answer with a list of file entries.
 	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#getFiles()
 	 */
-	public List getFiles() {
-		List files = new ArrayList();
-		Map index = new HashMap();
+	public List<FileEntry> getFiles() {
+		List<FileEntry> files = new ArrayList<>();
+		Map<String,CpmFileEntry> index = new HashMap<>();
 		for (int i=0; i<64; i++) {
 			int offset = i*CpmFileEntry.ENTRY_LENGTH;
 			CpmFileEntry fileEntry = new CpmFileEntry(this, offset);
@@ -473,8 +473,8 @@ public class CpmFormatDisk extends FormattedDisk {
 	 * Get the standard file column header information.
 	 * This default implementation is intended only for standard mode.
 	 */
-	public List getFileColumnHeaders(int displayMode) {
-		List list = new ArrayList();
+	public List<FileColumnHeader> getFileColumnHeaders(int displayMode) {
+		List<FileColumnHeader> list = new ArrayList<>();
 		switch (displayMode) {
 			case FILE_DISPLAY_NATIVE:
 				list.add(new FileColumnHeader(textBundle.get("Name"), 8, //$NON-NLS-1$

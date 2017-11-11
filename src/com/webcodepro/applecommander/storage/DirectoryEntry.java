@@ -37,7 +37,7 @@ public interface DirectoryEntry {
 	 * return value should always be a list - a directory
 	 * with 0 entries returns an empty list.
 	 */
-	public List getFiles();
+	public List<FileEntry> getFiles();
 
 	/**
 	 * Create a new FileEntry.

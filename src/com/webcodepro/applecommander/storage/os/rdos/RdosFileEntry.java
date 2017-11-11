@@ -157,7 +157,7 @@ public class RdosFileEntry implements FileEntry {
 	 * Retrieve the list of files in this directory.
 	 * Since RDOS does not support directories, this will always return null.
 	 */
-	public List getFiles() {
+	public List<RdosFileEntry> getFiles() {
 		return null;
 	}
 	
@@ -180,10 +180,10 @@ public class RdosFileEntry implements FileEntry {
 	 * This default implementation is intended only for standard mode.
 	 * displayMode is specified in FormattedDisk.
 	 */
-	public List getFileColumnData(int displayMode) {
+	public List<String> getFileColumnData(int displayMode) {
 		NumberFormat numberFormat = NumberFormat.getNumberInstance();
 
-		List list = new ArrayList();
+		List<String> list = new ArrayList<>();
 		switch (displayMode) {
 			case FormattedDisk.FILE_DISPLAY_NATIVE:
 				list.add(getFiletype());
