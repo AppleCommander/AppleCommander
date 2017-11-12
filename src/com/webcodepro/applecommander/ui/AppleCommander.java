@@ -140,12 +140,12 @@ public class AppleCommander {
 	 * command-line version.
 	 */
 	protected static void launchSwingAppleCommander(String[] args) {
-			Class<?> swtAppleCommander;
+			Class<?> swingAppleCommander;
 			try {
-				swtAppleCommander =	Class.forName(
+				swingAppleCommander =	Class.forName(
 					"com.webcodepro.applecommander.ui.swing.SwingAppleCommander"); //$NON-NLS-1$
-				Object object = swtAppleCommander.newInstance();
-				Method launchMethod = swtAppleCommander.
+				Object object = swingAppleCommander.newInstance();
+				Method launchMethod = swingAppleCommander.
 					getMethod("launch", (Class[]) null); //$NON-NLS-1$
 				launchMethod.invoke(object, (Object[]) null);
 			} catch (ClassNotFoundException e) {
