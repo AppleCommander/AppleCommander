@@ -2,7 +2,9 @@ THINGS TO DO
 ============
 This is the internal list of items that need to be done.
 
--- 1.3.5 -- 
+-- 1.3.5 --
+* Migration to GitHub
+* Update SWT libraries 
 
 --- FUTURE ---
 o Add binaries to repository to simplify AC development and builds
