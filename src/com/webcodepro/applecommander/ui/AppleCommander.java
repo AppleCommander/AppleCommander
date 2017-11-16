@@ -108,12 +108,12 @@ public class AppleCommander {
 	protected static void launchFXAppleCommander(String[] args) {
 			Class<?> fxAppleCommander;
 			try {
-				fxAppleCommander =	Class.forName(
+				fxAppleCommander = Class.forName(
 					"com.webcodepro.applecommander.ui.fx.FXAppleCommander"); //$NON-NLS-1$
 				Object object = fxAppleCommander.newInstance();
-				Method launchMethod = fxAppleCommander.
-					getMethod("launch", (Class[]) null); //$NON-NLS-1$
-				launchMethod.invoke(object, (Object[]) null);
+				Method launchMethod = fxAppleCommander.getMethod(
+						"main", new Class[] { String[].class }); //$NON-NLS-1$
+				launchMethod.invoke(object, new Object[] { args });
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			} catch (SecurityException e) {
