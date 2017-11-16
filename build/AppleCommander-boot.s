@@ -10,9 +10,12 @@
 
 ; Assemble this code with the cc65 toolchain:
 ;
-; cl65 AppleCommander-boot.s -t none --start-addr $0800
+; cl65 -t none --start-addr 0x0800 -l AppleCommander-boot.lst AppleCommander-boot.s
 ; then copy resulting AppleCommander-boot to:
 ; .../src/com/webcodepro/applecommander/storage/AppleCommander-boot.dump
+;
+; Note that this command will hexdump a useful format for pasting and testing...
+; hexdump -e '"08%02.2_ax:" 16/1 "%02x " "\n"' AppleCommander-boot
 ;
 
 ; Define as ASCII string with no attributes
@@ -76,7 +79,7 @@ YOFFSET = 13
 ;
 ; Added a little chicanery for the Apple /// to branch around
 ; since it starts executing at the zeroeth byte, not the first.
-; This has the effect of setting carry based on machine type. 
+; This has the effect of setting carry based on machine type.
 ;
 .byte $01
 	SEC
@@ -140,25 +143,24 @@ WAIT:
 ; Rotate the screen (isn't that retro)!
 ;
 SETUP:
-	LDX #19
+  LDX #19
 ROTATE:
-	TXA
-	JSR CALCADDR
-	LDY #0
-	LDA (ADDR),Y
-	PHA
+  TXA
+  JSR CALCADDR
+  LDY #39
+  LDA (ADDR),Y
+  PHA
 SHIFT:
-	INY
-	LDA (ADDR),Y
-	DEY
-	STA (ADDR),Y
-	INY
-	CPY #39
-	BNE SHIFT
-	PLA
-	STA (ADDR),Y
-	DEX
-	BPL ROTATE
+  DEY
+  LDA (ADDR),Y
+  INY
+  STA (ADDR),Y
+  DEY
+  BNE SHIFT
+  PLA
+  STA (ADDR),Y
+  DEX
+  BPL ROTATE
 ;
 ; Introduce a pause between rotations.
 ;
@@ -198,7 +200,7 @@ DATA2:
 ;
 MESSAGE:
 	asccr "APPLECOMMANDER CREATED THIS DISK"
-	asccr "VISIT APPLECOMMANDER.SF.NET"
+	asccr "VISIT APPLECOMMANDER.GITHUB.IO"
 	.byte $8d
 	asc "INSERT ANOTHER DISK AND PRESS ANY KEY"
 	.byte $00

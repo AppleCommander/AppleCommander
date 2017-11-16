@@ -49,8 +49,7 @@ public abstract class AppleImage {
 	public static AppleImage create(int width, int height) {
 		String[] classes = {
 			"ImageIoImage", "SunJpegImage", "SwtImage" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		Class<?> constructorArgType = AppleImage.class;
-		Class<?>[] constructorArgClasses = new Class[] { AppleImage.class };
+		Class[] constructorArgClasses = new Class[] { int.class, int.class };
 		Object[] constructorArgs = new Object[] {
 			new Integer(width), new Integer(height) };
 		for (int i=0; i<classes.length; i++) {
@@ -58,8 +57,9 @@ public abstract class AppleImage {
 				Class<?> appleImageClass = Class.forName(
 					"com.webcodepro.applecommander.storage.filters.imagehandlers."  //$NON-NLS-1$
 					+ classes[i]);
-				Constructor constructor =
-					constructorArgType.getConstructor(constructorArgClasses);
+				Constructor<?> constructor =
+					appleImageClass.getConstructor(constructorArgClasses);
+
 				AppleImage appleImage = (AppleImage) 
 					constructor.newInstance(constructorArgs);
 				return appleImage;
