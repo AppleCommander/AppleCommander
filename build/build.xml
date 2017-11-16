@@ -2,7 +2,12 @@
 	<description>
 		This script builds the distribution components.
 	</description>
-	
+
+	<!-- Fix ant warning (explained: https://stackoverflow.com/questions/5103384) -->
+	<presetdef name="javac">
+		<javac includeantruntime="false" />
+	</presetdef>
+
 	<property name="work" value="work"/>
 	<property name="classes" value="${work}/classes"/>
 	<property name="dist" value="${work}/dist"/>
@@ -13,21 +18,37 @@
 	<property name="web" value="web"/>
 	<property name="javadoc" value="${work}/javadoc"/>
 	<property name="builddir" value="${basedir}/build" />
+	<property name="mac.dir" value="${basedir}/mac"/>
 	<property file="${builddir}/ACBuild.properties"/>
 	<property file="${builddir}/ACBuild-default.properties"/>
-	<condition property="swtjar"
-		value="${swtJarPathWin}"
-		else="${swtJarPathMac}">
-		<os family="windows"/>
-	</condition>	
-	<condition property="junitjar"
-		value="${junitPathWin}"
-		else="${junitPathMac}">
-		<os family="windows"/>
-	</condition>	
+
+	<!-- If you want to add a platform, create a conditional property for it here -->
+	<condition property="isWin" value="true">
+		<os family="windows" />
+	</condition>
+	<condition property="isMac" value="true">
+		<and>
+			<os family="mac" />
+			<os family="unix" />
+		</and>
+	</condition>
+	<condition property="isUnix" value="true">
+		<!-- macOS also provides unix, so we must explicitly exclude it here -->
+		<and>
+			<os family="unix" />
+			<not>
+				<os family="mac" />
+			</not>
+		</and>
+	</condition>
+
 	<condition property="signing-needed">
 		<available file="${keyconf}" property="keyconf-exists" />
 	</condition>
+
+	<taskdef name="jarbundler"
+		classname="com.ultramixer.jarbundler.JarBundler"
+		classpath="mac/jarbundler-core-3.3.0.jar" />
 
 	<target name="version" description="Get version from source.">
 		<property name="main.path" value="src/com/webcodepro/applecommander/ui"/>
@@ -45,7 +66,29 @@
 		<echo>Building version ${acVersion}...</echo>
 	</target>
 
-	<target name="init" depends="version" description="Ensure work directory is present">
+	<target name="init-win" if="isWin">
+		<property name="antjar" value="${antJarPathWin}" />
+		<property name="swtjar" value="${swtJarPathWin}" />
+		<property name="juintjar" value="${junitPathWin}" />
+	</target>
+
+	<target name="init-mac" if="isMac">
+		<property name="antjar" value="${antJarPathMac}" />
+		<property name="swtjar" value="${swtJarPathMac}" />
+		<property name="juintjar" value="${junitPathMac}" />
+		<condition property="noMacGui" value="true">
+			<isset property="noGui" />
+		</condition>
+	</target>
+
+	<target name="init-unix" if="isUnix">
+		<property name="antjar" value="${antJarPathUnix}" />
+		<property name="swtjar" value="${swtJarPathUnix}" />
+		<property name="juintjar" value="${junitPathUnix}" />
+	</target>
+
+	<target name="init" depends="version,init-win,init-mac,init-unix"
+		description="Ensure work directory is present">
 		<mkdir dir="${work}"/>
 		<mkdir dir="${classes}"/>
 		<mkdir dir="${dist}"/>
@@ -82,9 +125,10 @@
 			</fileset>
 		</signjar>
 	</target>
-	
-	<target name="executableGuiJar" depends="init" description="Build GUI executable JAR">
-		<javac srcdir="${source}" destdir="${classes}" classpath="${swtjar}">
+
+	<target name="executableGuiJar" depends="init" unless="noGui"
+		description="Build GUI executable JAR">
+		<javac srcdir="${source}" destdir="${classes}" classpath="${antjar}:${swtjar}">
 			<include name="**/*.java"/>
 			<exclude name="**/*Test.java"/>
 			<compilerarg value="-Xlint:unchecked"/>
@@ -103,9 +147,11 @@
 			</fileset>
 		</jar>
 	</target>
-	
-	<target name="executableCmdJar" depends="init" description="Build command-line only executable JAR">
-		<javac srcdir="${source}" destdir="${classes}" >
+
+	<target name="executableCmdJar" depends="init"
+		description="Build command-line only executable JAR">
+		<!-- SWT needs to be in classpath if executableGuiCmdJar didn't run -->
+		<javac srcdir="${source}" destdir="${classes}" classpath="${antjar}:${swtjar}">
 			<include name="**/*.java"/>
 			<exclude name="**/*Test.java"/>
 			<compilerarg value="-Xlint:unchecked"/>
@@ -127,24 +173,38 @@
 			</fileset>
 		</jar>
 	</target>
-	
-	<target name="macBundle" depends="init,jars" description="Build Mac application bundle.">
-		<property name="mac.dir" value="mac"/>
-		<property name="mac.app" value="${mac.dir}/AppleCommander.app"/>
-		<property name="mac.Contents" value="${mac.app}/Contents"/>
-		<property name="mac.Java" value="${mac.Contents}/Resources/Java"/>
-		<copy file="${mac.dir}/Info.plist" todir="${mac.Contents}" overwrite="true">
-			<filterset>
-				<filter token="version" value="${acVersion}"/>
-			</filterset>
-		</copy>
-		<copy file="${guijar}" tofile="${mac.Java}/AppleCommander.jar"/>
-		<copy file="${cmdjar}" tofile="${user.home}/bin/ac.jar"/>
-	    <zip destfile="${maczip}">
-	        <zipfileset dir="${mac.app}" prefix="AppleCommander.app"/>
-			<zipfileset dir="${mac.app}" prefix="AppleCommander.app"
-				includes="Contents/MacOS/JavaApplicationStub" filemode="755"/>
-	    </zip>
+
+	<target name="macBundle" depends="init,jars" if="isMac" unless="noMacGui"
+		description="Build Mac application bundle.">
+		<property name="mac.app" value="${dist}/AppleCommander.app"/>
+
+		<!--
+		     NB: This seems like the only obvious way to turn ${swtjar}
+		     into something we can install using jarbundler to both
+		     copy and add to classpath.  If you have a better way… :)
+		-->
+		<copy file="${swtjar}" tofile="${work}/swt/swt.jar" />
+
+		<jarbundler dir="${dist}"
+			name="AppleCommander" version="${acVersion}"
+			verbose="true" showPlist="true"
+			mainclass="com.webcodepro.applecommander.ui.AppleCommander"
+			bundleid="com.webcodepro.applecommander"
+			stubfile="${mac.dir}/universalJavaApplicationStub"
+			icon="${mac.dir}/AppleCommander.icns"
+			arguments="-swt" startonmainthread="true"
+			jvmversion="1.6+" useJavaXKey="true" developmentregion="English"
+			copyright="Copyright 2002-2008 Rob Greene and John B. Matthews.">
+			<jarfilelist dir="${dist}" files="AppleCommander-${acVersion}.jar" />
+			<jarfilelist dir="${work}/swt" files="swt.jar" />
+		</jarbundler>
+
+		<zip destfile="${maczip}">
+			<zipfileset dir="${dist}/AppleCommander.app" prefix="AppleCommander-${acVersion}-mac/AppleCommander.app" />
+			<zipfileset dir="${dist}" prefix="AppleCommander-${acVersion}-mac/jars">
+				<include name="AppleCommander-${acVersion}*.jar" />
+			</zipfileset>
+		</zip>
 	</target>
 
 	<target name="sourceZip" depends="init" description="Build source ZIP archive">

@@ -58,10 +58,17 @@ public class AppleCommander {
 			String[] extraArgs = new String[args.length - 1];
 			System.arraycopy(args, 1, extraArgs, 0, extraArgs.length);
 			if ("-swt".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				launchSwtAppleCommander(args);
+				if (isSwtAvailable()) {
+					launchSwtAppleCommander(args);
+				} else {
+					System.err.println(textBundle.get("SwtVersionNotAvailable")); //$NON-NLS-1$
+				}
 			} else if ("-swing".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-                                System.err.println(textBundle.get("SwingVersionNotAvailable")); //$NON-NLS-1$
-			        launchSwingAppleCommander(args);
+				if (isSwingAvailable()) {
+					launchSwingAppleCommander(args);
+				} else {
+					System.err.println(textBundle.get("SwingVersionNotAvailable")); //$NON-NLS-1$
+				}
 			} else if ("-command".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				System.err.println(textBundle.get("CommandLineNotAvailable")); //$NON-NLS-1$
 			} else if ("-help".equalsIgnoreCase(args[0])  //$NON-NLS-1$
@@ -133,12 +140,12 @@ public class AppleCommander {
 	 * command-line version.
 	 */
 	protected static void launchSwingAppleCommander(String[] args) {
-			Class<?> swtAppleCommander;
+			Class<?> swingAppleCommander;
 			try {
-				swtAppleCommander =	Class.forName(
+				swingAppleCommander =	Class.forName(
 					"com.webcodepro.applecommander.ui.swing.SwingAppleCommander"); //$NON-NLS-1$
-				Object object = swtAppleCommander.newInstance();
-				Method launchMethod = swtAppleCommander.
+				Object object = swingAppleCommander.newInstance();
+				Method launchMethod = swingAppleCommander.
 					getMethod("launch", (Class[]) null); //$NON-NLS-1$
 				launchMethod.invoke(object, (Object[]) null);
 			} catch (ClassNotFoundException e) {

@@ -5,7 +5,6 @@ This is the internal list of items that need to be done.
 -- 1.3.5 -- 
 
 --- FUTURE ---
-o Automate Mac zip file build
 o Add binaries to repository to simplify AC development and builds
 o Create subdirectories as appropriate (ProDOS).
 o Create reusable show dialog messages (they're scattered all over right now) to clean
@@ -43,3 +42,6 @@ o Can AppleCommander read a CF card with ProDOS volumes on it?  This is an IDE d
   connected either via USB or a card reader.  Requires some level of OS integration...
   some form of raw disk access.  There is the possibility of finding a USB-level driver
   or of reading raw data from a disk.  Unix is most likely, unsure of Windows.
+  [iKarith: Yes, Windows can do it using a special "drive", CiderPress does it.]
+o Evaluate and consider Sean Riley's appbundler fork as an alternative to jarbundler for
+  macOS: <https://bitbucket.org/infinitekind/appbundler>
