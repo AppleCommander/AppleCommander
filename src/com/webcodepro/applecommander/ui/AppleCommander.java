@@ -47,7 +47,9 @@ public class AppleCommander {
 	 */
 	public static void main(String[] args) {
 		if (args.length == 0) {
-			if (isSwtAvailable()) {
+			if (isFXAvailable()) {
+				launchFXAppleCommander(args);
+			} else if (isSwtAvailable()) {
 				launchSwtAppleCommander(args);
 			} else if (isSwingAvailable()) {
 				launchSwingAppleCommander(args);
@@ -57,7 +59,13 @@ public class AppleCommander {
 		} else {
 			String[] extraArgs = new String[args.length - 1];
 			System.arraycopy(args, 1, extraArgs, 0, extraArgs.length);
-			if ("-swt".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+			if ("-fx".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				if (isFXAvailable()) {
+					launchFXAppleCommander(args);
+				} else {
+					System.err.println(textBundle.get("FXVersionNotAvailable")); //$NON-NLS-1$
+				}
+			} else if ("-swt".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				if (isSwtAvailable()) {
 					launchSwtAppleCommander(args);
 				} else {
@@ -78,6 +86,49 @@ public class AppleCommander {
 				ac.main(args);
 			}
 		}
+	}
+	/**
+	 * Test to see if JavaFX is available.
+	 */
+	protected static boolean isFXAvailable() {
+		try {
+			Class.forName("javafx.application.Application"); //$NON-NLS-1$
+			Class.forName("com.webcodepro.applecommander.ui.fx.FXAppleCommander"); //$NON-NLS-1$
+			return true;
+		} catch (ClassNotFoundException ex) {
+			return false;
+		}
+	}
+	/**
+	 * Launch the JavaFX version of AppleCommander.  This method
+	 * uses reflection to load FXAppleCommander to minimize which
+	 * classes get loaded.  This is particularly important for the
+	 * command-line version.
+	 */
+	protected static void launchFXAppleCommander(String[] args) {
+			Class<?> fxAppleCommander;
+			try {
+				fxAppleCommander =	Class.forName(
+					"com.webcodepro.applecommander.ui.fx.FXAppleCommander"); //$NON-NLS-1$
+				Object object = fxAppleCommander.newInstance();
+				Method launchMethod = fxAppleCommander.
+					getMethod("launch", (Class[]) null); //$NON-NLS-1$
+				launchMethod.invoke(object, (Object[]) null);
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				e.printStackTrace();
+			} catch (NoSuchMethodException e) {
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			}
 	}
 	/**
 	 * Launch the SWT version of AppleCommander.  This method
