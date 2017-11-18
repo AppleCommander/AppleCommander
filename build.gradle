@@ -8,6 +8,39 @@ apply plugin: 'application'
 // Define the main class for the application
 mainClassName = 'com.webcodepro.applecommander.ui.AppleCommander'
 
+// Configure build for each supported platform
+ext {
+    os = System.getProperty("os.name").toLowerCase()
+    arch = System.getProperty("os.arch").toLowerCase()
+
+    // First let's sanitize arch
+    if (arch.contains("amd64")) {
+        swtArch = "x86_64"
+    } else if (arch.matches("i[3-6]86]")) {
+        swtArch = "x86"
+    } else {
+        swtArch = arch
+    }
+
+    if (os.contains("windows")) {
+        swtGUI = "win32.win32.$swtArch"
+    } else if (os.contains("mac os x")) {
+        swtGUI = "cocoa.macosx.$swtArch"
+    } else if (os.contains("linux")) {
+        swtGUI = "gtk.linux.$swtArch"
+    } else {
+        throw new GradleException("Don't know how to build for this platform:\n" +
+                "      os = \"$os\"\n" +
+                "    arch = \"$arch\"\n\n" +
+                "Edit build.gradle to add support")
+        /* At least you'll need to define swtGUI for your os and
+         * probably your arch too.  Most SWT backend GUI descriptions
+         * take the form of <widgetset>.<os-tag>.<arch>.
+         */
+    }
+}
+
+
 // In this section you declare where to find the dependencies of your project
 repositories {
     mavenCentral()
@@ -17,8 +50,8 @@ repositories {
 }
 
 dependencies {
-    compile "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:$swtVersion"
-    
+    compile "org.eclipse.swt:org.eclipse.swt.$swtGUI:$swtVersion"
+
     compileOnly "org.apache.ant:ant:$antVersion"
 
     testCompile "junit:junit:$junitVersion"
@@ -27,7 +60,7 @@ dependencies {
 jar {
     manifest {
         attributes 'Main-Class': "$mainClassName"
-    } 
+    }
     doFirst {
         from { configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) } }
     }
