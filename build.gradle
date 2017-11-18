@@ -9,15 +9,25 @@ apply plugin: 'application'
 mainClassName = 'com.webcodepro.applecommander.ui.AppleCommander'
 
 // Configure build for each supported platform
-def os = System.getProperty("os.name").toLowerCase()
-def arch = System.getProperty("os.arch")
 ext {
+	os = System.getProperty("os.name").toLowerCase()
+	arch = System.getProperty("os.arch").toLowerCase()
+
+	// First let's sanitize arch
+	if (arch.contains("amd64")) {
+		swtArch = "x86_64"
+	} else if (arch.matches("i[3-6]86]")) {
+		swtArch = "x86"
+	} else {
+		swtArch = arch
+	}
+
 	if (os.contains("windows")) {
-		swtGUI = "win32.win32.$arch"
+		swtGUI = "win32.win32.$swtArch"
 	} else if (os.contains("mac os x")) {
-		swtGUI = "cocoa.macosx.$arch"
+		swtGUI = "cocoa.macosx.$swtArch"
 	} else if (os.contains("linux")) {
-		swtGUI = "gtk.linux.$arch"
+		swtGUI = "gtk.linux.$swtArch"
 	} else {
 		throw new GradleException("Don't know how to build for this platform:\n" +
 				"      os = \"$os\"\n" +
