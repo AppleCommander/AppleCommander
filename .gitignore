@@ -12,12 +12,12 @@ TODO.local
 work
 TestImage.*
 **/Thumbs.db
-build/ACBuild.properties
-build/AppleCommander.preferences
 *.o
 *.lst
 .classpath
 .project
 .settings
 .gradle
-/build/
+build/
+target/
+.DS_Store
