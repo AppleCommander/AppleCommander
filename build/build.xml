@@ -192,8 +192,8 @@
 			bundleid="com.webcodepro.applecommander"
 			stubfile="${mac.dir}/universalJavaApplicationStub"
 			icon="${mac.dir}/AppleCommander.icns"
-			arguments="-swt" startonmainthread="true"
-			jvmversion="1.6+" useJavaXKey="true" developmentregion="English"
+			arguments="-fx"
+			jvmversion="1.8+" useJavaXKey="true" developmentregion="English"
 			copyright="Copyright 2002-2008 Rob Greene and John B. Matthews.">
 			<jarfilelist dir="${dist}" files="AppleCommander-${acVersion}.jar" />
 			<jarfilelist dir="${work}/swt" files="swt.jar" />
