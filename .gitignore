@@ -12,9 +12,12 @@ TODO.local
 work
 TestImage.*
 **/Thumbs.db
-.settings/org.eclipse.jdt.ui.prefs
-.settings/org.eclipse.jdt.core.prefs
 build/ACBuild.properties
 build/AppleCommander.preferences
 *.o
 *.lst
+.classpath
+.project
+.settings
+.gradle
+/build/
