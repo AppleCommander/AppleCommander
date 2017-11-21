@@ -160,6 +160,7 @@ public class FXAppleCommander extends Application {
 		quitItem.setOnAction(e -> handleAction(e));
 		menuFile.getItems().add(quitItem);
 		menuBar.getMenus().add(menuFile);
+		menuBar.setUseSystemMenuBar(true);
 		return menuBar;
 	}
 
