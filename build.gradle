@@ -1,0 +1,107 @@
+repositories {
+    mavenCentral()
+    maven {
+    	// SWT libraries
+        url "http://maven-eclipse.github.io/maven"
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+ext {
+	sourceCompatibility = '1.8'
+	targetCompatibility = '1.8'
+	
+	swtVersion = "4.6.1"
+	junitVersion = "4.12"
+	antVersion = "1.8.2"
+}
+
+mainClassName = 'com.webcodepro.applecommander.ui.AppleCommander'
+version '1.3.6-BETA'
+
+// Disable default JAR creation
+jar {
+	enabled = false
+}
+
+tasks.withType(Javadoc) {
+    // disable the crazy super-strict doclint tool in Java 8
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+tasks.withType(Jar) {
+    manifest {
+        attributes 'Main-Class': 'com.webcodepro.applecommander.ui.AppleCommander'
+    } 
+	from('LICENSE', 'CONTRIB', 'TODO', 'VERSIONS')
+}
+
+dependencies {
+    compileOnly "org.apache.ant:ant:$antVersion"
+
+    testCompile "junit:junit:$junitVersion"
+}
+
+task acJar(type: Jar) {
+	dependencies {
+		// Just to pass the compile step; these classes are stripped out below.
+		compile "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:$swtVersion"
+	}
+	appendix 'ac'
+    manifest {
+    	attributes 'Main-Class' : 'com.webcodepro.applecommander.ui.ac'
+    }
+    from(sourceSets.main.output) {
+    	include 'com/webcodepro/**'
+        exclude 'com/webcodepro/applecommander/ui/images/**'
+        exclude 'com/webcodepro/applecommander/ui/swing/**'
+        exclude 'com/webcodepro/applecommander/ui/swt/**'
+	}
+}
+task linuxJar(type: Jar) {
+	dependencies {
+		compile "org.eclipse.swt:org.eclipse.swt.gtk.linux.x86_64:$swtVersion"
+	}
+	appendix 'linux64-gtk'
+    from(sourceSets.main.output) {
+    	include 'com/webcodepro/**'
+   	}
+   	doFirst {
+   		// Pick and include just the Linux JAR contents
+	    from { configurations.runtime.collect { it.name.contains('.linux.') ? zipTree(it) : 'fake' } } 
+	} 
+}
+task macosxJar(type: Jar) {
+	dependencies {
+		compile "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:$swtVersion"
+	}
+	appendix 'macosx'
+    from(sourceSets.main.output) {
+    	include 'com/webcodepro/**'
+   	}
+   	doFirst {
+   		// Pick and include just the Mac OS X JAR contents
+	    from { configurations.runtime.collect { it.name.contains('.macosx.') ? zipTree(it) : 'fake' } } 
+	} 
+}
+task windowsJar(type: Jar) {
+	dependencies {
+		compile "org.eclipse.swt:org.eclipse.swt.win32.win32.x86_64:$swtVersion"
+	}
+	appendix 'win64'
+    from(sourceSets.main.output) {
+    	include 'com/webcodepro/**'
+   	}
+   	doFirst {
+   		// Pick and include just the Windows SWT JAR contents
+	    from { configurations.runtime.collect { it.name.contains('.win32.') ? zipTree(it) : 'fake' } } 
+	} 
+}
+
+artifacts {
+    archives acJar 
+    archives linuxJar
+    archives macosxJar
+    archives windowsJar
+}
