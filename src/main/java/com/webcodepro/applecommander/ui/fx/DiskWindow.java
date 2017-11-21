@@ -4,13 +4,15 @@ import java.io.File;
 
 import javafx.stage.Stage;
 
+import com.webcodepro.applecommander.storage.FormattedDisk;
+
 public class DiskWindow {
 
 	// This won't take a File ultimately, probably a Disk.  And obviously
 	// it will, y'know, do something.  :)  All TODO!
-	public DiskWindow(File file) {
+	public DiskWindow(FormattedDisk[] disks) {
 		Stage diskStage = new Stage();
-		System.out.println("Yeah, we're opening \""+file+"\"");
+		diskStage.setTitle(disks[0].getFilename());
 
 		diskStage.show();
 	}

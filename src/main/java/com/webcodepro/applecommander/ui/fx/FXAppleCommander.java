@@ -37,6 +37,7 @@ import javafx.stage.Stage;
 
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.Disk.FilenameFilter;
+import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.ui.AppleCommander;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.UserPreferences;
@@ -196,7 +197,18 @@ public class FXAppleCommander extends Application {
 		if (null != selectedFile) {
 			userPreferences.setDiskImageDirectory(selectedFile.getParent());
 			UserPreferences.getInstance().save();
-			DiskWindow window = new DiskWindow(selectedFile);
+			try {
+				Disk disk = new Disk(selectedFile.getPath());
+				FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+				if (formattedDisks != null) {
+					DiskWindow window = new DiskWindow(formattedDisks);
+				} else {
+					System.out.println("We can't open " + selectedFile + " for some reason.");
+				}
+			} catch (Exception ignored) {
+				System.out.println("We can't open " + selectedFile + " for some reason. (Exception thrown)");
+
+			}
 		}
 	}
 
