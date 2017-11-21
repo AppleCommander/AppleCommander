@@ -62,15 +62,12 @@ public class Disk {
 	 */
 	public class FilenameFilter {
 		private String names;
-		private String[] extensions;
-		public FilenameFilter(String names, String... extensions) {
+		private String extensions;
+		public FilenameFilter(String names, String extensions) {
 			this.names = names;
 			this.extensions = extensions;
 		}
 		public String getExtensions() {
-			return String.join(";", extensions);
-		}
-		public String[] getExtensionList() {
 			return extensions;
 		}
 		public String getNames() {
@@ -130,38 +127,38 @@ public class Disk {
 	private Disk() {
 		filenameFilters = new FilenameFilter[] {
 			new FilenameFilter(textBundle.get("Disk.AllImages"),  //$NON-NLS-1$
-				"*.do", "*.dsk", "*.po", "*.nib", "*.2mg", "*.2img", "*.hdv", "*.do.gz", "*.dsk.gz", "*.po.gz", "*.nib.gz", "*.2mg.gz", "*.2img.gz"), //$NON-NLS-1$
+				"*.do; *.dsk; *.po; *.nib; *.2mg; *.2img; *.hdv; *.do.gz; *.dsk.gz; *.po.gz; *.nib.gz; *.2mg.gz; *.2img.gz"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.140kDosImages"),  //$NON-NLS-1$
-				"*.do", "*.dsk", "*.do.gz", "*.dsk.gz"), //$NON-NLS-1$
+				"*.do; *.dsk; *.do.gz; *.dsk.gz"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.140kNibbleImages"), //$NON-NLS-1$
-				"*.nib", "*.nib.gz"), //$NON-NLS-1$
+				"*.nib; *.nib.gz"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.140kProdosImages"),  //$NON-NLS-1$
-				"*.po", "*.po.gz"), //$NON-NLS-1$
+				"*.po; *.po.gz"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.800kProdosImages"),  //$NON-NLS-1$
-				"*.2mg", "*.2img", "*.2mg.gz", "*.2img.gz"), //$NON-NLS-1$
+				"*.2mg; *.2img; *.2mg.gz, *.2img.gz"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.ApplePcImages"),  //$NON-NLS-1$
 				"*.hdv"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.CompressedImages"),  //$NON-NLS-1$
-				"*.sdk", "*.shk", "*.do.gz", "*.dsk.gz", "*.po.gz", "*.2mg.gz", "*.2img.gz"), //$NON-NLS-1$
+				"*.sdk; *.shk; *.do.gz; *.dsk.gz; *.po.gz; *.2mg.gz; *.2img.gz"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.AllFiles"),  //$NON-NLS-1$
 				"*.*") //$NON-NLS-1$
 		};
 		allFileExtensions = new String[] {
-			".do",		//$NON-NLS-1$
-			".dsk",		//$NON-NLS-1$
-			".po",		//$NON-NLS-1$
-			".nib",		//$NON-NLS-1$
-			".sdk",		//$NON-NLS-1$
-			".shk",		//$NON-NLS-1$
-			".2mg",		//$NON-NLS-1$
-			".2img",	//$NON-NLS-1$
-			".hdv",		//$NON-NLS-1$
-			".do.gz",	//$NON-NLS-1$
-			".dsk.gz",	//$NON-NLS-1$
-			".po.gz",	//$NON-NLS-1$
-			".nib.gz",	//$NON-NLS-1$
-			".2mg.gz",	//$NON-NLS-1$
-			".2img.gz"	//$NON-NLS-1$
+				".do",		//$NON-NLS-1$
+			    ".dsk",		//$NON-NLS-1$
+			    ".po",		//$NON-NLS-1$
+			    ".nib",		//$NON-NLS-1$
+			    ".sdk",		//$NON-NLS-1$
+			    ".shk",		//$NON-NLS-1$
+			    ".2mg",		//$NON-NLS-1$
+			    ".2img",	//$NON-NLS-1$
+			    ".hdv",		//$NON-NLS-1$
+			    ".do.gz",	//$NON-NLS-1$
+			    ".dsk.gz",	//$NON-NLS-1$
+			    ".po.gz",	//$NON-NLS-1$
+			    ".nib.gz",	//$NON-NLS-1$
+			    ".2mg.gz",	//$NON-NLS-1$
+			    ".2img.gz"	//$NON-NLS-1$ 
 		};
 	}
 
