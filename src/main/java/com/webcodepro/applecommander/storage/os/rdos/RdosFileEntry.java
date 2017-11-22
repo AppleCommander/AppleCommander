@@ -328,4 +328,12 @@ public class RdosFileEntry implements FileEntry {
 	public boolean canCompile() {
 		return isApplesoftBasicFile();
 	}
+
+	/**
+	 * Implement toString() to return file name.
+	 */
+	@Override
+	public String toString() {
+		return getFilename();
+	}
 }

@@ -98,4 +98,12 @@ public class ProdosDirectoryEntry extends ProdosFileEntry implements DirectoryEn
 	public DirectoryEntry createDirectory(String name) throws DiskFullException {
 		return getDisk().createDirectory(getSubdirectoryHeader(), name);
 	}
+
+	/**
+	 * Implement toString() to return directory name.
+	 */
+	@Override
+	public String toString() {
+		return getFilename();
+	}
 }

@@ -616,4 +616,12 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	public boolean canCompile() {
 		return getDisk().canCompile(getFiletype());
 	}
+
+	/**
+	 * Implement toString() to return file name.
+	 */
+	@Override
+	public String toString() {
+		return getFilename();
+	}
 }

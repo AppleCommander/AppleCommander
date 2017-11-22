@@ -536,4 +536,12 @@ public class PascalFileEntry implements FileEntry {
 	public void setFileCount(int count) {
 		AppleUtil.setWordValue(fileEntry, 16, count);
 	}
+
+	/**
+	 * Implement toString() to return file name.
+	 */
+	@Override
+	public String toString() {
+		return getFilename();
+	}
 }

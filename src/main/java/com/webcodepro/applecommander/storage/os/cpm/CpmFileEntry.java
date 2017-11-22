@@ -503,4 +503,12 @@ public class CpmFileEntry implements FileEntry {
 		}
 		return allocations;
 	}
+
+	/**
+	 * Implement toString() to return file name.
+	 */
+	@Override
+	public String toString() {
+		return getFilename();
+	}
 }

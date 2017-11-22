@@ -256,4 +256,12 @@ public class NakedosFileEntry implements FileEntry {
 	public boolean equals (Object o) {
 		return this.getFilename().equals(((NakedosFileEntry)o).getFilename());
 	}
+
+	/**
+	 * Implement toString() to return file name.
+	 */
+	@Override
+	public String toString() {
+		return getFilename();
+	}
 }

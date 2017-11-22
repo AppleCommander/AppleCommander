@@ -395,4 +395,12 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	 * Typically, the FileEntry.setFileData method should be used. 
 	 */
 	public abstract void setFileData(FileEntry fileEntry, byte[] fileData) throws DiskFullException;
+
+	/**
+	 * Implement toString() to return disk name.
+	 */
+	@Override
+	public String toString() {
+		return getDiskName();
+	}
 }
