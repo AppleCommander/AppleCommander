@@ -12,7 +12,7 @@ apply plugin: 'application'
 ext {
 	sourceCompatibility = '1.8'
 	targetCompatibility = '1.8'
-	
+
 	swtVersion = "4.6.1"
 	junitVersion = "4.12"
 	antVersion = "1.8.2"
@@ -41,6 +41,11 @@ dependencies {
     compileOnly "org.apache.ant:ant:$antVersion"
 
     testCompile "junit:junit:$junitVersion"
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << "-Xlint:unchecked" // << "-Xlint:deprecation"
 }
 
 task acJar(type: Jar) {
