@@ -34,6 +34,7 @@ import javafx.stage.Stage;
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.FormattedDisk.FileColumnHeader;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.util.TextBundle;
 
@@ -68,14 +69,16 @@ public class DiskWindow {
 		VBox vbox = new VBox();
 		ToolBar toolBar = new ToolBar();
 
+		// Create the toolBar
 		toolBar.getItems().add(new Button("Placeholder"));
-
 		SplitPane splitPane = new SplitPane();
-		TreeItem dummyRoot = new TreeItem("dummy");
-		TreeView diskTreeView = new TreeView(dummyRoot);
+
+		// Left side of splitPane
+		TreeItem<DirectoryEntry> dummyRoot = new TreeItem<>();
+		TreeView<DirectoryEntry> diskTreeView = new TreeView<>(dummyRoot);
 		diskTreeView.setShowRoot(false); // Hide the dummy root node
-		for (int i=0; i < disks.length; ++i) {
-			TreeItem diskTree = new TreeItem(disks[i]);
+		for (int i = 0; i < disks.length; ++i) {
+			TreeItem<DirectoryEntry> diskTree = new TreeItem<DirectoryEntry>(disks[i]);
 
 			if (disks[i].canHaveDirectories()) {
 				addDirectoriesToTree(diskTree, (DirectoryEntry)disks[i]);
@@ -89,7 +92,10 @@ public class DiskWindow {
 			singleDir.setExpanded(true);
 		}
 
+		// Right side of splitPane
 		TableView fileTable = new TableView();
+
+		// Populate the tab
 		splitPane.getItems().addAll(diskTreeView, fileTable);
 		vbox.getChildren().addAll(toolBar, splitPane);
 		filesTab.setContent(vbox);
@@ -101,7 +107,7 @@ public class DiskWindow {
 		while (files.hasNext()) {
 			final FileEntry fileEntry = (FileEntry) files.next();
 			if (fileEntry.isDirectory()) {
-				TreeItem item = new TreeItem(fileEntry);
+				TreeItem<DirectoryEntry> item = new TreeItem<>((DirectoryEntry)fileEntry);
 				parent.getChildren().add(item);
 				addDirectoriesToTree(item, (DirectoryEntry)fileEntry);
 			}
