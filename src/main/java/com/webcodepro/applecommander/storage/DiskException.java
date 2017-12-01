@@ -25,18 +25,15 @@ package com.webcodepro.applecommander.storage;
  * <br>
  * Created on Dec 23, 2002.
  * @author Rob Greene
- *
- * Changed at: Dec 1, 2017
- * @author Lisias Toledo
  */
-public class DiskFullException extends DiskException {
+public class DiskException extends Exception {
 
 	private static final long serialVersionUID = 0xFFFFFFFF80000000L;
 
 	/**
 	 * Constructor for DiskFullException.
 	 */
-	public DiskFullException(String description) {
+	public DiskException(String description) {
 		super(description);
 	}
 }

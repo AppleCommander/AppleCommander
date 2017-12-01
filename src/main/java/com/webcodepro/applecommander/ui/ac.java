@@ -34,7 +34,7 @@ import java.util.List;
 
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.DiskFullException;
+import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
@@ -85,6 +85,9 @@ import com.webcodepro.applecommander.util.TextBundle;
  * </pre>
  * 
  * @author John B. Matthews
+ *
+ * Changed at: Dec 1, 2017
+ * @author Lisias Toledo
  */
 public class ac {
 	private static TextBundle textBundle = UiBundle.getInstance();
@@ -154,7 +157,7 @@ public class ac {
 	 * Put fileName from the local filesytem into the file named fileOnImageName on the disk named imageName;
 	 * Note: only volume level supported; input size unlimited.
 	 */
-	public static void putFile(String fileName, String imageName, String fileOnImageName, String fileType, String address) throws IOException, DiskFullException {
+	public static void putFile(String fileName, String imageName, String fileOnImageName, String fileType, String address) throws IOException, DiskException {
 		Name name = new Name(fileOnImageName);
 		File file = new File(fileName);
 		if (!file.canRead())
@@ -188,7 +191,7 @@ public class ac {
 	 * Note: only volume level supported; input size unlimited.
 	 */
 	static void putFile(String imageName, Name name, String fileType,
-		String address) throws IOException, DiskFullException {
+		String address) throws IOException, DiskException {
 
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
 		byte[] inb = new byte[1024];
@@ -225,7 +228,7 @@ public class ac {
 	 * Assume a cc65 style four-byte header with start address in bytes 0-1.
 	 */
 	public static void putCC65(String fileName, String imageName, String fileOnImageName, String fileType)
-		throws IOException, DiskFullException {
+		throws IOException, DiskException {
 
 		byte[] header = new byte[4];
 		if (System.in.read(header, 0, 4) == 4) {
@@ -239,7 +242,7 @@ public class ac {
 	 * Assume a cc65 style four-byte header with start address in bytes 0-1.
 	 */
 	static void putCC65(String imageName, Name name, String fileType)
-		throws IOException, DiskFullException {
+		throws IOException, DiskException {
 
 		byte[] header = new byte[4];
 		if (System.in.read(header, 0, 4) == 4) {
@@ -253,7 +256,7 @@ public class ac {
 	 * This would only make sense for a ProDOS-formatted disk.
 	 */
 	static void putGEOS(String imageName)
-		throws IOException, DiskFullException {
+		throws IOException, DiskException {
 		putFile(imageName, new Name("GEOS-Should Be ProDOS"), "GEO", "0"); //$NON-NLS-2$ $NON-NLS-3$
 	}
 
@@ -327,9 +330,11 @@ public class ac {
 			directory = "."+File.separator;
 		}
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-		for (int i = 0; i < formattedDisks.length; i++) {
+		for (int i = 0; i < formattedDisks.length; i++) try {
 			FormattedDisk formattedDisk = formattedDisks[i];
-			writeFiles(formattedDisk.getFiles(), directory);			
+			writeFiles(formattedDisk.getFiles(), directory);
+		} catch (DiskException e) {
+			// FIXME How to warn user about the problem?
 		}
 	}
 
@@ -352,8 +357,10 @@ public class ac {
 				OutputStream output = new FileOutputStream(file);
 				output.write(buf, 0, buf.length);
 				output.close();
-			} else if (entry.isDirectory()) {
+			} else if (entry.isDirectory()) try {
 				writeFiles(((DirectoryEntry) entry).getFiles(),directory+entry.getFilename()+File.separator);
+			} catch (DiskException e) {
+				// FIXME How to warn user about the problem?
 			}
 		}
 	}
@@ -373,11 +380,13 @@ public class ac {
 				if (!entry.isDeleted() && fileName.equalsIgnoreCase(entryName)) {
 					return entry;
 				}
-				if (entry.isDirectory()) {
+				if (entry.isDirectory()) try {
 					entry = getEntry(((DirectoryEntry) entry).getFiles(), fileName);
 					if (entry != null) {
 						return entry;
 					}
+				} catch (DiskException e) {
+					// FIXME How to warn user about the problem?
 				}
 			}
 		}
@@ -406,6 +415,8 @@ public class ac {
 						new Integer(formattedDisk.getUsedSpace()) }));
 					System.out.println();
 				}
+			} catch (DiskException e) {
+				throw new IOException(e);
 			} catch (RuntimeException e) {
 				System.out.println(args[d] + ": " + e.getMessage()); //$NON-NLS-1$
 				System.out.println();
@@ -430,9 +441,11 @@ public class ac {
 				}
 				System.out.println();
 			}
-			if (entry.isDirectory()) {
+			if (entry.isDirectory()) try {
 				showFiles(((DirectoryEntry) entry).getFiles(),
 					indent + "  ", display); //$NON-NLS-1$
+			} catch (DiskException e) {
+				// FIXME How to warn user about the problem?
 			}
 		}
 	}
@@ -602,29 +615,33 @@ public class ac {
 		}
 		
 		public FileEntry getEntry(FormattedDisk formattedDisk) {
-			List files = formattedDisk.getFiles();
-			FileEntry entry = null;
-			for (int i = 0; i < path.length - 1; i++) {
-				String dirName = path[i];
-				for (int j = 0; j < files.size(); j++) {
-					entry = (FileEntry) files.get(j);
-					String entryName = entry.getFilename();
-					if (entry.isDirectory() && dirName.equalsIgnoreCase(entryName)) {
-						files = ((DirectoryEntry) entry).getFiles();
+			try {
+				List files = formattedDisk.getFiles();
+				FileEntry entry = null;
+				for (int i = 0; i < path.length - 1; i++) {
+					String dirName = path[i];
+					for (int j = 0; j < files.size(); j++) {
+						entry = (FileEntry) files.get(j);
+						String entryName = entry.getFilename();
+						if (entry.isDirectory() && dirName.equalsIgnoreCase(entryName)) {
+							files = ((DirectoryEntry) entry).getFiles();
+						}
 					}
 				}
-			}
-			for (int i = 0; i < files.size(); i++) {
-				entry = (FileEntry) files.get(i);
-				String entryName = entry.getFilename();
-				if (!entry.isDeleted() && name.equalsIgnoreCase(entryName)) {
-					return entry;
+				for (int i = 0; i < files.size(); i++) {
+					entry = (FileEntry) files.get(i);
+					String entryName = entry.getFilename();
+					if (!entry.isDeleted() && name.equalsIgnoreCase(entryName)) {
+						return entry;
+					}
 				}
+			} catch (DiskException e) {
+				// FIXME How to warn user about the problem?
 			}
 			return null;
 		}
 		
-		public FileEntry createEntry(FormattedDisk formattedDisk) throws DiskFullException {
+		public FileEntry createEntry(FormattedDisk formattedDisk) throws DiskException {
 			if (path.length == 1) {
 				return formattedDisk.createFile();
 			}

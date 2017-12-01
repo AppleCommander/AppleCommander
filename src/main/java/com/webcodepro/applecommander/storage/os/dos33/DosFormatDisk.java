@@ -20,9 +20,13 @@
 package com.webcodepro.applecommander.storage.os.dos33;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.webcodepro.applecommander.storage.DirectoryEntry;
+import com.webcodepro.applecommander.storage.DiskException;
+import com.webcodepro.applecommander.storage.DiskCorruptException;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
@@ -36,6 +40,9 @@ import com.webcodepro.applecommander.util.TextBundle;
  * <p>
  * Date created: Oct 4, 2002 12:29:23 AM
  * @author Rob Greene
+ *
+ * Changed at: Dec 1, 2017
+ * @author Lisias Toledo
  */
 public class DosFormatDisk extends FormattedDisk {
 	private TextBundle textBundle = StorageBundle.getInstance();
@@ -132,14 +139,22 @@ public class DosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Retrieve a list of files.
+	 * @throws DiskException
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFiles()
 	 */
-	public List<FileEntry> getFiles() {
+	public List<FileEntry> getFiles() throws DiskException {
 		List<FileEntry> list = new ArrayList<>();
 		byte[] vtoc = readVtoc();
 		int track = AppleUtil.getUnsignedByte(vtoc[1]);
 		int sector = AppleUtil.getUnsignedByte(vtoc[2]);
+		final Map<Integer,Map<Integer,Boolean>> visits = new HashMap<>();
 		while (sector != 0) { // bug fix: iterate through all catalog _sectors_
+
+			// Prevents a recursive catalog crawling.
+			if ( !visits.containsKey(track) ) visits.put(track, new HashMap<Integer,Boolean>());
+			if ( visits.get(track).containsKey(sector)) throw new DiskCorruptException("Recursive Directory structure detected.");
+			else visits.get(track).put(sector, Boolean.TRUE);
+
 			byte[] catalogSector = readSector(track, sector);
 			int offset = 0x0b;
 			while (offset < 0xff) {	// iterate through all entries

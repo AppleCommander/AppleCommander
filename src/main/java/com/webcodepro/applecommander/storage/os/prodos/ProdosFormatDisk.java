@@ -23,10 +23,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import com.webcodepro.applecommander.storage.DirectoryEntry;
+import com.webcodepro.applecommander.storage.DiskException;
+import com.webcodepro.applecommander.storage.DiskCorruptException;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
@@ -40,6 +44,9 @@ import com.webcodepro.applecommander.util.TextBundle;
  * <p>
  * Date created: Oct 3, 2002 11:45:25 PM
  * @author Rob Greene
+ *
+ * Changed at: Dec 1, 2017
+ * @author Lisias Toledo
  */
 public class ProdosFormatDisk extends FormattedDisk {
 	private TextBundle textBundle = StorageBundle.getInstance();
@@ -255,9 +262,10 @@ public class ProdosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Retrieve a list of files.
+	 * @throws DiskException
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFiles()
 	 */
-	public List<FileEntry> getFiles() {
+	public List<FileEntry> getFiles() throws DiskException {
 		return getFiles(VOLUME_DIRECTORY_BLOCK);
 	}
 
@@ -265,9 +273,14 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * Build a list of files, starting in the given block number.
 	 * This works for the master as well as the subdirectories.
 	 */		
-	protected List<FileEntry> getFiles(int blockNumber) {
+	protected List<FileEntry> getFiles(int blockNumber) throws DiskException {
 		List<FileEntry> files = new ArrayList<>();
+		final Map<Integer,Boolean> visits = new HashMap<>();
 		while (blockNumber != 0) {
+			// Prevents a recursive catalog crawling.
+			if ( visits.containsKey(blockNumber)) throw new DiskCorruptException("Recursive Directory structure detected.");
+			else visits.put(blockNumber, Boolean.TRUE);
+
 			byte[] block = readBlock(blockNumber);
 			int offset = 4;
 			while (offset+ProdosCommonEntry.ENTRY_LENGTH < BLOCK_SIZE) {

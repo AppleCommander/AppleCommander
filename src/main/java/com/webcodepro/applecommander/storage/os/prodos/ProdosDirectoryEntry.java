@@ -22,6 +22,7 @@ package com.webcodepro.applecommander.storage.os.prodos;
 import java.util.List;
 
 import com.webcodepro.applecommander.storage.DirectoryEntry;
+import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.StorageBundle;
@@ -32,21 +33,24 @@ import com.webcodepro.applecommander.util.TextBundle;
  * <p>
  * Date Created: Mar 2, 2003
  * @author Rob Greene
+ *
+ * Changed at: Dec 1, 2017
+ * @author Lisias Toledo
  */
 public class ProdosDirectoryEntry extends ProdosFileEntry implements DirectoryEntry {
 	private TextBundle textBundle = StorageBundle.getInstance();
 	private ProdosSubdirectoryHeader subdirectoryHeader;
-	
+
 	/**
 	 * Constructor for ProdosDirectoryEntry.
 	 */
-	public ProdosDirectoryEntry(ProdosFormatDisk disk, int block, int offset, 
+	public ProdosDirectoryEntry(ProdosFormatDisk disk, int block, int offset,
 			ProdosSubdirectoryHeader subdirectoryHeader) {
 		super(disk, block, offset);
 		this.subdirectoryHeader = subdirectoryHeader;
 		subdirectoryHeader.setProdosDirectoryEntry(this);
 	}
-	
+
 	/**
 	 * Get the subdirectory header.
 	 */
@@ -60,8 +64,9 @@ public class ProdosDirectoryEntry extends ProdosFileEntry implements DirectoryEn
 	 * value should be null.  If this a directory, the
 	 * return value should always be a list - a directory
 	 * with 0 entries returns an empty list.
+	 * @throws DiskException
 	 */
-	public List<FileEntry> getFiles() {
+	public List<FileEntry> getFiles() throws DiskException {
 		return getDisk().getFiles(getSubdirectoryHeader().getFileEntryBlock());
 	}
 
