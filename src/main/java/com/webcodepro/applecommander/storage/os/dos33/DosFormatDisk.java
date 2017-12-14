@@ -20,9 +20,9 @@
 package com.webcodepro.applecommander.storage.os.dos33;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.DiskException;
@@ -147,13 +147,13 @@ public class DosFormatDisk extends FormattedDisk {
 		byte[] vtoc = readVtoc();
 		int track = AppleUtil.getUnsignedByte(vtoc[1]);
 		int sector = AppleUtil.getUnsignedByte(vtoc[2]);
-		final Map<Integer,Map<Integer,Boolean>> visits = new HashMap<>();
+		final Set<DosSectorAddress> visits = new HashSet<>();
 		while (sector != 0) { // bug fix: iterate through all catalog _sectors_
 
 			// Prevents a recursive catalog crawling.
-			if ( !visits.containsKey(track) ) visits.put(track, new HashMap<Integer,Boolean>());
-			if ( visits.get(track).containsKey(sector)) throw new DiskCorruptException("Recursive Directory structure detected.", DiskCorruptException.Kind.RECURSIVE_DIRECTORY_STRUCTURE, new DosSectorAddress(track, sector));
-			else visits.get(track).put(sector, Boolean.TRUE);
+			final DosSectorAddress address = new DosSectorAddress(track, sector);
+			if ( visits.contains(address)) throw new DiskCorruptException("Recursive Directory structure detected.", DiskCorruptException.Kind.RECURSIVE_DIRECTORY_STRUCTURE, address);
+			else visits.add(address);
 
 			byte[] catalogSector = readSector(track, sector);
 			int offset = 0x0b;

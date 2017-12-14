@@ -23,10 +23,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.HashSet;
 
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.DiskException;
@@ -275,11 +275,11 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 */		
 	protected List<FileEntry> getFiles(int blockNumber) throws DiskException {
 		List<FileEntry> files = new ArrayList<>();
-		final Map<Integer,Boolean> visits = new HashMap<>();
+		final Set<Integer> visits = new HashSet<>();
 		while (blockNumber != 0) {
 			// Prevents a recursive catalog crawling.
-			if ( visits.containsKey(blockNumber)) throw new DiskCorruptException("Recursive Directory structure detected.", DiskCorruptException.Kind.RECURSIVE_DIRECTORY_STRUCTURE, new ProdosBlockAddress(blockNumber));
-			else visits.put(blockNumber, Boolean.TRUE);
+			if ( visits.contains(blockNumber)) throw new DiskCorruptException("Recursive Directory structure detected.", DiskCorruptException.Kind.RECURSIVE_DIRECTORY_STRUCTURE, new ProdosBlockAddress(blockNumber));
+			else visits.add(blockNumber);
 
 			byte[] block = readBlock(blockNumber);
 			int offset = 4;

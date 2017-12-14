@@ -29,13 +29,28 @@ public class DosSectorAddress {
 
 	public final Integer track;
 	public final Integer sector;
-	
+
 	public DosSectorAddress(int track, int sector) {
 		this.track = track;
 		this.sector = sector;
 	}
-	
+
 	public String toString() {
 		return "Track:" + this.track + ", Sector:" + this.sector;
 	}
+
+	public boolean equals(final Object other){
+		if(other == null)							return false;
+		if(!(other instanceof DosSectorAddress))	return false;
+
+		final DosSectorAddress o = (DosSectorAddress) other;
+		return this.track == o.track && this.sector == o.sector;
+	}
+
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + this.track.hashCode();
+        result = 31 * result + this.sector.hashCode();
+        return result;
+    }
 }
