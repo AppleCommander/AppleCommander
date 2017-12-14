@@ -278,7 +278,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 		final Map<Integer,Boolean> visits = new HashMap<>();
 		while (blockNumber != 0) {
 			// Prevents a recursive catalog crawling.
-			if ( visits.containsKey(blockNumber)) throw new DiskCorruptException("Recursive Directory structure detected.");
+			if ( visits.containsKey(blockNumber)) throw new DiskCorruptException("Recursive Directory structure detected.", DiskCorruptException.Kind.RECURSIVE_DIRECTORY_STRUCTURE, new ProdosBlockAddress(blockNumber));
 			else visits.put(blockNumber, Boolean.TRUE);
 
 			byte[] block = readBlock(blockNumber);

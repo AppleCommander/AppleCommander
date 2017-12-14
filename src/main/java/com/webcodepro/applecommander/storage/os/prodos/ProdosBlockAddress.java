@@ -17,42 +17,23 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package com.webcodepro.applecommander.storage;
+package com.webcodepro.applecommander.storage.os.prodos;
 
 /**
- * A DiskCorruptException is thrown during the disk's data structures are corrupted
- * beyound hope of automatic recovering.
+ * A Container for DOS 3.3 Sector Addresses.
  * <br>
- * Created on Nov 30, 2017.
+ * Created on Dec 13, 2017.
  * @author Lisias Toledo
  */
-public class DiskCorruptException extends DiskException {
+public class ProdosBlockAddress {
 
-	private static final long serialVersionUID = 0xFFFFFFFF80000000L;
-
-	public enum Kind {
-		RECURSIVE_DIRECTORY_STRUCTURE
-	}
+	public final Integer number;
 	
-	final public Kind kind;
-	final public Object offender;
-	
-	private DiskCorruptException(String description) {
-		super(description);
-		this.kind = null;
-		this.offender = null;
-	}
-	
-	/**
-	 * Constructor for DiskFullException.
-	 */
-	public DiskCorruptException(String description, Kind kind, Object offender) {
-		super(description);
-		this.kind = kind;
-		this.offender = offender;
+	public ProdosBlockAddress(int number) {
+		this.number = number;
 	}
 	
 	public String toString() {
-		return super.toString() + " @ " + offender.toString();
+		return "Block:" + this.number;
 	}
 }
