@@ -258,20 +258,22 @@ public class DiskExplorerTab {
 			diskItem.setData(disks[i]);
 			directoryTree.setSelection(new TreeItem[] { diskItem });
 
-			if (disks[i].canHaveDirectories()) try {
-				Iterator files = disks[i].getFiles().iterator();
-				while (files.hasNext()) {
-					FileEntry entry = (FileEntry) files.next();
-					if (entry.isDirectory()) {
-						TreeItem item = new TreeItem(diskItem, SWT.BORDER);
-						item.setText(entry.getFilename());
-						item.setData(entry);
-						addDirectoriesToTree(item, (DirectoryEntry)entry);
+			if (disks[i].canHaveDirectories()) {
+				try {
+					Iterator files = disks[i].getFiles().iterator();
+					while (files.hasNext()) {
+						FileEntry entry = (FileEntry) files.next();
+						if (entry.isDirectory()) {
+							TreeItem item = new TreeItem(diskItem, SWT.BORDER);
+							item.setText(entry.getFilename());
+							item.setData(entry);
+							addDirectoriesToTree(item, (DirectoryEntry)entry);
+						}
 					}
-				}
-            } catch (DiskException e) {
-                // FIXME how to warn the User about this?
-            }
+	            } catch (DiskException e) {
+	                // FIXME how to warn the User about this?
+	            }
+			}
 		}
 
 		computeColumnWidths(FormattedDisk.FILE_DISPLAY_STANDARD);
@@ -1368,11 +1370,13 @@ public class DiskExplorerTab {
 		viewFileItem.setEnabled(false);
 		viewFileItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent event) {
-				if (event.detail != SWT.ARROW) try {
-					viewFile(null);
-	            } catch (DiskException e) {
-	                // FIXME how to warn the User about this?
-	            }
+				if (event.detail != SWT.ARROW) { 
+					try {
+						viewFile(null);
+		            } catch (DiskException e) {
+		                // FIXME how to warn the User about this?
+		            }
+				}
 			}
 		});
 		printToolItem = new ToolItem(toolBar, SWT.PUSH);
@@ -1682,40 +1686,43 @@ public class DiskExplorerTab {
 									saveAs();
 									break;
 							}
-						} else try {
-							switch (event.character) {
-								case CTRL_I:	// Import Wizard
-									importFiles();
-									break;
-								case CTRL_P:	// Print...
-									print();
-									break;
-								case CTRL_S:	// Save
-									if (getSaveToolItem().isEnabled()) {
-										save();
-									}
-									break;
-							}
-			            } catch (DiskException e) {
-			                // FIXME how to warn the User about this?
-			            }
+						} else {
+							try {
+								switch (event.character) {
+									case CTRL_I:	// Import Wizard
+										importFiles();
+										break;
+									case CTRL_P:	// Print...
+										print();
+										break;
+									case CTRL_S:	// Save
+										if (getSaveToolItem().isEnabled()) {
+											save();
+										}
+										break;
+								}
+				            } catch (DiskException e) {
+				                // FIXME how to warn the User about this?
+				            }
+						}
 					} else {	// No CTRL key
 					    if ((event.stateMask & SWT.ALT) != SWT.ALT)	// Ignore ALT key combinations like alt-F4!
-						try { switch (event.keyCode) {
-							case SWT.F2:	// Standard file display
-								changeCurrentFormat(FormattedDisk.FILE_DISPLAY_STANDARD);
-								break;
-							case SWT.F3:	// Native file display
-								changeCurrentFormat(FormattedDisk.FILE_DISPLAY_NATIVE);
-								break;
-							case SWT.F4:	// Detail file display
-								changeCurrentFormat(FormattedDisk.FILE_DISPLAY_DETAIL);
-								break;
-							case SWT.F5:	// Show deleted files
-								setShowDeletedFiles(!getShowDeletedFilesToolItem().getSelection());
-								getShowDeletedFilesToolItem().setSelection(isShowDeletedFiles());
-								fillFileTable(getCurrentFileList());
-								break;
+						try {
+							switch (event.keyCode) {
+								case SWT.F2:	// Standard file display
+									changeCurrentFormat(FormattedDisk.FILE_DISPLAY_STANDARD);
+									break;
+								case SWT.F3:	// Native file display
+									changeCurrentFormat(FormattedDisk.FILE_DISPLAY_NATIVE);
+									break;
+								case SWT.F4:	// Detail file display
+									changeCurrentFormat(FormattedDisk.FILE_DISPLAY_DETAIL);
+									break;
+								case SWT.F5:	// Show deleted files
+									setShowDeletedFiles(!getShowDeletedFilesToolItem().getSelection());
+									getShowDeletedFilesToolItem().setSelection(isShowDeletedFiles());
+									fillFileTable(getCurrentFileList());
+									break;
 							}
 			            } catch (DiskException e) {
 			                // FIXME how to warn the User about this?

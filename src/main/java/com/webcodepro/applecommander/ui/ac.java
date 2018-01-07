@@ -330,11 +330,13 @@ public class ac {
 			directory = "."+File.separator;
 		}
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-		for (int i = 0; i < formattedDisks.length; i++) try {
-			FormattedDisk formattedDisk = formattedDisks[i];
-			writeFiles(formattedDisk.getFiles(), directory);
-		} catch (DiskException e) {
-			// FIXME How to warn user about the problem?
+		for (int i = 0; i < formattedDisks.length; i++) { 
+			try {
+				FormattedDisk formattedDisk = formattedDisks[i];
+				writeFiles(formattedDisk.getFiles(), directory);
+			} catch (DiskException e) {
+				// FIXME How to warn user about the problem?
+			}
 		}
 	}
 
@@ -357,10 +359,12 @@ public class ac {
 				OutputStream output = new FileOutputStream(file);
 				output.write(buf, 0, buf.length);
 				output.close();
-			} else if (entry.isDirectory()) try {
-				writeFiles(((DirectoryEntry) entry).getFiles(),directory+entry.getFilename()+File.separator);
-			} catch (DiskException e) {
-				// FIXME How to warn user about the problem?
+			} else if (entry.isDirectory()) { 
+				try {
+					writeFiles(((DirectoryEntry) entry).getFiles(),directory+entry.getFilename()+File.separator);
+				} catch (DiskException e) {
+					// FIXME How to warn user about the problem?
+				}
 			}
 		}
 	}
@@ -441,11 +445,13 @@ public class ac {
 				}
 				System.out.println();
 			}
-			if (entry.isDirectory()) try {
-				showFiles(((DirectoryEntry) entry).getFiles(),
-					indent + "  ", display); //$NON-NLS-1$
-			} catch (DiskException e) {
-				// FIXME How to warn user about the problem?
+			if (entry.isDirectory()) {
+				try {
+					showFiles(((DirectoryEntry) entry).getFiles(),
+						indent + "  ", display); //$NON-NLS-1$
+				} catch (DiskException e) {
+					// FIXME How to warn user about the problem?
+				}
 			}
 		}
 	}
