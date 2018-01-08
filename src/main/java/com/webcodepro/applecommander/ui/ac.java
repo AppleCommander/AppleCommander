@@ -264,7 +264,7 @@ public class ac {
 	 * Delete the file named fileName from the disk named imageName.
 	 */
 	static void deleteFile(String imageName, String fileName)
-		throws IOException {
+		throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
 		Name name = new Name(fileName);
 		if (!disk.isSDK() && !disk.isDC42()) {
@@ -290,7 +290,7 @@ public class ac {
 	 * filtered according to its type and sent to &lt;stdout>.
 	 */
 	static void getFile(String imageName, String fileName, boolean filter, PrintStream out)
-		throws IOException {
+		throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
 		Name name = new Name(fileName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
@@ -479,7 +479,7 @@ public class ac {
 	 * Set the lockState of the file named fileName on the disk named imageName.
 	 * Proposed by David Schmidt.
 	 */
-	public static void setFileLocked(String imageName, String name, boolean lockState) throws IOException {
+	public static void setFileLocked(String imageName, String name, boolean lockState) throws IOException, DiskException {
 		setFileLocked(imageName, new Name(name), lockState);
 	}
 
@@ -488,7 +488,7 @@ public class ac {
 	 * Proposed by David Schmidt.
 	 */
 	static void setFileLocked(String imageName, Name name,
-		boolean lockState) throws IOException {
+		boolean lockState) throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
 		if (!disk.isSDK() && !disk.isDC42()) {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
@@ -620,29 +620,25 @@ public class ac {
 			this.name = path[path.length - 1];
 		}
 		
-		public FileEntry getEntry(FormattedDisk formattedDisk) {
-			try {
-				List files = formattedDisk.getFiles();
-				FileEntry entry = null;
-				for (int i = 0; i < path.length - 1; i++) {
-					String dirName = path[i];
-					for (int j = 0; j < files.size(); j++) {
-						entry = (FileEntry) files.get(j);
-						String entryName = entry.getFilename();
-						if (entry.isDirectory() && dirName.equalsIgnoreCase(entryName)) {
-							files = ((DirectoryEntry) entry).getFiles();
-						}
-					}
-				}
-				for (int i = 0; i < files.size(); i++) {
-					entry = (FileEntry) files.get(i);
+		public FileEntry getEntry(FormattedDisk formattedDisk) throws DiskException {
+			List files = formattedDisk.getFiles();
+			FileEntry entry = null;
+			for (int i = 0; i < path.length - 1; i++) {
+				String dirName = path[i];
+				for (int j = 0; j < files.size(); j++) {
+					entry = (FileEntry) files.get(j);
 					String entryName = entry.getFilename();
-					if (!entry.isDeleted() && name.equalsIgnoreCase(entryName)) {
-						return entry;
+					if (entry.isDirectory() && dirName.equalsIgnoreCase(entryName)) {
+						files = ((DirectoryEntry) entry).getFiles();
 					}
 				}
-			} catch (DiskException e) {
-				// FIXME How to warn user about the problem?
+			}
+			for (int i = 0; i < files.size(); i++) {
+				entry = (FileEntry) files.get(i);
+				String entryName = entry.getFilename();
+				if (!entry.isDeleted() && name.equalsIgnoreCase(entryName)) {
+					return entry;
+				}
 			}
 			return null;
 		}
