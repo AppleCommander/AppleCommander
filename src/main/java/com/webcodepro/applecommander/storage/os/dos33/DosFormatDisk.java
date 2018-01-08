@@ -152,7 +152,7 @@ public class DosFormatDisk extends FormattedDisk {
 
 			// Prevents a recursive catalog crawling.
 			final DosSectorAddress address = new DosSectorAddress(track, sector);
-			if ( visits.contains(address)) throw new DiskCorruptException("Recursive Directory structure detected.", DiskCorruptException.Kind.RECURSIVE_DIRECTORY_STRUCTURE, address);
+			if ( visits.contains(address)) throw new DiskCorruptException(DiskCorruptException.Kind.RECURSIVE_DIRECTORY_STRUCTURE, address);
 			else visits.add(address);
 
 			byte[] catalogSector = readSector(track, sector);

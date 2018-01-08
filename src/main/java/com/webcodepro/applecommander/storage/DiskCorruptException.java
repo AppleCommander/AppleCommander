@@ -31,13 +31,17 @@ public class DiskCorruptException extends DiskException {
 	private static final long serialVersionUID = 0xFFFFFFFF80000000L;
 
 	public enum Kind {
-		RECURSIVE_DIRECTORY_STRUCTURE
+		RECURSIVE_DIRECTORY_STRUCTURE {
+			public String toString() {
+				return "Recursive Directory structure detected."; // FIXME NLS
+			};
+		}
 	}
 	
 	final public Kind kind;
 	final public Object offender;
 	
-	private DiskCorruptException(String description) {
+	private DiskCorruptException(final String description) {
 		super(description);
 		this.kind = null;
 		this.offender = null;
@@ -46,8 +50,8 @@ public class DiskCorruptException extends DiskException {
 	/**
 	 * Constructor for DiskFullException.
 	 */
-	public DiskCorruptException(String description, Kind kind, Object offender) {
-		super(description);
+	public DiskCorruptException(final Kind kind, final Object offender) {
+		super(kind.toString());
 		this.kind = kind;
 		this.offender = offender;
 	}
