@@ -33,7 +33,7 @@ public class DiskCorruptException extends DiskException {
 	public enum Kind {
 		RECURSIVE_DIRECTORY_STRUCTURE {
 			public String toString() {
-				return "Recursive Directory structure detected."; // FIXME NLS
+				return "DiskCorruptException.RecursiveDirectoryStructure"; //$NON-NLS-1$
 			};
 		}
 	}

@@ -72,6 +72,7 @@ import org.eclipse.swt.widgets.TreeItem;
 import com.webcodepro.applecommander.compiler.ApplesoftCompiler;
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskCorruptException;
 import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileEntryComparator;
@@ -202,14 +203,6 @@ public class DiskExplorerTab {
 		currentFileList = null;
 	}
 	/**
-	 * Warns user about a problem
-	 * 
-	 * @param e
-	 */
-	protected void warnUserAbout(final DiskException e) {
-		// TODO Implement this!
-	}
-	/**
 	 * Create the FILES tab.
 	 */
 	protected void createFilesTab(CTabFolder tabFolder) {
@@ -240,7 +233,7 @@ public class DiskExplorerTab {
 				try {
 					changeCurrentFormat(getCurrentFormat()); // minor hack
 	            } catch (DiskException e) {
-	                DiskExplorerTab.this.warnUserAbout(e);
+	                DiskExplorerTab.this.diskWindow.handle(e);
 	            }
 			}
 			/**
@@ -279,7 +272,7 @@ public class DiskExplorerTab {
 						}
 					}
 	            } catch (DiskException e) {
-	                this.warnUserAbout(e);
+	                this.diskWindow.handle(e);
 	            }
 			}
 		}
@@ -292,7 +285,7 @@ public class DiskExplorerTab {
 		try {
 			fillFileTable(disks[0].getFiles());
         } catch (DiskException e) {
-            this.warnUserAbout(e);
+            this.diskWindow.handle(e);
         }
 		directoryTree.setSelection(new TreeItem[] { directoryTree.getItems()[0] });
 	}
@@ -366,7 +359,7 @@ public class DiskExplorerTab {
 				try {
 					importFiles();
 	            } catch (DiskException e) {
-	            	DiskExplorerTab.this.warnUserAbout(e);
+	            	DiskExplorerTab.this.diskWindow.handle(e);
 	            }
 			}
 		});
@@ -421,7 +414,7 @@ public class DiskExplorerTab {
 				try {
 					viewFile(null);
 	            } catch (DiskException e) {
-	            	DiskExplorerTab.this.warnUserAbout(e);
+	            	DiskExplorerTab.this.diskWindow.handle(e);
 	            }
 			}
 		});
@@ -480,7 +473,7 @@ public class DiskExplorerTab {
 				try {
 					viewFile(TextFileFilter.class);
 	            } catch (DiskException e) {
-	            	DiskExplorerTab.this.warnUserAbout(e);
+	            	DiskExplorerTab.this.diskWindow.handle(e);
 	            }
 			}
 		});
@@ -492,7 +485,7 @@ public class DiskExplorerTab {
 				try {
 					viewFile(GraphicsFileFilter.class);
 	            } catch (DiskException e) {
-	            	DiskExplorerTab.this.warnUserAbout(e);
+	            	DiskExplorerTab.this.diskWindow.handle(e);
 	            }
 			}
 		});
@@ -923,7 +916,7 @@ public class DiskExplorerTab {
 					try {
 						viewFile(null);
 		            } catch (DiskException e) {
-		            	DiskExplorerTab.this.warnUserAbout(e);
+		            	DiskExplorerTab.this.diskWindow.handle(e);
 		            }
 				}
 			});
@@ -1279,7 +1272,7 @@ public class DiskExplorerTab {
 				try {
 					changeCurrentFormat(FormattedDisk.FILE_DISPLAY_STANDARD);
 	            } catch (DiskException e) {
-	            	DiskExplorerTab.this.warnUserAbout(e);
+	            	DiskExplorerTab.this.diskWindow.handle(e);
 	            }
 			}
 		});
@@ -1292,7 +1285,7 @@ public class DiskExplorerTab {
 				try {
 					changeCurrentFormat(FormattedDisk.FILE_DISPLAY_NATIVE);
 	            } catch (DiskException e) {
-	            	DiskExplorerTab.this.warnUserAbout(e);
+	            	DiskExplorerTab.this.diskWindow.handle(e);
 	            }
 			}
 		});
@@ -1305,7 +1298,7 @@ public class DiskExplorerTab {
 				try {
 					changeCurrentFormat(FormattedDisk.FILE_DISPLAY_DETAIL);
 	            } catch (DiskException e) {
-	            	DiskExplorerTab.this.warnUserAbout(e);
+	            	DiskExplorerTab.this.diskWindow.handle(e);
 	            }
 			}
 		});
@@ -1337,7 +1330,7 @@ public class DiskExplorerTab {
 				try {
 					importFiles();
 	            } catch (DiskException e) {
-	            	DiskExplorerTab.this.warnUserAbout(e);
+	            	DiskExplorerTab.this.diskWindow.handle(e);
 	            }
 			}
 		});
@@ -1382,7 +1375,7 @@ public class DiskExplorerTab {
 					try {
 						viewFile(null);
 		            } catch (DiskException e) {
-		            	DiskExplorerTab.this.warnUserAbout(e);
+		            	DiskExplorerTab.this.diskWindow.handle(e);
 		            }
 				}
 			}
@@ -1673,7 +1666,7 @@ public class DiskExplorerTab {
 								break;
 						}
 					} catch (DiskException e) {
-						DiskExplorerTab.this.warnUserAbout(e);
+						DiskExplorerTab.this.diskWindow.handle(e);
 		            }
 				}
 			}
@@ -1713,7 +1706,7 @@ public class DiskExplorerTab {
 										break;
 								}
 				            } catch (DiskException e) {
-				            	DiskExplorerTab.this.warnUserAbout(e);
+				            	DiskExplorerTab.this.diskWindow.handle(e);
 				            }
 						}
 					} else {	// No CTRL key
@@ -1736,7 +1729,7 @@ public class DiskExplorerTab {
 									break;
 							}
 			            } catch (DiskException e) {
-			            	DiskExplorerTab.this.warnUserAbout(e);
+			            	DiskExplorerTab.this.diskWindow.handle(e);
 			            }
 					}
 				}
@@ -1811,7 +1804,7 @@ public class DiskExplorerTab {
 					try {
 						printFiles(disk, 1);
 		            } catch (DiskException e) {
-		            	DiskExplorerTab.this.warnUserAbout(e);
+		            	DiskExplorerTab.this.diskWindow.handle(e);
 		            }
 				}
 				if (y != clientArea.y) {	// partial page
