@@ -233,7 +233,9 @@ public class PascalFormatDisk extends FormattedDisk {
 			putDirectory(dir);
 			return entry;
 		} else {
-			throw new DiskFullException(textBundle.get("PascalFormatDisk.DiskFull")); //$NON-NLS-1$
+			throw new DiskFullException(
+					textBundle.get("PascalFormatDisk.DiskFull") //$NON-NLS-1$
+					, this.getFilename());
 		}
 	}
 

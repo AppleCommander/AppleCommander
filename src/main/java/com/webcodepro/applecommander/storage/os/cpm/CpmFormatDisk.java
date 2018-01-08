@@ -407,7 +407,9 @@ public class CpmFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createFile()
 	 */
 	public FileEntry createFile() throws DiskFullException {
-		throw new DiskFullException(textBundle.get("FileCreationNotSupported")); //$NON-NLS-1$
+		throw new DiskFullException(
+				textBundle.get("FileCreationNotSupported") //$NON-NLS-1$
+				, this.getFilename());
 	}
 
 	/**

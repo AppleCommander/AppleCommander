@@ -257,7 +257,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 			}
 			blockNumber = nextBlockNumber;
 		}
-		throw new DiskFullException(textBundle.get("ProdosFormatDisk.UnableToAllocateSpaceError")); //$NON-NLS-1$
+		throw new DiskFullException(textBundle.get("ProdosFormatDisk.UnableToAllocateSpaceError"), this.getFilename()); //$NON-NLS-1$
 	}
 
 	/**
@@ -278,7 +278,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 		final Set<Integer> visits = new HashSet<>();
 		while (blockNumber != 0) {
 			// Prevents a recursive catalog crawling.
-			if ( visits.contains(blockNumber)) throw new DiskCorruptException(DiskCorruptException.Kind.RECURSIVE_DIRECTORY_STRUCTURE, new ProdosBlockAddress(blockNumber));
+			if ( visits.contains(blockNumber)) throw new DiskCorruptException(this.getFilename(), DiskCorruptException.Kind.RECURSIVE_DIRECTORY_STRUCTURE, new ProdosBlockAddress(blockNumber));
 			else visits.add(blockNumber);
 
 			byte[] block = readBlock(blockNumber);
@@ -656,7 +656,8 @@ public class ProdosFormatDisk extends FormattedDisk {
 			if (numberOfBlocks > getFreeBlocks() + fileEntry.getBlocksUsed()) {
 				throw new DiskFullException(textBundle.
 						format("ProdosFormatDisk.NotEnoughSpaceOnDiskError", //$NON-NLS-1$
-								numberOfBlocks, getFreeBlocks()));
+								numberOfBlocks, getFreeBlocks())
+						, this.getFilename());
 			}
 			// free "old" data and just rewrite stuff...
 			freeBlocks(fileEntry);
@@ -761,7 +762,8 @@ public class ProdosFormatDisk extends FormattedDisk {
 		if (numberOfBlocks > getFreeBlocks() + fileEntry.getBlocksUsed()) {
 			throw new DiskFullException(textBundle.
 					format("ProdosFormatDisk.NotEnoughSpaceOnDiskError", //$NON-NLS-1$
-							numberOfBlocks, getFreeBlocks()));
+							numberOfBlocks, getFreeBlocks())
+					, this.getFilename());
 		}
 		// free "old" data and just rewrite stuff...
 		freeBlocks(fileEntry);
@@ -928,7 +930,8 @@ public class ProdosFormatDisk extends FormattedDisk {
 		if (numberOfBlocks > getFreeBlocks() + fileEntry.getBlocksUsed()) {
 			throw new DiskFullException(textBundle.
 					format("ProdosFormatDisk.NotEnoughSpaceOnDiskError", //$NON-NLS-1$
-					numberOfBlocks, getFreeBlocks()));
+					numberOfBlocks, getFreeBlocks())
+					, this.getFilename());
 		}
 		// free "old" data and just rewrite stuff...
 		freeBlocks(fileEntry);
@@ -1069,12 +1072,14 @@ public class ProdosFormatDisk extends FormattedDisk {
 					return block;
 				}
 				throw new ProdosDiskSizeDoesNotMatchException(
-					textBundle.get("ProdosFormatDisk.ProdosDiskSizeDoesNotMatchError")); //$NON-NLS-1$
+					textBundle.get("ProdosFormatDisk.ProdosDiskSizeDoesNotMatchError") //$NON-NLS-1$
+					, this.getFilename());
 			}
 			block++;
 		}
 		throw new DiskFullException(
-			textBundle.get("ProdosFormatDisk.NoFreeBlockAvailableError")); //$NON-NLS-1$
+			textBundle.get("ProdosFormatDisk.NoFreeBlockAvailableError") //$NON-NLS-1$
+			, this.getFilename());
 	}
 	
 	/**
@@ -1423,6 +1428,8 @@ public class ProdosFormatDisk extends FormattedDisk {
 			}
 			blockNumber = nextBlockNumber;
 		}
-		throw new DiskFullException(textBundle.get("ProdosFormatDisk.UnableToAllocateSpaceError")); //$NON-NLS-1$
+		throw new DiskFullException(
+				textBundle.get("ProdosFormatDisk.UnableToAllocateSpaceError") //$NON-NLS-1$
+				, this.getFilename());
 	}
 }

@@ -36,7 +36,7 @@ public class DiskFullException extends DiskException {
 	/**
 	 * Constructor for DiskFullException.
 	 */
-	public DiskFullException(String description) {
-		super(description);
+	public DiskFullException(final String description, final String imagepath) {
+		super(description, imagepath);
 	}
 }

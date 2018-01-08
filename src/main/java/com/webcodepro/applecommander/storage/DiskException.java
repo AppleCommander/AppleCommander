@@ -29,10 +29,13 @@ public abstract class DiskException extends Exception {
 
 	private static final long serialVersionUID = 0xFFFFFFFF80000000L;
 
+	public final String imagepath;
+
 	/**
 	 * Constructor for DiskException.
 	 */
-	public DiskException(String description) {
+	public DiskException(final String description, final String imagepath) {
 		super(description);
+		this.imagepath = imagepath;
 	}
 }

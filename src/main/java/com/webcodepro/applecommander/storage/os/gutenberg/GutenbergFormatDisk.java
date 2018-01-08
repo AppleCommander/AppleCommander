@@ -172,7 +172,9 @@ public class GutenbergFormatDisk extends FormattedDisk {
 			track = catalogSector[1];
 			sector = catalogSector[2];
 		}
-		throw new DiskFullException(textBundle.get("DosFormatDisk.NoMoreSpaceError")); //$NON-NLS-1$
+		throw new DiskFullException(
+				textBundle.get("DosFormatDisk.NoMoreSpaceError") //$NON-NLS-1$
+				, this.getFilename());
 	}
 
 	/**
@@ -436,7 +438,8 @@ public class GutenbergFormatDisk extends FormattedDisk {
 		if (numberOfSectors > getFreeSectors() + fileEntry.getSectorsUsed()) {
 			throw new DiskFullException(
 					textBundle.format("DosFormatDisk.NotEnoughSectorsError", //$NON-NLS-1$
-					numberOfSectors, getFreeSectors()));
+					numberOfSectors, getFreeSectors())
+					, this.getFilename());
 		}
 		// free "old" data and just rewrite stuff...
 		// freeSectors(fileEntry); (not going to work...)

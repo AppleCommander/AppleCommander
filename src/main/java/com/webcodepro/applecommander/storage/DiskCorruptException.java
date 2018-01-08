@@ -38,11 +38,11 @@ public class DiskCorruptException extends DiskException {
 		}
 	}
 	
-	final public Kind kind;
-	final public Object offender;
+	public final Kind kind;
+	public final Object offender;
 	
-	private DiskCorruptException(final String description) {
-		super(description);
+	private DiskCorruptException(final String description, final String imagepath) {
+		super(description, imagepath);
 		this.kind = null;
 		this.offender = null;
 	}
@@ -50,8 +50,8 @@ public class DiskCorruptException extends DiskException {
 	/**
 	 * Constructor for DiskFullException.
 	 */
-	public DiskCorruptException(final Kind kind, final Object offender) {
-		super(kind.toString());
+	public DiskCorruptException(final String imagepath, final Kind kind, final Object offender) {
+		super(kind.toString(), imagepath);
 		this.kind = kind;
 		this.offender = offender;
 	}
