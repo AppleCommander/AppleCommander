@@ -202,6 +202,14 @@ public class DiskExplorerTab {
 		currentFileList = null;
 	}
 	/**
+	 * Warns user about a problem
+	 * 
+	 * @param e
+	 */
+	protected void warnUserAbout(final DiskException e) {
+		// TODO Implement this!
+	}
+	/**
 	 * Create the FILES tab.
 	 */
 	protected void createFilesTab(CTabFolder tabFolder) {
@@ -232,7 +240,7 @@ public class DiskExplorerTab {
 				try {
 					changeCurrentFormat(getCurrentFormat()); // minor hack
 	            } catch (DiskException e) {
-	                // FIXME how to warn the User about this?
+	                DiskExplorerTab.this.warnUserAbout(e);
 	            }
 			}
 			/**
@@ -271,7 +279,7 @@ public class DiskExplorerTab {
 						}
 					}
 	            } catch (DiskException e) {
-	                // FIXME how to warn the User about this?
+	                this.warnUserAbout(e);
 	            }
 			}
 		}
@@ -284,7 +292,7 @@ public class DiskExplorerTab {
 		try {
 			fillFileTable(disks[0].getFiles());
         } catch (DiskException e) {
-            // FIXME how to warn the User about this?
+            this.warnUserAbout(e);
         }
 		directoryTree.setSelection(new TreeItem[] { directoryTree.getItems()[0] });
 	}
@@ -358,7 +366,7 @@ public class DiskExplorerTab {
 				try {
 					importFiles();
 	            } catch (DiskException e) {
-	                // FIXME how to warn the User about this?
+	            	DiskExplorerTab.this.warnUserAbout(e);
 	            }
 			}
 		});
@@ -413,7 +421,7 @@ public class DiskExplorerTab {
 				try {
 					viewFile(null);
 	            } catch (DiskException e) {
-	                // FIXME how to warn the User about this?
+	            	DiskExplorerTab.this.warnUserAbout(e);
 	            }
 			}
 		});
@@ -472,7 +480,7 @@ public class DiskExplorerTab {
 				try {
 					viewFile(TextFileFilter.class);
 	            } catch (DiskException e) {
-	                // FIXME how to warn the User about this?
+	            	DiskExplorerTab.this.warnUserAbout(e);
 	            }
 			}
 		});
@@ -484,7 +492,7 @@ public class DiskExplorerTab {
 				try {
 					viewFile(GraphicsFileFilter.class);
 	            } catch (DiskException e) {
-	                // FIXME how to warn the User about this?
+	            	DiskExplorerTab.this.warnUserAbout(e);
 	            }
 			}
 		});
@@ -915,7 +923,7 @@ public class DiskExplorerTab {
 					try {
 						viewFile(null);
 		            } catch (DiskException e) {
-		                // FIXME how to warn the User about this?
+		            	DiskExplorerTab.this.warnUserAbout(e);
 		            }
 				}
 			});
@@ -1271,7 +1279,7 @@ public class DiskExplorerTab {
 				try {
 					changeCurrentFormat(FormattedDisk.FILE_DISPLAY_STANDARD);
 	            } catch (DiskException e) {
-	                // FIXME how to warn the User about this?
+	            	DiskExplorerTab.this.warnUserAbout(e);
 	            }
 			}
 		});
@@ -1284,7 +1292,7 @@ public class DiskExplorerTab {
 				try {
 					changeCurrentFormat(FormattedDisk.FILE_DISPLAY_NATIVE);
 	            } catch (DiskException e) {
-	                // FIXME how to warn the User about this?
+	            	DiskExplorerTab.this.warnUserAbout(e);
 	            }
 			}
 		});
@@ -1297,7 +1305,7 @@ public class DiskExplorerTab {
 				try {
 					changeCurrentFormat(FormattedDisk.FILE_DISPLAY_DETAIL);
 	            } catch (DiskException e) {
-	                // FIXME how to warn the User about this?
+	            	DiskExplorerTab.this.warnUserAbout(e);
 	            }
 			}
 		});
@@ -1329,7 +1337,7 @@ public class DiskExplorerTab {
 				try {
 					importFiles();
 	            } catch (DiskException e) {
-	                // FIXME how to warn the User about this?
+	            	DiskExplorerTab.this.warnUserAbout(e);
 	            }
 			}
 		});
@@ -1374,7 +1382,7 @@ public class DiskExplorerTab {
 					try {
 						viewFile(null);
 		            } catch (DiskException e) {
-		                // FIXME how to warn the User about this?
+		            	DiskExplorerTab.this.warnUserAbout(e);
 		            }
 				}
 			}
@@ -1644,27 +1652,30 @@ public class DiskExplorerTab {
 		return new Listener() {
 			public void handleEvent(Event event) {
 				FileEntry fileEntry = getSelectedFileEntry();
-				if (fileEntry != null && event.type == SWT.KeyUp && (event.stateMask & SWT.CTRL) != 0)
-					try { switch (event.character) {
-						case CTRL_C:	// Compile Wizard
-							if (getCompileToolItem().isEnabled()) {
-								compileFileWizard();
-							}
-							break;
-						case CTRL_D:	// Delete file
-							if (getDeleteToolItem().isEnabled()) {
-								deleteFile();
-							}
-							break;
-						case CTRL_E:	// Export Wizard
-							exportFileWizard();
-							break;
-						case CTRL_V:	// View file
-							viewFile(null);
-							break;
-					} } catch (DiskException e) {
-		                // FIXME how to warn the User about this?
+				if (fileEntry != null && event.type == SWT.KeyUp && (event.stateMask & SWT.CTRL) != 0) {
+					try { 
+						switch (event.character) {
+							case CTRL_C:	// Compile Wizard
+								if (getCompileToolItem().isEnabled()) {
+									compileFileWizard();
+								}
+								break;
+							case CTRL_D:	// Delete file
+								if (getDeleteToolItem().isEnabled()) {
+									deleteFile();
+								}
+								break;
+							case CTRL_E:	// Export Wizard
+								exportFileWizard();
+								break;
+							case CTRL_V:	// View file
+								viewFile(null);
+								break;
+						}
+					} catch (DiskException e) {
+						DiskExplorerTab.this.warnUserAbout(e);
 		            }
+				}
 			}
 		};
 	}
@@ -1702,7 +1713,7 @@ public class DiskExplorerTab {
 										break;
 								}
 				            } catch (DiskException e) {
-				                // FIXME how to warn the User about this?
+				            	DiskExplorerTab.this.warnUserAbout(e);
 				            }
 						}
 					} else {	// No CTRL key
@@ -1725,7 +1736,7 @@ public class DiskExplorerTab {
 									break;
 							}
 			            } catch (DiskException e) {
-			                // FIXME how to warn the User about this?
+			            	DiskExplorerTab.this.warnUserAbout(e);
 			            }
 					}
 				}
@@ -1800,7 +1811,7 @@ public class DiskExplorerTab {
 					try {
 						printFiles(disk, 1);
 		            } catch (DiskException e) {
-		                // FIXME how to warn the User about this?
+		            	DiskExplorerTab.this.warnUserAbout(e);
 		            }
 				}
 				if (y != clientArea.y) {	// partial page
@@ -2100,5 +2111,5 @@ public class DiskExplorerTab {
 	
 	protected ToolItem getShowDeletedFilesToolItem() {
 		return showDeletedFilesToolItem;
-	}
+	}	
 }
