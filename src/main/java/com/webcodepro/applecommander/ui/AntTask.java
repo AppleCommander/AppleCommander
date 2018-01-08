@@ -122,7 +122,7 @@ public class AntTask extends Task
 			{
 				com.webcodepro.applecommander.ui.ac.setDiskName(_imageName, _volName);
 			}
-			catch (IOException io)
+			catch (IOException|DiskException io)
 			{
 				if (_failonerror)
 					throw new BuildException(io);
@@ -221,7 +221,7 @@ public class AntTask extends Task
 			{
 				com.webcodepro.applecommander.ui.ac.getFiles(_imageName, _outputPath);
 			}
-			catch (IOException io)
+			catch (IOException|DiskException io)
 			{
 				if (_failonerror)
 					throw new BuildException(io);

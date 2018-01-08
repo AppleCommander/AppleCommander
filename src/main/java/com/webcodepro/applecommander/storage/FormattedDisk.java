@@ -267,14 +267,8 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	 * Locate a specific file by filename.
 	 * Returns a null if specific filename is not located.
 	 */
-	public FileEntry getFile(String filename) {
-		List files;
-		try {
-			files = getFiles();
-        } catch (DiskException e) {
-            // FIXME how to warn the User about this?
-        	files = new ArrayList<>();
-        }
+	public FileEntry getFile(String filename) throws DiskException {
+		List files = getFiles();
 		return getFile(files, filename.trim());
 	}
 	
@@ -283,19 +277,15 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	 * Note that in the instance of a system with directories (ie, ProDOS),
 	 * this really returns the first file with the given filename.
 	 */
-	protected FileEntry getFile(List files, String filename) {
+	protected FileEntry getFile(List files, String filename) throws DiskException {
 		FileEntry theFileEntry = null;
 		if (files != null) {
 			for (int i=0; i<files.size(); i++) {
 				FileEntry entry = (FileEntry) files.get(i);
 				if (entry.isDirectory()) {
-					try {
-						theFileEntry = getFile(
-							((DirectoryEntry)entry).getFiles(), filename);
-						if (theFileEntry != null) break;
-		            } catch (DiskException e) {
-		                // FIXME how to warn the User about this?
-		            }
+					theFileEntry = getFile(
+						((DirectoryEntry)entry).getFiles(), filename);
+					if (theFileEntry != null) break;
 				}
 				String otherFilename = entry.getFilename();
 				if (otherFilename != null) otherFilename = otherFilename.trim();

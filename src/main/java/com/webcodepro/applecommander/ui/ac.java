@@ -320,7 +320,7 @@ public class ac {
 	/**
 	 * Extract all files in the image according to their respective filetype.
 	 */
-	static void getFiles(String imageName, String directory) throws IOException {
+	static void getFiles(String imageName, String directory) throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
 		if ((directory != null) && (directory.length() > 0)) {
 			// Add a final directory separator if the user didn't supply one
@@ -331,19 +331,15 @@ public class ac {
 		}
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		for (int i = 0; i < formattedDisks.length; i++) { 
-			try {
-				FormattedDisk formattedDisk = formattedDisks[i];
-				writeFiles(formattedDisk.getFiles(), directory);
-			} catch (DiskException e) {
-				// FIXME How to warn user about the problem?
-			}
+			FormattedDisk formattedDisk = formattedDisks[i];
+			writeFiles(formattedDisk.getFiles(), directory);
 		}
 	}
 
 	/**
 	 * Recursive routine to write directory and file entries.
 	 */
-	static void writeFiles(List files, String directory) throws IOException {
+	static void writeFiles(List files, String directory) throws IOException, DiskException {
 		Iterator it = files.iterator();
 		while (it.hasNext()) {
 			FileEntry entry = (FileEntry) it.next();
@@ -360,11 +356,7 @@ public class ac {
 				output.write(buf, 0, buf.length);
 				output.close();
 			} else if (entry.isDirectory()) { 
-				try {
-					writeFiles(((DirectoryEntry) entry).getFiles(),directory+entry.getFilename()+File.separator);
-				} catch (DiskException e) {
-					// FIXME How to warn user about the problem?
-				}
+				writeFiles(((DirectoryEntry) entry).getFiles(),directory+entry.getFilename()+File.separator);
 			}
 		}
 	}
@@ -375,7 +367,7 @@ public class ac {
 	 * file with the given filename.
 	 * @deprecated
 	 */
-	static FileEntry getEntry(List files, String fileName) {
+	static FileEntry getEntry(List files, String fileName) throws DiskException {
 		FileEntry entry = null;
 		if (files != null) {
 			for (int i = 0; i < files.size(); i++) {
@@ -384,13 +376,11 @@ public class ac {
 				if (!entry.isDeleted() && fileName.equalsIgnoreCase(entryName)) {
 					return entry;
 				}
-				if (entry.isDirectory()) try {
+				if (entry.isDirectory()) {
 					entry = getEntry(((DirectoryEntry) entry).getFiles(), fileName);
 					if (entry != null) {
 						return entry;
 					}
-				} catch (DiskException e) {
-					// FIXME How to warn user about the problem?
 				}
 			}
 		}
@@ -433,7 +423,7 @@ public class ac {
 	 * system with directories (e.g. ProDOS), this really returns the first file
 	 * with the given filename.
 	 */
-	static void showFiles(List files, String indent, int display) {
+	static void showFiles(List files, String indent, int display) throws DiskException {
 		for (int i = 0; i < files.size(); i++) {
 			FileEntry entry = (FileEntry) files.get(i);
 			if (!entry.isDeleted()) {
@@ -446,12 +436,8 @@ public class ac {
 				System.out.println();
 			}
 			if (entry.isDirectory()) {
-				try {
-					showFiles(((DirectoryEntry) entry).getFiles(),
-						indent + "  ", display); //$NON-NLS-1$
-				} catch (DiskException e) {
-					// FIXME How to warn user about the problem?
-				}
+				showFiles(((DirectoryEntry) entry).getFiles(),
+					indent + "  ", display); //$NON-NLS-1$
 			}
 		}
 	}
@@ -459,7 +445,7 @@ public class ac {
 	/**
 	 * Display information about each disk in args.
 	 */
-	static void getDiskInfo(String[] args) throws IOException {
+	static void getDiskInfo(String[] args) throws IOException, DiskException {
 		for (int d = 1; d < args.length; d++) {
 			Disk disk = new Disk(args[d]);
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
@@ -513,7 +499,7 @@ public class ac {
 	 * Pascal disks; others ignored. Proposed by David Schmidt.
 	 */
 	public static void setDiskName(String imageName, String volName)
-		throws IOException {
+		throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
 		if (!disk.isSDK() && !disk.isDC42()) {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
