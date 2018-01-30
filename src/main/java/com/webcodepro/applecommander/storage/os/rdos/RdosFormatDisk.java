@@ -202,7 +202,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * Create a new FileEntry.
 	 */
 	public FileEntry createFile() throws DiskFullException {
-		throw new DiskFullException(textBundle.get("FileCreationNotSupported")); //$NON-NLS-1$
+		throw new DiskFullException(textBundle.get("FileCreationNotSupported"), this.getFilename()); //$NON-NLS-1$
 	}
 
 	/**

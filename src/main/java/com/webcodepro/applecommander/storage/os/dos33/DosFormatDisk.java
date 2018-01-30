@@ -21,8 +21,12 @@ package com.webcodepro.applecommander.storage.os.dos33;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 
 import com.webcodepro.applecommander.storage.DirectoryEntry;
+import com.webcodepro.applecommander.storage.DiskException;
+import com.webcodepro.applecommander.storage.DiskCorruptException;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
@@ -36,6 +40,9 @@ import com.webcodepro.applecommander.util.TextBundle;
  * <p>
  * Date created: Oct 4, 2002 12:29:23 AM
  * @author Rob Greene
+ *
+ * Changed at: Dec 1, 2017
+ * @author Lisias Toledo
  */
 public class DosFormatDisk extends FormattedDisk {
 	private TextBundle textBundle = StorageBundle.getInstance();
@@ -132,14 +139,22 @@ public class DosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Retrieve a list of files.
+	 * @throws DiskException
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFiles()
 	 */
-	public List<FileEntry> getFiles() {
+	public List<FileEntry> getFiles() throws DiskException {
 		List<FileEntry> list = new ArrayList<>();
 		byte[] vtoc = readVtoc();
 		int track = AppleUtil.getUnsignedByte(vtoc[1]);
 		int sector = AppleUtil.getUnsignedByte(vtoc[2]);
+		final Set<DosSectorAddress> visits = new HashSet<>();
 		while (sector != 0) { // bug fix: iterate through all catalog _sectors_
+
+			// Prevents a recursive catalog crawling.
+			final DosSectorAddress address = new DosSectorAddress(track, sector);
+			if ( visits.contains(address)) throw new DiskCorruptException(this.getFilename(), DiskCorruptException.Kind.RECURSIVE_DIRECTORY_STRUCTURE, address);
+			else visits.add(address);
+
 			byte[] catalogSector = readSector(track, sector);
 			int offset = 0x0b;
 			while (offset < 0xff) {	// iterate through all entries
@@ -174,7 +189,9 @@ public class DosFormatDisk extends FormattedDisk {
 			track = catalogSector[1];
 			sector = catalogSector[2];
 		}
-		throw new DiskFullException(textBundle.get("DosFormatDisk.NoMoreSpaceError")); //$NON-NLS-1$
+		throw new DiskFullException(
+				textBundle.get("DosFormatDisk.NoMoreSpaceError") //$NON-NLS-1$
+				, this.getFilename());
 	}
 
 	/**
@@ -457,7 +474,8 @@ public class DosFormatDisk extends FormattedDisk {
 		if (numberOfSectors > getFreeSectors() + fileEntry.getSectorsUsed()) {
 			throw new DiskFullException(
 					textBundle.format("DosFormatDisk.NotEnoughSectorsError", //$NON-NLS-1$
-					numberOfSectors, getFreeSectors()));
+					numberOfSectors, getFreeSectors())
+					, this.getFilename());
 		}
 		// free "old" data and just rewrite stuff...
 		freeSectors(fileEntry);

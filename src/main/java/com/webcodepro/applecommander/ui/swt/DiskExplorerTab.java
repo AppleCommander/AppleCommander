@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -71,6 +72,8 @@ import org.eclipse.swt.widgets.TreeItem;
 import com.webcodepro.applecommander.compiler.ApplesoftCompiler;
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskCorruptException;
+import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileEntryComparator;
 import com.webcodepro.applecommander.storage.FileFilter;
@@ -114,6 +117,9 @@ import com.webcodepro.applecommander.util.TextBundle;
  * <p>
  * Date created: Nov 17, 2002 9:46:53 PM
  * @author Rob Greene
+ *
+ * Changed at: Dec 1, 2017
+ * @author Lisias Toledo
  */
 public class DiskExplorerTab {
 	private static final char CTRL_C = 'C' - '@';
@@ -224,7 +230,11 @@ public class DiskExplorerTab {
 			 * Single-click handler.
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				changeCurrentFormat(getCurrentFormat());		// minor hack
+				try {
+					changeCurrentFormat(getCurrentFormat()); // minor hack
+	            } catch (DiskException e) {
+	                DiskExplorerTab.this.diskWindow.handle(e);
+	            }
 			}
 			/**
 			 * Double-click handler.
@@ -248,27 +258,35 @@ public class DiskExplorerTab {
 			diskItem.setText(disks[i].getDiskName());
 			diskItem.setData(disks[i]);
 			directoryTree.setSelection(new TreeItem[] { diskItem });
-			
+
 			if (disks[i].canHaveDirectories()) {
-				Iterator files = disks[i].getFiles().iterator();
-				while (files.hasNext()) {
-					FileEntry entry = (FileEntry) files.next();
-					if (entry.isDirectory()) {
-						TreeItem item = new TreeItem(diskItem, SWT.BORDER);
-						item.setText(entry.getFilename());
-						item.setData(entry);
-						addDirectoriesToTree(item, (DirectoryEntry)entry);
+				try {
+					Iterator files = disks[i].getFiles().iterator();
+					while (files.hasNext()) {
+						FileEntry entry = (FileEntry) files.next();
+						if (entry.isDirectory()) {
+							TreeItem item = new TreeItem(diskItem, SWT.BORDER);
+							item.setText(entry.getFilename());
+							item.setData(entry);
+							addDirectoriesToTree(item, (DirectoryEntry)entry);
+						}
 					}
-				}
+	            } catch (DiskException e) {
+	                this.diskWindow.handle(e);
+	            }
 			}
 		}
-			
+
 		computeColumnWidths(FormattedDisk.FILE_DISPLAY_STANDARD);
 		computeColumnWidths(FormattedDisk.FILE_DISPLAY_NATIVE);
 		computeColumnWidths(FormattedDisk.FILE_DISPLAY_DETAIL);
 
 		formatChanged = true;
-		fillFileTable(disks[0].getFiles());
+		try {
+			fillFileTable(disks[0].getFiles());
+        } catch (DiskException e) {
+            this.diskWindow.handle(e);
+        }
 		directoryTree.setSelection(new TreeItem[] { directoryTree.getItems()[0] });
 	}
 	/**
@@ -338,11 +356,15 @@ public class DiskExplorerTab {
 		item.setImage(imageManager.get(ImageManager.ICON_IMPORT_FILE));
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				importFiles();
+				try {
+					importFiles();
+	            } catch (DiskException e) {
+	            	DiskExplorerTab.this.diskWindow.handle(e);
+	            }
 			}
 		});
 		item.setEnabled(disks[0].canCreateFile() && disks[0].canWriteFileData());
-		
+
 		return menu;
 	}
 	/**
@@ -389,7 +411,11 @@ public class DiskExplorerTab {
 		item.setImage(imageManager.get(ImageManager.ICON_VIEW_FILE));
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				viewFile(null);
+				try {
+					viewFile(null);
+	            } catch (DiskException e) {
+	            	DiskExplorerTab.this.diskWindow.handle(e);
+	            }
 			}
 		});
 	
@@ -444,7 +470,11 @@ public class DiskExplorerTab {
 		item.setText(textBundle.get("ViewAsTextMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				viewFile(TextFileFilter.class);
+				try {
+					viewFile(TextFileFilter.class);
+	            } catch (DiskException e) {
+	            	DiskExplorerTab.this.diskWindow.handle(e);
+	            }
 			}
 		});
 
@@ -452,7 +482,11 @@ public class DiskExplorerTab {
 		item.setText(textBundle.get("VeiwAsGraphicsMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				viewFile(GraphicsFileFilter.class);
+				try {
+					viewFile(GraphicsFileFilter.class);
+	            } catch (DiskException e) {
+	            	DiskExplorerTab.this.diskWindow.handle(e);
+	            }
 			}
 		});
 		
@@ -879,7 +913,11 @@ public class DiskExplorerTab {
 				 * Double-click handler.
 				 */
 				public void widgetDefaultSelected(SelectionEvent event) {
-					viewFile(null);
+					try {
+						viewFile(null);
+		            } catch (DiskException e) {
+		            	DiskExplorerTab.this.diskWindow.handle(e);
+		            }
 				}
 			});
 			TableColumn column = null;
@@ -1101,12 +1139,13 @@ public class DiskExplorerTab {
 	}
 	/**
 	 * Start the import wizard and import the selected files.
+	 * @throws DiskException
 	 */
-	protected void importFiles() {
+	protected void importFiles() throws DiskException {
 		//FIXME: This code has become really ugly!
 		TreeItem treeItem = directoryTree.getSelection()[0];
 		DirectoryEntry directory = (DirectoryEntry) treeItem.getData();
-		ImportWizard wizard = new ImportWizard(shell, 
+		ImportWizard wizard = new ImportWizard(shell,
 			imageManager, directory.getFormattedDisk());
 		wizard.open();
 		if (wizard.isWizardCompleted()) {
@@ -1201,8 +1240,9 @@ public class DiskExplorerTab {
 	}
 	/**
 	 * Helper function for building fileTree.
+	 * @throws DiskException
 	 */
-	protected void addDirectoriesToTree(TreeItem directoryItem, DirectoryEntry directoryEntry) {
+	protected void addDirectoriesToTree(TreeItem directoryItem, DirectoryEntry directoryEntry) throws DiskException {
 		Iterator files = directoryEntry.getFiles().iterator();
 		while (files.hasNext()) {
 			final FileEntry entry = (FileEntry) files.next();
@@ -1228,8 +1268,12 @@ public class DiskExplorerTab {
 		standardFormatToolItem.setToolTipText(textBundle.get("StandardViewHoverText")); //$NON-NLS-1$
 		standardFormatToolItem.setSelection(true);
 		standardFormatToolItem.addSelectionListener(new SelectionAdapter () {
-			public void widgetSelected(SelectionEvent e) {
-				changeCurrentFormat(FormattedDisk.FILE_DISPLAY_STANDARD);
+			public void widgetSelected(SelectionEvent event) {
+				try {
+					changeCurrentFormat(FormattedDisk.FILE_DISPLAY_STANDARD);
+	            } catch (DiskException e) {
+	            	DiskExplorerTab.this.diskWindow.handle(e);
+	            }
 			}
 		});
 		nativeFormatToolItem = new ToolItem(toolBar, SWT.RADIO);
@@ -1237,8 +1281,12 @@ public class DiskExplorerTab {
 		nativeFormatToolItem.setText(textBundle.get("NativeViewToolItem")); //$NON-NLS-1$
 		nativeFormatToolItem.setToolTipText(textBundle.get("NativeViewHoverText")); //$NON-NLS-1$
 		nativeFormatToolItem.addSelectionListener(new SelectionAdapter () {
-			public void widgetSelected(SelectionEvent e) {
-				changeCurrentFormat(FormattedDisk.FILE_DISPLAY_NATIVE);
+			public void widgetSelected(SelectionEvent event) {
+				try {
+					changeCurrentFormat(FormattedDisk.FILE_DISPLAY_NATIVE);
+	            } catch (DiskException e) {
+	            	DiskExplorerTab.this.diskWindow.handle(e);
+	            }
 			}
 		});
 		detailFormatToolItem = new ToolItem(toolBar, SWT.RADIO);
@@ -1246,13 +1294,17 @@ public class DiskExplorerTab {
 		detailFormatToolItem.setText(textBundle.get("DetailViewToolItem")); //$NON-NLS-1$
 		detailFormatToolItem.setToolTipText(textBundle.get("DetailViewHoverText")); //$NON-NLS-1$
 		detailFormatToolItem.addSelectionListener(new SelectionAdapter () {
-			public void widgetSelected(SelectionEvent e) {
-				changeCurrentFormat(FormattedDisk.FILE_DISPLAY_DETAIL);
+			public void widgetSelected(SelectionEvent event) {
+				try {
+					changeCurrentFormat(FormattedDisk.FILE_DISPLAY_DETAIL);
+	            } catch (DiskException e) {
+	            	DiskExplorerTab.this.diskWindow.handle(e);
+	            }
 			}
 		});
-		
+
 		new ToolItem(toolBar, SWT.SEPARATOR);
-		
+
 		showDeletedFilesToolItem = new ToolItem(toolBar, SWT.CHECK);
 		showDeletedFilesToolItem.setImage(imageManager.get(ImageManager.ICON_SHOW_DELETED_FILES));
 		showDeletedFilesToolItem.setText(textBundle.get("ShowDeletedFilesToolItem")); //$NON-NLS-1$
@@ -1274,11 +1326,15 @@ public class DiskExplorerTab {
 		importToolItem.setToolTipText(textBundle.get("ImportWizardHoverText")); //$NON-NLS-1$
 		importToolItem.setEnabled(disks[0].canCreateFile() && disks[0].canWriteFileData());
 		importToolItem.addSelectionListener(new SelectionAdapter () {
-			public void widgetSelected(SelectionEvent e) {
-				importFiles();
+			public void widgetSelected(SelectionEvent event) {
+				try {
+					importFiles();
+	            } catch (DiskException e) {
+	            	DiskExplorerTab.this.diskWindow.handle(e);
+	            }
 			}
 		});
-		
+
 		exportToolItem = new ToolItem(toolBar, SWT.DROP_DOWN);
 		exportToolItem.setImage(imageManager.get(ImageManager.ICON_EXPORT_FILE));
 		exportToolItem.setText(textBundle.get("ExportWizardToolItem")); //$NON-NLS-1$
@@ -1315,8 +1371,12 @@ public class DiskExplorerTab {
 		viewFileItem.setEnabled(false);
 		viewFileItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent event) {
-				if (event.detail != SWT.ARROW) {
-					viewFile(null);
+				if (event.detail != SWT.ARROW) { 
+					try {
+						viewFile(null);
+		            } catch (DiskException e) {
+		            	DiskExplorerTab.this.diskWindow.handle(e);
+		            }
 				}
 			}
 		});
@@ -1402,8 +1462,9 @@ public class DiskExplorerTab {
 	}
 	/**
 	 * Change the current format and refresh the display.
+	 * @throws DiskException
 	 */
-	protected void changeCurrentFormat(int newFormat) {
+	protected void changeCurrentFormat(int newFormat) throws DiskException {
 		TreeItem selection = directoryTree.getSelection()[0];
 		Object data = selection.getData();
 		DirectoryEntry directory = (DirectoryEntry) data;
@@ -1522,8 +1583,9 @@ public class DiskExplorerTab {
 	}
 	/**
 	 * Open up the view file window for the currently selected file.
+	 * @throws DiskException
 	 */
-	protected void viewFile(Class fileFilterClass) {
+	protected void viewFile(Class fileFilterClass) throws DiskException {
 		FileEntry fileEntry = getSelectedFileEntry();
 		if (fileEntry.isDeleted()) {
 			SwtUtil.showErrorDialog(shell, textBundle.get("DeleteFileErrorTitle"), //$NON-NLS-1$
@@ -1584,24 +1646,28 @@ public class DiskExplorerTab {
 			public void handleEvent(Event event) {
 				FileEntry fileEntry = getSelectedFileEntry();
 				if (fileEntry != null && event.type == SWT.KeyUp && (event.stateMask & SWT.CTRL) != 0) {
-					switch (event.character) {
-						case CTRL_C:	// Compile Wizard
-							if (getCompileToolItem().isEnabled()) {
-								compileFileWizard();
-							}
-							break;
-						case CTRL_D:	// Delete file
-							if (getDeleteToolItem().isEnabled()) {
-								deleteFile();
-							}
-							break;
-						case CTRL_E:	// Export Wizard
-							exportFileWizard();
-							break;
-						case CTRL_V:	// View file
-							viewFile(null);
-							break;
-					}		
+					try { 
+						switch (event.character) {
+							case CTRL_C:	// Compile Wizard
+								if (getCompileToolItem().isEnabled()) {
+									compileFileWizard();
+								}
+								break;
+							case CTRL_D:	// Delete file
+								if (getDeleteToolItem().isEnabled()) {
+									deleteFile();
+								}
+								break;
+							case CTRL_E:	// Export Wizard
+								exportFileWizard();
+								break;
+							case CTRL_V:	// View file
+								viewFile(null);
+								break;
+						}
+					} catch (DiskException e) {
+						DiskExplorerTab.this.diskWindow.handle(e);
+		            }
 				}
 			}
 		};
@@ -1625,39 +1691,46 @@ public class DiskExplorerTab {
 									break;
 							}
 						} else {
-							switch (event.character) {
-								case CTRL_I:	// Import Wizard
-									importFiles();
-									break;
-								case CTRL_P:	// Print...
-									print();
-									break;
-								case CTRL_S:	// Save
-									if (getSaveToolItem().isEnabled()) {
-										save();
-									}
-									break;
-							}
+							try {
+								switch (event.character) {
+									case CTRL_I:	// Import Wizard
+										importFiles();
+										break;
+									case CTRL_P:	// Print...
+										print();
+										break;
+									case CTRL_S:	// Save
+										if (getSaveToolItem().isEnabled()) {
+											save();
+										}
+										break;
+								}
+				            } catch (DiskException e) {
+				            	DiskExplorerTab.this.diskWindow.handle(e);
+				            }
 						}
 					} else {	// No CTRL key
-					    if ((event.stateMask & SWT.ALT) != SWT.ALT) {	// Ignore ALT key combinations like alt-F4!
-						switch (event.keyCode) {
-							case SWT.F2:	// Standard file display
-								changeCurrentFormat(FormattedDisk.FILE_DISPLAY_STANDARD);
-								break;
-							case SWT.F3:	// Native file display
-								changeCurrentFormat(FormattedDisk.FILE_DISPLAY_NATIVE);
-								break;
-							case SWT.F4:	// Detail file display
-								changeCurrentFormat(FormattedDisk.FILE_DISPLAY_DETAIL);
-								break;
-							case SWT.F5:	// Show deleted files
-								setShowDeletedFiles(!getShowDeletedFilesToolItem().getSelection());
-								getShowDeletedFilesToolItem().setSelection(isShowDeletedFiles());
-								fillFileTable(getCurrentFileList());
-								break;
+					    if ((event.stateMask & SWT.ALT) != SWT.ALT)	// Ignore ALT key combinations like alt-F4!
+						try {
+							switch (event.keyCode) {
+								case SWT.F2:	// Standard file display
+									changeCurrentFormat(FormattedDisk.FILE_DISPLAY_STANDARD);
+									break;
+								case SWT.F3:	// Native file display
+									changeCurrentFormat(FormattedDisk.FILE_DISPLAY_NATIVE);
+									break;
+								case SWT.F4:	// Detail file display
+									changeCurrentFormat(FormattedDisk.FILE_DISPLAY_DETAIL);
+									break;
+								case SWT.F5:	// Show deleted files
+									setShowDeletedFiles(!getShowDeletedFilesToolItem().getSelection());
+									getShowDeletedFilesToolItem().setSelection(isShowDeletedFiles());
+									fillFileTable(getCurrentFileList());
+									break;
 							}
-						}
+			            } catch (DiskException e) {
+			            	DiskExplorerTab.this.diskWindow.handle(e);
+			            }
 					}
 				}
 			}
@@ -1728,7 +1801,11 @@ public class DiskExplorerTab {
 					printFileHeaders();
 					gc.setFont(normalFont);
 					println(disk.getDiskName());
-					printFiles(disk, 1);
+					try {
+						printFiles(disk, 1);
+		            } catch (DiskException e) {
+		            	DiskExplorerTab.this.diskWindow.handle(e);
+		            }
 				}
 				if (y != clientArea.y) {	// partial page
 					printFooter();
@@ -1811,7 +1888,7 @@ public class DiskExplorerTab {
 				clientArea.y + clientArea.height + dpiY - point.y);
 			page++;
 		}
-		protected void printFiles(DirectoryEntry directory, int level) {
+		protected void printFiles(DirectoryEntry directory, int level) throws DiskException {
 			Iterator iterator = directory.getFiles().iterator();
 			while (iterator.hasNext()) {
 				FileEntry fileEntry = (FileEntry) iterator.next();
@@ -2027,5 +2104,5 @@ public class DiskExplorerTab {
 	
 	protected ToolItem getShowDeletedFilesToolItem() {
 		return showDeletedFilesToolItem;
-	}
+	}	
 }

@@ -20,23 +20,19 @@
 package com.webcodepro.applecommander.storage;
 
 /**
- * A DiskFullException is thrown during a write operation when the file
- * being written will not fit on the disk.
+ * A DiskUnrecognizedException is thrown when the Disk Image being opened is not recognized by any image handler.
  * <br>
- * Created on Dec 23, 2002.
- * @author Rob Greene
- *
- * Changed at: Dec 1, 2017
+ * Created at: Jan 8, 2018
  * @author Lisias Toledo
  */
-public class DiskFullException extends DiskException {
+public class DiskUnrecognizedException extends DiskException {
 
 	private static final long serialVersionUID = 0xFFFFFFFF80000000L;
 
 	/**
 	 * Constructor for DiskFullException.
 	 */
-	public DiskFullException(final String description, final String imagepath) {
-		super(description, imagepath);
+	public DiskUnrecognizedException(final String imagepath) {
+		super("DiskUnrecognizedException", imagepath);
 	}
 }

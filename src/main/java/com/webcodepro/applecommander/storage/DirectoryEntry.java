@@ -28,6 +28,9 @@ import java.util.List;
  * <p>
  * Date Created: Mar 2, 2003
  * @author Rob Greene
+ *
+ * Changed at: Dec 1, 2017
+ * @author Lisias Toledo
  */
 public interface DirectoryEntry {
 	/**
@@ -37,17 +40,17 @@ public interface DirectoryEntry {
 	 * return value should always be a list - a directory
 	 * with 0 entries returns an empty list.
 	 */
-	public List<FileEntry> getFiles();
+	public List<FileEntry> getFiles() throws DiskException;
 
 	/**
 	 * Create a new FileEntry.
 	 */
-	public FileEntry createFile() throws DiskFullException;
-	
+	public FileEntry createFile() throws DiskException;
+
 	/**
 	 * Create a new DirectoryEntry.
 	 */
-	public DirectoryEntry createDirectory(String name) throws DiskFullException;
+	public DirectoryEntry createDirectory(String name) throws DiskException;
 
 	/**
 	 * Identify if additional directories can be created.  This
@@ -56,7 +59,7 @@ public interface DirectoryEntry {
 	 * to writing.
 	 */
 	public boolean canCreateDirectories();
-	
+
 	/**
 	 * Indicates if this disk image can create a file.
 	 * If not, the reason may be as simple as it has not beem implemented

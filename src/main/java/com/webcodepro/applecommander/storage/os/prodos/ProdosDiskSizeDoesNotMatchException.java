@@ -37,7 +37,7 @@ public class ProdosDiskSizeDoesNotMatchException extends DiskFullException {
 	/**
 	 * Constructor for ProdosDiskSizeDoesNotMatchException.
 	 */
-	public ProdosDiskSizeDoesNotMatchException(String description) {
-		super(description);
+	public ProdosDiskSizeDoesNotMatchException(String description, final String imagepath) {
+		super(description, imagepath);
 	}
 }

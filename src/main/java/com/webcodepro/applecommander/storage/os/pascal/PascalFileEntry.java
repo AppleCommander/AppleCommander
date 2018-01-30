@@ -351,7 +351,7 @@ public class PascalFileEntry implements FileEntry {
 			volEntry.setFileCount(count - 2);
 			dir.set(0, volEntry);
 			disk.putDirectory(dir);
-			throw new DiskFullException(s);
+			throw new DiskFullException(s, this.disk.getFilename());
 		}
 	}
 

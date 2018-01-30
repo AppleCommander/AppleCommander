@@ -369,10 +369,10 @@ public class Disk {
 
 	/**
 	 * Determine type of disk, and return the appropriate
-	 * FormattedDisk object.  Returns null if none are
-	 * recognized.
+	 * FormattedDisk object.  Throws an Exception if none is recognized.
+	 * @throws DiskUnrecognizedException 
 	 */
-	public FormattedDisk[] getFormattedDisks() {
+	public FormattedDisk[] getFormattedDisks() throws DiskUnrecognizedException {
 		if (isProdosFormat()) {
 			return new FormattedDisk[]
 				{ new ProdosFormatDisk(filename, imageOrder) };
@@ -407,7 +407,7 @@ public class Disk {
 			return new FormattedDisk[]
 				{ new GutenbergFormatDisk(filename, imageOrder) };
 		}
-		return null;
+		throw new DiskUnrecognizedException(filename);
 	}
 
 	/**

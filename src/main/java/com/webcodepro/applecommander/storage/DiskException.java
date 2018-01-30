@@ -20,23 +20,22 @@
 package com.webcodepro.applecommander.storage;
 
 /**
- * A DiskFullException is thrown during a write operation when the file
- * being written will not fit on the disk.
+ * A DiskException is the base class for Disk Exceptions.
  * <br>
- * Created on Dec 23, 2002.
- * @author Rob Greene
- *
- * Changed at: Dec 1, 2017
+ * Created on Nov 30, 2017.
  * @author Lisias Toledo
  */
-public class DiskFullException extends DiskException {
+public abstract class DiskException extends Exception {
 
 	private static final long serialVersionUID = 0xFFFFFFFF80000000L;
 
+	public final String imagepath;
+
 	/**
-	 * Constructor for DiskFullException.
+	 * Constructor for DiskException.
 	 */
-	public DiskFullException(final String description, final String imagepath) {
-		super(description, imagepath);
+	public DiskException(final String description, final String imagepath) {
+		super(description);
+		this.imagepath = imagepath;
 	}
 }

@@ -24,11 +24,15 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
+import com.webcodepro.applecommander.storage.DiskCorruptException;
+import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
+import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Displays disk information on the screen.
@@ -45,6 +49,8 @@ public class DiskWindow {
 	
 	private DiskInfoTab diskInfoTab;
 	private DiskMapTab[] diskMapTabs;
+
+	private TextBundle textBundle = UiBundle.getInstance();
 
 	/**
 	 * Construct the disk window.
@@ -82,6 +88,58 @@ public class DiskWindow {
 		
 		
 		shell.open();
+	}
+	
+	/**
+	 * Warns user about a Disk Corrupt problem
+	 * 
+	 * @param e
+	 */
+	protected void handle(final DiskCorruptException e) {
+		Shell finalShell = shell;
+		MessageBox box = new MessageBox(finalShell, SWT.ICON_ERROR | SWT.OK);
+		box.setText(textBundle.get("SwtAppleCommander." + e.kind + ".Title")); //$NON-NLS-1$
+		box.setMessage(
+			  textBundle.format("SwtAppleCommander.DiskCorruptException.Message", //$NON-NLS-1$
+					  e.imagepath
+			  		));
+		box.open();
+	}
+	
+	/**
+	 * Warns user about a Generic Disk Error problem
+	 * 
+	 * @param e
+	 */
+	protected void handle(final DiskException e) {
+		if (e instanceof DiskCorruptException) {
+			this.handle((DiskCorruptException) e);
+			return;
+		}
+		final MessageBox box = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK | SWT.MODELESS);
+		box.setText(textBundle.get("SwtAppleCommander.DiskException.Title")); //$NON-NLS-1$
+		box.setMessage(
+				  textBundle.format("SwtAppleCommander.DiskException.Message", //$NON-NLS-1$
+						  new Object[]{e.imagepath, e.toString()}
+				  		));
+		box.open();
+	}
+	
+	/**
+	 * Warns user about an Application Error problem
+	 * 
+	 * @param e
+	 */
+	public void handle(final Exception e) {
+		final TextBundle textBundle = UiBundle.getInstance();
+		Shell finalShell = shell;
+		MessageBox box = new MessageBox(finalShell, SWT.ICON_ERROR | SWT.OK);
+		box.setText(textBundle.get("SwtAppleCommander.UnexpectedErrorTitle")); //$NON-NLS-1$
+		box.setMessage(
+			  textBundle.get("SwtAppleCommander.UnexpectedErrorMessage" //$NON-NLS-1$
+			  ));
+		box.open();
+		e.printStackTrace();
 	}
 	
 	/**

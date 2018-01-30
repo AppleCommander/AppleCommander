@@ -34,7 +34,7 @@ import java.util.List;
 
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.DiskFullException;
+import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
@@ -85,6 +85,9 @@ import com.webcodepro.applecommander.util.TextBundle;
  * </pre>
  * 
  * @author John B. Matthews
+ *
+ * Changed at: Dec 1, 2017
+ * @author Lisias Toledo
  */
 public class ac {
 	private static TextBundle textBundle = UiBundle.getInstance();
@@ -154,7 +157,7 @@ public class ac {
 	 * Put fileName from the local filesytem into the file named fileOnImageName on the disk named imageName;
 	 * Note: only volume level supported; input size unlimited.
 	 */
-	public static void putFile(String fileName, String imageName, String fileOnImageName, String fileType, String address) throws IOException, DiskFullException {
+	public static void putFile(String fileName, String imageName, String fileOnImageName, String fileType, String address) throws IOException, DiskException {
 		Name name = new Name(fileOnImageName);
 		File file = new File(fileName);
 		if (!file.canRead())
@@ -188,7 +191,7 @@ public class ac {
 	 * Note: only volume level supported; input size unlimited.
 	 */
 	static void putFile(String imageName, Name name, String fileType,
-		String address) throws IOException, DiskFullException {
+		String address) throws IOException, DiskException {
 
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
 		byte[] inb = new byte[1024];
@@ -225,7 +228,7 @@ public class ac {
 	 * Assume a cc65 style four-byte header with start address in bytes 0-1.
 	 */
 	public static void putCC65(String fileName, String imageName, String fileOnImageName, String fileType)
-		throws IOException, DiskFullException {
+		throws IOException, DiskException {
 
 		byte[] header = new byte[4];
 		if (System.in.read(header, 0, 4) == 4) {
@@ -239,7 +242,7 @@ public class ac {
 	 * Assume a cc65 style four-byte header with start address in bytes 0-1.
 	 */
 	static void putCC65(String imageName, Name name, String fileType)
-		throws IOException, DiskFullException {
+		throws IOException, DiskException {
 
 		byte[] header = new byte[4];
 		if (System.in.read(header, 0, 4) == 4) {
@@ -253,7 +256,7 @@ public class ac {
 	 * This would only make sense for a ProDOS-formatted disk.
 	 */
 	static void putGEOS(String imageName)
-		throws IOException, DiskFullException {
+		throws IOException, DiskException {
 		putFile(imageName, new Name("GEOS-Should Be ProDOS"), "GEO", "0"); //$NON-NLS-2$ $NON-NLS-3$
 	}
 
@@ -261,7 +264,7 @@ public class ac {
 	 * Delete the file named fileName from the disk named imageName.
 	 */
 	static void deleteFile(String imageName, String fileName)
-		throws IOException {
+		throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
 		Name name = new Name(fileName);
 		if (!disk.isSDK() && !disk.isDC42()) {
@@ -287,7 +290,7 @@ public class ac {
 	 * filtered according to its type and sent to &lt;stdout>.
 	 */
 	static void getFile(String imageName, String fileName, boolean filter, PrintStream out)
-		throws IOException {
+		throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
 		Name name = new Name(fileName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
@@ -317,7 +320,7 @@ public class ac {
 	/**
 	 * Extract all files in the image according to their respective filetype.
 	 */
-	static void getFiles(String imageName, String directory) throws IOException {
+	static void getFiles(String imageName, String directory) throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
 		if ((directory != null) && (directory.length() > 0)) {
 			// Add a final directory separator if the user didn't supply one
@@ -327,16 +330,16 @@ public class ac {
 			directory = "."+File.separator;
 		}
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-		for (int i = 0; i < formattedDisks.length; i++) {
+		for (int i = 0; i < formattedDisks.length; i++) { 
 			FormattedDisk formattedDisk = formattedDisks[i];
-			writeFiles(formattedDisk.getFiles(), directory);			
+			writeFiles(formattedDisk.getFiles(), directory);
 		}
 	}
 
 	/**
 	 * Recursive routine to write directory and file entries.
 	 */
-	static void writeFiles(List files, String directory) throws IOException {
+	static void writeFiles(List files, String directory) throws IOException, DiskException {
 		Iterator it = files.iterator();
 		while (it.hasNext()) {
 			FileEntry entry = (FileEntry) it.next();
@@ -352,7 +355,7 @@ public class ac {
 				OutputStream output = new FileOutputStream(file);
 				output.write(buf, 0, buf.length);
 				output.close();
-			} else if (entry.isDirectory()) {
+			} else if (entry.isDirectory()) { 
 				writeFiles(((DirectoryEntry) entry).getFiles(),directory+entry.getFilename()+File.separator);
 			}
 		}
@@ -364,7 +367,7 @@ public class ac {
 	 * file with the given filename.
 	 * @deprecated
 	 */
-	static FileEntry getEntry(List files, String fileName) {
+	static FileEntry getEntry(List files, String fileName) throws DiskException {
 		FileEntry entry = null;
 		if (files != null) {
 			for (int i = 0; i < files.size(); i++) {
@@ -406,6 +409,8 @@ public class ac {
 						new Integer(formattedDisk.getUsedSpace()) }));
 					System.out.println();
 				}
+			} catch (DiskException e) {
+				throw new IOException(e);
 			} catch (RuntimeException e) {
 				System.out.println(args[d] + ": " + e.getMessage()); //$NON-NLS-1$
 				System.out.println();
@@ -418,7 +423,7 @@ public class ac {
 	 * system with directories (e.g. ProDOS), this really returns the first file
 	 * with the given filename.
 	 */
-	static void showFiles(List files, String indent, int display) {
+	static void showFiles(List files, String indent, int display) throws DiskException {
 		for (int i = 0; i < files.size(); i++) {
 			FileEntry entry = (FileEntry) files.get(i);
 			if (!entry.isDeleted()) {
@@ -440,7 +445,7 @@ public class ac {
 	/**
 	 * Display information about each disk in args.
 	 */
-	static void getDiskInfo(String[] args) throws IOException {
+	static void getDiskInfo(String[] args) throws IOException, DiskException {
 		for (int d = 1; d < args.length; d++) {
 			Disk disk = new Disk(args[d]);
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
@@ -460,7 +465,7 @@ public class ac {
 	 * Set the lockState of the file named fileName on the disk named imageName.
 	 * Proposed by David Schmidt.
 	 */
-	public static void setFileLocked(String imageName, String name, boolean lockState) throws IOException {
+	public static void setFileLocked(String imageName, String name, boolean lockState) throws IOException, DiskException {
 		setFileLocked(imageName, new Name(name), lockState);
 	}
 
@@ -469,7 +474,7 @@ public class ac {
 	 * Proposed by David Schmidt.
 	 */
 	static void setFileLocked(String imageName, Name name,
-		boolean lockState) throws IOException {
+		boolean lockState) throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
 		if (!disk.isSDK() && !disk.isDC42()) {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
@@ -494,7 +499,7 @@ public class ac {
 	 * Pascal disks; others ignored. Proposed by David Schmidt.
 	 */
 	public static void setDiskName(String imageName, String volName)
-		throws IOException {
+		throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
 		if (!disk.isSDK() && !disk.isDC42()) {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
@@ -601,7 +606,7 @@ public class ac {
 			this.name = path[path.length - 1];
 		}
 		
-		public FileEntry getEntry(FormattedDisk formattedDisk) {
+		public FileEntry getEntry(FormattedDisk formattedDisk) throws DiskException {
 			List files = formattedDisk.getFiles();
 			FileEntry entry = null;
 			for (int i = 0; i < path.length - 1; i++) {
@@ -624,7 +629,7 @@ public class ac {
 			return null;
 		}
 		
-		public FileEntry createEntry(FormattedDisk formattedDisk) throws DiskFullException {
+		public FileEntry createEntry(FormattedDisk formattedDisk) throws DiskException {
 			if (path.length == 1) {
 				return formattedDisk.createFile();
 			}

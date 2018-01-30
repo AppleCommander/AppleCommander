@@ -39,6 +39,7 @@ import org.eclipse.swt.widgets.ToolItem;
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.Disk.FilenameFilter;
+import com.webcodepro.applecommander.storage.DiskUnrecognizedException;
 import com.webcodepro.applecommander.ui.AppleCommander;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.UserPreferences;
@@ -171,17 +172,29 @@ public class SwtAppleCommander implements Listener {
 			try {
 				Disk disk = new Disk(fullpath);
 				FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-				if (formattedDisks != null) {
-					DiskWindow window = new DiskWindow(shell, formattedDisks, imageManager);
-					window.open();
-				} else {
-					showUnrecognizedDiskFormatMessage(fullpath);
-				}
+				DiskWindow window = new DiskWindow(shell, formattedDisks, imageManager);
+				window.open();
+			} catch (DiskUnrecognizedException e) {
+				showUnrecognizedDiskFormatMessage(fullpath);
 			} catch (Exception ignored) {
 				ignored.printStackTrace();
-				showUnrecognizedDiskFormatMessage(fullpath);
+				showUnexpectedErrorMessage(fullpath);
 			}
 		}
+	}
+
+	/**
+	 * Displays the unrecognized disk format message.
+	 * @param fullpath
+	 */
+	protected void showUnexpectedErrorMessage(String fullpath) {
+		Shell finalShell = shell;
+		MessageBox box = new MessageBox(finalShell, SWT.ICON_ERROR | SWT.OK);
+		box.setText(textBundle.get("SwtAppleCommander.UnexpectedErrorTitle")); //$NON-NLS-1$
+		box.setMessage(
+			  textBundle.format("SwtAppleCommander.UnexpectedErrorMessage", //$NON-NLS-1$
+			  		fullpath));
+		box.open();
 	}
 
 	/**

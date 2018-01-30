@@ -26,6 +26,7 @@ import java.io.PrintStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 
 public class AntTask extends Task
@@ -107,7 +108,7 @@ public class AntTask extends Task
 			{
 				com.webcodepro.applecommander.ui.ac.deleteFile(_imageName, _fileName);
 			}
-			catch (IOException io)
+			catch (IOException|DiskException io)
 			{
 				if (_failonerror)
 					throw new BuildException(io);
@@ -121,7 +122,7 @@ public class AntTask extends Task
 			{
 				com.webcodepro.applecommander.ui.ac.setDiskName(_imageName, _volName);
 			}
-			catch (IOException io)
+			catch (IOException|DiskException io)
 			{
 				if (_failonerror)
 					throw new BuildException(io);
@@ -138,7 +139,7 @@ public class AntTask extends Task
 				else // Assume unlock
 					com.webcodepro.applecommander.ui.ac.setFileLocked(_imageName, _fileName, false);
 			}
-			catch (IOException io)
+			catch (IOException|DiskException io)
 			{
 				if (_failonerror)
 					throw new BuildException(io);
@@ -220,7 +221,7 @@ public class AntTask extends Task
 			{
 				com.webcodepro.applecommander.ui.ac.getFiles(_imageName, _outputPath);
 			}
-			catch (IOException io)
+			catch (IOException|DiskException io)
 			{
 				if (_failonerror)
 					throw new BuildException(io);
