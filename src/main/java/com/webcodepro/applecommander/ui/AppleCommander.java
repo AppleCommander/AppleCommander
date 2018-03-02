@@ -40,8 +40,13 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author Rob Greene
  */
 public class AppleCommander {
-	public static final String VERSION = "1.4.0-BETA"; //$NON-NLS-1$
+	public static final String VERSION;
 	private static TextBundle textBundle = UiBundle.getInstance();
+	
+	static {
+		VERSION = AppleCommander.class.getPackage().getImplementationVersion();
+	}
+	
 	/**
 	 * Launch AppleCommander.
 	 */

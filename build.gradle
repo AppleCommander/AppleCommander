@@ -19,7 +19,7 @@ ext {
 }
 
 mainClassName = 'com.webcodepro.applecommander.ui.AppleCommander'
-version '1.3.6-BETA'
+version "${version}"
 
 // Disable default JAR creation
 jar {
@@ -33,7 +33,9 @@ tasks.withType(Javadoc) {
 tasks.withType(Jar) {
     manifest {
         attributes 'Main-Class': 'com.webcodepro.applecommander.ui.AppleCommander'
-    } 
+        attributes 'Implementation-Title': 'AppleCommander',
+                   'Implementation-Version': version
+    }
 	from('LICENSE', 'CONTRIB', 'TODO', 'VERSIONS')
 }
 
