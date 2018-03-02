@@ -21,6 +21,7 @@
  */
 package com.webcodepro.applecommander.ui;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,7 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.Iterator;
 import java.util.List;
 
 import com.webcodepro.applecommander.storage.DirectoryEntry;
@@ -48,7 +48,10 @@ import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
 import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
+import com.webcodepro.applecommander.util.AppleSingle;
+import com.webcodepro.applecommander.util.AppleSingle.ProdosFileInfo;
 import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 
 /**
@@ -74,6 +77,9 @@ import com.webcodepro.applecommander.util.TextBundle;
  * -n  &lt;imagename&gt; &lt;volname&gt; change volume name (ProDOS or Pascal).
  * -cc65 &lt;imagename&gt; &lt;filename&gt; &lt;type&gt; put stdin with cc65 header
  *       in filename on image, using file type and address from header.
+ * -as &lt;imagename&gt; [&lt;filename&gt;] put stdin with AppleSingle format
+ *       in filename on image, using file type, address, and (optionally) name
+ *       from the AppleSingle file.
  * -geos &lt;imagename&gt; interpret stdin as a ProDOS GEOS transfer file and place on image.
  * -dos140 &lt;imagename&gt; create a 140K DOS 3.3 image.
  * -pro140 &lt;imagename&gt; &lt;volname&gt; create a 140K ProDOS image.
@@ -125,6 +131,8 @@ public class ac {
 				setDiskName(args[1], args[2]);
 			} else if ("-cc65".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				putCC65(args[1], new Name(args[2]), args[3]);
+			} else if ("-as".equalsIgnoreCase(args[0])) {
+				putAppleSingle(args[1], args.length >= 3 ? args[2] : null);
 			} else if ("-geos".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				putGEOS(args[1]);
 			} else if ("-dos140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
@@ -167,22 +175,23 @@ public class ac {
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
 		byte[] inb = new byte[1024];
 		int byteCount = 0;
-		InputStream is = new FileInputStream(file);
-		while ((byteCount = is.read(inb)) > 0) {
-			buf.write(inb, 0, byteCount);
-		}
-		Disk disk = new Disk(imageName);
-		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-		FormattedDisk formattedDisk = formattedDisks[0];
-		FileEntry entry = name.createEntry(formattedDisk);
-		if (entry != null) {
-			entry.setFiletype(fileType);
-			entry.setFilename(name.name);
-			entry.setFileData(buf.toByteArray());
-			if (entry.needsAddress()) {
-				entry.setAddress(stringToInt(address));
+		try (InputStream is = new FileInputStream(file)) {
+			while ((byteCount = is.read(inb)) > 0) {
+				buf.write(inb, 0, byteCount);
 			}
-			formattedDisk.save();
+			Disk disk = new Disk(imageName);
+			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+			FormattedDisk formattedDisk = formattedDisks[0];
+			FileEntry entry = name.createEntry(formattedDisk);
+			if (entry != null) {
+				entry.setFiletype(fileType);
+				entry.setFilename(name.name);
+				entry.setFileData(buf.toByteArray());
+				if (entry.needsAddress()) {
+					entry.setAddress(stringToInt(address));
+				}
+				formattedDisk.save();
+			}
 		}
 	}
 
@@ -193,12 +202,18 @@ public class ac {
 	static void putFile(String imageName, Name name, String fileType,
 		String address) throws IOException, DiskException {
 
+		putFile(imageName, name, fileType, address, System.in);
+	}
+	
+	/**
+	 * Put InputStream into the file named fileName on the disk named imageName;
+	 * Note: only volume level supported; input size unlimited.
+	 */
+	static void putFile(String imageName, Name name, String fileType,
+		String address, InputStream inputStream) throws IOException, DiskException {
+
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
-		byte[] inb = new byte[1024];
-		int byteCount = 0;
-		while ((byteCount = System.in.read(inb)) > 0) {
-			buf.write(inb, 0, byteCount);
-		}
+		StreamUtil.copy(inputStream, buf);
 		Disk disk = new Disk(imageName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		if (formattedDisks == null)
@@ -250,6 +265,38 @@ public class ac {
 			putFile(imageName, name, fileType, Integer.toString(address));
 		}
 	}
+	
+	/**
+	 * Put file from AppleSingle format into ProDOS image.
+	 */
+	public static void putAppleSingle(String imageName, String fileName) throws IOException, DiskException {
+		putAppleSingle(imageName, fileName, System.in);
+	}
+	/**
+	 * AppleSingle shim to allow for unit testing.
+	 */
+	public static void putAppleSingle(String imageName, String fileName, InputStream inputStream) 
+			throws IOException, DiskException {
+		
+		AppleSingle as = new AppleSingle(inputStream);
+		if (fileName == null) {
+			fileName = as.getRealName();
+		}
+		if (fileName == null) {
+			throw new IOException("Please specify a file name - this AppleSingle does not have one.");
+		}
+		if (as.getProdosFileInfo() == null) {
+			throw new IOException("This AppleSingle does not contain a ProDOS file.");
+		}
+		if (as.getDataFork() == null || as.getDataFork().length == 0) {
+			throw new IOException("This AppleSingle does not contain a data fork.");
+		}
+		Name name = new Name(fileName);
+		ProdosFileInfo info = as.getProdosFileInfo();
+		String fileType = ProdosFormatDisk.getFiletype(info.getFileType());
+		putFile(imageName, name, fileType, Integer.toString(info.getAuxType()), 
+				new ByteArrayInputStream(as.getDataFork()));
+	}	
 
 	/**
 	 * Interpret &lt;stdin> as a GEOS file and place it on the disk named imageName.
@@ -339,10 +386,8 @@ public class ac {
 	/**
 	 * Recursive routine to write directory and file entries.
 	 */
-	static void writeFiles(List files, String directory) throws IOException, DiskException {
-		Iterator it = files.iterator();
-		while (it.hasNext()) {
-			FileEntry entry = (FileEntry) it.next();
+	static void writeFiles(List<FileEntry> files, String directory) throws IOException, DiskException {
+		for (FileEntry entry : files) {
 			if ((entry != null) && (!entry.isDeleted()) && (!entry.isDirectory())) {
 				FileFilter ff = entry.getSuggestedFilter();
 				if (ff instanceof BinaryFileFilter)
@@ -367,11 +412,9 @@ public class ac {
 	 * file with the given filename.
 	 * @deprecated
 	 */
-	static FileEntry getEntry(List files, String fileName) throws DiskException {
-		FileEntry entry = null;
+	static FileEntry getEntry(List<FileEntry> files, String fileName) throws DiskException {
 		if (files != null) {
-			for (int i = 0; i < files.size(); i++) {
-				entry = (FileEntry) files.get(i);
+			for (FileEntry entry : files) {
 				String entryName = entry.getFilename();
 				if (!entry.isDeleted() && fileName.equalsIgnoreCase(entryName)) {
 					return entry;
@@ -399,7 +442,7 @@ public class ac {
 					FormattedDisk formattedDisk = formattedDisks[i];
 					System.out.print(args[d] + " ");
 					System.out.println(formattedDisk.getDiskName());
-					List files = formattedDisk.getFiles();
+					List<FileEntry> files = formattedDisk.getFiles();
 					if (files != null) {
 						showFiles(files, "", display); //$NON-NLS-1$
 					}
@@ -423,11 +466,10 @@ public class ac {
 	 * system with directories (e.g. ProDOS), this really returns the first file
 	 * with the given filename.
 	 */
-	static void showFiles(List files, String indent, int display) throws DiskException {
-		for (int i = 0; i < files.size(); i++) {
-			FileEntry entry = (FileEntry) files.get(i);
+	static void showFiles(List<FileEntry> files, String indent, int display) throws DiskException {
+		for (FileEntry entry : files) {
 			if (!entry.isDeleted()) {
-				List data = entry.getFileColumnData(display);
+				List<String> data = entry.getFileColumnData(display);
 				System.out.print(indent);
 				for (int d = 0; d < data.size(); d++) {
 					System.out.print(data.get(d));
@@ -451,9 +493,7 @@ public class ac {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 			for (int i = 0; i < formattedDisks.length; i++) {
 				FormattedDisk formattedDisk = formattedDisks[i];
-				Iterator iterator = formattedDisk.getDiskInformation().iterator();
-				while (iterator.hasNext()) {
-					DiskInformation diskinfo = (DiskInformation) iterator.next();
+				for (DiskInformation diskinfo : formattedDisk.getDiskInformation()) {
 					System.out.println(diskinfo.getLabel() + ": " + diskinfo.getValue());
 				}
 			}
@@ -607,7 +647,7 @@ public class ac {
 		}
 		
 		public FileEntry getEntry(FormattedDisk formattedDisk) throws DiskException {
-			List files = formattedDisk.getFiles();
+			List<FileEntry> files = formattedDisk.getFiles();
 			FileEntry entry = null;
 			for (int i = 0; i < path.length - 1; i++) {
 				String dirName = path[i];
@@ -633,7 +673,7 @@ public class ac {
 			if (path.length == 1) {
 				return formattedDisk.createFile();
 			}
-			List files = formattedDisk.getFiles();
+			List<FileEntry> files = formattedDisk.getFiles();
 			DirectoryEntry dir = null, parentDir = null;
 			for (int i = 0; i < path.length - 1; i++) {
 				String dirName = path[i];

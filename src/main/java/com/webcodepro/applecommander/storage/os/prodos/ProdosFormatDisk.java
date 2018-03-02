@@ -68,8 +68,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * A complete list of all known ProDOS filetypes.  Note that this
 	 * list really cannot be complete, as there are multiple mappings per
 	 * identifier in some cases - differentiated by AUXTYPE.  This is
-	 * loaded via initialize when the first instance of ProdosFormatDisk
-	 * is created.
+	 * loaded via the static initializer.
 	 */
 	private static ProdosFileType[] fileTypes;
 	/**
@@ -85,7 +84,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	/**
 	 * This class holds filetype mappings.
 	 */
-	private class ProdosFileType {
+	private static class ProdosFileType {
 		private byte type;
 		private String string;
 		private boolean addressRequired;
@@ -148,18 +147,15 @@ public class ProdosFormatDisk extends FormattedDisk {
 	public ProdosFormatDisk(String filename, ImageOrder imageOrder) {
 		super(filename, imageOrder);
 		volumeHeader = new ProdosVolumeDirectoryHeader(this);
-		initialize();
 	}
 	
 	/**
 	 * Initialize all file types.
 	 */
-	protected void initialize() {
-		if (fileTypes != null) return;
-		
+	static {
 		fileTypes = new ProdosFileType[256];
 		InputStream inputStream = 
-			getClass().getResourceAsStream("ProdosFileTypes.properties"); //$NON-NLS-1$
+			ProdosFormatDisk.class.getResourceAsStream("ProdosFileTypes.properties"); //$NON-NLS-1$
 		Properties properties = new Properties();
 		try {
 			properties.load(inputStream);
@@ -1251,7 +1247,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * Return the filetype of this file.  This will be three characters,
 	 * according to ProDOS - a "$xx" if unknown.
 	 */
-	public String getFiletype(int filetype) {
+	public static String getFiletype(int filetype) {
 		ProdosFileType prodostype = fileTypes[filetype];
 		return prodostype.getString();
 	}
@@ -1270,7 +1266,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	/**
 	 * Locate the associated ProdosFileType.
 	 */
-	public ProdosFileType findFileType(String filetype) {
+	public static ProdosFileType findFileType(String filetype) {
 		for (int i=0; i<fileTypes.length; i++) {
 			if (filetype.equalsIgnoreCase(fileTypes[i].getString())) {
 				return fileTypes[i];
