@@ -66,7 +66,7 @@ public class DiskWriterTest extends TestCase {
 	/**
 	 * Test writing and reading random files to a DOS 3.3 140K disk.
 	 */
-	public void testWriteToDos33() throws DiskFullException, IOException {
+	public void testWriteToDos33() throws IOException, DiskException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
 		ImageOrder imageOrder = new DosOrder(imageLayout);
 		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.dsk", imageOrder); //$NON-NLS-1$
@@ -77,7 +77,7 @@ public class DiskWriterTest extends TestCase {
 	/**
 	 * Test writing and reading random files to a DOS 3.3 140K nibbilized disk.
 	 */
-	public void testWriteToDos33Nibble() throws DiskFullException, IOException {
+	public void testWriteToDos33Nibble() throws IOException, DiskException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_NIBBLE_DISK);
 		ImageOrder imageOrder = new NibbleOrder(imageLayout);
 		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.nib", imageOrder); //$NON-NLS-1$
@@ -88,7 +88,7 @@ public class DiskWriterTest extends TestCase {
 	/**
 	 * Test writing and reading random files to a ProDOS 140K disk.
 	 */	
-	public void testWriteToPascal140kDisk() throws DiskFullException, IOException {
+	public void testWriteToPascal140kDisk() throws IOException, DiskException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
 		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = PascalFormatDisk.create(
@@ -112,7 +112,7 @@ public class DiskWriterTest extends TestCase {
 	/**
 	 * Test writing and reading random files to a ProDOS 140K disk.
 	 */	
-	public void testWriteToProdos140kDisk() throws DiskFullException, IOException {
+	public void testWriteToProdos140kDisk() throws IOException, DiskException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
 		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
@@ -124,7 +124,7 @@ public class DiskWriterTest extends TestCase {
 	/**
 	 * Test writing and reading random files to a ProDOS 800K disk.
 	 */	
-	public void testWriteToProdos800kDisk() throws DiskFullException, IOException {
+	public void testWriteToProdos800kDisk() throws IOException, DiskException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
 		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
@@ -136,7 +136,7 @@ public class DiskWriterTest extends TestCase {
 	/**
 	 * Test writing and reading random files to a ProDOS 5MB disk.
 	 */	
-	public void testWriteToProdos5mbDisk() throws DiskFullException, IOException {
+	public void testWriteToProdos5mbDisk() throws IOException, DiskException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_5MB_HARDDISK);
 		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
@@ -148,7 +148,7 @@ public class DiskWriterTest extends TestCase {
 	/**
 	 * Test creating and deleting many files on a DOS 3.3 140K disk.
 	 */
-	public void testCreateAndDeleteDos33() throws IOException {
+	public void testCreateAndDeleteDos33() throws IOException, DiskException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
 		ImageOrder imageOrder = new DosOrder(imageLayout);
 		FormattedDisk[] disks = DosFormatDisk.create(
@@ -160,7 +160,7 @@ public class DiskWriterTest extends TestCase {
 	/**
 	 * Test creating and deleting many files on an OzDOS 800K disk.
 	 */
-	public void testCreateAndDeleteOzDos() throws IOException {
+	public void testCreateAndDeleteOzDos() throws IOException, DiskException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
 		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = OzDosFormatDisk.create(
@@ -172,7 +172,7 @@ public class DiskWriterTest extends TestCase {
 	/**
 	 * Test creating and deleting many files on a UniDOS 800K disk.
 	 */
-	public void testCreateAndDeleteUniDos() throws IOException {
+	public void testCreateAndDeleteUniDos() throws IOException, DiskException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
 		ImageOrder imageOrder = new DosOrder(imageLayout);
 		FormattedDisk[] disks = UniDosFormatDisk.create(
@@ -184,7 +184,7 @@ public class DiskWriterTest extends TestCase {
 	/**
 	 * Test creating and deleting many files on a Pascal 140K disk.
 	 */
-	public void testCreateAndDeletePascal140kDisk() throws IOException {
+	public void testCreateAndDeletePascal140kDisk() throws IOException, DiskException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
 		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = PascalFormatDisk.create(
@@ -197,7 +197,7 @@ public class DiskWriterTest extends TestCase {
 	/**
 	 * Test creating and deleting many files on a Pascal 800K disk.
 	 */
-	public void testCreateAndDeletePascal800kDisk() throws IOException {
+	public void testCreateAndDeletePascal800kDisk() throws IOException, DiskException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
 		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = PascalFormatDisk.create(
@@ -210,7 +210,7 @@ public class DiskWriterTest extends TestCase {
 	/**
 	 * Test creating and deleting many files on a ProDOS 140K disk.
 	 */
-	public void testCreateAndDeleteProdos140kDisk() throws IOException {
+	public void testCreateAndDeleteProdos140kDisk() throws IOException, DiskException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
 		ImageOrder imageOrder = new DosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
@@ -223,7 +223,7 @@ public class DiskWriterTest extends TestCase {
 	/**
 	 * Test creating and deleting many files on a ProDOS 800K disk.
 	 */
-	public void testCreateAndDeleteProdos800kDisk() throws IOException {
+	public void testCreateAndDeleteProdos800kDisk() throws IOException, DiskException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
 		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
@@ -238,7 +238,7 @@ public class DiskWriterTest extends TestCase {
 	 * the old directory entry on a DOS 3.3 140K disk.
 	 */
 	public void testCreateDeleteCreateDosDisk() 
-	throws DiskFullException, IOException {
+	throws IOException, DiskException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
 		ImageOrder imageOrder = new DosOrder(imageLayout);
 		FormattedDisk[] disks = DosFormatDisk.create(
@@ -252,7 +252,7 @@ public class DiskWriterTest extends TestCase {
 	 * the old directory entry on a OzDOS 800K disk.
 	 */
 	public void testCreateDeleteCreateOzdosDisk() 
-	throws DiskFullException, IOException {
+	throws IOException, DiskException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
 		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = OzDosFormatDisk.create(
@@ -266,7 +266,7 @@ public class DiskWriterTest extends TestCase {
 	 * the old directory entry on a UniDOS 800K disk.
 	 */
 	public void testCreateDeleteCreateUnidosDisk() 
-	throws DiskFullException, IOException {
+	throws IOException, DiskException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_800KB_DISK);
 		ImageOrder imageOrder = new DosOrder(imageLayout);
 		FormattedDisk[] disks = UniDosFormatDisk.create(
@@ -280,7 +280,7 @@ public class DiskWriterTest extends TestCase {
 	 * the old directory entry on a Pascal 140K disk.
 	 */
 	public void testCreateDeleteCreatePascalDisk() 
-	throws DiskFullException, IOException {
+	throws IOException, DiskException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
 		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = PascalFormatDisk.create(
@@ -295,7 +295,7 @@ public class DiskWriterTest extends TestCase {
 	 * the old directory entry on a ProDOS 140K disk.
 	 */
 	public void testCreateDeleteCreateProdosDisk() 
-	throws DiskFullException, IOException {
+	throws IOException, DiskException {
 		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
 		ImageOrder imageOrder = new ProdosOrder(imageLayout);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
@@ -312,7 +312,7 @@ public class DiskWriterTest extends TestCase {
 	 * random bytes), and reading of files is done correctly.
 	 */
 	protected void writeFiles(FormattedDisk[] disks, String binaryType, 
-		String textType, boolean testText) throws DiskFullException {
+		String textType, boolean testText) throws DiskException {
 		FormattedDisk disk = disks[0];
 		showDirectory(disks, "BEFORE FILE CREATION"); //$NON-NLS-1$
 		writeFile(disk, 1, binaryType, true);
@@ -340,7 +340,7 @@ public class DiskWriterTest extends TestCase {
 	 * Generate randomized data for writing to disk.
 	 */
 	protected void writeFile(FormattedDisk disk, int size, String fileType,
-		boolean test) throws DiskFullException {
+		boolean test) throws DiskException {
 		byte[] data = new byte[size];
 		for (int i=0; i<data.length; i++) {
 			data[i] = (byte)(Math.random() * 1024);
@@ -355,7 +355,7 @@ public class DiskWriterTest extends TestCase {
 	 * exact same length.
 	 */
 	protected void writeFile(FormattedDisk disk, byte[] data, String fileType,
-		boolean test) throws DiskFullException {
+		boolean test) throws DiskException {
 		FileEntry entry = disk.createFile();
 		entry.setFilename("file-" + data.length); //$NON-NLS-1$
 		entry.setFiletype(fileType);
@@ -373,7 +373,7 @@ public class DiskWriterTest extends TestCase {
 	/**
 	 * Display the contents of a directory.
 	 */
-	protected void showDirectory(FormattedDisk[] formattedDisks, String title) {
+	protected void showDirectory(FormattedDisk[] formattedDisks, String title) throws DiskException {
 		System.out.println();
 		System.out.println("************************************************"); //$NON-NLS-1$
 		System.out.println(title);
@@ -381,7 +381,7 @@ public class DiskWriterTest extends TestCase {
 			FormattedDisk formattedDisk = formattedDisks[i];
 			System.out.println();
 			System.out.println(formattedDisk.getDiskName());
-			List files = formattedDisk.getFiles();
+			List<FileEntry> files = formattedDisk.getFiles();
 			if (files != null) {
 				showFiles(files, "", false); //$NON-NLS-1$
 			}
@@ -402,11 +402,11 @@ public class DiskWriterTest extends TestCase {
 	/**
 	 * Display a list of files.
 	 */
-	protected void showFiles(List files, String indent, boolean showDeleted) {
+	protected void showFiles(List<FileEntry> files, String indent, boolean showDeleted) throws DiskException {
 		for (int i=0; i<files.size(); i++) {
 			FileEntry entry = (FileEntry) files.get(i);
 			if (showDeleted || !entry.isDeleted()) {
-				List data = entry.getFileColumnData(FormattedDisk.FILE_DISPLAY_NATIVE);
+				List<String> data = entry.getFileColumnData(FormattedDisk.FILE_DISPLAY_NATIVE);
 				System.out.print(indent);
 				for (int d=0; d<data.size(); d++) {
 					System.out.print(data.get(d));
@@ -457,7 +457,7 @@ public class DiskWriterTest extends TestCase {
 	 * This is intended to excersize not only creating and deleting
 	 * files but the disk management (ala Disk Map).
 	 */
-	protected void createAndDeleteFiles(FormattedDisk[] disks, String filetype) {
+	protected void createAndDeleteFiles(FormattedDisk[] disks, String filetype) throws DiskException {
 		byte[] data = new byte[129 * 1024];
 		for (int i=0; i<data.length; i++) {
 			data[i] = (byte)(Math.random() * 1024);
@@ -479,7 +479,7 @@ public class DiskWriterTest extends TestCase {
 					// ignored
 				}
 				// Remove the files:
-				List files = disk.getFiles();
+				List<FileEntry> files = disk.getFiles();
 				for (int i=0; i<files.size(); i++) {
 					FileEntry entry = (FileEntry) files.get(i);
 					entry.delete();
@@ -498,13 +498,13 @@ public class DiskWriterTest extends TestCase {
 	 * The expected result is that the deleted file entry is reused.
 	 */
 	protected void createDeleteCreate(FormattedDisk[] disks, String filetype) 
-	throws DiskFullException {
+	throws DiskException {
 		for (int d=0; d<disks.length; d++) {
 			FormattedDisk disk = disks[d];
 			System.out.println("Exercising create, delete, create sequence " //$NON-NLS-1$
 				+ "on disk " + disk.getDiskName() + "."); //$NON-NLS-1$ //$NON-NLS-2$
 			writeFile(disk, 5432, filetype, false);
-			List files = disk.getFiles();
+			List<FileEntry> files = disk.getFiles();
 			for (int i=0; i<files.size(); i++) {
 				FileEntry entry = (FileEntry) files.get(i);
 				entry.delete();

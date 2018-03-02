@@ -49,7 +49,7 @@ public class DiskHelperTest extends TestCase {
 		junit.textui.TestRunner.run(DiskHelperTest.class);
 	}
 
-	public void testLoadDos33() throws IOException {
+	public void testLoadDos33() throws IOException, DiskException {
 		FormattedDisk[] disks = showDirectory(config.getDiskDir() +
 				"/DOS 3.3.po"); //$NON-NLS-1$
 		assertApplesoftFile(disks[0], "HELLO"); //$NON-NLS-1$
@@ -58,39 +58,39 @@ public class DiskHelperTest extends TestCase {
 		assertBinaryFile(disks[0], "BOOT13"); //$NON-NLS-1$
 	}
 
-	public void testLoadMaster() throws IOException {
+	public void testLoadMaster() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() + "/MASTER.DSK"); //$NON-NLS-1$
 	}
 	
-	public void testLoadGalacticAttack1() throws IOException {
+	public void testLoadGalacticAttack1() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() + "/galatt.dsk"); //$NON-NLS-1$
 	}
 	
-	public void testLoadProdos() throws IOException {
+	public void testLoadProdos() throws IOException, DiskException {
 		FormattedDisk[] disks = showDirectory(config.getDiskDir() + "/Prodos.dsk"); //$NON-NLS-1$
 		assertApplesoftFile(disks[0], "COPY.ME"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "SETTINGS"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "PRODOS"); //$NON-NLS-1$
 	}
 	
-	public void testLoadMarbleMadness() throws IOException {
+	public void testLoadMarbleMadness() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() 
 				+ "/Marble Madness (1985)(Electronic Arts).2mg"); //$NON-NLS-1$
 	}
 	
-	public void testLoadHd1() throws IOException {
+	public void testLoadHd1() throws IOException, DiskException {
 		showDirectory("C:/My Apple2/ApplePC/hd1.hdv"); //$NON-NLS-1$
 	}
 	
-	public void testRdosBoot() throws IOException {
+	public void testRdosBoot() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() + "/RDOSboot.dsk"); //$NON-NLS-1$
 	}
 
-	public void testSsiSave() throws IOException {
+	public void testSsiSave() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() + "/SSIsave.dsk"); //$NON-NLS-1$
 	}
 
-	public void testPhan2d1() throws IOException {
+	public void testPhan2d1() throws IOException, DiskException {
 		FormattedDisk[] disks = showDirectory(config.getDiskDir() 
 				+ "/phan2d1.dsk"); //$NON-NLS-1$
 		assertApplesoftFile(disks[0], "PHANTASIE II"); //$NON-NLS-1$
@@ -99,42 +99,42 @@ public class DiskHelperTest extends TestCase {
 		assertGraphicsFile(disks[0], "ICE DRAGON"); //$NON-NLS-1$
 	}
 
-	public void testPhan2d2() throws IOException {
+	public void testPhan2d2() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() + "/phan2d2.dsk"); //$NON-NLS-1$
 	}
 
-	public void testPhantasie1() throws IOException {
+	public void testPhantasie1() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() + "/Phantasie1.dsk"); //$NON-NLS-1$
 	}
 
-	public void testPhantasie2() throws IOException {
+	public void testPhantasie2() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() + "/Phantasie2.dsk"); //$NON-NLS-1$
 	}
 
-	public void testCavernsOfFreitag() throws IOException {
+	public void testCavernsOfFreitag() throws IOException, DiskException {
 		FormattedDisk[] disks = showDirectory(config.getDiskDir() 
 				+ "/CavernsOfFreitag.dsk"); //$NON-NLS-1$
 		assertGraphicsFile(disks[0], "TITLE.PIC"); //$NON-NLS-1$
 	}
 	
-	public void testUniDosD3110() throws IOException {
+	public void testUniDosD3110() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() 
 				+ "/UniDOS/D3110.dsk"); //$NON-NLS-1$
 	}
 
-	public void testUniDosD3151() throws IOException {
+	public void testUniDosD3151() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() 
 				+ "/UniDOS/D3151.dsk"); //$NON-NLS-1$
 	}
 	
-	protected FormattedDisk[] showDirectory(String imageName) throws IOException {
+	protected FormattedDisk[] showDirectory(String imageName) throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		for (int i=0; i<formattedDisks.length; i++) {
 			FormattedDisk formattedDisk = formattedDisks[i];
 			System.out.println();
 			System.out.println(formattedDisk.getDiskName());
-			List files = formattedDisk.getFiles();
+			List<FileEntry> files = formattedDisk.getFiles();
 			if (files != null) {
 				showFiles(files, ""); //$NON-NLS-1$
 			}
@@ -150,11 +150,11 @@ public class DiskHelperTest extends TestCase {
 		return formattedDisks;
 	}
 	
-	protected void showFiles(List files, String indent) {
+	protected void showFiles(List<FileEntry> files, String indent) throws DiskException {
 		for (int i=0; i<files.size(); i++) {
-			FileEntry entry = (FileEntry) files.get(i);
+			FileEntry entry = files.get(i);
 			if (!entry.isDeleted()) {
-				List data = entry.getFileColumnData(FormattedDisk.FILE_DISPLAY_NATIVE);
+				List<String> data = entry.getFileColumnData(FormattedDisk.FILE_DISPLAY_NATIVE);
 				System.out.print(indent);
 				for (int d=0; d<data.size(); d++) {
 					System.out.print(data.get(d));
@@ -196,7 +196,7 @@ public class DiskHelperTest extends TestCase {
 		System.out.println("U = used, . = free"); //$NON-NLS-1$
 	}
 	
-	protected void assertApplesoftFile(FormattedDisk disk, String filename) {
+	protected void assertApplesoftFile(FormattedDisk disk, String filename) throws DiskException {
 		assertNotNull(filename + " test: Disk should not be null", disk); //$NON-NLS-1$
 		FileEntry fileEntry = disk.getFile(filename);
 		assertNotNull(filename + " test: File not found", disk); //$NON-NLS-1$
@@ -204,7 +204,7 @@ public class DiskHelperTest extends TestCase {
 			fileEntry.getSuggestedFilter() instanceof ApplesoftFileFilter);
 	}
 
-	protected void assertIntegerFile(FormattedDisk disk, String filename) {
+	protected void assertIntegerFile(FormattedDisk disk, String filename) throws DiskException {
 		assertNotNull(filename + " test: Disk should not be null", disk); //$NON-NLS-1$
 		FileEntry fileEntry = disk.getFile(filename);
 		assertNotNull(filename + " test: File not found", disk); //$NON-NLS-1$
@@ -212,7 +212,7 @@ public class DiskHelperTest extends TestCase {
 			fileEntry.getSuggestedFilter() instanceof IntegerBasicFileFilter);
 	}
 	
-	protected void assertTextFile(FormattedDisk disk, String filename) {
+	protected void assertTextFile(FormattedDisk disk, String filename) throws DiskException {
 		assertNotNull(filename + " test: Disk should not be null", disk); //$NON-NLS-1$
 		FileEntry fileEntry = disk.getFile(filename);
 		assertNotNull(filename + " test: File not found", disk); //$NON-NLS-1$
@@ -220,7 +220,7 @@ public class DiskHelperTest extends TestCase {
 			fileEntry.getSuggestedFilter() instanceof TextFileFilter);
 	}
 	
-	protected void assertBinaryFile(FormattedDisk disk, String filename) {
+	protected void assertBinaryFile(FormattedDisk disk, String filename) throws DiskException {
 		assertNotNull(filename + " test: Disk should not be null", disk); //$NON-NLS-1$
 		FileEntry fileEntry = disk.getFile(filename);
 		assertNotNull(filename + " test: File not found", disk); //$NON-NLS-1$
@@ -228,7 +228,7 @@ public class DiskHelperTest extends TestCase {
 			fileEntry.getSuggestedFilter() instanceof BinaryFileFilter);
 	}
 	
-	protected void assertGraphicsFile(FormattedDisk disk, String filename) {
+	protected void assertGraphicsFile(FormattedDisk disk, String filename) throws DiskException {
 		assertNotNull(filename + " test: Disk should not be null", disk); //$NON-NLS-1$
 		FileEntry fileEntry = disk.getFile(filename);
 		assertNotNull(filename + " test: File not found", disk); //$NON-NLS-1$
