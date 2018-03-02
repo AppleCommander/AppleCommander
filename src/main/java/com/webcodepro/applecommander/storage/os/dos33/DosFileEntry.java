@@ -152,14 +152,15 @@ public class DosFileEntry implements FileEntry {
 	}
 
 	/**
-	 * Set the filetype.
+	 * Set the filetype. This contains some ProDOS file type translation to support
+	 * translation from an AppleSingle archive.
 	 */
 	public void setFiletype(String filetype) {
 		byte[] data = readFileEntry();
 		int type = 0x04;	// assume binary
-		if ("T".equals(filetype)) type = 0x00; //$NON-NLS-1$
+		if ("T".equals(filetype) || "TXT".equals(filetype)) type = 0x00; //$NON-NLS-1$
 		if ("I".equals(filetype)) type = 0x01; //$NON-NLS-1$
-		if ("A".equals(filetype)) type = 0x02; //$NON-NLS-1$
+		if ("A".equals(filetype) || "BAS".equals(filetype)) type = 0x02; //$NON-NLS-1$
 		if ("B".equals(filetype)) type = 0x04; //$NON-NLS-1$
 		if ("S".equals(filetype)) type = 0x08; //$NON-NLS-1$
 		if ("R".equals(filetype)) type = 0x10; //$NON-NLS-1$
