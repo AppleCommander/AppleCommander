@@ -2,17 +2,14 @@ THINGS TO DO
 ============
 This is the internal list of items that need to be done.
 
--- 1.3.5 --
+-- 1.4.0 --
 * Migration to GitHub
 * Update SWT libraries 
 
 --- FUTURE ---
-o Add binaries to repository to simplify AC development and builds
 o Create subdirectories as appropriate (ProDOS).
 o Create reusable show dialog messages (they're scattered all over right now) to clean
   up code a bit.
-? Compile of BASIC programs
-? Enhance the BASIC compiler with a few more commands...
 o Improve file preview for Integer BASIC files.
 o Improve file preview for AppleWorks Word Processor files (make implementation
   generic to a Word Processor, if possible).
@@ -26,9 +23,6 @@ o Change layout of DiskExplorer window to not be tabbed.  Information could/shou
 o Add RDOS writing capability.
 o Add CP/M writing capability.
 o Add drag-and-drop capability.
-o Provide a Swing GUI so people are not "limited" to SWT.  This may be tossed; although
-  it may side-step the MAC OS X issue with SWT not behaving properly.  (Alright, with
-  AppleCommander not behaving correctly.  Just wish I knew what the problem was!!)
 o Add more information to About box including GPL, TODO, VERSIONS, etc.
 o Change disk format.
 o Sector/Block editor.
