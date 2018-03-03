@@ -76,6 +76,8 @@ import com.webcodepro.applecommander.util.TextBundle;
  * -u  &lt;imagename&gt; &lt;filename&gt; unlock file on image.
  * -n  &lt;imagename&gt; &lt;volname&gt; change volume name (ProDOS or Pascal).
  * -cc65 &lt;imagename&gt; &lt;filename&gt; &lt;type&gt; put stdin with cc65 header
+ *       in filename on image, using file type and address from header.  DEPRECATED.
+ * -dos &lt;imagename&gt; &lt;filename&gt; &lt;type&gt; put stdin with cc65 header
  *       in filename on image, using file type and address from header.
  * -as &lt;imagename&gt; [&lt;filename&gt;] put stdin with AppleSingle format
  *       in filename on image, using file type, address, and (optionally) name
@@ -130,7 +132,10 @@ public class ac {
 			} else if ("-n".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				setDiskName(args[1], args[2]);
 			} else if ("-cc65".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				putCC65(args[1], new Name(args[2]), args[3]);
+				System.err.println("Note: -cc65 is deprecated.  Please use -as or -dos as appropriate."); 
+				putDOS(args[1], new Name(args[2]), args[3]);
+			} else if ("-dos".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				putDOS(args[1], new Name(args[2]), args[3]);
 			} else if ("-as".equalsIgnoreCase(args[0])) {
 				putAppleSingle(args[1], args.length >= 3 ? args[2] : null);
 			} else if ("-geos".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
@@ -254,9 +259,9 @@ public class ac {
 
 	/**
 	 * Put &lt;stdin> into the file named fileName on the disk named imageName;
-	 * Assume a cc65 style four-byte header with start address in bytes 0-1.
+	 * Assume an DOS 3.x style four-byte header with start address in bytes 0-1.
 	 */
-	static void putCC65(String imageName, Name name, String fileType)
+	static void putDOS(String imageName, Name name, String fileType)
 		throws IOException, DiskException {
 
 		byte[] header = new byte[4];
