@@ -19,21 +19,17 @@
  */
 package com.webcodepro.applecommander.testconfig;
 
-import java.io.InputStream;
-import java.util.Properties;
-
 /**
  * A simple class to contains test configuration information.
  * Update the file TestConfig.properties to match the system.
+ * <p>
+ * Note: Used to rely on a properties file; altered it to work
+ * more dynamically to allow tests to be run...
  * 
  * @author Rob
  */
 public class TestConfig {
-	private static final String FILENAME = "TestConfig.properties"; //$NON-NLS-1$
-	private static final String DISK_DIRECTORY = "DiskDir"; //$NON-NLS-1$
-	private static final String TEMP_DIRECTORY = "TempDir"; //$NON-NLS-1$
 	private static TestConfig instance;
-	private Properties properties = new Properties();
 	/**
 	 * Hide constructor from other classes.
 	 */
@@ -46,32 +42,19 @@ public class TestConfig {
 	public static TestConfig getInstance() {
 		if (instance == null) {
 			instance = new TestConfig();
-			instance.load();
 		}
 		return instance;
-	}
-	/**
-	 * Initialize the test config from disk.
-	 */
-	private void load() {
-		try {
-			InputStream inputStream = getClass().getResourceAsStream(FILENAME);
-			properties.load(inputStream);
-			inputStream.close();
-		} catch (Exception ignored) {
-			// Ignored
-		}
 	}
 	/**
 	 * Answer with the temp directory.
 	 */
 	public String getTempDir() {
-		return properties.getProperty(TEMP_DIRECTORY);
+		return System.getProperty("java.io.tmpdir");
 	}
 	/**
 	 * Answer with the directory where disk images are stored.
 	 */
 	public String getDiskDir() {
-		return properties.getProperty(DISK_DIRECTORY);
+		return "./src/test/resources/disks";
 	}
 }

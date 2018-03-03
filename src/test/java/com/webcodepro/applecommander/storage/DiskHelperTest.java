@@ -78,10 +78,6 @@ public class DiskHelperTest extends TestCase {
 				+ "/Marble Madness (1985)(Electronic Arts).2mg"); //$NON-NLS-1$
 	}
 	
-	public void testLoadHd1() throws IOException, DiskException {
-		showDirectory("C:/My Apple2/ApplePC/hd1.hdv"); //$NON-NLS-1$
-	}
-	
 	public void testRdosBoot() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() + "/RDOSboot.dsk"); //$NON-NLS-1$
 	}
@@ -119,12 +115,12 @@ public class DiskHelperTest extends TestCase {
 	
 	public void testUniDosD3110() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() 
-				+ "/UniDOS/D3110.dsk"); //$NON-NLS-1$
+				+ "/D3110.dsk"); //$NON-NLS-1$
 	}
 
 	public void testUniDosD3151() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() 
-				+ "/UniDOS/D3151.dsk"); //$NON-NLS-1$
+				+ "/D3151.dsk"); //$NON-NLS-1$
 	}
 	
 	protected FormattedDisk[] showDirectory(String imageName) throws IOException, DiskException {
