@@ -21,7 +21,7 @@ package com.webcodepro.applecommander.compiler;
 
 import java.io.FileOutputStream;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.FileEntry;
@@ -32,20 +32,10 @@ import com.webcodepro.applecommander.testconfig.TestConfig;
  * Test the ApplesoftCompiler. 
  * @author Rob
  */
-public class ApplesoftCompilerTest extends TestCase {
+public class ApplesoftCompilerTest {
 	private TestConfig config = TestConfig.getInstance();
-	/**
-	 * Constructor for ApplesoftCompilerTest.
-	 * @param arg0
-	 */
-	public ApplesoftCompilerTest(String arg0) {
-		super(arg0);
-	}
 
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(ApplesoftCompilerTest.class);
-	}
-
+	@Test
 	public void testCompileColors() throws Exception {
 		DosFormatDisk disk = (DosFormatDisk) 
 			new Disk(config.getDiskDir() + "/MASTER.DSK").getFormattedDisks()[0]; //$NON-NLS-1$

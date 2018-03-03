@@ -1,48 +1,41 @@
 package com.webcodepro.applecommander.storage.filters.imagehandlers;
 
-import com.webcodepro.applecommander.storage.filters.imagehandlers.SwtImage;
-
 import java.io.File;
 import java.io.FileOutputStream;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
- * Excersize the SwtImage class for all known types.
+ * Exercise the SwtImage class for all known types.
  * @author Rob
  */
-public class SwtImageTest extends TestCase {
-	/**
-	 * Constructor for SwtImageTest.
-	 */
-	public SwtImageTest(String arg0) {
-		super(arg0);
-	}
-
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(SwtImageTest.class);
-	}
-
+public class SwtImageTest {
+	@Test
 	public void testPNG() throws Exception {
 		performTest("PNG"); //$NON-NLS-1$
 	}
 	
+	@Test
 	public void testJPEG() throws Exception {
 		performTest("JPEG"); //$NON-NLS-1$
 	}
 	
+	@Test
 	public void testBMP() throws Exception {
 		performTest("BMP"); //$NON-NLS-1$
 	}
 	
+	@Test
 	public void testBMP_RLE() throws Exception {
 		performTest("RLE"); //$NON-NLS-1$
 	}
 	
+	@Test
 	public void testGIF() throws Exception {
 		performTest("GIF"); //$NON-NLS-1$
 	}
 	
+	@Test
 	public void testICO() throws Exception {
 		performTest("ICO"); //$NON-NLS-1$
 	}

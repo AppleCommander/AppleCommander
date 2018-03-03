@@ -19,10 +19,13 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.List;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
 import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
@@ -38,17 +41,10 @@ import com.webcodepro.applecommander.testconfig.TestConfig;
  * Date created: Oct 3, 2002 11:35:26 PM
  * @author Rob Greene
  */
-public class DiskHelperTest extends TestCase {
+public class DiskHelperTest {
 	private TestConfig config = TestConfig.getInstance();
 
-	public DiskHelperTest(String name) {
-		super(name);
-	}
-
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(DiskHelperTest.class);
-	}
-
+	@Test
 	public void testLoadDos33() throws IOException, DiskException {
 		FormattedDisk[] disks = showDirectory(config.getDiskDir() +
 				"/DOS 3.3.po"); //$NON-NLS-1$
@@ -58,14 +54,17 @@ public class DiskHelperTest extends TestCase {
 		assertBinaryFile(disks[0], "BOOT13"); //$NON-NLS-1$
 	}
 
+	@Test
 	public void testLoadMaster() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() + "/MASTER.DSK"); //$NON-NLS-1$
 	}
 	
+	@Test
 	public void testLoadGalacticAttack1() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() + "/galatt.dsk"); //$NON-NLS-1$
 	}
 	
+	@Test
 	public void testLoadProdos() throws IOException, DiskException {
 		FormattedDisk[] disks = showDirectory(config.getDiskDir() + "/Prodos.dsk"); //$NON-NLS-1$
 		assertApplesoftFile(disks[0], "COPY.ME"); //$NON-NLS-1$
@@ -73,19 +72,23 @@ public class DiskHelperTest extends TestCase {
 		assertBinaryFile(disks[0], "PRODOS"); //$NON-NLS-1$
 	}
 	
+	@Test
 	public void testLoadMarbleMadness() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() 
 				+ "/Marble Madness (1985)(Electronic Arts).2mg"); //$NON-NLS-1$
 	}
 	
+	@Test
 	public void testRdosBoot() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() + "/RDOSboot.dsk"); //$NON-NLS-1$
 	}
 
+	@Test
 	public void testSsiSave() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() + "/SSIsave.dsk"); //$NON-NLS-1$
 	}
 
+	@Test
 	public void testPhan2d1() throws IOException, DiskException {
 		FormattedDisk[] disks = showDirectory(config.getDiskDir() 
 				+ "/phan2d1.dsk"); //$NON-NLS-1$
@@ -95,29 +98,35 @@ public class DiskHelperTest extends TestCase {
 		assertGraphicsFile(disks[0], "ICE DRAGON"); //$NON-NLS-1$
 	}
 
+	@Test
 	public void testPhan2d2() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() + "/phan2d2.dsk"); //$NON-NLS-1$
 	}
 
+	@Test
 	public void testPhantasie1() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() + "/Phantasie1.dsk"); //$NON-NLS-1$
 	}
 
+	@Test
 	public void testPhantasie2() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() + "/Phantasie2.dsk"); //$NON-NLS-1$
 	}
 
+	@Test
 	public void testCavernsOfFreitag() throws IOException, DiskException {
 		FormattedDisk[] disks = showDirectory(config.getDiskDir() 
 				+ "/CavernsOfFreitag.dsk"); //$NON-NLS-1$
 		assertGraphicsFile(disks[0], "TITLE.PIC"); //$NON-NLS-1$
 	}
 	
+	@Test
 	public void testUniDosD3110() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() 
 				+ "/D3110.dsk"); //$NON-NLS-1$
 	}
 
+	@Test
 	public void testUniDosD3151() throws IOException, DiskException {
 		showDirectory(config.getDiskDir() 
 				+ "/D3151.dsk"); //$NON-NLS-1$

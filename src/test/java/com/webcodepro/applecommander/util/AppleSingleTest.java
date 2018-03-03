@@ -1,8 +1,14 @@
 package com.webcodepro.applecommander.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+
+import org.junit.Test;
 
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DiskException;
@@ -12,11 +18,10 @@ import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
 import com.webcodepro.applecommander.ui.ac;
 import com.webcodepro.applecommander.util.AppleSingle.ProdosFileInfo;
 
-import junit.framework.TestCase;
-
-public class AppleSingleTest extends TestCase {
+public class AppleSingleTest {
 	private static final String AS_HELLO_BIN = "/hello.applesingle.bin";
 	
+	@Test
 	public void testSampleFromCc65() throws IOException {
 		AppleSingle as = new AppleSingle(getClass().getResourceAsStream(AS_HELLO_BIN));
 		
@@ -31,6 +36,7 @@ public class AppleSingleTest extends TestCase {
 		assertEquals(0x0803, info.getAuxType());
 	}
 	
+	@Test
 	public void testViaAcTool() throws IOException, DiskException {
 		// Create a file that the JVM *should* delete for us.
 		File tmpDiskImage = File.createTempFile("deleteme-", ".po");

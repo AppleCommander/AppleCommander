@@ -19,33 +19,29 @@
  */
 package com.webcodepro.applecommander.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
 
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
+import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
 import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.NibbleOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
-import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 
 /**
  * Test AppleUtil.
  */
-public class AppleUtilTest extends TestCase {
-	public AppleUtilTest(String name) {
-		super(name);
-	}
-
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(AppleUtilTest.class);
-	}
-
+public class AppleUtilTest {
 	/**
 	 * These constants were pulled from Applesoft itself.
 	 */
+	@Test
 	public void testApplesoftFloat() {
 		testApplesoftFloat(1.0, 0x8100000000L);
 		testApplesoftFloat(10.0, 0x8420000000L);
@@ -80,6 +76,7 @@ public class AppleUtilTest extends TestCase {
 		}
 	}
 	
+	@Test
 	public void testChangeDosImageOrder() throws DiskFullException {
 		// Straight DOS disk in standard DOS order
 		DosFormatDisk dosDiskDosOrder = DosFormatDisk.create("dostemp.dsk",  //$NON-NLS-1$
@@ -97,6 +94,7 @@ public class AppleUtilTest extends TestCase {
 		assertTrue(AppleUtil.disksEqualByTrackAndSector(dosDiskDosOrder, dosDiskNibbleOrder));
 	}
 
+	@Test
 	public void testChangeProdosImageOrder() throws DiskFullException {
 		// Straight ProDOS disk in standard ProDOS block order
 		ProdosFormatDisk prodosDiskDosOrder = ProdosFormatDisk.create("prodostemp.po",  //$NON-NLS-1$
