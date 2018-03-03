@@ -98,8 +98,19 @@ public class OzDosFormatDisk extends DosFormatDisk {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
-		getImageOrder().format();
-		format(31, 50, 32);
+		final int tracksPerDisk = 50;
+		final int sectorsPerTrack = 32;
+		final int firstCatalogSector = 31;
+		// We can't use the ImageLayout to format this disk since that actually wipes the entire
+		// 800K volume (that is, both disk1 and disk2 get cleared).
+		byte[] data = new byte[SECTOR_SIZE];
+		for (int t = 0; t < tracksPerDisk; t++) {
+			for (int s = 0; s < sectorsPerTrack; s++) {
+				writeSector(t, s, data);
+			}
+		}
+		// Lay down the catalog track...
+		format(firstCatalogSector, tracksPerDisk, sectorsPerTrack);
 	}
 	/**
 	 * Retrieve the specified sector.
