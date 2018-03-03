@@ -2,6 +2,7 @@ package com.webcodepro.applecommander.storage.filters.imagehandlers;
 
 import com.webcodepro.applecommander.storage.filters.imagehandlers.SwtImage;
 
+import java.io.File;
 import java.io.FileOutputStream;
 
 import junit.framework.TestCase;
@@ -67,6 +68,8 @@ public class SwtImageTest extends TestCase {
 				image.setPoint(x, y, color);
 			}
 		}
-		image.save(new FileOutputStream("TestImage." + imageType)); //$NON-NLS-1$
+		File tempImageFile = File.createTempFile("TestImage-", "." + imageType);
+		tempImageFile.deleteOnExit();
+		image.save(new FileOutputStream(tempImageFile));
 	}
 }
