@@ -16,6 +16,7 @@ ext {
 	swtVersion = "4.6.1"
 	junitVersion = "4.12"
 	antVersion = "1.8.2"
+	commonsLang3Version = "3.7"
 }
 
 mainClassName = 'com.webcodepro.applecommander.ui.AppleCommander'
@@ -66,6 +67,8 @@ dependencies {
     compileOnly "org.apache.ant:ant:$antVersion"
 
     testCompile "junit:junit:$junitVersion"
+    testCompile "org.apache.commons:commons-lang3:$commonsLang3Version"
+    
 }
 
 task acJar(type: Jar) {
