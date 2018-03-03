@@ -1,23 +1,33 @@
+# Gradle work directories and settings
 bin
+.gradle
+build/
+
+# In case we run it locally, AppleCommander files we don't want to commit
 AppleCommander.preferences
+
+# Ignoring all disk images
 *.dsk
 *.po
 *.hdv
 *.do
 *.2mg
 *.2img
-.uml
-TODO.local
-*.jpage
-work
-TestImage.*
-**/Thumbs.db
-*.o
-*.lst
+# But allowing disk images from the unit tests
+!src/test/resources/disks/*
+
+# Eclipse
 .classpath
 .project
 .settings
-.gradle
-build/
-target/
+*.jpage
+
+# ca65 output we don't need to commit
+*.o
+*.lst
+
+# Mac OS X
 .DS_Store
+
+# Windows
+**/Thumbs.db
