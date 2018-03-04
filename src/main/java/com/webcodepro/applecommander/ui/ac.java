@@ -247,7 +247,7 @@ public class ac {
 	 * Put file fileName into the file named fileOnImageName on the disk named imageName;
 	 * Assume a cc65 style four-byte header with start address in bytes 0-1.
 	 */
-	public static void putCC65(String fileName, String imageName, String fileOnImageName, String fileType)
+	public static void putDOS(String fileName, String imageName, String fileOnImageName, String fileType)
 		throws IOException, DiskException {
 
 		byte[] header = new byte[4];

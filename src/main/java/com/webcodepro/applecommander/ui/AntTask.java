@@ -1,5 +1,7 @@
 package com.webcodepro.applecommander.ui;
 
+import java.io.FileInputStream;
+
 /*
  * Copyright (C) 2012 by David Schmidt
  * david__schmidt at users.sourceforge.net
@@ -25,6 +27,7 @@ import java.io.PrintStream;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FormattedDisk;
@@ -35,7 +38,8 @@ public class AntTask extends Task
 	{
 		/*
 		 * Commands: 
-		 * cc65: <imagename> <filename> <type> 
+		 * dos: <imagename> <filename> <type>
+		 * as: <imagename> [<filename>] 
 		 * d: <imagename> <filename>
 		 * e: <imagename> <filename>
 		 * i: <imagename>
@@ -83,7 +87,7 @@ public class AntTask extends Task
 					System.out.println(ex.getMessage());
 			}
 		}
-		else if (_command.equals("p") || (_command.equals("cc65")))
+		else if (_command.equals("p") || (_command.equals("cc65") || (_command.equals("cc65")) || (_command.equals("as"))))
 		{
 			try
 			{
@@ -91,8 +95,19 @@ public class AntTask extends Task
 				{
 					com.webcodepro.applecommander.ui.ac.putFile(_input, _imageName, _fileName, _type, _address);
 				}
-				else
-					com.webcodepro.applecommander.ui.ac.putCC65(_input, _imageName, _fileName, _type);
+				else if (_command.equals("cc65")) 
+				{
+					System.err.println("Note: 'cc65' is deprecated.  Please use 'as' or 'dos' as appropriate."); 
+					com.webcodepro.applecommander.ui.ac.putDOS(_input, _imageName, _fileName, _type);
+				}
+				else if (_command.equals("dos")) 
+				{
+					com.webcodepro.applecommander.ui.ac.putDOS(_input, _imageName, _fileName, _type);
+				}
+				else {
+					com.webcodepro.applecommander.ui.ac.putAppleSingle(_imageName, _fileName,
+							new FileInputStream(_input));
+				}
 			}
 			catch (Exception ex)
 			{
