@@ -1,4 +1,4 @@
-package com.webcodepro.shrinkit;
+package com.webcodepro.applecommander.util;
 
 /*
  * Copyright (C) 2012 by David Schmidt
@@ -34,7 +34,9 @@ import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import com.webcodepro.applecommander.ui.ac.Name;
-import com.webcodepro.applecommander.util.TextBundle;
+import com.webcodepro.shrinkit.HeaderBlock;
+import com.webcodepro.shrinkit.NuFileArchive;
+import com.webcodepro.shrinkit.ThreadRecord;
 import com.webcodepro.shrinkit.io.LittleEndianByteInputStream;
 
 /**
@@ -42,7 +44,7 @@ import com.webcodepro.shrinkit.io.LittleEndianByteInputStream;
  * 
  * @author david__schmidt at users.sourceforge.net
  */
-public class Utilities
+public class ShrinkItUtilities
 {
 	/**
 	 * Interpret a NuFile/NuFX/Shrinkit archive as a full disk image.

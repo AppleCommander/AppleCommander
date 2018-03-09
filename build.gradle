@@ -9,16 +9,6 @@ repositories {
 apply plugin: 'java'
 apply plugin: 'application'
 
-ext {
-	sourceCompatibility = '1.8'
-	targetCompatibility = '1.8'
-	
-	swtVersion = "4.6.1"
-	junitVersion = "4.12"
-	antVersion = "1.8.2"
-	commonsLang3Version = "3.7"
-}
-
 mainClassName = 'com.webcodepro.applecommander.ui.AppleCommander'
 version "${version}"
 
@@ -61,14 +51,18 @@ tasks.withType(Jar) {
                    'Implementation-Version': version
     }
 	from('LICENSE', 'CONTRIB', 'TODO', 'VERSIONS')
+   	doFirst {
+   		// Pick and include ShrinkIt contents
+	    from { configurations.runtime.collect { it.name.startsWith('ShrinkItArchive') ? zipTree(it) : 'fake' } } 
+	} 
 }
 
 dependencies {
+	compile "net.sf.applecommander:ShrinkItArchive:$shkVersion"
     compileOnly "org.apache.ant:ant:$antVersion"
 
     testCompile "junit:junit:$junitVersion"
     testCompile "org.apache.commons:commons-lang3:$commonsLang3Version"
-    
 }
 
 task acJar(type: Jar) {

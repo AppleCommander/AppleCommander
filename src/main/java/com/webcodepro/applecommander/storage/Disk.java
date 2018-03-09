@@ -212,7 +212,7 @@ public class Disk {
 		if (isSDK() || isSHK() || isBXY()) {
 			// If we have an SDK, unpack it and send along the byte array
 			// If we have a SHK, build a new disk and unpack the contents on to it
-			diskImage = com.webcodepro.shrinkit.Utilities.unpackSHKFile(filename, startBlocks);
+			diskImage = com.webcodepro.applecommander.util.ShrinkItUtilities.unpackSHKFile(filename, startBlocks);
 			diskSize = diskImage.length;
 			// Since we don't want to overwrite their shrinkit with a raw ProDOS image,
 			// add a .po extension to it
