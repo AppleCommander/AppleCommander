@@ -1,129 +1,207 @@
 repositories {
     mavenCentral()
     maven {
-    	// SWT libraries
+        // SWT libraries
         url "http://maven-eclipse.github.io/maven"
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'application'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
 mainClassName = 'com.webcodepro.applecommander.ui.AppleCommander'
 version "${version}"
 
 test {
-	String swtDependency
-	switch (System.getProperty('os.name').toLowerCase().split()[0]) {
-	    case 'windows':
-	        swtDependency = "org.eclipse.swt:org.eclipse.swt.win32.win32.x86_64:$swtVersion"
-	        break
-	    case 'linux':
-	        swtDependency = "org.eclipse.swt:org.eclipse.swt.gtk.linux.x86_64:$swtVersion"
-	        break
-	    case 'mac':
-	        swtDependency = "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:$swtVersion"
-	        break
-	    default:
-	        throw new Exception('Unknown OS')
-	}
-	dependencies {
-		compile "$swtDependency"
-	}
+    String swtDependency
+    switch (System.getProperty('os.name').toLowerCase().split()[0]) {
+        case 'windows':
+            swtDependency = "org.eclipse.swt:org.eclipse.swt.win32.win32.x86_64:$swtVersion"
+            break
+        case 'linux':
+            swtDependency = "org.eclipse.swt:org.eclipse.swt.gtk.linux.x86_64:$swtVersion"
+            break
+        case 'mac':
+            swtDependency = "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:$swtVersion"
+            break
+        default:
+            throw new Exception('Unknown OS')
+    }
+    dependencies {
+        compile "$swtDependency"
+    }
     testLogging {
         exceptionFormat = 'full'
     }
 }
 
 // Disable default JAR creation
-jar {
-	enabled = false
-}
+project.tasks.remove(jar)
 
-tasks.withType(Javadoc) {
-    // disable the crazy super-strict doclint tool in Java 8
-    options.addStringOption('Xdoclint:none', '-quiet')
-}
+// Generic additions to JAR creation
 tasks.withType(Jar) {
     manifest {
         attributes 'Main-Class': 'com.webcodepro.applecommander.ui.AppleCommander'
         attributes 'Implementation-Title': 'AppleCommander',
                    'Implementation-Version': version
     }
-	from('LICENSE', 'CONTRIB', 'TODO', 'VERSIONS')
-   	doFirst {
-   		// Pick and include ShrinkIt contents
-	    from { configurations.runtime.collect { it.name.startsWith('ShrinkItArchive') ? zipTree(it) : 'fake' } } 
-	} 
+    from('LICENSE')
+    doFirst {
+        // Jar files with an appendix are standalone applications and need to have ShrinkIt included.
+        if (appendix) {
+            from { configurations.runtime.collect { it.name.startsWith('ShrinkItArchive') ? zipTree(it) : 'fake' } }
+        } 
+    } 
 }
 
 dependencies {
-	compile "net.sf.applecommander:ShrinkItArchive:$shkVersion"
+    compile "net.sf.applecommander:ShrinkItArchive:$shkVersion"
     compileOnly "org.apache.ant:ant:$antVersion"
 
     testCompile "junit:junit:$junitVersion"
     testCompile "org.apache.commons:commons-lang3:$commonsLang3Version"
 }
 
-task acJar(type: Jar) {
-	dependencies {
-		// Just to pass the compile step; these classes are stripped out below.
-		compile "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:$swtVersion"
-	}
-	appendix 'ac'
-    manifest {
-    	attributes 'Main-Class' : 'com.webcodepro.applecommander.ui.ac'
+task mavenJar(type: Jar) {
+    dependencies {
+        // Just to pass the compile step; these classes are stripped out below.
+        compile "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:$swtVersion"
     }
     from(sourceSets.main.output) {
-    	include 'com/webcodepro/**'
+        include 'com/webcodepro/applecommander/**'
         exclude 'com/webcodepro/applecommander/ui/images/**'
         exclude 'com/webcodepro/applecommander/ui/swing/**'
         exclude 'com/webcodepro/applecommander/ui/swt/**'
-	}
+    }
+}
+task acJar(type: Jar) {
+    dependencies {
+        // Just to pass the compile step; these classes are stripped out below.
+        compile "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:$swtVersion"
+    }
+    appendix 'ac'
+    manifest {
+        attributes 'Main-Class' : 'com.webcodepro.applecommander.ui.ac'
+    }
+    from(sourceSets.main.output) {
+        include 'com/webcodepro/**'
+        exclude 'com/webcodepro/applecommander/ui/images/**'
+        exclude 'com/webcodepro/applecommander/ui/swing/**'
+        exclude 'com/webcodepro/applecommander/ui/swt/**'
+    }
 }
 task linuxJar(type: Jar) {
-	dependencies {
-		compile "org.eclipse.swt:org.eclipse.swt.gtk.linux.x86_64:$swtVersion"
-	}
-	appendix 'linux64-gtk'
+    dependencies {
+        compile "org.eclipse.swt:org.eclipse.swt.gtk.linux.x86_64:$swtVersion"
+    }
+    appendix 'linux64-gtk'
     from(sourceSets.main.output) {
-    	include 'com/webcodepro/**'
-   	}
-   	doFirst {
-   		// Pick and include just the Linux JAR contents
-	    from { configurations.runtime.collect { it.name.contains('.linux.') ? zipTree(it) : 'fake' } } 
-	} 
+        include 'com/webcodepro/**'
+    }
+    doFirst {
+        // Pick and include just the Linux JAR contents
+        from { configurations.runtime.collect { it.name.contains('.linux.') ? zipTree(it) : 'fake' } } 
+    } 
 }
 task macosxJar(type: Jar) {
-	dependencies {
-		compile "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:$swtVersion"
-	}
-	appendix 'macosx'
+    dependencies {
+        compile "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:$swtVersion"
+    }
+    appendix 'macosx'
     from(sourceSets.main.output) {
-    	include 'com/webcodepro/**'
-   	}
-   	doFirst {
-   		// Pick and include just the Mac OS X JAR contents
-	    from { configurations.runtime.collect { it.name.contains('.macosx.') ? zipTree(it) : 'fake' } } 
-	} 
+        include 'com/webcodepro/**'
+    }
+    doFirst {
+        // Pick and include just the Mac OS X JAR contents
+        from { configurations.runtime.collect { it.name.contains('.macosx.') ? zipTree(it) : 'fake' } } 
+    } 
 }
 task windowsJar(type: Jar) {
-	dependencies {
-		compile "org.eclipse.swt:org.eclipse.swt.win32.win32.x86_64:$swtVersion"
-	}
-	appendix 'win64'
+    dependencies {
+        compile "org.eclipse.swt:org.eclipse.swt.win32.win32.x86_64:$swtVersion"
+    }
+    appendix 'win64'
     from(sourceSets.main.output) {
-    	include 'com/webcodepro/**'
-   	}
-   	doFirst {
-   		// Pick and include just the Windows SWT JAR contents
-	    from { configurations.runtime.collect { it.name.contains('.win32.') ? zipTree(it) : 'fake' } } 
-	} 
+        include 'com/webcodepro/**'
+    }
+    doFirst {
+        // Pick and include just the Windows SWT JAR contents
+        from { configurations.runtime.collect { it.name.contains('.win32.') ? zipTree(it) : 'fake' } } 
+    } 
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
 }
 
 artifacts {
-    archives acJar 
-    archives linuxJar
-    archives macosxJar
-    archives windowsJar
+    archives mavenJar, acJar 
+    archives linuxJar, macosxJar, windowsJar
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    // Only sign if we're uploading...
+    required { gradle.taskGraph.hasTask("uploadArchives") }
+    sign configurations.archives
+}
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      addFilter('AppleCommander') { artifact, file ->
+        // Note that the other executables all have suffixes which change their name.
+        return artifact.name == 'AppleCommander' && artifact.ext == 'jar'
+      } 
+    
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      // Only preserve the compile and non-SWT POM dependencies
+      pom('AppleCommander').whenConfigured { p ->
+        p.dependencies = p.dependencies.findAll { it.scope == "compile" }
+        p.dependencies = p.dependencies.findAll { it.groupId != "org.eclipse.swt" }
+      }
+      
+      pom('AppleCommander').project {
+        name archivesBaseName
+        packaging 'jar'
+        description 'AppleCommander is a general utility for Apple II disk images.'
+        url 'https://applecommander.github.io/'
+        
+        scm {
+          url 'https://github.com/AppleCommander/AppleCommander'
+        }
+
+        licenses {
+          license {
+            name 'The GNU General Public License (GPL) Version 2, June 1991'
+            url 'https://www.gnu.org/licenses/gpl-2.0.html'
+          }
+        }
+
+        developers {
+          developer {
+            id 'robgreene'
+            email 'robgreene@gmail.com'
+          }
+        }
+      }
+    }
+  }
 }
