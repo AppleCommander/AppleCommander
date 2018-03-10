@@ -12,7 +12,7 @@ import java.nio.file.Paths;
  * Support reading of data from and AppleSingle source.
  * Does not implement all components at this time, extend as required.
  * 
- * @see https://github.com/AppleCommander/AppleCommander/issues/20
+ * @see <a href="https://github.com/AppleCommander/AppleCommander/issues/20">AppleCommander issue #20</a>
  */
 public class AppleSingle {
 	public static final int MAGIC_NUMBER = 0x0051600;

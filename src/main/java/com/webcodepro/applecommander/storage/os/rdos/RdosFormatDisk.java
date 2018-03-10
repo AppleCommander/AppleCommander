@@ -504,15 +504,7 @@ public class RdosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Create a new DirectoryEntry.
-	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory()
-	 */
-	public DirectoryEntry createDirectory() throws DiskFullException {
-		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$
-	}
-
-	/**
-	 * Create a new DirectoryEntry.
-	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory()
+	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory(String)
 	 */
 	public DirectoryEntry createDirectory(String name) throws DiskFullException	{
 		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$

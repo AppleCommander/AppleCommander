@@ -531,18 +531,10 @@ public class CpmFormatDisk extends FormattedDisk {
 	public void setFileData(FileEntry fileEntry, byte[] fileData) throws DiskFullException {
 		// TODO implement setFileData
 	}
-	
-	/**
-	 * Create a new DirectoryEntry.
-	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory()
-	 */
-	public DirectoryEntry createDirectory() throws DiskFullException {
-		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$
-	}
 
 	/**
 	 * Create a new DirectoryEntry.
-	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory()
+	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory(String)
 	 */
 	public DirectoryEntry createDirectory(String name) throws DiskFullException	{
 		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$

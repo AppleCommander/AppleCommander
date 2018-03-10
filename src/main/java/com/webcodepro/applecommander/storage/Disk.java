@@ -880,7 +880,7 @@ public class Disk {
 
 	/**
 	 * Find the standard sized disk that will fit the requested number of bytes.
-	 * @returns int size of the disk if it will satisfy the request, -1 otherwise 
+	 * @return int size of the disk if it will satisfy the request, -1 otherwise 
 	 */
 	public static int sizeToFit(long bytes) {
 		if (bytes < APPLE_140KB_DISK) {

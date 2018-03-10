@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
@@ -184,7 +183,7 @@ public class ShrinkItUtilities
 	 * 
 	 * Reads the data from a thread
 	 * 
-	 * @returns byte[] buffer, possibly null
+	 * @return byte[] buffer, possibly null
 	 */
 	public static byte[] readThread(ThreadRecord thread) throws IOException
 	{

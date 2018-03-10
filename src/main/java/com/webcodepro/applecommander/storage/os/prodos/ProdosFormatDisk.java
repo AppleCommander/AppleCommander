@@ -1343,7 +1343,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Create a new DirectoryEntry.
-	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory()
+	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory(String)
 	 */
 	public DirectoryEntry createDirectory(String name) throws DiskFullException {
 		return createDirectory(getVolumeHeader(), name);
@@ -1351,7 +1351,6 @@ public class ProdosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Create a new DirectoryEntry.
-	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory()
 	 */
 	public DirectoryEntry createDirectory(ProdosCommonDirectoryHeader directory, String name) throws DiskFullException {
 		int blockNumber = directory.getFileEntryBlock();

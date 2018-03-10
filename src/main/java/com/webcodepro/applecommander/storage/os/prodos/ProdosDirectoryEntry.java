@@ -98,7 +98,7 @@ public class ProdosDirectoryEntry extends ProdosFileEntry implements DirectoryEn
 
 	/**
 	 * Create a new DirectoryEntry.
-	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory()
+	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory(String)
 	 */
 	public DirectoryEntry createDirectory(String name) throws DiskFullException {
 		return getDisk().createDirectory(getSubdirectoryHeader(), name);
