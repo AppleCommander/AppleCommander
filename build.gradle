@@ -159,7 +159,7 @@ uploadArchives {
     mavenDeployer {
       addFilter('AppleCommander') { artifact, file ->
         // Note that the other executables all have suffixes which change their name.
-        return artifact.name == 'AppleCommander' && artifact.ext == 'jar'
+        return artifact.name == 'AppleCommander' && artifact.ext != 'zip' && artifact.ext != 'tar'
       } 
     
       beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
