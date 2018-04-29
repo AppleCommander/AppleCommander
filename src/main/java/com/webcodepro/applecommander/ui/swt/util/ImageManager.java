@@ -68,12 +68,12 @@ public class ImageManager {
 	public static final String ICON_COMPARE_DISKS = "comparedisks.gif"; //$NON-NLS-1$
 	public static final String ICON_CHANGE_IMAGE_ORDER = "changeorder.gif"; //$NON-NLS-1$
 
-	public static final String LOGO_EXPORT_WIZARD = "ExportWizardLogo.gif"; //$NON-NLS-1$
-	public static final String LOGO_APPLECOMMANDER = "AppleCommanderLogo.gif"; //$NON-NLS-1$
-	public static final String LOGO_DISK_IMAGE_WIZARD = "DiskImageWizardLogo.gif"; //$NON-NLS-1$
-	public static final String LOGO_IMPORT_WIZARD = "ImportWizardLogo.gif"; //$NON-NLS-1$
-	public static final String LOGO_COMPILE_WIZARD = "CompileWizardLogo.gif"; //$NON-NLS-1$
-	public static final String LOGO_COMPARE_IMAGE_WIZARD = "CompareImageWizardLogo.gif"; //$NON-NLS-1$
+	public static final String LOGO_EXPORT_WIZARD        = "ExportWizardLogo.jpg"; //$NON-NLS-1$
+	public static final String LOGO_APPLECOMMANDER       = "AppleCommanderLogo.jpg"; //$NON-NLS-1$
+	public static final String LOGO_DISK_IMAGE_WIZARD    = "DiskImageWizardLogo.jpg"; //$NON-NLS-1$
+	public static final String LOGO_IMPORT_WIZARD        = "ImportWizardLogo.jpg"; //$NON-NLS-1$
+	public static final String LOGO_COMPILE_WIZARD       = "CompileWizardLogo.jpg"; //$NON-NLS-1$
+	public static final String LOGO_COMPARE_IMAGE_WIZARD = "CompareImageWizardLogo.jpg"; //$NON-NLS-1$
 	
 	private Map<String,Image> images = new HashMap<>();
 	private String[] imageNames = {

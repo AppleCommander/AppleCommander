@@ -96,7 +96,9 @@ public class SwingAppleCommander extends JFrame implements ActionListener {
 		SwingAppleCommander application = new SwingAppleCommander();
 		application.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/com/webcodepro/applecommander/ui/images/diskicon.gif"))); //$NON-NLS-1$
 		application.setTitle(textBundle.get("SwtAppleCommander.AppleCommander"));
-		titleLabel = new JLabel(new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/com/webcodepro/applecommander/ui/images/AppleCommanderLogo.gif"))));
+
+		titleLabel = new JLabel(new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/com/webcodepro/applecommander/ui/images/AppleCommanderLogo.jpg"))));
+
 		addTitleTabPane();
 		application.getContentPane().add(topPanel, BorderLayout.NORTH);
 		application.getContentPane().add(tabPane, BorderLayout.CENTER);
