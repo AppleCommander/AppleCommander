@@ -30,7 +30,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Queue;
 
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.Disk;
@@ -53,6 +55,10 @@ import com.webcodepro.applecommander.util.AppleSingle.ProdosFileInfo;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+import com.webcodepro.applecommander.util.applesoft.Parser;
+import com.webcodepro.applecommander.util.applesoft.Program;
+import com.webcodepro.applecommander.util.applesoft.Token;
+import com.webcodepro.applecommander.util.applesoft.TokenReader;
 
 /**
  * ac provides a command line interface to key AppleCommander functions. Text
@@ -90,6 +96,8 @@ import com.webcodepro.applecommander.util.TextBundle;
  * -pas800 &lt;imagename&gt; &lt;volname&gt; create an 800K Pascal image.
  * -convert &lt;filename&gt; &lt;imagename&gt; uncompress a ShrinkIt file or disk image
  *           or convert a DiskCopy 4.2 image into a ProDOS disk image.
+ * -bas    &lt;imagename&gt; &lt;filename&gt; import an AppleSoft basic file from text
+ *        back to it's tokenized format.
  * </pre>
  * 
  * @author John B. Matthews
@@ -155,6 +163,8 @@ public class ac {
 					convert(args[1], args[2], Integer.parseInt(args[3]));
 				else
 					convert(args[1], args[2]);
+			} else if ("-bas".equalsIgnoreCase(args[0])) {
+				putAppleSoft(args[1], args[2]);
 			} else {
 				help();
 			}
@@ -163,6 +173,44 @@ public class ac {
 				ex.getLocalizedMessage()));
 			ex.printStackTrace();
 			help();
+		}
+	}
+	
+	/**
+	 * Convert the AppleSoft BASIC program from text into it's "native" tokenized format.
+	 * Note that we try to infer the BASIC type dynamically and hard-code the start address
+	 * to 0x801.
+	 */
+	public static void putAppleSoft(String imageName, String fileName) throws IOException, DiskException {
+		Queue<Token> tokens = TokenReader.tokenize(System.in);
+		Parser parser = new Parser(tokens);
+		Program program = parser.parse();
+		int address = 0x801;
+		byte[] data = program.toBytes(address);
+		
+		Name name = new Name(fileName);
+		File file = new File(imageName);
+		if (!file.canRead()){
+			throw new IOException("Unable to read input file named "+imageName+".");
+		}
+		
+		Disk disk = new Disk(imageName);
+		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+		FormattedDisk formattedDisk = formattedDisks[0];
+		// Look through the supplied types and try to pick AppleSoft.  Otherwise, let's try "A".
+		String fileType = Arrays.asList(formattedDisk.getFiletypes()).stream()
+				.filter(ft -> "A".equalsIgnoreCase(ft) || "BAS".equalsIgnoreCase(ft))
+				.findFirst()
+				.orElse("A");
+		FileEntry entry = name.createEntry(formattedDisk);
+		if (entry != null) {
+			entry.setFiletype(fileType);
+			entry.setFilename(name.name);
+			entry.setFileData(data);
+			if (entry.needsAddress()) {
+				entry.setAddress(address);
+			}
+			formattedDisk.save();
 		}
 	}
 
