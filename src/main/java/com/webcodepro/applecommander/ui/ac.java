@@ -50,8 +50,6 @@ import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
 import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
-import com.webcodepro.applecommander.util.AppleSingle;
-import com.webcodepro.applecommander.util.AppleSingle.ProdosFileInfo;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
@@ -59,6 +57,9 @@ import com.webcodepro.applecommander.util.applesoft.Parser;
 import com.webcodepro.applecommander.util.applesoft.Program;
 import com.webcodepro.applecommander.util.applesoft.Token;
 import com.webcodepro.applecommander.util.applesoft.TokenReader;
+
+import io.github.applecommander.applesingle.AppleSingle;
+import io.github.applecommander.applesingle.ProdosFileInfo;
 
 /**
  * ac provides a command line interface to key AppleCommander functions. Text
@@ -331,7 +332,7 @@ public class ac {
 	public static void putAppleSingle(String imageName, String fileName, InputStream inputStream) 
 			throws IOException, DiskException {
 		
-		AppleSingle as = new AppleSingle(inputStream);
+		AppleSingle as = AppleSingle.read(inputStream); 
 		if (fileName == null) {
 			fileName = as.getRealName();
 		}

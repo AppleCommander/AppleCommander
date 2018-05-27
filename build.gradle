@@ -51,13 +51,18 @@ tasks.withType(Jar) {
     doFirst {
         // Jar files with an appendix are standalone applications and need to have ShrinkIt included.
         if (appendix) {
-            from { configurations.runtime.collect { it.name.startsWith('ShrinkItArchive') ? zipTree(it) : 'fake' } }
+            from { 
+                configurations.runtime.collect { 
+                    it.name.startsWith('ShrinkItArchive') || it.name.startsWith('applesingle-api') ? zipTree(it) : 'fake' 
+                } 
+            }
         } 
     } 
 }
 
 dependencies {
     compile "net.sf.applecommander:ShrinkItArchive:$shkVersion"
+    compile "net.sf.applecommander:applesingle-api:$asVersion"
     compileOnly "org.apache.ant:ant:$antVersion"
 
     testCompile "junit:junit:$junitVersion"
