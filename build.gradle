@@ -147,6 +147,10 @@ task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
 }
 
+javadoc {
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
 artifacts {
     archives mavenJar, acJar 
     archives linuxJar, macosxJar, windowsJar
