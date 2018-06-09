@@ -53,13 +53,15 @@ import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
-import com.webcodepro.applecommander.util.applesoft.Parser;
-import com.webcodepro.applecommander.util.applesoft.Program;
-import com.webcodepro.applecommander.util.applesoft.Token;
-import com.webcodepro.applecommander.util.applesoft.TokenReader;
 
 import io.github.applecommander.applesingle.AppleSingle;
 import io.github.applecommander.applesingle.ProdosFileInfo;
+import io.github.applecommander.bastokenizer.api.Configuration;
+import io.github.applecommander.bastokenizer.api.Parser;
+import io.github.applecommander.bastokenizer.api.TokenReader;
+import io.github.applecommander.bastokenizer.api.Visitors;
+import io.github.applecommander.bastokenizer.api.model.Program;
+import io.github.applecommander.bastokenizer.api.model.Token;
 
 /**
  * ac provides a command line interface to key AppleCommander functions. Text
@@ -183,11 +185,11 @@ public class ac {
 	 * to 0x801.
 	 */
 	public static void putAppleSoft(String imageName, String fileName) throws IOException, DiskException {
+		Configuration config = Configuration.builder().build();
 		Queue<Token> tokens = TokenReader.tokenize(System.in);
 		Parser parser = new Parser(tokens);
 		Program program = parser.parse();
-		int address = 0x801;
-		byte[] data = program.toBytes(address);
+		byte[] data = Visitors.byteVisitor(config).dump(program);
 		
 		Name name = new Name(fileName);
 		File file = new File(imageName);
@@ -209,7 +211,7 @@ public class ac {
 			entry.setFilename(name.name);
 			entry.setFileData(data);
 			if (entry.needsAddress()) {
-				entry.setAddress(address);
+				entry.setAddress(config.startAddress);
 			}
 			formattedDisk.save();
 		}

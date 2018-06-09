@@ -26,7 +26,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -72,7 +71,6 @@ import org.eclipse.swt.widgets.TreeItem;
 import com.webcodepro.applecommander.compiler.ApplesoftCompiler;
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.DiskCorruptException;
 import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileEntryComparator;
@@ -87,10 +85,10 @@ import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
 import com.webcodepro.applecommander.storage.filters.BusinessBASICFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
+import com.webcodepro.applecommander.storage.filters.GutenbergFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
-import com.webcodepro.applecommander.storage.filters.GutenbergFileFilter;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosDiskSizeDoesNotMatchException;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
@@ -111,6 +109,8 @@ import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.Host;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+
+import io.github.applecommander.applesingle.AppleSingle;
 
 /**
  * Build the Disk File tab for the Disk Window.
@@ -261,7 +261,7 @@ public class DiskExplorerTab {
 
 			if (disks[i].canHaveDirectories()) {
 				try {
-					Iterator files = disks[i].getFiles().iterator();
+					Iterator<FileEntry> files = disks[i].getFiles().iterator();
 					while (files.hasNext()) {
 						FileEntry entry = (FileEntry) files.next();
 						if (entry.isDirectory()) {
@@ -848,7 +848,7 @@ public class DiskExplorerTab {
 	 * These can and are over-ridden by user sizing.
 	 */
 	protected void computeColumnWidths(int format) {
-		List headers = disks[0].getFileColumnHeaders(format);
+		List<FileColumnHeader> headers = disks[0].getFileColumnHeaders(format);
 		int[] headerWidths = new int[headers.size()];
 		GC gc = new GC(shell);
 		for (int i=0; i<headers.size(); i++) {
@@ -921,7 +921,7 @@ public class DiskExplorerTab {
 				}
 			});
 			TableColumn column = null;
-			List headers = disks[0].getFileColumnHeaders(currentFormat);
+			List<FileColumnHeader> headers = disks[0].getFileColumnHeaders(currentFormat);
 			int[] widths = (int[])columnWidths.get(new Integer(currentFormat));
 			for (int i=0; i<headers.size(); i++) {
 				FileColumnHeader header = (FileColumnHeader) headers.get(i);
@@ -941,12 +941,12 @@ public class DiskExplorerTab {
 			fileTable.removeAll();
 		}
 
-		Iterator files = fileList.iterator();
+		Iterator<FileEntry> files = fileList.iterator();
 		while (files.hasNext()) {
 			FileEntry entry = (FileEntry) files.next();
 			if (showDeletedFiles || !entry.isDeleted()) {
 				TableItem item = new TableItem(fileTable, 0);
-				List data = entry.getFileColumnData(currentFormat);
+				List<String> data = entry.getFileColumnData(currentFormat);
 				for (int i=0; i<data.size(); i++) {
 					item.setText(i, (String)data.get(i));
 				}
@@ -1151,7 +1151,7 @@ public class DiskExplorerTab {
 		if (wizard.isWizardCompleted()) {
 			Shell dialog = null;
 			try {
-				List specs = wizard.getImportSpecifications();
+				List<ImportSpecification> specs = wizard.getImportSpecifications();
 				// Progress meter for import wizard:
 				dialog = new Shell(shell, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 				dialog.setText(textBundle.get("ImportingFilesTitle")); //$NON-NLS-1$
@@ -1196,17 +1196,22 @@ public class DiskExplorerTab {
 					ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 					InputStream input =  new FileInputStream(spec.getSourceFilename());
 					StreamUtil.copy(input, buffer);
+					byte[] fileData = buffer.toByteArray();
 					FileEntry fileEntry = directory.createFile();
 					fileEntry.setFilename(spec.getTargetFilename());
 					fileEntry.setFiletype(spec.getFiletype());
 					if (spec.isRawFileImport()) {
-						disks[0].setFileData(fileEntry, buffer.toByteArray());
+						disks[0].setFileData(fileEntry, fileData);
 					} else {
+						if (AppleSingle.test(fileData)) {
+							AppleSingle as = AppleSingle.read(fileData);
+							fileData = as.getDataFork();
+						}
 						if (fileEntry.needsAddress()) {
 							fileEntry.setAddress(spec.getAddress());
 						}
 						try {
-							fileEntry.setFileData(buffer.toByteArray());
+							fileEntry.setFileData(fileData);
 						} catch (ProdosDiskSizeDoesNotMatchException ex) {
 							int answer = SwtUtil.showYesNoDialog(shell,
 									textBundle.get("ResizeDiskTitle"), //$NON-NLS-1$
@@ -1215,7 +1220,7 @@ public class DiskExplorerTab {
 								ProdosFormatDisk prodosDisk = (ProdosFormatDisk) 
 									fileEntry.getFormattedDisk();
 								prodosDisk.resizeDiskImage();
-								fileEntry.setFileData(buffer.toByteArray());
+								fileEntry.setFileData(fileData);
 							}
 						}
 					}
@@ -1243,7 +1248,7 @@ public class DiskExplorerTab {
 	 * @throws DiskException
 	 */
 	protected void addDirectoriesToTree(TreeItem directoryItem, DirectoryEntry directoryEntry) throws DiskException {
-		Iterator files = directoryEntry.getFiles().iterator();
+		Iterator<FileEntry> files = directoryEntry.getFiles().iterator();
 		while (files.hasNext()) {
 			final FileEntry entry = (FileEntry) files.next();
 			if (entry.isDirectory()) {
@@ -1585,7 +1590,7 @@ public class DiskExplorerTab {
 	 * Open up the view file window for the currently selected file.
 	 * @throws DiskException
 	 */
-	protected void viewFile(Class fileFilterClass) throws DiskException {
+	protected void viewFile(Class<? extends FileFilter> fileFilterClass) throws DiskException {
 		FileEntry fileEntry = getSelectedFileEntry();
 		if (fileEntry.isDeleted()) {
 			SwtUtil.showErrorDialog(shell, textBundle.get("DeleteFileErrorTitle"), //$NON-NLS-1$
@@ -1601,7 +1606,7 @@ public class DiskExplorerTab {
 			FileViewerWindow window = null;
 			FileFilter fileFilter = null;
 			try {
-				fileFilter = (FileFilter) fileFilterClass.newInstance();
+				fileFilter = fileFilterClass.newInstance();
 			} catch (NullPointerException ex) {
 				// This is expected
 			} catch (InstantiationException e) {
@@ -1757,7 +1762,7 @@ public class DiskExplorerTab {
 		private int x;
 		private Rectangle clientArea;
 		private GC gc;
-		private List fileHeaders;
+		private List<FileColumnHeader> fileHeaders;
 		private int[] printColumnWidths;
 		private int[] printColumnPosition;
 		private Font normalFont;
@@ -1889,11 +1894,11 @@ public class DiskExplorerTab {
 			page++;
 		}
 		protected void printFiles(DirectoryEntry directory, int level) throws DiskException {
-			Iterator iterator = directory.getFiles().iterator();
+			Iterator<FileEntry> iterator = directory.getFiles().iterator();
 			while (iterator.hasNext()) {
 				FileEntry fileEntry = (FileEntry) iterator.next();
 				if (!fileEntry.isDeleted() || isShowDeletedFiles()) {
-					List columns = fileEntry.getFileColumnData(getCurrentFormat());
+					List<String> columns = fileEntry.getFileColumnData(getCurrentFormat());
 					for (int i=0; i<columns.size(); i++) {
 						FileColumnHeader header = (FileColumnHeader) fileHeaders.get(i);
 						String text = (String)columns.get(i);

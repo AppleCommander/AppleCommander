@@ -1,7 +1,12 @@
 package com.webcodepro.applecommander.ui.swt.wizard.importfile;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -16,12 +21,14 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
+import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.ui.ImportSpecification;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.UserPreferences;
@@ -29,6 +36,11 @@ import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+
+import io.github.applecommander.applesingle.AppleSingle;
+import io.github.applecommander.applesingle.AppleSingleReader;
+import io.github.applecommander.applesingle.ProdosFileInfo;
+import io.github.applecommander.applesingle.Utilities;
 
 /**
  * Allow the used to choose the files to import into the disk image.
@@ -121,15 +133,31 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 			 * Single click.
 			 */
 			public void widgetSelected(SelectionEvent event) {
-				FileDialog dialog = new FileDialog(getParent().getShell(), 
-					SWT.OPEN | SWT.MULTI);
-				dialog.setFilterPath(
-					UserPreferences.getInstance().getImportDirectory());
-				String filename = dialog.open();
-				if (filename != null) {
-					setFilenames(dialog.getFilterPath(), dialog.getFileNames());
-					UserPreferences.getInstance().setImportDirectory(
-						dialog.getFilterPath());
+				try {
+					FileDialog dialog = new FileDialog(getParent().getShell(), 
+						SWT.OPEN | SWT.MULTI);
+					dialog.setFilterPath(
+						UserPreferences.getInstance().getImportDirectory());
+					String filename = dialog.open();
+					if (filename != null) {
+						setFilenames(dialog.getFilterPath(), dialog.getFileNames());
+						UserPreferences.getInstance().setImportDirectory(
+							dialog.getFilterPath());
+					}
+				} catch (Throwable t) {
+					MessageBox mb = new MessageBox(getParent().getShell(), 
+							SWT.OK | SWT.ICON_ERROR | SWT.APPLICATION_MODAL);
+					mb.setText("Error!");
+					StringBuilder message = new StringBuilder();
+					while (t != null) {
+						if (t.getMessage() != null && t.getMessage().length() > 0) {
+							message.append(t.getMessage());
+							message.append("\n");
+						}
+						t = t.getCause();
+					}
+					mb.setMessage(message.toString());
+					mb.open();
 				}
 			}
 		});
@@ -168,12 +196,29 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 	/**
 	 * Set all filenames to be imported.
 	 */
-	protected void setFilenames(String path, String[] filenames) {
+	protected void setFilenames(String path, String[] filenames) throws FileNotFoundException, IOException {
 		for (int i=0; i<filenames.length; i++) {
-			ImportSpecification spec = new ImportSpecification(
-				path + File.separatorChar+ filenames[i],
-				wizard.getDisk().getSuggestedFilename(filenames[i]),
-				wizard.getDisk().getSuggestedFiletype(filenames[i]));
+			String filename = path + File.separatorChar + filenames[i];
+			
+			String suggestedFiletype = wizard.getDisk().getSuggestedFiletype(filenames[i]);
+			String suggestedFilename = wizard.getDisk().getSuggestedFilename(filenames[i]);
+			int suggestedAddress = 0;
+			
+			try (InputStream inputStream = new FileInputStream(filename)) {
+				byte[] data = Utilities.toByteArray(inputStream);
+				AppleSingleReader reader = AppleSingleReader.builder(data).build();
+				if (AppleSingle.test(reader)) {
+					AppleSingle as = AppleSingle.read(data);
+					suggestedFilename = Optional.ofNullable(as.getRealName())
+							                    .orElse(suggestedFilename);
+					suggestedFiletype = ProdosFormatDisk.getFiletype(as.getProdosFileInfo().getFileType());
+					suggestedAddress = Optional.ofNullable(as.getProdosFileInfo())
+											   .map(ProdosFileInfo::getAuxType)
+											   .orElse(suggestedAddress);
+				}
+			}
+			ImportSpecification spec = new ImportSpecification(filename, suggestedFilename, suggestedFiletype);
+			spec.setAddress(suggestedAddress);
 			wizard.addImportSpecification(spec);
 		}
 		refreshTable();
@@ -183,7 +228,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 	 */
 	protected void refreshTable() {
 		fileTable.removeAll();
-		Iterator specs = wizard.getImportSpecifications().iterator();
+		Iterator<ImportSpecification> specs = wizard.getImportSpecifications().iterator();
 		boolean canFinish = specs.hasNext();
 		while (specs.hasNext()) {
 			ImportSpecification spec = (ImportSpecification) specs.next();
