@@ -160,7 +160,7 @@ public class SwtAppleCommander implements Listener {
 		String[] extensions = new String[fileFilters.length];
 		for (int i=0; i<fileFilters.length; i++) {
 			names[i] = fileFilters[i].getNames();
-			extensions[i] = fileFilters[i].getExtensions();
+			extensions[i] = makeExtensionCaseInsensitive(fileFilters[i].getExtensions());
 		}
 		fileDialog.setFilterNames(names);
 		fileDialog.setFilterExtensions(extensions);
@@ -181,6 +181,25 @@ public class SwtAppleCommander implements Listener {
 				showUnexpectedErrorMessage(fullpath);
 			}
 		}
+	}
+	/**
+	 * A quick change to any letter in the glob to be a regex of both the lower-case
+	 * and upper-case letters.  For example, {@code *.dsk} converts to 
+	 * {@code *.[dD][sS][kK]}. 
+	 */
+	protected String makeExtensionCaseInsensitive(String extension) {
+		StringBuilder sb = new StringBuilder();
+		for (char ch : extension.toCharArray()) {
+			if (Character.isLetter(ch)) {
+				sb.append("[");
+				sb.append(Character.toLowerCase(ch));
+				sb.append(Character.toUpperCase(ch));
+				sb.append("]");
+			} else {
+				sb.append(ch);
+			}
+		}
+		return sb.toString();
 	}
 
 	/**
