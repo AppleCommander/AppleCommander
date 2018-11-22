@@ -56,12 +56,12 @@ import com.webcodepro.applecommander.util.TextBundle;
 
 import io.github.applecommander.applesingle.AppleSingle;
 import io.github.applecommander.applesingle.ProdosFileInfo;
-import io.github.applecommander.bastokenizer.api.Configuration;
-import io.github.applecommander.bastokenizer.api.Parser;
-import io.github.applecommander.bastokenizer.api.TokenReader;
-import io.github.applecommander.bastokenizer.api.Visitors;
-import io.github.applecommander.bastokenizer.api.model.Program;
-import io.github.applecommander.bastokenizer.api.model.Token;
+import io.github.applecommander.bastools.api.Configuration;
+import io.github.applecommander.bastools.api.Parser;
+import io.github.applecommander.bastools.api.TokenReader;
+import io.github.applecommander.bastools.api.Visitors;
+import io.github.applecommander.bastools.api.model.Program;
+import io.github.applecommander.bastools.api.model.Token;
 
 /**
  * ac provides a command line interface to key AppleCommander functions. Text
