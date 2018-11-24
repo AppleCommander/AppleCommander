@@ -53,6 +53,7 @@ import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+import com.webcodepro.applecommander.util.TranslatorStream;
 
 import io.github.applecommander.applesingle.AppleSingle;
 import io.github.applecommander.applesingle.ProdosFileInfo;
@@ -134,6 +135,8 @@ public class ac {
 			} else if ("-p".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				putFile(args[1], new Name(args[2]), args[3],
 					(args.length > 4 ? args[4] : "0x2000"));
+			} else if ("-pt".equalsIgnoreCase(args[0])) {
+			    putTxtFile(args[1], new Name(args[2]));
 			} else if ("-d".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				deleteFile(args[1], args[2]);
 			} else if ("-k".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
@@ -260,7 +263,15 @@ public class ac {
 
 		putFile(imageName, name, fileType, address, System.in);
 	}
-	
+
+    /**
+     * Put &lt;stdin&gt. as an Apple text file into the file named 
+     * fileName on the disk named imageName.
+     */
+    static void putTxtFile(String imageName, Name name) throws IOException, DiskException {
+        putFile(imageName, name, "TXT", "0", TranslatorStream.builder(System.in).lfToCr().setHighBit().get());
+    }
+
 	/**
 	 * Put InputStream into the file named fileName on the disk named imageName;
 	 * Note: only volume level supported; input size unlimited.
