@@ -188,7 +188,9 @@ public class ac {
 	 * to 0x801.
 	 */
 	public static void putAppleSoft(String imageName, String fileName) throws IOException, DiskException {
-		Configuration config = Configuration.builder().build();
+	    File fakeTempSource = File.createTempFile("ac-", "bas");
+	    fakeTempSource.deleteOnExit();
+		Configuration config = Configuration.builder().sourceFile(fakeTempSource).build();
 		Queue<Token> tokens = TokenReader.tokenize(System.in);
 		Parser parser = new Parser(tokens);
 		Program program = parser.parse();
