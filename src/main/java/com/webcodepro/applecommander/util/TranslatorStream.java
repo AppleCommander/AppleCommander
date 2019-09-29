@@ -17,11 +17,18 @@ public class TranslatorStream extends InputStream {
     
     @Override
     public int read() throws IOException {
-        return fn.apply(sourceStream.read());
+        int data = sourceStream.read();
+        if (data == -1) {
+            return -1;
+        }
+        return fn.apply(data);
     }
 
     private int setHighBit(int value) {
         return value | 0x80;
+    }
+    private int clearHighBit(int value) {
+        return value & 0x7f;
     }
     private int lfToCr(int value) {
         if (value == '\r') {
@@ -57,6 +64,9 @@ public class TranslatorStream extends InputStream {
         
         public Builder setHighBit() {
             return fn(stream::setHighBit);
+        }
+        public Builder clearHighBit() {
+            return fn(stream::clearHighBit);
         }
         public Builder lfToCr() {
             return fn(stream::lfToCr);

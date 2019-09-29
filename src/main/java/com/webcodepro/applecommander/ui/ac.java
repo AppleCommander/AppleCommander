@@ -136,7 +136,9 @@ public class ac {
 				putFile(args[1], new Name(args[2]), args[3],
 					(args.length > 4 ? args[4] : "0x2000"));
 			} else if ("-pt".equalsIgnoreCase(args[0])) {
-			    putTxtFile(args[1], new Name(args[2]));
+			    putTxtFileSetHighBit(args[1], new Name(args[2]));
+            } else if ("-ptx".equalsIgnoreCase(args[0])) {
+                putTxtFileClearHighBit(args[1], new Name(args[2]));
 			} else if ("-d".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				deleteFile(args[1], args[2]);
 			} else if ("-k".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
@@ -270,8 +272,18 @@ public class ac {
      * Put &lt;stdin&gt. as an Apple text file into the file named 
      * fileName on the disk named imageName.
      */
-    static void putTxtFile(String imageName, Name name) throws IOException, DiskException {
+    static void putTxtFileSetHighBit(String imageName, Name name) throws IOException, DiskException {
+        // Order on the stream is important to ensure the translated newlines have the high bit done appropriately
         putFile(imageName, name, "TXT", "0", TranslatorStream.builder(System.in).lfToCr().setHighBit().get());
+    }
+
+    /**
+     * Put &lt;stdin&gt. as an Apple text file into the file named 
+     * fileName on the disk named imageName.
+     */
+    static void putTxtFileClearHighBit(String imageName, Name name) throws IOException, DiskException {
+        // Order on the stream is important to ensure the translated newlines have the high bit done appropriately
+        putFile(imageName, name, "TXT", "0", TranslatorStream.builder(System.in).lfToCr().clearHighBit().get());
     }
 
 	/**
