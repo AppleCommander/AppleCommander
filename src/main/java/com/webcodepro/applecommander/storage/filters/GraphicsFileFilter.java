@@ -39,7 +39,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * 4 is multiplied by 0x0080<br>
  * 321 are multipled by 0x0400
  * <p>
- * HGR bit values ignore the high bit, as that switches the "palette", and for B&W mode,
+ * HGR bit values ignore the high bit, as that switches the "palette", and for B&amp;W mode,
  * the bit does nothing.  The other 7 bits simply toggle the pixel on or off.  Double hires
  * does not follow this - it uses a real 4 bit value, but the high bit is still ignored for
  * graphics (hence, the 560 instead of 640 resolution).
@@ -537,7 +537,7 @@ public class GraphicsFileFilter implements FileFilter {
 	}
 
 	/**
-	 * Indicates if this is configured for hires black & white mode.
+	 * Indicates if this is configured for hires black &amp; white mode.
 	 */
 	public boolean isHiresBlackAndWhiteMode() {
 		return mode == MODE_HGR_BLACK_AND_WHITE;
@@ -551,7 +551,7 @@ public class GraphicsFileFilter implements FileFilter {
 	}
 	
 	/**
-	 * Indicates if this is configured for double hires black & white mode.
+	 * Indicates if this is configured for double hires black &amp; white mode.
 	 */
 	public boolean isDoubleHiresBlackAndWhiteMode() {
 		return mode == MODE_DHR_BLACK_AND_WHITE;

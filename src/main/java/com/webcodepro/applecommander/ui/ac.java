@@ -479,8 +479,8 @@ public class ac {
 	 * Recursive routine to locate a specific file by filename; In the instance
 	 * of a system with directories (e.g. ProDOS), this really returns the first
 	 * file with the given filename.
-	 * @deprecated
 	 */
+	@Deprecated
 	static FileEntry getEntry(List<FileEntry> files, String fileName) throws DiskException {
 		if (files != null) {
 			for (FileEntry entry : files) {

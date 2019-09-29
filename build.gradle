@@ -38,7 +38,7 @@ test {
 }
 
 // Disable default JAR creation
-project.tasks.remove(jar)
+project.tasks.jar.setEnabled(false)
 
 // Generic additions to JAR creation
 tasks.withType(Jar) {
