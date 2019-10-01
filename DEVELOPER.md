@@ -21,19 +21,19 @@ BUILD SUCCESSFUL in 2s
 6 actionable tasks: 6 executed
 ```
 
-This will create the `build` directory and populate with an uber-jar.
+This will create the `build` directory and populate with uber-jars in `build/libs`.
 
 To run the command-line version of AppleCommander, use the following:
 
 * All platforms:
-  `java -jar AppleCommander-ac-VERSION.jar`
+  `java -jar build/libs/AppleCommander-ac-VERSION.jar`
 
 To launch the GUI version of AppleCommander, use the following:
 
 * Linux:
-  `java -jar AppleCommander-linux64-gtk-VERSION.jar`
+  `java -jar build/libs/AppleCommander-linux64-gtk-VERSION.jar`
 * Windows:
-  `java -jar AppleCommander-win64-VERSION.jar`
+  `java -jar build/libs/AppleCommander-win64-VERSION.jar`
 * Mac OS X:
   `java -XstartOnFirstThread -jar build/libs/AppleCommander-macosx-VERSION.jar`
   
