@@ -165,6 +165,7 @@ public class SwtAppleCommander implements Listener {
 		fileDialog.setFilterNames(names);
 		fileDialog.setFilterExtensions(extensions);
 		fileDialog.setFilterPath(userPreferences.getDiskImageDirectory());
+		fileDialog.setFilterIndex(0);
 		String fullpath = fileDialog.open();
 		
 		if (fullpath != null) {
