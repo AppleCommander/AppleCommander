@@ -47,6 +47,7 @@ import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 import com.webcodepro.applecommander.ui.swt.wizard.comparedisks.CompareDisksWizard;
 import com.webcodepro.applecommander.ui.swt.wizard.diskimage.DiskImageWizard;
+import com.webcodepro.applecommander.util.Host;
 import com.webcodepro.applecommander.util.TextBundle;
 
 /**
@@ -189,6 +190,10 @@ public class SwtAppleCommander implements Listener {
 	 * {@code *.[dD][sS][kK]}. 
 	 */
 	protected String makeExtensionCaseInsensitive(String extension) {
+	    if (Host.isWindows()) {
+	        // Windows SWT does not support the regex and is case insensitive. Leave it as-is!
+	        return extension;
+	    }
 		StringBuilder sb = new StringBuilder();
 		for (char ch : extension.toCharArray()) {
 			if (Character.isLetter(ch)) {

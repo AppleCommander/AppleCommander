@@ -81,4 +81,14 @@ public class Host {
 		}
 		return pathName;
 	}
+	
+	public static boolean isLinux() {
+        return linux;
+    }
+	public static boolean isMacosx() {
+        return macOSX;
+    }
+	public static boolean isWindows() {
+        return windows;
+    }
 }
