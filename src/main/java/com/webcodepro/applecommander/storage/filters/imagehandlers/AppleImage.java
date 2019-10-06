@@ -47,22 +47,20 @@ public abstract class AppleImage {
 	 * using Reflection to ease native compilation for the most part.
 	 */
 	public static AppleImage create(int width, int height) {
-		String[] classes = {
+		String[] classNames = {
 			"ImageIoImage", "SunJpegImage", "SwtImage" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		Class[] constructorArgClasses = new Class[] { int.class, int.class };
-		Object[] constructorArgs = new Object[] {
-			new Integer(width), new Integer(height) };
-		for (int i=0; i<classes.length; i++) {
+		Class<?>[] constructorArgClasses = new Class<?>[] { int.class, int.class };
+		Object[] constructorArgs = { new Integer(width), new Integer(height) };
+		for (String className : classNames) {
 			try {
 				Class<?> appleImageClass = Class.forName(
 					"com.webcodepro.applecommander.storage.filters.imagehandlers."  //$NON-NLS-1$
-					+ classes[i]);
+					+ className);
 				Constructor<?> constructor =
 					appleImageClass.getConstructor(constructorArgClasses);
-
-				AppleImage appleImage = (AppleImage) 
+				Object instance =  
 					constructor.newInstance(constructorArgs);
-				return appleImage;
+				return AppleImage.class.cast(instance);
 			} catch (Exception ignored) {
 				// There are multiple exceptions that can be thrown here.
 				// For the most part, this is expected and simply means that
