@@ -98,9 +98,8 @@ public class DiskMapTab {
 					labels[0].toLowerCase()));
 		} else {
 			buf.append(textBundle.format("DiskMapTab.TrackAndSectorDecriptiveLabel", //$NON-NLS-1$
-					new Object[] {
-						labels[0].toLowerCase(),
-						labels[1].toLowerCase() }));
+					labels[0].toLowerCase(),
+					labels[1].toLowerCase()));
 		}
 		title.setText(buf.toString());
 		title.setLayoutData(data);

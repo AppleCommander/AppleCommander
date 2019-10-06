@@ -1882,7 +1882,7 @@ public class DiskExplorerTab {
 		}
 		protected void printFooter() {
 			TextBundle textBundle = UiBundle.getInstance();
-			String text = textBundle.format("PageNumberText", Integer.toString(page)); //$NON-NLS-1$
+			String text = textBundle.format("PageNumberText", page); //$NON-NLS-1$
 			Point point = gc.stringExtent(text);
 			gc.drawString(text, 
 				clientArea.x + (clientArea.width - point.x)/2, 

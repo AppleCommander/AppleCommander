@@ -528,9 +528,9 @@ public class ac {
 						showFiles(files, "", display); //$NON-NLS-1$
 					}
 					System.out.println(textBundle.format("CommandLineStatus", //$NON-NLS-1$
-						new Object[] { formattedDisk.getFormat(),
-						new Integer(formattedDisk.getFreeSpace()),
-						new Integer(formattedDisk.getUsedSpace()) }));
+						formattedDisk.getFormat(),
+						formattedDisk.getFreeSpace(),
+						formattedDisk.getUsedSpace()));
 					System.out.println();
 				}
 			} catch (DiskException e) {

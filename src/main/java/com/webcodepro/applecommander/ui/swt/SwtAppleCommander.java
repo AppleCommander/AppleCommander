@@ -310,7 +310,7 @@ public class SwtAppleCommander implements Listener {
 		box.setText(textBundle.get("SwtAppleCommander.AboutTitle")); //$NON-NLS-1$
 		box.setMessage( 
 		  textBundle.format("SwtAppleCommander.AboutMessage", //$NON-NLS-1$
-		  new Object[] { AppleCommander.VERSION, textBundle.get("Copyright") })); //$NON-NLS-1$
+		          AppleCommander.VERSION, textBundle.get("Copyright"))); //$NON-NLS-1$
 		box.open();
 	}
 

@@ -120,8 +120,7 @@ public class DiskWindow {
 		box.setText(textBundle.get("SwtAppleCommander.DiskException.Title")); //$NON-NLS-1$
 		box.setMessage(
 				  textBundle.format("SwtAppleCommander.DiskException.Message", //$NON-NLS-1$
-						  new Object[]{e.imagepath, e.toString()}
-				  		));
+						  e.imagepath, e.toString()));
 		box.open();
 	}
 	

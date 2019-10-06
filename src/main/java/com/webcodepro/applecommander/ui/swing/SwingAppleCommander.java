@@ -206,34 +206,11 @@ public class SwingAppleCommander extends JFrame implements ActionListener {
 		}
 	}
 
-/*
-		fileDialog.setFilterNames(names);
-		fileDialog.setFilterExtensions(extensions);
-		fileDialog.setFilterPath(userPreferences.getDiskImageDirectory());
-		String fullpath = fileDialog.open();
-	
-		if (fullpath != null) {
-			userPreferences.setDiskImageDirectory(fileDialog.getFilterPath());
-			try {
-				Disk disk = new Disk(fullpath);
-				FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-				if (formattedDisks != null) {
-					DiskWindow window = new DiskWindow(shell, formattedDisks, imageManager);
-					window.open();
-				} else {
-					showUnrecognizedDiskFormatMessage(fullpath);
-				}
-			} catch (Exception ignored) {
-				ignored.printStackTrace();
-				showUnrecognizedDiskFormatMessage(fullpath);
-			}
-		}
-*/
-
 	public void showAboutAppleCommander() {
 		JOptionPane.showMessageDialog(null,
 			textBundle.format("SwtAppleCommander.AboutMessage", //$NON-NLS-1$
-			new Object[] { AppleCommander.VERSION, textBundle.get("Copyright") }), textBundle.get("SwtAppleCommander.AboutTitle"), //$NON-NLS-1$
+			        AppleCommander.VERSION, textBundle.get("Copyright")), 
+			textBundle.get("SwtAppleCommander.AboutTitle"), //$NON-NLS-1$
 			JOptionPane.INFORMATION_MESSAGE);
 	}
 }
