@@ -261,7 +261,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * @throws DiskException
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFiles()
 	 */
-	public List<ProdosFileEntry> getFiles() throws DiskException {
+	public List<FileEntry> getFiles() throws DiskException {
 		return getFiles(VOLUME_DIRECTORY_BLOCK);
 	}
 
@@ -269,8 +269,8 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * Build a list of files, starting in the given block number.
 	 * This works for the master as well as the subdirectories.
 	 */		
-	protected List<ProdosFileEntry> getFiles(int blockNumber) throws DiskException {
-		List<ProdosFileEntry> files = new ArrayList<>();
+	protected List<FileEntry> getFiles(int blockNumber) throws DiskException {
+		List<FileEntry> files = new ArrayList<>();
 		final Set<Integer> visits = new HashSet<>();
 		while (blockNumber != 0) {
 			// Prevents a recursive catalog crawling.

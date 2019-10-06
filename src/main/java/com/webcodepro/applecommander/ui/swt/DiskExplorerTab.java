@@ -164,7 +164,7 @@ public class DiskExplorerTab {
 
 	private int currentFormat = FormattedDisk.FILE_DISPLAY_STANDARD;
 	private boolean formatChanged;
-	private List<? extends FileEntry> currentFileList;
+	private List<FileEntry> currentFileList;
 	private Map<Integer,int[]> columnWidths = new HashMap<>();
 	private boolean showDeletedFiles;
 
@@ -261,7 +261,7 @@ public class DiskExplorerTab {
 
 			if (disks[i].canHaveDirectories()) {
 				try {
-					Iterator<? extends FileEntry> files = disks[i].getFiles().iterator();
+					Iterator<FileEntry> files = disks[i].getFiles().iterator();
 					while (files.hasNext()) {
 						FileEntry entry = (FileEntry) files.next();
 						if (entry.isDirectory()) {
@@ -880,7 +880,7 @@ public class DiskExplorerTab {
 	/**
 	 * Display files in the fileTable.
 	 */
-	protected void fillFileTable(List<? extends FileEntry> fileList) {
+	protected void fillFileTable(List<FileEntry> fileList) {
 		int[] weights = sashForm.getWeights();
 
 		if (formatChanged) {
@@ -1469,7 +1469,7 @@ public class DiskExplorerTab {
 		TreeItem selection = directoryTree.getSelection()[0];
 		Object data = selection.getData();
 		DirectoryEntry directory = (DirectoryEntry) data;
-		List<? extends FileEntry> fileList = directory.getFiles();
+		List<FileEntry> fileList = directory.getFiles();
 		
 		formatChanged = (currentFormat != newFormat);
 		if (formatChanged || !fileList.equals(currentFileList)) {
@@ -2093,7 +2093,7 @@ public class DiskExplorerTab {
 		return viewFileItem;
 	}
 	
-	protected List<? extends FileEntry> getCurrentFileList() {
+	protected List<FileEntry> getCurrentFileList() {
 		return currentFileList;
 	}
 	

@@ -102,10 +102,11 @@ public class RdosFormatDisk extends FormattedDisk {
 					bitmap.set(b);
 				}
 				// for each file, mark the blocks used
-				for (RdosFileEntry fileEntry : getFiles()) {
+				for (FileEntry fileEntry : getFiles()) {
 					if (!fileEntry.isDeleted()) {
-						for (int b=0; b<fileEntry.getSizeInBlocks(); b++) {
-							bitmap.clear(fileEntry.getStartingBlock()+b);
+					    RdosFileEntry entry = (RdosFileEntry) fileEntry;
+						for (int b=0; b<entry.getSizeInBlocks(); b++) {
+							bitmap.clear(entry.getStartingBlock()+b);
 						}
 					}
 				}
@@ -179,8 +180,8 @@ public class RdosFormatDisk extends FormattedDisk {
 	/**
 	 * Retrieve a list of files.
 	 */
-	public List<RdosFileEntry> getFiles() {
-		List<RdosFileEntry> files = new ArrayList<>();
+	public List<FileEntry> getFiles() {
+		List<FileEntry> files = new ArrayList<>();
 		for (int b=13; b<23; b++) {
 			byte[] data = readRdosBlock(b);
 			for (int i=0; i<data.length; i+= ENTRY_LENGTH) {
@@ -240,8 +241,9 @@ public class RdosFormatDisk extends FormattedDisk {
 	 */
 	public int getUsedBlocks() {
 		int used = 0;
-		for (RdosFileEntry fileEntry : getFiles()) {
-			if (!fileEntry.isDeleted()) used+= fileEntry.getSizeInBlocks();
+		for (FileEntry fileEntry : getFiles()) {
+		    RdosFileEntry entry = (RdosFileEntry) fileEntry;
+			if (!fileEntry.isDeleted()) used+= entry.getSizeInBlocks();
 		}
 		return used;
 	}

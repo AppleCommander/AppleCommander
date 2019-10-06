@@ -467,7 +467,7 @@ public class ac {
 	/**
 	 * Recursive routine to write directory and file entries.
 	 */
-	static void writeFiles(List<? extends FileEntry> files, String directory) throws IOException, DiskException {
+	static void writeFiles(List<FileEntry> files, String directory) throws IOException, DiskException {
 		for (FileEntry entry : files) {
 			if ((entry != null) && (!entry.isDeleted()) && (!entry.isDirectory())) {
 				FileFilter ff = entry.getSuggestedFilter();
@@ -493,7 +493,7 @@ public class ac {
 	 * file with the given filename.
 	 */
 	@Deprecated
-	static FileEntry getEntry(List<? extends FileEntry> files, String fileName) throws DiskException {
+	static FileEntry getEntry(List<FileEntry> files, String fileName) throws DiskException {
 		if (files != null) {
 			for (FileEntry entry : files) {
 				String entryName = entry.getFilename();
@@ -523,7 +523,7 @@ public class ac {
 					FormattedDisk formattedDisk = formattedDisks[i];
 					System.out.print(args[d] + " ");
 					System.out.println(formattedDisk.getDiskName());
-					List<? extends FileEntry> files = formattedDisk.getFiles();
+					List<FileEntry> files = formattedDisk.getFiles();
 					if (files != null) {
 						showFiles(files, "", display); //$NON-NLS-1$
 					}
@@ -547,7 +547,7 @@ public class ac {
 	 * system with directories (e.g. ProDOS), this really returns the first file
 	 * with the given filename.
 	 */
-	static void showFiles(List<? extends FileEntry> files, String indent, int display) throws DiskException {
+	static void showFiles(List<FileEntry> files, String indent, int display) throws DiskException {
 		for (FileEntry entry : files) {
 			if (!entry.isDeleted()) {
 				List<String> data = entry.getFileColumnData(display);
@@ -728,7 +728,7 @@ public class ac {
 		}
 		
 		public FileEntry getEntry(FormattedDisk formattedDisk) throws DiskException {
-			List<? extends FileEntry> files = formattedDisk.getFiles();
+			List<FileEntry> files = formattedDisk.getFiles();
 			FileEntry entry = null;
 			for (int i = 0; i < path.length - 1; i++) {
 				String dirName = path[i];
@@ -754,7 +754,7 @@ public class ac {
 			if (path.length == 1) {
 				return formattedDisk.createFile();
 			}
-			List<? extends FileEntry> files = formattedDisk.getFiles();
+			List<FileEntry> files = formattedDisk.getFiles();
 			DirectoryEntry dir = null, parentDir = null;
 			for (int i = 0; i < path.length - 1; i++) {
 				String dirName = path[i];

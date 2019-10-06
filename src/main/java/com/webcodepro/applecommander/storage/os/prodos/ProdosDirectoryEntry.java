@@ -24,6 +24,7 @@ import java.util.List;
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.DiskFullException;
+import com.webcodepro.applecommander.storage.FileEntry;
 
 /**
  * Implement directory functionality.
@@ -62,7 +63,7 @@ public class ProdosDirectoryEntry extends ProdosFileEntry implements DirectoryEn
 	 * with 0 entries returns an empty list.
 	 * @throws DiskException
 	 */
-	public List<ProdosFileEntry> getFiles() throws DiskException {
+	public List<FileEntry> getFiles() throws DiskException {
 		return getDisk().getFiles(getSubdirectoryHeader().getFileEntryBlock());
 	}
 

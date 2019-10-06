@@ -384,7 +384,7 @@ public class DiskWriterTest {
 			FormattedDisk formattedDisk = formattedDisks[i];
 			System.out.println();
 			System.out.println(formattedDisk.getDiskName());
-			List<? extends FileEntry> files = formattedDisk.getFiles();
+			List<FileEntry> files = formattedDisk.getFiles();
 			if (files != null) {
 				showFiles(files, "", false); //$NON-NLS-1$
 			}
@@ -405,7 +405,7 @@ public class DiskWriterTest {
 	/**
 	 * Display a list of files.
 	 */
-	protected void showFiles(List<? extends FileEntry> files, String indent, boolean showDeleted) throws DiskException {
+	protected void showFiles(List<FileEntry> files, String indent, boolean showDeleted) throws DiskException {
 		for (int i=0; i<files.size(); i++) {
 			FileEntry entry = (FileEntry) files.get(i);
 			if (showDeleted || !entry.isDeleted()) {
@@ -482,7 +482,7 @@ public class DiskWriterTest {
 					// ignored
 				}
 				// Remove the files:
-				List<? extends FileEntry> files = disk.getFiles();
+				List<FileEntry> files = disk.getFiles();
 				for (int i=0; i<files.size(); i++) {
 					FileEntry entry = (FileEntry) files.get(i);
 					entry.delete();
@@ -506,7 +506,7 @@ public class DiskWriterTest {
 			System.out.println("Exercising create, delete, create sequence " //$NON-NLS-1$
 				+ "on disk " + disk.getDiskName() + "."); //$NON-NLS-1$ //$NON-NLS-2$
 			writeFile(disk, 5432, filetype, false);
-			List<? extends FileEntry> files = disk.getFiles();
+			List<FileEntry> files = disk.getFiles();
 			for (int i=0; i<files.size(); i++) {
 				FileEntry entry = (FileEntry) files.get(i);
 				entry.delete();

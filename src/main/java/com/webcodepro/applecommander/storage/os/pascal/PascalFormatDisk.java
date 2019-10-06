@@ -89,7 +89,8 @@ public class PascalFormatDisk extends FormattedDisk {
 					bitmap.set(block);
 				}
 				// process through all files and mark those blocks as used
-				for (PascalFileEntry entry : getFiles()) {
+				for (FileEntry fileEntry : getFiles()) {
+				    PascalFileEntry entry = (PascalFileEntry) fileEntry;
 					for (int block=entry.getFirstBlock(); block<entry.getLastBlock(); block++) {
 						bitmap.clear(block);
 					}
@@ -136,8 +137,8 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * Retrieve a list of files.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFiles()
 	 */
-	public List<PascalFileEntry> getFiles() {
-		List<PascalFileEntry> list = new ArrayList<>();
+	public List<FileEntry> getFiles() {
+		List<FileEntry> list = new ArrayList<>();
 		byte[] directory = readDirectory();
 		// process directory blocks:
 		int entrySize = ENTRY_SIZE;
@@ -300,10 +301,11 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * Return the number of free blocks.
 	 */
 	public int getFreeBlocks() {
-		List<PascalFileEntry> files = getFiles();
+		List<FileEntry> files = getFiles();
 		int blocksFree = getBlocksOnDisk() - 6;
 		if (files != null) {
-		    for (PascalFileEntry entry : files) {
+		    for (FileEntry fileEntry : files) {
+		        PascalFileEntry entry = (PascalFileEntry) fileEntry;
 				blocksFree-= entry.getBlocksUsed();
 			}
 		}
@@ -367,10 +369,11 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * Return the number of used blocks.
 	 */
 	public int getUsedBlocks() {
-		List<PascalFileEntry> files = getFiles();
+		List<FileEntry> files = getFiles();
 		int blocksUsed = 6;
 		if (files != null) {
-		    for (PascalFileEntry entry : files) {
+		    for (FileEntry fileEntry : files) {
+		        PascalFileEntry entry = (PascalFileEntry) fileEntry;
 				blocksUsed+= entry.getBlocksUsed();
 			}
 		}
