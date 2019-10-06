@@ -814,8 +814,6 @@ public class Disk {
 	 * @return boolean liklihood it is a DC42 stream
 	 */
 	private static boolean isDC42(byte[] buffer) {
-		boolean truth = ((buffer[0x52] == 0x01) && (buffer[0x53] == 0x00)) &&
-		((buffer[0x51] == 0x02) || (buffer[0x51] == 0x22) || (buffer[0x51] == 0x24));
 		return (((buffer[0x52] == 0x01) && (buffer[0x53] == 0x00)) &&
 				((buffer[0x51] == 0x02) || (buffer[0x51] == 0x22) || (buffer[0x51] == 0x24)));
 	}
