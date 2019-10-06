@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,9 +113,7 @@ public class ApplesoftCompiler implements ApplesoftTokens {
 		Properties properties = new Properties();
 		try {
 			properties.load(inputStream);
-			Enumeration keys = properties.keys();
-			while (keys.hasMoreElements()) {
-				String key = (String) keys.nextElement();
+			for (String key : properties.stringPropertyNames()) {
 				knownAddresses.put(key, properties.getProperty(key));
 			}
 		} catch (IOException ex) {
