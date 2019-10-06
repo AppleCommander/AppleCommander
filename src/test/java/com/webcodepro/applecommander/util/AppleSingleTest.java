@@ -34,7 +34,7 @@ public class AppleSingleTest {
 		
 		Disk disk = new Disk(tmpImageName);
 		FormattedDisk formattedDisk = disk.getFormattedDisks()[0];
-		List<FileEntry> files = formattedDisk.getFiles();
+		List<? extends FileEntry> files = formattedDisk.getFiles();
 		assertNotNull(files);
 		assertEquals(1, files.size());
 		ProdosFileEntry file = (ProdosFileEntry)files.get(0);

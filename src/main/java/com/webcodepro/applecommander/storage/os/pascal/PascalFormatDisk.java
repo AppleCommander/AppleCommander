@@ -24,7 +24,6 @@ package com.webcodepro.applecommander.storage.os.pascal;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import com.webcodepro.applecommander.storage.DirectoryEntry;
@@ -90,9 +89,7 @@ public class PascalFormatDisk extends FormattedDisk {
 					bitmap.set(block);
 				}
 				// process through all files and mark those blocks as used
-				Iterator files = getFiles().iterator();
-				while (files.hasNext()) {
-					PascalFileEntry entry = (PascalFileEntry) files.next();
+				for (PascalFileEntry entry : getFiles()) {
 					for (int block=entry.getFirstBlock(); block<entry.getLastBlock(); block++) {
 						bitmap.clear(block);
 					}
@@ -139,8 +136,8 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * Retrieve a list of files.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFiles()
 	 */
-	public List<FileEntry> getFiles() {
-		List<FileEntry> list = new ArrayList<>();
+	public List<PascalFileEntry> getFiles() {
+		List<PascalFileEntry> list = new ArrayList<>();
 		byte[] directory = readDirectory();
 		// process directory blocks:
 		int entrySize = ENTRY_SIZE;
@@ -175,12 +172,11 @@ public class PascalFormatDisk extends FormattedDisk {
 	/**
 	 * Write the revised directory.
 	 */
-	public void putDirectory(List list) {
+	public void putDirectory(List<PascalFileEntry> files) {
 		byte[] directory = new byte[2048];
-		int count = list.size();
 		int offset = 0;
-		for (int i = 0; i < count; i++) {
-			byte[] entry = ((PascalFileEntry) list.get(i)).toBytes();
+		for (PascalFileEntry fileEntry : files) {
+			byte[] entry = fileEntry.toBytes();
 			System.arraycopy(entry, 0, directory, offset, entry.length);
 			offset += ENTRY_SIZE;
 		}
@@ -304,11 +300,10 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * Return the number of free blocks.
 	 */
 	public int getFreeBlocks() {
-		List files = getFiles();
+		List<PascalFileEntry> files = getFiles();
 		int blocksFree = getBlocksOnDisk() - 6;
 		if (files != null) {
-			for (int i=0; i<files.size(); i++) {
-				PascalFileEntry entry = (PascalFileEntry) files.get(i);
+		    for (PascalFileEntry entry : files) {
 				blocksFree-= entry.getBlocksUsed();
 			}
 		}
@@ -372,11 +367,10 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * Return the number of used blocks.
 	 */
 	public int getUsedBlocks() {
-		List files = getFiles();
+		List<PascalFileEntry> files = getFiles();
 		int blocksUsed = 6;
 		if (files != null) {
-			for (int i=0; i<files.size(); i++) {
-				PascalFileEntry entry = (PascalFileEntry) files.get(i);
+		    for (PascalFileEntry entry : files) {
 				blocksUsed+= entry.getBlocksUsed();
 			}
 		}
@@ -642,7 +636,7 @@ public class PascalFormatDisk extends FormattedDisk {
 
 	/**
 	 * Change to a different ImageOrder.  Remains in Pascal format but
-	 * the underlying order can chage.
+	 * the underlying order can change.
 	 * @see ImageOrder
 	 */
 	public void changeImageOrder(ImageOrder imageOrder) {

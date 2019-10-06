@@ -21,7 +21,6 @@ package com.webcodepro.applecommander.storage.os.rdos;
 
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Iterator;
 import java.util.List;
 
 import com.webcodepro.applecommander.storage.DirectoryEntry;
@@ -103,9 +102,7 @@ public class RdosFormatDisk extends FormattedDisk {
 					bitmap.set(b);
 				}
 				// for each file, mark the blocks used
-				Iterator files = getFiles().iterator();
-				while (files.hasNext()) {
-					RdosFileEntry fileEntry = (RdosFileEntry) files.next();
+				for (RdosFileEntry fileEntry : getFiles()) {
 					if (!fileEntry.isDeleted()) {
 						for (int b=0; b<fileEntry.getSizeInBlocks(); b++) {
 							bitmap.clear(fileEntry.getStartingBlock()+b);
@@ -182,8 +179,8 @@ public class RdosFormatDisk extends FormattedDisk {
 	/**
 	 * Retrieve a list of files.
 	 */
-	public List<FileEntry> getFiles() {
-		List<FileEntry> files = new ArrayList<>();
+	public List<RdosFileEntry> getFiles() {
+		List<RdosFileEntry> files = new ArrayList<>();
 		for (int b=13; b<23; b++) {
 			byte[] data = readRdosBlock(b);
 			for (int i=0; i<data.length; i+= ENTRY_LENGTH) {
@@ -243,9 +240,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 */
 	public int getUsedBlocks() {
 		int used = 0;
-		Iterator files = getFiles().iterator();
-		while (files.hasNext()) {
-			RdosFileEntry fileEntry = (RdosFileEntry) files.next();
+		for (RdosFileEntry fileEntry : getFiles()) {
 			if (!fileEntry.isDeleted()) used+= fileEntry.getSizeInBlocks();
 		}
 		return used;

@@ -165,7 +165,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	 */
 	public String getFiletype() {
 		int filetype = getFiletypeByte();
-		return getDisk().getFiletype(filetype);
+        return ProdosFormatDisk.getFiletype(filetype);
 	}
 	
 	public int getFiletypeByte() {

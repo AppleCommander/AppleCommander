@@ -40,7 +40,7 @@ public interface DirectoryEntry {
 	 * return value should always be a list - a directory
 	 * with 0 entries returns an empty list.
 	 */
-	public List<FileEntry> getFiles() throws DiskException;
+	public List<? extends FileEntry> getFiles() throws DiskException;
 
 	/**
 	 * Create a new FileEntry.

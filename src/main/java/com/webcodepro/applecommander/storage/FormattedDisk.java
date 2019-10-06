@@ -268,7 +268,7 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	 * Returns a null if specific filename is not located.
 	 */
 	public FileEntry getFile(String filename) throws DiskException {
-		List files = getFiles();
+		List<? extends FileEntry> files = getFiles();
 		return getFile(files, filename.trim());
 	}
 	
@@ -277,11 +277,10 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	 * Note that in the instance of a system with directories (ie, ProDOS),
 	 * this really returns the first file with the given filename.
 	 */
-	protected FileEntry getFile(List files, String filename) throws DiskException {
+	protected FileEntry getFile(List<? extends FileEntry> files, String filename) throws DiskException {
 		FileEntry theFileEntry = null;
 		if (files != null) {
-			for (int i=0; i<files.size(); i++) {
-				FileEntry entry = (FileEntry) files.get(i);
+		    for (FileEntry entry : files) {
 				if (entry.isDirectory()) {
 					theFileEntry = getFile(
 						((DirectoryEntry)entry).getFiles(), filename);
@@ -384,7 +383,7 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	/**
 	 * Change the physical ordering of the disk.  This must be implemented by all
 	 * subclasses.  See AppleUtil for common utility methods.  (It is assumed that a
-	 * disk needs to be copied in the appropriate order - ie, by track and sector for
+	 * disk needs to be copied in the appropriate order - i.e., by track and sector for
 	 * a DOS type disk or by blocks in a ProDOS type disk.)
 	 */
 	public abstract void changeImageOrder(ImageOrder imageOrder);

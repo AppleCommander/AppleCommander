@@ -19,8 +19,6 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import java.util.Iterator;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -112,10 +110,8 @@ public class DiskInfoTab {
 	 * Build the table describing the given disk.
 	 */
 	public void buildDiskInfoTable(FormattedDisk disk) {
-		Iterator iterator = disk.getDiskInformation().iterator();
 		TableItem item = null;
-		while (iterator.hasNext()) {
-			DiskInformation diskinfo = (DiskInformation) iterator.next();
+		for (DiskInformation diskinfo : disk.getDiskInformation()) {
 			item = new TableItem(infoTable, SWT.NULL);
 			item.setText(new String[] { diskinfo.getLabel(), diskinfo.getValue() });
 		}

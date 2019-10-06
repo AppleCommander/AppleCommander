@@ -70,51 +70,11 @@ public class TextBundle {
 	}
 
 	/**
-	 * Format the given resource name with a single String value.
-	 */
-	public String format(String name, String value) {
-		return format(name, new Object[] { value });
-	}
-
-	/**
 	 * Format the given resource name with multiple values.
 	 */
-	public String format(String name, Object[] values) {
+	public String format(String name, Object... values) {
 		String resourceValue = get(name);
 		MessageFormat messageFormat = new MessageFormat(resourceValue);
 		return messageFormat.format(values);
-	}
-
-	/**
-	 * Format the given resource name with one integer.
-	 */
-	public String format(String name, int value1) {
-		return format(name, new Object[] { 
-				new Integer(value1) });
-	}
-
-	/**
-	 * Format the given resource name with two integers.
-	 */
-	public String format(String name, int value1, int value2) {
-		return format(name, new Object[] { 
-				new Integer(value1), new Integer(value2) });
-	}
-
-	/**
-	 * Format the given resource name with three integers.
-	 */
-	public String format(String name, int value1, int value2, int value3) {
-		return format(name, new Object[] { 
-				new Integer(value1), new Integer(value2),
-				new Integer(value3) });
-	}
-
-	/**
-	 * Format the given resource name with two integers.
-	 */
-	public String format(String name, String value1, int value2) {
-		return format(name, new Object[] { 
-				value1, new Integer(value2) });
 	}
 }

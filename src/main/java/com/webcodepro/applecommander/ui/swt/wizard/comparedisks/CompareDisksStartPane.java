@@ -164,6 +164,6 @@ public class CompareDisksStartPane extends WizardPane {
 	}
 	protected String getDiskLabel(int diskNumber) {
 		return textBundle.format("CompareDisksStartPane.DiskNLabel", //$NON-NLS-1$
-				new Object[] { new Integer(diskNumber) });
+				diskNumber);
 	}
 }

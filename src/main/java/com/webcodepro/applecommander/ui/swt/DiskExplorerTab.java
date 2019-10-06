@@ -164,7 +164,7 @@ public class DiskExplorerTab {
 
 	private int currentFormat = FormattedDisk.FILE_DISPLAY_STANDARD;
 	private boolean formatChanged;
-	private List<FileEntry> currentFileList;
+	private List<? extends FileEntry> currentFileList;
 	private Map<Integer,int[]> columnWidths = new HashMap<>();
 	private boolean showDeletedFiles;
 
@@ -261,7 +261,7 @@ public class DiskExplorerTab {
 
 			if (disks[i].canHaveDirectories()) {
 				try {
-					Iterator<FileEntry> files = disks[i].getFiles().iterator();
+					Iterator<? extends FileEntry> files = disks[i].getFiles().iterator();
 					while (files.hasNext()) {
 						FileEntry entry = (FileEntry) files.next();
 						if (entry.isDirectory()) {
@@ -864,7 +864,7 @@ public class DiskExplorerTab {
 		}
 		gc.dispose();
 		gc = null;
-		columnWidths.put(new Integer(format), headerWidths);
+		columnWidths.put(Integer.valueOf(format), headerWidths);
 	}
 	/**
 	 * Preserve the column widths.
@@ -875,12 +875,12 @@ public class DiskExplorerTab {
 		for (int i=0; i<columns.length; i++) {
 			widths[i] = columns[i].getWidth();
 		}
-		columnWidths.put(new Integer(currentFormat), widths);
+		columnWidths.put(Integer.valueOf(currentFormat), widths);
 	}
 	/**
 	 * Display files in the fileTable.
 	 */
-	protected void fillFileTable(List<FileEntry> fileList) {
+	protected void fillFileTable(List<? extends FileEntry> fileList) {
 		int[] weights = sashForm.getWeights();
 
 		if (formatChanged) {
@@ -922,7 +922,7 @@ public class DiskExplorerTab {
 			});
 			TableColumn column = null;
 			List<FileColumnHeader> headers = disks[0].getFileColumnHeaders(currentFormat);
-			int[] widths = (int[])columnWidths.get(new Integer(currentFormat));
+			int[] widths = (int[])columnWidths.get(Integer.valueOf(currentFormat));
 			for (int i=0; i<headers.size(); i++) {
 				FileColumnHeader header = (FileColumnHeader) headers.get(i);
 				int align = header.isCenterAlign() ? SWT.CENTER :
@@ -941,9 +941,7 @@ public class DiskExplorerTab {
 			fileTable.removeAll();
 		}
 
-		Iterator<FileEntry> files = fileList.iterator();
-		while (files.hasNext()) {
-			FileEntry entry = (FileEntry) files.next();
+		for (FileEntry entry : fileList) {
 			if (showDeletedFiles || !entry.isDeleted()) {
 				TableItem item = new TableItem(fileTable, 0);
 				List<String> data = entry.getFileColumnData(currentFormat);
@@ -1042,7 +1040,7 @@ public class DiskExplorerTab {
 					int answer = SwtUtil.showOkCancelErrorDialog(shell,
 							textBundle.get("ExportErrorTitle"), //$NON-NLS-1$
 							textBundle.format("ExportErrorMessage",  //$NON-NLS-1$
-									new Object[] { filename, errorMessage }));
+									filename, errorMessage));
 					if (answer == SWT.CANCEL) break;	// break out of loop
 				}
 			}
@@ -1108,7 +1106,7 @@ public class DiskExplorerTab {
 					int answer = SwtUtil.showOkCancelErrorDialog(shell,
 							textBundle.get("UnableToCompileTitle"), //$NON-NLS-1$
 							textBundle.format("UnableToCompileMessage", //$NON-NLS-1$
-									new Object[] { filename, errorMessage }));
+									filename, errorMessage));
 					if (answer == SWT.CANCEL) break;	// break out of loop
 				}
 			}
@@ -1190,7 +1188,7 @@ public class DiskExplorerTab {
 					ImportSpecification spec = 
 						(ImportSpecification) specs.get(i);
 					countLabel.setText(textBundle.format("FileNofM", //$NON-NLS-1$
-							new Object[] { new Integer(i+1), new Integer(specs.size()) }));
+							i+1, specs.size()));
 					nameLabel.setText(spec.getSourceFilename());
 					progressBar.setSelection(i);
 					ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -1248,9 +1246,7 @@ public class DiskExplorerTab {
 	 * @throws DiskException
 	 */
 	protected void addDirectoriesToTree(TreeItem directoryItem, DirectoryEntry directoryEntry) throws DiskException {
-		Iterator<FileEntry> files = directoryEntry.getFiles().iterator();
-		while (files.hasNext()) {
-			final FileEntry entry = (FileEntry) files.next();
+	    for (final FileEntry entry : directoryEntry.getFiles()) {
 			if (entry.isDirectory()) {
 				TreeItem item = new TreeItem(directoryItem, SWT.BORDER);
 				item.setText(entry.getFilename());
@@ -1473,7 +1469,7 @@ public class DiskExplorerTab {
 		TreeItem selection = directoryTree.getSelection()[0];
 		Object data = selection.getData();
 		DirectoryEntry directory = (DirectoryEntry) data;
-		List<FileEntry> fileList = directory.getFiles();
+		List<? extends FileEntry> fileList = directory.getFiles();
 		
 		formatChanged = (currentFormat != newFormat);
 		if (formatChanged || !fileList.equals(currentFileList)) {
@@ -1482,7 +1478,7 @@ public class DiskExplorerTab {
 			fillFileTable(fileList);
 
 			// Ensure that the control buttons are set appropriately.
-			// Primarly required for keyboard interface.
+			// Primarily required for keyboard interface.
 			standardFormatToolItem.setSelection(
 				currentFormat == FormattedDisk.FILE_DISPLAY_STANDARD);
 			nativeFormatToolItem.setSelection(
@@ -1544,7 +1540,7 @@ public class DiskExplorerTab {
 			SWT.ICON_ERROR | SWT.CLOSE);
 		box.setText(textBundle.get("SaveDiskImageErrorTitle")); //$NON-NLS-1$
 		box.setMessage(textBundle.format("SaveDiskImageErrorMessage", //$NON-NLS-1$
-				new Object[] { getDisk(0).getFilename(), errorMessage }));
+				getDisk(0).getFilename(), errorMessage));
 		box.open();
 	}
 	/**
@@ -1894,9 +1890,7 @@ public class DiskExplorerTab {
 			page++;
 		}
 		protected void printFiles(DirectoryEntry directory, int level) throws DiskException {
-			Iterator<FileEntry> iterator = directory.getFiles().iterator();
-			while (iterator.hasNext()) {
-				FileEntry fileEntry = (FileEntry) iterator.next();
+		    for (FileEntry fileEntry : directory.getFiles()) {
 				if (!fileEntry.isDeleted() || isShowDeletedFiles()) {
 					List<String> columns = fileEntry.getFileColumnData(getCurrentFormat());
 					for (int i=0; i<columns.size(); i++) {
@@ -2099,7 +2093,7 @@ public class DiskExplorerTab {
 		return viewFileItem;
 	}
 	
-	protected List<FileEntry> getCurrentFileList() {
+	protected List<? extends FileEntry> getCurrentFileList() {
 		return currentFileList;
 	}
 	

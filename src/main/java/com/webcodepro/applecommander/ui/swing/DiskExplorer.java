@@ -1,8 +1,6 @@
 package com.webcodepro.applecommander.ui.swing;
 
 import java.awt.Color;
-import java.util.Random;
-import java.util.Vector;
 
 import javax.swing.JPanel;
 

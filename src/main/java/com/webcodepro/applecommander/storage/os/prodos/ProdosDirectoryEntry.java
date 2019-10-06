@@ -24,9 +24,6 @@ import java.util.List;
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.DiskFullException;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.StorageBundle;
-import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Implement directory functionality.
@@ -38,7 +35,6 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author Lisias Toledo
  */
 public class ProdosDirectoryEntry extends ProdosFileEntry implements DirectoryEntry {
-	private TextBundle textBundle = StorageBundle.getInstance();
 	private ProdosSubdirectoryHeader subdirectoryHeader;
 
 	/**
@@ -66,14 +62,14 @@ public class ProdosDirectoryEntry extends ProdosFileEntry implements DirectoryEn
 	 * with 0 entries returns an empty list.
 	 * @throws DiskException
 	 */
-	public List<FileEntry> getFiles() throws DiskException {
+	public List<ProdosFileEntry> getFiles() throws DiskException {
 		return getDisk().getFiles(getSubdirectoryHeader().getFileEntryBlock());
 	}
 
 	/**
 	 * Create a new FileEntry.
 	 */
-	public FileEntry createFile() throws DiskFullException {
+	public ProdosFileEntry createFile() throws DiskFullException {
 		return getDisk().createFile(getSubdirectoryHeader());
 	}
 

@@ -100,7 +100,7 @@ public class CompareDisksResultsPane extends WizardPane {
 		} catch (Throwable t) {
 			errorMessages.append(textBundle.
 				format("CompareDisksResultsPane.UnableToLoadDiskN", //$NON-NLS-1$
-					new Object[] { new Integer(1), t.getLocalizedMessage() }));
+					1, t.getLocalizedMessage()));
 		}
 		FormattedDisk[] disk2 = null;
 		try {
@@ -108,7 +108,7 @@ public class CompareDisksResultsPane extends WizardPane {
 		} catch (Throwable t) {
 			errorMessages.append(textBundle.
 				format("CompareDisksResultsPane.UnableToLoadDiskN", //$NON-NLS-1$
-					new Object[] { new Integer(2), t.getLocalizedMessage() }));
+					2, t.getLocalizedMessage()));
 		}
 		if (disk1 != null && disk2 != null) {
 			if (disk1.length != disk2.length) {

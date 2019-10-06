@@ -139,7 +139,7 @@ public class DiskHelperTest {
 			FormattedDisk formattedDisk = formattedDisks[i];
 			System.out.println();
 			System.out.println(formattedDisk.getDiskName());
-			List<FileEntry> files = formattedDisk.getFiles();
+			List<? extends FileEntry> files = formattedDisk.getFiles();
 			if (files != null) {
 				showFiles(files, ""); //$NON-NLS-1$
 			}
@@ -155,7 +155,7 @@ public class DiskHelperTest {
 		return formattedDisks;
 	}
 	
-	protected void showFiles(List<FileEntry> files, String indent) throws DiskException {
+	protected void showFiles(List<? extends FileEntry> files, String indent) throws DiskException {
 		for (int i=0; i<files.size(); i++) {
 			FileEntry entry = files.get(i);
 			if (!entry.isDeleted()) {

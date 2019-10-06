@@ -98,13 +98,11 @@ public class DiskImageNamePane extends WizardPane {
 		if (wizard.isFormatProdos() || wizard.isFormatPascal()) {
 			int maxLength = wizard.isFormatProdos() ? 15 : 7;
 			label = new Label(control, SWT.WRAP);
-			Object[] objects = new Object[2];
-			objects[0] = wizard.isFormatProdos()
+			String name = wizard.isFormatProdos()
 					? textBundle.get("Prodos")  //$NON-NLS-1$
 					: textBundle.get("Pascal"); //$NON-NLS-1$
-			objects[1] = new Integer(maxLength);
 			label.setText(textBundle.format(
-					"DiskImageNameLengthText", objects)); //$NON-NLS-1$
+					"DiskImageNameLengthText", name, maxLength)); //$NON-NLS-1$
 			final Text volumeName = new Text(control, SWT.BORDER);
 			volumeName.setText(wizard.getVolumeName());
 			volumeName.setTextLimit(maxLength);
