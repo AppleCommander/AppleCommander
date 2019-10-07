@@ -34,10 +34,10 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * <p>
  * Address for Apple2 HGR/DHR address is calculated from an observation of a pattern:<br>
  * line number bits:  87654321<br>
- * 87 are multipled by 0x0028<br>
- * 65 are multipled by 0x0100<br>
+ * 87 are multiplied by 0x0028<br>
+ * 65 are multiplied by 0x0100<br>
  * 4 is multiplied by 0x0080<br>
- * 321 are multipled by 0x0400
+ * 321 are multiplied by 0x0400
  * <p>
  * HGR bit values ignore the high bit, as that switches the "palette", and for B&amp;W mode,
  * the bit does nothing.  The other 7 bits simply toggle the pixel on or off.  Double hires
@@ -45,8 +45,8 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * graphics (hence, the 560 instead of 640 resolution).
  * <p>
  * SHR has been implemented in "16 color" mode as well as 3200 color mode.  Note that
- * 16 color mode is really 16 pallettes of 16 colors while 3200 color mode is 200
- * pallettes of 16 colors (one pallette per line).
+ * 16 color mode is really 16 palettes of 16 colors while 3200 color mode is 200
+ * palettes of 16 colors (one palette per line).
  * <p>
  * NOTE: The design is feeling kludgy.  There are 6 distinct variations - possibly a
  * subclass is needed to interpret the various graphic image or some such redesign.
@@ -197,7 +197,7 @@ public class GraphicsFileFilter implements FileFilter {
 	 * HGR color is two bits to determine color - essentially resolution is
 	 * 140 horizontally, but it indicates the color for two pixels.
 	 * <p>
-	 * The names of pixles is a bit confusion - pixel0 is really the left-most
+	 * The names of pixels is a bit confusion - pixel0 is really the left-most
 	 * pixel (not the low-value bit).
 	 * To alleviate my bad naming, here is a color table to assist:<br>
 	 * <pre>
@@ -235,7 +235,7 @@ public class GraphicsFileFilter implements FileFilter {
 				if (pixel0 && highbit) {
 					color = 0x0000ff;	// blue
 				} else if (pixel0 && !highbit) {
-					color = 0xff00ff;	// voilet
+					color = 0xff00ff;	// violet
 				} else if (pixel1 && !highbit) {
 					color = 0x00ff00;	// green
 				} else {	// pixel1 && highbit
@@ -305,7 +305,7 @@ public class GraphicsFileFilter implements FileFilter {
 		int[] colorValues = {
 				0x000000, 0xff0000, 0x800000, 0xff8000,	// black, magenta, brown, orange
 				0x008000, 0x808080, 0x00ff00, 0xffff00,	// dark green, grey1, green, yellow
-				0x000080, 0xff00ff, 0x808080, 0xff80c0,	// dark blue, voilet, grey2, pink
+				0x000080, 0xff00ff, 0x808080, 0xff80c0,	// dark blue, violet, grey2, pink
 				0x0000a0, 0x0000ff, 0x00c080, 0xffffff	// medium blue, light blue, aqua, white
 		};
 		for (int x=0; x<560; x+=4) {
@@ -454,7 +454,7 @@ public class GraphicsFileFilter implements FileFilter {
 		int[] colors = {	// this is a wild guess, by the way!
 				0x000000, 0xff0000, 0x800000, 0xff8000,	// black, magenta, brown, orange
 				0x008000, 0x808080, 0x00ff00, 0xffff00,	// dark green, grey1, green, yellow
-				0x000080, 0xff00ff, 0x808080, 0xff80c0,	// dark blue, voilet, grey2, pink
+				0x000080, 0xff00ff, 0x808080, 0xff80c0,	// dark blue, violet, grey2, pink
 				0x0000a0, 0x0000ff, 0x00c080, 0xffffff	// medium blue, light blue, aqua, white
 		};
 		int[] grays = {	// a logical guess...

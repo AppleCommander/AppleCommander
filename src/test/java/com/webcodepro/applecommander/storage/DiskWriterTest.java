@@ -457,7 +457,7 @@ public class DiskWriterTest {
 	
 	/**
 	 * Create a bunch of files and then delete them repeatedly.
-	 * This is intended to excersize not only creating and deleting
+	 * This is intended to exercise not only creating and deleting
 	 * files but the disk management (ala Disk Map).
 	 */
 	protected void createAndDeleteFiles(FormattedDisk[] disks, String filetype) throws DiskException {

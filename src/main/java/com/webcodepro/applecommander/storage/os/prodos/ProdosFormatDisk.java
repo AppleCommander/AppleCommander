@@ -72,7 +72,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 */
 	private static ProdosFileType[] fileTypes;
 	/**
-	 * This array of strings conains all filetypes.  This is lazy 
+	 * This array of strings contains all filetypes.  This is lazy 
 	 * initialized by getFiletypes.
 	 */
 	private static String[] filetypeStrings;
@@ -111,7 +111,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Use this inner interface for managing the disk usage data.
-	 * This offloads format-specific implementation to the implementing class.
+	 * This off-loads format-specific implementation to the implementing class.
 	 */
 	private class ProdosDiskUsage implements DiskUsage {
 		private int location = -1;
@@ -1320,7 +1320,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Change to a different ImageOrder.  Remains in ProDOS format but
-	 * the underlying order can chage.
+	 * the underlying order can change.
 	 * @see ImageOrder
 	 */
 	public void changeImageOrder(ImageOrder imageOrder) {

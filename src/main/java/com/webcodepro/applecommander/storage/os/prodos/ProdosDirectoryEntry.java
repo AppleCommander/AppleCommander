@@ -86,7 +86,7 @@ public class ProdosDirectoryEntry extends ProdosFileEntry implements DirectoryEn
 	
 	/**
 	 * Indicates if this disk image can create a file.
-	 * If not, the reason may be as simple as it has not beem implemented
+	 * If not, the reason may be as simple as it has not been implemented
 	 * to something specific about the disk.
 	 */
 	public boolean canCreateFile() {

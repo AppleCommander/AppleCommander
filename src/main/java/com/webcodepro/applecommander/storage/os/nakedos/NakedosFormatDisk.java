@@ -73,7 +73,7 @@ public class NakedosFormatDisk extends FormattedDisk {
 	private static final int[] sectorTranslate = {0, 7, 14, 6, 13, 5, 12, 4, 11, 3, 10, 2, 9, 1, 8, 15};
 	/**
 	 * Use this inner interface for managing the disk usage data.
-	 * This offloads format-specific implementation to the implementing class.
+	 * This off-loads format-specific implementation to the implementing class.
 	 */
 	private class WPDiskUsage implements DiskUsage {
 		private int[] location = null;

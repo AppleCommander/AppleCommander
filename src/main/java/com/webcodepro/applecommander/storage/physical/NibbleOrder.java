@@ -156,14 +156,14 @@ public class NibbleOrder extends DosOrder {
 	 * signature.  Because of the way in which disk bytes are captured, we need
 	 * to wrap around the track to ensure all sequences of bytes are accounted for.
 	 * <p>
-	 * This methid fills fieldData as well as returning the last position referenced
+	 * This method fills fieldData as well as returning the last position referenced
 	 * in the track buffer.
 	 */
 	protected int locateField(int byte1, int byte2, int byte3, byte[] trackData, byte[] fieldData, int startingOffset) {
 		int i = startingOffset;	// logical position in track buffer (can wrap)
 		int position = 0;			// physical position in field buffer
 		while (i < trackData.length + fieldData.length) {
-			int offset = i % trackData.length;	// physical posistion in track buffer
+			int offset = i % trackData.length;	// physical position in track buffer
 			int b = AppleUtil.getUnsignedByte(trackData[offset]);
 			if (position == 0 && b == byte1) {
 				fieldData[position++] = (byte) b;
@@ -188,7 +188,7 @@ public class NibbleOrder extends DosOrder {
 	 *     XX = 1d1d1d1d (odd data bits)
 	 *     YY = 1d1d1d1d (even data bits)
 	 * </pre>
-	 * XX is then shifted by a bit and ANDed with YY to get the databyte.
+	 * XX is then shifted by a bit and ANDed with YY to get the data byte.
 	 * See page 3-12 in Beneath Apple DOS for more information.
 	 */
 	protected int decodeOddEven(byte[] buffer, int offset) {

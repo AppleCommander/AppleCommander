@@ -76,7 +76,7 @@ public class RdosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Use this inner interface for managing the disk usage data.
-	 * This offloads format-specific implementation to the implementing class.
+	 * This off-loads format-specific implementation to the implementing class.
 	 * A BitSet is used to track all blocks, as RDOS disks do not have a
 	 * bitmap stored on the disk. This is safe since we know the number of blocks
 	 * that exist. (BitSet length is of last set bit - unset bits at the end are
@@ -215,7 +215,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	
 	/**
 	 * Indicates if this disk image can create a file.
-	 * If not, the reason may be as simple as it has not beem implemented
+	 * If not, the reason may be as simple as it has not been implemented
 	 * to something specific about the disk.
 	 */
 	public boolean canCreateFile() {
@@ -264,7 +264,7 @@ public class RdosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Get suggested dimensions for display of bitmap.
-	 * Since RDOS uses blocks, a null is returned indicating no suggsetions.
+	 * Since RDOS uses blocks, a null is returned indicating no suggestions.
 	 */
 	public int[] getBitmapDimensions() {
 		return null;
@@ -482,7 +482,7 @@ public class RdosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Change to a different ImageOrder.  Remains in RDOS format but
-	 * the underlying order can chage.
+	 * the underlying order can change.
 	 * @see ImageOrder
 	 */
 	public void changeImageOrder(ImageOrder imageOrder) {

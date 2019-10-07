@@ -61,7 +61,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	/**
 	 * Return the name of this file.
 	 * This handles normal files, deleted files, and AppleWorks files - which use
-	 * the AUXTYPE attribute to indicate upper/lower-case in the filename.
+	 * the AUXTYPE attribute to indicate upper/lowercase in the filename.
 	 */
 	public String getFilename() {
 		String fileName;
@@ -85,7 +85,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 			StringBuffer mixedCase = new StringBuffer(fileName);
 			// the highest bit of the least significant byte is the first
 			// character through the 2nd bit of the most significant byte
-			// being the 15th character.  Bit is on indicates lowercase or
+			// being the 15th character.  Bit is on indicates lower-case or
 			// a space if a "." is present.
 			for (int i=0; i<16 && i<fileName.length(); i++) {
 				boolean lowerCase;

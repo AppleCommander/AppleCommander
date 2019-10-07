@@ -2,10 +2,6 @@ THINGS TO DO
 ============
 This is the internal list of items that need to be done.
 
--- 1.4.0 --
-* Migration to GitHub
-* Update SWT libraries 
-
 --- FUTURE ---
 o Create subdirectories as appropriate (ProDOS).
 o Create reusable show dialog messages (they're scattered all over right now) to clean

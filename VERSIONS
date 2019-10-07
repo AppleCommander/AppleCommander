@@ -1,9 +1,12 @@
+1.4.0 (March 2018) and later are posted on GitHub under releases:
+    https://github.com/AppleCommander/AppleCommander/releases
+
 1.3.4 (2007-03-31)
 * Started using the SWT S-Leak application to test for application resource leakage.
 * Reports of a few issues with 800K images.  UniDOS in particular doesn't appear to be
   recognized appropriately.  This was due to a mix-up in setting the the image ordering.
 * Fixed the bug where the import of a binary file does not set the address for DOS images.
-* Fixed bug that where a file cound not be exported as raw binary.  (Crashed AppleCommander.)
+* Fixed bug that where a file could not be exported as raw binary.  (Crashed AppleCommander.)
 * Raw binary files may now be imported - just check the raw image checkbox in the import
   wizard.
 * Prepare for internationalization (I18N).  Started as a simplification process but it
@@ -129,7 +132,7 @@
   	- CTRL+C = Copy to clipboard (only text formats)
   	- CTRL+P = Print
 * Printing is available from the file preview.
-* Copy is avilable from file preview except for images.
+* Copy is available from file preview except for images.
 * Opening an invalid disk image (or a file that is not a disk image) no longer
   crashes AppleCommander.
 * Provide a command-line interface - John Matthews "ac" is now supplied as part
@@ -253,7 +256,7 @@
 * Files can be deleted. 
 * Any changes to a disk image can be saved. Please be careful! It's 
   easy enough to keep a backup copy of your work these days. 
-* Two new DOS derivitaves are available: UniDOS and OzDOS (both are 
+* Two new DOS derivatives are available: UniDOS and OzDOS (both are 
   800K formats). 
 * Import from right-click menu needs to be enabled.
 
@@ -292,7 +295,7 @@
 * Extract Applesoft files by converting tokens to strings.
 * Extract Integer Basic files by converting tokens to strings.
 * RDOS files are not being read correctly; maybe this is an issue with 
-  the sector skew? Resolved that RDOS images are apprantly 13 sectors. 
+  the sector skew? Resolved that RDOS images are apparently 13 sectors. 
   Updated accordingly.
 * Fixed bug in DOS Applesoft and Binary file length calculations.  
   Deleted file entries were (a) not being detected correctly which 
@@ -301,7 +304,7 @@
 * Updated FileFilter to suggest an appropriate file name.
 * Extracting black & white or color (user selected) HGR file format to 
   PNG/JPEG (user selected).  GIF is not a part of ImageIO for writing 
-  (apparantly is avilable for reading).
+  (apparently is available for reading).
 * Fixed issue in determining DOS format disks.  Originally was only 
   checking 3 bytes of the VTOC for valid values.  Extended to check for 8 
   valid values in the VTOC.  Fixed known problem with Crisis Mountain.
@@ -355,7 +358,7 @@ Website (2002-10-28)
 * Add sorting to file table.
 
 0.92 (2002-10-24)
-* Fix icon transparency. Needed to change from PNG to GIF; apparantly SWT 
+* Fix icon transparency. Needed to change from PNG to GIF; apparently SWT 
   does not do PNG transparency.
 * Don't use large font in disk usage map; on some displays, the words are 
   cut off and the legend doesn't fit in the window.

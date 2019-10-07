@@ -115,7 +115,7 @@ public class CpmFormatDisk extends FormattedDisk {
 	}
 
 	/**
-	 * There apparantly is no corresponding CP/M disk name.
+	 * There apparently is no corresponding CP/M disk name.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getDiskName()
 	 */
 	public String getDiskName() {
@@ -515,7 +515,7 @@ public class CpmFormatDisk extends FormattedDisk {
 
 	/**
 	 * Change to a different ImageOrder.  Remains in CP/M format but
-	 * the underlying order can chage.
+	 * the underlying order can change.
 	 * @see ImageOrder
 	 */
 	public void changeImageOrder(ImageOrder imageOrder) {

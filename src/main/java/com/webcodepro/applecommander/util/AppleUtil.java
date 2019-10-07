@@ -294,7 +294,7 @@ public class AppleUtil {
 	}
 	
 	/**
-	 * Format a byte value as hexidecimal.
+	 * Format a byte value as hexadecimal.
 	 */
 	public static String getFormattedByte(int byt) {
 		int byt1 = byt & 0x0f;
@@ -306,7 +306,7 @@ public class AppleUtil {
 	}
 	
 	/**
-	 * Format a word value as hexidecimal.
+	 * Format a word value as hexadecimal.
 	 */
 	public static String getFormattedWord(int word) {
 		return getFormattedByte((word & 0xff00) >> 8)
@@ -314,7 +314,7 @@ public class AppleUtil {
 	}
 	
 	/**
-	 * Format a 3 byte value as hexidecimal.
+	 * Format a 3 byte value as hexadecimal.
 	 */
 	public static String getFormatted3ByteAddress(int addr) {
 		return getFormattedByte((addr & 0xff0000) >> 16)
@@ -515,7 +515,7 @@ public class AppleUtil {
 	 * 5 bytes long, a float will not work - hence the double.  Some
 	 * precision is lost, but (hopefully) nothing significant!
 	 * <p>
-	 * More specificially, the mapping is as follows:<br>
+	 * More specifically, the mapping is as follows:<br>
 	 * (Applesoft)<br>
 	 * <tt>EEEEEEEE SFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF</tt><br>
 	 * (IEEE 754 - Java)<br>

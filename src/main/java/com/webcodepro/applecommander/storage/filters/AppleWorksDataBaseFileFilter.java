@@ -68,7 +68,7 @@ public class AppleWorksDataBaseFileFilter implements FileFilter {
 	 */
 	private static final int HEADER_REPORTS_BYTE = 38;
 	/**
-	 * DBMinVers. Ths minimum version of AppleWorks needed 
+	 * DBMinVers. The minimum version of AppleWorks needed 
 	 * to read this file. This will be $0 unless there are
 	 * more than 8 report formats; it will then contain the
 	 * version number 30 ($1E) or greater.

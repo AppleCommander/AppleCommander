@@ -103,7 +103,7 @@ public class Disk {
 
 	/**
 	 * Get the supported file filters supported by the Disk interface.
-	 * This is due to the fact that FilenameFilter is an innerclass of Disk -
+	 * This is due to the fact that FilenameFilter is an inner class of Disk -
 	 * without an instance of the class, the filters cannot be created.
 	 */
 	public static FilenameFilter[] getFilenameFilters() {

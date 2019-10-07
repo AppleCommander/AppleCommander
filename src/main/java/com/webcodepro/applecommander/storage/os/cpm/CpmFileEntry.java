@@ -342,7 +342,7 @@ public class CpmFileEntry implements FileEntry {
 	/**
 	 * Return the user number (UU).  0-15 on Apple CP/M (can range to 31
 	 * on some systems).  The user number allows multiple files with the
-	 * same name to coexist on the disk.  Apparantly, this is used in 
+	 * same name to coexist on the disk.  Apparently, this is used in 
 	 * conjunction with deleted files. 
 	 */	
 	public int getUserNumber(int entryNumber) {

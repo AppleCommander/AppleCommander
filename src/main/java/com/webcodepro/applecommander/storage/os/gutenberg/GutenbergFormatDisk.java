@@ -68,7 +68,7 @@ public class GutenbergFormatDisk extends FormattedDisk {
 
 	/**
 	 * Use this inner interface for managing the disk usage data.
-	 * This offloads format-specific implementation to the implementing class.
+	 * This off-loads format-specific implementation to the implementing class.
 	 */
 	private class WPDiskUsage implements DiskUsage {
 		private int[] location = null;
@@ -189,7 +189,7 @@ public class GutenbergFormatDisk extends FormattedDisk {
 	
 	/**
 	 * Indicates if this disk image can create a file.
-	 * If not, the reason may be as simple as it has not beem implemented
+	 * If not, the reason may be as simple as it has not been implemented
 	 * to something specific about the disk.
 	 */
 	public boolean canCreateFile() {
@@ -511,30 +511,6 @@ public class GutenbergFormatDisk extends FormattedDisk {
 	}
 	
 	/**
-	 * Free sectors used by a GutenbergFileEntry.
-	 */
-/*
-	protected void freeSectors(GutenbergFileEntry GutenbergFileEntry) {
-		byte[] vtoc = readVtoc();
-		int track = GutenbergFileEntry.getTrack();
-		if (track == 255) return;
-		int sector = GutenbergFileEntry.getSector();
-		while (track != 0) {
-			setSectorFree(track,sector,vtoc);
-			byte[] trackSectorList = readSector(track, sector);
-			track = AppleUtil.getUnsignedByte(trackSectorList[0x01]);
-			sector = AppleUtil.getUnsignedByte(trackSectorList[0x02]);
-			for (int i=0x0c; i<0x100; i+=2) {
-				int t = AppleUtil.getUnsignedByte(trackSectorList[i]);
-				if (t == 0) break;
-				int s = AppleUtil.getUnsignedByte(trackSectorList[i+1]);
-				setSectorFree(t,s,vtoc);
-			}
-		}
-		writeVtoc(vtoc);
-	}
-*/
-	/**
 	 * Format the disk as DOS 3.3.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
@@ -703,7 +679,7 @@ public class GutenbergFormatDisk extends FormattedDisk {
 
 	/**
 	 * Change to a different ImageOrder.  Remains in DOS 3.3 format but
-	 * the underlying order can chage.
+	 * the underlying order can change.
 	 * @see ImageOrder
 	 */
 	public void changeImageOrder(ImageOrder imageOrder) {

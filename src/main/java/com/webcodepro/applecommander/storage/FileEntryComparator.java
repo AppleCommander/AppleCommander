@@ -45,21 +45,13 @@ public class FileEntryComparator implements Comparator<FileEntry> {
 	 * Compare two FileEntry objects.
 	 * @see java.util.Comparator#compare(Object, Object)
 	 */
-	public int compare(FileEntry o1, FileEntry o2) {
-		// FIXME?: This safety check is safe to remove now?
-		if (!(o1 instanceof FileEntry) || !(o2 instanceof FileEntry)) {
-			return 0;
-		}
-
-		if (o1 == null || o2 == null) {
-			return ((o1 == null) ? -1 : 0) + ((o2 == null) ? 1 : 0);
+	public int compare(FileEntry entry1, FileEntry entry2) {
+		if (entry1 == null || entry2 == null) {
+			return ((entry1 == null) ? -1 : 0) + ((entry2 == null) ? 1 : 0);
 		}
 		
-		FileEntry entry1 = (FileEntry) o1;
-		FileEntry entry2 = (FileEntry) o2;
-		
-		String column1 = (String) entry1.getFileColumnData(displayMode).get(columnIndex);
-		String column2 = (String) entry2.getFileColumnData(displayMode).get(columnIndex);
+		String column1 = entry1.getFileColumnData(displayMode).get(columnIndex);
+		String column2 = entry2.getFileColumnData(displayMode).get(columnIndex);
 		
 		if (isAllDigits(column1) && isAllDigits(column2)) {
 			int int1 = toInt(column1);

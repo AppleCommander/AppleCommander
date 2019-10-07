@@ -23,7 +23,7 @@ import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Manage the user-interface specific ResourceBundle.  Inheritance is used to
- * allow logical groupings of ResourceBundles and to reuse the common metods.
+ * allow logical groupings of ResourceBundles and to reuse the common methods.
  * 
  * @author Rob Greene
  */

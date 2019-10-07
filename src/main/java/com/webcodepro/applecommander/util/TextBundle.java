@@ -23,7 +23,7 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 /**
- * Manage the user-interface specific ResourceBundle.  Initally, this is to actually clean up the
+ * Manage the user-interface specific ResourceBundle.  Initially, this is to actually clean up the
  * text.  Ultimately, it should allow AppleCommander to be translated into other languages.
  * <p>
  * Note that TextBundle serves as a generic resource for the util package.  Other

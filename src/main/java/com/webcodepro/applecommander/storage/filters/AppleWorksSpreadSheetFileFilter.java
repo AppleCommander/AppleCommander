@@ -39,7 +39,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  */
 public class AppleWorksSpreadSheetFileFilter implements FileFilter {
 	/**
-	 * SSMinVers. Ths minimum version of AppleWorks needed 
+	 * SSMinVers. The minimum version of AppleWorks needed 
 	 * to read this file. If this file contains version 3.0-
 	 * specific functions (such as calculated labels or new
 	 * functions), this byte will contain the version number

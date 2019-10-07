@@ -26,7 +26,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
 
 /**
  * Provides a view of a raw hex dump from the diskette.  This includes any operating
- * system-specific data (ie, for DOS it may include starting address and/or length).
+ * system-specific data (i.e., for DOS it may include starting address and/or length).
  * 
  * @author Rob Greene
  */

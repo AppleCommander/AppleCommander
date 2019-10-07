@@ -76,7 +76,7 @@ public class DosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Use this inner interface for managing the disk usage data.
-	 * This offloads format-specific implementation to the implementing class.
+	 * This off-loads format-specific implementation to the implementing class.
 	 */
 	private class DosDiskUsage implements DiskUsage {
 		private int[] location = null;
@@ -206,7 +206,7 @@ public class DosFormatDisk extends FormattedDisk {
 	
 	/**
 	 * Indicates if this disk image can create a file.
-	 * If not, the reason may be as simple as it has not beem implemented
+	 * If not, the reason may be as simple as it has not been implemented
 	 * to something specific about the disk.
 	 */
 	public boolean canCreateFile() {
@@ -224,7 +224,7 @@ public class DosFormatDisk extends FormattedDisk {
 	}
 	
 	/**
-	 * Comput the number of free sectors available on the disk.
+	 * Compute the number of free sectors available on the disk.
 	 */
 	public int getFreeSectors() {
 		byte[] vtoc = readVtoc();
@@ -579,7 +579,7 @@ public class DosFormatDisk extends FormattedDisk {
 	}
 	
 	/**
-	 * Format the disk as DOS 3.3 given the dymanic parameters.
+	 * Format the disk as DOS 3.3 given the dynamic parameters.
 	 * (Used for UniDOS and OzDOS.)
 	 */
 	protected void format(int firstCatalogSector, int tracksPerDisk,
@@ -748,7 +748,7 @@ public class DosFormatDisk extends FormattedDisk {
 
 	/**
 	 * Change to a different ImageOrder.  Remains in DOS 3.3 format but
-	 * the underlying order can chage.
+	 * the underlying order can change.
 	 * @see ImageOrder
 	 */
 	public void changeImageOrder(ImageOrder imageOrder) {

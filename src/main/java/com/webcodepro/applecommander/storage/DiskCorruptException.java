@@ -21,7 +21,7 @@ package com.webcodepro.applecommander.storage;
 
 /**
  * A DiskCorruptException is thrown during the disk's data structures are corrupted
- * beyound hope of automatic recovering.
+ * beyond hope of automatic recovering.
  * <br>
  * Created on Nov 30, 2017.
  * @author Lisias Toledo

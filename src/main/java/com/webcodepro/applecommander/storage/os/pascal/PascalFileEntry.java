@@ -488,7 +488,7 @@ public class PascalFileEntry implements FileEntry {
 
 	/**
 	 * Get the byte[] associated with this FileEntry.
-	 * This is need to manipuate the directory as a whole.
+	 * This is need to manipulate the directory as a whole.
 	 */
 	public byte[] toBytes() {
 		return fileEntry;

@@ -69,7 +69,7 @@ public class PascalFormatDisk extends FormattedDisk {
 
 	/**
 	 * Use this inner interface for managing the disk usage data.
-	 * This offloads format-specific implementation to the implementing class.
+	 * This off-loads format-specific implementation to the implementing class.
 	 * A BitSet is used to track all blocks, as Pascal disks do not have a
 	 * bitmap stored on the disk. This is safe since we know the number of blocks
 	 * that exist. (BitSet length is of last set bit - unset bits at the end are
@@ -337,7 +337,7 @@ public class PascalFormatDisk extends FormattedDisk {
 	}
 
  	/**
- 	 * Return the fisrt block.
+ 	 * Return the first block.
  	 */
 	public int getFirstBlock() {
 		return AppleUtil.getWordValue(getVolumeEntry(), 18);

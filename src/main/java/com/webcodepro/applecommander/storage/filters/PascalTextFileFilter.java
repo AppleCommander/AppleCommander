@@ -38,10 +38,10 @@ import com.webcodepro.applecommander.storage.FileFilter;
  * by all portions of the system. When a user program opens a text file, 
  * and REWRITEs or RESETs it with a title ending in .TEXT, the I/O 
  * subsystem will create and skip over the initial header page. This is 
- * done to faciliatie users editing their input and/or output data. The 
- * file-handler wil transfer the header page only on a disk-to-disk 
+ * done to facilitate users editing their input and/or output data. The 
+ * file-handler will transfer the header page only on a disk-to-disk 
  * transfer, and will omit it on a transfer to a serial device (thus 
- * transfers to PRINTER: abd CONSOLE: will omit the header page).
+ * transfers to PRINTER: and CONSOLE: will omit the header page).
  * <p>
  * Following the initial header page, the text itself appears in 
  * subsequent 1024-byte text pages (two block each, on diskette), 
