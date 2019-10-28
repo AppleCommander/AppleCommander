@@ -1,6 +1,6 @@
 /*
  * AppleCommander - An Apple ][ image utility.
- * Copyright (C) 2008 by David Schmidt
+ * Copyright (C) 2008-2019 by David Schmidt
  * david__schmidt at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it 
@@ -66,7 +66,7 @@ public class BusinessBASICTokenizer {
 		"*error*",  "*error*",  "*error*",  "*error*",  "*error*",  "*error*",  "*error*",  "*error*", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
 		"*error*",  "*error*",  "*error*",  "STR$(",    "HEX$(",    "CHR$(",    "LEN(",     "VAL(",    //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
 		"ASC(",     "TEN(",     "*error*",  "*error*",  "CONV(",    "CONV&(",   "CONV$(",   "CONV%(",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-		"LEFT$(",   "RIGHT$(",  "MID$(",    "INSTR$(",  "*error*",  "*error*",  "*error*",  "*error*"};//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		"LEFT$(",   "RIGHT$(",  "MID$(",    "INSTR(",  "*error*",  "*error*",  "*error*",  "*error*"};//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
 
 	private byte[] fileData;
 	private int offset = 2;
