@@ -6,8 +6,6 @@ There is still a bunch of ANT related build information around.  They no longer 
 
 ## Tests
 
-> Note that test currently fail due to dependencies on disk images not present in the repository.
-
 ```
 $ ./gradlew test
 ```
@@ -19,14 +17,23 @@ $ ./gradlew assemble
 
 BUILD SUCCESSFUL in 2s
 6 actionable tasks: 6 executed
+
+$ tools/retrolambda.sh build/libs/AppleCommander-ac-<version>.jar
+Converting...
+Retrolambda 2.5.6
+Repackaging to build/libs/AppleCommander-ac-<version>-java5.jar
 ```
 
-This will create the `build` directory and populate with uber-jars in `build/libs`.
+This will:
+1. Create the `build` directory and populate with uber-jars in `build/libs`.
+2. Create a Java 5 variant of the `ac` tool in `AppleCommander-ac-<version>-java5.jar`. (Replace `<version>` with version.) 
 
 To run the command-line version of AppleCommander, use the following:
 
 * All platforms:
   `java -jar build/libs/AppleCommander-ac-VERSION.jar`
+* Java 5:
+  `java -jar build/libs/AppleCommander-ac-VERSION-java5.jar`
 
 To launch the GUI version of AppleCommander, use the following:
 
