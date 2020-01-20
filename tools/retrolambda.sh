@@ -1,6 +1,12 @@
 #!/bin/sh
 
-set -x
+if [ $# -gt 0 -a "$1" = "-v" ]
+then
+    RETROFLAG="false"
+    JARFLAG="v"
+    shift
+    set -x
+fi 
 
 if [ $# -ne 1 ]
 then
@@ -20,8 +26,9 @@ rm -rf "$INPUT_DIR"
 rm -rf "$OUTPUT_DIR"
 mkdir "$INPUT_DIR"
 mkdir "$OUTPUT_DIR"
-(cd "$INPUT_DIR"; jar -xvf $OLDPWD/"$JAR_TO_CONVERT")
+(cd "$INPUT_DIR"; jar -x${JARFLAG}f $OLDPWD/"$JAR_TO_CONVERT")
 
+echo "Converting..."
 java \
     -Dretrolambda.bytecodeVersion=49          \
     -Dretrolambda.defaultMethods=true         \
@@ -29,12 +36,14 @@ java \
     -Dretrolambda.outputDir="$OUTPUT_DIR"     \
     -Dretrolambda.classpath="$JAR_TO_CONVERT" \
     -Dretrolambda.javacHacks=true             \
-    -Dretrolambda.quiet=false                 \
+    -Dretrolambda.quiet=${RETROFLAG:-true}    \
     -jar "$LIB_DIR"/retrolambda-2.5.6.jar
 
 # The order of the "m" and "f" must match the order that the
 # corresponding files appear in the argument list. This is
 # so stupid...
-jar -cvfm "$JAR_TO_CONVERT".java5.jar \
+NEW_JAR_NAME="${JAR_TO_CONVERT%.jar}-java5.jar"
+echo "Repackaging to ${NEW_JAR_NAME}"
+jar -c${JARFLAG}fm "${NEW_JAR_NAME}" \
     "$OUTPUT_DIR"/META-INF/MANIFEST.MF \
     -C "$OUTPUT_DIR" .
