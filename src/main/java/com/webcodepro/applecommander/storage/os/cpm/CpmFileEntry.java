@@ -112,7 +112,7 @@ public class CpmFileEntry implements FileEntry {
 	 * Add another directory offset to this file entry.
 	 */
 	public void addOffset(int offset) {
-		offsets.add(new Integer(offset));
+		offsets.add(Integer.valueOf(offset));
 	}
 
 	/**

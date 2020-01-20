@@ -484,7 +484,7 @@ public class DosFileEntry implements FileEntry {
 		try {
 			byte[] rawdata = disk.getFileData(this);
 			if (rawdata == null || rawdata.length == 0) {
-				this.address = new Integer(address);
+				this.address = Integer.valueOf(address);
 			} else {
 				AppleUtil.setWordValue(rawdata, 0, address);
 				disk.setFileData(this, rawdata);

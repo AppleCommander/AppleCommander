@@ -50,7 +50,7 @@ public abstract class AppleImage {
 		String[] classNames = {
 			"ImageIoImage", "SunJpegImage", "SwtImage" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		Class<?>[] constructorArgClasses = new Class<?>[] { int.class, int.class };
-		Object[] constructorArgs = { new Integer(width), new Integer(height) };
+		Object[] constructorArgs = { Integer.valueOf(width), Integer.valueOf(height) };
 		for (String className : classNames) {
 			try {
 				Class<?> appleImageClass = Class.forName(
