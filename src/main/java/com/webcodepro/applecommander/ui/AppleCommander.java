@@ -19,6 +19,7 @@
  */
 package com.webcodepro.applecommander.ui;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -95,7 +96,8 @@ public class AppleCommander {
 			try {
 				swtAppleCommander =	Class.forName(
 					"com.webcodepro.applecommander.ui.swt.SwtAppleCommander"); //$NON-NLS-1$
-				Object object = swtAppleCommander.newInstance();
+				Constructor<?> constructor = swtAppleCommander.getConstructor();
+				Object object = constructor.newInstance();
 				Method launchMethod = swtAppleCommander.
 					getMethod("launch", (Class[]) null); //$NON-NLS-1$
 				launchMethod.invoke(object, (Object[]) null);
@@ -149,7 +151,8 @@ public class AppleCommander {
 			try {
 				swingAppleCommander =	Class.forName(
 					"com.webcodepro.applecommander.ui.swing.SwingAppleCommander"); //$NON-NLS-1$
-				Object object = swingAppleCommander.newInstance();
+				Constructor<?> constructor = swingAppleCommander.getConstructor();
+				Object object = constructor.newInstance();
 				Method launchMethod = swingAppleCommander.
 					getMethod("launch", (Class[]) null); //$NON-NLS-1$
 				launchMethod.invoke(object, (Object[]) null);

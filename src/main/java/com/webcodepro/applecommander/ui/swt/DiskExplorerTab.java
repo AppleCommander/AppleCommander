@@ -26,6 +26,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -232,9 +234,9 @@ public class DiskExplorerTab {
 			public void widgetSelected(SelectionEvent event) {
 				try {
 					changeCurrentFormat(getCurrentFormat()); // minor hack
-	            } catch (DiskException e) {
-	                DiskExplorerTab.this.diskWindow.handle(e);
-	            }
+				} catch (DiskException e) {
+				    DiskExplorerTab.this.diskWindow.handle(e);
+				}
 			}
 			/**
 			 * Double-click handler.
@@ -1602,14 +1604,23 @@ public class DiskExplorerTab {
 			FileViewerWindow window = null;
 			FileFilter fileFilter = null;
 			try {
-				fileFilter = fileFilterClass.newInstance();
+			    Constructor<? extends FileFilter> constructor = fileFilterClass.getConstructor();
+				fileFilter = constructor.newInstance();
 			} catch (NullPointerException ex) {
 				// This is expected
 			} catch (InstantiationException e) {
 				SwtUtil.showSystemErrorDialog(shell, e);
 			} catch (IllegalAccessException e) {
 				SwtUtil.showSystemErrorDialog(shell, e);
-			}
+			} catch (NoSuchMethodException e) {
+                SwtUtil.showSystemErrorDialog(shell, e);
+            } catch (SecurityException e) {
+                SwtUtil.showSystemErrorDialog(shell, e);
+            } catch (IllegalArgumentException e) {
+                SwtUtil.showSystemErrorDialog(shell, e);
+            } catch (InvocationTargetException e) {
+                SwtUtil.showSystemErrorDialog(shell, e);
+            }
 			if (fileFilter != null) {
 				window = new FileViewerWindow(shell, fileEntry, imageManager, fileFilter);
 			} else {
