@@ -1,6 +1,11 @@
 #!/bin/bash
 
-TMP=$(mktemp --directory)
+TMP=$(mktemp -d)
+if [ -z ${TMP} ]
+then
+    echo "Problem creating TEMP directory; aborting!"
+    exit 1
+fi
 
 pushd build
   for JAR in $(find . -name "*.jar" -a -not -name "*-sources.jar" -a -not -name "*-javadoc.jar")
