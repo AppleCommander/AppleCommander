@@ -8,8 +8,12 @@ plugins {
 repositories {
     mavenCentral()
     maven {
-        // SWT libraries
+        // SWT libraries (historical, need a better site)
         url "http://maven-eclipse.github.io/maven"
+    }
+    flatDir {
+        // SWT libraries (hand-generated SWT for Pi)
+        dirs "./rpi-lib"
     }
 }
 
@@ -22,13 +26,18 @@ compileJava {
 }
 
 test {
+    String osName = System.getProperty('os.name').toLowerCase().split()[0]
+    String osArch = System.getProperty('os.arch').toLowerCase().split()[0]
     String swtDependency
-    switch (System.getProperty('os.name').toLowerCase().split()[0]) {
+    switch (osName) {
         case 'windows':
             swtDependency = "org.eclipse.swt:org.eclipse.swt.win32.win32.x86_64:$swtVersion"
             break
         case 'linux':
             swtDependency = "org.eclipse.swt:org.eclipse.swt.gtk.linux.x86_64:$swtVersion"
+            if (osArch == 'arm') {
+                swtDependency = "org.eclipse.swt:org.eclipse.swt.gtk.linux.arm:$piswtVersion"
+            }
             break
         case 'mac':
             swtDependency = "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:$swtVersion"
@@ -116,7 +125,20 @@ task linuxJar(type: Jar) {
     }
     doFirst {
         // Pick and include just the Linux JAR contents
-        from { configurations.runtime.collect { it.name.contains('.linux.') ? zipTree(it) : 'fake' } } 
+        from { configurations.runtime.collect { it.name.contains('.linux.x86_64-') ? zipTree(it) : 'fake' } } 
+    } 
+}
+task piJar(type: Jar) {
+    dependencies {
+        compile "org.eclipse.swt:org.eclipse.swt.gtk.linux.arm:$piswtVersion"
+    }
+    appendix 'linuxarm-gtk'
+    from(sourceSets.main.output) {
+        include 'com/webcodepro/**'
+    }
+    doFirst {
+        // Pick and include just the Linux JAR contents
+        from { configurations.runtime.collect { it.name.contains('.linux.arm-') ? zipTree(it) : 'fake' } } 
     } 
 }
 task macosxJar(type: Jar) {
@@ -162,7 +184,7 @@ javadoc {
 
 artifacts {
     archives mavenJar, acJar 
-    archives linuxJar, macosxJar, windowsJar
+    archives linuxJar, piJar, macosxJar, windowsJar
     archives javadocJar, sourcesJar
 }
 
