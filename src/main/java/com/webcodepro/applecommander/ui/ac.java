@@ -180,7 +180,7 @@ public class ac {
 			System.err.println(textBundle.format("CommandLineErrorMessage", //$NON-NLS-1$
 				ex.getLocalizedMessage()));
 			ex.printStackTrace();
-			help();
+			System.exit(1);
 		}
 	}
 	
