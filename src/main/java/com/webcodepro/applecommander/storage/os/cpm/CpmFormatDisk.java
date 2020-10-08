@@ -443,6 +443,24 @@ public class CpmFormatDisk extends FormattedDisk {
 		return data;
 	}
 	
+	public byte[] readCpmFileEntries() {
+        byte[] data = new byte[2 * CpmFormatDisk.CPM_BLOCKSIZE];
+        System.arraycopy(readCpmBlock(0), 0, data, 
+            0, CpmFormatDisk.CPM_BLOCKSIZE);
+        System.arraycopy(readCpmBlock(1), 0, data, 
+            CpmFormatDisk.CPM_BLOCKSIZE, CpmFormatDisk.CPM_BLOCKSIZE);
+        return data;
+	}
+	public void writeCpmFileEntries(byte[] data) {
+        byte[] block = new byte[CPM_BLOCKSIZE];
+        System.arraycopy(data, 0, block, 
+            0, CpmFormatDisk.CPM_BLOCKSIZE);
+        writeCpmBlock(0, block);
+        System.arraycopy(data, CpmFormatDisk.CPM_BLOCKSIZE, block, 
+            0, CpmFormatDisk.CPM_BLOCKSIZE);
+        writeCpmBlock(1, block);	           
+	}
+	
 	/**
 	 * Compute the physical track number.
 	 */

@@ -119,11 +119,7 @@ public class CpmFileEntry implements FileEntry {
 	 * Read the fileEntry bytes from the disk image.
 	 */
 	protected byte[] readFileEntry(int number) {
-		byte[] data = new byte[2 * CpmFormatDisk.CPM_BLOCKSIZE];
-		System.arraycopy(disk.readCpmBlock(0), 0, data, 
-			0, CpmFormatDisk.CPM_BLOCKSIZE);
-		System.arraycopy(disk.readCpmBlock(1), 0, data, 
-			CpmFormatDisk.CPM_BLOCKSIZE, CpmFormatDisk.CPM_BLOCKSIZE);
+		byte[] data = disk.readCpmFileEntries();
 		byte[] entry = new byte[ENTRY_LENGTH];
 		int offset = ((Integer)offsets.get(number)).intValue();
 		System.arraycopy(data, offset, entry, 0, ENTRY_LENGTH);
@@ -133,14 +129,11 @@ public class CpmFileEntry implements FileEntry {
 	/**
 	 * Write the fileEntry bytes back to the disk image.
 	 */
-	protected void writeFileEntry(int number, byte[] data) {
-		byte[] block = new byte[CpmFormatDisk.CPM_BLOCKSIZE];
-		System.arraycopy(data, 0, block, 
-			0, CpmFormatDisk.CPM_BLOCKSIZE);
-		disk.writeCpmBlock(0, block);
-		System.arraycopy(data, 0, block, 
-			CpmFormatDisk.CPM_BLOCKSIZE, CpmFormatDisk.CPM_BLOCKSIZE);
-		disk.writeCpmBlock(1, block);
+	protected void writeFileEntry(int number, byte[] entry) {
+        byte[] entries = disk.readCpmFileEntries();
+        int offset = ((Integer)offsets.get(number)).intValue();
+        System.arraycopy(entry, 0, entries, offset, ENTRY_LENGTH);
+		disk.writeCpmFileEntries(entries);
 	}
 
 	/**
