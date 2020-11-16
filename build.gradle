@@ -7,13 +7,9 @@ plugins {
 
 repositories {
     mavenCentral()
-    maven {
-        // SWT libraries (historical, need a better site)
-        url "http://maven-eclipse.github.io/maven"
-    }
     flatDir {
-        // SWT libraries (hand-generated SWT for Pi)
-        dirs "./rpi-lib"
+        // SWT libraries
+        dirs "./swt-lib"
     }
 }
 
