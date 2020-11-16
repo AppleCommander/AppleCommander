@@ -190,7 +190,7 @@ public class SwtAppleCommander implements Listener {
 	 * {@code *.[dD][sS][kK]}. 
 	 */
 	protected String makeExtensionCaseInsensitive(String extension) {
-	    if (Host.isWindows()) {
+	    if (Host.isWindows() || Host.isMacosx()) {
 	        // Windows SWT does not support the regex and is case insensitive. Leave it as-is!
 	        return extension;
 	    }
