@@ -401,6 +401,8 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 		NumberFormat numberFormat = NumberFormat.getNumberInstance();
 		SimpleDateFormat dateFormat = new SimpleDateFormat(
 				textBundle.get("DateFormat")); //$NON-NLS-1$
+		SimpleDateFormat dateTimeFormat = new SimpleDateFormat(
+				textBundle.get("DateTimeFormat"));
 
 		List<String> list = new ArrayList<>();
 		switch (displayMode) {
@@ -445,9 +447,9 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 				list.add(numberFormat.format(getBlocksUsed()));
 				list.add(getLastModificationDate() == null ? 
 					textBundle.get("ProdosFileEntry.NullDate") :  //$NON-NLS-1$
-					dateFormat.format(getLastModificationDate()));
+					dateTimeFormat.format(getLastModificationDate()));
 				list.add(getCreationDate() == null ? textBundle.get("ProdosFileEntry.NullDate") :  //$NON-NLS-1$
-					dateFormat.format(getCreationDate()));
+					dateTimeFormat.format(getCreationDate()));
 				numberFormat.setMinimumIntegerDigits(1);
 				list.add(numberFormat.format(getEofPosition()));
 				if ("TXT".equals(getFiletype()) && getAuxiliaryType() > 0) { //$NON-NLS-1$
