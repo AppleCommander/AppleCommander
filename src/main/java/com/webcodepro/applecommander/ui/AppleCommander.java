@@ -65,13 +65,13 @@ public class AppleCommander {
 			System.arraycopy(args, 1, extraArgs, 0, extraArgs.length);
 			if ("-swt".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				if (isSwtAvailable()) {
-					launchSwtAppleCommander(args);
+					launchSwtAppleCommander(extraArgs);
 				} else {
 					System.err.println(textBundle.get("SwtVersionNotAvailable")); //$NON-NLS-1$
 				}
 			} else if ("-swing".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				if (isSwingAvailable()) {
-					launchSwingAppleCommander(args);
+					launchSwingAppleCommander(extraArgs);
 				} else {
 					System.err.println(textBundle.get("SwingVersionNotAvailable")); //$NON-NLS-1$
 				}
@@ -99,8 +99,8 @@ public class AppleCommander {
 				Constructor<?> constructor = swtAppleCommander.getConstructor();
 				Object object = constructor.newInstance();
 				Method launchMethod = swtAppleCommander.
-					getMethod("launch", (Class[]) null); //$NON-NLS-1$
-				launchMethod.invoke(object, (Object[]) null);
+					getMethod("launch", args.getClass()); //$NON-NLS-1$
+				launchMethod.invoke(object, new Object[] { args });
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			} catch (SecurityException e) {

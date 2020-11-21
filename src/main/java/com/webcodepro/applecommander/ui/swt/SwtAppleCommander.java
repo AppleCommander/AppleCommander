@@ -68,15 +68,38 @@ public class SwtAppleCommander implements Listener {
 	 * Launch SwtAppleCommander.
 	 */
 	public static void main(String[] args) {
-		new SwtAppleCommander().launch();
+		new SwtAppleCommander().launch(args);
 	}
 
 	/**
 	 * Launch SwtAppleCommander.
 	 */
-	public void launch() {
+	public void launch(String[] args) {
 		Display display = new Display();
+		display.asyncExec(() -> {
+			for (String arg : args) {
+				open(arg);
+			}
+		});
 		launch(display);
+	}
+	
+	/**
+	 * Open a specific file.
+	 */
+	public void open(String fullpath) {
+		try {
+			Disk disk = new Disk(fullpath);
+			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+			DiskWindow window = new DiskWindow(shell, formattedDisks, imageManager);
+			window.open();
+		} catch (DiskUnrecognizedException e) {
+			showUnrecognizedDiskFormatMessage(fullpath);
+		} catch (Exception ignored) {
+			ignored.printStackTrace();
+			showUnexpectedErrorMessage(fullpath);
+		}			
+
 	}
 	
 	/**
@@ -171,17 +194,7 @@ public class SwtAppleCommander implements Listener {
 		
 		if (fullpath != null) {
 			userPreferences.setDiskImageDirectory(fileDialog.getFilterPath());
-			try {
-				Disk disk = new Disk(fullpath);
-				FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-				DiskWindow window = new DiskWindow(shell, formattedDisks, imageManager);
-				window.open();
-			} catch (DiskUnrecognizedException e) {
-				showUnrecognizedDiskFormatMessage(fullpath);
-			} catch (Exception ignored) {
-				ignored.printStackTrace();
-				showUnexpectedErrorMessage(fullpath);
-			}
+			open(fullpath);
 		}
 	}
 	/**
