@@ -442,46 +442,59 @@ public class ProdosFormatDisk extends FormattedDisk {
 		List<FileColumnHeader> list = new ArrayList<>();
 		switch (displayMode) {
 			case FILE_DISPLAY_NATIVE:
-				list.add(new FileColumnHeader(" ", 1, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
-				list.add(new FileColumnHeader(textBundle.get("Name"), 15,  //$NON-NLS-1$
-						FileColumnHeader.ALIGN_LEFT));
-				list.add(new FileColumnHeader(textBundle.get("Filetype"), 8, //$NON-NLS-1$ 
-						FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3,  //$NON-NLS-1$
-						FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader(textBundle.get("Modified"), 10, //$NON-NLS-1$
-						FileColumnHeader.ALIGN_CENTER));
+				list.add(new FileColumnHeader(" ", 1, FileColumnHeader.ALIGN_CENTER, "locked"));
+				list.add(new FileColumnHeader(textBundle.get("Name"), 15,
+						FileColumnHeader.ALIGN_LEFT, "name"));
+				list.add(new FileColumnHeader(textBundle.get("Filetype"), 8, 
+						FileColumnHeader.ALIGN_CENTER, "type"));
+				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3,
+						FileColumnHeader.ALIGN_RIGHT, "blocks"));
+				list.add(new FileColumnHeader(textBundle.get("Modified"), 10,
+						FileColumnHeader.ALIGN_CENTER, "modified"));
 				list.add(new FileColumnHeader(
-						textBundle.get("ProdosFormatDisk.Created"), 10, //$NON-NLS-1$
-						FileColumnHeader.ALIGN_CENTER));
+						textBundle.get("ProdosFormatDisk.Created"), 10,
+						FileColumnHeader.ALIGN_CENTER, "created"));
 				list.add(new FileColumnHeader(
-						textBundle.get("ProdosFormatDisk.Length"), 10, //$NON-NLS-1$
-						FileColumnHeader.ALIGN_RIGHT));
+						textBundle.get("ProdosFormatDisk.Length"), 10,
+						FileColumnHeader.ALIGN_RIGHT, "size"));
 				list.add(new FileColumnHeader(
-						textBundle.get("ProdosFormatDisk.AuxType"), 8, //$NON-NLS-1$
-						FileColumnHeader.ALIGN_LEFT));
+						textBundle.get("ProdosFormatDisk.AuxType"), 8,
+						FileColumnHeader.ALIGN_LEFT, "auxType"));
 				break;
 			case FILE_DISPLAY_DETAIL:
-				list.add(new FileColumnHeader(" ", 1, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
-				list.add(new FileColumnHeader(textBundle.get("Name"), 15,  //$NON-NLS-1$
-						FileColumnHeader.ALIGN_LEFT));
-				list.add(new FileColumnHeader(textBundle.get("DeletedQ"), 7,  //$NON-NLS-1$
-						FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
-				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.Permissions"), 8, FileColumnHeader.ALIGN_LEFT)); //$NON-NLS-1$
-				list.add(new FileColumnHeader(textBundle.get("Filetype"), 8, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
-				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.DirectoryQ"), 9, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
-				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3,  //$NON-NLS-1$
-						FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader(textBundle.get("Modified"), 10, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
-				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.Created"), 10, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
-				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.Length"), 10, FileColumnHeader.ALIGN_RIGHT)); //$NON-NLS-1$
-				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.AuxType"), 8, FileColumnHeader.ALIGN_LEFT)); //$NON-NLS-1$
-				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.DirectoryHeader"), 5, FileColumnHeader.ALIGN_RIGHT)); //$NON-NLS-1$
-				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.KeyBlock"), 5, FileColumnHeader.ALIGN_RIGHT)); //$NON-NLS-1$
-				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.KeyType"), 8, FileColumnHeader.ALIGN_LEFT)); //$NON-NLS-1$
-				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.Changed"), 5, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
-				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.MinimumProdosVersion"), 2, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
-				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.ProdosVersion"), 2, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+				list.add(new FileColumnHeader(" ", 1, FileColumnHeader.ALIGN_CENTER, "locked"));
+				list.add(new FileColumnHeader(textBundle.get("Name"), 15,
+						FileColumnHeader.ALIGN_LEFT, "name"));
+				list.add(new FileColumnHeader(textBundle.get("DeletedQ"), 7,
+						FileColumnHeader.ALIGN_CENTER, "deleted"));
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.Permissions"), 8, 
+						FileColumnHeader.ALIGN_LEFT, "permissions"));
+				list.add(new FileColumnHeader(textBundle.get("Filetype"), 8, 
+						FileColumnHeader.ALIGN_CENTER, "type"));
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.DirectoryQ"), 9, 
+						FileColumnHeader.ALIGN_CENTER, "directory"));
+				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3,
+						FileColumnHeader.ALIGN_RIGHT, "blocks"));
+				list.add(new FileColumnHeader(textBundle.get("Modified"), 10, 
+						FileColumnHeader.ALIGN_CENTER, "modified"));
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.Created"), 10, 
+						FileColumnHeader.ALIGN_CENTER, "created"));
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.Length"), 10, 
+						FileColumnHeader.ALIGN_RIGHT, "size"));
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.AuxType"), 8, 
+						FileColumnHeader.ALIGN_LEFT, "auxType"));
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.DirectoryHeader"), 5, 
+						FileColumnHeader.ALIGN_RIGHT, "directory"));
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.KeyBlock"), 5, 
+						FileColumnHeader.ALIGN_RIGHT, "keyBlock"));
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.KeyType"), 8, 
+						FileColumnHeader.ALIGN_LEFT, "keyType"));
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.Changed"), 5, 
+						FileColumnHeader.ALIGN_CENTER, "changed"));
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.MinimumProdosVersion"), 2, 
+						FileColumnHeader.ALIGN_CENTER, "minimumProdosVersion"));
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.ProdosVersion"), 2, 
+						FileColumnHeader.ALIGN_CENTER, "prodosVersion"));
 				break;
 			default:	// FILE_DISPLAY_STANDARD
 				list.addAll(super.getFileColumnHeaders(displayMode));

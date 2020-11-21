@@ -97,10 +97,12 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 		private String title;
 		private int maximumWidth;
 		private int alignment;
-		public FileColumnHeader(String title, int maximumWidth, int alignment) {
+		private String key;
+		public FileColumnHeader(String title, int maximumWidth, int alignment, String key) {
 			this.title = title;
 			this.maximumWidth = maximumWidth;
 			this.alignment = alignment;
+			this.key = key;
 		}
 		public String getTitle() {
 			return title;
@@ -110,6 +112,9 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 		}
 		public int getAlignment() {
 			return alignment;
+		}
+		public String getKey() {
+			return key;
 		}
 		public boolean isLeftAlign() {
 			return alignment == ALIGN_LEFT;
@@ -207,13 +212,13 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	public List<FileColumnHeader> getFileColumnHeaders(int displayMode) {
 		List<FileColumnHeader> list = new ArrayList<>();
 		list.add(new FileColumnHeader(textBundle
-				.get("Name"), 30, FileColumnHeader.ALIGN_LEFT)); //$NON-NLS-1$
+				.get("Name"), 30, FileColumnHeader.ALIGN_LEFT, "name"));
 		list.add(new FileColumnHeader(textBundle
-				.get("Type"), 8, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+				.get("Type"), 8, FileColumnHeader.ALIGN_CENTER, "type"));
 		list.add(new FileColumnHeader(textBundle
-				.get("SizeInBytes"), 6, FileColumnHeader.ALIGN_RIGHT)); //$NON-NLS-1$
+				.get("SizeInBytes"), 6, FileColumnHeader.ALIGN_RIGHT, "sizeInBytes"));
 		list.add(new FileColumnHeader(textBundle
-				.get("LockedQ"), 6, FileColumnHeader.ALIGN_CENTER)); //$NON-NLS-1$
+				.get("LockedQ"), 6, FileColumnHeader.ALIGN_CENTER, "locked"));
 		return list;
 	}
 	

@@ -455,35 +455,35 @@ public class PascalFormatDisk extends FormattedDisk {
 		List<FileColumnHeader> list = new ArrayList<>();
 		switch (displayMode) {
 			case FILE_DISPLAY_NATIVE:
-				list.add(new FileColumnHeader(textBundle.get("Modified"), 8, //$NON-NLS-1$
-						FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3, //$NON-NLS-1$
-						FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader(textBundle.get("Filetype"), 8, //$NON-NLS-1$
-						FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader(textBundle.get("Name"), 15, //$NON-NLS-1$
-						FileColumnHeader.ALIGN_LEFT));
+				list.add(new FileColumnHeader(textBundle.get("Modified"), 8,
+						FileColumnHeader.ALIGN_CENTER, "modified"));
+				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3,
+						FileColumnHeader.ALIGN_RIGHT, "blocks"));
+				list.add(new FileColumnHeader(textBundle.get("Filetype"), 8,
+						FileColumnHeader.ALIGN_CENTER, "filetype"));
+				list.add(new FileColumnHeader(textBundle.get("Name"), 15,
+						FileColumnHeader.ALIGN_LEFT, "name"));
 				break;
 			case FILE_DISPLAY_DETAIL:
-				list.add(new FileColumnHeader(textBundle.get("Modified"), 8, //$NON-NLS-1$
-						FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3, //$NON-NLS-1$
-						FileColumnHeader.ALIGN_RIGHT));
+				list.add(new FileColumnHeader(textBundle.get("Modified"), 8,
+						FileColumnHeader.ALIGN_CENTER, "modified"));
+				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3,
+						FileColumnHeader.ALIGN_RIGHT, "blocks"));
 				list.add(new FileColumnHeader(
-						textBundle.get("PascalFormatDisk.BytesInLastBlock"), 3, //$NON-NLS-1$
-						FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader(textBundle.get("SizeInBytes"), 6, //$NON-NLS-1$
-						FileColumnHeader.ALIGN_RIGHT));
-				list.add(new FileColumnHeader(textBundle.get("Filetype"), 8, //$NON-NLS-1$
-						FileColumnHeader.ALIGN_CENTER));
-				list.add(new FileColumnHeader(textBundle.get("Name"), 15, //$NON-NLS-1$
-						FileColumnHeader.ALIGN_LEFT));
+						textBundle.get("PascalFormatDisk.BytesInLastBlock"), 3,
+						FileColumnHeader.ALIGN_RIGHT, "bytesInLastBlock"));
+				list.add(new FileColumnHeader(textBundle.get("SizeInBytes"), 6,
+						FileColumnHeader.ALIGN_RIGHT, "size"));
+				list.add(new FileColumnHeader(textBundle.get("Filetype"), 8,
+						FileColumnHeader.ALIGN_CENTER, "filetype"));
+				list.add(new FileColumnHeader(textBundle.get("Name"), 15,
+						FileColumnHeader.ALIGN_LEFT, "name"));
 				list.add(new FileColumnHeader(
-						textBundle.get("PascalFormatDisk.FirstBlock"), 3, //$NON-NLS-1$ 
-						FileColumnHeader.ALIGN_RIGHT));
+						textBundle.get("PascalFormatDisk.FirstBlock"), 3, 
+						FileColumnHeader.ALIGN_RIGHT, "firstBlock"));
 				list.add(new FileColumnHeader(
-						textBundle.get("PascalFormatDisk.LastBlock"), 3, //$NON-NLS-1$ 
-						FileColumnHeader.ALIGN_RIGHT));
+						textBundle.get("PascalFormatDisk.LastBlock"), 3, 
+						FileColumnHeader.ALIGN_RIGHT, "lastBlock"));
 				break;
 			default:	// FILE_DISPLAY_STANDARD
 				list.addAll(super.getFileColumnHeaders(displayMode));

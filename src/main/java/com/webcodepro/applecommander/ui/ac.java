@@ -119,11 +119,23 @@ public class ac {
 			} else if ("-i".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				getDiskInfo(args);
 			} else if ("-ls".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				showDirectory(args, FormattedDisk.FILE_DISPLAY_STANDARD);
+				showDirectory(DirectoryLister.text(FormattedDisk.FILE_DISPLAY_STANDARD), args);
 			} else if ("-l".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				showDirectory(args, FormattedDisk.FILE_DISPLAY_NATIVE);
+				showDirectory(DirectoryLister.text(FormattedDisk.FILE_DISPLAY_NATIVE), args);
 			} else if ("-ll".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				showDirectory(args, FormattedDisk.FILE_DISPLAY_DETAIL);
+				showDirectory(DirectoryLister.text(FormattedDisk.FILE_DISPLAY_DETAIL), args);
+			} else if ("-lsv".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				showDirectory(DirectoryLister.csv(FormattedDisk.FILE_DISPLAY_STANDARD), args);
+			} else if ("-lv".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				showDirectory(DirectoryLister.csv(FormattedDisk.FILE_DISPLAY_NATIVE), args);
+			} else if ("-llv".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				showDirectory(DirectoryLister.csv(FormattedDisk.FILE_DISPLAY_DETAIL), args);
+			} else if ("-lsj".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				showDirectory(DirectoryLister.json(FormattedDisk.FILE_DISPLAY_STANDARD), args);
+			} else if ("-lj".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				showDirectory(DirectoryLister.json(FormattedDisk.FILE_DISPLAY_NATIVE), args);
+			} else if ("-llj".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
+				showDirectory(DirectoryLister.json(FormattedDisk.FILE_DISPLAY_DETAIL), args);
 			} else if ("-e".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				getFile(args[1], args[2], true,
 					(args.length > 3 ? new PrintStream(new FileOutputStream(args[3])) : System.out));
@@ -510,57 +522,19 @@ public class ac {
 		}
 		return null;
 	}
-
+	
 	/**
 	 * Display a directory listing of each disk in args.
 	 */
-	static void showDirectory(String[] args, int display) throws IOException {
-		for (int d = 1; d < args.length; d++) {
+	static void showDirectory(DirectoryLister dl, String[] args) throws IOException {
+		for (String filename : Arrays.copyOfRange(args, 1, args.length)) {
 			try {
-				Disk disk = new Disk(args[d]);
-				FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-				for (int i = 0; i < formattedDisks.length; i++) {
-					FormattedDisk formattedDisk = formattedDisks[i];
-					System.out.print(args[d] + " ");
-					System.out.println(formattedDisk.getDiskName());
-					List<FileEntry> files = formattedDisk.getFiles();
-					if (files != null) {
-						showFiles(files, "", display); //$NON-NLS-1$
-					}
-					System.out.println(textBundle.format("CommandLineStatus", //$NON-NLS-1$
-						formattedDisk.getFormat(),
-						formattedDisk.getFreeSpace(),
-						formattedDisk.getUsedSpace()));
-					System.out.println();
-				}
+				dl.list(filename);
 			} catch (DiskException e) {
 				throw new IOException(e);
 			} catch (RuntimeException e) {
-				System.out.println(args[d] + ": " + e.getMessage()); //$NON-NLS-1$
+				System.out.println(filename + ": " + e.getMessage()); //$NON-NLS-1$
 				System.out.println();
-			}
-		}
-	}
-
-	/**
-	 * Recursive routine to display directory entries. In the instance of a
-	 * system with directories (e.g. ProDOS), this really returns the first file
-	 * with the given filename.
-	 */
-	static void showFiles(List<FileEntry> files, String indent, int display) throws DiskException {
-		for (FileEntry entry : files) {
-			if (!entry.isDeleted()) {
-				List<String> data = entry.getFileColumnData(display);
-				System.out.print(indent);
-				for (int d = 0; d < data.size(); d++) {
-					System.out.print(data.get(d));
-					System.out.print(" "); //$NON-NLS-1$
-				}
-				System.out.println();
-			}
-			if (entry.isDirectory()) {
-				showFiles(((DirectoryEntry) entry).getFiles(),
-					indent + "  ", display); //$NON-NLS-1$
 			}
 		}
 	}

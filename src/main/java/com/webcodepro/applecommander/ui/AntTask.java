@@ -168,11 +168,11 @@ public class AntTask extends Task
 			{
 				String[] onlyOneImage = { "nonsense", _imageName };
 				if (_command.equals("ls"))
-					com.webcodepro.applecommander.ui.ac.showDirectory(onlyOneImage, FormattedDisk.FILE_DISPLAY_STANDARD);
+					com.webcodepro.applecommander.ui.ac.showDirectory(DirectoryLister.text(FormattedDisk.FILE_DISPLAY_STANDARD), onlyOneImage);
 				else if (_command.equals("l"))
-					com.webcodepro.applecommander.ui.ac.showDirectory(onlyOneImage, FormattedDisk.FILE_DISPLAY_NATIVE);
+					com.webcodepro.applecommander.ui.ac.showDirectory(DirectoryLister.text(FormattedDisk.FILE_DISPLAY_NATIVE), onlyOneImage);
 				else // Assume "ll"
-					com.webcodepro.applecommander.ui.ac.showDirectory(onlyOneImage, FormattedDisk.FILE_DISPLAY_DETAIL);
+					com.webcodepro.applecommander.ui.ac.showDirectory(DirectoryLister.text(FormattedDisk.FILE_DISPLAY_DETAIL), onlyOneImage);
 			}
 			catch (IOException io)
 			{
