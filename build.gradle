@@ -42,7 +42,7 @@ test {
             throw new Exception('Unknown OS')
     }
     dependencies {
-        compile "$swtDependency"
+        implementation "$swtDependency"
     }
     testLogging {
         exceptionFormat = 'full'
@@ -57,14 +57,14 @@ tasks.withType(Jar) {
     manifest {
         attributes 'Main-Class': 'com.webcodepro.applecommander.ui.AppleCommander'
         attributes 'Implementation-Title': 'AppleCommander',
-                   'Implementation-Version': version
+                   'Implementation-Version': archiveVersion
     }
     from('LICENSE')
     doFirst {
         // Jar files with an appendix are standalone applications and need to have ShrinkIt included.
-        if (appendix) {
+        if (archiveAppendix) {
             from { 
-                configurations.runtime.collect { 
+                configurations.runtimeClasspath.collect { 
                     it.name.startsWith('ShrinkItArchive') || it.name.startsWith('applesingle-api') || 
                         it.name.startsWith('bastools-api') || it.name.startsWith('commons-csv') ||
                         it.name.startsWith('gson')
@@ -76,21 +76,21 @@ tasks.withType(Jar) {
 }
 
 dependencies {
-    compile "net.sf.applecommander:ShrinkItArchive:$shkVersion"
-    compile "net.sf.applecommander:applesingle-api:$asVersion"
-    compile "net.sf.applecommander:bastools-api:$btVersion"
-    compile "org.apache.commons:commons-csv:$commonsCsvVersion"
-	compile "com.google.code.gson:gson:$gsonVersion"
+    implementation "net.sf.applecommander:ShrinkItArchive:$shkVersion"
+    implementation "net.sf.applecommander:applesingle-api:$asVersion"
+    implementation "net.sf.applecommander:bastools-api:$btVersion"
+    implementation "org.apache.commons:commons-csv:$commonsCsvVersion"
+	implementation "com.google.code.gson:gson:$gsonVersion"
     compileOnly "org.apache.ant:ant:$antVersion"
 
-    testCompile "junit:junit:$junitVersion"
-    testCompile "org.apache.commons:commons-lang3:$commonsLang3Version"
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "org.apache.commons:commons-lang3:$commonsLang3Version"
 }
 
 task mavenJar(type: Jar) {
     dependencies {
         // Just to pass the compile step; these classes are stripped out below.
-        compile "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:$swtVersion"
+        implementation "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:$swtVersion"
     }
     from(sourceSets.main.output) {
         include 'com/webcodepro/applecommander/**'
@@ -102,9 +102,9 @@ task mavenJar(type: Jar) {
 task acJar(type: Jar) {
     dependencies {
         // Just to pass the compile step; these classes are stripped out below.
-        compile "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:$swtVersion"
+        implementation "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:$swtVersion"
     }
-    appendix 'ac'
+    archiveAppendix = 'ac'
     manifest {
         attributes 'Main-Class' : 'com.webcodepro.applecommander.ui.ac'
     }
@@ -117,54 +117,54 @@ task acJar(type: Jar) {
 }
 task linuxJar(type: Jar) {
     dependencies {
-        compile "org.eclipse.swt:org.eclipse.swt.gtk.linux.x86_64:$swtVersion"
+        implementation "org.eclipse.swt:org.eclipse.swt.gtk.linux.x86_64:$swtVersion"
     }
-    appendix 'linux64-gtk'
+    archiveAppendix = 'linux64-gtk'
     from(sourceSets.main.output) {
         include 'com/webcodepro/**'
     }
     doFirst {
         // Pick and include just the Linux JAR contents
-        from { configurations.runtime.collect { it.name.contains('.linux.x86_64-') ? zipTree(it) : 'fake' } } 
+        from { configurations.runtimeClasspath.collect { it.name.contains('.linux.x86_64-') ? zipTree(it) : 'fake' } } 
     } 
 }
 task piJar(type: Jar) {
     dependencies {
-        compile "org.eclipse.swt:org.eclipse.swt.gtk.linux.arm:$piswtVersion"
+        implementation "org.eclipse.swt:org.eclipse.swt.gtk.linux.arm:$piswtVersion"
     }
-    appendix 'linuxarm-gtk'
+    archiveAppendix = 'linuxarm-gtk'
     from(sourceSets.main.output) {
         include 'com/webcodepro/**'
     }
     doFirst {
         // Pick and include just the Linux JAR contents
-        from { configurations.runtime.collect { it.name.contains('.linux.arm-') ? zipTree(it) : 'fake' } } 
+        from { configurations.runtimeClasspath.collect { it.name.contains('.linux.arm-') ? zipTree(it) : 'fake' } } 
     } 
 }
 task macosxJar(type: Jar) {
     dependencies {
-        compile "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:$swtVersion"
+        implementation "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:$swtVersion"
     }
-    appendix 'macosx'
+    archiveAppendix = 'macosx'
     from(sourceSets.main.output) {
         include 'com/webcodepro/**'
     }
     doFirst {
         // Pick and include just the Mac OS X JAR contents
-        from { configurations.runtime.collect { it.name.contains('.macosx.') ? zipTree(it) : 'fake' } } 
+        from { configurations.runtimeClasspath.collect { it.name.contains('.macosx.') ? zipTree(it) : 'fake' } } 
     } 
 }
 task windowsJar(type: Jar) {
     dependencies {
-        compile "org.eclipse.swt:org.eclipse.swt.win32.win32.x86_64:$swtVersion"
+        implementation "org.eclipse.swt:org.eclipse.swt.win32.win32.x86_64:$swtVersion"
     }
-    appendix 'win64'
+    archiveAppendix = 'win64'
     from(sourceSets.main.output) {
         include 'com/webcodepro/**'
     }
     doFirst {
         // Pick and include just the Windows SWT JAR contents
-        from { configurations.runtime.collect { it.name.contains('.win32.') ? zipTree(it) : 'fake' } } 
+        from { configurations.runtimeClasspath.collect { it.name.contains('.win32.') ? zipTree(it) : 'fake' } } 
     } 
 }
 
