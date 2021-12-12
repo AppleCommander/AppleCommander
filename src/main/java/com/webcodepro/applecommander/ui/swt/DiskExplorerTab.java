@@ -1498,7 +1498,9 @@ public class DiskExplorerTab {
 		fileDialog.setFileName(Host.getFileName(disks[0].getFilename()));
 		fileDialog.setText(textBundle.get("SaveDiskImageAsPrompt")); //$NON-NLS-1$
 		String fullpath = fileDialog.open();
-		userPreferences.setSaveDirectory(fileDialog.getFilterPath());
+		if (fileDialog.getFilterPath() != null) {
+		    userPreferences.setSaveDirectory(fileDialog.getFilterPath());
+		}
 		if (fullpath == null) {
 			return;	// user pressed cancel
 		}
