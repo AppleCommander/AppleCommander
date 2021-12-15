@@ -227,7 +227,7 @@ public class ac {
 		FileEntry entry = name.createEntry(formattedDisk);
 		if (entry != null) {
 			entry.setFiletype(fileType);
-			entry.setFilename(name.name);
+			entry.setFilename(formattedDisk.getSuggestedFilename(name.name));
 			entry.setFileData(data);
 			if (entry.needsAddress()) {
 				entry.setAddress(config.startAddress);
@@ -260,7 +260,7 @@ public class ac {
 			FileEntry entry = name.createEntry(formattedDisk);
 			if (entry != null) {
 				entry.setFiletype(fileType);
-				entry.setFilename(name.name);
+				entry.setFilename(formattedDisk.getSuggestedFilename(name.name));
 				entry.setFileData(buf.toByteArray());
 				if (entry.needsAddress()) {
 					entry.setAddress(stringToInt(address));
@@ -316,7 +316,7 @@ public class ac {
 			FileEntry entry = name.createEntry(formattedDisk);
 			if (entry != null) {
 				entry.setFiletype(fileType);
-				entry.setFilename(name.name);
+				entry.setFilename(formattedDisk.getSuggestedFilename(name.name));
 				entry.setFileData(buf.toByteArray());
 				if (entry.needsAddress()) {
 					entry.setAddress(stringToInt(address));

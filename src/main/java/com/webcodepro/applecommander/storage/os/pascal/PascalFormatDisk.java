@@ -187,7 +187,7 @@ public class PascalFormatDisk extends FormattedDisk {
 	/**
 	 * Create a new FileEntry.
 	 */
- 	public FileEntry createFile() throws DiskFullException {
+ 	public PascalFileEntry createFile() throws DiskFullException {
 		// find index of largest free space
 		int count = 0; int index = 0; int max = 0;
 		int last = 0; int first = 0; int free = 0;
@@ -574,24 +574,28 @@ public class PascalFormatDisk extends FormattedDisk {
 	}
 
 	/**
-	 * Returns a valid filename for the given filename.  This is somewhat
-	 * of a guess, but the Pascal filenames appear to have similar
-	 * restrictions as ProDOS.
+	 * Returns a valid filename for the given filename.
+	 * <p/> 
+     * Summary taken from the filename description in "Apple Pascal:
+     * Operating System Reference Manual."
+     * <p/>
+     * A legal diskette filename can consist of up to 15 characters.  
+     * Lower- case letters typed into a filename are translated to upper-case, 
+     * and spaces and non-printing characters are removed from the filename.
+     * All characters are legal in filenames. However, from the keyboard you should 
+     * not type filenames that include the following characters:
+     * dollar sign ($), left square bracket ([), equals sign (=) question mark, (?), 
+     * RETURN, and the CTRL characters C, F, M, S, U, and @.
+     * <p/>
+     * WARNING: The Filer will not be able to access filenames containing the 
+     * characters dollar sign ($), equals sign (=), question mark (?),
+     * or comma (,)
 	 */
 	public String getSuggestedFilename(String filename) {
-		StringBuffer newName = new StringBuffer();
-		if (!Character.isLetter(filename.charAt(0))) {
-			newName.append('A');
-		}
-		int i=0;
-		while (newName.length() < 15 && i<filename.length()) {
-			char ch = filename.charAt(i);
-			if (Character.isLetterOrDigit(ch) || ch == '.') {
-				newName.append(ch);
-			}
-			i++;
-		}
-		return newName.toString().toUpperCase().trim();
+        String name = filename.toUpperCase()
+                              .replaceAll("[ \t\r\n]", "")
+                              .replaceAll("[^A-Z0-9.]", ".");
+        return name.substring(0, Math.min(name.length(),15));
 	}
 
 	/**

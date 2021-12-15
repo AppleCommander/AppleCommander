@@ -197,7 +197,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	/**
 	 * Create a FileEntry in the Volume Directory.
 	 */
-	public FileEntry createFile() throws DiskFullException {
+	public ProdosFileEntry createFile() throws DiskFullException {
 		return createFile(volumeHeader);
 	}
 	
@@ -1229,8 +1229,10 @@ public class ProdosFormatDisk extends FormattedDisk {
 		int i=0;
 		while (newName.length() < 15 && i<filename.length()) {
 			char ch = filename.charAt(i);
-			if (Character.isLetterOrDigit(ch) || ch == '.') {
+			if (Character.isLetterOrDigit(ch)) {
 				newName.append(ch);
+			} else {
+			    newName.append('.');
 			}
 			i++;
 		}

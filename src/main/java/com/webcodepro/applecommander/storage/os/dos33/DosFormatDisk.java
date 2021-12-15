@@ -172,7 +172,7 @@ public class DosFormatDisk extends FormattedDisk {
 	/**
 	 * Create a FileEntry.
 	 */
-	public FileEntry createFile() throws DiskFullException {
+	public DosFileEntry createFile() throws DiskFullException {
 		byte[] vtoc = readVtoc();
 		int track = AppleUtil.getUnsignedByte(vtoc[1]);
 		int sector = AppleUtil.getUnsignedByte(vtoc[2]);
@@ -706,6 +706,9 @@ public class DosFormatDisk extends FormattedDisk {
 	 * and trimmed (trailing whitespace may cause confusion).
 	 */
 	public String getSuggestedFilename(String filename) {
+        if (filename.charAt(0) < '@') {
+            filename = "A" + filename;
+        }
 		int len = Math.min(filename.length(), 30);
 		return filename.toUpperCase().substring(0, len).trim();
 	}
