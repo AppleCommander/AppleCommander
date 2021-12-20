@@ -3,6 +3,9 @@ bin
 .gradle
 build/
 
+# IDE's
+.vscode
+
 # In case we run it locally, AppleCommander files we don't want to commit
 AppleCommander.preferences
 *.bas
