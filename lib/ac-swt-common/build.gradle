@@ -18,6 +18,9 @@ dependencies {
 test {
     String osName = System.getProperty('os.name').toLowerCase().split()[0]
     String osArch = System.getProperty('os.arch').toLowerCase().split()[0]
+    if ("amd64".equals(osArch)) {
+        osArch = "x86_64"
+    }
     String swtDependency
     switch (osName) {
         case 'windows':
