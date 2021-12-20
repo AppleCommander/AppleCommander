@@ -21,8 +21,8 @@ application {
 
 bootJar {
     manifest {
-        attributes 'Implementation-Title': 'AppleCommander',
+        attributes 'Implementation-Title': 'AppleCommander (Mac)',
                    'Implementation-Version': archiveVersion
     }
-    from('LICENSE')
+    from('../../LICENSE')
 }

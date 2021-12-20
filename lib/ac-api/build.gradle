@@ -19,11 +19,16 @@ tasks.withType(Jar) {
         attributes 'Implementation-Title': 'AppleCommander',
                    'Implementation-Version': archiveVersion
     }
-    from('LICENSE')
+    from('../../LICENSE')
 }
 
 javadoc {
     title = "AppleCommander ${version}"
     source = sourceSets.main.allJava
     options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
 }
