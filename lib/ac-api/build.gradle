@@ -13,3 +13,11 @@ dependencies {
 
     testImplementation "junit:junit:$junitVersion"
 }
+
+tasks.withType(Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'AppleCommander',
+                   'Implementation-Version': archiveVersion
+    }
+    from('LICENSE')
+}
