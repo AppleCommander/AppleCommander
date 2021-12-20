@@ -21,3 +21,9 @@ tasks.withType(Jar) {
     }
     from('LICENSE')
 }
+
+javadoc {
+    title = "AppleCommander ${version}"
+    source = sourceSets.main.allJava
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
