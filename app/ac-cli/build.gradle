@@ -1,0 +1,31 @@
+plugins {
+    id 'org.springframework.boot' version '2.6.1'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':lib:ac-api')
+    implementation "net.sf.applecommander:ShrinkItArchive:$shkVersion"
+    implementation "net.sf.applecommander:applesingle-api:$asVersion"
+    implementation "net.sf.applecommander:bastools-api:$btVersion"
+
+    compileOnly "org.apache.ant:ant:$antVersion"
+
+    testImplementation "junit:junit:$junitVersion"
+}
+
+application {
+    mainClass = 'com.webcodepro.applecommander.ui.ac'
+}
+
+bootJar {
+    manifest {
+        attributes 'Implementation-Title': 'AppleCommander (Swing)',
+                   'Implementation-Version': archiveVersion
+    }
+    from('LICENSE')
+}

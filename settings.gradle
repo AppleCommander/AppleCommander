@@ -1,0 +1,11 @@
+rootProject.name = "AppleCommander"
+
+include ':lib:ac-api'
+include ':lib:ac-swt-common'
+include ':app:ac-cli'
+include ':app:ac-swing'
+include ':app:ac-swt-macosx-aarch64'
+include ':app:ac-swt-macosx-x86_64'
+include ':app:ac-swt-linux-aarch64'
+include ':app:ac-swt-linux-x86_64'
+include ':app:ac-swt-win32-x86_64'

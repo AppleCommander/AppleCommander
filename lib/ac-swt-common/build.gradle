@@ -1,0 +1,40 @@
+plugins {
+    id 'java-library'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':lib:ac-api')
+
+    implementation "net.sf.applecommander:applesingle-api:$asVersion"
+
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "org.apache.commons:commons-lang3:$commonsLang3Version"
+}
+
+test {
+    String osName = System.getProperty('os.name').toLowerCase().split()[0]
+    String osArch = System.getProperty('os.arch').toLowerCase().split()[0]
+    String swtDependency
+    switch (osName) {
+        case 'windows':
+            swtDependency = "org.eclipse.platform:org.eclipse.swt.win32.win32.${osArch}:$swtVersion"
+            break
+        case 'linux':
+            swtDependency = "org.eclipse.platform:org.eclipse.swt.gtk.linux.${osArch}:$swtVersion"
+            break
+        case 'mac':
+            swtDependency = "org.eclipse.platform:org.eclipse.swt.cocoa.macosx.${osArch}:$swtVersion"
+            break
+        default:
+            throw new Exception('Unknown OS')
+    }
+    dependencies {
+        implementation("$swtDependency") {
+            exclude group: "org.eclipse.platform", module: "org.eclipse.swt"
+        }
+    }
+}
