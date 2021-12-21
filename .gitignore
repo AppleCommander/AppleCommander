@@ -18,7 +18,7 @@ AppleCommander.preferences
 *.2mg
 *.2img
 # But allowing disk images from the unit tests
-!src/test/resources/disks/*
+!lib/ac-api/src/test/resources/disks/*
 
 # Eclipse
 .classpath
