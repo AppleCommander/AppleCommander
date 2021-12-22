@@ -20,6 +20,8 @@ application {
 }
 
 bootJar {
+    archiveBaseName = 'AppleCommander'
+    archiveAppendix = 'linux-aarch64'
     manifest {
         attributes 'Implementation-Title': 'AppleCommander (Linux Arm)',
                    'Implementation-Version': archiveVersion

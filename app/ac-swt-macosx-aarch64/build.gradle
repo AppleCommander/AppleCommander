@@ -20,6 +20,8 @@ application {
 }
 
 bootJar {
+    archiveBaseName = 'AppleCommander'
+    archiveAppendix = 'macosx-aarch64'
     manifest {
         attributes 'Implementation-Title': 'AppleCommander (Mac Arm)',
                    'Implementation-Version': archiveVersion

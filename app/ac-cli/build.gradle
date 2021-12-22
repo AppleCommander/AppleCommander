@@ -23,6 +23,8 @@ application {
 }
 
 bootJar {
+    archiveBaseName = 'AppleCommander'
+    archiveAppendix = 'ac'
     manifest {
         attributes 'Implementation-Title': "AppleCommander 'ac'",
                    'Implementation-Version': archiveVersion

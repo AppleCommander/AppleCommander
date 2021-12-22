@@ -16,6 +16,8 @@ application {
 }
 
 bootJar {
+    archiveBaseName = 'AppleCommander'
+    archiveAppendix = 'swing-ui'
     manifest {
         attributes 'Implementation-Title': 'AppleCommander (Swing)',
                    'Implementation-Version': archiveVersion

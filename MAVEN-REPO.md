@@ -24,24 +24,35 @@ Extract secret key for the Gradle signing plugin:
 $ gpg2 --export-secret-keys > secring.gpg
 ```
 
-## Build and publish to Central Repository
+## Gradle build and publish to Central Repository
+
+> NOTE: The build has been updated to allow snapshots to be published.  These appear to be automatically available.
 
 Ensure full build passes:
 
 ```bash
-$ ./gradlew clean test javadoc assemble
-<...lots of stuff, primarily Javadoc issues...>
-BUILD SUCCESSFUL in 3s
-13 actionable tasks: 13 executed
+ ./gradlew clean build
+
+BUILD SUCCESSFUL in 8s
+91 actionable tasks: 91 executed
 ```
 
-Upload:
+Publish:
 
 ```bash
-$ ./gradlew uploadArchives
+$ ./gradlew publish
 
-BUILD SUCCESSFUL in 10s
-10 actionable tasks: 1 executed, 9 up-to-date
+BUILD SUCCESSFUL in 8s
+2 actionable tasks: 2 executed
+```
+
+The can also be combined:
+
+```bash
+$ ./gradlew clean build publish
+
+BUILD SUCCESSFUL in 16s
+93 actionable tasks: 93 executed
 ```
 
 Then follow "releasing the deployment" below.
@@ -52,6 +63,7 @@ Just a reminder!
 
 # References
 
-* http://central.sonatype.org/pages/gradle.html
+* http://central.sonatype.org/pages/gradle.html (NOTE: Documentation is out of date)
 * http://central.sonatype.org/pages/releasing-the-deployment.html
+* https://docs.gradle.org/current/userguide/publishing_maven.html
 * For all the other little pieces, Google is your friend. ;-)

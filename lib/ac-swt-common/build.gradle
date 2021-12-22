@@ -41,3 +41,8 @@ test {
         }
     }
 }
+
+tasks.withType(Jar) {
+    archiveBaseName = 'AppleCommander'
+    archiveAppendix = 'swt-common'
+}

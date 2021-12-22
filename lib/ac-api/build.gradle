@@ -1,5 +1,7 @@
 plugins {
     id 'java-library'
+    id 'maven-publish'
+    id 'signing'
 }
 
 repositories {
@@ -15,6 +17,8 @@ dependencies {
 }
 
 tasks.withType(Jar) {
+    archiveBaseName = 'AppleCommander'
+    archiveAppendix = 'api'
     manifest {
         attributes 'Implementation-Title': 'AppleCommander',
                    'Implementation-Version': archiveVersion
@@ -31,4 +35,52 @@ javadoc {
 java {
     withSourcesJar()
     withJavadocJar()
+}
+
+signing {
+    sign configurations.archives
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            pom {
+                groupId = "net.sf.applecommander"
+                artifactId = "AppleCommander"
+                name = 'AppleCommander'
+                description = 'AppleCommander is a general utility for Apple II disk images.'
+                url = 'https://applecommander.github.io/'
+                licenses {
+                    license {
+                        name = 'The GNU General Public License (GPL) Version 2, June 1991'
+                        url = 'https://www.gnu.org/licenses/gpl-2.0.html'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'robgreene'
+                        name = 'Rob Greene'
+                        email = 'robgreene@gmail.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/AppleCommander/AppleCommander.git'
+                    developerConnection = 'scm:git:git@github.com:AppleCommander/AppleCommander.git'
+                    url = 'https://github.com/AppleCommander/AppleCommander'
+                }
+            }
+            repositories {
+                maven {
+                    def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                    def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+                    url = version.endsWith("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
+                    credentials {
+                        username = findProperty('ossrhUsername')
+                        password = findProperty('ossrhPassword')
+                    }
+                }
+            }
+        }
+    }
 }

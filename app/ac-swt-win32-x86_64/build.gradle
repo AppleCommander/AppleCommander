@@ -20,6 +20,8 @@ application {
 }
 
 bootJar {
+    archiveBaseName = 'AppleCommander'
+    archiveAppendix = 'win32-x86_64'
     manifest {
         attributes 'Implementation-Title': 'AppleCommander (Windows)',
                    'Implementation-Version': archiveVersion
