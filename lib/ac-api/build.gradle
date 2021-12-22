@@ -4,6 +4,9 @@ plugins {
     id 'signing'
 }
 
+ext.isSnapshotVersion = version.endsWith("SNAPSHOT")
+ext.isReleaseVersion = !ext.isSnapshotVersion
+
 repositories {
     mavenCentral()
 }
@@ -38,6 +41,10 @@ java {
 }
 
 signing {
+    // Only sign if we're uploading...
+    required {
+        isReleaseVersion && gradle.taskGraph.hasTask("publish")
+    }
     sign configurations.archives
 }
 
@@ -74,7 +81,7 @@ publishing {
                 maven {
                     def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
                     def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
-                    url = version.endsWith("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
+                    url = isSnapshotVersion ? snapshotsRepoUrl : releasesRepoUrl
                     credentials {
                         username = findProperty('ossrhUsername')
                         password = findProperty('ossrhPassword')
