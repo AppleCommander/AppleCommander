@@ -3,6 +3,9 @@ bin
 .gradle
 build/
 
+# IDE's
+.vscode
+
 # In case we run it locally, AppleCommander files we don't want to commit
 AppleCommander.preferences
 *.bas
@@ -15,7 +18,7 @@ AppleCommander.preferences
 *.2mg
 *.2img
 # But allowing disk images from the unit tests
-!src/test/resources/disks/*
+!lib/ac-api/src/test/resources/disks/*
 
 # Eclipse
 .classpath

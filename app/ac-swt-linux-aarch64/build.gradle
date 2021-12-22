@@ -1,0 +1,30 @@
+plugins {
+    id 'org.springframework.boot' version '2.6.1'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':lib:ac-swt-common')
+
+    implementation("org.eclipse.platform:org.eclipse.swt.gtk.linux.aarch64:$swtVersion") {
+        exclude group: "org.eclipse.platform", module: "org.eclipse.swt"
+    }
+}
+
+application {
+    mainClass = 'com.webcodepro.applecommander.ui.swt.SwtAppleCommander'
+}
+
+bootJar {
+    archiveBaseName = 'AppleCommander'
+    archiveAppendix = 'linux-aarch64'
+    manifest {
+        attributes 'Implementation-Title': 'AppleCommander (Linux Arm)',
+                   'Implementation-Version': archiveVersion
+    }
+    from('../../LICENSE')
+}

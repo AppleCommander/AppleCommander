@@ -1,0 +1,26 @@
+plugins {
+    id 'org.springframework.boot' version '2.6.1'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':lib:ac-api')
+}
+
+application {
+    mainClass = 'com.webcodepro.applecommander.ui.swing.SwingAppleCommander'
+}
+
+bootJar {
+    archiveBaseName = 'AppleCommander'
+    archiveAppendix = 'swing-ui'
+    manifest {
+        attributes 'Implementation-Title': 'AppleCommander (Swing)',
+                   'Implementation-Version': archiveVersion
+    }
+    from('../../LICENSE')
+}
