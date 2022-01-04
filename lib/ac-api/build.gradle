@@ -7,6 +7,9 @@ plugins {
 ext.isSnapshotVersion = version.endsWith("SNAPSHOT")
 ext.isReleaseVersion = !ext.isSnapshotVersion
 
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 repositories {
     mavenCentral()
 }

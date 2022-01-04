@@ -1,0 +1,36 @@
+plugins {
+    id 'org.springframework.boot' version "$springBoot"
+    id 'java'
+    id 'application'
+}
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "info.picocli:picocli:$picocliVersion"
+    implementation project(':lib:ac-api')
+    implementation "net.sf.applecommander:ShrinkItArchive:$shkVersion"
+    implementation "net.sf.applecommander:applesingle-api:$asVersion"
+    implementation "net.sf.applecommander:bastools-api:$btVersion"
+
+    testImplementation "junit:junit:$junitVersion"
+}
+
+application {
+    mainClass = 'io.github.applecommander.acx.Main'
+}
+
+bootJar {
+  archiveBaseName = 'AppleCommander'
+  archiveAppendix = 'acx'
+  manifest {
+      attributes 'Implementation-Title': "AppleCommander 'acx'",
+                  'Implementation-Version': archiveVersion
+  }
+  from('../../LICENSE')
+}
