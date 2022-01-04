@@ -1,36 +1,36 @@
 plugins {
     id 'org.springframework.boot' version "$springBoot"
+    id 'java'
     id 'application'
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 11
+targetCompatibility = 11
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    implementation "info.picocli:picocli:$picocliVersion"
     implementation project(':lib:ac-api')
     implementation "net.sf.applecommander:ShrinkItArchive:$shkVersion"
     implementation "net.sf.applecommander:applesingle-api:$asVersion"
     implementation "net.sf.applecommander:bastools-api:$btVersion"
 
-    compileOnly "org.apache.ant:ant:$antVersion"
-
     testImplementation "junit:junit:$junitVersion"
 }
 
 application {
-    mainClass = 'com.webcodepro.applecommander.ui.ac'
+    mainClass = 'io.github.applecommander.acx.Main'
 }
 
 bootJar {
-    archiveBaseName = 'AppleCommander'
-    archiveAppendix = 'ac'
-    manifest {
-        attributes 'Implementation-Title': "AppleCommander 'ac'",
-                   'Implementation-Version': archiveVersion
-    }
-    from('../../LICENSE')
+  archiveBaseName = 'AppleCommander'
+  archiveAppendix = 'acx'
+  manifest {
+      attributes 'Implementation-Title': "AppleCommander 'acx'",
+                  'Implementation-Version': archiveVersion
+  }
+  from('../../LICENSE')
 }
