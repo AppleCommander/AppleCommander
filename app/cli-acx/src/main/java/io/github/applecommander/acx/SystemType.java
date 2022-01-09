@@ -5,60 +5,79 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
-import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
-import com.webcodepro.applecommander.storage.physical.DosOrder;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 
-import io.github.applecommander.acx.converter.DataSizeConverter;
 import io.github.applecommander.acx.fileutil.FileUtils;
 
 public enum SystemType {
-	DOS(SystemType::createDosImageOrder, SystemType::copyDosSystemTracks),
-	OZDOS(SystemType::create800kDosImageOrder, SystemType::copyDosSystemTracks),
-	UNIDOS(SystemType::create800kDosImageOrder, SystemType::copyDosSystemTracks),
-	PRODOS(SystemType::createProdosImageOrder, SystemType::copyProdosSystemFiles),
-	PASCAL(SystemType::createProdosImageOrder, SystemType::copyPascalSystemFiles);
+	DOS(OrderType.DOS, SystemType::enforce140KbDisk, 
+	        SystemType::copyDosSystemTracks),
+	// OzdosFormatDisk is structured on top of ProDOS blocks in the implementation.
+	OZDOS(OrderType.PRODOS, SystemType::enforce800KbDisk, 
+	        SystemType::copyDosSystemTracks),
+	// UnidosFormatDisk is structured on top of DOS track/sectors in the implementation.
+	UNIDOS(OrderType.DOS, SystemType::enforce800KbDisk, 
+	        SystemType::copyDosSystemTracks),
+	PRODOS(OrderType.PRODOS, SystemType::enforce140KbOr800KbUpTo32MbDisk, 
+	        SystemType::copyProdosSystemFiles),
+	PASCAL(OrderType.PRODOS, SystemType::enforce140KbDisk, 
+	        SystemType::copyPascalSystemFiles);
 	
-    private static Logger LOG = Logger.getLogger(SystemType.class.getName());
+    static Logger LOG = Logger.getLogger(SystemType.class.getName());
 
-	private Function<Integer,ImageOrder> createImageOrderFn;
+    private OrderType defaultOrderType;
+    private Function<Integer,Integer> enforceDiskSizeFn;
 	private BiConsumer<FormattedDisk,FormattedDisk> copySystemFn;
 	
-	private SystemType(Function<Integer,ImageOrder> createImageOrderFn,
-			BiConsumer<FormattedDisk,FormattedDisk> copySystemFn) {
-		this.createImageOrderFn = createImageOrderFn;
+	private SystemType(OrderType defaultOrderType,
+	        Function<Integer,Integer> enforceDiskSizeFn,
+	        BiConsumer<FormattedDisk,FormattedDisk> copySystemFn) {
+	    this.defaultOrderType = defaultOrderType;
+	    this.enforceDiskSizeFn = enforceDiskSizeFn;
 		this.copySystemFn = copySystemFn;
 	}
 
-	public ImageOrder createImageOrder(int size) {
-		return createImageOrderFn.apply(size);
+	public OrderType defaultOrderType() {
+	    return defaultOrderType;
+	}
+	public int validateSize(int size) {
+	    return enforceDiskSizeFn.apply(size);
 	}
 	public void copySystem(FormattedDisk target, FormattedDisk source) {
 		copySystemFn.accept(target, source);
 	}
-
-	private static ImageOrder createDosImageOrder(int size) {
-		ByteArrayImageLayout layout = new ByteArrayImageLayout(new byte[size]);
-		return new DosOrder(layout);
-	}
-	private static ImageOrder create800kDosImageOrder(int size) {
-		if (size != 800 * DataSizeConverter.KB) {
-			LOG.warning("Setting image size to 800KB.");
-		}
-		ByteArrayImageLayout layout = new ByteArrayImageLayout(new byte[800 * DataSizeConverter.KB]);
-		return new DosOrder(layout);
-	}
-	private static ImageOrder createProdosImageOrder(int size) {
-		ByteArrayImageLayout layout = new ByteArrayImageLayout(size);
-		return new ProdosOrder(layout);
-	}
 	
-	private static void copyDosSystemTracks(FormattedDisk targetDisk, FormattedDisk source) {
+	static int enforce140KbDisk(int size) {
+        if (size != Disk.APPLE_140KB_DISK) {
+            LOG.warning("Setting image size to 140KB");
+        }
+        return Disk.APPLE_140KB_DISK;
+	}
+	static int enforce800KbDisk(int size) {
+        if (size != Disk.APPLE_800KB_DISK) {
+            LOG.warning("Setting image size to 800KB.");
+        }
+        return Disk.APPLE_800KB_DISK;
+	}
+	static int enforce140KbOr800KbUpTo32MbDisk(int size) {
+	    if (size <= Disk.APPLE_140KB_DISK) {
+	        return enforce140KbDisk(size);
+	    }
+	    if (size <= Disk.APPLE_800KB_DISK) {
+	        return enforce800KbDisk(size);
+	    }
+	    if (size > Disk.APPLE_32MB_HARDDISK) {
+	        LOG.warning("Setting image size to 32MB.");
+	        return Disk.APPLE_32MB_HARDDISK;
+	    }
+	    return size;
+	}
+
+	static void copyDosSystemTracks(FormattedDisk targetDisk, FormattedDisk source) {
 		DosFormatDisk target = (DosFormatDisk)targetDisk;
 		// FIXME messing with the VTOC should be handled elsewhere 
 		byte[] vtoc = source.readSector(DosFormatDisk.CATALOG_TRACK, DosFormatDisk.VTOC_SECTOR);
@@ -71,7 +90,7 @@ public enum SystemType {
 			}
 		}
 	}
-	private static void copyProdosSystemFiles(FormattedDisk target, FormattedDisk source) {
+	static void copyProdosSystemFiles(FormattedDisk target, FormattedDisk source) {
 		// We need to explicitly fix the boot block
 		target.writeBlock(0, source.readBlock(0));
 		target.writeBlock(1, source.readBlock(1));
@@ -86,7 +105,7 @@ public enum SystemType {
 			throw new RuntimeException(e);
 		}
 	}
-	private static void copyPascalSystemFiles(FormattedDisk target, FormattedDisk source) {
+	static void copyPascalSystemFiles(FormattedDisk target, FormattedDisk source) {
 		// We need to explicitly fix the boot block
 		target.writeBlock(0, source.readBlock(0));
 		target.writeBlock(1, source.readBlock(1));

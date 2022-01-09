@@ -1,5 +1,6 @@
 package io.github.applecommander.acx.command;
 
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import com.webcodepro.applecommander.storage.Disk;
@@ -11,10 +12,11 @@ import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 
+import io.github.applecommander.acx.OrderType;
 import io.github.applecommander.acx.SystemType;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
 import io.github.applecommander.acx.converter.DataSizeConverter;
-import io.github.applecommander.acx.converter.SystemTypeConverter;
+import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -27,12 +29,14 @@ public class CreateDiskCommand extends ReusableCommandOptions {
             defaultValue = "${ACX_DISK_NAME}")
     private String imageName;
 
-    @Option(names = { "-t", "--type" }, required = true, converter = SystemTypeConverter.class, 
-            description = "Select system type (DOS, ProDOS, Pascal.")
-    private SystemType type;
+    @ArgGroup(multiplicity = "1", heading = "%nOperating System Selection:%n")
+    private SystemSelection systemSelection;
+    
+    @ArgGroup(heading = "%nDisk Sector Ordering Selection:%n")
+    private OrderSelection orderSelection = new OrderSelection();
     
     @Option(names = { "-s", "--size" }, defaultValue = "140kb", converter = DataSizeConverter.class, 
-            description = "Select disk size (140K, 800K, 10M).")
+            description = "Select disk size (examples: 140K, 800K, 10M).")
     private int size;
     
     @Option(names = { "-f", "--format" }, 
@@ -45,11 +49,20 @@ public class CreateDiskCommand extends ReusableCommandOptions {
 
     @Override
     public int handleCommand() throws Exception {
-    	LOG.info(() -> String.format("Creating %s image of type %s.", DataSizeConverter.format(size), type));
+        SystemType systemType = systemSelection.get();
 
-    	ImageOrder order = type.createImageOrder(size);
+        // This allows a defaulted OrderType to be adjusted based on SystemType.
+        OrderType actualOrderType = orderSelection.get().orElse(systemType.defaultOrderType());
+
+        // Size is constrained in DOS and Pascal
+        int correctedSize = systemType.validateSize(size);
+    	
+        LOG.info(() -> String.format("Creating %s image of type %s (%s).", 
+                DataSizeConverter.format(correctedSize), systemType, actualOrderType));
+    	
+    	ImageOrder order = actualOrderType.createImageOrder(correctedSize);
     	FormattedDisk[] disks = null;
-    	switch (type) {
+    	switch (systemType) {
     	case DOS:		
     		disks = DosFormatDisk.create(imageName, order);
     		break;
@@ -69,11 +82,61 @@ public class CreateDiskCommand extends ReusableCommandOptions {
     	
     	if (formatSource != null) {
     		Disk systemSource = new Disk(formatSource);
-    		type.copySystem(disks[0], systemSource.getFormattedDisks()[0]);
+    		systemType.copySystem(disks[0], systemSource.getFormattedDisks()[0]);
     	}
     	
     	saveDisk(disks[0]);
     	
         return 0;
+    }
+    
+    private static class SystemSelection {
+        private SystemType systemType;
+        
+        public SystemType get() {
+            return systemType;
+        }
+        
+        @Option(names = "--dos", description = "DOS formatted disk.")
+        public void selectDos(boolean flag) {
+            systemType = SystemType.DOS;
+        }
+        @Option(names = "--ozdos", description = "OzDOS 800K formatted disk.")
+        public void selectOzdos(boolean flag) {
+            systemType = SystemType.OZDOS;
+        }
+        @Option(names = "--unidos", description = "UniDOS 800K formatted disk.")
+        public void selectUnidos(boolean flag) {
+            systemType = SystemType.UNIDOS;
+        }
+        @Option(names = "--pascal", description = "Pascal formatted disk.")
+        public void selectPascal(boolean flag) {
+            systemType = SystemType.PASCAL;
+        }
+        @Option(names = "--prodos", description = "ProDOS formatted disk.")
+        public void selectProdos(boolean flag) {
+            systemType = SystemType.PRODOS;
+        }
+    }
+    
+    private static class OrderSelection {
+        private Optional<OrderType> orderType = Optional.empty();
+        
+        public Optional<OrderType> get() {
+            return orderType;
+        }
+
+        @Option(names = { "--dos-order" }, description = "DOS ordered sectors.")
+        public void selectDosOrder(boolean flag) {
+            orderType = Optional.of(OrderType.DOS);
+        }
+        @Option(names = { "--nibble-order" }, description = "DOS ordered, nibble encoded sectors.")
+        public void selectNibbleOrder(boolean flag) {
+            orderType = Optional.of(OrderType.NIBBLE);
+        }
+        @Option(names = { "--prodos-order" }, description = "ProDOS ordered sectors/blocks.")
+        public void selectProdosOrder(boolean flag) {
+            orderType = Optional.of(OrderType.PRODOS);
+        }
     }
 }

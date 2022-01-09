@@ -10,15 +10,13 @@ build/
 AppleCommander.preferences
 *.bas
 
-# Ignoring all disk images
-*.dsk
-*.po
-*.hdv
-*.do
-*.2mg
-*.2img
-# But allowing disk images from the unit tests
-!lib/ac-api/src/test/resources/disks/*
+# Ignoring all disk images at root of project
+/*.dsk
+/*.po
+/*.hdv
+/*.do
+/*.2mg
+/*.2img
 
 # Eclipse
 .classpath

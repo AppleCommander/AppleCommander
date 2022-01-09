@@ -88,6 +88,7 @@ public class Main {
     public static void main(String[] args) {
         CommandLine cmd = new CommandLine(new Main());
         cmd.setExecutionExceptionHandler(new PrintExceptionMessageHandler());
+        cmd.setCaseInsensitiveEnumValuesAllowed(true);
         if (args.length == 0) {
             cmd.usage(System.out);
             System.exit(1);
