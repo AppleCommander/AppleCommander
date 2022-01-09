@@ -66,7 +66,12 @@ public class TextBundle {
 	 * Retrieve a value for the given resource name.
 	 */
 	public String get(String name) {
-		return resourceBundle.getString(name);
+	    if (resourceBundle.containsKey(name)) {
+	        return resourceBundle.getString(name);
+	    } 
+	    else {
+	        return String.format("KeyNotFound: %s", name);
+	    }
 	}
 
 	/**
