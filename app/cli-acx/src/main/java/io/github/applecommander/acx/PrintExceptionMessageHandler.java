@@ -14,8 +14,8 @@ public class PrintExceptionMessageHandler implements IExecutionExceptionHandler 
             ex.printStackTrace(System.err);
         }
         else {
-            // bold red error message
-            cmd.getErr().println(cmd.getColorScheme().errorText(ex.getMessage()));
+            // bold red error message (+ "" is to handle null messages)
+            cmd.getErr().println(cmd.getColorScheme().errorText(ex.getMessage() + ""));
         }
 
         return cmd.getExitCodeExceptionMapper() != null
