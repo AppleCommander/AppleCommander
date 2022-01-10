@@ -89,6 +89,7 @@ public class ImportCommand extends ReadWriteDiskCommandOptions {
                     .filename(overrides.fileName)
                     .prodosFiletype(overrides.fileType)
                     .binaryAddress(overrides.fileAddress)
+                    .auxiliaryType(overrides.auxType)
                     .build(processorReader);
             
             copier.copyFile(directory, reader);
@@ -317,14 +318,20 @@ public class ImportCommand extends ReadWriteDiskCommandOptions {
     }
     
     public static class Overrides {
-        @Option(names = { "-t", "--type" }, description = "File type.")
+        @Option(names = { "-t", "--type" }, description = "ProDOS File type.  "
+                + "(Each filesystem translates between it's native types and ProDOS.)")
         private Optional<String> fileType;
         
-        @Option(names = { "-a", "--addr" }, description = "File address.", 
+        @Option(names = { "-a", "--addr" }, description = "File address. " 
+                + "(Note that address may only be set on file types that use address.)", 
                 converter = IntegerTypeConverter.class)
         private Optional<Integer> fileAddress;
         
         @Option(names = { "-n", "--name" }, description = "File name.")
         private Optional<String> fileName;
+        
+        @Option(names = { "--aux", "--auxtype" }, description = "Aux. Type. "
+                + "(For a filesystem that supports aux type.)")
+        private Optional<Integer> auxType;
     }
 }
