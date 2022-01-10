@@ -44,12 +44,6 @@ public class AppleUtil {
 	private static final int BYTES_PER_LINE = 16;
 
 	/**
-	 * This is the ASCII space character as used by the Apple ][.
-	 * The high bit is off.
-	 */
-	private static final int APPLE_SPACE = 0x20;
-
-	/**
 	 * Bit masks used for the bit shifting or testing operations.
 	 */
 	private static byte[] masks = { 
@@ -582,11 +576,11 @@ public class AppleUtil {
 				int index = offset+a;
 				if (index < bytes.length) {
 					char ch = (char) (bytes[index] & 0x7f);
-					if ((byte)ch >= (byte)APPLE_SPACE) {
-						printer.print(ch);
-					} else {
-						printer.print('.');
-					}
+					if (Character.isISOControl(ch)) {
+                        printer.print('.');
+                    } else {
+                        printer.print(ch);
+                    }
 				} else {
 					printer.print(' ');
 				}

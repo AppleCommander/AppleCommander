@@ -19,6 +19,7 @@
  */
 package com.webcodepro.applecommander.util;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -112,5 +113,27 @@ public class AppleUtilTest {
 			prodosDiskNibbleOrder.getImageOrder());
 		// Confirm that these disks are identical:
 		assertTrue(AppleUtil.disksEqualByBlock(prodosDiskDosOrder, prodosDiskNibbleOrder));
+	}
+	
+	@Test
+	public void testGetHexDump_expectedWidth() {
+        final int expectedWidth = 76;
+        
+        // Setup an array of all byte values
+	    byte[] data = new byte[256];
+	    for (int i=0; i<data.length; i++) {
+	        data[i] = (byte)i;
+	    }
+
+	    // Ensure the width is expected and there are no control characters
+	    String result = AppleUtil.getHexDump(data);
+	    String[] lines = result.split("\n");
+	    for (String line : lines) {
+            System.out.println(line);
+	        if (line.startsWith("$")) {
+	            assertEquals(expectedWidth, line.length());
+	            line.chars().forEach(i -> assertTrue(Integer.toString(i), i >= ' '));
+	        }
+	    }
 	}
 }
