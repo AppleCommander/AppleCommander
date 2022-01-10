@@ -32,7 +32,7 @@ import picocli.CommandLine.Option;
     descriptionHeading = "%n",
     commandListHeading = "%nCommands:%n",
     optionListHeading = "%nOptions:%n",
-    description = "'ac' experimental utility", 
+    description = "'acx' experimental utility", 
     subcommands = {
             ConvertCommand.class,
             CopyFileCommand.class,
