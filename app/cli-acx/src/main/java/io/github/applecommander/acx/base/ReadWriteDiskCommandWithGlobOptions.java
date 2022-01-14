@@ -5,9 +5,10 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import io.github.applecommander.filestreamer.FileStreamer;
-import io.github.applecommander.filestreamer.FileTuple;
-import io.github.applecommander.filestreamer.TypeOfFile;
+import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
+import com.webcodepro.applecommander.util.filestreamer.FileTuple;
+import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
+
 import picocli.CommandLine.Parameters;
 
 public abstract class ReadWriteDiskCommandWithGlobOptions extends ReadWriteDiskCommandOptions {

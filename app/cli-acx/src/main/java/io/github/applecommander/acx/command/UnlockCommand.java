@@ -2,8 +2,9 @@ package io.github.applecommander.acx.command;
 
 import java.util.logging.Logger;
 
+import com.webcodepro.applecommander.util.filestreamer.FileTuple;
+
 import io.github.applecommander.acx.base.ReadWriteDiskCommandWithGlobOptions;
-import io.github.applecommander.filestreamer.FileTuple;
 import picocli.CommandLine.Command;
 
 @Command(name = "unlock", description = "Unlock file(s) on a disk image.")

@@ -26,11 +26,7 @@ public class DirectoryLister {
 		return new DirectoryLister(new TextListingStrategy(display));
 	}
 	public static DirectoryLister csv(int display) {
-		try {
-			return new DirectoryLister(new CsvListingStrategy(display));
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
+		return new DirectoryLister(new CsvListingStrategy(display));
 	}
 	public static DirectoryLister json(int display) {
 		return new DirectoryLister(new JsonListingStrategy(display));
@@ -57,32 +53,35 @@ public class DirectoryLister {
 		strategy.last(disk);
 	}
 	
-	private static abstract class ListingStrategy {
+	public static abstract class ListingStrategy {
 		protected int display;
 		protected ListingStrategy(int display) {
 			this.display = display;
 		}
 		
-		protected void first(Disk d) {};
-		protected void beforeDisk(FormattedDisk d) {}
-		protected void afterDisk(FormattedDisk d) {}
-		protected void forEach(FileTuple f) {}
-		protected void last(Disk d) {};
+		public void first(Disk d) {};
+		public void beforeDisk(FormattedDisk d) {}
+		public void afterDisk(FormattedDisk d) {}
+		public void forEach(FileTuple f) {}
+		public void last(Disk d) {};
 	}
 	
-	private static class TextListingStrategy extends ListingStrategy {
+	public static class TextListingStrategy extends ListingStrategy {
 		protected TextListingStrategy(int display) {
 			super(display);
 		}
-		protected void beforeDisk(FormattedDisk disk) {
+        @Override
+		public void beforeDisk(FormattedDisk disk) {
 			System.out.printf("%s %s\n", disk.getFilename(), disk.getDiskName());
 		}
-		protected void afterDisk(FormattedDisk disk) {
+        @Override
+		public void afterDisk(FormattedDisk disk) {
 			System.out.printf("%s\n\n",
 				textBundle.format("CommandLineStatus", 
 					disk.getFormat(), disk.getFreeSpace(), disk.getUsedSpace()));
 		}
-		protected void forEach(FileTuple tuple) {
+        @Override
+		public void forEach(FileTuple tuple) {
 			System.out.printf("%s%s\n",
 				repeat(" ", tuple.paths.size()),
 				String.join(" ", tuple.fileEntry.getFileColumnData(display)));
@@ -96,13 +95,18 @@ public class DirectoryLister {
 
 	}
 	
-	private static class CsvListingStrategy extends ListingStrategy {
+	public static class CsvListingStrategy extends ListingStrategy {
 		private CSVPrinter printer;
-		protected CsvListingStrategy(int display) throws IOException {
+		public CsvListingStrategy(int display) {
 			super(display);
-			this.printer = new CSVPrinter(System.out, CSVFormat.DEFAULT);
+			try {
+                this.printer = new CSVPrinter(System.out, CSVFormat.DEFAULT);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
 		}
-		protected void beforeDisk(FormattedDisk disk) {
+        @Override
+		public void beforeDisk(FormattedDisk disk) {
 			try {
 				printer.printRecord(disk.getFilename(), disk.getDiskName());
 				printer.printRecord(disk
@@ -114,7 +118,8 @@ public class DirectoryLister {
 				throw new RuntimeException(e);
 			}
 		}
-		protected void afterDisk(FormattedDisk disk) {
+        @Override
+		public void afterDisk(FormattedDisk disk) {
 			try {
 				printer.printRecord(disk.getFormat(), disk.getFreeSpace(), disk.getUsedSpace());
 				printer.println();
@@ -122,7 +127,8 @@ public class DirectoryLister {
 				throw new RuntimeException(e);
 			}
 		}
-		protected void forEach(FileTuple tuple) {
+        @Override
+		public void forEach(FileTuple tuple) {
 			try {
 				printer.printRecord(tuple.fileEntry.getFileColumnData(display));
 			} catch (IOException e) {
@@ -131,16 +137,17 @@ public class DirectoryLister {
 		}
 	}
 	
-	private static class JsonListingStrategy extends ListingStrategy {
+	public static class JsonListingStrategy extends ListingStrategy {
 		private JsonObject root;
 		private JsonArray disks;
 		private JsonObject currentDisk;
 		private JsonArray files;
 		private Gson gson = new Gson();
-		protected JsonListingStrategy(int display) {
+		public JsonListingStrategy(int display) {
 			super(display);
 		}
-		protected void first(Disk disk) {
+        @Override
+		public void first(Disk disk) {
 			root = new JsonObject();
 			root.addProperty("filename", disk.getFilename());
 			root.addProperty("order", disk.getOrderName());
@@ -148,7 +155,8 @@ public class DirectoryLister {
 			this.disks = new JsonArray();
 			root.add("disks", disks);
 		}
-		protected void beforeDisk(FormattedDisk disk) {
+        @Override
+		public void beforeDisk(FormattedDisk disk) {
 			currentDisk = new JsonObject();
 			disks.add(currentDisk);
 			currentDisk.addProperty("diskName", disk.getDiskName());
@@ -160,10 +168,12 @@ public class DirectoryLister {
 			currentDisk.add("files", files);
 
 		}
-		protected void afterDisk(FormattedDisk disk) {
+        @Override
+		public void afterDisk(FormattedDisk disk) {
 			currentDisk = null;
 		}
-		protected void forEach(FileTuple tuple) {
+        @Override
+		public void forEach(FileTuple tuple) {
 			JsonObject file = new JsonObject();
 			files.add(file);
 			
@@ -173,7 +183,8 @@ public class DirectoryLister {
 				file.addProperty(headers.get(i).getKey(), columns.get(i));
 			}
 		}
-		protected void last(Disk disk) {
+        @Override
+		public void last(Disk disk) {
 			System.out.println(gson.toJson(root));			
 		}
 	}

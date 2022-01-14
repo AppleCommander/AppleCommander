@@ -123,10 +123,21 @@ public class FileStreamer {
         return includeDeletedFlag || !tuple.fileEntry.isDeleted();
     }
     protected boolean globFilter(FileTuple tuple) {
+        if (recursiveFlag && tuple.fileEntry.isDirectory()) {
+            // If we don't match directories, no files can be listed.
+            return true;
+        }
+        // This may cause issues, but Path is a "real" filesystem construct, so the delimiters
+        // vary by OS (likely just "/" and "\"). However, Java also erases them to some degree,
+        // so using "/" (as used in ProDOS) will likely work out.
+        // Also note that we check the single file "PARMS.S" and full path "SOURCE/PARMS.S" since
+        // the user might have entered "*.S" or something like "SOURCE/PARMS.S".
         FileSystem fs = FileSystems.getDefault();
-        Path path = Paths.get(String.join(fs.getSeparator(), tuple.paths), tuple.fileEntry.getFilename());
+        Path filePath = Paths.get(tuple.fileEntry.getFilename());
+        Path fullPath = Paths.get(String.join(fs.getSeparator(), tuple.paths), 
+                tuple.fileEntry.getFilename());
         for (PathMatcher pathMatcher : pathMatchers) {
-            if (pathMatcher.matches(path)) return true;
+            if (pathMatcher.matches(filePath) || pathMatcher.matches(fullPath)) return true;
         }
         return false;
     }

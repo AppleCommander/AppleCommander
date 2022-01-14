@@ -4,10 +4,11 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
+import com.webcodepro.applecommander.util.filestreamer.FileTuple;
+import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
+
 import io.github.applecommander.acx.base.ReadWriteDiskCommandOptions;
-import io.github.applecommander.filestreamer.FileStreamer;
-import io.github.applecommander.filestreamer.FileTuple;
-import io.github.applecommander.filestreamer.TypeOfFile;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;

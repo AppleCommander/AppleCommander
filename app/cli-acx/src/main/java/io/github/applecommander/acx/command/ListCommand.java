@@ -2,14 +2,18 @@ package io.github.applecommander.acx.command;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.FormattedDisk.FileColumnHeader;
+import com.webcodepro.applecommander.ui.DirectoryLister.CsvListingStrategy;
+import com.webcodepro.applecommander.ui.DirectoryLister.JsonListingStrategy;
+import com.webcodepro.applecommander.ui.DirectoryLister.ListingStrategy;
+import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
+import com.webcodepro.applecommander.util.filestreamer.FileTuple;
+import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
 
 import io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions;
-import io.github.applecommander.filestreamer.FileStreamer;
-import io.github.applecommander.filestreamer.FileTuple;
-import io.github.applecommander.filestreamer.TypeOfFile;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -28,6 +32,9 @@ public class ListCommand extends ReadOnlyDiskImageCommandOptions {
     
     @ArgGroup(exclusive = true, multiplicity = "0..1")
     private TypeOfFileSelection typeOfFile = new TypeOfFileSelection();
+    
+    @ArgGroup(exclusive = true, multiplicity = "0..1", heading = "%nOutput format:%n")
+    private OutputType outputType = new OutputType();
 
     @Option(names = "--header", negatable = true, description = "Show header.")
     private boolean headerFlag = true;
@@ -41,67 +48,29 @@ public class ListCommand extends ReadOnlyDiskImageCommandOptions {
     @Option(names = "--globs", defaultValue = "*", split = ",", description = "File glob(s) to match.")
     private List<String> globs = new ArrayList<String>();
 
-    private List<String> fmtSpec;
-    
     @Override
     public int handleCommand() throws Exception {
+        int display = fileDisplay.format();
+        ListingStrategy listingStrategy = outputType.create(display);
+        
+        listingStrategy.first(disk);
+        
         FileStreamer.forDisk(disk)
                     .ignoreErrors(true)
                     .includeDeleted(deletedFlag)
                     .recursive(recursiveFlag)
                     .includeTypeOfFile(typeOfFile.typeOfFile())
                     .matchGlobs(globs)
-                    .beforeDisk(this::header)
-                    .afterDisk(this::footer)
+                    .beforeDisk(listingStrategy::beforeDisk)
+                    .afterDisk(listingStrategy::afterDisk)
                     .stream()
-                    .forEach(this::list);
+                    .forEach(listingStrategy::forEach);
+        
+        listingStrategy.last(disk);
+        
         return 0;
     }
     
-    protected void header(FormattedDisk disk) {
-        List<FileColumnHeader> headers = disk.getFileColumnHeaders(fileDisplay.format());
-        fmtSpec = createFormatSpec(headers);
-    
-        System.out.println();
-        System.out.printf("File: %s\n", disk.getFilename());
-        System.out.printf("Name: %s\n", disk.getDiskName());
-    }
-    
-    protected void list(FileTuple tuple) {
-        if (!deletedFlag && tuple.fileEntry.isDeleted()) {
-            return;
-        }
-
-        List<String> data = tuple.fileEntry.getFileColumnData(fileDisplay.format());
-        for (int i=0; i<tuple.paths.size(); i++) { 
-            System.out.print("  ");
-        }
-        for (int d = 0; d < data.size(); d++) {
-            System.out.printf(fmtSpec.get(d), data.get(d));
-        }
-        if (tuple.fileEntry.isDeleted()) {
-            System.out.print("[deleted]");
-        }
-        System.out.println();
-    }
-    
-    protected void footer(FormattedDisk disk) {
-        System.out.printf("%s format; %d bytes free; %d bytes used.\n",
-                  disk.getFormat(),
-                  disk.getFreeSpace(),
-                  disk.getUsedSpace());
-    }
-    
-    private List<String> createFormatSpec(List<FileColumnHeader> fileColumnHeaders) {
-        List<String> fmtSpec = new ArrayList<>();
-        for (FileColumnHeader h : fileColumnHeaders) {
-            String spec = String.format("%%%s%ds ", h.isRightAlign() ? "" : "-", 
-                    h.getMaximumWidth());
-            fmtSpec.add(spec);
-        }
-        return fmtSpec;
-    }
-
     public static class FileDisplay {
         public int format() {
             if (standardFormat) {
@@ -121,6 +90,93 @@ public class ListCommand extends ReadOnlyDiskImageCommandOptions {
         
         @Option(names = { "-l", "--long",  "--detail" }, description = "Use long/detailed directory format.")
         private boolean longFormat;
+    }
+    
+    public static class OutputType {
+        private OutputStrategy outputStrategy = OutputStrategy.TEXT;
+        public ListingStrategy create(int display) {
+            return outputStrategy.create(display);
+        }
+
+        private enum OutputStrategy { 
+            TEXT(FormattedTextListingStrategy::new), 
+            CSV(CsvListingStrategy::new),
+            JSON(JsonListingStrategy::new);
+            
+            private Function<Integer,ListingStrategy> constructorFn;
+            
+            private OutputStrategy(Function<Integer,ListingStrategy> constructorFn) {
+                this.constructorFn = constructorFn;
+            }
+            
+            public ListingStrategy create(int display) {
+                return constructorFn.apply(display);
+            }
+
+        };
+        
+        @Option(names = "--text", description = "Formatted text (default).")
+        public void selectTextOutput(boolean flag) {
+            this.outputStrategy = OutputStrategy.TEXT;
+        }
+        
+        @Option(names = "--json", description = "JSON output.")
+        public void selectJsonOutput(boolean flag) {
+            this.outputStrategy = OutputStrategy.JSON;
+        }
+        
+        @Option(names = "--csv", description = "CSV output.")
+        public void selectCsvOutput(boolean flag) {
+            this.outputStrategy = OutputStrategy.CSV;
+        }
+    }
+    
+    public static class FormattedTextListingStrategy extends ListingStrategy {
+        private List<String> fmtSpec;
+        
+        public FormattedTextListingStrategy(int display) {
+            super(display);
+        }
+        @Override
+        public void beforeDisk(FormattedDisk disk) {
+            List<FileColumnHeader> headers = disk.getFileColumnHeaders(display);
+            fmtSpec = createFormatSpec(headers);
+        
+            System.out.println();
+            System.out.printf("File: %s\n", disk.getFilename());
+            System.out.printf("Name: %s\n", disk.getDiskName());
+        }
+        @Override
+        public void forEach(FileTuple tuple) {
+            List<String> data = tuple.fileEntry.getFileColumnData(display);
+            for (int i=0; i<tuple.paths.size(); i++) { 
+                System.out.print("  ");
+            }
+            for (int d = 0; d < data.size(); d++) {
+                System.out.printf(fmtSpec.get(d), data.get(d));
+            }
+            if (tuple.fileEntry.isDeleted()) {
+                System.out.print("[deleted]");
+            }
+            System.out.println();
+        }
+        @Override
+        public void afterDisk(FormattedDisk disk) {
+            System.out.printf("%s format; %,d bytes free; %,d bytes used.\n",
+                      disk.getFormat(),
+                      disk.getFreeSpace(),
+                      disk.getUsedSpace());
+        }
+        
+        private List<String> createFormatSpec(List<FileColumnHeader> fileColumnHeaders) {
+            List<String> fmtSpec = new ArrayList<>();
+            for (FileColumnHeader h : fileColumnHeaders) {
+                String spec = String.format("%%%s%ds ", h.isRightAlign() ? "" : "-", 
+                        h.getMaximumWidth());
+                fmtSpec.add(spec);
+            }
+            return fmtSpec;
+        }
     }
     
     public static class TypeOfFileSelection {

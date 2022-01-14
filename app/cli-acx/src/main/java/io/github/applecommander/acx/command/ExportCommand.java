@@ -16,11 +16,11 @@ import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
 import com.webcodepro.applecommander.storage.filters.HexDumpFileFilter;
+import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
+import com.webcodepro.applecommander.util.filestreamer.FileTuple;
+import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
 
 import io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions;
-import io.github.applecommander.filestreamer.FileStreamer;
-import io.github.applecommander.filestreamer.FileTuple;
-import io.github.applecommander.filestreamer.TypeOfFile;
 import io.github.applecommander.filters.AppleSingleFileFilter;
 import io.github.applecommander.filters.RawFileFilter;
 import picocli.CommandLine.ArgGroup;

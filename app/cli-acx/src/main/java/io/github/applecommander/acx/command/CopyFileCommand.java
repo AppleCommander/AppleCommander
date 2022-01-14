@@ -7,13 +7,13 @@ import java.util.stream.Collectors;
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
+import com.webcodepro.applecommander.util.filestreamer.FileTuple;
+import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
 
 import io.github.applecommander.acx.base.ReadWriteDiskCommandOptions;
 import io.github.applecommander.acx.converter.DiskConverter;
 import io.github.applecommander.acx.fileutil.FileUtils;
-import io.github.applecommander.filestreamer.FileStreamer;
-import io.github.applecommander.filestreamer.FileTuple;
-import io.github.applecommander.filestreamer.TypeOfFile;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
