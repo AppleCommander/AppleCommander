@@ -7,6 +7,10 @@ targetCompatibility = 11
 
 repositories {
     mavenCentral()
+    flatDir {
+        // Raspberry Pi 32-bit library
+        dirs project(':').projectDir.absolutePath + "/swt-lib"
+    }
 }
 
 dependencies {
