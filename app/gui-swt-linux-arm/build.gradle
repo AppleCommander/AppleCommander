@@ -17,8 +17,7 @@ repositories {
 dependencies {
     implementation project(':lib:ac-swt-common')
 
-    // This is a special case until 32-bit SWT libraries become available.
-    implementation("org.eclipse.platform:org.eclipse.swt.gtk.linux.arm:3.8.2") {
+    implementation("org.eclipse.platform:org.eclipse.swt.gtk.linux.arm:$piSwtVersion") {
         exclude group: "org.eclipse.platform", module: "org.eclipse.swt"
     }
 }

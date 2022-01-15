@@ -25,8 +25,13 @@ dependencies {
 test {
     String osName = System.getProperty('os.name').toLowerCase().split()[0]
     String osArch = System.getProperty('os.arch').toLowerCase().split()[0]
-    if ("amd64".equals(osArch)) {
-        osArch = "x86_64"
+    switch (osArch) {
+        case 'amd64':
+            osArch = "x86_64"
+            break
+        case 'arm':
+            swtVersion = "$piSwtVersion"
+            break
     }
     String swtDependency
     switch (osName) {
@@ -43,7 +48,10 @@ test {
             throw new Exception('Unknown OS')
     }
     dependencies {
-        implementation("$swtDependency") {
+        compileOnly("$swtDependency") {
+            exclude group: "org.eclipse.platform", module: "org.eclipse.swt"
+        }
+        testImplementation("$swtDependency") {
             exclude group: "org.eclipse.platform", module: "org.eclipse.swt"
         }
     }
