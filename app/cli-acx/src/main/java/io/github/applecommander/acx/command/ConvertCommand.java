@@ -9,9 +9,9 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "convert", description = {
-            "Uncompress a ShrinkIt or Binary II file; ",
-            "or convert a DiskCopy 4.2 image into a ProDOS disk image." })
+@Command(name = "convert", description = 
+            "Uncompress a ShrinkIt or Binary II file; "
+            + "or convert a DiskCopy 4.2 image into a ProDOS disk image.")
 public class ConvertCommand extends ReusableCommandOptions {
     @Option(names = { "-d", "--disk" }, description = "Image to create [$ACX_DISK_NAME].", required = true,
             defaultValue = "${ACX_DISK_NAME}")
