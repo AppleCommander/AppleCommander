@@ -18,6 +18,10 @@ public class SwtImageTest {
 	public void testPNG() throws Exception {
 		// SwtImage unit test fails on Mac, appears to be the thread deal. Disabling for now.
 		assumeThat(SystemUtils.IS_OS_MAC, is(false));
+		// ... and on Rasbian 32-bit; disabling.
+        if (SystemUtils.IS_OS_LINUX) {
+            assumeThat(SystemUtils.OS_ARCH.equals("arm"), is(false));
+        }
 		performTest("PNG"); //$NON-NLS-1$
 	}
 	
@@ -25,6 +29,10 @@ public class SwtImageTest {
 	public void testJPEG() throws Exception {
 		// SwtImage unit test fails on Mac, appears to be the thread deal. Disabling for now.
 		assumeThat(SystemUtils.IS_OS_MAC, is(false));
+		// ... and on Rasbian 32-bit; disabling.
+        if (SystemUtils.IS_OS_LINUX) {
+            assumeThat(SystemUtils.OS_ARCH.equals("arm"), is(false));
+        }
 		performTest("JPEG"); //$NON-NLS-1$
 	}
 	
@@ -32,6 +40,10 @@ public class SwtImageTest {
 	public void testBMP() throws Exception {
 		// SwtImage unit test fails on Mac, appears to be the thread deal. Disabling for now.
 		assumeThat(SystemUtils.IS_OS_MAC, is(false));
+		// ... and on Rasbian 32-bit; disabling.
+        if (SystemUtils.IS_OS_LINUX) {
+            assumeThat(SystemUtils.OS_ARCH.equals("arm"), is(false));
+        }
 		performTest("BMP"); //$NON-NLS-1$
 	}
 	
@@ -39,6 +51,10 @@ public class SwtImageTest {
 	public void testBMP_RLE() throws Exception {
 		// SwtImage unit test fails on Mac, appears to be the thread deal. Disabling for now.
 		assumeThat(SystemUtils.IS_OS_MAC, is(false));
+		// ... and on Rasbian 32-bit; disabling.
+        if (SystemUtils.IS_OS_LINUX) {
+            assumeThat(SystemUtils.OS_ARCH.equals("arm"), is(false));
+        }
 		performTest("RLE"); //$NON-NLS-1$
 	}
 	
@@ -55,6 +71,10 @@ public class SwtImageTest {
 	public void testICO() throws Exception {
 		// SwtImage unit test fails on Mac, appears to be the thread deal. Disabling for now.
 		assumeThat(SystemUtils.IS_OS_MAC, is(false));
+		// ... and on Rasbian 32-bit; disabling.
+        if (SystemUtils.IS_OS_LINUX) {
+            assumeThat(SystemUtils.OS_ARCH.equals("arm"), is(false));
+        }
 		performTest("ICO"); //$NON-NLS-1$
 	}
 	

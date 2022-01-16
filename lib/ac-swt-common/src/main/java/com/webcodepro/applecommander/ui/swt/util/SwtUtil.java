@@ -59,12 +59,13 @@ public class SwtUtil {
 	/**
 	 * Setup some sensible paging information.
 	 */
-	public static void setupPagingInformation(ScrolledComposite composite) {
+	@SuppressWarnings("deprecation")   // Using deprecated method for older RPi SWT version
+    public static void setupPagingInformation(ScrolledComposite composite) {
 		GC gc = new GC(composite);
 		FontMetrics fontMetrics = gc.getFontMetrics();
 		gc.dispose();
 		int fontHeight = fontMetrics.getHeight();
-		int fontWidth = (int)fontMetrics.getAverageCharacterWidth();
+		int fontWidth = fontMetrics.getAverageCharWidth();
 		Rectangle clientArea = composite.getClientArea();
 		int lines = clientArea.height / fontHeight;
 		int pageHeight = lines * fontHeight;
