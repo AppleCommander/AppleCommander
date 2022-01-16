@@ -64,7 +64,7 @@ public class SwtUtil {
 		FontMetrics fontMetrics = gc.getFontMetrics();
 		gc.dispose();
 		int fontHeight = fontMetrics.getHeight();
-		int fontWidth = (int)fontMetrics.getAverageCharacterWidth();
+		int fontWidth = fontMetrics.getAverageCharWidth();
 		Rectangle clientArea = composite.getClientArea();
 		int lines = clientArea.height / fontHeight;
 		int pageHeight = lines * fontHeight;
