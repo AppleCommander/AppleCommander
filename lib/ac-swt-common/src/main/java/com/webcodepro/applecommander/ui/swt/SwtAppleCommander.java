@@ -37,9 +37,9 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
 import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.Disk.FilenameFilter;
 import com.webcodepro.applecommander.storage.DiskUnrecognizedException;
+import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.ui.AppleCommander;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.UserPreferences;
@@ -75,6 +75,8 @@ public class SwtAppleCommander implements Listener {
 	 * Launch SwtAppleCommander.
 	 */
 	public void launch(String[] args) {
+	    Display.setAppName("AppleCommander");
+	    Display.setAppVersion(AppleCommander.VERSION);
 		Display display = new Display();
 		display.asyncExec(() -> {
 			for (String arg : args) {
