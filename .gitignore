@@ -12,11 +12,13 @@ AppleCommander.preferences
 
 # Ignoring all disk images at root of project
 /*.dsk
+/*.DSK
 /*.po
 /*.hdv
 /*.do
 /*.2mg
 /*.2img
+/*.nib
 
 # Eclipse
 .classpath
