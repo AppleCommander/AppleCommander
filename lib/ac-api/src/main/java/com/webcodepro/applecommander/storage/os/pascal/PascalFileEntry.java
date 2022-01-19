@@ -1,8 +1,8 @@
 /*
  * AppleCommander - An Apple ][ image utility.
- * Copyright (C) 2002 by Robert Greene
+ * Copyright (C) 2002-2022 by Robert Greene
  * robgreene at users.sourceforge.net
- * Copyright (C) 2004 by John B. Matthews
+ * Copyright (C) 2004-2022 by John B. Matthews
  * matthewsj at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it 

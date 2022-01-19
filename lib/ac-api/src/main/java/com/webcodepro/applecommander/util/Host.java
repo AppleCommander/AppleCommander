@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006 John B. Matthews
+ * Copyright (C) 2006-2022 John B. Matthews
  * matthewsj at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it 

@@ -1,7 +1,5 @@
-package com.webcodepro.applecommander.util;
-
 /*
- * Copyright (C) 2012 by David Schmidt
+ * Copyright (C) 2012-2022 by David Schmidt
  * david__schmidt at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it 
@@ -18,6 +16,7 @@ package com.webcodepro.applecommander.util;
  * with this program; if not, write to the Free Software Foundation, Inc., 
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+package com.webcodepro.applecommander.util;
 
 import java.io.File;
 import java.io.FileInputStream;
