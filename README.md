@@ -1,14 +1,10 @@
 # Overview
 
-Contributions welcome!
+[![Current Release](https://img.shields.io/github/release/AppleCommander/AppleCommander.svg)](https://github.com/AppleCommander/AppleCommander/releases)
+![License](https://img.shields.io/github/license/AppleCommander/AppleCommander) 
 
-Please see [AppleCommander site](https://applecommander.github.io) for more details. 
+AppleCommander is a cross-platform set of tools used to manipulate Apple ][ disk images. There is a GUI packaged for Windows, Linux, or Mac OS X, and there are a number of command-line tools (see below) that are useful for build chains. 
 
-[Developer information](DEVELOPER.md) has some details useful if you wish to update AppleCommander.
+Please see [AppleCommander site](https://applecommander.github.io) for usage details. 
 
-Some information is still out of date on the AppleCommander site...
-* Obviously, we have moved to Github. :-)
-* Binaries are in the release tab.
-* Mac OS X users may want to visit [lifepillar's homebrew tap](https://github.com/lifepillar/homebrew-appleii) for retro goodness.
-* Libary releases to the Maven repository are currently manual and may be a bit delayed.
-  
+[Developer information](DEVELOPER.md) has some details useful if you wish to contribute to AppleCommander!
