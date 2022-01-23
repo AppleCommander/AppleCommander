@@ -38,23 +38,22 @@ javadoc {
     options.addStringOption('Xdoclint:none', '-quiet')
 }
 
-java {
-    withSourcesJar()
-    withJavadocJar()
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
 }
 
-signing {
-    // Only sign if we're uploading...
-    required {
-        isReleaseVersion && gradle.taskGraph.hasTask("publish")
-    }
-    sign configurations.archives
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
+            artifact sourcesJar
+            artifact javadocJar
             pom {
                 groupId = "net.sf.applecommander"
                 artifactId = "AppleCommander"
@@ -93,4 +92,8 @@ publishing {
             }
         }
     }
+}
+
+signing {
+    sign publishing.publications.mavenJava
 }
