@@ -475,9 +475,9 @@ public class ProdosFormatDisk extends FormattedDisk {
 						FileColumnHeader.ALIGN_CENTER, "directory"));
 				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3,
 						FileColumnHeader.ALIGN_RIGHT, "blocks"));
-				list.add(new FileColumnHeader(textBundle.get("Modified"), 10, 
+				list.add(new FileColumnHeader(textBundle.get("Modified"), 16, 
 						FileColumnHeader.ALIGN_CENTER, "modified"));
-				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.Created"), 10, 
+				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.Created"), 16, 
 						FileColumnHeader.ALIGN_CENTER, "created"));
 				list.add(new FileColumnHeader(textBundle.get("ProdosFormatDisk.Length"), 10, 
 						FileColumnHeader.ALIGN_RIGHT, "size"));
