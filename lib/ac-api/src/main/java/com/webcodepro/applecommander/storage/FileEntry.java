@@ -132,6 +132,11 @@ public interface FileEntry {
 	public abstract void setAddress(int address);
 	
 	/**
+	 * Get the address that this file loads at.
+	 */
+	public abstract int getAddress();
+	
+	/**
 	 * Indicates that this filetype can be compiled.
 	 * Compile is a somewhat arbitrary term, as the code may be
 	 * assembled.

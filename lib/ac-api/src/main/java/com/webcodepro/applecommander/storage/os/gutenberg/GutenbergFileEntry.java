@@ -334,6 +334,13 @@ public class GutenbergFileEntry implements FileEntry {
 	public void setAddress(int address) {
 	}
 
+    /**
+     * Get the address that this file loads at.
+     */
+    public int getAddress() {
+        return 0;   // Does not apply.
+    }
+	
 	/**
 	 * Indicates that this filetype can be compiled.
 	 */

@@ -511,6 +511,13 @@ public class PascalFileEntry implements FileEntry {
 		// Does not apply.
 	}
 
+    /**
+     * Get the address that this file loads at.
+     */
+    public int getAddress() {
+        return 0;   // Does not apply.
+    }
+
 	/**
 	 * Indicates that this filetype can be compiled.
 	 */

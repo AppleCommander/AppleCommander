@@ -376,6 +376,8 @@ public class DosFormatDisk extends FormattedDisk {
 						FileColumnHeader.ALIGN_CENTER, "deleted"));
 				list.add(new FileColumnHeader(textBundle.get("DosFormatDisk.TrackAndSectorList"), 7, 
 						FileColumnHeader.ALIGN_CENTER, "trackAndSectorList"));
+				list.add(new FileColumnHeader(textBundle.get("DosFormatDisk.FileAddress"), 7,
+				        FileColumnHeader.ALIGN_RIGHT, "address"));
 				break;
 			default:	// FILE_DISPLAY_STANDARD
 				list.addAll(super.getFileColumnHeaders(displayMode));

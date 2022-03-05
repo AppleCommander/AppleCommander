@@ -612,6 +612,17 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 		writeFileEntry(fileEntry);
 	}
 
+    /**
+     * Get the address that this file loads at.
+     */
+    public int getAddress() {
+        if (needsAddress()) {
+            return getAuxiliaryType();
+        }
+        return 0;
+    }
+
+
 	/**
 	 * Indicates that this filetype can be compiled.
 	 */

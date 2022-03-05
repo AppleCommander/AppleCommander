@@ -476,6 +476,14 @@ public class CpmFileEntry implements FileEntry {
 	public void setAddress(int address) {
 		// not applicable
 	}
+	
+    /**
+     * Get the address that this file loads at.
+     */
+    public int getAddress() {
+        return 0;   // Not applicable
+    }
+
 
 	/**
 	 * Indicates that this filetype can be compiled.

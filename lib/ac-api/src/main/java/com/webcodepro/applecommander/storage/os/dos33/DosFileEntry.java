@@ -285,6 +285,7 @@ public class DosFileEntry implements FileEntry {
 				list.add(numberFormat.format(getSectorsUsed()));
 				list.add(isDeleted() ? textBundle.get("Deleted") : "");  //$NON-NLS-1$//$NON-NLS-2$
 				list.add("T" + getTrack() + " S" + getSector()); //$NON-NLS-1$ //$NON-NLS-2$
+				list.add("A=$" + AppleUtil.getFormattedWord(getAddress()));
 				break;
 			default:	// FILE_DISPLAY_STANDARD
 				list.add(getFilename());
@@ -495,6 +496,17 @@ public class DosFileEntry implements FileEntry {
 					format("DosFileEntry.UnableToSetAddressError", getFilename())); //$NON-NLS-1$
 		}
 	}
+
+    /**
+     * Get the address that this file loads at.
+     */
+    public int getAddress() {
+        if (needsAddress()) {
+            byte[] rawData = disk.getFileData(this);
+            return AppleUtil.getWordValue(rawData, 0);
+        }
+        return 0;
+    }
 
 	/**
 	 * Indicates that this filetype can be compiled.
