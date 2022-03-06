@@ -30,6 +30,7 @@ import org.junit.Test;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
 import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
+import com.webcodepro.applecommander.storage.filters.DisassemblyFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
@@ -69,7 +70,7 @@ public class DiskHelperTest {
 		FormattedDisk[] disks = showDirectory(config.getDiskDir() + "/Prodos.dsk"); //$NON-NLS-1$
 		assertApplesoftFile(disks[0], "COPY.ME"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "SETTINGS"); //$NON-NLS-1$
-		assertBinaryFile(disks[0], "PRODOS"); //$NON-NLS-1$
+		assertDisassemblyFile(disks[0], "PRODOS"); //$NON-NLS-1$
 	}
 	
 	@Test
@@ -231,6 +232,14 @@ public class DiskHelperTest {
 		assertNotNull(filename + " test: File not found", disk); //$NON-NLS-1$
 		assertTrue("BinaryFileFilter was not chosen",  //$NON-NLS-1$
 			fileEntry.getSuggestedFilter() instanceof BinaryFileFilter);
+	}
+	
+	protected void assertDisassemblyFile(FormattedDisk disk, String filename) throws DiskException {
+        assertNotNull(filename + " test: Disk should not be null", disk);
+        FileEntry fileEntry = disk.getFile(filename);
+        assertNotNull(filename + " test: File not found", disk);
+        assertTrue("DisassemblyFileFilter was not chosen",
+            fileEntry.getSuggestedFilter() instanceof DisassemblyFileFilter);
 	}
 	
 	protected void assertGraphicsFile(FormattedDisk disk, String filename) throws DiskException {

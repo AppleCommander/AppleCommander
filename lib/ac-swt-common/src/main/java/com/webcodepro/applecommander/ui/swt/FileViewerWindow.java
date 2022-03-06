@@ -21,6 +21,7 @@ package com.webcodepro.applecommander.ui.swt;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -48,6 +49,7 @@ import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFile
 import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
 import com.webcodepro.applecommander.storage.filters.BusinessBASICFileFilter;
+import com.webcodepro.applecommander.storage.filters.DisassemblyFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
@@ -56,6 +58,7 @@ import com.webcodepro.applecommander.storage.filters.GutenbergFileFilter;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.filteradapter.ApplesoftFilterAdapter;
 import com.webcodepro.applecommander.ui.swt.filteradapter.BusinessBASICFilterAdapter;
+import com.webcodepro.applecommander.ui.swt.filteradapter.DisassemblyFilterAdapter;
 import com.webcodepro.applecommander.ui.swt.filteradapter.FilterAdapter;
 import com.webcodepro.applecommander.ui.swt.filteradapter.GraphicsFilterAdapter;
 import com.webcodepro.applecommander.ui.swt.filteradapter.HexFilterAdapter;
@@ -90,6 +93,7 @@ public class FileViewerWindow {
 	private ToolBar toolBar;
 	private ToolItem nativeToolItem;
 	private ToolItem hexDumpToolItem;
+	private Optional<ToolItem> disassemblyToolItem = Optional.empty();    // May or may not be setup
 	private ToolItem rawDumpToolItem;
 	private ToolItem copyToolItem;
 	
@@ -103,6 +107,7 @@ public class FileViewerWindow {
 	private FilterAdapter nativeFilterAdapter;
 	private FilterAdapter hexFilterAdapter;
 	private FilterAdapter rawDumpFilterAdapter;
+	private FilterAdapter disassemblyFilterAdapter;
 	
 	/**
 	 * Construct the file viewer window.
@@ -222,6 +227,11 @@ public class FileViewerWindow {
 				textBundle.get("FileViewerWindow.TextTooltip"), //$NON-NLS-1$
 				imageManager.get(ImageManager.ICON_VIEW_AS_TEXTFILE)
 			));
+		nativeFilterAdapterMap.put(DisassemblyFileFilter.class, 
+		    new DisassemblyFilterAdapter(this, textBundle.get("FileViewerWindow.DisassemblyButton"),
+                textBundle.get("FileViewerWindow.DisassemblyTooltip"),
+                imageManager.get(ImageManager.ICON_COMPILE_FILE)
+            ));
 	}
 	
 	/**
@@ -261,6 +271,10 @@ public class FileViewerWindow {
 			nativeFilterAdapter = hexFilterAdapter;
 		}
 		rawDumpToolItem = createRawDumpToolItem();
+		// Add the disassembly button only if it's not the default and if this filetype has a start address.
+		if (fileEntry != null && fileEntry.needsAddress() && !(nativeFilter instanceof DisassemblyFileFilter)) {
+		    disassemblyToolItem = Optional.of(createDisassemblyToolItem());
+		}
 		new ToolItem(toolBar, SWT.SEPARATOR);
 		copyToolItem = createCopyToolItem();
 		new ToolItem(toolBar, SWT.SEPARATOR);
@@ -291,7 +305,19 @@ public class FileViewerWindow {
 		ToolItem toolItem = rawDumpFilterAdapter.create(toolBar);
 		return toolItem;
 	}
-	
+
+   /**
+     * Create the disassembly tool item (button).
+     */
+    protected ToolItem createDisassemblyToolItem() {
+        disassemblyFilterAdapter = new DisassemblyFilterAdapter(this, textBundle.get("FileViewerWindow.DisassemblyButton"),  //$NON-NLS-1$
+                textBundle.get("FileViewerWindow.DisassemblyTooltip"),  //$NON-NLS-1$
+                imageManager.get(ImageManager.ICON_COMPILE_FILE));
+        disassemblyFilterAdapter.setDisassemblySelected();
+        ToolItem toolItem = disassemblyFilterAdapter.create(toolBar);
+        return toolItem;
+    }
+
 	/**
 	 * Create the copy tool item (button).
 	 */
@@ -351,15 +377,15 @@ public class FileViewerWindow {
 						switch (event.keyCode) {
 							case SWT.F2:	// the "native" file format (image, text, etc)
 								getNativeFilterAdapter().display();
-								setFilterToolItemSelection(true, false, false);
+								setFilterToolItemSelection(true, false, false, false);
 								break;
 							case SWT.F3:	// Hex format
 								getHexFilterAdapter().display();
-								setFilterToolItemSelection(false, true, false);
+								setFilterToolItemSelection(false, true, false, false);
 								break;
 							case SWT.F4:	// "Raw" hex format
 								getRawDumpFilterAdapter().display();
-								setFilterToolItemSelection(false, false, true);
+								setFilterToolItemSelection(false, false, true, false);
 								break;
 						}
 					}
@@ -395,10 +421,11 @@ public class FileViewerWindow {
 	public Color getBlueColor() {
 		return blue;
 	}
-	public void setFilterToolItemSelection(boolean nativeSelected, boolean hexSelected, boolean dumpSelected) {
+	public void setFilterToolItemSelection(boolean nativeSelected, boolean hexSelected, boolean dumpSelected, boolean disassemblySelected) {
 		if (nativeToolItem != null) nativeToolItem.setSelection(nativeSelected);
 		hexDumpToolItem.setSelection(hexSelected);
 		rawDumpToolItem.setSelection(dumpSelected);
+		disassemblyToolItem.ifPresent(toolItem -> toolItem.setSelection(disassemblySelected));
 	}
 	protected ContentTypeAdapter getContentTypeAdapter() {
 		return contentTypeAdapter;

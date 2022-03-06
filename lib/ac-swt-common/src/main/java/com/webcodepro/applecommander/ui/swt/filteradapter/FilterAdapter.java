@@ -50,6 +50,7 @@ public abstract class FilterAdapter {
 	private boolean nativeSelected = true;
 	private boolean hexSelected = false;
 	private boolean dumpSelected = false;
+	private boolean disassemblySelected = false;
 	
 	public FilterAdapter(FileViewerWindow window, String text, String toolTipText, 
 			Image image) {
@@ -77,7 +78,7 @@ public abstract class FilterAdapter {
 				public void widgetSelected(SelectionEvent e) {
 					display();
 					getWindow().setFilterToolItemSelection(
-						isNativeSelected(), isHexSelected(), isDumpSelected());
+					        isNativeSelected(), isHexSelected(), isDumpSelected(), isDisassemblySelected());
 				}
 			});
 		}
@@ -130,16 +131,25 @@ public abstract class FilterAdapter {
 		nativeSelected = false;
 		hexSelected = false;
 		dumpSelected = true;
+		disassemblySelected = false;
 	}
 	public void setHexSelected() {
 		nativeSelected = false;
 		hexSelected = true;
 		dumpSelected = false;
+        disassemblySelected = false;
 	}
+    public void setDisassemblySelected() {
+        nativeSelected = false;
+        hexSelected = false;
+        dumpSelected = false;
+        disassemblySelected = true;
+    }
 	public void setNativeSelected() {
 		nativeSelected = true;
 		hexSelected = false;
 		dumpSelected = false;
+        disassemblySelected = false;
 	}
 	protected boolean isDumpSelected() {
 		return dumpSelected;
@@ -147,6 +157,9 @@ public abstract class FilterAdapter {
 	protected boolean isHexSelected() {
 		return hexSelected;
 	}
+	protected boolean isDisassemblySelected() {
+        return disassemblySelected;
+    }
 	protected boolean isNativeSelected() {
 		return nativeSelected;
 	}

@@ -37,6 +37,7 @@ import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
 import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
 import com.webcodepro.applecommander.storage.filters.BusinessBASICFileFilter;
+import com.webcodepro.applecommander.storage.filters.DisassemblyFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
@@ -589,6 +590,8 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 				filter.setMode(GraphicsFileFilter.MODE_QUICKDRAW2_ICON);
 				return filter;
 			}
+		case 0xff:
+		    return new DisassemblyFileFilter();
 		}
 		return new BinaryFileFilter();
 	}
