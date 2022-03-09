@@ -51,10 +51,11 @@ import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
 import com.webcodepro.applecommander.storage.filters.BusinessBASICFileFilter;
 import com.webcodepro.applecommander.storage.filters.DisassemblyFileFilter;
 import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
+import com.webcodepro.applecommander.storage.filters.GutenbergFileFilter;
 import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
+import com.webcodepro.applecommander.storage.filters.ShapeTableFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
-import com.webcodepro.applecommander.storage.filters.GutenbergFileFilter;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.filteradapter.ApplesoftFilterAdapter;
 import com.webcodepro.applecommander.ui.swt.filteradapter.BusinessBASICFilterAdapter;
@@ -63,6 +64,7 @@ import com.webcodepro.applecommander.ui.swt.filteradapter.FilterAdapter;
 import com.webcodepro.applecommander.ui.swt.filteradapter.GraphicsFilterAdapter;
 import com.webcodepro.applecommander.ui.swt.filteradapter.HexFilterAdapter;
 import com.webcodepro.applecommander.ui.swt.filteradapter.RawDumpFilterAdapter;
+import com.webcodepro.applecommander.ui.swt.filteradapter.ShapeTableFilterAdapter;
 import com.webcodepro.applecommander.ui.swt.filteradapter.TextFilterAdapter;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
@@ -93,9 +95,11 @@ public class FileViewerWindow {
 	private ToolBar toolBar;
 	private ToolItem nativeToolItem;
 	private ToolItem hexDumpToolItem;
-	private Optional<ToolItem> disassemblyToolItem = Optional.empty();    // May or may not be setup
 	private ToolItem rawDumpToolItem;
 	private ToolItem copyToolItem;
+	// May or may not be setup
+    private Optional<ToolItem> disassemblyToolItem = Optional.empty();
+    private Optional<ToolItem> shapeTableToolItem = Optional.empty();
 	
 	private Font courier;
 	private Color black;
@@ -108,6 +112,7 @@ public class FileViewerWindow {
 	private FilterAdapter hexFilterAdapter;
 	private FilterAdapter rawDumpFilterAdapter;
 	private FilterAdapter disassemblyFilterAdapter;
+	private FilterAdapter shapeTableFilterAdapter;
 	
 	/**
 	 * Construct the file viewer window.
@@ -232,6 +237,11 @@ public class FileViewerWindow {
                 textBundle.get("FileViewerWindow.DisassemblyTooltip"),
                 imageManager.get(ImageManager.ICON_COMPILE_FILE)
             ));
+        nativeFilterAdapterMap.put(ShapeTableFileFilter.class, 
+            new ShapeTableFilterAdapter(this, textBundle.get("FileViewerWindow.ShapeTableButton"),
+                textBundle.get("FileViewerWindow.ShapeTableTooltip"),
+                imageManager.get(ImageManager.ICON_SHAPE_TABLE)
+            ));
 	}
 	
 	/**
@@ -274,6 +284,7 @@ public class FileViewerWindow {
 		// Add the disassembly button only if it's not the default and if this filetype has a start address.
 		if (fileEntry != null && fileEntry.needsAddress() && !(nativeFilter instanceof DisassemblyFileFilter)) {
 		    disassemblyToolItem = Optional.of(createDisassemblyToolItem());
+		    shapeTableToolItem = Optional.of(createShapeTableToolItem());
 		}
 		new ToolItem(toolBar, SWT.SEPARATOR);
 		copyToolItem = createCopyToolItem();
@@ -315,6 +326,18 @@ public class FileViewerWindow {
                 imageManager.get(ImageManager.ICON_COMPILE_FILE));
         disassemblyFilterAdapter.setDisassemblySelected();
         ToolItem toolItem = disassemblyFilterAdapter.create(toolBar);
+        return toolItem;
+    }
+
+    /**
+     * Create the shape table tool item (button).
+     */
+    protected ToolItem createShapeTableToolItem() {
+        shapeTableFilterAdapter = new ShapeTableFilterAdapter(this, textBundle.get("FileViewerWindow.ShapeTableButton"),
+                textBundle.get("FileViewerWindow.ShapeTableTooltip"),
+                imageManager.get(ImageManager.ICON_SHAPE_TABLE));
+        shapeTableFilterAdapter.setShapeTableSelected();
+        ToolItem toolItem = shapeTableFilterAdapter.create(toolBar);
         return toolItem;
     }
 
@@ -377,15 +400,15 @@ public class FileViewerWindow {
 						switch (event.keyCode) {
 							case SWT.F2:	// the "native" file format (image, text, etc)
 								getNativeFilterAdapter().display();
-								setFilterToolItemSelection(true, false, false, false);
+								setFilterToolItemSelection(true, false, false, false, false);
 								break;
 							case SWT.F3:	// Hex format
 								getHexFilterAdapter().display();
-								setFilterToolItemSelection(false, true, false, false);
+								setFilterToolItemSelection(false, true, false, false, false);
 								break;
 							case SWT.F4:	// "Raw" hex format
 								getRawDumpFilterAdapter().display();
-								setFilterToolItemSelection(false, false, true, false);
+								setFilterToolItemSelection(false, false, true, false, false);
 								break;
 						}
 					}
@@ -421,11 +444,13 @@ public class FileViewerWindow {
 	public Color getBlueColor() {
 		return blue;
 	}
-	public void setFilterToolItemSelection(boolean nativeSelected, boolean hexSelected, boolean dumpSelected, boolean disassemblySelected) {
+	public void setFilterToolItemSelection(boolean nativeSelected, boolean hexSelected, boolean dumpSelected, 
+	        boolean disassemblySelected, boolean shapeTableSelected) {
 		if (nativeToolItem != null) nativeToolItem.setSelection(nativeSelected);
 		hexDumpToolItem.setSelection(hexSelected);
 		rawDumpToolItem.setSelection(dumpSelected);
 		disassemblyToolItem.ifPresent(toolItem -> toolItem.setSelection(disassemblySelected));
+		shapeTableToolItem.ifPresent(toolItem -> toolItem.setSelection(shapeTableSelected));
 	}
 	protected ContentTypeAdapter getContentTypeAdapter() {
 		return contentTypeAdapter;
