@@ -51,6 +51,7 @@ public abstract class FilterAdapter {
 	private boolean hexSelected = false;
 	private boolean dumpSelected = false;
 	private boolean disassemblySelected = false;
+	private boolean shapeTableSelected = false;
 	
 	public FilterAdapter(FileViewerWindow window, String text, String toolTipText, 
 			Image image) {
@@ -78,7 +79,8 @@ public abstract class FilterAdapter {
 				public void widgetSelected(SelectionEvent e) {
 					display();
 					getWindow().setFilterToolItemSelection(
-					        isNativeSelected(), isHexSelected(), isDumpSelected(), isDisassemblySelected());
+					        isNativeSelected(), isHexSelected(), isDumpSelected(), isDisassemblySelected(),
+					        isShapeTableSelected());
 				}
 			});
 		}
@@ -132,25 +134,36 @@ public abstract class FilterAdapter {
 		hexSelected = false;
 		dumpSelected = true;
 		disassemblySelected = false;
+		shapeTableSelected = false;
 	}
 	public void setHexSelected() {
 		nativeSelected = false;
 		hexSelected = true;
 		dumpSelected = false;
         disassemblySelected = false;
+        shapeTableSelected = false;
 	}
     public void setDisassemblySelected() {
         nativeSelected = false;
         hexSelected = false;
         dumpSelected = false;
         disassemblySelected = true;
+        shapeTableSelected = false;
     }
 	public void setNativeSelected() {
 		nativeSelected = true;
 		hexSelected = false;
 		dumpSelected = false;
         disassemblySelected = false;
+        shapeTableSelected = false;
 	}
+    public void setShapeTableSelected() {
+        nativeSelected = false;
+        hexSelected = false;
+        dumpSelected = false;
+        disassemblySelected = false;
+        shapeTableSelected = true;
+    }
 	protected boolean isDumpSelected() {
 		return dumpSelected;
 	}
@@ -163,6 +176,9 @@ public abstract class FilterAdapter {
 	protected boolean isNativeSelected() {
 		return nativeSelected;
 	}
+	protected boolean isShapeTableSelected() {
+        return shapeTableSelected;
+    }
 	protected FileViewerWindow getWindow() {
 		return window;
 	}
