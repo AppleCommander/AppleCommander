@@ -253,7 +253,11 @@ public class ProdosFormatDisk extends FormattedDisk {
 			}
 			blockNumber = nextBlockNumber;
 		}
-		throw new DiskFullException(textBundle.get("ProdosFormatDisk.UnableToAllocateSpaceError"), this.getFilename()); //$NON-NLS-1$
+		if (directory instanceof ProdosSubdirectoryHeader) {
+		    throw new DiskFullException(textBundle.get("ProdosFormatDisk.UnableToAllocateSpaceError"), this.getFilename()); //$NON-NLS-1$
+		} else {
+		    throw new DiskFullException(textBundle.get("ProdosFormatDisk.UnableToAllocateFileEntry"), this.getFilename());
+	    }
 	}
 
 	/**
@@ -1438,8 +1442,12 @@ public class ProdosFormatDisk extends FormattedDisk {
 			}
 			blockNumber = nextBlockNumber;
 		}
-		throw new DiskFullException(
-				textBundle.get("ProdosFormatDisk.UnableToAllocateSpaceError") //$NON-NLS-1$
-				, this.getFilename());
+		if (directory instanceof ProdosSubdirectoryHeader) {
+    		throw new DiskFullException(
+    				textBundle.get("ProdosFormatDisk.UnableToAllocateSpaceError") //$NON-NLS-1$
+    				, this.getFilename());
+		} else {
+		    throw new DiskFullException(textBundle.get("ProdosFormatDisk.UnableToAllocateFileEntry"), this.getFilename());
+		}
 	}
 }
