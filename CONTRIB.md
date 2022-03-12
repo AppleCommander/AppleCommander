@@ -1,6 +1,8 @@
+```
 AppleCommander - An Apple ][ image utility.
 Copyright (c) 2002-2022 by Robert Greene and others
 robgreene at users.sourceforge.net  (should still be functional)
+```
 
 Note that user history was lost in the transition from CVS at SourceForge to Git at GitHub.
 Entirely my fault. :-/

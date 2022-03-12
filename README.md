@@ -8,4 +8,5 @@ AppleCommander is a cross-platform set of tools used to manipulate Apple ][ disk
 Please see [AppleCommander site](https://applecommander.github.io) for usage details. 
 
 [Developer information](DEVELOPER.md) has some details useful if you wish to contribute to AppleCommander!
+
 [Contribution information](CONTRIB.md) is a collection of people who have contributed to AppleCommander.
