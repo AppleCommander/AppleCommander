@@ -28,6 +28,8 @@ import org.junit.Test;
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
+import com.webcodepro.applecommander.storage.compare.ComparisonResult;
+import com.webcodepro.applecommander.storage.compare.DiskDiff;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
@@ -92,7 +94,9 @@ public class AppleUtilTest {
 		AppleUtil.changeImageOrderByTrackAndSector(dosDiskDosOrder.getImageOrder(),
 			dosDiskNibbleOrder.getImageOrder());
 		// Confirm that these disks are identical:
-		assertTrue(AppleUtil.disksEqualByTrackAndSector(dosDiskDosOrder, dosDiskNibbleOrder));
+        ComparisonResult result = DiskDiff.create(dosDiskDosOrder, dosDiskDosOrder)
+                .selectCompareByTrackSectorGeometry().compare();
+        assertEquals("Expected disks to have no differences", 0, result.getDifferenceCount());
 	}
 
 	@Test
@@ -112,7 +116,9 @@ public class AppleUtilTest {
 		AppleUtil.changeImageOrderByBlock(prodosDiskDosOrder.getImageOrder(),
 			prodosDiskNibbleOrder.getImageOrder());
 		// Confirm that these disks are identical:
-		assertTrue(AppleUtil.disksEqualByBlock(prodosDiskDosOrder, prodosDiskNibbleOrder));
+		ComparisonResult result = DiskDiff.create(prodosDiskDosOrder, prodosDiskNibbleOrder)
+		        .selectCompareByBlockGeometry().compare();
+		assertEquals("Expected disks to have no differences", 0, result.getDifferenceCount());
 	}
 	
 	@Test

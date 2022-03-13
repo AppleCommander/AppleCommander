@@ -28,6 +28,7 @@ import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.DiskCorruptException;
 import com.webcodepro.applecommander.storage.DiskFullException;
+import com.webcodepro.applecommander.storage.DiskGeometry;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.StorageBundle;
@@ -773,4 +774,11 @@ public class DosFormatDisk extends FormattedDisk {
 	public DirectoryEntry createDirectory(String name) throws DiskFullException	{
 		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$
 	}
+
+    /**
+     * Gives an indication on how this disk's geometry should be handled.
+     */
+    public DiskGeometry getDiskGeometry() {
+        return DiskGeometry.TRACK_SECTOR;
+    }
 }

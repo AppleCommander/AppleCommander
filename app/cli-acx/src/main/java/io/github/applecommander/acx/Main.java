@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import io.github.applecommander.acx.command.CompareCommand;
 import io.github.applecommander.acx.command.ConvertCommand;
 import io.github.applecommander.acx.command.CopyFileCommand;
 import io.github.applecommander.acx.command.CreateDiskCommand;
@@ -53,6 +54,7 @@ import picocli.CommandLine.Option;
     optionListHeading = "%nOptions:%n",
     description = "'acx' experimental utility", 
     subcommands = {
+            CompareCommand.class,
             ConvertCommand.class,
             CopyFileCommand.class,
     		CreateDiskCommand.class,
