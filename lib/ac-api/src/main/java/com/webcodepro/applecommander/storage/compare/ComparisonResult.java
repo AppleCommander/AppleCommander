@@ -33,6 +33,17 @@ public class ComparisonResult {
         return errors.size() + warnings.size();
     }
     
+    public List<String> getAllMessages() {
+        List<String> messages = new ArrayList<>();
+        messages.addAll(errors);
+        messages.addAll(warnings);
+        return messages;
+    }
+    public List<String> getLimitedMessages(int limit) {
+        List<String> messages = getAllMessages();
+        return messages.subList(0, Math.min(messages.size(), limit));
+    }
+    
     public void addError(Exception ex) {
         errors.add(ex.getMessage());
     }

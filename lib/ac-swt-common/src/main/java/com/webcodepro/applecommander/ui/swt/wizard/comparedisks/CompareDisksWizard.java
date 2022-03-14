@@ -34,6 +34,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 public class CompareDisksWizard extends Wizard {
 	private String diskname1;
 	private String diskname2;
+	private int messageLimit = 10;
 	/**
 	 * Constructor for ExportWizard.
 	 */
@@ -54,11 +55,16 @@ public class CompareDisksWizard extends Wizard {
 	public String getDiskname2() {
 		return diskname2;
 	}
+	public int getMessageLimit() {
+        return messageLimit;
+    }
 	public void setDiskname1(String string) {
 		diskname1 = string;
 	}
 	public void setDiskname2(String string) {
 		diskname2 = string;
 	}
-
+	public void setMessageLimit(int messageLimit) {
+        this.messageLimit = messageLimit;
+    }
 }

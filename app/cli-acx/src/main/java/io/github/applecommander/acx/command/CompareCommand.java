@@ -19,6 +19,7 @@
  */
 package io.github.applecommander.acx.command;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import com.webcodepro.applecommander.storage.Disk;
@@ -39,6 +40,9 @@ public class CompareCommand extends ReadOnlyDiskImageCommandOptions {
     
     @ArgGroup(heading = "%nComparison Strategy Selection:%n")
     private StrategySelection strategySelection = new StrategySelection();
+    
+    @Option(names = { "-l", "--limit" }, description = "Set limit to messages displayed.")
+    private Optional<Integer> limit = Optional.empty();
 
     @Override
     public int handleCommand() throws Exception {
@@ -51,8 +55,12 @@ public class CompareCommand extends ReadOnlyDiskImageCommandOptions {
         }
         else {
             System.out.println("The disks do not match.");
-            result.getErrors().forEach(System.out::println);
-            result.getWarnings().forEach(System.out::println);
+            limit.map(result::getLimitedMessages)
+                 .orElseGet(result::getAllMessages)
+                 .forEach(System.out::println);
+            if (result.getDifferenceCount() > limit.orElse(Integer.MAX_VALUE)) {
+                System.out.printf("There are %d more messages.\n", result.getDifferenceCount() - limit.get());
+            }
         }
                     
         return 0;

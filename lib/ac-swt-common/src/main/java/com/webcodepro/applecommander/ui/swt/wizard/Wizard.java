@@ -83,6 +83,7 @@ public abstract class Wizard {
 		RowData rowData = new RowData();
 		rowData.width = logo.getImageData().width;
 		rowData.height = logo.getImageData().height;
+		System.out.println(rowData.toString());
 		imageCanvas = new ImageCanvas(dialog, SWT.BORDER, logo, rowData);
 
 		// Starting pane

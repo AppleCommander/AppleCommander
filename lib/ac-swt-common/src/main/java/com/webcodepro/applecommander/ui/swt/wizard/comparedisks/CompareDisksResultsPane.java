@@ -117,8 +117,7 @@ public class CompareDisksResultsPane extends WizardPane {
 		}
 		if (disk1 != null && disk2 != null) {
 		    ComparisonResult result = DiskDiff.compare(disk1, disk2);
-		    errorMessages.addAll(result.getErrors());
-		    errorMessages.addAll(result.getWarnings());
+		    errorMessages.addAll(result.getLimitedMessages(wizard.getMessageLimit()));
 		}
 		if (errorMessages.size() == 0) {
 			return textBundle.get("CompareDisksResultsPane.DisksMatch"); //$NON-NLS-1$
