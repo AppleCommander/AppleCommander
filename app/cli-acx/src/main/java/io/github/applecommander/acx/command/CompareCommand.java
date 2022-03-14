@@ -61,6 +61,7 @@ public class CompareCommand extends ReadOnlyDiskImageCommandOptions {
             if (result.getDifferenceCount() > limit.orElse(Integer.MAX_VALUE)) {
                 System.out.printf("There are %d more messages.\n", result.getDifferenceCount() - limit.get());
             }
+            return 1;
         }
                     
         return 0;
