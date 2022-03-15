@@ -24,12 +24,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DiskGeometry;
 import com.webcodepro.applecommander.storage.DiskUnrecognizedException;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import com.webcodepro.applecommander.util.Range;
 
 /**
  * Perform a disk comparison based on selected strategy.
@@ -123,12 +125,21 @@ public class DiskDiff {
                     orderA.getBlocksOnDevice(), orderB.getBlocksOnDevice());
             return;
         }
-        
+
+        List<Integer> unequalBlocks = new ArrayList<>();
         for (int block=0; block<orderA.getBlocksOnDevice(); block++) {
             byte[] blockA = orderA.readBlock(block);
             byte[] blockB = orderB.readBlock(block);
             if (!Arrays.equals(blockA, blockB)) {
-                results.addError("Block #%d does not match.", block);
+                unequalBlocks.add(block);
+            }
+        }
+        for (Range r : Range.from(unequalBlocks)) {
+            if (r.size() == 1) {
+                results.addError("Block #%s does not match.", r);
+            }
+            else {
+                results.addError("Blocks #%s do not match.", r);
             }
         }
     }
@@ -145,17 +156,20 @@ public class DiskDiff {
         }
         
         for (int track=0; track<orderA.getTracksPerDisk(); track++) {
-            List<String> unequalSectors = new ArrayList<>();
+            List<Integer> unequalSectors = new ArrayList<>();
             for (int sector=0; sector<orderA.getSectorsPerTrack(); sector++) {
                 byte[] sectorA = orderA.readSector(track, sector);
                 byte[] sectorB = orderB.readSector(track, sector);
                 if (!Arrays.equals(sectorA, sectorB)) {
-                    unequalSectors.add(Integer.toString(sector));
+                    unequalSectors.add(sector);
                 }
             }
             if (!unequalSectors.isEmpty()) {
                 results.addError("Track %d does not match on sectors %s", track,
-                        String.join(",", unequalSectors));
+                        Range.from(unequalSectors)
+                             .stream()
+                             .map(Range::toString)
+                             .collect(Collectors.joining(",")));
             }
         }
     }
