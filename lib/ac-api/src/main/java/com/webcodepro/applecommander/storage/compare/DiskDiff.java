@@ -21,17 +21,25 @@ package com.webcodepro.applecommander.storage.compare;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.DiskGeometry;
 import com.webcodepro.applecommander.storage.DiskUnrecognizedException;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.Range;
+import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
+import com.webcodepro.applecommander.util.filestreamer.FileTuple;
+import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
+import com.webcodepro.applecommander.util.readerwriter.FileEntryReader;
 
 /**
  * Perform a disk comparison based on selected strategy.
@@ -174,6 +182,99 @@ public class DiskDiff {
         }
     }
     
+    public void compareByFileName(FormattedDisk formattedDiskA, FormattedDisk formattedDiskB) {
+        try {
+            Map<String,List<FileTuple>> filesA = FileStreamer.forDisk(formattedDiskA)
+                    .includeTypeOfFile(TypeOfFile.FILE)
+                    .recursive(true)
+                    .stream()
+                    .collect(Collectors.groupingBy(FileTuple::fullPath));
+            Map<String,List<FileTuple>> filesB = FileStreamer.forDisk(formattedDiskB)
+                    .includeTypeOfFile(TypeOfFile.FILE)
+                    .recursive(true)
+                    .stream()
+                    .collect(Collectors.groupingBy(FileTuple::fullPath));
+            
+            Set<String> pathsOnlyA = new HashSet<>(filesA.keySet());
+            pathsOnlyA.removeAll(filesB.keySet());
+            if (!pathsOnlyA.isEmpty()) {
+                results.addError("Files only in %s: %s", formattedDiskA.getFilename(), String.join(", ", pathsOnlyA));
+            }
+
+            Set<String> pathsOnlyB = new HashSet<>(filesB.keySet());
+            pathsOnlyB.removeAll(filesA.keySet());
+            if (!pathsOnlyB.isEmpty()) {
+                results.addError("Files only in %s: %s", formattedDiskB.getFilename(), String.join(", ", pathsOnlyB));
+            }
+            
+            Set<String> pathsInAB = new HashSet<>(filesA.keySet());
+            pathsInAB.retainAll(filesB.keySet());
+            for (String path : pathsInAB) {
+                List<FileTuple> tuplesA = filesA.get(path);
+                List<FileTuple> tuplesB = filesB.get(path);
+
+                // Since this is by name, we expect a single file; report oddities
+                FileTuple tupleA = tuplesA.get(0);
+                if (tuplesA.size() > 1) {
+                    results.addWarning("Path %s on disk %s has %d entries.", path, formattedDiskA.getFilename(), tuplesA.size());
+                }
+                FileTuple tupleB = tuplesB.get(0);
+                if (tuplesB.size() > 1) {
+                    results.addWarning("Path %s on disk %s has %d entries.", path, formattedDiskB.getFilename(), tuplesB.size());
+                }
+                
+                // Do our own custom compare so we can capture a description of differences:
+                FileEntryReader readerA = FileEntryReader.get(tupleA.fileEntry);
+                FileEntryReader readerB = FileEntryReader.get(tupleB.fileEntry);
+                List<String> differences = compare(readerA, readerB);
+                if (!differences.isEmpty()) {
+                    results.addWarning("Path %s differ: %s", path, String.join(", ", differences));
+                }
+            }
+        } catch (DiskException ex) {
+            results.addError(ex);
+        }
+    }
+
+    public void compareByFileContent(FormattedDisk formattedDiskA, FormattedDisk formattedDiskB) {
+        // TODO
+    }
+
+    private List<String> compare(FileEntryReader readerA, FileEntryReader readerB) {
+        List<String> differences = new ArrayList<>();
+        if (!readerA.getFilename().equals(readerB.getFilename())) {
+            differences.add("filename");
+        }
+        if (!readerA.getProdosFiletype().equals(readerB.getProdosFiletype())) {
+            differences.add("filetype");
+        }
+        if (!readerA.isLocked().equals(readerB.isLocked())) {
+            differences.add("locked");
+        }
+        if (!Arrays.equals(readerA.getFileData().orElse(null), readerB.getFileData().orElse(null))) {
+            differences.add("file data");
+        }
+        if (!Arrays.equals(readerA.getResourceData().orElse(null), readerB.getResourceData().orElse(null))) {
+            differences.add("resource fork");
+        }
+        if (!readerA.getBinaryAddress().equals(readerB.getBinaryAddress())) {
+            differences.add("address");
+        }
+        if (!readerA.getBinaryLength().equals(readerB.getBinaryLength())) {
+            differences.add("length");
+        }
+        if (!readerA.getAuxiliaryType().equals(readerB.getAuxiliaryType())) {
+            differences.add("aux. type");
+        }
+        if (!readerA.getCreationDate().equals(readerB.getCreationDate())) {
+            differences.add("create date");
+        }
+        if (!readerA.getLastModificationDate().equals(readerB.getLastModificationDate())) {
+            differences.add("mod. date");
+        }
+        return differences;
+    }
+
     public static class Builder {
         private DiskDiff diff;
         
@@ -193,6 +294,16 @@ public class DiskDiff {
         /** Compare disks by 512-byte ProDOS/Pascal blocks. */
         public Builder selectCompareByBlockGeometry() {
             diff.diskComparisonStrategy = diff::compareByBlockGeometry;
+            return this;
+        }
+        /** Compare disks by files ensuring that all filenames match. */
+        public Builder selectCompareByFileName() {
+            diff.diskComparisonStrategy = diff::compareByFileName;
+            return this;
+        }
+        /** Compare disks by files based on content; allowing files to have moved or been renamed. */
+        public Builder selectCompareByFileContent() {
+            diff.diskComparisonStrategy = diff::compareByFileContent;
             return this;
         }
         

@@ -116,7 +116,24 @@ public class CompareDisksResultsPane extends WizardPane {
 					2, t.getLocalizedMessage()));
 		}
 		if (disk1 != null && disk2 != null) {
-		    ComparisonResult result = DiskDiff.compare(disk1, disk2);
+		    DiskDiff.Builder builder = DiskDiff.create(disk1, disk2);
+		    switch (wizard.getComparisonStrategy()) {
+		    case 0:
+		        builder.selectCompareByNativeGeometry();
+		        break;
+		    case 1:
+		        builder.selectCompareByTrackSectorGeometry();
+		        break;
+		    case 2:
+		        builder.selectCompareByBlockGeometry();
+		        break;
+		    case 3:
+		        builder.selectCompareByFileName();
+		        break;
+	        default:
+	            throw new RuntimeException("missing a comparison strategy");
+		    }
+		    ComparisonResult result = builder.compare();
 		    errorMessages.addAll(result.getLimitedMessages(wizard.getMessageLimit()));
 		}
 		if (errorMessages.size() == 0) {

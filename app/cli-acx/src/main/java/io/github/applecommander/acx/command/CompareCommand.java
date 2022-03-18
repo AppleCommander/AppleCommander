@@ -82,6 +82,10 @@ public class CompareCommand extends ReadOnlyDiskImageCommandOptions {
         private void selectTrackSectorGeometry(boolean flag) {
             strategy = this::trackSectorGeometry;
         }
+        @Option(names = { "--filename" }, description = "Compare by filename.")
+        private void selectByFilename(boolean flag) {
+            strategy = this::filename;
+        }
         
         private void nativeGeometry(DiskDiff.Builder builder) {
             builder.selectCompareByNativeGeometry();
@@ -91,6 +95,9 @@ public class CompareCommand extends ReadOnlyDiskImageCommandOptions {
         }
         private void trackSectorGeometry(DiskDiff.Builder builder) {
             builder.selectCompareByTrackSectorGeometry();
+        }
+        private void filename(DiskDiff.Builder builder) {
+            builder.selectCompareByFileName();
         }
     }
 }

@@ -27,6 +27,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
@@ -49,6 +50,7 @@ public class CompareDisksStartPane extends WizardPane {
 	private CompareDisksWizard wizard;
 	private Text diskname1Text;
 	private Text diskname2Text;
+	private Combo comparisonStrategyCombo;
 	private Text limitText;
 	/**
 	 * Constructor for CompareDisksStartPane.
@@ -133,6 +135,22 @@ public class CompareDisksStartPane extends WizardPane {
 				}
 			}
 		});
+		
+		label = new Label(control, SWT.WRAP);
+		label.setText("Select comparison time:");
+		
+		comparisonStrategyCombo = new Combo(control, SWT.BORDER | SWT.READ_ONLY);
+		comparisonStrategyCombo.setItems("Compare by native geometry",
+		               "Compare by track/sector geometry",
+		               "Compare by block geometry",
+		               "Compare by filename");
+		comparisonStrategyCombo.select(getWizard().getComparisonStrategy());
+		comparisonStrategyCombo.addSelectionListener(new SelectionAdapter() {
+		    @Override
+		    public void widgetSelected(SelectionEvent e) {
+		        getWizard().setComparisonStrategy(comparisonStrategyCombo.getSelectionIndex());
+		    }
+		});
         
         label = new Label(control, SWT.WRAP);
         label.setText("Set limit on messages displayed:");
@@ -178,9 +196,9 @@ public class CompareDisksStartPane extends WizardPane {
 	
 	protected void limitTextModifyListener(ModifyEvent event) {
 	    try {
-	        wizard.setMessageLimit(Integer.parseInt(limitText.getText()));
+	        getWizard().setMessageLimit(Integer.parseInt(limitText.getText()));
 	    } catch (NumberFormatException e) {
-	        limitText.setText(Integer.toString(wizard.getMessageLimit()));
+	        limitText.setText(Integer.toString(getWizard().getMessageLimit()));
 	    }
 	}
 }

@@ -29,6 +29,7 @@ import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 
 public class FileTuple {
+    public static final String SEPARATOR = "/";
     private static final Logger LOG = Logger.getLogger(FileTuple.class.getName());
     public final FormattedDisk formattedDisk;
     public final List<String> paths;
@@ -53,6 +54,9 @@ public class FileTuple {
     }
     public FileTuple of(FileEntry fileEntry) {
         return new FileTuple(formattedDisk, paths, directoryEntry, fileEntry);
+    }
+    public String fullPath() {
+        return String.join(SEPARATOR, String.join(SEPARATOR, paths), fileEntry.getFilename());
     }
     
     public static FileTuple of(FormattedDisk disk) {

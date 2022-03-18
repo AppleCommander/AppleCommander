@@ -41,15 +41,15 @@ import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TranslatorStream;
+import com.webcodepro.applecommander.util.readerwriter.FileEntryReader;
+import com.webcodepro.applecommander.util.readerwriter.OverrideFileEntryReader;
 import com.webcodepro.shrinkit.HeaderBlock;
 import com.webcodepro.shrinkit.NuFileArchive;
 import com.webcodepro.shrinkit.ThreadRecord;
 
 import io.github.applecommander.acx.base.ReadWriteDiskCommandOptions;
 import io.github.applecommander.acx.converter.IntegerTypeConverter;
-import io.github.applecommander.acx.fileutil.FileEntryReader;
 import io.github.applecommander.acx.fileutil.FileUtils;
-import io.github.applecommander.acx.fileutil.OverrideFileEntryReader;
 import io.github.applecommander.applesingle.AppleSingle;
 import io.github.applecommander.applesingle.FileDatesInfo;
 import io.github.applecommander.applesingle.ProdosFileInfo;
