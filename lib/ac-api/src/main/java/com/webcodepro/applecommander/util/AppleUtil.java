@@ -22,12 +22,10 @@ package com.webcodepro.applecommander.util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 
 /**
@@ -615,28 +613,6 @@ public class AppleUtil {
 	protected static boolean sameSectorsPerDisk(ImageOrder sourceOrder, ImageOrder targetOrder) {
 		return sourceOrder.getSectorsPerDisk() == targetOrder.getSectorsPerDisk();
 	}
-	
-	/**
-	 * Compare two disks by track and sector.
-	 */
-	public static boolean disksEqualByTrackAndSector(FormattedDisk sourceDisk, FormattedDisk targetDisk) {
-		ImageOrder sourceOrder = sourceDisk.getImageOrder();
-		ImageOrder targetOrder = targetDisk.getImageOrder();
-		if (!sameSectorsPerDisk(sourceOrder, targetOrder)) {
-			throw new IllegalArgumentException(textBundle.
-					get("AppleUtil.CannotCompareDisks")); //$NON-NLS-1$
-		}
-		for (int track = 0; track < sourceOrder.getTracksPerDisk(); track++) {
-			for (int sector = 0; sector < sourceOrder.getSectorsPerTrack(); sector++) {
-				byte[] sourceData = sourceOrder.readSector(track, sector);
-				byte[] targetData = targetOrder.readSector(track, sector);
-				if (!Arrays.equals(sourceData, targetData)) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
 
 	/**
 	 * Change ImageOrder from source order to target order by copying block by block.
@@ -657,25 +633,5 @@ public class AppleUtil {
 	 */
 	protected static boolean sameBlocksPerDisk(ImageOrder sourceOrder, ImageOrder targetOrder) {
 		return sourceOrder.getBlocksOnDevice() == targetOrder.getBlocksOnDevice();
-	}
-
-	/**
-	 * Compare two disks block by block.
-	 */
-	public static boolean disksEqualByBlock(FormattedDisk sourceDisk, FormattedDisk targetDisk) {
-		ImageOrder sourceOrder = sourceDisk.getImageOrder();
-		ImageOrder targetOrder = targetDisk.getImageOrder();
-		if (!sameBlocksPerDisk(sourceOrder, targetOrder)) {
-			throw new IllegalArgumentException(textBundle.
-					get("AppleUtil.CannotCompareDisks")); //$NON-NLS-1$
-		}
-		for (int block = 0; block < sourceOrder.getBlocksOnDevice(); block++) {
-				byte[] sourceData = sourceOrder.readBlock(block);
-				byte[] targetData = targetOrder.readBlock(block);
-				if (!Arrays.equals(sourceData, targetData)) {
-					return false;
-				}
-		}
-		return true;
 	}
 }

@@ -72,6 +72,9 @@ public class FileStreamer {
     public static FileStreamer forDisk(Disk disk) throws DiskUnrecognizedException {
         return new FileStreamer(disk);
     }
+    public static FileStreamer forFormattedDisks(FormattedDisk... disks) {
+        return new FileStreamer(disks);
+    }
     
     private FormattedDisk[] formattedDisks = null;
     
@@ -89,7 +92,10 @@ public class FileStreamer {
     private List<PathMatcher> pathMatchers = new ArrayList<>();
     
     private FileStreamer(Disk disk) throws DiskUnrecognizedException {
-        this.formattedDisks = disk.getFormattedDisks();
+        this(disk.getFormattedDisks());
+    }
+    private FileStreamer(FormattedDisk... disks) {
+        this.formattedDisks = disks;
     }
     
     public FileStreamer ignoreErrors(boolean flag) {

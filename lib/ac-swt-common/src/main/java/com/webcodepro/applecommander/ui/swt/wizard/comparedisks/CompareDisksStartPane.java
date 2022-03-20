@@ -24,10 +24,10 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
@@ -50,6 +50,8 @@ public class CompareDisksStartPane extends WizardPane {
 	private CompareDisksWizard wizard;
 	private Text diskname1Text;
 	private Text diskname2Text;
+	private Combo comparisonStrategyCombo;
+	private Text limitText;
 	/**
 	 * Constructor for CompareDisksStartPane.
 	 */
@@ -75,6 +77,7 @@ public class CompareDisksStartPane extends WizardPane {
 		layout.marginTop = 5;
 		layout.spacing = 3;
 		control.setLayout(layout);
+		
 		Label label = new Label(control, SWT.WRAP);
 		label.setText(textBundle.get("CompareDisksStartPane.Description")); //$NON-NLS-1$
 
@@ -84,7 +87,6 @@ public class CompareDisksStartPane extends WizardPane {
 		diskname1Text = new Text(control, SWT.WRAP | SWT.BORDER);
 		if (wizard.getDiskname1() != null) diskname1Text.setText(wizard.getDiskname1());
 		diskname1Text.setLayoutData(new RowData(300, -1));
-		diskname1Text.setBackground(new Color(control.getDisplay(), 255,255,255));
 		diskname1Text.setFocus();
 		diskname1Text.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent event) {
@@ -113,7 +115,6 @@ public class CompareDisksStartPane extends WizardPane {
 		diskname2Text = new Text(control, SWT.WRAP | SWT.BORDER);
 		if (wizard.getDiskname2() != null) diskname2Text.setText(wizard.getDiskname2());
 		diskname2Text.setLayoutData(new RowData(300, -1));
-		diskname2Text.setBackground(new Color(control.getDisplay(), 255,255,255));
 		diskname2Text.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent event) {
 				Text text = (Text) event.getSource();
@@ -134,6 +135,32 @@ public class CompareDisksStartPane extends WizardPane {
 				}
 			}
 		});
+		
+		label = new Label(control, SWT.WRAP);
+		label.setText("Select comparison time:");
+		
+		comparisonStrategyCombo = new Combo(control, SWT.BORDER | SWT.READ_ONLY);
+		comparisonStrategyCombo.setItems("Compare by native geometry",
+		               "Compare by track/sector geometry",
+		               "Compare by block geometry",
+		               "Compare by filename");
+		comparisonStrategyCombo.select(getWizard().getComparisonStrategy());
+		comparisonStrategyCombo.addSelectionListener(new SelectionAdapter() {
+		    @Override
+		    public void widgetSelected(SelectionEvent e) {
+		        getWizard().setComparisonStrategy(comparisonStrategyCombo.getSelectionIndex());
+		    }
+		});
+        
+        label = new Label(control, SWT.WRAP);
+        label.setText("Set limit on messages displayed:");
+        
+        limitText = new Text(control, SWT.WRAP | SWT.BORDER);
+        limitText.setText(Integer.toString(wizard.getMessageLimit()));
+        limitText.setLayoutData(new RowData(200, -1));
+        limitText.addModifyListener(this::limitTextModifyListener);
+        
+        parent.pack();
 	}
 	/**
 	 * Get the next pane. A null return indicates the end of the wizard.
@@ -165,5 +192,13 @@ public class CompareDisksStartPane extends WizardPane {
 	protected String getDiskLabel(int diskNumber) {
 		return textBundle.format("CompareDisksStartPane.DiskNLabel", //$NON-NLS-1$
 				diskNumber);
+	}
+	
+	protected void limitTextModifyListener(ModifyEvent event) {
+	    try {
+	        getWizard().setMessageLimit(Integer.parseInt(limitText.getText()));
+	    } catch (NumberFormatException e) {
+	        limitText.setText(Integer.toString(getWizard().getMessageLimit()));
+	    }
 	}
 }

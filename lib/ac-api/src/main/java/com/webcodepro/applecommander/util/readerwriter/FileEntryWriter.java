@@ -17,57 +17,49 @@
  * with this program; if not, write to the Free Software Foundation, Inc., 
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package io.github.applecommander.acx.fileutil;
+package com.webcodepro.applecommander.util.readerwriter;
 
 import java.util.Date;
-import java.util.Optional;
 
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.os.dos33.DosFileEntry;
-import com.webcodepro.applecommander.storage.os.nakedos.NakedosFileEntry;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFileEntry;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
-import com.webcodepro.applecommander.storage.os.rdos.RdosFileEntry;
 
-public interface FileEntryReader {
+public interface FileEntryWriter {
     //  FileEntry common
-    public default Optional<String> getFilename()                   { return Optional.empty(); }
-    public default Optional<String> getProdosFiletype()             { return Optional.empty(); }
-    public default Optional<Boolean> isLocked()                     { return Optional.empty(); }
-    public default Optional<byte[]> getFileData()                   { return Optional.empty(); }
-    public default Optional<byte[]> getResourceData()               { return Optional.empty(); }
+    public default void setFilename(String filename)                { }
+    public default void setProdosFiletype(String filetype)          { }
+    public default void setLocked(boolean flag)                     { }
+    public default void setFileData(byte[] data)                    { }
+    // Special case for GS/OS files (uglifies API; sets 0x05)
+    public default void setFileData(byte[] data, byte[] resource)   { }
     /** 
      * The address embedded in binary objects. 
      * This varies by DOS's so is split apart. 
      */
-    public default Optional<Integer> getBinaryAddress()             { return Optional.empty(); }
+    public default void setBinaryAddress(int address)               { }
     /** 
      * The length embedded in binary, Applesoft, Integer BASIC objects. 
      * This varies by DOS's so is split apart. 
      */
-    public default Optional<Integer> getBinaryLength()              { return Optional.empty(); }
+    public default void setBinaryLength(int length)                 { }
     // ProdosFileEntry specific
-    public default Optional<Integer> getAuxiliaryType()             { return Optional.empty(); }
-    public default Optional<Date> getCreationDate()                 { return Optional.empty(); }
+    public default void setAuxiliaryType(int auxType)               { }
+    public default void setCreationDate(Date date)                  { }
     // ProdosFileEntry / PascalFileEntry specific
-    public default Optional<Date> getLastModificationDate()         { return Optional.empty(); }
+    public default void setLastModificationDate(Date date)          { }
     
-    public static FileEntryReader get(FileEntry fileEntry) {
+    public static FileEntryWriter get(FileEntry fileEntry) {
         if (fileEntry instanceof DosFileEntry) {
             return new DosFileEntryReaderWriter((DosFileEntry)fileEntry);
-        }
-        else if (fileEntry instanceof NakedosFileEntry) {
-            return new NakedosFileEntryReader((NakedosFileEntry)fileEntry);
+        } 
+        else if (fileEntry instanceof ProdosFileEntry) {
+            return new ProdosFileEntryReaderWriter((ProdosFileEntry)fileEntry);
         }
         else if (fileEntry instanceof PascalFileEntry) {
             return new PascalFileEntryReaderWriter((PascalFileEntry)fileEntry);
         }
-        else if (fileEntry instanceof ProdosFileEntry) {
-            return new ProdosFileEntryReaderWriter((ProdosFileEntry)fileEntry);
-        }
-        else if (fileEntry instanceof RdosFileEntry) {
-            return new RdosFileEntryReader((RdosFileEntry)fileEntry);
-        }
-        throw new RuntimeException(String.format("No reader for %s", fileEntry.getClass().getName()));
+        throw new RuntimeException(String.format("No writer for %s", fileEntry.getClass().getName()));
     }
 }

@@ -25,6 +25,8 @@ import java.util.logging.Logger;
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FileEntry;
+import com.webcodepro.applecommander.util.readerwriter.FileEntryReader;
+import com.webcodepro.applecommander.util.readerwriter.FileEntryWriter;
 
 import io.github.applecommander.acx.command.CopyFileCommand;
 

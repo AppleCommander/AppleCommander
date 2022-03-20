@@ -399,4 +399,9 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	 * Typically, the FileEntry.setFileData method should be used. 
 	 */
 	public abstract void setFileData(FileEntry fileEntry, byte[] fileData) throws DiskFullException;
+	
+	/**
+	 * Gives an indication on how this disk's geometry should be handled.
+	 */
+	public abstract DiskGeometry getDiskGeometry();
 }

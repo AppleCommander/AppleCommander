@@ -17,46 +17,25 @@
  * with this program; if not, write to the Free Software Foundation, Inc., 
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package io.github.applecommander.acx.fileutil;
+package com.webcodepro.applecommander.util.readerwriter;
 
-import java.util.Map;
 import java.util.Optional;
 
-import com.webcodepro.applecommander.storage.os.rdos.RdosFileEntry;
+import com.webcodepro.applecommander.storage.os.nakedos.NakedosFileEntry;
 
-public class RdosFileEntryReader implements FileEntryReader {
-    private static final Map<String,String> FILE_TYPES;
-    static {
-        FILE_TYPES = Map.of(
-                "T", "TXT",
-                "A", "BAS",
-                "B", "BIN"
-            );
-    }
+public class NakedosFileEntryReader implements FileEntryReader {
+    private NakedosFileEntry fileEntry;
     
-    private RdosFileEntry fileEntry;
-    
-    public RdosFileEntryReader(RdosFileEntry fileEntry) {
+    public NakedosFileEntryReader(NakedosFileEntry fileEntry) {
         this.fileEntry = fileEntry;
     }
     
     @Override
     public Optional<String> getFilename() {
-        return Optional.ofNullable(fileEntry.getFilename());
+        return Optional.of(fileEntry.getFilename());
     }
-
-    @Override
-    public Optional<Integer> getBinaryAddress() {
-        return Optional.ofNullable(fileEntry.getAddress());
-    }
-
-    @Override
-    public Optional<String> getProdosFiletype() {
-        return Optional.ofNullable(FILE_TYPES.get(fileEntry.getFiletype()));
-    }
-    
     @Override
     public Optional<byte[]> getFileData() {
-        return Optional.ofNullable(fileEntry.getFileData());
+        return Optional.of(fileEntry.getFileData());
     }
 }
