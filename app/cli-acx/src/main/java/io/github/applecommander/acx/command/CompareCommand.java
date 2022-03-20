@@ -86,6 +86,10 @@ public class CompareCommand extends ReadOnlyDiskImageCommandOptions {
         private void selectByFilename(boolean flag) {
             strategy = this::filename;
         }
+        @Option(names = { "--content" }, description = "Compare by file content.")
+        private void selectByFileContent(boolean flag) {
+            strategy = this::fileContent;
+        }
         
         private void nativeGeometry(DiskDiff.Builder builder) {
             builder.selectCompareByNativeGeometry();
@@ -98,6 +102,9 @@ public class CompareCommand extends ReadOnlyDiskImageCommandOptions {
         }
         private void filename(DiskDiff.Builder builder) {
             builder.selectCompareByFileName();
+        }
+        private void fileContent(DiskDiff.Builder builder) {
+            builder.selectCompareByFileContent();
         }
     }
 }

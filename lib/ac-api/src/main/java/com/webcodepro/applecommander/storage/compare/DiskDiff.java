@@ -19,6 +19,9 @@
  */
 package com.webcodepro.applecommander.storage.compare;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -182,6 +185,7 @@ public class DiskDiff {
         }
     }
     
+    /** Compare by filename. This accounts for names only in disk A, only in disk B, or different but same-named. */
     public void compareByFileName(FormattedDisk formattedDiskA, FormattedDisk formattedDiskB) {
         try {
             Map<String,List<FileTuple>> filesA = FileStreamer.forDisk(formattedDiskA)
@@ -236,8 +240,83 @@ public class DiskDiff {
         }
     }
 
+    /** Compare by file content. Accounts for content differences that are "only" in disk A or "only" in disk B. */
     public void compareByFileContent(FormattedDisk formattedDiskA, FormattedDisk formattedDiskB) {
-        // TODO
+        try {
+            Map<String,List<FileTuple>> contentA = FileStreamer.forDisk(formattedDiskA)
+                    .includeTypeOfFile(TypeOfFile.FILE)
+                    .recursive(true)
+                    .stream()
+                    .collect(Collectors.groupingBy(this::contentHash));
+            Map<String,List<FileTuple>> contentB = FileStreamer.forDisk(formattedDiskB)
+                    .includeTypeOfFile(TypeOfFile.FILE)
+                    .recursive(true)
+                    .stream()
+                    .collect(Collectors.groupingBy(this::contentHash));
+            
+            Set<String> contentOnlyA = new HashSet<>(contentA.keySet());
+            contentOnlyA.removeAll(contentB.keySet());
+            if (!contentOnlyA.isEmpty()) {
+                Set<String> pathNamesA = contentOnlyA.stream()
+                    .map(contentA::get)
+                    .flatMap(List::stream)
+                    .map(FileTuple::fullPath)
+                    .collect(Collectors.toSet());
+                results.addError("Content that only exists in %s: %s", 
+                        formattedDiskA.getFilename(), String.join(", ", pathNamesA));
+            }
+
+            Set<String> contentOnlyB = new HashSet<>(contentB.keySet());
+            contentOnlyB.removeAll(contentA.keySet());
+            if (!contentOnlyB.isEmpty()) {
+                Set<String> pathNamesB = contentOnlyB.stream()
+                        .map(contentB::get)
+                        .flatMap(List::stream)
+                        .map(FileTuple::fullPath)
+                        .collect(Collectors.toSet());
+                results.addError("Content that only exists in %s: %s", 
+                        formattedDiskB.getFilename(), String.join(", ", pathNamesB));
+            }
+
+            Set<String> contentInAB = new HashSet<>(contentA.keySet());
+            contentInAB.retainAll(contentB.keySet());
+            for (String content : contentInAB) {
+                List<FileTuple> tuplesA = contentA.get(content);
+                List<FileTuple> tuplesB = contentB.get(content);
+
+                // This is by content, but uncertain how to report multiple per disk, so pick first one
+                FileTuple tupleA = tuplesA.get(0);
+                if (tuplesA.size() > 1) {
+                    results.addWarning("Hash %s on disk %s has %d entries.", content, 
+                            formattedDiskA.getFilename(), tuplesA.size());
+                }
+                FileTuple tupleB = tuplesB.get(0);
+                if (tuplesB.size() > 1) {
+                    results.addWarning("Hash %s on disk %s has %d entries.", content, 
+                            formattedDiskB.getFilename(), tuplesB.size());
+                }
+                
+                // Do our own custom compare so we can capture a description of differences:
+                FileEntryReader readerA = FileEntryReader.get(tupleA.fileEntry);
+                FileEntryReader readerB = FileEntryReader.get(tupleB.fileEntry);
+                List<String> differences = compare(readerA, readerB);
+                if (!differences.isEmpty()) {
+                    results.addWarning("Files %s and %s share same content but file attributes differ: %s", 
+                            tupleA.fullPath(), tupleB.fullPath(), String.join(", ", differences));
+                }
+            }
+        } catch (DiskException ex) {
+            results.addError(ex);
+        }
+    }
+    private String contentHash(FileTuple tuple) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+            byte[] digest = messageDigest.digest(tuple.fileEntry.getFileData());
+            return String.format("%032X", new BigInteger(1, digest));
+        } catch (NoSuchAlgorithmException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private List<String> compare(FileEntryReader readerA, FileEntryReader readerB) {
