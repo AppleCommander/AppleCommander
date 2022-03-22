@@ -553,13 +553,17 @@ public class AppleUtil {
 	 * A = ASCII character.
 	 */
 	public static String getHexDump(byte[] bytes) {
+	    return getHexDump(0, bytes);
+	}
+	
+	public static String getHexDump(int address, byte[] bytes) {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		PrintWriter printer = new PrintWriter(output);
 		printer.println(textBundle.get("AppleUtil.HexDumpLine1")); //$NON-NLS-1$
 		printer.println(textBundle.get("AppleUtil.HexDumpLine2")); //$NON-NLS-1$
 		for (int offset=0; offset<bytes.length; offset+= BYTES_PER_LINE) {
 			printer.print("$"); //$NON-NLS-1$
-			printer.print(AppleUtil.getFormatted3ByteAddress(offset));
+			printer.print(AppleUtil.getFormatted3ByteAddress(address+offset));
 			printer.print("  "); //$NON-NLS-1$
 			for (int b=0; b<BYTES_PER_LINE; b++) {
 				if (b == BYTES_PER_LINE / 2) printer.print(' ');

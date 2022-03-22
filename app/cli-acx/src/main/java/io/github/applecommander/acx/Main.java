@@ -30,6 +30,7 @@ import io.github.applecommander.acx.command.CopyFileCommand;
 import io.github.applecommander.acx.command.CreateDiskCommand;
 import io.github.applecommander.acx.command.DeleteCommand;
 import io.github.applecommander.acx.command.DiskMapCommand;
+import io.github.applecommander.acx.command.DumpCommand;
 import io.github.applecommander.acx.command.ExportCommand;
 import io.github.applecommander.acx.command.ImportCommand;
 import io.github.applecommander.acx.command.InfoCommand;
@@ -60,6 +61,7 @@ import picocli.CommandLine.Option;
     		CreateDiskCommand.class,
     		DeleteCommand.class,
     		DiskMapCommand.class,
+    		DumpCommand.class,
             ExportCommand.class,
             HelpCommand.class,
             ImportCommand.class,

@@ -17,6 +17,7 @@ dependencies {
     implementation "net.sf.applecommander:ShrinkItArchive:$shkVersion"
     implementation "net.sf.applecommander:applesingle-api:$asVersion"
     implementation "net.sf.applecommander:bastools-api:$btVersion"
+    implementation "net.sf.applecommander:acdasm:$acdasmVersion"
 
     testImplementation "junit:junit:$junitVersion"
 }
