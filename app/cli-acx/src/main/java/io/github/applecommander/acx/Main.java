@@ -37,10 +37,12 @@ import io.github.applecommander.acx.command.InfoCommand;
 import io.github.applecommander.acx.command.ListCommand;
 import io.github.applecommander.acx.command.LockCommand;
 import io.github.applecommander.acx.command.MkdirCommand;
+import io.github.applecommander.acx.command.ReadCommand;
 import io.github.applecommander.acx.command.RenameDiskCommand;
 import io.github.applecommander.acx.command.RenameFileCommand;
 import io.github.applecommander.acx.command.RmdirCommand;
 import io.github.applecommander.acx.command.UnlockCommand;
+import io.github.applecommander.acx.command.WriteCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
@@ -69,10 +71,12 @@ import picocli.CommandLine.Option;
             ListCommand.class,
             LockCommand.class,
             MkdirCommand.class,
+            ReadCommand.class,
             RenameFileCommand.class,
             RenameDiskCommand.class,
             RmdirCommand.class,
-            UnlockCommand.class
+            UnlockCommand.class,
+            WriteCommand.class
     })
 public class Main {
     private static Logger LOG = Logger.getLogger(Main.class.getName());

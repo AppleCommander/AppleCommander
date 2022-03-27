@@ -24,9 +24,9 @@ import java.io.StringWriter;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.util.AppleUtil;
 
+import io.github.applecommander.acx.arggroup.CoordinateSelection;
 import io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions;
 import io.github.applecommander.disassembler.api.Disassembler;
 import io.github.applecommander.disassembler.api.Instruction;
@@ -51,42 +51,6 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
         byte[] data = coordinate.read(disk);
         System.out.println(output.format(address, data));
         return 0;
-    }
-    
-    public static class CoordinateSelection {
-        @ArgGroup(exclusive = false)
-        private SectorCoordinateSelection sectorCoordinate;
-        @ArgGroup(exclusive = false)
-        private BlockCoordinateSelection blockCoordinate;
-        
-        public byte[] read(Disk disk) {
-            if (sectorCoordinate != null) {
-                return sectorCoordinate.read(disk);
-            }
-            else if (blockCoordinate != null) {
-                return blockCoordinate.read(disk);
-            }
-            return disk.readSector(0, 0);
-        }
-        
-        public static class SectorCoordinateSelection {
-            @Option(names = { "-t", "--track" }, required = true, description = "Track number.")
-            private Integer track;
-            @Option(names = { "-s", "--sector" }, required = true, description = "Sector number.")
-            private Integer sector;
-            
-            public byte[] read(Disk disk) {
-                return disk.readSector(track, sector);
-            }
-        }
-        public static class BlockCoordinateSelection {
-            @Option(names = { "-b", "--block" }, description = "Block number.")
-            private Integer block;
-            
-            public byte[] read(Disk disk) {
-                return disk.readBlock(block);
-            }
-        }
     }
     
     public static class OutputSelection {
