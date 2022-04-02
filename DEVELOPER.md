@@ -29,9 +29,11 @@ BUILD SUCCESSFUL in 554ms
 19 actionable tasks: 19 up-to-date
 ```
 
-## Testing for Ant Task
+## Testing of the Ant Task
 
-The Apache Ant Task has been added as an independent "application" to the Gradle source structure. It resides in `app/ant-ac`. To test the Ant Task, there is an actual Ant build script available. Run this script from the AppleCommander project directory -- it should figure out paths from that starting position.
+The Ant Task testing has been enbedded within the Gradle build for Ant itself and does not need to be run separately. The `app/ant-ac/build.gradle` script reads from the `app/ant-ac/src/test/resources/build-testacant.xml` and executes the tests as part of the testing task. 
+
+However, if the Ant script itself is being worked upon, it may be useful to run it outside of the build process. Run the following from the main AppleCommander project directory; note that this requires Ant to be installed and active. As usual, note your Java versions and ensure that Java 11 is active.
 
 ```
 $ ant -f app/ant-ac/src/test/resources/build-testacant.xml

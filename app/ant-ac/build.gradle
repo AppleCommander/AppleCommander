@@ -24,3 +24,11 @@ jar {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
+
+// Automagically run the Ant tests as part of the build process.
+ant.importBuild('src/test/resources/build-testacant.xml') { antTargetName ->
+    'anttest-' + antTargetName
+}
+tasks.named('test') {
+    finalizedBy('anttest-all')
+}
