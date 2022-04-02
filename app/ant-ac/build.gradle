@@ -1,0 +1,26 @@
+plugins {
+    id 'java-library'
+}
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':app:cli-ac')
+    implementation project(':lib:ac-api')
+    compileOnly "org.apache.ant:ant:$antVersion"
+}
+
+jar {
+    archiveBaseName = 'AppleCommander'
+    archiveAppendix = 'ant'
+
+    dependsOn configurations.runtimeClasspath
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}

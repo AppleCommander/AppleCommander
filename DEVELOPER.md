@@ -2,7 +2,7 @@
 
 AppleCommander has switched to using [Gradle](https://gradle.org/) for build and build dependencies.
 
-There is still a bunch of ANT related build information around.  They no longer apply and "should" get cleaned up over time. 
+There is still a bunch of ANT related build information around in `ant-build`.  This should get cleaned up over time. 
 
 ## Structure
 
@@ -27,6 +27,20 @@ With the introduction of the Apple Silicon, AppleCommander switched over to the 
 
 BUILD SUCCESSFUL in 554ms
 19 actionable tasks: 19 up-to-date
+```
+
+## Testing for Ant Task
+
+The Apache Ant Task has been added as an independent "application" to the Gradle source structure. It resides in `app/ant-ac`. To test the Ant Task, there is an actual Ant build script available. Run this script from the AppleCommander project directory -- it should figure out paths from that starting position.
+
+```
+$ ant -f app/ant-ac/src/test/resources/build-testacant.xml
+Buildfile: /.../AppleCommander/app/ant-ac/src/test/resources/build-testacant.xml
+
+<snip>
+
+BUILD SUCCESSFUL
+Total time: 0 seconds
 ```
 
 ## Building

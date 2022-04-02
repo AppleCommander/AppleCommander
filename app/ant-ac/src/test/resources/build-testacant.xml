@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ac-ant-test" default="all">
+
+    <property name="projdir" value="../../../../.."/>
+	<property name="appantdir" value="app/ant-ac/src/test/resources" />
+	<property name="tmpdir" value="build/tmp" />
+	<mkdir dir="${projdir}/${tmpdir}" />
+	
+    <target name="version" description="Get version from source.">
+        <echo>Testing ant support...</echo>
+    	
+    	<path id="antJar">
+    		<fileset dir="${projdir}/app/ant-ac/build/libs" includes="AppleCommander-ant-*.jar" />
+    	</path>
+
+        <!-- Set a number of properties based on that version number -->
+        <taskdef name="appleCommander" classname="com.webcodepro.applecommander.ui.AntTask" classpathref="antJar"/>
+        <property name="dos140image" value="${tmpdir}/test-ant-dos140.do"/>
+        <property name="pro140image" value="${tmpdir}/test-ant-pro140.po"/>
+        <property name="pro800image" value="${tmpdir}/test-ant-pro800.po"/>
+        <property name="pas140image" value="${tmpdir}/test-ant-pas140.po"/>
+        <property name="pas800image" value="${tmpdir}/test-ant-pas800.po"/>
+    </target>
+
+    <target name="all" depends="version, clean, test" description="Tests some of the functions of the AppleCommander Ant task.  Run 'clean' afterwards to clean up.">
+        <!-- This target is here to orchestrate the staging of other tasks via the 'depends' clause. -->
+    </target>
+
+    <target name="test" description="Run the bulk of the testing.">
+        <!-- First, build images to play with -->
+        <appleCommander command="dos140" imagename="${dos140image}" />
+        <appleCommander command="pro800" imagename="${pro800image}" />
+        <appleCommander command="pro140" imagename="${pro140image}" />
+        <appleCommander command="pas800" imagename="${pas800image}" />
+        <appleCommander command="pas140" imagename="${pas140image}" />
+        <!-- Now, copy a file to the images -->
+        <appleCommander command="p" input="${appantdir}/manifest.mf" 
+        	imagename="${dos140image}" filename="MANIFEST" type="T" />
+        <appleCommander command="p" input="${appantdir}/manifest.mf" 
+        	imagename="${pas140image}" filename="MANIFEST" type="text" />
+        <appleCommander command="p" input="${appantdir}/manifest.mf" failonerror="false" 
+        	imagename="${pas800image}" filename="MANIFEST" type="text" />
+        <appleCommander command="p" input="${appantdir}/manifest.mf" 
+        	imagename="${pro140image}" filename="MANIFEST" type="txt" />
+        <appleCommander command="p" input="${pas140image}" failonerror="false" 
+        	imagename="${pro800image}" filename="BIG140IMG" type="bin" />
+        <!-- Now, copy a file that should not fit on the images -->
+        <echo message="Here we expect messages from [appleCommander] complaining about file space requirements not being met..."/>
+        <appleCommander failonerror="false" command="p" input="${pro800image}" imagename="${dos140image}" filename="BLOWUP" type="T" />
+        <appleCommander failonerror="false" command="p" input="${pro800image}" imagename="${pas140image}" filename="BLOWUP" type="text" />
+        <appleCommander failonerror="false" command="p" input="${pro800image}" imagename="${pas800image}" filename="BLOWUP" type="text" />
+        <appleCommander failonerror="false" command="p" input="${pro800image}" imagename="${pro140image}" filename="BLOWUP" type="txt" />
+        <appleCommander failonerror="false" command="p" input="${pro800image}" imagename="${pro800image}" filename="BLOWUP" type="txt" />
+        <!-- Now, ask for some directories -->
+        <echo message="Here we are asking for a normal DOS directory."/>
+        <appleCommander command="ls" imagename="${dos140image}" />
+        <echo message="Here we are asking for a native Pascal directory."/>
+        <appleCommander command="l" imagename="${pas800image}" />
+        <echo message="Here we are asking for a detailed ProDOS directory."/>
+        <appleCommander command="ll" imagename="${pro800image}" />
+        <!-- Now, ask for some information on images -->
+        <echo message="Here we are asking for general image information."/>
+        <appleCommander command="i" imagename="${dos140image}" />
+        <!-- Now, delete that file we created -->
+        <appleCommander command="d" imagename="${dos140image}" filename="MANIFEST" />
+        <appleCommander command="d" imagename="${pas140image}" filename="MANIFEST" />
+        <echo message="Note: the 'No match' message is coming from the Pascal 140k image, which gets corrupted when it is blown up with the large file."/> 
+        <appleCommander command="d" imagename="${pas800image}" filename="MANIFEST" />
+        <appleCommander command="d" imagename="${pro140image}" filename="MANIFEST" />
+        <appleCommander command="d" imagename="${pro800image}" filename="BIG140IMG" />
+        <!-- Now, the files should be gone -->
+        <echo message="Now, the files that appeared before should be gone."/>
+        <appleCommander command="ls" imagename="${dos140image}" />
+        <appleCommander command="l" imagename="${pas800image}" />
+        <appleCommander command="ll" imagename="${pro800image}" />
+        <!-- Now, test some file exporting -->
+        <echo message="Here are the contents of a file:"/>
+        <appleCommander command="p" input="${appantdir}/manifest.mf" 
+        	imagename="${pro140image}" filename="TEST" type="txt" />
+        <appleCommander command="e" imagename="${pro140image}" filename="TEST" />
+        <echo message="Here are the contents of a file, native:"/>
+        <appleCommander command="g" imagename="${pro140image}" filename="TEST" />
+        <appleCommander command="x" imagename="${pro140image}" outputpath="${tmpdir}" />
+        <appleCommander command="p" input="${pro140image}" imagename="${pro800image}" filename="TEST.po" type="bin" />
+        <appleCommander command="g" imagename="${pro800image}" filename="TEST.po" output="${tmpdir}/TEST.po"/>
+        <echo message="Files TEST.po and ${pro140image} should match." />
+        <echo message="Files should be exported to the current working directory now." />
+    </target>
+
+    <target name="clean" description="Get rid of testing artifacts.">
+        <delete file="${dos140image}" />
+        <delete file="${pas140image}" />
+        <delete file="${pas800image}" />
+        <delete file="${pro140image}" />
+        <delete file="${pro800image}" />
+        <delete file="TEST.txt" />
+    </target>
+</project>
