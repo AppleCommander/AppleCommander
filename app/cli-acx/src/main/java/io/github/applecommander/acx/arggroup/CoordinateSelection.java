@@ -30,6 +30,16 @@ public class CoordinateSelection {
     @ArgGroup(exclusive = false)
     private CoordinateSelection.BlockCoordinateSelection blockCoordinate;
     
+    public boolean includesBootSector() {
+        if (sectorCoordinate != null) {
+            return sectorCoordinate.isBootSector();
+        }
+        else if (blockCoordinate != null) {
+            return blockCoordinate.isBootBlock();
+        }
+        return false;
+    }
+    
     public byte[] read(Disk disk) {
         if (sectorCoordinate != null) {
             return sectorCoordinate.read(disk);
@@ -56,6 +66,9 @@ public class CoordinateSelection {
         @Option(names = { "-s", "--sector" }, required = true, description = "Sector number.")
         private Integer sector;
         
+        public boolean isBootSector() {
+            return track == 0 && sector == 0;
+        }
         public byte[] read(Disk disk) {
             return disk.readSector(track, sector);
         }
@@ -67,6 +80,9 @@ public class CoordinateSelection {
         @Option(names = { "-b", "--block" }, description = "Block number.")
         private Integer block;
         
+        public boolean isBootBlock() {
+            return block == 0;
+        }
         public byte[] read(Disk disk) {
             return disk.readBlock(block);
         }
