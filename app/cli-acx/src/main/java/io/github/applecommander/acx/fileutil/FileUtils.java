@@ -114,8 +114,11 @@ public class FileUtils {
 	    source.getLastModificationDate().ifPresent(target::setLastModificationDate);
 
         if (source.getFileData().isPresent() && source.getResourceData().isPresent()) {
+            LOG.finest(() -> String.format("Setting data fork to %d bytes and resource fork to %d bytes.", 
+                    source.getFileData().get().length, source.getResourceData().get().length));
             target.setFileData(source.getFileData().get(), source.getResourceData().get());
         } else {
+            LOG.finest(() -> String.format("Setting data fork to %d bytes.", source.getFileData().get().length));
             source.getFileData().ifPresent(target::setFileData);
         }
 	}

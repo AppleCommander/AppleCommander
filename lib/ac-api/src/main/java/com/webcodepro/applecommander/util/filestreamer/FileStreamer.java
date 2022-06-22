@@ -190,6 +190,12 @@ public class FileStreamer {
                     currentDisk = tuple.formattedDisk;
                     beforeDisk.accept(currentDisk);
                 }
+                // Special case when we have a disk with no files
+                // This allows triggering of the before and after disk events.
+                if (tuple.fileEntry == null) {
+                    files.remove(tuple);
+                    return hasNext();
+                }
             } else {
                 if (currentDisk != null) {
                     afterDisk.accept(currentDisk);
@@ -218,6 +224,10 @@ public class FileStreamer {
             try {
                 for (FileEntry fileEntry : tuple.directoryEntry.getFiles()) {
                     list.add(tuple.of(fileEntry));
+                }
+                // Special case? If disk is empty we need to force a tuple as none is generated
+                if (tuple.directoryEntry == tuple.formattedDisk && tuple.directoryEntry.getFiles().isEmpty()) {
+                    list.add(tuple);
                 }
             } catch (DiskException e) {
                 if (!ignoreErrorsFlag) {

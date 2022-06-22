@@ -276,8 +276,11 @@ public class ImportCommand extends ReadWriteDiskCommandOptions {
                 if (as.getProdosFileInfo() == null) {
                     throw new IOException("This AppleSingle does not contain a ProDOS file.");
                 }
-                if (as.getDataFork() == null || as.getDataFork().length == 0) {
+                if (as.getDataFork() == null) {
                     throw new IOException("This AppleSingle does not contain a data fork.");
+                }
+                if (as.getDataFork().length == 0) {
+                    LOG.warning("This AppleSingle has a 0 byte data fork.");
                 }
                 ProdosFileInfo info = as.getProdosFileInfo();
                 String fileType = ProdosFormatDisk.getFiletype(info.getFileType());
