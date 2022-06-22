@@ -106,6 +106,25 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 			}
 			fileName = mixedCase.toString();
 		}
+		// GS/OS upper/lower case mix
+		if ((getMinimumProdosVersion() & 0x80) != 0) {
+		    int flags = getMinimumProdosVersion() << 8 | getProdosVersion();
+			int bit = 1 << 14;   // 1st bit in 16 bit number is enablement flag, so skipping it
+			StringBuffer mixedCase = new StringBuffer(fileName);
+			for (int i=0; i<16 && i<fileName.length(); i++) {
+			    boolean lowerCase = (flags & bit) != 0;
+                if (lowerCase) {
+                    char ch = mixedCase.charAt(i);
+                    if (ch == '.') {
+                        mixedCase.setCharAt(i, ' ');
+                    } else {
+                        mixedCase.setCharAt(i, Character.toLowerCase(ch));
+                    }
+                }
+                bit >>= 1;
+			}
+			fileName = mixedCase.toString();
+		}
 		return fileName;
 	}
 
