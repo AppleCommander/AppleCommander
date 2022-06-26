@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Function;
 
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
@@ -61,13 +62,14 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 	
 	/**
 	 * Return the name of this file.
-	 * This handles normal files, deleted files, and AppleWorks files - which use
-	 * the AUXTYPE attribute to indicate upper/lowercase in the filename.
+	 * This handles normal files, deleted files, AppleWorks files - which use
+	 * the AUXTYPE attribute to indicate upper/lowercase in the filename, and
+	 * GS/OS casing which is in the ProDOS version flags.
+	 * Note that we don't do mixed case for deleted files.
 	 */
 	public String getFilename() {
-		String fileName;
 		if (isDeleted()) {
-			fileName = AppleUtil.getString(readFileEntry(), 1, 15);
+			String fileName = AppleUtil.getString(readFileEntry(), 1, 15);
 			StringBuffer buf = new StringBuffer();
 			for (int i=0; i<fileName.length(); i++) {
 				char ch = fileName.charAt(i);
@@ -77,55 +79,53 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 					break;
 				}
 			}
-			fileName = buf.toString();
-		} else {
-			fileName = AppleUtil.getProdosString(readFileEntry(), 0);
-		}
-		if (isAppleWorksFile()) {
-			int auxtype = getAuxiliaryType();
-			StringBuffer mixedCase = new StringBuffer(fileName);
-			// the highest bit of the least significant byte is the first
-			// character through the 2nd bit of the most significant byte
-			// being the 15th character.  Bit is on indicates lower-case or
-			// a space if a "." is present.
-			for (int i=0; i<16 && i<fileName.length(); i++) {
-				boolean lowerCase;
-				if (i < 8) {
-					lowerCase = AppleUtil.isBitSet((byte)auxtype, 7-i);
-				} else {
-					lowerCase = AppleUtil.isBitSet((byte)(auxtype >> 8), 7-(i%8));
-				}
-				if (lowerCase) {
-					char ch = mixedCase.charAt(i);
-					if (ch == '.') {
-						mixedCase.setCharAt(i, ' ');
-					} else {
-						mixedCase.setCharAt(i, Character.toLowerCase(ch));
-					}
-				}
-			}
-			fileName = mixedCase.toString();
-		}
-		// GS/OS upper/lower case mix
-		if ((getMinimumProdosVersion() & 0x80) != 0) {
-		    int flags = getMinimumProdosVersion() << 8 | getProdosVersion();
-			int bit = 1 << 14;   // 1st bit in 16 bit number is enablement flag, so skipping it
-			StringBuffer mixedCase = new StringBuffer(fileName);
-			for (int i=0; i<16 && i<fileName.length(); i++) {
-			    boolean lowerCase = (flags & bit) != 0;
-                if (lowerCase) {
-                    char ch = mixedCase.charAt(i);
-                    if (ch == '.') {
-                        mixedCase.setCharAt(i, ' ');
-                    } else {
-                        mixedCase.setCharAt(i, Character.toLowerCase(ch));
-                    }
+			return buf.toString();
+		} 
+		else {
+			String fileName = AppleUtil.getProdosString(readFileEntry(), 0);
+	        if (isAppleWorksFile()) {
+	            int auxtype = getAuxiliaryType();
+	            fileName = getMixedCaseName(fileName, auxtype, ProdosFileEntry::calculateAppleWorksBit);
+	        }
+	        // GS/OS upper/lower case mix
+	        else if ((getMinimumProdosVersion() & 0x80) != 0) {
+	            int flags = getMinimumProdosVersion() << 8 | getProdosVersion();
+	            fileName = getMixedCaseName(fileName, flags, ProdosFileEntry::calculateGSOSBit);
+	        }
+	        return fileName;
+	    }
+	}
+	/**
+     * the highest bit of the least significant byte is the first
+     * character through the 2nd bit of the most significant byte
+     * being the 15th character.  Bit is on indicates lower-case or
+     * a space if a "." is present.
+     */
+    static int calculateAppleWorksBit(int pos) {
+        final int[] bitTest = { 7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9 };
+        return 1 << bitTest[pos];
+    }
+    /**
+     * 1st bit in 16 bit number is enablement flag, so skipping it
+     * flags = e01234567 89ABCDEF  (e = enablement flag; hex digits = character index)
+     */
+    static int calculateGSOSBit(int pos) {
+        return 1 << (14-pos);
+    }	
+	static String getMixedCaseName(final String original, final int bits, 
+	        final Function<Integer,Integer> bitPosition) {
+	    StringBuffer mixedCase = new StringBuffer(original);
+	    for (int i=0; i<mixedCase.length(); i++) {
+	        if ((bits & bitPosition.apply(i)) != 0) {
+	            char ch = mixedCase.charAt(i);
+                if (ch == '.') {
+                    mixedCase.setCharAt(i, ' ');
+                } else {
+                    mixedCase.setCharAt(i, Character.toLowerCase(ch));
                 }
-                bit >>= 1;
-			}
-			fileName = mixedCase.toString();
-		}
-		return fileName;
+	        }
+	    }
+	    return mixedCase.toString();
 	}
 
 	/**
@@ -137,31 +137,51 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 
 	/**
 	 * Set the name of this file.
+     * This handles normal files, deleted files, AppleWorks files - which use
+     * the AUXTYPE attribute to indicate upper/lowercase in the filename, and
+     * GS/OS casing which is in the ProDOS version flags.
 	 */
 	public void setFilename(String filename) {
-		byte[] fileEntry = readFileEntry();
-		if (isDeleted()) {
-			AppleUtil.setString(fileEntry, 1, filename.toUpperCase(), 15);
-		} else {
-			AppleUtil.setProdosString(fileEntry, 0, filename.toUpperCase(), 15);
-		}
+	    // 1. Set the upper/lowercase flags
 		if (isAppleWorksFile()) {
-			byte lowByte = 0;
-			byte highByte = 0;
-			for (int i=0; i<filename.length(); i++) {
-				if (Character.isLowerCase(filename.charAt(i))) {
-					if (i < 8) {
-						lowByte = AppleUtil.setBit(lowByte, 7-i);
-					} else if (i < 16) {
-						highByte = AppleUtil.setBit(highByte, 7-(i%8));
-					}
-				}
-			}
-			setAuxiliaryType(fileEntry, lowByte, highByte);
+		    // Since we are ALWAYS doing the GSOS filename, we just have a temp holder here.
+		    StringBuilder tempFilename = new StringBuilder(filename);
+		    int auxtype = setMixedCaseFlags(tempFilename, ProdosFileEntry::calculateAppleWorksBit);
+		    setAuxiliaryType(auxtype);
 		}
+		StringBuilder alternateFilename = new StringBuilder(filename);
+		int flags = setMixedCaseFlags(alternateFilename, ProdosFileEntry::calculateGSOSBit);
+		if (flags != 0) {
+		    // high bit signals mixed case
+		    flags |= 0x8000;  
+		}
+		filename = alternateFilename.toString();
+		setMinimumProdosVersion(flags >> 8);
+		setProdosVersion(flags);
+
+		// 2. Set the filename details as the result should be all uppercase.
+		byte[] fileEntry = readFileEntry();
+        if (isDeleted()) {
+            AppleUtil.setString(fileEntry, 1, filename.toUpperCase(), 15);
+        } else {
+            AppleUtil.setProdosString(fileEntry, 0, filename.toUpperCase(), 15);
+        }
 		writeFileEntry(fileEntry);
 	}
+	static int setMixedCaseFlags(StringBuilder filename, Function<Integer,Integer> bitPosition) {
+	    int flags = 0;
+	    for (int i=0; i<filename.length(); i++) {
+	        char ch = filename.charAt(i);
+	        if (Character.isLowerCase(ch) || ch == ' ') {
+	            flags |= bitPosition.apply(i);
+	            if (ch == ' ') ch = '.';
+	            filename.setCharAt(i, Character.toUpperCase(ch));
+	        }
+	    }
+	    return flags;
+	}
 
+	
 	/**
 	 * Copy GEOS-specific metadata to the directory entry verbatim:
 	 * Bytes $00-$10 ($11 bytes)
