@@ -162,6 +162,35 @@ public class ProdosCommonEntry {
 		setStorageType(0x03);
 	}
 
+    /**
+     * Indicates if this is a "pascal area".
+     */
+    public boolean isPascalArea() {
+        return getStorageType() == 0x04;
+    }
+
+    /**
+     * Sets the storage type to a "pascal area".
+     */
+    public void setPascalArea() {
+        setStorageType(0x04);
+    }
+
+    /**
+     * Indicates if this is an "extended" file (GS/OS with resource and data forks).
+     */
+    public boolean isExtendedFile() {
+        return getStorageType() == 0x05;
+    }
+
+    /**
+     * Sets the storage type to an "extended" file (GS/OS with resource and data forks).
+     */
+    public void setExtendedFile() {
+        setStorageType(0x05);
+    }
+    
+    
 	/**
 	 * Indicates if this is a subdirectory entry.
 	 */

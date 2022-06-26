@@ -504,10 +504,13 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 				}
 				list.add(AppleUtil.getFormattedWord(getHeaderPointer()));
 				list.add(AppleUtil.getFormattedWord(getKeyPointer()));
-				list.add(isSaplingFile() ? textBundle.get("ProdosFileEntry.Sapling") :  //$NON-NLS-1$
-					isSeedlingFile() ? textBundle.get("ProdosFileEntry.Seedling") :  //$NON-NLS-1$
-					isTreeFile() ? textBundle.get("ProdosFileEntry.Tree") :  //$NON-NLS-1$
-					textBundle.format("ProdosFileEntry.UnknownFileType", getFileTypeString())); //$NON-NLS-1$
+				list.add(isSaplingFile() ? textBundle.get("ProdosFileEntry.Sapling") :
+					isSeedlingFile() ? textBundle.get("ProdosFileEntry.Seedling") :
+					isTreeFile() ? textBundle.get("ProdosFileEntry.Tree") :
+					isPascalArea() ? textBundle.get("ProdosFileEntry.PascalArea") :
+					isExtendedFile() ? textBundle.get("ProdosFileEntry.Extended") :
+					isDirectory() ? textBundle.get("ProdosFileEntry.Directory") :
+					textBundle.format("ProdosFileEntry.UnknownFileType", getFileTypeString()));
 				list.add(hasChanged() ? 
 					textBundle.get("ProdosFileEntry.Changed") : "");  //$NON-NLS-1$//$NON-NLS-2$
 				numberFormat.setMinimumIntegerDigits(1);

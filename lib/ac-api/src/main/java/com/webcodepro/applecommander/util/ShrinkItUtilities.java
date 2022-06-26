@@ -143,9 +143,9 @@ public class ShrinkItUtilities
 						if (resourceFork != null)
 						{
 							// If we have a resource fork in addition to a data fork,
-							// then we've got a GSOS storage type $5. 
+							// then we've got a GSOS extended storage type $5. 
 							newFile.setFileData(readThread(dataFork), readThread(resourceFork));
-							newFile.setStorageType(0x05);
+							newFile.setExtendedFile();
 						}
 						else
 						{

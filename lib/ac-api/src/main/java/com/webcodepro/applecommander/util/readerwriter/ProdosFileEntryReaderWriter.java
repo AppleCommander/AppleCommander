@@ -75,9 +75,9 @@ public class ProdosFileEntryReaderWriter implements FileEntryReader, FileEntryWr
     public void setFileData(byte[] data, byte[] resource) {
         try {
             // If we have a resource fork in addition to a data fork,
-            // then we've got a GSOS storage type $5. 
+            // then we've got a GSOS extended storage type $5. 
             fileEntry.setFileData(data, resource);
-            fileEntry.setStorageType(0x05);
+            fileEntry.setExtendedFile();
         } catch (DiskFullException e) {
             throw new RuntimeException(e);
         }
