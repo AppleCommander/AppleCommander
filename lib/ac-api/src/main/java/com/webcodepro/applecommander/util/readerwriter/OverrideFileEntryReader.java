@@ -64,8 +64,7 @@ public class OverrideFileEntryReader implements FileEntryReader {
     }
     @Override
     public Optional<byte[]> getResourceData() {
-        // Special case, the AppleCommander API does not really handle resource forks.
-        return resourceData;
+        return resourceData.or(() -> parent.map(FileEntryReader::getResourceData).filter(Optional::isPresent).map(Optional::get));
     }
     @Override
     public Optional<Integer> getBinaryAddress() {
