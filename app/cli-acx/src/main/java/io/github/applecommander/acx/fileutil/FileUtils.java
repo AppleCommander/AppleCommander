@@ -109,9 +109,6 @@ public class FileUtils {
 	    source.isLocked().ifPresent(target::setLocked);
 	    source.getBinaryAddress().ifPresent(target::setBinaryAddress);
 	    source.getBinaryLength().ifPresent(target::setBinaryLength);
-	    source.getAuxiliaryType().ifPresent(target::setAuxiliaryType);
-	    source.getCreationDate().ifPresent(target::setCreationDate);
-	    source.getLastModificationDate().ifPresent(target::setLastModificationDate);
 
         if (source.getFileData().isPresent() && source.getResourceData().isPresent()) {
             LOG.finest(() -> String.format("Setting data fork to %d bytes and resource fork to %d bytes.", 
@@ -121,5 +118,10 @@ public class FileUtils {
             LOG.finest(() -> String.format("Setting data fork to %d bytes.", source.getFileData().get().length));
             source.getFileData().ifPresent(target::setFileData);
         }
+        // These come after the set of data because the API will possibly set the auxtype
+        // and the updated date.
+        source.getAuxiliaryType().ifPresent(target::setAuxiliaryType);
+        source.getCreationDate().ifPresent(target::setCreationDate);
+        source.getLastModificationDate().ifPresent(target::setLastModificationDate);
 	}
 }

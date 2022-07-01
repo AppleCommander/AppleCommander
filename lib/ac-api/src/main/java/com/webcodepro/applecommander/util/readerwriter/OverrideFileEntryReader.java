@@ -76,7 +76,7 @@ public class OverrideFileEntryReader implements FileEntryReader {
     }
     @Override
     public Optional<Integer> getAuxiliaryType() {
-        return auxiliaryType.or(() -> parent.map(FileEntryReader::getBinaryLength).filter(Optional::isPresent).map(Optional::get));
+        return auxiliaryType.or(() -> parent.map(FileEntryReader::getAuxiliaryType).filter(Optional::isPresent).map(Optional::get));
     }
     @Override
     public Optional<Date> getCreationDate() {

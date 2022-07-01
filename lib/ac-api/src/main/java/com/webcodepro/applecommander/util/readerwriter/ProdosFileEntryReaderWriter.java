@@ -21,11 +21,14 @@ package com.webcodepro.applecommander.util.readerwriter;
 
 import java.util.Date;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
 
 public class ProdosFileEntryReaderWriter implements FileEntryReader, FileEntryWriter {
+    private static Logger LOG = Logger.getLogger(ProdosFileEntryReaderWriter.class.getName());
+    
     private ProdosFileEntry fileEntry;
     
     public ProdosFileEntryReaderWriter(ProdosFileEntry fileEntry) {
@@ -38,6 +41,7 @@ public class ProdosFileEntryReaderWriter implements FileEntryReader, FileEntryWr
     }
     @Override
     public void setFilename(String filename) {
+        LOG.finest(() -> String.format("Setting name to '%s'.", filename));
         fileEntry.setFilename(filename);
     }
 
@@ -47,6 +51,7 @@ public class ProdosFileEntryReaderWriter implements FileEntryReader, FileEntryWr
     }
     @Override
     public void setProdosFiletype(String filetype) {
+        LOG.finest(() -> String.format("Setting file type to '%s'.", filetype));
         fileEntry.setFiletype(filetype);
     }
     
@@ -56,6 +61,7 @@ public class ProdosFileEntryReaderWriter implements FileEntryReader, FileEntryWr
     }
     @Override
     public void setLocked(boolean flag) {
+        LOG.finest(() -> String.format("Setting locked to '%b'.", flag));
         fileEntry.setLocked(flag);
     }
     
@@ -66,6 +72,7 @@ public class ProdosFileEntryReaderWriter implements FileEntryReader, FileEntryWr
     @Override
     public void setFileData(byte[] data) {
         try {
+            LOG.finest(() -> String.format("Setting file data to %d bytes.", data.length));
             fileEntry.setFileData(data);
         } catch (DiskFullException e) {
             throw new RuntimeException(e);
@@ -76,6 +83,8 @@ public class ProdosFileEntryReaderWriter implements FileEntryReader, FileEntryWr
         try {
             // If we have a resource fork in addition to a data fork,
             // then we've got a GSOS extended storage type $5. 
+            LOG.finest(() -> String.format("Setting data fork to %d bytes, resource fork to %d bytes.", 
+                    data.length, resource.length));
             fileEntry.setFileData(data, resource);
             fileEntry.setExtendedFile();
         } catch (DiskFullException e) {
@@ -93,7 +102,10 @@ public class ProdosFileEntryReaderWriter implements FileEntryReader, FileEntryWr
     @Override
     public void setBinaryAddress(int address) {
         if (fileEntry.needsAddress()) {
+            LOG.finest(() -> String.format("Setting address to $%04X.", address));
             fileEntry.setAddress(address);
+        } else {
+            LOG.finest(() -> String.format("NOT SETTING ADDRESS, wrong type: $%04X", address));
         }
     }
     
@@ -103,6 +115,7 @@ public class ProdosFileEntryReaderWriter implements FileEntryReader, FileEntryWr
     }
     @Override
     public void setBinaryLength(int length) {
+        LOG.finest("Skipping set of binary length.");
         // Nothing to do
     }
     
@@ -112,6 +125,7 @@ public class ProdosFileEntryReaderWriter implements FileEntryReader, FileEntryWr
     }
     @Override
     public void setAuxiliaryType(int auxType) {
+        LOG.finest(() -> String.format("Setting auxtype to $%04X.", auxType));
         fileEntry.setAuxiliaryType(auxType);
     }
     
@@ -121,6 +135,7 @@ public class ProdosFileEntryReaderWriter implements FileEntryReader, FileEntryWr
     }
     @Override
     public void setCreationDate(Date date) {
+        LOG.finest(() -> String.format("Setting create date to '%s'.", date));
         fileEntry.setCreationDate(date);
     }
     
@@ -130,6 +145,7 @@ public class ProdosFileEntryReaderWriter implements FileEntryReader, FileEntryWr
     }
     @Override
     public void setLastModificationDate(Date date) {
+        LOG.finest(() -> String.format("Setting modification date to '%s'.", date));
         fileEntry.setLastModificationDate(date);
     }
 }
