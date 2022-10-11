@@ -119,11 +119,11 @@ public class AntTask extends Task
 				else if (_command.equals("cc65")) 
 				{
 					System.err.println("Note: 'cc65' is deprecated.  Please use 'as' or 'dos' as appropriate."); 
-					com.webcodepro.applecommander.ui.ac.putDOS(_input, _imageName, _fileName, _type);
+					com.webcodepro.applecommander.ui.ac.putDOS(_input, _imageName, _fileName, _type, System.in);
 				}
 				else if (_command.equals("dos")) 
 				{
-					com.webcodepro.applecommander.ui.ac.putDOS(_input, _imageName, _fileName, _type);
+					com.webcodepro.applecommander.ui.ac.putDOS(_input, _imageName, _fileName, _type, System.in);
 				}
 				else {
 					com.webcodepro.applecommander.ui.ac.putAppleSingle(_imageName, _fileName,
