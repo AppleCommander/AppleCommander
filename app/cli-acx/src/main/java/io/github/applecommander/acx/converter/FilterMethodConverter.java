@@ -24,33 +24,33 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.github.applecommander.acx.ExportMethod;
+import io.github.applecommander.acx.FilterMethod;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.TypeConversionException;
 
-public class ExportMethodConverter implements ITypeConverter<ExportMethod> {
-    public static final Map<String,ExportMethod> EXPORTS = new HashMap<>();
+public class FilterMethodConverter implements ITypeConverter<FilterMethod> {
+    public static final Map<String,FilterMethod> FILTERS = new HashMap<>();
     static {
-        for (ExportMethod x : ExportMethod.values()) {
+        for (FilterMethod x : FilterMethod.values()) {
             for (String code : x.getCodes()) {
-                EXPORTS.put(code, x);
+                FILTERS.put(code, x);
             }
         }
     }
     
     @Override
-    public ExportMethod convert(String value) throws Exception {
-        if (EXPORTS.containsKey(value)) {
-            return EXPORTS.get(value);
+    public FilterMethod convert(String value) throws Exception {
+        if (FILTERS.containsKey(value)) {
+            return FILTERS.get(value);
         }
         throw new TypeConversionException(String.format("Export method not found: %s", value));
     }
     
-    public static class ExportMethodCandidates extends ArrayList<String> {
+    public static class FilterMethodCandidates extends ArrayList<String> {
         private static final long serialVersionUID = -744232190636905235L;
 
-        ExportMethodCandidates() {
-            super(EXPORTS.keySet());
+        FilterMethodCandidates() {
+            super(FILTERS.keySet());
             Collections.sort(this);
         }
     }

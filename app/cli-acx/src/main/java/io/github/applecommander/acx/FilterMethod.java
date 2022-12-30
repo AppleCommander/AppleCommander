@@ -42,7 +42,7 @@ import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 import io.github.applecommander.filters.AppleSingleFileFilter;
 import io.github.applecommander.filters.RawFileFilter;
 
-public enum ExportMethod {
+public enum FilterMethod {
     APPLESINGLE(AppleSingleFileFilter::new, "as", "applesingle"),
     APPLESOFT(ApplesoftFileFilter::new, "bas", "applesoft"),
     APPLEWORKS_DATABASE(AppleWorksDataBaseFileFilter::new, "adb"),
@@ -63,7 +63,7 @@ public enum ExportMethod {
     private Supplier<FileFilter> constructor;
     private List<String> codes;
     
-    private ExportMethod(Supplier<FileFilter> constructor, String... codes) {
+    private FilterMethod(Supplier<FileFilter> constructor, String... codes) {
         this.constructor = constructor;
         this.codes = Arrays.asList(codes);
     }

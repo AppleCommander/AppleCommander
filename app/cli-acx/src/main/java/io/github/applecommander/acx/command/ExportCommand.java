@@ -39,10 +39,10 @@ import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
 import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
 
-import io.github.applecommander.acx.ExportMethod;
+import io.github.applecommander.acx.FilterMethod;
 import io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions;
-import io.github.applecommander.acx.converter.ExportMethodConverter;
-import io.github.applecommander.acx.converter.ExportMethodConverter.ExportMethodCandidates;
+import io.github.applecommander.acx.converter.FilterMethodConverter;
+import io.github.applecommander.acx.converter.FilterMethodConverter.FilterMethodCandidates;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
@@ -144,21 +144,21 @@ public class ExportCommand extends ReadOnlyDiskImageCommandOptions {
     private static class FileExtractMethods {
         private Function<FileEntry,FileFilter> extractFunction = this::asSuggestedFile; 
 
-        @Option(names = { "--method" }, converter = ExportMethodConverter.class,
-                completionCandidates = ExportMethodCandidates.class,
+        @Option(names = { "--method" }, converter = FilterMethodConverter.class,
+                completionCandidates = FilterMethodCandidates.class,
                 description = "Select a specific export method type (${COMPLETION-CANDIDATES}).")
-        public void selectExportMethod(final ExportMethod exportMethod) {
-            this.extractFunction = fileFilter -> exportMethod.create();
+        public void selectFilterMethod(final FilterMethod filterMethod) {
+            this.extractFunction = fileFilter -> filterMethod.create();
         }
 
         // Short-cuts to some of the more common, non-suggested, filters
         @Option(names = { "--raw", "--binary" }, description = "Extract file in native format.")
         public void setBinaryExtraction(boolean flag) {
-            selectExportMethod(ExportMethod.BINARY);
+            selectFilterMethod(FilterMethod.BINARY);
         }
         @Option(names = { "--hex", "--dump" }, description = "Extract file in hex dump format.")
         public void setHexDumpExtraction(boolean flag) {
-            selectExportMethod(ExportMethod.HEX_DUMP);
+            selectFilterMethod(FilterMethod.HEX_DUMP);
         }
         @Option(names = { "--suggested" }, description = "Extract file as suggested by AppleCommander (default)")
         public void setSuggestedExtraction(boolean flag) {
@@ -166,11 +166,11 @@ public class ExportCommand extends ReadOnlyDiskImageCommandOptions {
         }
 		@Option(names = { "--as", "--applesingle" }, description = "Extract file to AppleSingle file.")
 		public void setAppleSingleExtraction(boolean flag) {
-		    selectExportMethod(ExportMethod.APPLESINGLE);
+		    selectFilterMethod(FilterMethod.APPLESINGLE);
 		}
 		@Option(names = { "--disassembly" }, description = "Dissassembly file.")
 		public void setDisassemblyExtraction(boolean flag) {
-		    selectExportMethod(ExportMethod.DISASSEMBLY);
+		    selectFilterMethod(FilterMethod.DISASSEMBLY);
 		}
         
         public FileFilter asSuggestedFile(FileEntry entry) {
