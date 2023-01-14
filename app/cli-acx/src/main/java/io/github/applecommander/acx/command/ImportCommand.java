@@ -287,7 +287,7 @@ public class ImportCommand extends ReadWriteDiskCommandOptions {
                 builder.fileData(as.getDataFork());
                 builder.resourceData(Optional.ofNullable(as.getResourceFork()));
                 builder.prodosFiletype(fileType);
-                builder.locked(info.getAccess() == 0xc3);
+                builder.locked((info.getAccess()&0xc2) != 0xc2); //Unlocked if destory, rename and write are all enabled
                 builder.auxiliaryType(info.getAuxType());
                 
                 if (as.getFileDatesInfo() != null) {
