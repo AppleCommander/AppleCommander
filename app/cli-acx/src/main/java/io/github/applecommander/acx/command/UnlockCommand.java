@@ -20,17 +20,26 @@
 package io.github.applecommander.acx.command;
 
 import java.util.logging.Logger;
+import java.util.Arrays;
+import java.util.List;
 
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
 
 import io.github.applecommander.acx.base.ReadWriteDiskCommandWithGlobOptions;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Parameters;
 
 @Command(name = "unlock", description = "Unlock file(s) on a disk image.")
 public class UnlockCommand extends ReadWriteDiskCommandWithGlobOptions {
     private static Logger LOG = Logger.getLogger(UnlockCommand.class.getName());
-
-    public void fileHandler(FileTuple tuple) {
+	
+	@Parameters(arity = "1..*", description = "File glob(s) to unlock (default = '*') - be cautious of quoting!")
+    private List<String> globs = Arrays.asList("*");
+	
+	@Override
+	protected List<String> getGlobs(){return globs;}
+    
+	public void fileHandler(FileTuple tuple) {
     	tuple.fileEntry.setLocked(false);
     	LOG.info(() -> String.format("File '%s' unlocked.", tuple.fileEntry.getFilename()));
     }

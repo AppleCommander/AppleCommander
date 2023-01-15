@@ -20,15 +20,24 @@
 package io.github.applecommander.acx.command;
 
 import java.util.logging.Logger;
+import java.util.Arrays;
+import java.util.List;
 
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
 
 import io.github.applecommander.acx.base.ReadWriteDiskCommandWithGlobOptions;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Parameters;
 
 @Command(name = "lock", description = "Lock file(s) on a disk image.")
 public class LockCommand extends ReadWriteDiskCommandWithGlobOptions {
     private static Logger LOG = Logger.getLogger(LockCommand.class.getName());
+
+	@Parameters(arity = "1..*", description = "File glob(s) to lock (default = '*') - be cautious of quoting!")
+    private List<String> globs = Arrays.asList("*");
+	
+	@Override
+	protected List<String> getGlobs(){return globs;}
 
     public void fileHandler(FileTuple tuple) {
     	tuple.fileEntry.setLocked(true);

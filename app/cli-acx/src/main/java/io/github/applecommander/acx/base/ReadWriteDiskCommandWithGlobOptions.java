@@ -28,25 +28,23 @@ import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
 import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
 
-import picocli.CommandLine.Parameters;
-
 public abstract class ReadWriteDiskCommandWithGlobOptions extends ReadWriteDiskCommandOptions {
     private static Logger LOG = Logger.getLogger(ReadWriteDiskCommandWithGlobOptions.class.getName());
 
-    @Parameters(arity = "1..*", description = "File glob(s) to unlock (default = '*') - be cautious of quoting!")
-    private List<String> globs = Arrays.asList("*");
+	//Subclasses must declare globs data member and implement getGlobs() method
+	protected abstract List<String> getGlobs();
 
     @Override
     public int handleCommand() throws Exception {
         List<FileTuple> files = FileStreamer.forDisk(disk)
 			        .ignoreErrors(true)
 			        .includeTypeOfFile(TypeOfFile.FILE)
-			        .matchGlobs(globs)
+			        .matchGlobs(this.getGlobs())
 			        .stream()
 			        .collect(Collectors.toList());
 
         if (files.isEmpty()) {
-        	LOG.warning(() -> String.format("No matches found for %s.", String.join(",", globs)));
+        	LOG.warning(() -> String.format("No matches found for %s.", String.join(",", this.getGlobs())));
         } else {
         	files.forEach(this::fileHandler);
         }
