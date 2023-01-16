@@ -72,7 +72,7 @@ public class ImportCommand extends ReadWriteDiskCommandOptions {
     @ArgGroup(heading = "%nInput source:%n", multiplicity = "1")
     private InputData inputData;
 
-    @ArgGroup(heading = "%nProcessing options:%n")
+    @ArgGroup(heading = "%nProcessing options:%n", multiplicity = "1")
     private Processor processor;
     
     @ArgGroup(heading = "%nGeneral overrides:%n", exclusive = false)
