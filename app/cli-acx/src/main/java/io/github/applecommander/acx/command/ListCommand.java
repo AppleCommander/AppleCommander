@@ -73,6 +73,9 @@ public class ListCommand extends ReadOnlyDiskImageCommandOptions {
         ListingStrategy listingStrategy = outputType.create(display);
         
         listingStrategy.first(disk);
+
+        FormattedDisk formattedDisk = disk.getFormattedDisks()[0];
+        listingStrategy.beforeDisk(formattedDisk);
         
         FileStreamer.forDisk(disk)
                     .ignoreErrors(true)
@@ -80,10 +83,10 @@ public class ListCommand extends ReadOnlyDiskImageCommandOptions {
                     .recursive(recursiveFlag)
                     .includeTypeOfFile(typeOfFile.typeOfFile())
                     .matchGlobs(globs)
-                    .beforeDisk(listingStrategy::beforeDisk)
-                    .afterDisk(listingStrategy::afterDisk)
                     .stream()
                     .forEach(listingStrategy::forEach);
+
+        listingStrategy.afterDisk(formattedDisk);
         
         listingStrategy.last(disk);
         
