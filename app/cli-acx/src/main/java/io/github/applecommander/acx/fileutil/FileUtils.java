@@ -56,6 +56,7 @@ public class FileUtils {
 	    Optional<FileEntry> targetFile = targetParent.getFiles()
 	            .stream()
 	            .filter(fileEntry -> name.equals(fileEntry.getFilename()))
+                    .filter(fileEntry -> !fileEntry.isDeleted())
 	            .findFirst();
 	    Optional<DirectoryEntry> targetDir = targetFile
 	            .filter(FileEntry::isDirectory)
