@@ -54,6 +54,7 @@ public class RmdirCommand extends ReadWriteDiskCommandOptions {
             final String pathName = formattedDisk.getSuggestedFilename(paths[i]);
             Optional<FileEntry> optEntry = directory.getFiles().stream()
                     .filter(entry -> entry.getFilename().equalsIgnoreCase(pathName))
+                    .filter(entry -> !entry.isDeleted())
                     .findFirst();
             
             if (optEntry.isPresent()) {
