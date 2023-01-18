@@ -89,6 +89,7 @@ public class FileUtils {
 	    String sanitizedName = directory.getFormattedDisk().getSuggestedFilename(sourceName);
 	    final Optional<FileEntry> fileEntry = directory.getFiles().stream()
 	        .filter(entry -> entry.getFilename().equals(sanitizedName))
+                .filter(entry -> !entry.isDeleted())
 	        .findFirst();
 
         final FileEntry targetFile;
