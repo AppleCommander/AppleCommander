@@ -52,7 +52,7 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
     @Override
     public int handleCommand() throws Exception {
         byte[] data = options.coordinate.read(disk);
-		if (output.raw) {
+        if (output.raw) {
             System.out.write(data);
         } else {
             System.out.println(output.format(options, data));
@@ -141,7 +141,7 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
                 return this.instructionSet;
             }
 
-	        @Option(names = "--6502", description = "MOS 6502. (Default)")
+            @Option(names = "--6502", description = "MOS 6502. (Default)")
             public void select6502(boolean flag) {
                 this.instructionSet = InstructionSet6502.for6502();
             }
