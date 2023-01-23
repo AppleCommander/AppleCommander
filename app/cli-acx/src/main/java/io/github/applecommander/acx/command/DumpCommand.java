@@ -70,7 +70,7 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
         public void selectHexDump(boolean flag) {
             fn = this::formatHexDump;
         }
-		
+
         @Option(names = "--disassembly", description = "Disassembly.")
         public void selectDisassembly(boolean flag) {
             fn = this::formatDisassembly;
@@ -126,7 +126,7 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
         @Option(names = {"-a", "--address"}, converter = IntegerTypeConverter.class,
                          description = "Starting Address.")
         private int address = 0x800;
-		
+
         @Option(names = {"-o", "--offset"}, converter = IntegerTypeConverter.class,
                          description = "Number of bytes to skip into file before disassembling.")
         private Optional<Integer> offset = Optional.empty();
