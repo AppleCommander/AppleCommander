@@ -76,8 +76,8 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
             fn = this::formatDisassembly;
         }
 		
-		@Option(names = "--raw", description = "Raw Binary dump.")
-		public boolean raw = false;
+        @Option(names = "--raw", description = "Raw Binary dump.")
+        public boolean raw = false;
         
         public String formatHexDump(Options options, byte[] data) {
             return AppleUtil.getHexDump(data);
@@ -122,17 +122,17 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
         private DisassemblerOptions disassemblerOptions = new DisassemblerOptions();
     }
 
-	public static class DisassemblerOptions {
-		@Option(names = {"-a", "--address"}, converter = IntegerTypeConverter.class,
-		                 description = "Starting Address.")
-		private int address = 0x800;
+    public static class DisassemblerOptions {
+        @Option(names = {"-a", "--address"}, converter = IntegerTypeConverter.class,
+                         description = "Starting Address.")
+        private int address = 0x800;
 		
-		@Option(names = {"-o", "--offset"}, converter = IntegerTypeConverter.class,
-		                 description = "Number of bytes to skip into file before disassembling.")
-		private Optional<Integer> offset = Optional.empty();
+        @Option(names = {"-o", "--offset"}, converter = IntegerTypeConverter.class,
+                         description = "Number of bytes to skip into file before disassembling.")
+        private Optional<Integer> offset = Optional.empty();
 		
-	    @ArgGroup(multiplicity = "0..1")
-	    private InstructionSetSelection instructionSet = new InstructionSetSelection();
+        @ArgGroup(multiplicity = "0..1")
+        private InstructionSetSelection instructionSet = new InstructionSetSelection();
 	
         public static class InstructionSetSelection {
             private InstructionSet instructionSet = InstructionSet6502.for6502();
@@ -140,8 +140,8 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
             public InstructionSet get() {
                 return this.instructionSet;
             }
-		
-	    	@Option(names = "--6502", description = "MOS 6502. (Default)")
+
+	        @Option(names = "--6502", description = "MOS 6502. (Default)")
             public void select6502(boolean flag) {
                 this.instructionSet = InstructionSet6502.for6502();
             }
@@ -160,7 +160,7 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
             @Option(names = { "--6502S" }, description = "MOS 6502 with SWEET16 switching.")
             public void select6502Switching(boolean flag) {
                 this.instructionSet = InstructionSet6502Switching.withSwitching();
-            }			
+            }		
         }	
-	}
+    }
 }
