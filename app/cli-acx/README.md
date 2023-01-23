@@ -43,7 +43,7 @@ ProDOS format; 110592 bytes free; 32768 bytes used.
 $ acx --help                                                                    
 Usage: acx [-hVv] [--debug] [--quiet] [COMMAND]
 
-'ac' experimental utility
+'acx' experimental utility
 
 Options:
       --debug     Show detailed stack traces.
@@ -53,37 +53,41 @@ Options:
   -V, --version   Print version information and exit.
 
 Commands:
-  convert          Uncompress a ShrinkIt or Binary II file;
+  compare          Compare two disk images.
+  convert          Uncompress a ShrinkIt or Binary II file; or convert a
+                     DiskCopy 4.2 image into a ProDOS disk image.
   copy, cp         Copy files between disks.
-  create, mkdisk   Rename volume of a disk image.
+  create, mkdisk   Create a disk image.
   delete, del, rm  Delete file(s) from a disk image.
   diskmap, map     Show disk usage map.
+  dump             Dump a block or sector.
   export, x, get   Export file(s) from a disk image.
+  dups             Find duplicate files.
   help             Displays help information about the specified command
   import, put      Import file onto disk.
   info, i          Show information on a disk image(s).
   list, ls         List directory of disk image(s).
   lock             Lock file(s) on a disk image.
   mkdir, md        Create a directory on disk.
+  read             Read a block or sector.
   rename, ren      Rename file on a disk image.
   rename-disk      Rename volume of a disk image.
   rmdir, rd        Remove a directory on disk.
   unlock           Unlock file(s) on a disk image.
+  write            Write a block or sector.
 ```
 
 ## Info
 
 ```
 $ acx info --help
-Usage: acx info [-h] <paths>...
+Usage: acx info [-h] -d=<disk>
 
 Show information on a disk image(s).
 
-Parameters:
-      <paths>...   Image(s) to process.
-
 Options:
-  -h, --help       Show help for subcommand.
+  -d, --disk=<disk>   Image to process [$ACX_DISK_NAME].
+  -h, --help          Show help for subcommand.
 ```
 
 ```
@@ -110,16 +114,14 @@ Sectors On Disk: 16
 ```
 $ acx list --help
 Usage: acx list [-hr] [--[no-]column] [--deleted] [--[no-]footer] [--[no-]
-                header] [--globs=<globs>[,<globs>...]]... [-n | -s | -l]
-                [--file | --directory] <paths>...
+                header] -d=<disk> [--globs=<globs>[,<globs>...]]... [-n | -s |
+                -l] [--file | --directory] [--text | --json | --csv]
 
 List directory of disk image(s).
 
-Parameters:
-      <paths>...            Image(s) to process.
-
 Options:
       --[no-]column         Show column headers.
+  -d, --disk=<disk>         Image to process [$ACX_DISK_NAME].
       --deleted             Show deleted files.
       --directory           Only include directories.
       --file                Only include files.
@@ -129,10 +131,16 @@ Options:
   -h, --help                Show help for subcommand.
       --[no-]header         Show header.
   -r, --[no-]recursive      Display directory recursively.
+
 File display formatting:
   -l, --long, --detail      Use long/detailed directory format.
   -n, --native              Use native directory format (default).
   -s, --short, --standard   Use brief directory format.
+
+Output format:
+      --csv                 CSV output.
+      --json                JSON output.
+      --text                Formatted text (default).
 ```
 
 ```
