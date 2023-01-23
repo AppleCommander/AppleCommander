@@ -52,11 +52,7 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
     @Override
     public int handleCommand() throws Exception {
         byte[] data = options.coordinate.read(disk);
-        if (output.raw) {
-            System.out.write(data);
-        } else {
-            System.out.println(output.format(options, data));
-        }
+        System.out.println(output.format(options, data));
         return 0;
     }
     
@@ -66,7 +62,7 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
             return fn.apply(options, data);
         }
         
-        @Option(names = "--hex", description = "Hex dump. (Default)")
+        @Option(names = "--hex", description = "Hex dump. (default)")
         public void selectHexDump(boolean flag) {
             fn = this::formatHexDump;
         }
@@ -75,9 +71,6 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
         public void selectDisassembly(boolean flag) {
             fn = this::formatDisassembly;
         }
-		
-        @Option(names = "--raw", description = "Raw Binary dump.")
-        public boolean raw = false;
         
         public String formatHexDump(Options options, byte[] data) {
             return AppleUtil.getHexDump(data);
@@ -141,7 +134,7 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
                 return this.instructionSet;
             }
 
-            @Option(names = "--6502", description = "MOS 6502. (Default)")
+            @Option(names = "--6502", description = "MOS 6502. (default)")
             public void select6502(boolean flag) {
                 this.instructionSet = InstructionSet6502.for6502();
             }
