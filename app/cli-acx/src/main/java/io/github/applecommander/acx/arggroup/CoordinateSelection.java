@@ -20,6 +20,7 @@
 package io.github.applecommander.acx.arggroup;
 
 import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Option;
@@ -29,7 +30,7 @@ public class CoordinateSelection {
     private CoordinateSelection.SectorCoordinateSelection sectorCoordinate;
     @ArgGroup(exclusive = false)
     private CoordinateSelection.BlockCoordinateSelection blockCoordinate;
-    
+
     public boolean includesBootSector() {
         if (sectorCoordinate != null) {
             return sectorCoordinate.isBootSector();
@@ -39,7 +40,7 @@ public class CoordinateSelection {
         }
         return false;
     }
-    
+
     public byte[] read(Disk disk) {
         if (sectorCoordinate != null) {
             return sectorCoordinate.read(disk);
@@ -49,7 +50,7 @@ public class CoordinateSelection {
         }
         return disk.readSector(0, 0);
     }
-    
+
     public void write(Disk disk, byte[] data) {
         if (sectorCoordinate != null) {
             sectorCoordinate.write(disk, data);
@@ -59,34 +60,66 @@ public class CoordinateSelection {
         }
         disk.writeSector(0, 0, data);
     }
-    
+
     public static class SectorCoordinateSelection {
         @Option(names = { "-t", "--track" }, required = true, description = "Track number.")
         private Integer track;
         @Option(names = { "-s", "--sector" }, required = true, description = "Sector number.")
         private Integer sector;
-        
+
         public boolean isBootSector() {
             return track == 0 && sector == 0;
         }
+
+        public void validateTrackAndSector(Disk disk) throws IllegalArgumentException  {
+            final int tracksPerDisk = disk.getImageOrder().getTracksPerDisk();
+            final int sectorsPerTrack = disk.getImageOrder().getSectorsPerTrack();
+
+            if (track < 0 || track >= tracksPerDisk) {
+                String errormsg = String.format("The track number(%d) is out of range(0-%d) on this image.", track, tracksPerDisk-1);
+                throw new IllegalArgumentException(errormsg);
+            }
+
+            if (sector < 0 || sector >= sectorsPerTrack) {
+                String errormsg = String.format("The sector number(%d) is out of range(0-%d) on this image.", sector, sectorsPerTrack-1);
+                throw new IllegalArgumentException(errormsg);
+            }
+        }
+
         public byte[] read(Disk disk) {
+            validateTrackAndSector(disk);
             return disk.readSector(track, sector);
         }
+
         public void write(Disk disk, byte[] data) {
+            validateTrackAndSector(disk);
             disk.writeSector(track, sector, data);
         }
     }
     public static class BlockCoordinateSelection {
         @Option(names = { "-b", "--block" }, description = "Block number.")
         private Integer block;
-        
+
         public boolean isBootBlock() {
             return block == 0;
         }
+
+        public void validateBlockNum(Disk disk) throws IllegalArgumentException {
+            final int blocksOnDevice = disk.getImageOrder().getBlocksOnDevice();
+
+            if (block < 0 || block >= blocksOnDevice) {
+                String errormsg = String.format("The block number(%d) is out of range(0-%d) on this image.", block, blocksOnDevice-1);
+                throw new IllegalArgumentException(errormsg);
+            }
+        }
+
         public byte[] read(Disk disk) {
+            validateBlockNum(disk);
             return disk.readBlock(block);
         }
+
         public void write(Disk disk, byte[] data) {
+            validateBlockNum(disk);
             disk.writeBlock(block, data);
         }
     }
