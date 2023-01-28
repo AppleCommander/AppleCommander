@@ -86,6 +86,25 @@ public class ImportCommand extends ReadWriteDiskCommandOptions {
 
     @Override
     public int handleCommand() throws Exception {
+        final int MAX_ADDRESS = 0xFFFF;
+        final int MAX_AUXTYPE = 0xFFFF;
+
+        if (overrides.fileAddress.isPresent()){
+            final int fileAddress = overrides.fileAddress.get();
+            if (fileAddress < 0 || fileAddress > MAX_ADDRESS) {
+                String errormsg = String.format("address(%d) is out of range(0-%d).", fileAddress, MAX_ADDRESS);
+                throw new IllegalArgumentException(errormsg);
+            }
+        }
+
+       if (overrides.auxType.isPresent()){
+            final int auxType = overrides.auxType.get();
+            if (auxType < 0 || auxType > MAX_AUXTYPE) {
+                String errormsg = String.format("auxiliary type(%d) is out of range(0-%d).", auxType, MAX_AUXTYPE);
+                throw new IllegalArgumentException(errormsg);
+            }
+        }
+
         DirectoryEntry directory = disk.getFormattedDisks()[0];
         if (directoryName.isPresent()) {
             String[] dirs = directoryName.get().split("/");
@@ -350,7 +369,8 @@ public class ImportCommand extends ReadWriteDiskCommandOptions {
         private Optional<String> fileName;
         
         @Option(names = { "--aux", "--auxtype" }, description = "Aux. Type. "
-                + "(For a filesystem that supports aux type.)")
+                + "(For a filesystem that supports aux type.)",
+                converter = IntegerTypeConverter.class)
         private Optional<Integer> auxType;
     }
 }
