@@ -92,6 +92,7 @@ public class ImportCommand extends ReadWriteDiskCommandOptions {
             for (String dir : dirs) {
                 Optional<FileEntry> fileEntry = directory.getFiles().stream()
                         .filter(f -> dir.equalsIgnoreCase(f.getFilename()))
+                        .filter(f -> !f.isDeleted())
                         .findFirst();
                 Optional<DirectoryEntry> dirEntry = fileEntry
                         .filter(FileEntry::isDirectory)

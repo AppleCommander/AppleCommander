@@ -56,6 +56,7 @@ public class FileUtils {
 	    Optional<FileEntry> targetFile = targetParent.getFiles()
 	            .stream()
 	            .filter(fileEntry -> name.equals(fileEntry.getFilename()))
+                    .filter(fileEntry -> !fileEntry.isDeleted())
 	            .findFirst();
 	    Optional<DirectoryEntry> targetDir = targetFile
 	            .filter(FileEntry::isDirectory)
@@ -89,6 +90,7 @@ public class FileUtils {
 	    String sanitizedName = directory.getFormattedDisk().getSuggestedFilename(sourceName);
 	    final Optional<FileEntry> fileEntry = directory.getFiles().stream()
 	        .filter(entry -> entry.getFilename().equals(sanitizedName))
+                .filter(entry -> !entry.isDeleted())
 	        .findFirst();
 
         final FileEntry targetFile;
