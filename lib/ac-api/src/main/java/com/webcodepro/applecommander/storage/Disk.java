@@ -278,7 +278,7 @@ public class Disk {
 					rc = 0;
 				} else {
 					imageOrder = proDosOrder;
-					if (knownProDOSOrder || isProdosFormat() || isDosFormat()) {
+					if (knownProDOSOrder || isProdosFormat() || isDosFormat() || isRdos33Format()) {
 						rc = 0;
 					}
 				}
@@ -791,9 +791,20 @@ public class Disk {
 		if (!is140KbDisk()) return false;
 		byte[] block = readSector(0, 0x0d);
 		String id = AppleUtil.getString(block, 0xe0, 4);
-		return "RDOS".equals(id); //$NON-NLS-1$
+		return "RDOS".equals(id) || isRdos33Format(); //$NON-NLS-1$
 	}
 	
+	/**
+	 * Test the disk format to see if this is a RDOS 33 formatted
+	 * disk.
+	 */
+	public boolean isRdos33Format() {
+		if (!is140KbDisk()) return false;
+		byte[] block = readSector(1, 0x0);
+		String id = AppleUtil.getString(block, 0x0, 6);
+		return "RDOS 3".equals(id); //$NON-NLS-1$
+	}
+
 	/**
 	 * Test the disk format to see if this is a WP formatted
 	 * disk.

@@ -30,6 +30,7 @@ import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 
@@ -168,6 +169,24 @@ public class RdosFormatDisk extends FormattedDisk {
 		int track = block / 13;
 		int sector = sectorSkew[block % 13];
 		writeSector(track, sector, data);
+	}
+
+	/**
+	 * Read the block from the disk image.
+	 */
+	public byte[] readBlock(int block) {
+		int track = block / 16;
+		int sector = block % 16;
+		return getImageOrder().readSector(track, sector);
+	}
+	
+	/**
+	 * Write the block to the disk image.
+	 */
+	public void writeBlock(int block, byte[] data) {
+		int track = block / 16;
+		int sector = block % 16;
+		getImageOrder().writeSector(track, sector, data);
 	}
 
 	/**
@@ -392,7 +411,12 @@ public class RdosFormatDisk extends FormattedDisk {
 		byte[] fileData = new byte[rdosEntry.getSizeInBlocks() * SECTOR_SIZE];
 		int offset = 0;
 		for (int blockOffset = 0; blockOffset < rdosEntry.getSizeInBlocks(); blockOffset++) {
-			byte[] blockData = readRdosBlock(startingBlock + blockOffset);
+			byte[] blockData;
+			if (getImageOrder() instanceof ProdosOrder) {
+				blockData = readBlock(startingBlock + blockOffset);
+			} else {
+				blockData = readRdosBlock(startingBlock + blockOffset);
+			}
 			System.arraycopy(blockData, 0, fileData, offset, blockData.length);
 			offset+= blockData.length;
 		}
