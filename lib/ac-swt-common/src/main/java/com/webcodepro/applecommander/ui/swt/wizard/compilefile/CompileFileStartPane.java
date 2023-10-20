@@ -84,7 +84,6 @@ public class CompileFileStartPane extends WizardPane {
 		directoryText = new Text(control, SWT.WRAP | SWT.BORDER);
 		if (wizard.getDirectory() != null) directoryText.setText(wizard.getDirectory());
 		directoryText.setLayoutData(new RowData(300, -1));
-		directoryText.setBackground(new Color(control.getDisplay(), 255,255,255));
 		directoryText.setFocus();
 		directoryText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent event) {
