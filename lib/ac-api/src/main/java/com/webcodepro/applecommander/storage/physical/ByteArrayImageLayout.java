@@ -41,6 +41,7 @@ public class ByteArrayImageLayout {
 	 */
 	public ByteArrayImageLayout(byte[] diskImage) {
 		setDiskImage(diskImage);
+		changed = false;	// setDiskImage by default sets to true but we don't want that
 	}
 
 	/**

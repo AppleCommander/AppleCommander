@@ -19,6 +19,7 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
+import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.events.DisposeEvent;
@@ -74,6 +75,13 @@ public class DiskWindow {
 					dispose(event);
 				}
 			});
+		shell.addListener(SWT.Close, (event) -> {
+			if (disks[0].hasChanged()) {
+				int button = SwtUtil.showYesNoDialog(shell, "Are you sure?",
+						"The disk has been modified. Are you certain you want to quit?");
+				event.doit = button == SWT.YES;
+			}
+		});
 			
 		CTabFolder tabFolder = new CTabFolder(shell, SWT.BOTTOM);
 		new DiskExplorerTab(tabFolder, disks, imageManager, this);
