@@ -5,6 +5,7 @@ build/
 
 # IDE's
 .vscode
+.idea
 
 # In case we run it locally, AppleCommander files we don't want to commit
 AppleCommander.preferences
