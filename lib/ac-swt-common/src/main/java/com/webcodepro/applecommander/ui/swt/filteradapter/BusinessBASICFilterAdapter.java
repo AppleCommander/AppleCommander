@@ -22,6 +22,7 @@ package com.webcodepro.applecommander.ui.swt.filteradapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
@@ -37,7 +38,10 @@ import com.webcodepro.applecommander.util.BusinessBASICTokenizer;
  */
 public class BusinessBASICFilterAdapter extends FilterAdapter {
 	private StyledText styledText;
-	
+	private Color separatorColor;
+	private Color stringColor;
+	private Color tokenColor;
+
 	public BusinessBASICFilterAdapter(FileViewerWindow window, String text, String toolTipText, Image image) {
 		super(window, text, toolTipText, image);
 	}
@@ -59,12 +63,19 @@ public class BusinessBASICFilterAdapter extends FilterAdapter {
 	
 	public void dispose() {
 		styledText.dispose();
+		separatorColor.dispose();
+		tokenColor.dispose();
+		stringColor.dispose();
 	}
 
 
 	protected void createStyledText() {
+		separatorColor = new Color(getComposite().getDisplay(), 192, 0, 0);
+		tokenColor = new Color(getComposite().getDisplay(), 0, 0, 192);
+		stringColor = new Color(getComposite().getDisplay(), 0, 192, 0);
+
 		styledText = new StyledText(getComposite(), SWT.NONE);
-		styledText.setForeground(getBlackColor());
+		styledText.setForeground(getComposite().getForeground());
 		styledText.setFont(getCourierFont());
 		styledText.setEditable(false);
 
@@ -90,7 +101,13 @@ public class BusinessBASICFilterAdapter extends FilterAdapter {
 						styledText.append("  "); //$NON-NLS-1$
 					}
 			} else if (token.isCommandSeparator() || token.isExpressionSeparator()) {
+				int caretOffset = styledText.getCharCount();
 				styledText.append(token.getStringValue());
+				StyleRange styleRange = new StyleRange();
+				styleRange.start = caretOffset;
+				styleRange.length = token.getStringValue().length();
+				styleRange.foreground = separatorColor;
+				styledText.setStyleRange(styleRange);
 				firstData = true;
 			} else if (token.isEndOfCommand()) {
 				styledText.append("\n"); //$NON-NLS-1$
@@ -103,7 +120,7 @@ public class BusinessBASICFilterAdapter extends FilterAdapter {
 				StyleRange styleRange = new StyleRange();
 				styleRange.start = caretOffset;
 				styleRange.length = token.getStringValue().trim().length();
-				styleRange.foreground = getGreenColor();
+				styleRange.foreground = stringColor;
 				styledText.setStyleRange(styleRange);
 				firstData = false;
 			} else if (token.isToken()) {
@@ -114,8 +131,7 @@ public class BusinessBASICFilterAdapter extends FilterAdapter {
 				StyleRange styleRange = new StyleRange();
 				styleRange.start = caretOffset;
 				styleRange.length = token.getTokenString().length();
-				//styleRange.fontStyle = SWT.BOLD;
-				styleRange.foreground = getBlueColor();
+				styleRange.foreground = tokenColor;
 				styledText.setStyleRange(styleRange);
 				firstData = false;
 				if (token.isIndenter()) {

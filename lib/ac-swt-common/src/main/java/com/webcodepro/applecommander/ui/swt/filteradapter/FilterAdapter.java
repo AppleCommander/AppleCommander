@@ -120,15 +120,6 @@ public abstract class FilterAdapter {
 	protected ToolItem getToolItem() {
 		return toolItem;
 	}
-	protected Color getBlackColor() {
-		return window.getBlackColor();
-	}
-	protected Color getGreenColor() {
-		return window.getGreenColor();
-	}
-	protected Color getBlueColor() {
-		return window.getBlueColor();
-	}
 	public void setDumpSelected() {
 		nativeSelected = false;
 		hexSelected = false;

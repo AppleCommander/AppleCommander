@@ -34,12 +34,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.swt.widgets.*;
 
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
@@ -102,10 +97,7 @@ public class FileViewerWindow {
     private Optional<ToolItem> shapeTableToolItem = Optional.empty();
 	
 	private Font courier;
-	private Color black;
-	private Color blue;
-	private Color green;
-	
+
 	private ContentTypeAdapter contentTypeAdapter;
 	private Map<Class<?>,FilterAdapter> nativeFilterAdapterMap;
 	private FilterAdapter nativeFilterAdapter;
@@ -159,12 +151,9 @@ public class FileViewerWindow {
 		gridData = new GridData(GridData.FILL_BOTH);
 		content.setLayoutData(gridData);
 		content.addListener(SWT.KeyUp, createToolbarCommandHandler());
-		
+
 		courier = new Font(shell.getDisplay(), "Courier", 10, SWT.NORMAL); //$NON-NLS-1$
-		black = new Color(shell.getDisplay(), 0, 0, 0);
-		blue = new Color(shell.getDisplay(), 0, 0, 192);
-		green = new Color(shell.getDisplay(), 0, 192, 0);
-		
+
 		nativeFilterAdapter.display();
 		
 		shell.open();
@@ -249,9 +238,6 @@ public class FileViewerWindow {
 	 */
 	protected void dispose(DisposeEvent event) {
 		courier.dispose();
-		black.dispose();
-		blue.dispose();
-		green.dispose();
 		if (nativeFilterAdapter != null) nativeFilterAdapter.dispose();
 		hexFilterAdapter.dispose();
 		rawDumpFilterAdapter.dispose();
@@ -435,16 +421,7 @@ public class FileViewerWindow {
 	public Font getCourierFont() {
 		return courier;
 	}
-	public Color getBlackColor() {
-		return black;
-	}
-	public Color getGreenColor() {
-		return green;
-	}
-	public Color getBlueColor() {
-		return blue;
-	}
-	public void setFilterToolItemSelection(boolean nativeSelected, boolean hexSelected, boolean dumpSelected, 
+	public void setFilterToolItemSelection(boolean nativeSelected, boolean hexSelected, boolean dumpSelected,
 	        boolean disassemblySelected, boolean shapeTableSelected) {
 		if (nativeToolItem != null) nativeToolItem.setSelection(nativeSelected);
 		hexDumpToolItem.setSelection(hexSelected);

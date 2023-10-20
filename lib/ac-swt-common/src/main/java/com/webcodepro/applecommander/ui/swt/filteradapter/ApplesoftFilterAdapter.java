@@ -22,6 +22,7 @@ package com.webcodepro.applecommander.ui.swt.filteradapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
@@ -29,6 +30,7 @@ import com.webcodepro.applecommander.ui.swt.FileViewerWindow;
 import com.webcodepro.applecommander.ui.swt.util.contentadapter.StyledTextAdapter;
 import com.webcodepro.applecommander.util.ApplesoftToken;
 import com.webcodepro.applecommander.util.ApplesoftTokenizer;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * Provides a view of a syntax-colored Applesoft program listing.
@@ -37,6 +39,9 @@ import com.webcodepro.applecommander.util.ApplesoftTokenizer;
  */
 public class ApplesoftFilterAdapter extends FilterAdapter {
 	private StyledText styledText;
+	private Color separatorColor;
+	private Color stringColor;
+	private Color tokenColor;
 	
 	public ApplesoftFilterAdapter(FileViewerWindow window, String text, String toolTipText, Image image) {
 		super(window, text, toolTipText, image);
@@ -59,12 +64,25 @@ public class ApplesoftFilterAdapter extends FilterAdapter {
 	
 	public void dispose() {
 		styledText.dispose();
+		separatorColor.dispose();
+		tokenColor.dispose();
+		stringColor.dispose();
 	}
 
 
 	protected void createStyledText() {
+		if (Display.isSystemDarkTheme()) {
+			separatorColor = new Color(getComposite().getDisplay(), 255, 128, 128);
+			tokenColor = new Color(getComposite().getDisplay(), 192, 192, 255);
+			stringColor = new Color(getComposite().getDisplay(), 128, 255, 128);
+		} else {
+			separatorColor = new Color(getComposite().getDisplay(), 192, 0, 0);
+			tokenColor = new Color(getComposite().getDisplay(), 0, 0, 192);
+			stringColor = new Color(getComposite().getDisplay(), 0, 192, 0);
+		}
+
 		styledText = new StyledText(getComposite(), SWT.NONE);
-		styledText.setForeground(getBlackColor());
+		styledText.setForeground(getComposite().getForeground());
 		styledText.setFont(getCourierFont());
 		styledText.setEditable(false);
 
@@ -83,7 +101,13 @@ public class ApplesoftFilterAdapter extends FilterAdapter {
 				styledText.append(Integer.toString(token.getLineNumber()));
 				styledText.append(" "); //$NON-NLS-1$
 			} else if (token.isCommandSeparator() || token.isExpressionSeparator()) {
+				int caretOffset = styledText.getCharCount();
 				styledText.append(token.getStringValue());
+				StyleRange styleRange = new StyleRange();
+				styleRange.start = caretOffset;
+				styleRange.length = token.getStringValue().length();
+				styleRange.foreground = separatorColor;
+				styledText.setStyleRange(styleRange);
 			} else if (token.isEndOfCommand()) {
 				styledText.append("\n"); //$NON-NLS-1$
 			} else if (token.isString()) {
@@ -92,7 +116,7 @@ public class ApplesoftFilterAdapter extends FilterAdapter {
 				StyleRange styleRange = new StyleRange();
 				styleRange.start = caretOffset;
 				styleRange.length = token.getStringValue().length();
-				styleRange.foreground = getGreenColor();
+				styleRange.foreground = stringColor;
 				styledText.setStyleRange(styleRange);
 			} else if (token.isToken()) {
 				int caretOffset = styledText.getCharCount();
@@ -100,8 +124,7 @@ public class ApplesoftFilterAdapter extends FilterAdapter {
 				StyleRange styleRange = new StyleRange();
 				styleRange.start = caretOffset;
 				styleRange.length = token.getTokenString().length();
-				//styleRange.fontStyle = SWT.BOLD;
-				styleRange.foreground = getBlueColor();
+				styleRange.foreground = tokenColor;
 				styledText.setStyleRange(styleRange);
 			}
 		}
