@@ -37,14 +37,14 @@ import com.webcodepro.applecommander.util.TextBundle;
 /**
  * Manages a disk that is in the RDOS format.
  * <p>
- * Note that the RDOS block interleave is different than the standard DOS 3.3 format.
+ * Note that the RDOS 2.1/3.2 block interleave is different than the standard DOS 3.3 format.
  * Thus, when the image is made, the sectors are skewed differently - use readRdosBlock
  * to read the appropriate block number.
  * <p>
  * Also note that the operating system is itself the first file.  Block #0 is really 
  * track 0, sector 0 - meaning that the first file should not (cannot) be deleted.
  * <p>
- * RDOS appears to have been placed on 13 sector disks.  This limits the number of blocks
+ * RDOS 2.1/3.2 was placed on 13 sector disks.  This limits the number of blocks
  * to 455.  It also may also cause incompatibilities with other formats and other cracks.
  * <p>
  * Date created: Oct 7, 2002 2:03:58 PM
@@ -53,7 +53,7 @@ import com.webcodepro.applecommander.util.TextBundle;
 public class RdosFormatDisk extends FormattedDisk {
 	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
-	 * The RDOS disks are structured in a different order than DOS 3.3.
+	 * RDOS 2.1/3.2 disks are structured in a different order than DOS 3.3.
 	 * This table interpolates between the RDOS ordering and the DOS
 	 * ordering.  It appears that RDOS may use the physical sector number
 	 * instead of the logical sector.
@@ -142,12 +142,12 @@ public class RdosFormatDisk extends FormattedDisk {
 	}
 
 	/**
-	 * Read an RDOS block.  The sector skewing for RDOS seems to be different.
+	 * Read an RDOS block.  The sector skewing for RDOS 2.1/3.2 is different.
 	 * This routine will convert the block number to a DOS track and sector,
 	 * handling the sector change-over.  The readSector method then should
 	 * take care of various image formats.
 	 * <p>
-	 * Note that sectorSkew has the full 16 sectors, even though RDOS
+	 * Note that sectorSkew has the full 16 sectors, even though RDOS 2.1/3.2
 	 * itself is a 13 sector format.
 	 */
 	public byte[] readRdosBlock(int block) {
@@ -157,7 +157,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	}
 	
 	/**
-	 * Write an RDOS block.  The sector skewing for RDOS seems to be different.
+	 * Write an RDOS block.  The sector skewing for RDOS2.1/3/2 is different.
 	 * This routine will convert the block number to a DOS track and sector,
 	 * handling the sector change-over.  The writeSector method then should
 	 * take care of various image formats.
@@ -438,6 +438,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 *         would be) and executes that code for the directory.
 	 *         AppleCommander will need to either clone the code or write
 	 *         its own routine.  This is RDOS block #25.
+	 * FIXME - Doesn't handle native 16-sector (RDOS 3.3) format.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
