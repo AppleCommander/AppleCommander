@@ -193,6 +193,10 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * RDOS really does not have a disk name.  Fake one.
 	 */
 	public String getDiskName() {
+		if (getImageOrder() instanceof ProdosOrder) {
+			byte[] block = readSector(1, 0x0);
+			return AppleUtil.getString(block, 0x0, 0x18);
+		}
 		byte[] block = readRdosBlock(4);
 		return AppleUtil.getString(block, 0xe0, 0x20);
 	}
