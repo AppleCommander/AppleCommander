@@ -52,7 +52,7 @@ public class ProdosFileEntryReaderWriter implements FileEntryReader, FileEntryWr
     
     @Override
     public Optional<Boolean> isLocked() {
-        return Optional.ofNullable(fileEntry.isLocked());
+        return Optional.of(fileEntry.isLocked());
     }
     @Override
     public void setLocked(boolean flag) {
@@ -86,7 +86,7 @@ public class ProdosFileEntryReaderWriter implements FileEntryReader, FileEntryWr
     @Override
     public Optional<Integer> getBinaryAddress() {
         if (fileEntry.needsAddress()) {
-            return Optional.ofNullable(fileEntry.getAuxiliaryType());
+            return Optional.of(fileEntry.getAuxiliaryType());
         }
         return Optional.empty();
     }
@@ -99,7 +99,7 @@ public class ProdosFileEntryReaderWriter implements FileEntryReader, FileEntryWr
     
     @Override
     public Optional<Integer> getBinaryLength() {
-        return Optional.ofNullable(fileEntry.getSize());
+        return Optional.of(fileEntry.getSize());
     }
     @Override
     public void setBinaryLength(int length) {
@@ -108,7 +108,7 @@ public class ProdosFileEntryReaderWriter implements FileEntryReader, FileEntryWr
     
     @Override
     public Optional<Integer> getAuxiliaryType() {
-        return Optional.ofNullable(fileEntry.getAuxiliaryType());
+        return Optional.of(fileEntry.getAuxiliaryType());
     }
     @Override
     public void setAuxiliaryType(int auxType) {
