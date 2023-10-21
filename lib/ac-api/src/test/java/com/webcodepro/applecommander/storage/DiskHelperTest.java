@@ -85,15 +85,23 @@ public class DiskHelperTest {
 	}
 
 	@Test
-	public void testRdos33Boot() throws IOException, DiskException {
-		FormattedDisk[] disks = showDirectory(config.getDiskDir() + "/RDOS_33_boot.dsk"); //$NON-NLS-1$
-		assertApplesoftFile(disks[0], "START"); //$NON-NLS-1$
-		assertTextFile(disks[0], "SYSTEMBOOT"); //$NON-NLS-1$
+	public void testSsiSave() throws IOException, DiskException {
+		showDirectory(config.getDiskDir() + "/SSIsave.dsk"); //$NON-NLS-1$
 	}
 
 	@Test
-	public void testSsiSave() throws IOException, DiskException {
-		showDirectory(config.getDiskDir() + "/SSIsave.dsk"); //$NON-NLS-1$
+	public void testPhanta31() throws IOException, DiskException {
+		FormattedDisk[] disks = showDirectory(config.getDiskDir() 
+				+ "/PHANTA31.DSK"); //$NON-NLS-1$
+		assertApplesoftFile(disks[0], "PHANTASIE III"); //$NON-NLS-1$
+		assertBinaryFile(disks[0], "TWN31"); //$NON-NLS-1$
+		assertTextFile(disks[0], "ITEM"); //$NON-NLS-1$
+		assertGraphicsFile(disks[0], "ICE DRAGON"); //$NON-NLS-1$
+	}
+
+	@Test
+	public void testPhanta32() throws IOException, DiskException {
+		showDirectory(config.getDiskDir() + "/PHANTA32.DSK"); //$NON-NLS-1$
 	}
 
 	@Test
