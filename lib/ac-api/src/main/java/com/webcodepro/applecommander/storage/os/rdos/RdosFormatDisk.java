@@ -250,6 +250,9 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * Identify the operating system format of this disk.
 	 */
 	public String getFormat() {
+		if (getImageOrder() instanceof ProdosOrder) {
+			return textBundle.get("RdosFormatDisk.Rdos33"); //$NON-NLS-1$
+		}
 		return textBundle.get("RdosFormatDisk.Rdos21"); //$NON-NLS-1$
 	}
 	
