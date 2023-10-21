@@ -17,6 +17,7 @@ dependencies {
     implementation project(':lib:ac-api')
 
     implementation "net.sf.applecommander:applesingle-api:$asVersion"
+    implementation "net.sf.applecommander:bastools-api:$btVersion"
 
     testImplementation "junit:junit:$junitVersion"
     testImplementation "org.apache.commons:commons-lang3:$commonsLang3Version"

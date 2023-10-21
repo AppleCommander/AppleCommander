@@ -19,17 +19,29 @@
  */
 package com.webcodepro.applecommander.ui.swt.wizard.importfile;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.eclipse.swt.widgets.Shell;
-
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.ui.ImportSpecification;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 import com.webcodepro.applecommander.ui.swt.wizard.Wizard;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
+import com.webcodepro.applecommander.util.ApplesoftTokenizer;
+import io.github.applecommander.bastools.api.Configuration;
+import io.github.applecommander.bastools.api.Parser;
+import io.github.applecommander.bastools.api.TokenReader;
+import io.github.applecommander.bastools.api.Visitors;
+import io.github.applecommander.bastools.api.model.Program;
+import io.github.applecommander.bastools.api.model.Token;
+import org.eclipse.swt.widgets.Shell;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 
 /**
  * The Disk Import Wizard.
@@ -38,6 +50,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  * @author Rob Greene
  */
 public class ImportWizard extends Wizard {
+	private static Set<String> APPLESOFT_FILETYPES = Set.of("B", "BAS");
 	private FormattedDisk disk;
 	private List<ImportSpecification> importSpecifications;
 	/**
@@ -58,8 +71,39 @@ public class ImportWizard extends Wizard {
 	/**
 	 * Add an import specification.
 	 */
-	public void addImportSpecification(ImportSpecification importSpecification) {
+	public void addImportSpecification(ImportSpecification importSpecification) throws IOException {
+		validate(importSpecification);
 		getImportSpecifications().add(importSpecification);
+	}
+
+	/**
+	 * Perform validation for some problematic file type imports.
+	 */
+	public void validate(ImportSpecification importSpecification) throws IOException {
+		if (APPLESOFT_FILETYPES.contains(importSpecification.getFiletype())) {
+			try {
+				// 1. Validate that this is a binary Applesoft file.
+				byte[] data = Files.readAllBytes(Path.of(importSpecification.getSourceFilename()));
+				ApplesoftTokenizer tokenizer = new ApplesoftTokenizer(data);
+				while (tokenizer.hasMoreTokens()) {
+					tokenizer.getNextToken();    // Make sure we can loop through entire program
+				}
+				importSpecification.setFileData(data);
+			} catch (Throwable ignored) {
+				try {
+					// 2. Make an attempt at tokenizing the file (assuming it's text).
+					File file = new File(importSpecification.getSourceFilename());
+					Configuration config = Configuration.builder().sourceFile(file).build();
+					Queue<Token> tokens = TokenReader.tokenize(config.sourceFile);
+					Parser parser = new Parser(tokens);
+					Program program = parser.parse();
+					byte[] data = Visitors.byteVisitor(config).dump(program);
+					importSpecification.setFileData(data);
+				} catch (Throwable ignored2) {
+					throw new IOException("File does not appear to be an Applesoft program");
+				}
+			}
+		}
 	}
 	/**
 	 * Remove an import specification.

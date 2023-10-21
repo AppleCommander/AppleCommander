@@ -19,85 +19,14 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.MenuAdapter;
-import org.eclipse.swt.events.MenuEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.printing.PrintDialog;
-import org.eclipse.swt.printing.Printer;
-import org.eclipse.swt.printing.PrinterData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.ProgressBar;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeItem;
-
 import com.webcodepro.applecommander.compiler.ApplesoftCompiler;
-import com.webcodepro.applecommander.storage.DirectoryEntry;
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.DiskException;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FileEntryComparator;
 import com.webcodepro.applecommander.storage.FileFilter;
-import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.FormattedDisk.FileColumnHeader;
-import com.webcodepro.applecommander.storage.filters.AppleWorksDataBaseFileFilter;
-import com.webcodepro.applecommander.storage.filters.AppleWorksSpreadSheetFileFilter;
-import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFileFilter;
-import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
-import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
-import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
-import com.webcodepro.applecommander.storage.filters.BusinessBASICFileFilter;
-import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
-import com.webcodepro.applecommander.storage.filters.GutenbergFileFilter;
-import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
-import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
-import com.webcodepro.applecommander.storage.filters.TextFileFilter;
+import com.webcodepro.applecommander.storage.filters.*;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosDiskSizeDoesNotMatchException;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
-import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
-import com.webcodepro.applecommander.storage.physical.DosOrder;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import com.webcodepro.applecommander.storage.physical.NibbleOrder;
-import com.webcodepro.applecommander.storage.physical.ProdosOrder;
+import com.webcodepro.applecommander.storage.physical.*;
 import com.webcodepro.applecommander.ui.ImportSpecification;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.UserPreferences;
@@ -111,8 +40,28 @@ import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.Host;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
-
 import io.github.applecommander.applesingle.AppleSingle;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.printing.PrintDialog;
+import org.eclipse.swt.printing.Printer;
+import org.eclipse.swt.printing.PrinterData;
+import org.eclipse.swt.widgets.*;
+
+import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.*;
 
 /**
  * Build the Disk File tab for the Disk Window.
@@ -1193,10 +1142,15 @@ public class DiskExplorerTab {
 							i+1, specs.size()));
 					nameLabel.setText(spec.getSourceFilename());
 					progressBar.setSelection(i);
-					ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-					InputStream input =  new FileInputStream(spec.getSourceFilename());
-					StreamUtil.copy(input, buffer);
-					byte[] fileData = buffer.toByteArray();
+					byte[] fileData = null;
+					if (spec.hasFileData()) {
+						fileData = spec.getFileData();
+					} else {
+						ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+						InputStream input =  new FileInputStream(spec.getSourceFilename());
+						StreamUtil.copy(input, buffer);
+						fileData = buffer.toByteArray();
+					}
 					FileEntry fileEntry = directory.createFile();
 					fileEntry.setFilename(spec.getTargetFilename());
 					fileEntry.setFiletype(spec.getFiletype());

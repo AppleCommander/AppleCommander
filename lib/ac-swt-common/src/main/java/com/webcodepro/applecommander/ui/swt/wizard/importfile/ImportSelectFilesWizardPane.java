@@ -19,34 +19,6 @@
  */
 package com.webcodepro.applecommander.ui.swt.wizard.importfile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Iterator;
-import java.util.Optional;
-
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowData;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.Text;
-
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.ui.ImportSpecification;
 import com.webcodepro.applecommander.ui.UiBundle;
@@ -55,11 +27,19 @@ import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
-
 import io.github.applecommander.applesingle.AppleSingle;
 import io.github.applecommander.applesingle.AppleSingleReader;
 import io.github.applecommander.applesingle.ProdosFileInfo;
 import io.github.applecommander.applesingle.Utilities;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.*;
+import org.eclipse.swt.widgets.*;
+
+import java.io.*;
+import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * Allow the used to choose the files to import into the disk image.
@@ -362,6 +342,22 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 		dialog.setDefaultButton(button);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
+				try {
+					// Make an attempt at validating before accepting the change
+					ImportSpecification temp = new ImportSpecification(spec);
+					temp.setTargetFilename(getWizard().getDisk().
+							getSuggestedFilename(filenameText.getText()));
+					temp.setFiletype(filetypes.getItem(
+							filetypes.getSelectionIndex()));
+					temp.setAddress(AppleUtil.convertFormattedWord(
+							getAddressText().getText()));
+					temp.setRawFileImport(getRawCheckBox().getSelection());
+					wizard.validate(temp);
+				} catch (Throwable t) {
+					SwtUtil.showErrorDialog(wizard.getDialog(), "Error", t.getMessage());
+					return;
+				}
+
 				spec.setTargetFilename(getWizard().getDisk().
 					getSuggestedFilename(filenameText.getText()));
 				spec.setFiletype(filetypes.getItem(

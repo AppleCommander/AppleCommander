@@ -33,6 +33,16 @@ public class ImportSpecification {
 	private String filetype;
 	private int address;
 	private boolean rawFileImport;
+	private byte[] fileData;
+
+	public ImportSpecification(ImportSpecification orig) {
+		this.sourceFilename = orig.sourceFilename;
+		this.targetFilename = orig.targetFilename;
+		this.filetype = orig.filetype;
+		this.address = orig.address;
+		this.rawFileImport = orig.rawFileImport;
+		this.fileData = orig.fileData;
+	}
 	/**
 	 * Create the ImportSpecification with default values.
 	 */
@@ -117,5 +127,23 @@ public class ImportSpecification {
 	 */
 	public void setRawFileImport(boolean rawFileImport) {
 		this.rawFileImport = rawFileImport;
+	}
+	/**
+	 * Set the binary file data (only done with validated file types).
+	 */
+	public void setFileData(byte[] fileData) {
+		this.fileData = fileData;
+	}
+	/**
+	 * Get the binary file data (only done with validated file types).
+	 */
+	public byte[] getFileData() {
+		return fileData;
+	}
+	/**
+	 * Answers true if this specification has file data attached.
+	 */
+	public boolean hasFileData() {
+		return fileData != null;
 	}
 }
