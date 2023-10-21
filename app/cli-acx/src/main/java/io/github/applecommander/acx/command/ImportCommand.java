@@ -301,13 +301,16 @@ public class ImportCommand extends ReadWriteDiskCommandOptions {
                 }
                 ProdosFileInfo info = as.getProdosFileInfo();
                 String fileType = ProdosFormatDisk.getFiletype(info.getFileType());
-                
+
                 OverrideFileEntryReader.Builder builder = OverrideFileEntryReader.builder();
                 builder.filename(Optional.ofNullable(as.getRealName()));
+                builder.prodosFiletype(fileType);
+                builder.locked((info.getAccess()&0xc2) != 0xc2); //Unlocked if destroy, rename and write are all enabled
                 builder.fileData(as.getDataFork());
                 builder.resourceData(Optional.ofNullable(as.getResourceFork()));
-                builder.prodosFiletype(fileType);
-                builder.locked((info.getAccess()&0xc2) != 0xc2); //Unlocked if destory, rename and write are all enabled
+                if (ProdosFormatDisk.fileTypeNeedsAddress(fileType)) {
+                    builder.binaryAddress(info.getAuxType());
+                }
                 builder.auxiliaryType(info.getAuxType());
                 
                 if (as.getFileDatesInfo() != null) {

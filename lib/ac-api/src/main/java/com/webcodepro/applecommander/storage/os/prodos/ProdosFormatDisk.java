@@ -1286,13 +1286,24 @@ public class ProdosFormatDisk extends FormattedDisk {
 	/**
 	 * Locate the associated ProdosFileType.
 	 */
-	public static ProdosFileType findFileType(String filetype) {
+	static ProdosFileType findFileType(String filetype) {
 		for (int i=0; i<fileTypes.length; i++) {
 			if (filetype.equalsIgnoreCase(fileTypes[i].getString())) {
 				return fileTypes[i];
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Utility method to indicate if this file type needs an address.
+	 */
+	public static boolean fileTypeNeedsAddress(String filetype) {
+		ProdosFileType prodosFileType = findFileType(filetype);
+		if (prodosFileType != null) {
+			return prodosFileType.needsAddress();
+		}
+		return false;
 	}
 
 	/**
