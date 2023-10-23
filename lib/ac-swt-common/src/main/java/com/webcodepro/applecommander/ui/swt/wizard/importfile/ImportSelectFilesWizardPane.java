@@ -176,6 +176,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 					getWizard().removeImportSpecification(spec);
 				}
 				getRemoveButton().setEnabled(false);
+				getEditButton().setEnabled(false);
 				refreshTable();
 			}
 		});
