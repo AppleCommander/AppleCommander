@@ -35,3 +35,7 @@ jobs:
       env:
         # The SWT image tests fail in the pipeline; disable them.
         AC_SKIP_SWT_TESTS: true
+    - uses: actions/upload-artifact@v3
+      with:
+        path: app/**/build/libs/AppleCommander-*.jar
+        if-no-files-found: error
