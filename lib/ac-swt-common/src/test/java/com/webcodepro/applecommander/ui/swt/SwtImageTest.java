@@ -21,11 +21,13 @@ package com.webcodepro.applecommander.ui.swt;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assume.assumeThat;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -33,6 +35,11 @@ import org.junit.Test;
  * @author Rob
  */
 public class SwtImageTest {
+	@Before
+	public void beforeMethod() {
+		assumeTrue(System.getenv("AC_SKIP_SWT_TESTS") == null);
+	}
+
 	@Test
 	public void testPNG() throws Exception {
 		// SwtImage unit test fails on Mac, appears to be the thread deal. Disabling for now.
