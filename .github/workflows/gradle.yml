@@ -37,37 +37,15 @@ jobs:
         AC_SKIP_SWT_TESTS: true
     - uses: actions/upload-artifact@v3
       with:
-        path: app/ant-ac/build/libs/AppleCommander-*.jar
-        if-no-files-found: error
-    - uses: actions/upload-artifact@v3
-      with:
-        path: app/cli-ac/build/libs/AppleCommander-*.jar
-        if-no-files-found: error
-    - uses: actions/upload-artifact@v3
-      with:
-        path: app/cli-acx/build/libs/AppleCommander-*.jar
-        if-no-files-found: error
-    - uses: actions/upload-artifact@v3
-      with:
-        path: app/gui-swt-linux-aarch64/build/libs/AppleCommander-*.jar
-        if-no-files-found: error
-    - uses: actions/upload-artifact@v3
-      with:
-        path: app/gui-swt-linux-arm/build/libs/AppleCommander-*.jar
-        if-no-files-found: error
-    - uses: actions/upload-artifact@v3
-      with:
-        path: app/gui-swt-linux-x86_64/build/libs/AppleCommander-*.jar
-        if-no-files-found: error
-    - uses: actions/upload-artifact@v3
-      with:
-        path: app/gui-swt-macosx-aarch64/build/libs/AppleCommander-*.jar
-        if-no-files-found: error
-    - uses: actions/upload-artifact@v3
-      with:
-        path: app/gui-swt-macosx-x86_64/build/libs/AppleCommander-*.jar
-        if-no-files-found: error
-    - uses: actions/upload-artifact@v3
-      with:
-        path: app/gui-swt-win32-x86_64/build/libs/AppleCommander-*.jar
+        name: build-artifacts
+        path: |
+          app/ant-ac/build/libs/AppleCommander-*.jar
+          app/cli-ac/build/libs/AppleCommander-*.jar
+          app/cli-acx/build/libs/AppleCommander-*.jar
+          app/gui-swt-linux-aarch64/build/libs/AppleCommander-*.jar
+          app/gui-swt-linux-arm/build/libs/AppleCommander-*.jar
+          app/gui-swt-linux-x86_64/build/libs/AppleCommander-*.jar
+          app/gui-swt-macosx-aarch64/build/libs/AppleCommander-*.jar
+          app/gui-swt-macosx-x86_64/build/libs/AppleCommander-*.jar
+          app/gui-swt-win32-x86_64/build/libs/AppleCommander-*.jar
         if-no-files-found: error
