@@ -27,11 +27,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Queue;
+import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
@@ -73,7 +69,7 @@ public class ImportCommand extends ReadWriteDiskCommandOptions {
     private InputData inputData;
 
     @ArgGroup(heading = "%nProcessing options:%n")
-    private Processor processor;
+    private Processor processor = new Processor();
     
     @ArgGroup(heading = "%nGeneral overrides:%n", exclusive = false)
     private Overrides overrides = new Overrides();
@@ -173,14 +169,19 @@ public class ImportCommand extends ReadWriteDiskCommandOptions {
             }
         }
     }
-    
+
     public static class Processor {
-        private Function<FileEntryReader,List<FileEntryReader>> fileEntryReaderFn;
-        
+        private Function<FileEntryReader,List<FileEntryReader>> fileEntryReaderFn = this::handleRawFile;
+
         public List<FileEntryReader> apply(FileEntryReader reader) {
             return fileEntryReaderFn.apply(reader);
         }
-        
+
+        @Option(names = { "--raw", "--binary" }, description = { "Import as a raw binary file." })
+        public void setRawBinaryMode(boolean flag) {
+            fileEntryReaderFn = this::handleRawFile;
+        }
+
         @Option(names = { "--text", "--text-high" }, description = { 
                 "Import as a text file, setting high bit and ",
                 "replacing newline characters with $8D." })
@@ -219,6 +220,10 @@ public class ImportCommand extends ReadWriteDiskCommandOptions {
                 description = "Import files from SHK archive.")
         public void setShrinkitMode(boolean shrinkitMode) {
             fileEntryReaderFn = this::handleShrinkitMode;
+        }
+
+        private List<FileEntryReader> handleRawFile(FileEntryReader reader) {
+            return Arrays.asList(reader);
         }
 
         private List<FileEntryReader> handleTextModeSetHighBit(FileEntryReader reader) {
