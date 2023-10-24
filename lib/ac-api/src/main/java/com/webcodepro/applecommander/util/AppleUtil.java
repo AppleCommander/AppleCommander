@@ -60,7 +60,7 @@ public class AppleUtil {
 	 * A word is two bytes, in standard Apple LO/HI format.
 	 */
 	public static int getWordValue(byte[] buffer, int offset) {
-		if (offset+1 > buffer.length) {
+		if (offset+1 >= buffer.length) {
 			return 0;
 		}
 		return getWordValue(buffer[offset], buffer[offset+1]);

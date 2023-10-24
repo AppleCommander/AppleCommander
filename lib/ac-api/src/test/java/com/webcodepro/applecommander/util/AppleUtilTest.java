@@ -142,4 +142,15 @@ public class AppleUtilTest {
 	        }
 	    }
 	}
+
+	@Test
+	public void testGetWordValue_beyondEdge() {
+		byte[] data = new byte[] { 0x01, 0x02, 0x03, 0x04 };
+
+		assertEquals(0x0201, AppleUtil.getWordValue(data, 0));
+		assertEquals(0x0302, AppleUtil.getWordValue(data, 1));
+		assertEquals(0x0403, AppleUtil.getWordValue(data, 2));
+		assertEquals(0x0000, AppleUtil.getWordValue(data, 3));
+		assertEquals(0x0000, AppleUtil.getWordValue(data, 4));
+	}
 }
