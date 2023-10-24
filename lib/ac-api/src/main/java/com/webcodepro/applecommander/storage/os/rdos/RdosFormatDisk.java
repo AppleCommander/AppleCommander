@@ -30,20 +30,21 @@ import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Manages a disk that is in the RDOS format.
  * <p>
- * Note that the RDOS block interleave is different than the standard DOS 3.3 format.
+ * Note that the RDOS 2.1/3.2 block interleave is different than the standard DOS 3.3 format.
  * Thus, when the image is made, the sectors are skewed differently - use readRdosBlock
  * to read the appropriate block number.
  * <p>
  * Also note that the operating system is itself the first file.  Block #0 is really 
  * track 0, sector 0 - meaning that the first file should not (cannot) be deleted.
  * <p>
- * RDOS appears to have been placed on 13 sector disks.  This limits the number of blocks
+ * RDOS 2.1/3.2 was placed on 13 sector disks.  This limits the number of blocks
  * to 455.  It also may also cause incompatibilities with other formats and other cracks.
  * <p>
  * Date created: Oct 7, 2002 2:03:58 PM
@@ -52,7 +53,7 @@ import com.webcodepro.applecommander.util.TextBundle;
 public class RdosFormatDisk extends FormattedDisk {
 	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
-	 * The RDOS disks are structured in a different order than DOS 3.3.
+	 * RDOS 2.1/3.2 disks are structured in a different order than DOS 3.3.
 	 * This table interpolates between the RDOS ordering and the DOS
 	 * ordering.  It appears that RDOS may use the physical sector number
 	 * instead of the logical sector.
@@ -66,14 +67,37 @@ public class RdosFormatDisk extends FormattedDisk {
 	 */
 	public static final int ENTRY_LENGTH = 0x20;
 	/**
-	 * Specifies the number of blocks on the disk.  
+	 * Specifies the number of tracks on the disk.  
 	 * RDOS apparantly only worked on 5.25" disks.
 	 */
-	public static final int BLOCKS_ON_DISK = 455;
+	public static final int TRACKS_ON_DISK = 35;
+	/**
+	 * Number of sectors used by catalog.
+	 * FIXME: some sources say 10, others say 11. RDOS 3.3 may support 16.
+	 */
+	public static final int CATALOG_SECTORS = 10;
 	/**
 	 * The known filetypes for a RDOS disk.
 	 */
 	public static final String[] filetypes = { "B", "A", "T" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+
+	/**
+	 * 13 sectors for RDOS 2.1/3.2, native sectoring (16) for RDOS 3.3
+	 */
+	private int SectorsPerTrack() {
+		if (getImageOrder() instanceof ProdosOrder) {
+			return getImageOrder().getSectorsPerTrack();
+		} else {
+			return 13;
+		}
+	}
+
+	/**
+	 * 455 blocks for RDOS 2.1/3.2, 560 for RDOS 3.3
+	 */
+	private int BlocksOnDisk() {
+		return TRACKS_ON_DISK * SectorsPerTrack();
+	}
 
 	/**
 	 * Use this inner interface for managing the disk usage data.
@@ -93,13 +117,13 @@ public class RdosFormatDisk extends FormattedDisk {
 		private int location = -1;
 		private BitSet bitmap = null;
 		public boolean hasNext() {
-			return location == -1 || location < BLOCKS_ON_DISK - 1;
+			return location == -1 || location < BlocksOnDisk() - 1;
 		}
 		public void next() {
 			if (bitmap == null) {
-				bitmap = new BitSet(BLOCKS_ON_DISK);
+				bitmap = new BitSet(BlocksOnDisk());
 				// mark all blocks as unused
-				for (int b=0; b<BLOCKS_ON_DISK; b++) {
+				for (int b=0; b<BlocksOnDisk(); b++) {
 					bitmap.set(b);
 				}
 				// for each file, mark the blocks used
@@ -141,22 +165,26 @@ public class RdosFormatDisk extends FormattedDisk {
 	}
 
 	/**
-	 * Read an RDOS block.  The sector skewing for RDOS seems to be different.
+	 * Read an RDOS block.  The sector skewing for RDOS 2.1/3.2 is different.
 	 * This routine will convert the block number to a DOS track and sector,
 	 * handling the sector change-over.  The readSector method then should
 	 * take care of various image formats.
 	 * <p>
-	 * Note that sectorSkew has the full 16 sectors, even though RDOS
+	 * Note that sectorSkew has the full 16 sectors, even though RDOS 2.1/3.2
 	 * itself is a 13 sector format.
 	 */
 	public byte[] readRdosBlock(int block) {
-		int track = block / 13;
-		int sector = sectorSkew[block % 13];
+		int s = SectorsPerTrack();
+		int track = block / s;
+		int sector = block % s;
+		if (s == 13) {
+			sector = sectorSkew[sector];
+		}
 		return readSector(track, sector);
 	}
 	
 	/**
-	 * Write an RDOS block.  The sector skewing for RDOS seems to be different.
+	 * Write an RDOS block.  The sector skewing for RDOS2.1/3/2 is different.
 	 * This routine will convert the block number to a DOS track and sector,
 	 * handling the sector change-over.  The writeSector method then should
 	 * take care of various image formats.
@@ -165,8 +193,12 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * itself is a 13 sector format.
 	 */
 	public void writeRdosBlock(int block, byte[] data) {
-		int track = block / 13;
-		int sector = sectorSkew[block % 13];
+		int s = SectorsPerTrack();
+		int track = block / s;
+		int sector = block % s;
+		if (s == 13) {
+			sector = sectorSkew[sector];
+		}
 		writeSector(track, sector, data);
 	}
 
@@ -174,8 +206,15 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * RDOS really does not have a disk name.  Fake one.
 	 */
 	public String getDiskName() {
-		byte[] block = readRdosBlock(4);
-		return AppleUtil.getString(block, 0xe0, 0x20);
+		if (SectorsPerTrack() == 13) {
+			/* Use the comment/tag added in the 13->16 sector conversion */
+			byte[] block = readRdosBlock(4);
+			return AppleUtil.getString(block, 0xe0, 0x20);
+		} else {
+			/* Use the name of the OS (catalog entry zero) */
+			byte[] block = readSector(1, 0x0);
+			return AppleUtil.getString(block, 0x0, 0x18);
+		}
 	}
 
 	/**
@@ -183,8 +222,8 @@ public class RdosFormatDisk extends FormattedDisk {
 	 */
 	public List<FileEntry> getFiles() {
 		List<FileEntry> files = new ArrayList<>();
-		for (int b=13; b<23; b++) {
-			byte[] data = readRdosBlock(b);
+		for (int b=0; b<CATALOG_SECTORS; b++) {
+			byte[] data = readRdosBlock(b + SectorsPerTrack());
 			for (int i=0; i<data.length; i+= ENTRY_LENGTH) {
 				byte[] entry = new byte[ENTRY_LENGTH];
 				System.arraycopy(data, i, entry, 0, entry.length);
@@ -227,14 +266,18 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * Identify the operating system format of this disk.
 	 */
 	public String getFormat() {
-		return textBundle.get("RdosFormatDisk.Rdos21"); //$NON-NLS-1$
+		if (SectorsPerTrack() == 13) {
+			return textBundle.get("RdosFormatDisk.Rdos21"); //$NON-NLS-1$
+		} else {
+			return textBundle.get("RdosFormatDisk.Rdos33"); //$NON-NLS-1$
+		}
 	}
 	
 	/**
 	 * Return the number of free blocks.
 	 */
 	public int getFreeBlocks() {
-		return BLOCKS_ON_DISK - getUsedBlocks();
+		return BlocksOnDisk() - getUsedBlocks();
 	}
 	
 	/**
@@ -275,7 +318,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * Get the length of the bitmap.
 	 */
 	public int getBitmapLength() {
-		return BLOCKS_ON_DISK;
+		return BlocksOnDisk();
 	}
 	
 	/**
@@ -297,7 +340,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 */
 	public List<DiskInformation> getDiskInformation() {
 		List<DiskInformation> list = super.getDiskInformation();
-		list.add(new DiskInformation(textBundle.get("TotalBlocks"), BLOCKS_ON_DISK)); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("TotalBlocks"), BlocksOnDisk())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("FreeBlocks"), getFreeBlocks())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("UsedBlocks"), getUsedBlocks())); //$NON-NLS-1$
 		return list;
@@ -407,6 +450,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 *         would be) and executes that code for the directory.
 	 *         AppleCommander will need to either clone the code or write
 	 *         its own routine.  This is RDOS block #25.
+	 * FIXME - Doesn't handle native 16-sector (RDOS 3.3) format.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
