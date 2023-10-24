@@ -32,13 +32,16 @@ import io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions;
 import io.github.applecommander.acx.converter.IntegerTypeConverter;
 import io.github.applecommander.disassembler.api.Disassembler;
 import io.github.applecommander.disassembler.api.Instruction;
+import io.github.applecommander.disassembler.api.InstructionSet;
 import io.github.applecommander.disassembler.api.mos6502.InstructionSet6502;
+import io.github.applecommander.disassembler.api.sweet16.InstructionSetSWEET16;
+import io.github.applecommander.disassembler.api.switching6502.InstructionSet6502Switching;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 
-@Command(name = "dump", description = "Dump a block or sector.")
+@Command(name = "dump", description = "Dump a block or sector.", sortOptions = false)
 public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
     @ArgGroup(heading = "%nOutput Selection:%n")
     private OutputSelection output = new OutputSelection();
@@ -59,33 +62,33 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
             return fn.apply(options, data);
         }
         
-        @Option(names = "--hex", description = "Hex dump.")
+        @Option(names = "--hex", description = "Hex dump. (default)")
         public void selectHexDump(boolean flag) {
             fn = this::formatHexDump;
         }
-        
+
         @Option(names = "--disassembly", description = "Disassembly.")
         public void selectDisassembly(boolean flag) {
             fn = this::formatDisassembly;
         }
         
         public String formatHexDump(Options options, byte[] data) {
-            return AppleUtil.getHexDump(options.address, data);
+            return AppleUtil.getHexDump(data);
         }
         
         public String formatDisassembly(Options options, byte[] data) {
             // If the offset is given, use that. If not, use 0 except for the boot sector and then use 1.
-            int calculatedOffset = options.offset.orElse(options.coordinate.includesBootSector() ? 1 : 0);
+            int calculatedOffset = options.disassemblerOptions.offset.orElse(options.coordinate.includesBootSector() ? 1 : 0);
             return Disassembler.with(data)
-                    .startingAddress(options.address)
+                    .startingAddress(options.disassemblerOptions.address)
                     .bytesToSkip(calculatedOffset)
-                    .use(InstructionSet6502.for6502())
+                    .use(options.disassemblerOptions.instructionSet.get())
                     .decode()
                     .stream()
                     .map(this::formatInstruction)
                     .collect(Collectors.joining());
-
         }
+
         private String formatInstruction(Instruction instruction) {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
@@ -106,14 +109,51 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
     
     public static class Options {
         @ArgGroup(multiplicity = "1", heading = "%nCoordinate Selection:%n")
-        private CoordinateSelection coordinate = new CoordinateSelection();
-        
-        @Option(names = { "-a", "--address" }, converter = IntegerTypeConverter.class, 
-                description = "Starting address.")
+        private CoordinateSelection coordinate = new CoordinateSelection();		
+		
+        @ArgGroup(heading = "%nDisassembler Options:%n", exclusive = false)
+        private DisassemblerOptions disassemblerOptions = new DisassemblerOptions();
+    }
+
+    public static class DisassemblerOptions {
+        @Option(names = {"-a", "--address"}, converter = IntegerTypeConverter.class,
+                         description = "Starting Address.")
         private int address = 0x800;
-        
-        @Option(names = { "-o", "--offset" }, converter = IntegerTypeConverter.class, 
-                description = "Number of bytes to skip into file before disassembling.")
+
+        @Option(names = {"-o", "--offset"}, converter = IntegerTypeConverter.class,
+                         description = "Number of bytes to skip into file before disassembling.")
         private Optional<Integer> offset = Optional.empty();
+		
+        @ArgGroup(multiplicity = "0..1")
+        private InstructionSetSelection instructionSet = new InstructionSetSelection();
+	
+        public static class InstructionSetSelection {
+            private InstructionSet instructionSet = InstructionSet6502.for6502();
+        
+            public InstructionSet get() {
+                return this.instructionSet;
+            }
+
+            @Option(names = "--6502", description = "MOS 6502. (default)")
+            public void select6502(boolean flag) {
+                this.instructionSet = InstructionSet6502.for6502();
+            }
+            @Option(names = { "--65C02" }, description = "WDC 65C02.")
+            public void select65C02(boolean flag) {
+                this.instructionSet = InstructionSet6502.for65C02();
+            }
+            @Option(names = { "--6502X" }, description = "MOS 6502 + 'illegal' instructions.")
+            public void select6502X(boolean flag) {
+                this.instructionSet = InstructionSet6502.for6502withIllegalInstructions();
+            }
+            @Option(names = { "--SWEET16" }, description = "SWEET16.")
+            public void selectSWEET16(boolean flag) {
+                this.instructionSet = InstructionSetSWEET16.forSWEET16();
+            }
+            @Option(names = { "--6502S" }, description = "MOS 6502 with SWEET16 switching.")
+            public void select6502Switching(boolean flag) {
+                this.instructionSet = InstructionSet6502Switching.withSwitching();
+            }		
+        }	
     }
 }
