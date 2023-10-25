@@ -78,6 +78,7 @@ public class SwtAppleCommander implements Listener {
 	    Display.setAppName("AppleCommander");
 	    Display.setAppVersion(AppleCommander.VERSION);
 		Display display = new Display();
+		display.setData("org.eclipse.swt.internal.theme.useSystemColors", true);
 		display.asyncExec(() -> {
 			for (String arg : args) {
 				open(arg);
