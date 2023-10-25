@@ -52,6 +52,16 @@ public class FileTuple {
         newPaths.add(directoryEntry.getFilename());
         return new FileTuple(formattedDisk, newPaths, (DirectoryEntry)directoryEntry, null);
     }
+    public boolean isDisk() {
+        // Just in case directoryEntry is unset or is a disk - looks like either cna occur!
+        return fileEntry == null && (directoryEntry == null || directoryEntry == formattedDisk);
+    }
+    public boolean isDirectory() {
+        return !isDisk() && (fileEntry == null || fileEntry.isDirectory());
+    }
+    public boolean isFile() {
+        return fileEntry != null && !fileEntry.isDirectory();
+    }
     public FileTuple of(FileEntry fileEntry) {
         return new FileTuple(formattedDisk, paths, directoryEntry, fileEntry);
     }

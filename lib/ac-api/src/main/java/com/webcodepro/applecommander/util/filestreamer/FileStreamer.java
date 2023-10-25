@@ -173,7 +173,7 @@ public class FileStreamer {
         
         private FileTupleIterator() {
             for (FormattedDisk formattedDisk : formattedDisks) {
-                files.addAll(toTupleList(FileTuple.of(formattedDisk)));
+                files.add(FileTuple.of(formattedDisk));
             }
         }
 
@@ -190,6 +190,12 @@ public class FileStreamer {
                     currentDisk = tuple.formattedDisk;
                     beforeDisk.accept(currentDisk);
                 }
+                // Handle disks independently and guarantee disk events fire for empty disks
+                if (tuple.isDisk()) {
+                    tuple = files.removeFirst();
+                    files.addAll(0, toTupleList(tuple));
+                    return hasNext();
+                }
             } else {
                 if (currentDisk != null) {
                     afterDisk.accept(currentDisk);
@@ -203,7 +209,7 @@ public class FileStreamer {
         public FileTuple next() {
             if (hasNext()) {
                 FileTuple tuple = files.removeFirst();
-                if (recursiveFlag && tuple.fileEntry.isDirectory()) {
+                if (recursiveFlag && tuple.isDirectory()) {
                     FileTuple newTuple = tuple.pushd(tuple.fileEntry);
                     files.addAll(0, toTupleList(newTuple));
                 }
