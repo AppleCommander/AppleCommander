@@ -110,7 +110,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 				editSelection();
 			}
 		});
-		
+
 		TableColumn column = new TableColumn(fileTable, SWT.LEFT);
 		column.setText(textBundle.get("SourceColumnHeader")); //$NON-NLS-1$
 		column.setWidth(130);
@@ -336,6 +336,9 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 				getAddressText().dispose();
 				getRawCheckBox().dispose();
 				dialog.close();
+				getRemoveButton().setEnabled(false);
+				getEditButton().setEnabled(false);
+				getFileTable().deselectAll();
 			}
 		});
 		button = new Button(composite, SWT.PUSH);
@@ -343,6 +346,9 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 		dialog.setDefaultButton(button);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
+				getRemoveButton().setEnabled(false);
+				getEditButton().setEnabled(false);
+				getFileTable().deselectAll();
 				try {
 					// Make an attempt at validating before accepting the change
 					ImportSpecification temp = new ImportSpecification(spec);
