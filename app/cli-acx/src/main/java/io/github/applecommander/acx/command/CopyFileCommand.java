@@ -23,9 +23,8 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.DiskException;
-import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.*;
+import com.webcodepro.applecommander.util.Name;
 import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
 import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
@@ -72,19 +71,29 @@ public class CopyFileCommand extends ReadWriteDiskCommandOptions {
         if (files.isEmpty()) {
             LOG.warning(() -> String.format("No matches found for %s.", String.join(",", globs)));
         } else {
-            files.forEach(this::fileHandler);
+            DirectoryEntry targetDirectory = disk.getFormattedDisks()[0];
+            if (targetPath != null) {
+                Name name = new Name(targetPath);
+                FileEntry found = name.getEntry(targetDirectory);
+                if (found == null || !found.isDirectory()) {
+                    throw new RuntimeException("unable to find directory: " + targetPath);
+                }
+                targetDirectory = (DirectoryEntry) found;
+            }
+            for (FileTuple tuple : files) {
+                fileHandler(targetDirectory, tuple);
+            }
         }
         return 0;
     }
 
-    private void fileHandler(FileTuple tuple) {
+    private void fileHandler(DirectoryEntry directoryEntry, FileTuple tuple) {
         try {
-            FormattedDisk formattedDisk = disk.getFormattedDisks()[0];
             if (!recursiveFlag && tuple.fileEntry.isDirectory()) {
-                formattedDisk.createDirectory(tuple.fileEntry.getFilename());
+                directoryEntry.createDirectory(tuple.fileEntry.getFilename());
             } else {
                 FileUtils copier = new FileUtils(overwriteFlag);
-                copier.copy(formattedDisk, tuple.fileEntry);
+                copier.copy(directoryEntry, tuple.fileEntry);
             }
         } catch (DiskException ex) {
             LOG.severe(ex.getMessage());

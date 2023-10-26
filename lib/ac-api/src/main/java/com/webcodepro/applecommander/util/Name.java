@@ -45,8 +45,8 @@ public class Name {
         this.name = path[path.length - 1];
     }
     
-    public FileEntry getEntry(FormattedDisk formattedDisk) throws DiskException {
-        List<FileEntry> files = formattedDisk.getFiles();
+    public FileEntry getEntry(DirectoryEntry directoryEntry) throws DiskException {
+        List<FileEntry> files = directoryEntry.getFiles();
         FileEntry entry = null;
         for (int i = 0; i < path.length - 1; i++) {
             String dirName = path[i];
@@ -68,11 +68,11 @@ public class Name {
         return null;
     }
     
-    public FileEntry createEntry(FormattedDisk formattedDisk) throws DiskException {
+    public FileEntry createEntry(DirectoryEntry directoryEntry) throws DiskException {
         if (path.length == 1) {
-            return formattedDisk.createFile();
+            return directoryEntry.createFile();
         }
-        List<FileEntry> files = formattedDisk.getFiles();
+        List<FileEntry> files = directoryEntry.getFiles();
         DirectoryEntry dir = null, parentDir = null;
         for (int i = 0; i < path.length - 1; i++) {
             String dirName = path[i];
@@ -94,7 +94,7 @@ public class Name {
                     parentDir = dir;
                 } else {
                     // Add the directory to the root of the filesystem
-                    dir = formattedDisk.createDirectory(dirName);
+                    dir = directoryEntry.createDirectory(dirName);
                     parentDir = dir;
                 }
             }
