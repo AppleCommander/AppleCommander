@@ -98,8 +98,7 @@ public enum SystemType {
 
 	static void copyDosSystemTracks(FormattedDisk targetDisk, FormattedDisk source) {
 		DosFormatDisk target = (DosFormatDisk)targetDisk;
-		// FIXME messing with the VTOC should be handled elsewhere 
-		byte[] vtoc = source.readSector(DosFormatDisk.CATALOG_TRACK, DosFormatDisk.VTOC_SECTOR);
+		byte[] vtoc = target.readVtoc();
 		int sectorsPerTrack = vtoc[0x35];
 		// Note that this also patches T0 S0 for BOOT0
 		for (int t=0; t<3; t++) {
@@ -108,6 +107,7 @@ public enum SystemType {
 				target.setSectorUsed(t, s, vtoc);
 			}
 		}
+		target.writeVtoc(vtoc);
 	}
 	static void copyProdosSystemFiles(FormattedDisk target, FormattedDisk source) {
 		// We need to explicitly fix the boot block

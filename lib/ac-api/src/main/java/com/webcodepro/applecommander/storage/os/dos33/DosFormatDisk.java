@@ -275,14 +275,14 @@ public class DosFormatDisk extends FormattedDisk {
 	/**
 	 * Return the VTOC (Volume Table Of Contents).
 	 */
-	protected byte[] readVtoc() {
+	public byte[] readVtoc() {
 		return readSector(CATALOG_TRACK, VTOC_SECTOR);
 	}
 	
 	/**
 	 * Save the VTOC (Volume Table Of Contents) to disk.
 	 */
-	protected void writeVtoc(byte[] vtoc) {
+	public void writeVtoc(byte[] vtoc) {
 		writeSector(CATALOG_TRACK, VTOC_SECTOR, vtoc);
 	}
 
