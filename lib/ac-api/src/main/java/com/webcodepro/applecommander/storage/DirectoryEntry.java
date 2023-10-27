@@ -34,6 +34,11 @@ import java.util.List;
  */
 public interface DirectoryEntry {
 	/**
+	 * Return a name for this directory.
+	 */
+	public String getDirname();
+
+	/**
 	 * Retrieve the list of files in this directory.
 	 * Note that if this is not a directory, the return
 	 * value should be null.  If this a directory, the

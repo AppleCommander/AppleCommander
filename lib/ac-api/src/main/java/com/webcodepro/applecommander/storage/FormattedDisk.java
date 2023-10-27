@@ -140,7 +140,14 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	 * but "DISK VOLUME #xxx" (DOS 3.3) or "/MY.DISK" (ProDOS).
 	 */
 	public abstract String getDiskName();
-	
+
+	/**
+	 * Return a name for this directory.
+	 */
+	public String getDirname(){
+		return getDiskName();
+	}
+
 	/**
 	 * Set the name of the disk to volumeName.
 	 */

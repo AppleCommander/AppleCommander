@@ -19,22 +19,24 @@
  */
 package io.github.applecommander.acx.command;
 
-import java.util.List;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-
-import com.webcodepro.applecommander.storage.*;
+import com.webcodepro.applecommander.storage.DirectoryEntry;
+import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskException;
+import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.util.Name;
 import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
 import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
-
 import io.github.applecommander.acx.base.ReadWriteDiskCommandOptions;
 import io.github.applecommander.acx.converter.DiskConverter;
 import io.github.applecommander.acx.fileutil.FileUtils;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+
+import java.util.List;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Command(name = "copy", description = "Copy files between disks.",
          aliases = { "cp" })
@@ -63,7 +65,7 @@ public class CopyFileCommand extends ReadWriteDiskCommandOptions {
         List<FileTuple> files = FileStreamer.forDisk(sourceDisk)
                 .ignoreErrors(true)
                 .includeTypeOfFile(TypeOfFile.BOTH)
-                .recursive(recursiveFlag)
+                .recursive(false)   // we handle recursion in the FileUtils
                 .matchGlobs(globs)
                 .stream()
                 .collect(Collectors.toList());

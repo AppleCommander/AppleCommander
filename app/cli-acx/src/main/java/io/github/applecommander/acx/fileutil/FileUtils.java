@@ -19,16 +19,15 @@
  */
 package io.github.applecommander.acx.fileutil;
 
-import java.util.Optional;
-import java.util.logging.Logger;
-
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.util.readerwriter.FileEntryReader;
 import com.webcodepro.applecommander.util.readerwriter.FileEntryWriter;
-
 import io.github.applecommander.acx.command.CopyFileCommand;
+
+import java.util.Optional;
+import java.util.logging.Logger;
 
 public class FileUtils {
     private static Logger LOG = Logger.getLogger(CopyFileCommand.class.getName());
@@ -40,7 +39,7 @@ public class FileUtils {
     }
 
     public void copy(DirectoryEntry directory, FileEntry file) throws DiskException {
-        LOG.fine(() -> String.format("Copying '%s'", file.getFilename()));
+        LOG.fine(() -> String.format("Copying '%s' into directory '%s'", file.getFilename(), directory.getDirname()));
 		if (file.isDeleted()) {
 			// Skip deleted files
 		}
@@ -112,13 +111,15 @@ public class FileUtils {
 	    source.getBinaryAddress().ifPresent(target::setBinaryAddress);
 	    source.getBinaryLength().ifPresent(target::setBinaryLength);
 	    source.getAuxiliaryType().ifPresent(target::setAuxiliaryType);
-	    source.getCreationDate().ifPresent(target::setCreationDate);
-	    source.getLastModificationDate().ifPresent(target::setLastModificationDate);
+		source.getCreationDate().ifPresent(target::setCreationDate);
 
         if (source.getFileData().isPresent() && source.getResourceData().isPresent()) {
             target.setFileData(source.getFileData().get(), source.getResourceData().get());
         } else {
             source.getFileData().ifPresent(target::setFileData);
         }
+
+		// Modification date needs to be done last since writing file data/attributes are likely to change it
+		source.getLastModificationDate().ifPresent(target::setLastModificationDate);
 	}
 }

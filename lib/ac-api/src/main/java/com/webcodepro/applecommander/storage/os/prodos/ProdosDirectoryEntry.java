@@ -19,12 +19,12 @@
  */
 package com.webcodepro.applecommander.storage.os.prodos;
 
-import java.util.List;
-
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
+
+import java.util.List;
 
 /**
  * Implement directory functionality.
@@ -53,6 +53,13 @@ public class ProdosDirectoryEntry extends ProdosFileEntry implements DirectoryEn
 	 */
 	public ProdosSubdirectoryHeader getSubdirectoryHeader() {
 		return this.subdirectoryHeader;
+	}
+
+	/**
+	 * Return a name for this directory.
+	 */
+	public String getDirname(){
+		return getFilename();
 	}
 
 	/**
