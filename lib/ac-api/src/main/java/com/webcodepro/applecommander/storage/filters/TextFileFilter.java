@@ -61,6 +61,7 @@ public class TextFileFilter implements FileFilter {
 			}
 			offset++;
 		}
+		printWriter.flush();
 		return byteArray.toByteArray();
 	}
 
