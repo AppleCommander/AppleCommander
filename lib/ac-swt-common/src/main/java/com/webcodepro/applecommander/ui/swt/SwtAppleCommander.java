@@ -19,23 +19,6 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
-
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.Disk.FilenameFilter;
 import com.webcodepro.applecommander.storage.DiskUnrecognizedException;
@@ -49,6 +32,17 @@ import com.webcodepro.applecommander.ui.swt.wizard.comparedisks.CompareDisksWiza
 import com.webcodepro.applecommander.ui.swt.wizard.diskimage.DiskImageWizard;
 import com.webcodepro.applecommander.util.Host;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.*;
+
+import static org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter;
 
 /**
  * Main class for the SwtAppleCommander interface.
@@ -134,6 +128,13 @@ public class SwtAppleCommander implements Listener {
 	 */
 	protected Shell open(Display display) {		
 		Display.setAppName(textBundle.get("SwtAppleCommander.AppleCommander")); //$NON-NLS-1$
+		// Find the system About menu on Mac OS X.
+		// See https://www.eclipse.org/swt/R3_7/new_and_noteworthy.html#m6
+		for (MenuItem item : display.getSystemMenu().getItems()) {
+			if (item.getID() == SWT.ID_ABOUT) {
+				item.addSelectionListener(widgetSelectedAdapter(e -> showAboutAppleCommander()));
+			}
+		}
 		shell = new Shell(display, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.TITLE);
 		shell.setText(textBundle.get("SwtAppleCommander.AppleCommander")); //$NON-NLS-1$
 		shell.setImage(imageManager.get(ImageManager.ICON_DISK));
