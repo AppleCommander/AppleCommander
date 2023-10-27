@@ -19,26 +19,14 @@
  */
 package com.webcodepro.applecommander.storage.os.prodos;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.HashSet;
-
-import com.webcodepro.applecommander.storage.DirectoryEntry;
-import com.webcodepro.applecommander.storage.DiskException;
-import com.webcodepro.applecommander.storage.DiskCorruptException;
-import com.webcodepro.applecommander.storage.DiskFullException;
-import com.webcodepro.applecommander.storage.DiskGeometry;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.StorageBundle;
+import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 /**
  * Manages a disk that is in the ProDOS format.
@@ -1469,4 +1457,21 @@ public class ProdosFormatDisk extends FormattedDisk {
     public DiskGeometry getDiskGeometry() {
         return DiskGeometry.BLOCK;
     }
+
+	/**
+	 * Provides conversation from a given ProDOS file type since as it is common across
+	 * many archiving tools.
+	 */
+	@Override
+	public String fromProdosFiletype(String prodosFiletype) {
+		return prodosFiletype;
+	};
+	/**
+	 * Provides conversation to a given ProDOS file type since as it is common across
+	 * many archiving tools.
+	 */
+	@Override
+	public String toProdosFiletype(String nativeFiletype) {
+		return nativeFiletype;
+	};
 }

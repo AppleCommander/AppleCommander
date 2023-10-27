@@ -19,21 +19,11 @@
  */
 package com.webcodepro.applecommander.util.readerwriter;
 
-import java.util.Map;
-import java.util.Optional;
-
 import com.webcodepro.applecommander.storage.os.rdos.RdosFileEntry;
 
+import java.util.Optional;
+
 public class RdosFileEntryReader implements FileEntryReader {
-    private static final Map<String,String> FILE_TYPES;
-    static {
-        FILE_TYPES = Map.of(
-                "T", "TXT",
-                "A", "BAS",
-                "B", "BIN"
-            );
-    }
-    
     private RdosFileEntry fileEntry;
     
     public RdosFileEntryReader(RdosFileEntry fileEntry) {
@@ -52,7 +42,7 @@ public class RdosFileEntryReader implements FileEntryReader {
 
     @Override
     public Optional<String> getProdosFiletype() {
-        return Optional.ofNullable(FILE_TYPES.get(fileEntry.getFiletype()));
+        return Optional.ofNullable(fileEntry.getFormattedDisk().toProdosFiletype(fileEntry.getFiletype()));
     }
     
     @Override

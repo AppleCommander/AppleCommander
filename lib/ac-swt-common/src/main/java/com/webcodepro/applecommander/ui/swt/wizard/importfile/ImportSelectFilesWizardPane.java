@@ -211,7 +211,8 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 					AppleSingle as = AppleSingle.read(data);
 					suggestedFilename = Optional.ofNullable(as.getRealName())
 							                    .orElse(suggestedFilename);
-					suggestedFiletype = ProdosFormatDisk.getFiletype(as.getProdosFileInfo().getFileType());
+					suggestedFiletype = wizard.getDisk().fromProdosFiletype(
+							ProdosFormatDisk.getFiletype(as.getProdosFileInfo().getFileType()));
 					suggestedAddress = Optional.ofNullable(as.getProdosFileInfo())
 											   .map(ProdosFileInfo::getAuxType)
 											   .orElse(suggestedAddress);
@@ -285,7 +286,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 		label.setText(textBundle.get("FiletypeLabel")); //$NON-NLS-1$
 		final Combo filetypes = new Combo(dialog, SWT.BORDER | SWT.READ_ONLY);
 		filetypes.setItems(wizard.getDisk().getFiletypes());
-		if (spec.hasFiletype()) {
+		if (spec.hasFiletype() && filetypes.indexOf(spec.getFiletype()) != -1) {
 			filetypes.select(filetypes.indexOf(spec.getFiletype()));
 		}
 		

@@ -21,20 +21,12 @@
  */
 package com.webcodepro.applecommander.storage.os.pascal;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Date;
-import java.util.List;
-
-import com.webcodepro.applecommander.storage.DirectoryEntry;
-import com.webcodepro.applecommander.storage.DiskFullException;
-import com.webcodepro.applecommander.storage.DiskGeometry;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.StorageBundle;
+import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+
+import java.util.*;
 
 /**
  * Manages a disk that is in the Pascal format.
@@ -58,15 +50,31 @@ public class PascalFormatDisk extends FormattedDisk {
 	/**
 	 * The known filetypes for a Pascal disk.
 	 */
-	private static final String[] filetypes = {
-			"xdskfile", 	//$NON-NLS-1$
+	private static final String[] FILE_TYPES = {
+			"xdskfile",
 			CODEFILE,
 			TEXTFILE,
-			"INFO",			//$NON-NLS-1$
+			"INFO",
 			DATAFILE,
-			"GRAF",			//$NON-NLS-1$
-			"FOTO", 		//$NON-NLS-1$
-			"securedir" };	//$NON-NLS-1$
+			"GRAF",
+			"FOTO",
+			"securedir"
+		};
+	private static final Map<String,String> FILE_TYPE_MAP = Map.of(
+			// Pascal => Prodos
+			"xdskfile", "BAD",
+			CODEFILE, "BIN",
+			TEXTFILE, "TXT",
+			"INFO", "TXT",
+			DATAFILE, "BIN",
+			"GRAF", "BIN",
+			"FOTO", "BIN",
+			"securedir", "BIN",
+
+			// Prodos => Pascal
+			"BIN", DATAFILE,
+			"TXT", TEXTFILE
+		);
 
 	/**
 	 * Use this inner interface for managing the disk usage data.
@@ -624,7 +632,7 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * specific to each operating system, a simple String is used.
 	 */
 	public String[] getFiletypes() {
-		return filetypes;
+		return FILE_TYPES;
 	}
 
 	/**
@@ -675,4 +683,21 @@ public class PascalFormatDisk extends FormattedDisk {
     public DiskGeometry getDiskGeometry() {
         return DiskGeometry.BLOCK;
     }
+
+	/**
+	 * Provides conversation from a given ProDOS file type since as it is common across
+	 * many archiving tools.
+	 */
+	@Override
+	public String fromProdosFiletype(String prodosFiletype) {
+		return FILE_TYPE_MAP.getOrDefault(prodosFiletype, DATAFILE);
+	}
+	/**
+	 * Provides conversation to a given ProDOS file type since as it is common across
+	 * many archiving tools.
+	 */
+	@Override
+	public String toProdosFiletype(String nativeFiletype) {
+		return FILE_TYPE_MAP.getOrDefault(nativeFiletype, "BIN");
+	}
 }

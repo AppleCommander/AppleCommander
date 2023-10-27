@@ -19,22 +19,12 @@
  */
 package com.webcodepro.applecommander.storage.os.dos33;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-
-import com.webcodepro.applecommander.storage.DirectoryEntry;
-import com.webcodepro.applecommander.storage.DiskException;
-import com.webcodepro.applecommander.storage.DiskCorruptException;
-import com.webcodepro.applecommander.storage.DiskFullException;
-import com.webcodepro.applecommander.storage.DiskGeometry;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.StorageBundle;
+import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+
+import java.util.*;
 
 /**
  * Manages a disk that is in Apple DOS 3.3 format.
@@ -70,11 +60,20 @@ public class DosFormatDisk extends FormattedDisk {
 	/**
 	 * The list of filetypes available.
 	 */
-	private static final String[] filetypes = { 
-			"T", "A", "I", "B", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-			"S", "R", "a", "b"  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+	private static final String[] FILE_TYPES = {
+			"T", "A", "I", "B",
+			"S", "R", "a", "b"
 		};
-
+	private static final Map<String,String> FILE_TYPE_MAPPING = Map.of(
+				"T", "TXT",
+				"I", "INT",
+				"A", "BAS",
+				"B", "BIN",
+				"S", "$F1",
+				"R", "REL",
+				"a", "$F2",
+				"b", "$F3"
+		);
 	/**
 	 * Use this inner interface for managing the disk usage data.
 	 * This off-loads format-specific implementation to the implementing class.
@@ -739,7 +738,7 @@ public class DosFormatDisk extends FormattedDisk {
 	 * specific to each operating system, a simple String is used.
 	 */
 	public String[] getFiletypes() {
-		return filetypes;
+		return FILE_TYPES;
 	}
 
 	/**
@@ -781,4 +780,26 @@ public class DosFormatDisk extends FormattedDisk {
     public DiskGeometry getDiskGeometry() {
         return DiskGeometry.TRACK_SECTOR;
     }
+
+	/**
+	 * Provides conversation from a given ProDOS file type since as it is common across
+	 * many archiving tools.
+	 */
+	@Override
+	public String fromProdosFiletype(String prodosFiletype) {
+		return FILE_TYPE_MAPPING.entrySet()
+				.stream()
+				.filter(e -> e.getValue().equals(prodosFiletype))
+				.map(Map.Entry::getKey)
+				.findFirst()
+				.orElse("B");
+	}
+	/**
+	 * Provides conversation to a given ProDOS file type since as it is common across
+	 * many archiving tools.
+	 */
+	@Override
+	public String toProdosFiletype(String nativeFiletype) {
+		return FILE_TYPE_MAPPING.getOrDefault(nativeFiletype, "BIN");
+	}
 }

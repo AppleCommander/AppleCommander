@@ -19,21 +19,12 @@
  */
 package com.webcodepro.applecommander.storage.os.cpm;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-
-import com.webcodepro.applecommander.storage.DirectoryEntry;
-import com.webcodepro.applecommander.storage.DiskFullException;
-import com.webcodepro.applecommander.storage.DiskGeometry;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.StorageBundle;
+import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+
+import java.util.*;
 
 /**
  * Manages a disk that is in the Apple CP/M format.
@@ -565,4 +556,29 @@ public class CpmFormatDisk extends FormattedDisk {
     public DiskGeometry getDiskGeometry() {
         return DiskGeometry.TRACK_SECTOR;
     }
+
+	/**
+	 * Provides conversation from a given ProDOS file type since as it is common across
+	 * many archiving tools.
+	 */
+	@Override
+	public String fromProdosFiletype(String prodosFiletype) {
+		if ("TXT".equalsIgnoreCase(prodosFiletype)) {
+			return "TXT";
+		}
+		return "BIN";
+	}
+	/**
+	 * Provides conversation to a given ProDOS file type since as it is common across
+	 * many archiving tools.
+	 */
+	@Override
+	public String toProdosFiletype(String nativeFiletype) {
+		for (String textFiletype : CpmFileEntry.TEXT_FILETYPES) {
+			if (textFiletype.equalsIgnoreCase(nativeFiletype)) {
+				return "TXT";
+			}
+		}
+		return "BIN";
+	}
 }

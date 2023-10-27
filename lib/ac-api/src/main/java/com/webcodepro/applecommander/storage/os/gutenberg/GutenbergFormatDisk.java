@@ -19,18 +19,13 @@
  */
 package com.webcodepro.applecommander.storage.os.gutenberg;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.webcodepro.applecommander.storage.DirectoryEntry;
-import com.webcodepro.applecommander.storage.DiskFullException;
-import com.webcodepro.applecommander.storage.DiskGeometry;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.StorageBundle;
+import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Manages a disk that is in Gutenberg Word Processor format.
@@ -707,4 +702,21 @@ public class GutenbergFormatDisk extends FormattedDisk {
     public DiskGeometry getDiskGeometry() {
         return DiskGeometry.TRACK_SECTOR;
     }
+
+	/**
+	 * Provides conversation from a given ProDOS file type since as it is common across
+	 * many archiving tools.
+	 */
+	@Override
+	public String fromProdosFiletype(String prodosFiletype) {
+		return "T";
+	}
+	/**
+	 * Provides conversation to a given ProDOS file type since as it is common across
+	 * many archiving tools.
+	 */
+	@Override
+	public String toProdosFiletype(String nativeFiletype) {
+		return "TXT";
+	}
 }

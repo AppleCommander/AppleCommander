@@ -19,29 +19,14 @@
  */
 package com.webcodepro.applecommander.util.readerwriter;
 
-import java.util.Map;
-import java.util.Optional;
-
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.os.dos33.DosFileEntry;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.util.AppleUtil;
 
+import java.util.Optional;
+
 public class DosFileEntryReaderWriter implements FileEntryReader, FileEntryWriter {
-    private static final Map<String,String> FILE_TYPES;
-    static {
-        FILE_TYPES = Map.of(
-                "T", "TXT",
-                "I", "INT",
-                "A", "BAS",
-                "B", "BIN",
-                "S", "$F1",
-                "R", "REL",
-                "a", "$F2",
-                "b", "$F3"
-                );
-    }
-    
     private DosFileEntry fileEntry;
     
     public DosFileEntryReaderWriter(DosFileEntry fileEntry) {
@@ -62,17 +47,13 @@ public class DosFileEntryReaderWriter implements FileEntryReader, FileEntryWrite
     
     @Override
     public Optional<String> getProdosFiletype() {
-        return Optional.ofNullable(FILE_TYPES.get(fileEntry.getFiletype()));
+        String prodosFiletype = fileEntry.getFormattedDisk().toProdosFiletype(fileEntry.getFiletype());
+        return Optional.ofNullable(prodosFiletype);
     }
     @Override
     public void setProdosFiletype(String filetype) {
-        String dosFileType = FILE_TYPES.entrySet()
-                                       .stream()
-                                       .filter(e -> e.getValue().equals(filetype))
-                                       .map(Map.Entry::getKey)
-                                       .findFirst()
-                                       .orElse("B");
-        fileEntry.setFiletype(dosFileType);
+        String dosFiletype = fileEntry.getFormattedDisk().fromProdosFiletype(filetype);
+        fileEntry.setFiletype(dosFiletype);
     }
     
     @Override

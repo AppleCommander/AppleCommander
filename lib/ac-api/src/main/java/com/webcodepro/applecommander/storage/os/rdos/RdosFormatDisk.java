@@ -19,20 +19,16 @@
  */
 package com.webcodepro.applecommander.storage.os.rdos;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.List;
-
-import com.webcodepro.applecommander.storage.DirectoryEntry;
-import com.webcodepro.applecommander.storage.DiskFullException;
-import com.webcodepro.applecommander.storage.DiskGeometry;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.StorageBundle;
+import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Manages a disk that is in the RDOS format.
@@ -79,7 +75,12 @@ public class RdosFormatDisk extends FormattedDisk {
 	/**
 	 * The known filetypes for a RDOS disk.
 	 */
-	public static final String[] filetypes = { "B", "A", "T" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	public static final String[] FILE_TYPES = { "B", "A", "T" };
+	private static final Map<String,String> FILE_TYPE_MAPPING = Map.of(
+			"T", "TXT",
+			"A", "BAS",
+			"B", "BIN"
+		);
 
 	/**
 	 * 13 sectors for RDOS 2.1/3.2, native sectoring (16) for RDOS 3.3
@@ -517,7 +518,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * specific to each operating system, a simple String is used.
 	 */
 	public String[] getFiletypes() {
-		return filetypes;
+		return FILE_TYPES;
 	}
 
 	/**
@@ -570,4 +571,26 @@ public class RdosFormatDisk extends FormattedDisk {
     public DiskGeometry getDiskGeometry() {
         return DiskGeometry.TRACK_SECTOR;
     }
+
+	/**
+	 * Provides conversation from a given ProDOS file type since as it is common across
+	 * many archiving tools.
+	 */
+	@Override
+	public String fromProdosFiletype(String prodosFiletype) {
+		return FILE_TYPE_MAPPING.entrySet()
+				.stream()
+				.filter(e -> e.getValue().equals(prodosFiletype))
+				.map(Map.Entry::getKey)
+				.findFirst()
+				.orElse("B");
+	}
+	/**
+	 * Provides conversation to a given ProDOS file type since as it is common across
+	 * many archiving tools.
+	 */
+	@Override
+	public String toProdosFiletype(String nativeFiletype) {
+		return FILE_TYPE_MAPPING.getOrDefault(nativeFiletype, "BIN");
+	}
 }

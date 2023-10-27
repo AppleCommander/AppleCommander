@@ -19,35 +19,16 @@
  */
 package com.webcodepro.applecommander.util.readerwriter;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.Optional;
-
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFileEntry;
 
+import java.util.Date;
+import java.util.Optional;
+
 public class PascalFileEntryReaderWriter implements FileEntryReader, FileEntryWriter {
     private static final PascalTextFileFilter TEXT_FILTER = new PascalTextFileFilter();
-    private static final Map<String,String> FILE_TYPES;
-    static {
-        FILE_TYPES = Map.of(
-                // Pascal => Prodos
-                "xdskfile", "BAD",  // TODO we should skip bad block files
-                "CODE", "BIN",      // TODO is there an address?
-                "TEXT", "TXT",
-                "INFO", "TXT",      // TODO We should skip debugger info
-                "DATA", "BIN",
-                "GRAF", "BIN",      // TODO compressed graphics image
-                "FOTO", "BIN",      // TODO screen image
-                "securedir", "BIN", // TODO is this even implemented
-                
-                // Prodos => Pascal
-                "BIN", "DATA",
-                "TXT", "TEXT"
-            );
-    }
-    
+
     private PascalFileEntry fileEntry;
     
     public PascalFileEntryReaderWriter(PascalFileEntry fileEntry) {
@@ -65,11 +46,11 @@ public class PascalFileEntryReaderWriter implements FileEntryReader, FileEntryWr
     
     @Override
     public Optional<String> getProdosFiletype() {
-        return Optional.ofNullable(FILE_TYPES.get(fileEntry.getFiletype()));
+        return Optional.ofNullable(fileEntry.getFormattedDisk().toProdosFiletype(fileEntry.getFiletype()));
     }
     @Override
     public void setProdosFiletype(String filetype) {
-        fileEntry.setFiletype(FILE_TYPES.getOrDefault(filetype, "DATA"));
+        fileEntry.setFiletype(fileEntry.getFormattedDisk().fromProdosFiletype(filetype));
     }
     
     @Override

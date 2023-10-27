@@ -19,14 +19,15 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import com.webcodepro.applecommander.util.TextBundle;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Abstract representation of a formatted Apple2 disk (floppy, 800k, hard disk).
@@ -404,4 +405,15 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	 * Gives an indication on how this disk's geometry should be handled.
 	 */
 	public abstract DiskGeometry getDiskGeometry();
+
+	/**
+	 * Provides conversation from a given ProDOS file type since as it is common across
+	 * many archiving tools.
+	 */
+	public abstract String fromProdosFiletype(String prodosFiletype);
+	/**
+	 * Provides conversation to a given ProDOS file type since as it is common across
+	 * many archiving tools.
+	 */
+	public abstract String toProdosFiletype(String nativeFiletype);
 }
