@@ -130,9 +130,11 @@ public class SwtAppleCommander implements Listener {
 		Display.setAppName(textBundle.get("SwtAppleCommander.AppleCommander")); //$NON-NLS-1$
 		// Find the system About menu on Mac OS X.
 		// See https://www.eclipse.org/swt/R3_7/new_and_noteworthy.html#m6
-		for (MenuItem item : display.getSystemMenu().getItems()) {
-			if (item.getID() == SWT.ID_ABOUT) {
-				item.addSelectionListener(widgetSelectedAdapter(e -> showAboutAppleCommander()));
+		if (display.getSystemMenu() != null) {
+			for (MenuItem item : display.getSystemMenu().getItems()) {
+				if (item.getID() == SWT.ID_ABOUT) {
+					item.addSelectionListener(widgetSelectedAdapter(e -> showAboutAppleCommander()));
+				}
 			}
 		}
 		shell = new Shell(display, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.TITLE);
