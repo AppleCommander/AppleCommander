@@ -69,6 +69,7 @@ public class DiskWindow {
 		shell = new Shell(parentShell, SWT.SHELL_TRIM);
 		shell.setLayout(new FillLayout());
 		shell.setImage(imageManager.get(ImageManager.ICON_DISK));
+		shell.setMinimumSize(400, 300);
 		setStandardWindowTitle();
 		shell.addDisposeListener(new DisposeListener() {
 				public void widgetDisposed(DisposeEvent event) {
