@@ -25,6 +25,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
@@ -81,13 +82,13 @@ public abstract class Wizard {
 
 		// Wizard logo		
 		RowData rowData = new RowData();
-		rowData.width = logo.getImageData().width;
-		rowData.height = logo.getImageData().height;
+		rowData.width = logo.getImageData(DPIUtil.getDeviceZoom()).width;
+		rowData.height = logo.getImageData(DPIUtil.getDeviceZoom()).height;
 		imageCanvas = new ImageCanvas(dialog, SWT.BORDER, logo, rowData);
 
 		// Starting pane
 		rowData = new RowData();
-		rowData.width = logo.getImageData().width;
+		rowData.width = logo.getImageData(DPIUtil.getDeviceZoom()).width;
 		contentPane = new Composite(dialog, SWT.BORDER);
 		contentPane.setLayoutData(rowData);
 		contentPane.setLayout(new FillLayout());
