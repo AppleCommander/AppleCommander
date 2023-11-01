@@ -82,13 +82,13 @@ public abstract class Wizard {
 
 		// Wizard logo		
 		RowData rowData = new RowData();
-		rowData.width = logo.getImageData(DPIUtil.getDeviceZoom()).width;
-		rowData.height = logo.getImageData(DPIUtil.getDeviceZoom()).height;
+		rowData.width = logo.getImageData().width;
+		rowData.height = logo.getImageData().height;
 		imageCanvas = new ImageCanvas(dialog, SWT.BORDER, logo, rowData);
 
 		// Starting pane
 		rowData = new RowData();
-		rowData.width = logo.getImageData(DPIUtil.getDeviceZoom()).width;
+		rowData.width = logo.getImageData().width;
 		contentPane = new Composite(dialog, SWT.BORDER);
 		contentPane.setLayoutData(rowData);
 		contentPane.setLayout(new FillLayout());
