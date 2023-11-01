@@ -297,7 +297,13 @@ public class DiskMapTab {
 			xpos[i] = (i * area.width) / xdim + 1;
 		}
 		xpos[xdim] = area.width;
-		
+
+		if (area.width <= 0 || area.height <= 0) {
+			// patch for issue #89
+			// based on stack trace it appears the bounds area may be invalid
+			// under some circumstances
+			return;
+		}
 		Image image = new Image(canvas.getDisplay(), area);
 		GC gc = new GC(image);
 		int x = 0;
