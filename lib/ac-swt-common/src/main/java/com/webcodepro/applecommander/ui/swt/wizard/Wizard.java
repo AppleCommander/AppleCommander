@@ -21,11 +21,11 @@ package com.webcodepro.applecommander.ui.swt.wizard;
 
 import java.util.Stack;
 
+import com.webcodepro.applecommander.util.Host;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
@@ -69,7 +69,11 @@ public abstract class Wizard {
 	 * Create the dialog.
 	 */
 	private void createDialog() {
-		dialog = new Shell(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+		int styles = SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL;
+		if (Host.isMacosx()) {
+			styles |= SWT.SHEET;
+		}
+		dialog = new Shell(parent, styles);
 		dialog.setText(title);
 		RowLayout layout = new RowLayout(SWT.VERTICAL);
 		layout.justify = true;
@@ -86,7 +90,7 @@ public abstract class Wizard {
 		rowData.height = logo.getImageData().height;
 		imageCanvas = new ImageCanvas(dialog, SWT.BORDER, logo, rowData);
 
-		// Starting pane
+		// Content pane
 		rowData = new RowData();
 		rowData.width = logo.getImageData().width;
 		contentPane = new Composite(dialog, SWT.BORDER);
