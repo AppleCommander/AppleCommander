@@ -64,15 +64,15 @@ import java.util.regex.Pattern;
 public class ShellCommand implements Callable<Integer> {
     private static final String PROMPT = "ACX> ";
 
-    private boolean exit = false;
+    private static boolean exit = false;
     @Command(name = "exit", aliases = { "quit" }, description = "Exit shell environment")
     public void exitShell() {
         exit = true;
     }
 
-    private String defaultDiskName = null;
+    private static String defaultDiskName = null;
     @Command(name = "default", description = "Display or set the default disk")
-    public void defaultDisk(@Parameters(description = "Disk to be set as default", arity = "0..1", defaultValue = "") String diskName) {
+    public void defaultDisk(@Parameters(description = "Disk to be set as default", defaultValue = "") String diskName) {
         if (diskName == null || diskName.isEmpty()) {
             if (defaultDiskName == null) {
                 System.out.println("No default disk has been set.");
