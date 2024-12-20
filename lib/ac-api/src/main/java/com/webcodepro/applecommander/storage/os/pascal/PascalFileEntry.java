@@ -411,22 +411,21 @@ public class PascalFileEntry implements FileEntry {
 					len2 = len1 - 512;  // Second block gets the remainder of the partial page length minus 512 bytes 
 					len1 = 512;  // The first block will write the first 512 bytes
 				}
+				System.out.println("Writing final data block with padding: " + (1024-len1-len2));
 				System.arraycopy(data, offset, buf1, 0, len1);
 				disk.writeBlock(first + (pages * 2), buf1);  // Copy out the first block
 				if (len2 > 0) { 
 					System.arraycopy(data, offset+512, buf2, 0, len2);
-					disk.writeBlock(first + (pages * 2) + 1, buf2);  // Copy out second block
-					setBytesUsedInLastBlock(len2);  // The second block holds the last byte
-					setLastBlock(first + (pages * 2) + 2);  // Final block +1... i.e. pages++
 				}
-				else {  // The first block holds the last byte
-					setBytesUsedInLastBlock(len1);
-					setLastBlock(first + pages * 2 + 1);  // Final block +1... i.e. pages++ -1
-				}
-			}
-			else {  // The last page was completely full, so the last byte used in the last block is 512
-				setLastBlock(first + pages * 2);
-				setBytesUsedInLastBlock(512);
+				len2 = 512;	// TEXT files always pad out to 1KB
+				disk.writeBlock(first + (pages * 2) + 1, buf2);  // Copy out second block
+				setBytesUsedInLastBlock(len2);  // The second block holds the last byte
+				setLastBlock(first + (pages * 2) + 2);  // Final block +1... i.e. pages++
+			} else {  // The last page was completely full, so the last byte used in the last block is 512
+				// FIXME: Verify that we need a fully padded block when finishing on a boundary
+				System.out.println("Text data at page boundary: no padding.");
+				// FIXME: setLastBlock(first + pages * 2);
+				// FIXME: setBytesUsedInLastBlock(512);
 			}
 		} else { // data or code
 			if (data.length > (last - first) * 512) {
