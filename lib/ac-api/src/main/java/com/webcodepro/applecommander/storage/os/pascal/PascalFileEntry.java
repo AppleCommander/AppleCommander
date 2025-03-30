@@ -400,21 +400,17 @@ public class PascalFileEntry implements FileEntry {
 				disk.writeBlock(first + (pages * 2), buf1);
 				disk.writeBlock(first + (pages * 2) + 1, buf2);
 				pages++;
-				System.out.println("BYTES: " + data.length + "\tCR:" + crPtr + "\tOFFSET:" + offset + "\tPAGES:" +
- pages);
 				Arrays.fill(buf1, (byte) 0);
 				Arrays.fill(buf2, (byte) 0);
 				offset = crPtr + 1;
 			}
 			if (offset < data.length) {  // We have less than a full page of data left over
-				System.out.println("BYTES: " + data.length + "\tOFFSET:" + offset + "\tPAGES:" + pages);
 				int len1 = data.length - offset;
 				int len2 = 0;
 				if (len1 > 512) {  // That final page spans both blocks
 					len2 = len1 - 512;  // Second block gets the remainder of the partial page length minus 512 bytes 
 					len1 = 512;  // The first block will write the first 512 bytes
 				}
-				System.out.println("Writing final data block (" + len1 + ":" + len2 + ") with padding: " + (1024-len1-len2));
 				System.arraycopy(data, offset, buf1, 0, len1);
 				disk.writeBlock(first + (pages * 2), buf1);  // Copy out the first block
 				if (len2 > 0) { 
@@ -425,7 +421,6 @@ public class PascalFileEntry implements FileEntry {
 				setBytesUsedInLastBlock(len2);  // The second block holds the last byte
 				setLastBlock(first + (pages * 2) + 2);  // Final block +1... i.e. pages++
 			} else {  // The last page was completely full, so the last byte used in the last block is 512
-				System.out.println("Text data at page boundary: no padding.");
 				setLastBlock(first + pages * 2);
 				setBytesUsedInLastBlock(512);
 			}
