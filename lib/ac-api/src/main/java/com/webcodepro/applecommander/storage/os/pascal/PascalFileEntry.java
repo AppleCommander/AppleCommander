@@ -387,14 +387,14 @@ public class PascalFileEntry implements FileEntry {
 			byte[] buf2 = new byte[512];
 			int offset = 0;
 			int pages = 0;
-			disk.writeBlock(first, buf1);  // First two blocks (first page) is ignored by Pascal text
+			disk.writeBlock(first,  buf1);  // First two blocks (first page) is ignored by Pascal text
 			disk.writeBlock(first+1,buf2);  // ...so write a page of zeroes
 			pages++;
 			while (offset + 1023 < data.length) {  // We have at least one full page of data (1024 bytes)
 				if ((pages * 2) > (last - first - 2)) {
 					storageError(textBundle.get("PascalFileEntry.NotEnoughRoom")); //$NON-NLS-1$
 				}
-				int crPtr = findEOL(data, offset);
+				int crPtr = findEOL(data, offset); // Copy to last CR & we'll zero-pad to end of page
 				System.arraycopy(data, offset, buf1, 0, 512);
 				System.arraycopy(data, offset+512, buf2, 0, crPtr - offset + 1 - 512);
 				disk.writeBlock(first + (pages * 2), buf1);
@@ -415,19 +415,16 @@ public class PascalFileEntry implements FileEntry {
 				disk.writeBlock(first + (pages * 2), buf1);  // Copy out the first block
 				if (len2 > 0) { 
 					System.arraycopy(data, offset+512, buf2, 0, len2);
-					disk.writeBlock(first + (pages * 2) + 1, buf2);  // Copy out second block
-					setBytesUsedInLastBlock(len2);  // The second block holds the last byte
-					setLastBlock(first + (pages * 2) + 2);  // Final block +1... i.e. pages++
 				}
-				else {  // The first block holds the last byte
-					setBytesUsedInLastBlock(len1);
-					setLastBlock(first + pages * 2 + 1);  // Final block +1... i.e. pages++ -1
-				}
-			}
-			else {  // The last page was completely full, so the last byte used in the last block is 512
+				len2 = 512;	// TEXT files always pad out to 1KB
+				disk.writeBlock(first + (pages * 2) + 1, buf2);  // Copy out second block
+				setBytesUsedInLastBlock(len2);  // The second block holds the last byte
+				setLastBlock(first + (pages * 2) + 2);  // Final block +1... i.e. pages++
+			} else {  // The last page was completely full, so the last byte used in the last block is 512
 				setLastBlock(first + pages * 2);
 				setBytesUsedInLastBlock(512);
 			}
+
 		} else { // data or code
 			if (data.length > (last - first) * 512) {
 				storageError(textBundle.get("PascalFileEntry.NotEnoughRoom")); //$NON-NLS-1$
