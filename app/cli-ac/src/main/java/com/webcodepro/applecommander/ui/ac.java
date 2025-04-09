@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -112,82 +113,169 @@ import io.github.applecommander.bastools.api.model.Token;
 public class ac {
 	private static TextBundle textBundle = UiBundle.getInstance();
 
+
+	/**
+	 * Finds the array index of the next operation (e.g. -bas, -ptx, -ll) from the specified
+	 * starting point. If there is no further operation found, then a -1 is returned.
+	 *
+	 * @param args      String array of arguments from the command line.
+	 * @param startFrom Index to start searching from.
+	 * @return Index of the next operation arg, or -1 if the end of the array was hit.
+	 */
+	public static int findNextOperationArg(String[] args, int startFrom) {
+		while (startFrom < args.length) {
+			// we check length>1 to make sure we're differentiating from STDIN '-'
+			if (args[startFrom].startsWith("-") == true && args[startFrom].length() > 1) {
+				return startFrom;
+			}
+			startFrom++;
+		}
+		return -1;
+	}
+
+	/**
+	 * Returns an InputStream handle to either the file specified by arg or STDIN if arg is
+	 * null, empty, or simply a '-'.
+	 * If a file is specified to arg, then any exceptions that may get raised by attempting to open
+	 * the file will simply get passed through since the AC's command line error handling doesn't
+	 * really do much other than stacktrace anyway.
+	 *
+	 * @param arg Either a filename to open or '-' for STDIN.
+	 * @return Handle to an InputStream ready to be pulled from.
+	 */
+	public static InputStream stdinOrFile(String arg) {
+		if (arg == null || arg.isEmpty() || arg.equalsIgnoreCase("-")) {
+			return System.in;
+		} else {
+			File f = new File(arg);
+			InputStream is = null;
+			try {
+				is = new FileInputStream(f);
+			} catch (FileNotFoundException e) {
+				throw new RuntimeException(e);
+			}
+			return is;
+		}
+	}
+
+
 	public static void main(String[] args) {
 		try {
 			if (args.length == 0) {
 				help();
-			} else if ("-i".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				getDiskInfo(args);
-			} else if ("-ls".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				showDirectory(DirectoryLister.text(FormattedDisk.FILE_DISPLAY_STANDARD), args);
-			} else if ("-l".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				showDirectory(DirectoryLister.text(FormattedDisk.FILE_DISPLAY_NATIVE), args);
-			} else if ("-ll".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				showDirectory(DirectoryLister.text(FormattedDisk.FILE_DISPLAY_DETAIL), args);
-			} else if ("-lsv".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				showDirectory(DirectoryLister.csv(FormattedDisk.FILE_DISPLAY_STANDARD), args);
-			} else if ("-lv".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				showDirectory(DirectoryLister.csv(FormattedDisk.FILE_DISPLAY_NATIVE), args);
-			} else if ("-llv".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				showDirectory(DirectoryLister.csv(FormattedDisk.FILE_DISPLAY_DETAIL), args);
-			} else if ("-lsj".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				showDirectory(DirectoryLister.json(FormattedDisk.FILE_DISPLAY_STANDARD), args);
-			} else if ("-lj".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				showDirectory(DirectoryLister.json(FormattedDisk.FILE_DISPLAY_NATIVE), args);
-			} else if ("-llj".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				showDirectory(DirectoryLister.json(FormattedDisk.FILE_DISPLAY_DETAIL), args);
-			} else if ("-e".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				getFile(args[1], args[2], true,
-					(args.length > 3 ? new PrintStream(new FileOutputStream(args[3])) : System.out));
-			} else if ("-x".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				getFiles(args[1], (args.length > 2 ? args[2] : ""));
-			} else if ("-g".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				getFile(args[1], args[2], false,
-					(args.length > 3 ? new PrintStream(new FileOutputStream(args[3])) : System.out));
-			} else if ("-p".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				putFile(args[1], new Name(args[2]), args[3],
-					(args.length > 4 ? args[4] : "0x2000"));
-			} else if ("-pt".equalsIgnoreCase(args[0])) {
-			    putTxtFileSetHighBit(args[1], new Name(args[2]));
-            } else if ("-ptx".equalsIgnoreCase(args[0])) {
-                putTxtFileClearHighBit(args[1], new Name(args[2]));
-			} else if ("-d".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				deleteFile(args[1], args[2]);
-			} else if ("-k".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				setFileLocked(args[1], args[2], true);
-			} else if ("-u".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				setFileLocked(args[1], args[2], false);
-			} else if ("-n".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				setDiskName(args[1], args[2]);
-			} else if ("-cc65".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				System.err.println("Note: -cc65 is deprecated.  Please use -as or -dos as appropriate."); 
-				putDOS(args[1], new Name(args[2]), args[3]);
-			} else if ("-dos".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				putDOS(args[1], new Name(args[2]), args[3]);
-			} else if ("-as".equalsIgnoreCase(args[0])) {
-				putAppleSingle(args[1], args.length >= 3 ? args[2] : null);
-			} else if ("-geos".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				putGEOS(args[1]);
-			} else if ("-dos140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				createDosDisk(args[1], Disk.APPLE_140KB_DISK);
-			} else if ("-pas140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				createPasDisk(args[1], args[2], Disk.APPLE_140KB_DISK);
-			} else if ("-pas800".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				createPasDisk(args[1], args[2], Disk.APPLE_800KB_DISK);
-			} else if ("-pro140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				createProDisk(args[1], args[2], Disk.APPLE_140KB_DISK);
-			} else if ("-pro800".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				createProDisk(args[1], args[2], Disk.APPLE_800KB_DISK);
-			} else if ("-convert".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				if (args.length > 3)
-					convert(args[1], args[2], Integer.parseInt(args[3]));
-				else
-					convert(args[1], args[2]);
-			} else if ("-bas".equalsIgnoreCase(args[0])) {
-				putAppleSoft(args[1], args[2]);
-			} else {
-				help();
 			}
+
+			int argPtr = 0;
+			while (argPtr < args.length && argPtr > -1) {
+				InputStream inputStream = null;
+
+				int nextArg = findNextOperationArg(args, argPtr + 1);
+				if (nextArg == -1) {
+					nextArg = args.length;
+				}
+
+				String[] trimmedArgs = Arrays.copyOfRange(args, argPtr, nextArg);
+
+				if ("-i".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					getDiskInfo(trimmedArgs);
+				} else if ("-ls".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					showDirectory(DirectoryLister.text(FormattedDisk.FILE_DISPLAY_STANDARD), trimmedArgs);
+				} else if ("-l".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					showDirectory(DirectoryLister.text(FormattedDisk.FILE_DISPLAY_NATIVE), trimmedArgs);
+				} else if ("-ll".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					showDirectory(DirectoryLister.text(FormattedDisk.FILE_DISPLAY_DETAIL), trimmedArgs);
+				} else if ("-lsv".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					showDirectory(DirectoryLister.csv(FormattedDisk.FILE_DISPLAY_STANDARD), trimmedArgs);
+				} else if ("-lv".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					showDirectory(DirectoryLister.csv(FormattedDisk.FILE_DISPLAY_NATIVE), trimmedArgs);
+				} else if ("-llv".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					showDirectory(DirectoryLister.csv(FormattedDisk.FILE_DISPLAY_DETAIL), trimmedArgs);
+				} else if ("-lsj".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					showDirectory(DirectoryLister.json(FormattedDisk.FILE_DISPLAY_STANDARD), trimmedArgs);
+				} else if ("-lj".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					showDirectory(DirectoryLister.json(FormattedDisk.FILE_DISPLAY_NATIVE), trimmedArgs);
+				} else if ("-llj".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					showDirectory(DirectoryLister.json(FormattedDisk.FILE_DISPLAY_DETAIL), trimmedArgs);
+				} else if ("-e".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					getFile(trimmedArgs[1], trimmedArgs[2], true,
+							(trimmedArgs.length > 3 ? new PrintStream(new FileOutputStream(trimmedArgs[3])) : System.out));
+				} else if ("-x".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					getFiles(trimmedArgs[1], (args.length > 2 ? trimmedArgs[2] : ""));
+				} else if ("-g".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					getFile(trimmedArgs[1], trimmedArgs[2], false,
+							(trimmedArgs.length > 3 ? new PrintStream(new FileOutputStream(trimmedArgs[3])) : System.out));
+				} else if ("-p".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					String addr = "0x2000";
+					if (trimmedArgs.length > 5) {
+						addr = trimmedArgs[4];
+						inputStream = stdinOrFile(trimmedArgs[5]);
+					} else {
+						inputStream = stdinOrFile(trimmedArgs[4]);
+					}
+					putFile(trimmedArgs[1], new Name(trimmedArgs[2]), trimmedArgs[3], addr, inputStream);
+				} else if ("-pt".equalsIgnoreCase(trimmedArgs[0])) {
+					inputStream = stdinOrFile(trimmedArgs[3]);
+					putTxtFileSetHighBit(trimmedArgs[1], new Name(trimmedArgs[2]), inputStream);
+				} else if ("-ptx".equalsIgnoreCase(trimmedArgs[0])) {
+					inputStream = stdinOrFile(trimmedArgs[3]);
+					putTxtFileClearHighBit(trimmedArgs[1], new Name(trimmedArgs[2]), inputStream);
+				} else if ("-d".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					deleteFile(trimmedArgs[1], trimmedArgs[2]);
+				} else if ("-k".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					setFileLocked(trimmedArgs[1], trimmedArgs[2], true);
+				} else if ("-u".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					setFileLocked(trimmedArgs[1], trimmedArgs[2], false);
+				} else if ("-n".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					setDiskName(trimmedArgs[1], trimmedArgs[2]);
+				} else if ("-cc65".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					System.err.println("Note: -cc65 is deprecated.  Please use -as or -dos as appropriate.");
+					inputStream = stdinOrFile(trimmedArgs[4]);
+					putDOS(trimmedArgs[1], new Name(trimmedArgs[2]), trimmedArgs[3], inputStream);
+				} else if ("-dos".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					inputStream = stdinOrFile(trimmedArgs[4]);
+					putDOS(trimmedArgs[1], new Name(trimmedArgs[2]), trimmedArgs[3], inputStream);
+				} else if ("-as".equalsIgnoreCase(trimmedArgs[0])) {
+					String fname = null;
+					if (trimmedArgs.length > 4) {
+						fname = trimmedArgs[2];
+						inputStream = stdinOrFile(trimmedArgs[3]);
+					} else {
+						inputStream = stdinOrFile(trimmedArgs[2]);
+					}
+					putAppleSingle(trimmedArgs[1], trimmedArgs.length >= 3 ? fname : null, inputStream);
+				} else if ("-geos".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					inputStream = stdinOrFile(trimmedArgs[2]);
+					putGEOS(trimmedArgs[1], inputStream);
+				} else if ("-dos140".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					createDosDisk(trimmedArgs[1], Disk.APPLE_140KB_DISK);
+				} else if ("-pas140".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					createPasDisk(trimmedArgs[1], trimmedArgs[2], Disk.APPLE_140KB_DISK);
+				} else if ("-pas800".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					createPasDisk(trimmedArgs[1], trimmedArgs[2], Disk.APPLE_800KB_DISK);
+				} else if ("-pro140".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					createProDisk(trimmedArgs[1], trimmedArgs[2], Disk.APPLE_140KB_DISK);
+				} else if ("-pro800".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					createProDisk(trimmedArgs[1], trimmedArgs[2], Disk.APPLE_800KB_DISK);
+				} else if ("-convert".equalsIgnoreCase(trimmedArgs[0])) { //$NON-NLS-1$
+					if (trimmedArgs.length > 3)
+						convert(trimmedArgs[1], trimmedArgs[2], Integer.parseInt(trimmedArgs[3]));
+					else
+						convert(trimmedArgs[1], trimmedArgs[2]);
+				} else if ("-bas".equalsIgnoreCase(trimmedArgs[0])) {
+					inputStream = stdinOrFile(trimmedArgs[3]);
+					putAppleSoft(trimmedArgs[1], trimmedArgs[2], inputStream);
+				} else {
+					help();
+				}
+
+				// close out InputStream if we used one
+				if (inputStream instanceof FileInputStream) {
+					inputStream.close();
+				}
+
+				argPtr = findNextOperationArg(args, argPtr + 1);
+
+			} // while
 		} catch (Exception ex) {
 			System.err.println(textBundle.format("CommandLineErrorMessage", //$NON-NLS-1$
 				ex.getLocalizedMessage()));
@@ -201,11 +289,11 @@ public class ac {
 	 * Note that we try to infer the BASIC type dynamically and hard-code the start address
 	 * to 0x801.
 	 */
-	public static void putAppleSoft(String imageName, String fileName) throws IOException, DiskException {
-	    File fakeTempSource = File.createTempFile("ac-", "bas");
-	    fakeTempSource.deleteOnExit();
+	public static void putAppleSoft(String imageName, String fileName, InputStream inputStream) throws IOException, DiskException {
+		File fakeTempSource = File.createTempFile("ac-", "bas");
+		fakeTempSource.deleteOnExit();
 		Configuration config = Configuration.builder().sourceFile(fakeTempSource).build();
-		Queue<Token> tokens = TokenReader.tokenize(System.in);
+		Queue<Token> tokens = TokenReader.tokenize(inputStream);
 		Parser parser = new Parser(tokens);
 		Program program = parser.parse();
 		byte[] data = Visitors.byteVisitor(config).dump(program);
@@ -271,32 +359,22 @@ public class ac {
 	}
 
 	/**
-	 * Put &lt;stdin&gt. into the file named fileName on the disk named imageName;
-	 * Note: only volume level supported; input size unlimited.
+	 * Put &lt;stdin&gt. as an Apple text file into the file named 
+	 * fileName on the disk named imageName.
 	 */
-	static void putFile(String imageName, Name name, String fileType,
-		String address) throws IOException, DiskException {
-
-		putFile(imageName, name, fileType, address, System.in);
+	static void putTxtFileSetHighBit(String imageName, Name name, InputStream inputStream) throws IOException, DiskException {
+		// Order on the stream is important to ensure the translated newlines have the high bit done appropriately
+		putFile(imageName, name, "TXT", "0", TranslatorStream.builder(inputStream).lfToCr().setHighBit().get());
 	}
 
-    /**
-     * Put &lt;stdin&gt. as an Apple text file into the file named 
-     * fileName on the disk named imageName.
-     */
-    static void putTxtFileSetHighBit(String imageName, Name name) throws IOException, DiskException {
-        // Order on the stream is important to ensure the translated newlines have the high bit done appropriately
-        putFile(imageName, name, "TXT", "0", TranslatorStream.builder(System.in).lfToCr().setHighBit().get());
-    }
-
-    /**
-     * Put &lt;stdin&gt. as an Apple text file into the file named 
-     * fileName on the disk named imageName.
-     */
-    static void putTxtFileClearHighBit(String imageName, Name name) throws IOException, DiskException {
-        // Order on the stream is important to ensure the translated newlines have the high bit done appropriately
-        putFile(imageName, name, "TXT", "0", TranslatorStream.builder(System.in).lfToCr().clearHighBit().get());
-    }
+	/**
+	 * Put &lt;stdin&gt. as an Apple text file into the file named 
+	 * fileName on the disk named imageName.
+	 */
+	static void putTxtFileClearHighBit(String imageName, Name name, InputStream inputStream) throws IOException, DiskException {
+		// Order on the stream is important to ensure the translated newlines have the high bit done appropriately
+		putFile(imageName, name, "TXT", "0", TranslatorStream.builder(inputStream).lfToCr().clearHighBit().get());
+	}
 
 	/**
 	 * Put InputStream into the file named fileName on the disk named imageName;
@@ -335,11 +413,11 @@ public class ac {
 	 * Put file fileName into the file named fileOnImageName on the disk named imageName;
 	 * Assume a cc65 style four-byte header with start address in bytes 0-1.
 	 */
-	public static void putDOS(String fileName, String imageName, String fileOnImageName, String fileType)
+	public static void putDOS(String fileName, String imageName, String fileOnImageName, String fileType, InputStream inputStream)
 		throws IOException, DiskException {
 
 		byte[] header = new byte[4];
-		if (System.in.read(header, 0, 4) == 4) {
+		if (inputStream.read(header, 0, 4) == 4) {
 			int address = AppleUtil.getWordValue(header, 0);
 			putFile(fileName, imageName, fileOnImageName, fileType, Integer.toString(address));
 		}
@@ -349,22 +427,16 @@ public class ac {
 	 * Put &lt;stdin> into the file named fileName on the disk named imageName;
 	 * Assume an DOS 3.x style four-byte header with start address in bytes 0-1.
 	 */
-	static void putDOS(String imageName, Name name, String fileType)
+	static void putDOS(String imageName, Name name, String fileType, InputStream inputStream)
 		throws IOException, DiskException {
 
 		byte[] header = new byte[4];
-		if (System.in.read(header, 0, 4) == 4) {
+		if (inputStream.read(header, 0, 4) == 4) {
 			int address = AppleUtil.getWordValue(header, 0);
-			putFile(imageName, name, fileType, Integer.toString(address));
+			putFile(imageName, name, fileType, Integer.toString(address), inputStream);
 		}
 	}
 	
-	/**
-	 * Put file from AppleSingle format into ProDOS image.
-	 */
-	public static void putAppleSingle(String imageName, String fileName) throws IOException, DiskException {
-		putAppleSingle(imageName, fileName, System.in);
-	}
 	/**
 	 * AppleSingle shim to allow for unit testing.
 	 */
@@ -395,9 +467,9 @@ public class ac {
 	 * Interpret &lt;stdin> as a GEOS file and place it on the disk named imageName.
 	 * This would only make sense for a ProDOS-formatted disk.
 	 */
-	static void putGEOS(String imageName)
+	static void putGEOS(String imageName, InputStream inputStream)
 		throws IOException, DiskException {
-		putFile(imageName, new Name("GEOS-Should Be ProDOS"), "GEO", "0"); //$NON-NLS-2$ $NON-NLS-3$
+		putFile(imageName, new Name("GEOS-Should Be ProDOS"), "GEO", "0", inputStream); //$NON-NLS-2$ $NON-NLS-3$
 	}
 
 	/**
