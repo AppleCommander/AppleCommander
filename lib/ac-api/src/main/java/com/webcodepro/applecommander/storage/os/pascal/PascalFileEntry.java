@@ -362,7 +362,7 @@ public class PascalFileEntry implements FileEntry {
 	private int findEOL(byte[] data, int offset) throws DiskFullException  {
 		int i = offset + 1022;
 		while (i > offset) {
-			if (data[i] == 13) {
+			if ((data[i] & 0x7f) == 13) {
 				return i;
 			}
 			i--;
