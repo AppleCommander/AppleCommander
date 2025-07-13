@@ -316,7 +316,7 @@ public class PascalFileEntry implements FileEntry {
 		ByteArrayOutputStream buf = new ByteArrayOutputStream(data.length);
 		int index = 0;
 		while (index < data.length) {
-			byte b = data[index];
+			byte b = AppleUtil.clearBit(data[index], 7);
 			if (b == CR || b == LF) {
 				buf.write(CR);
 				index++;
@@ -362,7 +362,7 @@ public class PascalFileEntry implements FileEntry {
 	private int findEOL(byte[] data, int offset) throws DiskFullException  {
 		int i = offset + 1022;
 		while (i > offset) {
-			if ((data[i] & 0x7f) == 13) {
+			if (data[i] == 13) {
 				return i;
 			}
 			i--;
