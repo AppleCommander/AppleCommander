@@ -191,7 +191,7 @@ public class ImportCommand extends ReadWriteDiskCommandOptions {
 
         @Option(names = { "--text-low" }, description = { 
                 "Import as a text file, clearing high bit and ",
-                "replacing newline characters with $8D." })
+                "replacing newline characters with $0D." })
         public void setTextModeClearHighBit(boolean textFlag) {
             fileEntryReaderFn = this::handleTextModeClearHighBit;
         }
