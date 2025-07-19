@@ -39,12 +39,7 @@ import com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
-import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
-import com.webcodepro.applecommander.storage.physical.DosOrder;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import com.webcodepro.applecommander.storage.physical.NibbleOrder;
-import com.webcodepro.applecommander.storage.physical.ProdosOrder;
-import com.webcodepro.applecommander.storage.physical.UniversalDiskImageLayout;
+import com.webcodepro.applecommander.storage.physical.*;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
@@ -130,7 +125,7 @@ public class Disk {
 	private Disk() {
 		filenameFilters = new FilenameFilter[] {
 			new FilenameFilter(textBundle.get("Disk.AllImages"),  //$NON-NLS-1$
-				"*.do", "*.dsk", "*.po", "*.nib", "*.2mg", "*.2img", "*.hdv", "*.do.gz", "*.dsk.gz", "*.po.gz", "*.nib.gz", "*.2mg.gz", "*.2img.gz"), //$NON-NLS-1$
+				"*.do", "*.dsk", "*.po", "*.nib", "*.2mg", "*.2img", "*.hdv", "*.do.gz", "*.dsk.gz", "*.po.gz", "*.nib.gz", "*.2mg.gz", "*.2img.gz", "*.woz"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.140kDosImages"),  //$NON-NLS-1$
 				"*.do", "*.dsk", "*.do.gz", "*.dsk.gz"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.140kNibbleImages"), //$NON-NLS-1$
@@ -143,6 +138,8 @@ public class Disk {
 				"*.hdv"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.CompressedImages"),  //$NON-NLS-1$
 				"*.sdk", "*.shk", "*.do.gz", "*.dsk.gz", "*.po.gz", "*.2mg.gz", "*.2img.gz"), //$NON-NLS-1$
+			new FilenameFilter(textBundle.get("Disk.WozImages"),
+				"*.woz"),
 			new FilenameFilter(textBundle.get("Disk.AllFiles"),  //$NON-NLS-1$
 				"*.*") //$NON-NLS-1$
 		};
@@ -229,9 +226,14 @@ public class Disk {
 			diskImage = diskImageByteArray.toByteArray();
 		}
 		boolean is2img = false;
+		boolean isWoz = false;
 		/* Does it have the 2IMG header? */
 		if ((diskImage[0] == 0x32) && (diskImage[1] == 0x49) && (diskImage[2] == 0x4D) && (diskImage[3]) == 0x47) {
 			is2img = true;
+		}
+		/* Does it have the WOZ header? */
+		else if ((diskImage[0] == 0x57) && (diskImage[1] == 0x4f) && (diskImage[2] == 0x5a) && (diskImage[3]) == 0x32) {
+			isWoz = true;
 		}
 		/* Does it have the DiskCopy 4.2 header? */
 		else if (Disk.isDC42(diskImage)) {
@@ -265,6 +267,8 @@ public class Disk {
 
 		if (isSDK()) {
 			imageOrder = proDosOrder; // SDKs are always in ProDOS order
+		} else if (isWoz) {
+			imageOrder = new WozOrder(diskImageManager);
 		} else {
 			/*
 			 * First step: test physical disk orders for viable file systems.
@@ -519,6 +523,10 @@ public class Disk {
 	 * Identify the size of this disk.
 	 */
 	public int getPhysicalSize() {
+		if (getImageOrder() instanceof WozOrder) {
+			// Total hack since WOZ is currently a special case.
+			return getImageOrder().getPhysicalSize();
+		}
 		if (getDiskImageManager() != null) {
 			return getDiskImageManager().getPhysicalSize();
 		}
