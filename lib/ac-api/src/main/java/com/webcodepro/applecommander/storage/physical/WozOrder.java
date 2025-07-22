@@ -1,6 +1,7 @@
 package com.webcodepro.applecommander.storage.physical;
 
 import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.os.dos33.DosSectorAddress;
 import com.webcodepro.applecommander.util.AppleUtil;
 
 import java.io.ByteArrayOutputStream;
@@ -11,7 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class WozOrder extends NibbleOrder {
+import static com.webcodepro.applecommander.storage.physical.NibbleCodec.readSectorFromTrack;
+
+public class WozOrder extends ImageOrder {
     public static final int INFO_CHUNK_ID = 0x4f464e49;
     public static final int TMAP_CHUNK_ID = 0x50414d54;
     public static final int TRKS_CHUNK_ID = 0x534b5254;
@@ -22,6 +25,10 @@ public class WozOrder extends NibbleOrder {
     private Map<String,String> meta = new HashMap<>();
     private List<TmapChunk> tmap = new ArrayList<>();
     private List<TrkInfo> trks = new ArrayList<>();
+
+    private boolean blockDevice;
+    private boolean trackAndSectorDevice;
+    private int blocksOnDevice;
 
     public WozOrder(ByteArrayImageLayout layout) {
         super(layout);
@@ -44,8 +51,15 @@ public class WozOrder extends NibbleOrder {
             switch (chunkId) {
                 case INFO_CHUNK_ID:
                     this.info = new InfoChunk(data);
-                    if (this.info.getDiskType() != 1) {
-                        throw new RuntimeException("WOZ support only supports 5.25\" disks at this time");
+                    if (this.info.getDiskType() == 1) { // DISK II - 5.25"
+                        this.blockDevice = false;
+                        this.trackAndSectorDevice = true;
+                        this.blocksOnDevice = 280;
+                    }
+                    else {  // 400K or 800K 3.5" disk
+                        this.blockDevice = true;
+                        this.trackAndSectorDevice = false;
+                        this.blocksOnDevice = this.info.getDiskSides() * 800;
                     }
                     break;
                 case TMAP_CHUNK_ID:
@@ -61,8 +75,95 @@ public class WozOrder extends NibbleOrder {
     }
 
     @Override
+    public String getName() {
+        return "WOZ Disk Image";
+    }
+
+    @Override
     public int getPhysicalSize() {
-        return Disk.APPLE_140KB_NIBBLE_DISK;
+        // We fake it. "Size" is sometimes used to determine OS type, so we give the decoded disk size.
+        return this.blocksOnDevice * 512;
+    }
+
+    @Override
+    public byte[] readBlock(int block) {
+        byte[] sector1;
+        byte[] sector2;
+        DosSectorAddress[] sectors;
+        if (isTrackAndSectorDevice()) { // Disk II
+            sectors = DosOrder.blockToSectors525(block);
+        }
+        else {  // 3.5" 400K/800K
+            sectors = blockToSectors35(block);
+        }
+        sector1 = readSector(sectors[0].track, sectors[0].sector);
+        sector2 = readSector(sectors[1].track, sectors[1].sector);
+        byte[] blockData = new byte[Disk.BLOCK_SIZE];
+        System.arraycopy(sector1, 0, blockData, 0, Disk.SECTOR_SIZE);
+        System.arraycopy(sector2, 0, blockData, Disk.SECTOR_SIZE, Disk.SECTOR_SIZE);
+        return blockData;
+    }
+
+    public DosSectorAddress[] blockToSectors35(int block) {
+        // 12x8, 11x8, 10x8, 9x8, 8x8 = 96+88+80+72+64 = 400 sectors per side
+        int sector = block*2;
+        int maxSectorsOnTrack = 0;
+        int track = 0;
+    locateBlockLoop:
+        for (int i=0; i<info.getDiskSides(); i++) {
+            for (int s=12; s>=8; s--) {
+                maxSectorsOnTrack = s;
+                for (int c=0; c<8; c++) {
+                    if (sector < maxSectorsOnTrack) {
+                        break locateBlockLoop;
+                    }
+                    sector -= s;
+                    track++;
+                }
+            }
+        }
+        DosSectorAddress addr1 = new DosSectorAddress(track, sector);
+        sector++;
+        if (sector > maxSectorsOnTrack) {
+            track++;
+            sector = 0;
+        }
+        DosSectorAddress addr2 = new DosSectorAddress(track, sector);
+        return new DosSectorAddress[] { addr1, addr2 };
+    }
+
+    @Override
+    public void writeBlock(int block, byte[] data) {
+        throw new RuntimeException("WOZ Disk Image does not support writing at this time");
+    }
+
+    @Override
+    public boolean isBlockDevice() {
+        return blockDevice;
+    }
+
+    @Override
+    public boolean isTrackAndSectorDevice() {
+        return trackAndSectorDevice;
+    }
+
+    @Override
+    public int getBlocksOnDevice() {
+        return blocksOnDevice;
+    }
+
+    @Override
+    public byte[] readSector(int track, int sector) throws IllegalArgumentException {
+        if (isTrackAndSectorDevice()) { // Disk II requires translation
+            sector = NibbleOrder.DOS_SECTOR_SKEW[sector];
+        }
+        byte[] trackData = readTrackData(track);
+        return readSectorFromTrack(trackData, track, sector, getSectorsPerTrack());
+    }
+
+    @Override
+    public void writeSector(int track, int sector, byte[] bytes) throws IllegalArgumentException {
+        throw new RuntimeException("WOZ Disk Image does not support writing at this time");
     }
 
     private void readMetaChunk(byte[] data) {
@@ -94,7 +195,6 @@ public class WozOrder extends NibbleOrder {
         }
     }
 
-    @Override
     protected byte[] readTrackData(int track) {
         TmapChunk map = tmap.get(track);
         int trkInfo = map.getOffset00();
@@ -107,7 +207,7 @@ public class WozOrder extends NibbleOrder {
     }
 
     protected byte[] transformBitstream(byte[] rawData, int bitCount) {
-        // NOTE: Uncertain if we need to track 0's (only 2 in a row) or not.
+        // NOTE: Uncertain if we need to track 0's (only 2 allowed by hardware) or not.
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         int bitNo = 7;
         int byteNo = 0;
@@ -130,11 +230,6 @@ public class WozOrder extends NibbleOrder {
         }
         return baos.toByteArray();
 
-    }
-
-    @Override
-    protected void writeTrackData(int track, byte[] trackData) {
-        throw new RuntimeException("WOZ disks do not support writing");
     }
 
     public static class InfoChunk {

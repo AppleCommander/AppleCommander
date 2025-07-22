@@ -19,22 +19,16 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
+import com.webcodepro.applecommander.storage.filters.*;
+import com.webcodepro.applecommander.testconfig.TestConfig;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
 
-import org.junit.Test;
-
-import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
-import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
-import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
-import com.webcodepro.applecommander.storage.filters.DisassemblyFileFilter;
-import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
-import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
-import com.webcodepro.applecommander.storage.filters.TextFileFilter;
-import com.webcodepro.applecommander.testconfig.TestConfig;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test Disk and FormattedDisk for read.
@@ -148,6 +142,15 @@ public class DiskHelperTest {
 				+ "/D3151.dsk"); //$NON-NLS-1$
 	}
 	
+
+	@Test
+	public void testLoadDos33SystemMasterWoz() throws IOException, DiskException {
+		FormattedDisk[] disks = showDirectory(config.getDiskDir() +
+				"/DOS 3.3 System Master.woz");
+		assertApplesoftFile(disks[0], "HELLO"); //$NON-NLS-1$
+		assertIntegerFile(disks[0], "COPY"); //$NON-NLS-1$
+		assertBinaryFile(disks[0], "BOOT13"); //$NON-NLS-1$
+	}
 	protected FormattedDisk[] showDirectory(String imageName) throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
