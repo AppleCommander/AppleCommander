@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static com.webcodepro.applecommander.storage.physical.NibbleCodec.readSectorFromTrack;
 
@@ -21,14 +24,18 @@ public class WozOrder extends ImageOrder {
     public static final int FLUX_CHUNK_ID = 0x54495257;
     public static final int META_CHUNK_ID = 0x4154454d;
 
+    // WOZ image representation
     private InfoChunk info;
     private Map<String,String> meta = new HashMap<>();
     private List<TmapChunk> tmap = new ArrayList<>();
     private List<TrkInfo> trks = new ArrayList<>();
 
+    // Internal configuration settings
     private boolean blockDevice;
     private boolean trackAndSectorDevice;
     private int blocksOnDevice;
+    private Function<Integer,byte[]> blockReader = this::readBlock525;
+    private BiFunction<Integer,Integer,byte[]> sectorReader = this::readSector525;
 
     public WozOrder(ByteArrayImageLayout layout) {
         super(layout);
@@ -43,6 +50,7 @@ public class WozOrder extends ImageOrder {
         }
         bb.getInt();    // ignoring CRC
 
+        Consumer<byte[]> tmapReader = this::readTmapChunk525;
         while (bb.hasRemaining()) {
             int chunkId = bb.getInt();
             int chunkSize = bb.getInt();
@@ -55,15 +63,21 @@ public class WozOrder extends ImageOrder {
                         this.blockDevice = false;
                         this.trackAndSectorDevice = true;
                         this.blocksOnDevice = 280;
+                        tmapReader = this::readTmapChunk525;
+                        this.blockReader = this::readBlock525;
+                        this.sectorReader = this::readSector525;
                     }
                     else {  // 400K or 800K 3.5" disk
                         this.blockDevice = true;
                         this.trackAndSectorDevice = false;
                         this.blocksOnDevice = this.info.getDiskSides() * 800;
+                        tmapReader = this::readTmapChunk35;
+                        this.blockReader = this::readBlock35;
+                        this.sectorReader = this::readSector35;
                     }
                     break;
                 case TMAP_CHUNK_ID:
-                    readTmapChunk(data);
+                    tmapReader.accept(data);
                     break;
                 case TRKS_CHUNK_ID:
                     readTrksChunk(data);
@@ -87,15 +101,14 @@ public class WozOrder extends ImageOrder {
 
     @Override
     public byte[] readBlock(int block) {
+        return this.blockReader.apply(block);
+    }
+
+    public byte[] readBlock525(int block) {
         byte[] sector1;
         byte[] sector2;
         DosSectorAddress[] sectors;
-        if (isTrackAndSectorDevice()) { // Disk II
-            sectors = DosOrder.blockToSectors525(block);
-        }
-        else {  // 3.5" 400K/800K
-            sectors = blockToSectors35(block);
-        }
+        sectors = DosOrder.blockToSectors525(block);
         sector1 = readSector(sectors[0].track, sectors[0].sector);
         sector2 = readSector(sectors[1].track, sectors[1].sector);
         byte[] blockData = new byte[Disk.BLOCK_SIZE];
@@ -104,9 +117,15 @@ public class WozOrder extends ImageOrder {
         return blockData;
     }
 
-    public DosSectorAddress[] blockToSectors35(int block) {
+    public byte[] readBlock35(int block) {
+        DosSectorAddress addr = blockToSector35(block);
+        byte[] trackData = readTrackData(addr.track);
+        return readSectorFromTrack(trackData, addr.track, addr.sector, getSectorsPerTrack());
+    }
+
+    public DosSectorAddress blockToSector35(int block) {
         // 12x8, 11x8, 10x8, 9x8, 8x8 = 96+88+80+72+64 = 400 sectors per side
-        int sector = block*2;
+        int sector = block;
         int maxSectorsOnTrack = 0;
         int track = 0;
     locateBlockLoop:
@@ -122,14 +141,7 @@ public class WozOrder extends ImageOrder {
                 }
             }
         }
-        DosSectorAddress addr1 = new DosSectorAddress(track, sector);
-        sector++;
-        if (sector > maxSectorsOnTrack) {
-            track++;
-            sector = 0;
-        }
-        DosSectorAddress addr2 = new DosSectorAddress(track, sector);
-        return new DosSectorAddress[] { addr1, addr2 };
+        return new DosSectorAddress(track, sector);
     }
 
     @Override
@@ -154,11 +166,17 @@ public class WozOrder extends ImageOrder {
 
     @Override
     public byte[] readSector(int track, int sector) throws IllegalArgumentException {
-        if (isTrackAndSectorDevice()) { // Disk II requires translation
-            sector = NibbleOrder.DOS_SECTOR_SKEW[sector];
-        }
+        return this.sectorReader.apply(track, sector);
+    }
+
+    public byte[] readSector525(int track, int sector) throws IllegalArgumentException {
+        sector = NibbleOrder.DOS_SECTOR_SKEW[sector];
         byte[] trackData = readTrackData(track);
         return readSectorFromTrack(trackData, track, sector, getSectorsPerTrack());
+    }
+
+    public byte[] readSector35(int track, int sector) throws IllegalArgumentException {
+        throw new RuntimeException("WOZ 3.5\" Disk Image does not support reading DOS track and sectors at this time");
     }
 
     @Override
@@ -178,11 +196,19 @@ public class WozOrder extends ImageOrder {
         }
     }
 
-    private void readTmapChunk(byte[] data) {
+    private void readTmapChunk525(byte[] data) {
         ByteBuffer bb = ByteBuffer.wrap(data);
         while (bb.hasRemaining()) {
             byte[] chunk = new byte[4];
             bb.get(chunk);
+            tmap.add(new TmapChunk(chunk));
+        }
+    }
+
+    private void readTmapChunk35(byte[] data) {
+        ByteBuffer bb = ByteBuffer.wrap(data);
+        while (bb.hasRemaining()) {
+            byte chunk = bb.get();
             tmap.add(new TmapChunk(chunk));
         }
     }
@@ -316,11 +342,20 @@ public class WozOrder extends ImageOrder {
     public static class TmapChunk {
         private byte[] tmap;
 
+        /** Create a 5.25" TMAP entry; one for every quarter track. */
         public TmapChunk(byte[] data) {
             if (data.length != 4) {
                 throw new RuntimeException("Unexpected TMAP chunk size of " + data.length);
             }
             tmap = data;
+        }
+        /** Create a 3.5" TMAP entry; just one for the track. */
+        public TmapChunk(byte data) {
+            tmap = new byte[4];
+            tmap[0] = data;
+            tmap[1] = (byte)255;
+            tmap[2] = (byte)255;
+            tmap[3] = (byte)255;
         }
 
         public int getOffset00() {

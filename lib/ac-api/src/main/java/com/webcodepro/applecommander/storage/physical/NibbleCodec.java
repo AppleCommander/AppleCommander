@@ -5,13 +5,13 @@ import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 
 public class NibbleCodec {
-    private static TextBundle textBundle = StorageBundle.getInstance();
+    private static final TextBundle textBundle = StorageBundle.getInstance();
 
     /**
      * This is the 6 and 2 write translate table, as given in Beneath
      * Apple DOS, pg 3-21.
      */
-    private static int[] writeTranslateTable = {
+    private static final int[] writeTranslateTable = {
             //$0    $1    $2    $3    $4    $5    $6    $7
             0x96, 0x97, 0x9a, 0x9b, 0x9d, 0x9e, 0x9f, 0xa6,	// +$00
             0xa7, 0xab, 0xac, 0xad, 0xae, 0xaf, 0xb2, 0xb3, // +$08
@@ -27,7 +27,7 @@ public class NibbleCodec {
      * translate table.  Used to decode a disk byte into a value
      * from 0x00 to 0x3f which is further decoded...
      */
-    private static int[] readTranslateTable;
+    private static final int[] readTranslateTable;
     static {
         // Construct the read translation table:
         readTranslateTable = new int[256];
@@ -79,14 +79,6 @@ public class NibbleCodec {
             found = (t == track && s == physicalSector);
         }
         if (!found) {
-            System.out.println("Looking for header:");
-            byte[] header = new byte[] { (byte)0xd5, (byte)0xaa, (byte)0x96, 0, 0, 0, 0, 0, 0 };
-            encodeOddEven(header, 3, 0xff);
-            encodeOddEven(header, 5, track);
-            encodeOddEven(header, 7, physicalSector);
-            System.out.println(AppleUtil.getHexDump(header));
-            System.out.printf("Track #%02d:\n", track);
-            System.out.println(AppleUtil.getHexDump(trackData));
             throw new IllegalArgumentException(textBundle
                     .format("NibbleOrder.InvalidPhysicalSectorError", physicalSector, track, 1)); //$NON-NLS-1$
         }

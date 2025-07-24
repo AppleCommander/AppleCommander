@@ -151,6 +151,7 @@ public class DiskHelperTest {
 		assertIntegerFile(disks[0], "COPY"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "BOOT13"); //$NON-NLS-1$
 	}
+
 	protected FormattedDisk[] showDirectory(String imageName) throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
