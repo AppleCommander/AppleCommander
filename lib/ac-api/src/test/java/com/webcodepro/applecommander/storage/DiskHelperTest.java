@@ -141,12 +141,20 @@ public class DiskHelperTest {
 		showDirectory(config.getDiskDir() 
 				+ "/D3151.dsk"); //$NON-NLS-1$
 	}
-	
 
 	@Test
-	public void testLoadDos33SystemMasterWoz() throws IOException, DiskException {
+	public void testLoadDos33SystemMasterWoz1() throws IOException, DiskException {
 		FormattedDisk[] disks = showDirectory(config.getDiskDir() +
-				"/DOS 3.3 System Master.woz");
+				"/DOS 3.3 System Master.woz1");
+		assertApplesoftFile(disks[0], "HELLO"); //$NON-NLS-1$
+		assertIntegerFile(disks[0], "COPY"); //$NON-NLS-1$
+		assertBinaryFile(disks[0], "BOOT13"); //$NON-NLS-1$
+	}
+
+	@Test
+	public void testLoadDos33SystemMasterWoz2() throws IOException, DiskException {
+		FormattedDisk[] disks = showDirectory(config.getDiskDir() +
+				"/DOS 3.3 System Master.woz2");
 		assertApplesoftFile(disks[0], "HELLO"); //$NON-NLS-1$
 		assertIntegerFile(disks[0], "COPY"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "BOOT13"); //$NON-NLS-1$

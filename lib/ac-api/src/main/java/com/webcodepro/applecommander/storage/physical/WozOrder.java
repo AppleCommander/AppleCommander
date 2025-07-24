@@ -18,6 +18,9 @@ import java.util.function.Function;
 import static com.webcodepro.applecommander.storage.physical.NibbleCodec.readSectorFromTrack;
 
 public class WozOrder extends ImageOrder {
+    // The magic bytes are read in little-endian order, so they do appear reversed here.
+    public static final int WOZ1_MAGIC = 0x315a4f57;
+    public static final int WOZ2_MAGIC = 0x325a4f57;
     public static final int INFO_CHUNK_ID = 0x4f464e49;
     public static final int TMAP_CHUNK_ID = 0x50414d54;
     public static final int TRKS_CHUNK_ID = 0x534b5254;
@@ -34,6 +37,7 @@ public class WozOrder extends ImageOrder {
     private boolean blockDevice;
     private boolean trackAndSectorDevice;
     private int blocksOnDevice;
+    private Function<Integer,byte[]> trackReader = null;
     private Function<Integer,byte[]> blockReader = this::readBlock525;
     private BiFunction<Integer,Integer,byte[]> sectorReader = this::readSector525;
 
@@ -45,8 +49,15 @@ public class WozOrder extends ImageOrder {
 
         int sig = bb.getInt();
         int test = bb.getInt();
-        if (sig != 0x325a4f57 || test != 0xa0d0aff) {
-            throw new RuntimeException("Not a WOZ v2 format file.");
+        final int testExpected = 0xa0d0aff;
+        if (sig == WOZ1_MAGIC && test == testExpected) {
+            this.trackReader = this::readTrackDataWOZ1;
+        }
+        else if (sig == WOZ2_MAGIC && test == testExpected) {
+            this.trackReader = this::readTrackDataWOZ2;
+        }
+        else {
+            throw new RuntimeException("Not a WOZ1 or WOZ2 format file.");
         }
         bb.getInt();    // ignoring CRC
 
@@ -214,6 +225,7 @@ public class WozOrder extends ImageOrder {
     }
 
     private void readTrksChunk(byte[] data) {
+        // Note: WOZ2 only
         ByteBuffer bb = ByteBuffer.wrap(data);
         bb.order(ByteOrder.LITTLE_ENDIAN);
         for (int i=0; i<160; i++) {
@@ -222,6 +234,10 @@ public class WozOrder extends ImageOrder {
     }
 
     protected byte[] readTrackData(int track) {
+        return this.trackReader.apply(track);
+    }
+
+    protected byte[] readTrackDataWOZ2(int track) {
         TmapChunk map = tmap.get(track);
         int trkInfo = map.getOffset00();
         if (trkInfo == 255) trkInfo = map.getOffset25();
@@ -230,6 +246,17 @@ public class WozOrder extends ImageOrder {
         TrkInfo trk = trks.get(trkInfo);
         byte[] rawData = readBytes(trk.getStartingBlock()*512, trk.getBlockCount()*512);
         return transformBitstream(rawData, trk.getBitCount());
+    }
+
+    protected byte[] readTrackDataWOZ1(int track) {
+        final int trackLength = 6656;
+        int start = 256 + (track * trackLength);
+        byte[] details = readBytes(start + 6646, 10);
+        int bytesUsed = AppleUtil.getWordValue(details, 0);
+        int bitCount = AppleUtil.getWordValue(details, 2);
+        int end = start + bytesUsed;
+        byte[] rawData = readBytes(start, end);
+        return transformBitstream(rawData, bitCount);
     }
 
     protected byte[] transformBitstream(byte[] rawData, int bitCount) {
@@ -285,14 +312,18 @@ public class WozOrder extends ImageOrder {
             byte[] creator = new byte[32];
             bb.get(creator);
             this.creator = new String(creator);
-            this.diskSides = bb.get();
-            this.bootSectorFormat = bb.get();
-            this.optimalBitTiming = bb.get();
-            this.compatibleHardware = bb.getShort();
-            this.requiredRAM = bb.getShort();
-            this.largestTrack = bb.getShort();
-            this.fluxBlock = bb.getShort();
-            this.largestFluxTrack = bb.getShort();
+            if (this.version == 2) {
+                this.diskSides = bb.get();
+                this.bootSectorFormat = bb.get();
+                this.optimalBitTiming = bb.get();
+                this.compatibleHardware = bb.getShort();
+                this.requiredRAM = bb.getShort();
+                this.largestTrack = bb.getShort();
+            }
+            if (this.version == 3) {
+                this.fluxBlock = bb.getShort();
+                this.largestFluxTrack = bb.getShort();
+            }
         }
 
         public int getVersion() {

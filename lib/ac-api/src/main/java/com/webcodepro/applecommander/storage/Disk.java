@@ -231,8 +231,9 @@ public class Disk {
 		if ((diskImage[0] == 0x32) && (diskImage[1] == 0x49) && (diskImage[2] == 0x4D) && (diskImage[3]) == 0x47) {
 			is2img = true;
 		}
-		/* Does it have the WOZ header? */
-		else if ((diskImage[0] == 0x57) && (diskImage[1] == 0x4f) && (diskImage[2] == 0x5a) && (diskImage[3]) == 0x32) {
+		/* Does it have the WOZ1 or WOZ2 header? */
+		else if ((diskImage[0] == 0x57) && (diskImage[1] == 0x4f) && (diskImage[2] == 0x5a)
+				&& ((diskImage[3] == 0x31) || (diskImage[3] == 0x32))) {
 			isWoz = true;
 		}
 		/* Does it have the DiskCopy 4.2 header? */
