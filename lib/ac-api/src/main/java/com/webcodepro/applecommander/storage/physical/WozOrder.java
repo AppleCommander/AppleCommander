@@ -16,6 +16,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static com.webcodepro.applecommander.storage.physical.NibbleCodec.readSectorFromTrack;
+import static com.webcodepro.applecommander.storage.physical.NibbleCodec.readSectorFromTrack35;
+import static com.webcodepro.applecommander.storage.physical.ProdosOrder.blockInterleave;
+import static com.webcodepro.applecommander.storage.physical.ProdosOrder.blockOffsets;
 
 public class WozOrder extends ImageOrder {
     // The magic bytes are read in little-endian order, so they do appear reversed here.
@@ -131,7 +134,7 @@ public class WozOrder extends ImageOrder {
     public byte[] readBlock35(int block) {
         DosSectorAddress addr = blockToSector35(block);
         byte[] trackData = readTrackData(addr.track);
-        return readSectorFromTrack(trackData, addr.track, addr.sector, getSectorsPerTrack());
+        return readSectorFromTrack35(trackData, addr.track, addr.sector, getSectorsPerTrack());
     }
 
     public DosSectorAddress blockToSector35(int block) {
@@ -187,7 +190,13 @@ public class WozOrder extends ImageOrder {
     }
 
     public byte[] readSector35(int track, int sector) throws IllegalArgumentException {
-        throw new RuntimeException("WOZ 3.5\" Disk Image does not support reading DOS track and sectors at this time");
+        int block = track * 8 + blockInterleave[sector];
+        byte[] blockData = readBlock(block);
+        int offset = blockOffsets[sector];
+        byte[] sectorData = new byte[Disk.SECTOR_SIZE];
+        System.arraycopy(blockData, offset * Disk.SECTOR_SIZE,
+                sectorData, 0, Disk.SECTOR_SIZE);
+        return sectorData;
     }
 
     @Override
