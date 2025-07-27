@@ -19,22 +19,15 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
+import com.webcodepro.applecommander.storage.filters.*;
+import com.webcodepro.applecommander.testconfig.TestConfig;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
 
-import org.junit.Test;
-
-import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
-import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
-import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
-import com.webcodepro.applecommander.storage.filters.DisassemblyFileFilter;
-import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
-import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
-import com.webcodepro.applecommander.storage.filters.TextFileFilter;
-import com.webcodepro.applecommander.testconfig.TestConfig;
+import static org.junit.Assert.*;
 
 /**
  * Test Disk and FormattedDisk for read.
@@ -43,6 +36,9 @@ import com.webcodepro.applecommander.testconfig.TestConfig;
  * @author Rob Greene
  */
 public class DiskHelperTest {
+	private static final String DOS33_FORMAT = "DOS 3.3";
+	private static final String DOS32_FORMAT = "DOS 3.2";
+
 	private TestConfig config = TestConfig.getInstance();
 
 	@Test
@@ -53,6 +49,7 @@ public class DiskHelperTest {
 		assertIntegerFile(disks[0], "ANIMALS"); //$NON-NLS-1$
 		assertTextFile(disks[0], "APPLE PROMS"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "BOOT13"); //$NON-NLS-1$
+		assertEquals(DOS33_FORMAT, disks[0].getFormat());
 	}
 
 	@Test
@@ -147,7 +144,46 @@ public class DiskHelperTest {
 		showDirectory(config.getDiskDir() 
 				+ "/D3151.dsk"); //$NON-NLS-1$
 	}
-	
+
+	@Test
+	public void testLoadDos33SystemMasterWoz1() throws IOException, DiskException {
+		FormattedDisk[] disks = showDirectory(config.getDiskDir() +
+				"/DOS 3.3 System Master.woz1");
+		assertApplesoftFile(disks[0], "HELLO"); //$NON-NLS-1$
+		assertIntegerFile(disks[0], "COPY"); //$NON-NLS-1$
+		assertBinaryFile(disks[0], "BOOT13"); //$NON-NLS-1$
+		assertEquals(DOS33_FORMAT, disks[0].getFormat());
+	}
+
+	@Test
+	public void testLoadDos33SystemMasterWoz2() throws IOException, DiskException {
+		FormattedDisk[] disks = showDirectory(config.getDiskDir() +
+				"/DOS 3.3 System Master.woz2");
+		assertApplesoftFile(disks[0], "HELLO"); //$NON-NLS-1$
+		assertIntegerFile(disks[0], "COPY"); //$NON-NLS-1$
+		assertBinaryFile(disks[0], "BOOT13"); //$NON-NLS-1$
+		assertEquals(DOS33_FORMAT, disks[0].getFormat());
+	}
+
+	@Test
+	public void testLoadDos32SystemMasterWoz() throws IOException, DiskException {
+		FormattedDisk[] disks = showDirectory(config.getDiskDir() +
+				"/DOS 3.2 System Master.woz");
+		assertIntegerFile(disks[0], "HELLO"); //$NON-NLS-1$
+		assertBinaryFile(disks[0], "UPDATE 3.2"); //$NON-NLS-1$
+		assertEquals(DOS32_FORMAT, disks[0].getFormat());
+	}
+
+	@Test
+	public void testLoadDos32SystemMasterNib() throws IOException, DiskException {
+		FormattedDisk[] disks = showDirectory(config.getDiskDir() +
+				"/original321sysmaspls.nib");
+		assertApplesoftFile(disks[0], "HELLO");
+		assertBinaryFile(disks[0], "UPDATE 3.2.1");
+		assertTextFile(disks[0], "APPLE PROMS");
+		assertEquals(DOS32_FORMAT, disks[0].getFormat());
+	}
+
 	protected FormattedDisk[] showDirectory(String imageName) throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();

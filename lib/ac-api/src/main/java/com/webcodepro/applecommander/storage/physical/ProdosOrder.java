@@ -33,14 +33,14 @@ public class ProdosOrder extends ImageOrder {
 	/**
 	 * This table contains the block offset for a particular DOS sector.
 	 */
-	private static final int[] blockInterleave = { 
+	public static final int[] blockInterleave = {
 		0, 7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 0, 7 
 	};
 	/**
 	 * Defines the location within a block in which the DOS sector resides.
 	 * (0 = 0-255 and 1 = 256-511.)
 	 */
-	private static final int[] blockOffsets = { 
+	public static final int[] blockOffsets = {
 		0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1 
 	};
 

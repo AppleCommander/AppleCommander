@@ -130,11 +130,13 @@ public class DosFormatDisk extends FormattedDisk {
 	}
 
 	/**
-	 * Identify the operating system format of this disk as DOS 3.3.
+	 * Identify the operating system format of this disk as DOS 3.x.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFormat()
 	 */
 	public String getFormat() {
-		return textBundle.get("Dos33"); //$NON-NLS-1$
+		byte[] vtoc = readVtoc();
+		int version = Byte.toUnsignedInt(vtoc[3]);
+		return String.format("DOS 3.%d", version);
 	}
 
 	/**

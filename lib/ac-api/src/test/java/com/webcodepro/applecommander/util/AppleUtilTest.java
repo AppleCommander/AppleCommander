@@ -19,12 +19,6 @@
  */
 package com.webcodepro.applecommander.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import org.junit.Test;
-
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
@@ -36,6 +30,9 @@ import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
 import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.NibbleOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * Test AppleUtil.
