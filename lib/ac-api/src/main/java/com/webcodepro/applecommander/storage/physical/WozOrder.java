@@ -15,8 +15,8 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.webcodepro.applecommander.storage.physical.NibbleCodec.readSectorFromTrack;
-import static com.webcodepro.applecommander.storage.physical.NibbleCodec.readSectorFromTrack35;
+import static com.webcodepro.applecommander.storage.physical.NibbleCodec.*;
+import static com.webcodepro.applecommander.storage.physical.NibbleOrder.DOS_SECTOR_SKEW;
 import static com.webcodepro.applecommander.storage.physical.ProdosOrder.blockInterleave;
 import static com.webcodepro.applecommander.storage.physical.ProdosOrder.blockOffsets;
 
@@ -40,6 +40,7 @@ public class WozOrder extends ImageOrder {
     private boolean blockDevice;
     private boolean trackAndSectorDevice;
     private int blocksOnDevice;
+    private int sectorsPerTrack;
     private Function<Integer,byte[]> trackReader = null;
     private Function<Integer,byte[]> blockReader = this::readBlock525;
     private BiFunction<Integer,Integer,byte[]> sectorReader = this::readSector525;
@@ -86,7 +87,7 @@ public class WozOrder extends ImageOrder {
                         this.trackAndSectorDevice = false;
                         this.blocksOnDevice = this.info.getDiskSides() * 800;
                         tmapReader = this::readTmapChunk35;
-                        this.blockReader = this::readBlock35;
+                        //this.blockReader = this::readBlock35;
                         this.sectorReader = this::readSector35;
                     }
                     break;
@@ -100,6 +101,9 @@ public class WozOrder extends ImageOrder {
                     break;
             }
         }
+        // Identify 13-sector vs 16-sector
+        byte[] trackData = readTrackData(0);
+        sectorsPerTrack = identifySectorsPerTrack(trackData);
     }
 
     @Override
@@ -114,11 +118,20 @@ public class WozOrder extends ImageOrder {
     }
 
     @Override
+    public int getSectorsPerTrack() {
+        return sectorsPerTrack;
+    }
+
+    @Override
     public byte[] readBlock(int block) {
         return this.blockReader.apply(block);
     }
 
     public byte[] readBlock525(int block) {
+        if (sectorsPerTrack == 13) {
+            // 13 sector disks don't map to blocks, but the interrogation routines don't know this; faking it.
+            return new byte[512];
+        }
         byte[] sector1;
         byte[] sector2;
         DosSectorAddress[] sectors;
@@ -131,11 +144,11 @@ public class WozOrder extends ImageOrder {
         return blockData;
     }
 
-    public byte[] readBlock35(int block) {
-        DosSectorAddress addr = blockToSector35(block);
-        byte[] trackData = readTrackData(addr.track);
-        return readSectorFromTrack35(trackData, addr.track, addr.sector, getSectorsPerTrack());
-    }
+//    public byte[] readBlock35(int block) {
+//        DosSectorAddress addr = blockToSector35(block);
+//        byte[] trackData = readTrackData(addr.track);
+//        return readSectorFromTrack35(trackData, addr.track, addr.sector, getSectorsPerTrack());
+//    }
 
     public DosSectorAddress blockToSector35(int block) {
         // 12x8, 11x8, 10x8, 9x8, 8x8 = 96+88+80+72+64 = 400 sectors per side
@@ -184,9 +197,14 @@ public class WozOrder extends ImageOrder {
     }
 
     public byte[] readSector525(int track, int sector) throws IllegalArgumentException {
-        sector = NibbleOrder.DOS_SECTOR_SKEW[sector];
-        byte[] trackData = readTrackData(track);
-        return readSectorFromTrack(trackData, track, sector, getSectorsPerTrack());
+        if (sectorsPerTrack == 16) {
+            sector = DOS_SECTOR_SKEW[sector];
+            byte[] trackData = readTrackData(track);
+            return readSectorFromTrack62(trackData, track, sector, getSectorsPerTrack());
+        } else {
+            byte[] trackData = readTrackData(track);
+            return readSectorFromTrack53(trackData, track, sector, getSectorsPerTrack());
+        }
     }
 
     public byte[] readSector35(int track, int sector) throws IllegalArgumentException {

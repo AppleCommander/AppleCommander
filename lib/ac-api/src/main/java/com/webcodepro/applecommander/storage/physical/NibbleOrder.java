@@ -39,11 +39,16 @@ public class NibbleOrder extends DosOrder {
 			0xe, 0xc, 0xa, 0x8, 0x6, 0x4, 0x2, 0xf
 	};
 
+	private int sectorsPerTrack = 16;
+
 	/**
 	 * Construct a NibbleOrder.
 	 */
 	public NibbleOrder(ByteArrayImageLayout diskImageManager) {
 		super(diskImageManager);
+		// Identify 13-sector vs 16-sector
+		byte[] trackData = readTrackData(0);
+		sectorsPerTrack = identifySectorsPerTrack(trackData);
 	}
 
 	/**
@@ -67,15 +72,23 @@ public class NibbleOrder extends DosOrder {
 	 * for this process is directly from Beneath Apple DOS, chapter 3.
 	 */
 	public byte[] readSector(int track, int dosSector) throws IllegalArgumentException {
-		int sector = DOS_SECTOR_SKEW[dosSector];
-		byte[] trackData = readTrackData(track);
-		return readSectorFromTrack(trackData, track, sector, getSectorsPerTrack());
+		if (sectorsPerTrack == 16) {
+			int sector = DOS_SECTOR_SKEW[dosSector];
+			byte[] trackData = readTrackData(track);
+			return readSectorFromTrack62(trackData, track, sector, getSectorsPerTrack());
+		} else {
+			byte[] trackData = readTrackData(track);
+			return readSectorFromTrack53(trackData, track, dosSector, getSectorsPerTrack());
+		}
 	}
 
 	/**
 	 * Write the specified sector.
 	 */
 	public void writeSector(int track, int dosSector, byte[] sectorData) throws IllegalArgumentException {
+		if (sectorsPerTrack == 13) {
+			throw new RuntimeException("writing to 13-sector disks not supported");
+		}
 		int sector = DOS_SECTOR_SKEW[dosSector];
 		byte[] trackData = readTrackData(track);
 		writeSectorToTrack(trackData, sectorData, track, sector, getSectorsPerTrack());
@@ -93,7 +106,7 @@ public class NibbleOrder extends DosOrder {
 	 * Answer with the number of sectors per track on this device.
 	 */
 	public int getSectorsPerTrack() {
-		return 16;
+		return sectorsPerTrack;
 	}
 
 	/**
@@ -102,7 +115,7 @@ public class NibbleOrder extends DosOrder {
 	 * bytes (6+2 encoded) instead of a full 8-bit byte.
 	 */
 	public int getBlocksOnDevice() {
-		return 280;
+		return 280;	// Note: Only relevant to DOS 3.3 disks; irrelevant for DOS 3.2. (Right?)
 	}
 
 	/**
@@ -113,6 +126,9 @@ public class NibbleOrder extends DosOrder {
 	 * sector markers. 
 	 */
 	public void format() {
+		if (sectorsPerTrack == 13) {
+			throw new RuntimeException("formatting 13-sector disks not supported");
+		}
 		// pre-fill entire disk with 0xff
 		byte[] diskImage = new byte[232960];	// 6656 bytes per track
 		Arrays.fill(diskImage, (byte)0xff);

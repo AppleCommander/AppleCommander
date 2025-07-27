@@ -27,8 +27,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.List;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Test Disk and FormattedDisk for read.
@@ -37,6 +36,9 @@ import static org.junit.Assert.assertTrue;
  * @author Rob Greene
  */
 public class DiskHelperTest {
+	private static final String DOS33_FORMAT = "DOS 3.3";
+	private static final String DOS32_FORMAT = "DOS 3.2";
+
 	private TestConfig config = TestConfig.getInstance();
 
 	@Test
@@ -47,6 +49,7 @@ public class DiskHelperTest {
 		assertIntegerFile(disks[0], "ANIMALS"); //$NON-NLS-1$
 		assertTextFile(disks[0], "APPLE PROMS"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "BOOT13"); //$NON-NLS-1$
+		assertEquals(DOS33_FORMAT, disks[0].getFormat());
 	}
 
 	@Test
@@ -149,6 +152,7 @@ public class DiskHelperTest {
 		assertApplesoftFile(disks[0], "HELLO"); //$NON-NLS-1$
 		assertIntegerFile(disks[0], "COPY"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "BOOT13"); //$NON-NLS-1$
+		assertEquals(DOS33_FORMAT, disks[0].getFormat());
 	}
 
 	@Test
@@ -158,6 +162,26 @@ public class DiskHelperTest {
 		assertApplesoftFile(disks[0], "HELLO"); //$NON-NLS-1$
 		assertIntegerFile(disks[0], "COPY"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "BOOT13"); //$NON-NLS-1$
+		assertEquals(DOS33_FORMAT, disks[0].getFormat());
+	}
+
+	@Test
+	public void testLoadDos32SystemMasterWoz() throws IOException, DiskException {
+		FormattedDisk[] disks = showDirectory(config.getDiskDir() +
+				"/DOS 3.2 System Master.woz");
+		assertIntegerFile(disks[0], "HELLO"); //$NON-NLS-1$
+		assertBinaryFile(disks[0], "UPDATE 3.2"); //$NON-NLS-1$
+		assertEquals(DOS32_FORMAT, disks[0].getFormat());
+	}
+
+	@Test
+	public void testLoadDos32SystemMasterNib() throws IOException, DiskException {
+		FormattedDisk[] disks = showDirectory(config.getDiskDir() +
+				"/original321sysmaspls.nib");
+		assertApplesoftFile(disks[0], "HELLO");
+		assertBinaryFile(disks[0], "UPDATE 3.2.1");
+		assertTextFile(disks[0], "APPLE PROMS");
+		assertEquals(DOS32_FORMAT, disks[0].getFormat());
 	}
 
 	protected FormattedDisk[] showDirectory(String imageName) throws IOException, DiskException {

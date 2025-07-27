@@ -19,23 +19,13 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-
 import com.webcodepro.applecommander.storage.os.cpm.CpmFileEntry;
 import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.storage.os.dos33.OzDosFormatDisk;
 import com.webcodepro.applecommander.storage.os.dos33.UniDosFormatDisk;
-import com.webcodepro.applecommander.storage.os.nakedos.NakedosFormatDisk;
 import com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk;
+import com.webcodepro.applecommander.storage.os.nakedos.NakedosFormatDisk;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
@@ -43,6 +33,10 @@ import com.webcodepro.applecommander.storage.physical.*;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+
+import java.io.*;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Abstract representation of an Apple2 disk (floppy, 800k, hard disk).
@@ -614,7 +608,7 @@ public class Disk {
 			// can vary	&& vtoc[0x02] == 15		// expect catalog to start on sector 15 (140KB disk only!)
 						&& vtoc[0x27] == 122	// expect 122 track/sector pairs per sector
 						&& (vtoc[0x34] == 35 || vtoc[0x34] == 40) // expect 35 or 40 tracks per disk (140KB disk only!)
-						&& vtoc[0x35] == 16		// expect 16 sectors per disk (140KB disk only!)
+						&& (vtoc[0x35] == 16 || vtoc[0x35] == 13) // expect 13 or 16 sectors per disk (140KB disk only!)
 						;
 			if (good) {
 				int catTrack = vtoc[0x01]; // Pull out the first catalog track/sector
@@ -798,6 +792,7 @@ public class Disk {
 	 */
 	public boolean isRdosFormat() {
 		if (!is140KbDisk()) return false;
+		if (getImageOrder().getSectorsPerTrack() != 16) return false;
 		byte[] block = readSector(0, 0x0d);
 		String id = AppleUtil.getString(block, 0xe0, 4);
 		return "RDOS".equals(id) || isRdos33Format(); //$NON-NLS-1$
