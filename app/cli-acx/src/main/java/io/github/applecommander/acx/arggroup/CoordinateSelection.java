@@ -22,6 +22,7 @@ package io.github.applecommander.acx.arggroup;
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 
+import io.github.applecommander.acx.converter.IntegerTypeConverter;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Option;
 
@@ -62,9 +63,11 @@ public class CoordinateSelection {
     }
 
     public static class SectorCoordinateSelection {
-        @Option(names = { "-t", "--track" }, required = true, description = "Track number.")
+        @Option(names = { "-t", "--track" }, required = true, description = "Track number.",
+                converter = IntegerTypeConverter.class)
         private Integer track;
-        @Option(names = { "-s", "--sector" }, required = true, description = "Sector number.")
+        @Option(names = { "-s", "--sector" }, required = true, description = "Sector number.",
+                converter = IntegerTypeConverter.class)
         private Integer sector;
 
         public boolean isBootSector() {
@@ -97,7 +100,7 @@ public class CoordinateSelection {
         }
     }
     public static class BlockCoordinateSelection {
-        @Option(names = { "-b", "--block" }, description = "Block number.")
+        @Option(names = { "-b", "--block" }, description = "Block number.", converter = IntegerTypeConverter.class)
         private Integer block;
 
         public boolean isBootBlock() {
