@@ -40,24 +40,25 @@ import com.webcodepro.applecommander.storage.FileEntry;
  */
 public class ApplesoftTokenizer {
 	private static String tokens[] = {	// starts at $80
-		" END ",		" FOR ",	" NEXT ",	" DATA ",	" INPUT ",		" DEL ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		" DIM ",		" READ ",	" GR ",		" TEXT ",	" PR# ",		" IN# ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		" CALL ",		" PLOT ",	" HLIN ",	" VLIN ",	" HGR2 ",		" HGR ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		" HCOLOR= ",	" HPLOT ",	" DRAW ",	" XDRAW ",	" HTAB ",		" HOME ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		" ROT= ",		" SCALE= ",	" SHLOAD ",	" TRACE ",	" NOTRACE ",	" NORMAL ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		" INVERSE ",	" FLASH ",	" COLOR= ",	" POP ",	" VTAB ",		" HIMEM: ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		" LOMEM: ",		" ONERR ",	" RESUME ",	" RECALL ",	" STORE ",		" SPEED= ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		" LET ",		" GOTO ",	" RUN ",	" IF ",		" RESTORE ",	" & ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		" GOSUB ",		" RETURN ",	" REM ",	" STOP ",	" ON ",			" WAIT ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		" LOAD ",		" SAVE ",	" DEF ",	" POKE ",	" PRINT ",		" CONT ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		" LIST ",		" CLEAR ",	" GET ",	" NEW ",	" TAB( ",		" TO ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		" FN ",			" SPC( ",	"  THEN ",	" AT ",		"  NOT ",		"  STEP ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		" +",			" -",		" *",		"/",		" ^",			"  AND ", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		"  OR ",		" >",		" = ",		" <",		" SGN",			" INT", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		" ABS",			" USR",		" FRE",		" SCRN( ",	" PDL",			" POS", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		" SQR",			" RND",		" LOG",		" EXP",		" COS",			" SIN", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		" TAN",			" ATN",		" PEEK",	" LEN",		" STR$",		" VAL", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		" ASC",			" CHR$",	" LEFT$",	" RIGHT$",	" MID$ " }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+		" END ",		" FOR ",	" NEXT ",	" DATA ",	" INPUT ",		" DEL ",
+		" DIM ",		" READ ",	" GR ",		" TEXT ",	" PR# ",		" IN# ",
+		" CALL ",		" PLOT ",	" HLIN ",	" VLIN ",	" HGR2 ",		" HGR ",
+		" HCOLOR= ",	" HPLOT ",	" DRAW ",	" XDRAW ",	" HTAB ",		" HOME ",
+		" ROT= ",		" SCALE= ",	" SHLOAD ",	" TRACE ",	" NOTRACE ",	" NORMAL ",
+		" INVERSE ",	" FLASH ",	" COLOR= ",	" POP ",	" VTAB ",		" HIMEM: ",
+		" LOMEM: ",		" ONERR ",	" RESUME ",	" RECALL ",	" STORE ",		" SPEED= ",
+		" LET ",		" GOTO ",	" RUN ",	" IF ",		" RESTORE ",	" & ",
+		" GOSUB ",		" RETURN ",	" REM ",	" STOP ",	" ON ",			" WAIT ",
+		" LOAD ",		" SAVE ",	" DEF ",	" POKE ",	" PRINT ",		" CONT ",
+		" LIST ",		" CLEAR ",	" GET ",	" NEW ",	" TAB( ",		" TO ",
+		" FN ",			" SPC( ",	" THEN ",	" AT ",		" NOT ",		" STEP ",
+		" + ",			" - ",		" * ",		" / ",		" ^ ",			" AND ",
+		" OR ",			" > ",		" = ",		" < ",		" SGN",			" INT",
+		" ABS",			" USR",		" FRE",		" SCRN( ",	" PDL",			" POS",
+		" SQR",			" RND",		" LOG",		" EXP",		" COS",			" SIN",
+		" TAN",			" ATN",		" PEEK",	" LEN",		" STR$",		" VAL",
+		" ASC",			" CHR$",	" LEFT$",	" RIGHT$",	" MID$ "
+	};
 		
 	private byte[] fileData;
 	private int offset;
