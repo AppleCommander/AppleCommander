@@ -85,7 +85,7 @@ public class FileUtils {
 	}
 	
 	public void copyFile(DirectoryEntry directory, FileEntryReader source) throws DiskException {
-	    String sourceName = source.getFilename().get();
+	    String sourceName = source.getFilename().orElseThrow();
 	    String sanitizedName = directory.getFormattedDisk().getSuggestedFilename(sourceName);
 	    final Optional<FileEntry> fileEntry = directory.getFiles().stream()
 	        .filter(entry -> entry.getFilename().equals(sanitizedName))

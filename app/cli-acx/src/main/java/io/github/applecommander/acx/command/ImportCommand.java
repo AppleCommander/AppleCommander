@@ -19,18 +19,6 @@
  */
 package io.github.applecommander.acx.command;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.function.Function;
-import java.util.logging.Logger;
-
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
@@ -42,7 +30,6 @@ import com.webcodepro.applecommander.util.readerwriter.OverrideFileEntryReader;
 import com.webcodepro.shrinkit.HeaderBlock;
 import com.webcodepro.shrinkit.NuFileArchive;
 import com.webcodepro.shrinkit.ThreadRecord;
-
 import io.github.applecommander.acx.base.ReadWriteDiskCommandOptions;
 import io.github.applecommander.acx.converter.IntegerTypeConverter;
 import io.github.applecommander.acx.fileutil.FileUtils;
@@ -59,6 +46,13 @@ import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.function.Function;
+import java.util.logging.Logger;
 
 @Command(name = "import", description = "Import file onto disk.",
          aliases = { "put" })
@@ -116,7 +110,7 @@ public class ImportCommand extends ReadWriteDiskCommandOptions {
                     new IOException(String.format("Directory '%s' not found.", dir)));
             }
         }
-        
+
         FileUtils copier = new FileUtils(overwriteFlag);
         FileEntryReader inputReader = inputData.get();
         for (FileEntryReader processorReader : processor.apply(inputReader)) {
@@ -161,7 +155,7 @@ public class ImportCommand extends ReadWriteDiskCommandOptions {
                 byte[] data = Files.readAllBytes(path);
                 fileEntryReader = OverrideFileEntryReader.builder()
                         .fileData(data)
-                        .filename(filename)
+                        .filename(path.getFileName().toString())
                         .prodosFiletype("BIN")
                         .build();
             } catch (IOException e) {
@@ -365,7 +359,7 @@ public class ImportCommand extends ReadWriteDiskCommandOptions {
     }
     
     public static class Overrides {
-        @Option(names = { "-t", "--type" }, description = "ProDOS File type.  "
+        @Option(names = { "-t", "--type" }, description = "ProDOS or native file type.  "
                 + "(Each filesystem translates between it's native types and ProDOS.)")
         private Optional<String> fileType;
         

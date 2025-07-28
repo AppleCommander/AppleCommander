@@ -577,10 +577,10 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * many archiving tools.
 	 */
 	@Override
-	public String fromProdosFiletype(String prodosFiletype) {
+	public String toNativeFiletype(String prodosFiletype) {
 		return FILE_TYPE_MAPPING.entrySet()
 				.stream()
-				.filter(e -> e.getValue().equals(prodosFiletype))
+				.filter(e -> prodosFiletype.equalsIgnoreCase(e.getKey()) || prodosFiletype.equalsIgnoreCase(e.getValue()))
 				.map(Map.Entry::getKey)
 				.findFirst()
 				.orElse("B");

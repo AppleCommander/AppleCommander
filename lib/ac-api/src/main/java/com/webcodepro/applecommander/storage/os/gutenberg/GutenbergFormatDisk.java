@@ -708,7 +708,7 @@ public class GutenbergFormatDisk extends FormattedDisk {
 	 * many archiving tools.
 	 */
 	@Override
-	public String fromProdosFiletype(String prodosFiletype) {
+	public String toNativeFiletype(String prodosFiletype) {
 		return "T";
 	}
 	/**

@@ -788,7 +788,11 @@ public class DosFormatDisk extends FormattedDisk {
 	 * many archiving tools.
 	 */
 	@Override
-	public String fromProdosFiletype(String prodosFiletype) {
+	public String toNativeFiletype(String prodosFiletype) {
+		if (FILE_TYPE_MAPPING.containsKey(prodosFiletype)) {
+			// This is really a DOS file type. Pass it back.
+			return prodosFiletype;
+		}
 		return FILE_TYPE_MAPPING.entrySet()
 				.stream()
 				.filter(e -> e.getValue().equals(prodosFiletype))
