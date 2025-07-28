@@ -42,7 +42,7 @@ public class HexDumpFileFilter implements FileFilter {
 	 * @see com.webcodepro.applecommander.storage.FileFilter#filter(FileEntry)
 	 */
 	public byte[] filter(FileEntry fileEntry) {
-		return AppleUtil.getHexDump(fileEntry.getFileData()).getBytes();
+		return AppleUtil.getHexDump(fileEntry.getAddress(), fileEntry.getFileData()).getBytes();
 	}
 
 	/**
