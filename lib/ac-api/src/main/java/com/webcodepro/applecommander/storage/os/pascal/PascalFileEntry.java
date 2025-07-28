@@ -412,9 +412,7 @@ public class PascalFileEntry implements FileEntry {
 						storageError(textBundle.get("PascalFileEntry.LineLengthError"));
 					}
 				}
-				System.out.printf("OFFSET=%d, SIZE=%d\n", offset, size);
 				System.arraycopy(text, offset, chunk, 0, size);
-				System.out.println("DONE");
 				out.write(chunk);
 				offset += size;
 			}
