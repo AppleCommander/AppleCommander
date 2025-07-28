@@ -402,8 +402,8 @@ public class PascalFileEntry implements FileEntry {
 				Arrays.fill(chunk, (byte) 0);
 				int size = 0;
 				for (int i=0; i<Math.min(chunk.length,text.length-offset); i++) {
-					if (text[offset+i] == 13 && size < i) {
-						size = i;
+					if (text[offset+i] == 13) {
+						size = i+1;
 					}
 				}
 				if (size == 0) {
