@@ -22,6 +22,8 @@
 package com.webcodepro.applecommander.storage.os.pascal;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -385,19 +387,41 @@ public class PascalFileEntry implements FileEntry {
 	}
 
 	/**
-	 * Find index of last CR < 1023 bytes from offset.
-	 * @author John B. Matthews
+	 * Convert the given text file to conform to the expected Pascal text file format.
+	 * <p/>
+	 * Initial header page of 1024 bytes (left as zeros), followed by 1024-byte chunks
+	 * that terminate on CR, with all remaining bytes being zero.
 	 */
-	private int findEOL(byte[] data, int offset) throws DiskFullException  {
-		int i = offset + 1022;
-		while (i > offset) {
-			if (data[i] == 13) {
-				return i;
+	private byte[] convertTextToBlocks(byte[] text) throws DiskFullException {
+		try {
+			byte[] chunk = new byte[1024];
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			out.write(chunk);
+			int offset = 0;
+			while (offset < text.length) {
+				Arrays.fill(chunk, (byte) 0);
+				int size = 0;
+				for (int i=0; i<Math.min(chunk.length,text.length-offset); i++) {
+					if (text[offset+i] == 13 && size < i) {
+						size = i;
+					}
+				}
+				if (size == 0) {
+					size = text.length-offset;
+					if (size >= 1024) {
+						storageError(textBundle.get("PascalFileEntry.LineLengthError"));
+					}
+				}
+				System.out.printf("OFFSET=%d, SIZE=%d\n", offset, size);
+				System.arraycopy(text, offset, chunk, 0, size);
+				System.out.println("DONE");
+				out.write(chunk);
+				offset += size;
 			}
-			i--;
+			return out.toByteArray();
+		} catch (IOException ex) {
+			throw new UncheckedIOException(ex);
 		}
-		storageError(textBundle.get("PascalFileEntry.LineLengthError")); //$NON-NLS-1$
-		return 0;
 	}
 
 	/**
@@ -407,76 +431,49 @@ public class PascalFileEntry implements FileEntry {
 	 * @see PascalFormatDisk#createFile
 	 */
 	public void setFileData(byte[] data) throws DiskFullException {
-		int first = getFirstBlock();
-		int last = getLastBlock();
+		// Prepare a text file for writing since it has a special format
 		if (fileEntry[4] == 3) { // text
 			data = filterText(data);
-			byte[] buf1 = new byte[512];
-			byte[] buf2 = new byte[512];
-			int offset = 0;
-			int pages = 0;
-			disk.writeBlock(first,  buf1);  // First two blocks (first page) is ignored by Pascal text
-			disk.writeBlock(first+1,buf2);  // ...so write a page of zeroes
-			pages++;
-			while (offset + 1023 < data.length) {  // We have at least one full page of data (1024 bytes)
-				if ((pages * 2) > (last - first - 2)) {
-					storageError(textBundle.get("PascalFileEntry.NotEnoughRoom")); //$NON-NLS-1$
-				}
-				int crPtr = findEOL(data, offset); // Copy to last CR & we'll zero-pad to end of page
-				System.arraycopy(data, offset, buf1, 0, 512);
-				System.arraycopy(data, offset+512, buf2, 0, crPtr - offset + 1 - 512);
-				disk.writeBlock(first + (pages * 2), buf1);
-				disk.writeBlock(first + (pages * 2) + 1, buf2);
-				pages++;
-				Arrays.fill(buf1, (byte) 0);
-				Arrays.fill(buf2, (byte) 0);
-				offset = crPtr + 1;
-			}
-			if (offset < data.length) {  // We have less than a full page of data left over
-				int len1 = data.length - offset;
-				int len2 = 0;
-				if (len1 > 512) {  // That final page spans both blocks
-					len2 = len1 - 512;  // Second block gets the remainder of the partial page length minus 512 bytes 
-					len1 = 512;  // The first block will write the first 512 bytes
-				}
-				System.arraycopy(data, offset, buf1, 0, len1);
-				disk.writeBlock(first + (pages * 2), buf1);  // Copy out the first block
-				if (len2 > 0) { 
-					System.arraycopy(data, offset+512, buf2, 0, len2);
-				}
-				len2 = 512;	// TEXT files always pad out to 1KB
-				disk.writeBlock(first + (pages * 2) + 1, buf2);  // Copy out second block
-				setBytesUsedInLastBlock(len2);  // The second block holds the last byte
-				setLastBlock(first + (pages * 2) + 2);  // Final block +1... i.e. pages++
-			} else {  // The last page was completely full, so the last byte used in the last block is 512
-				setLastBlock(first + pages * 2);
-				setBytesUsedInLastBlock(512);
-			}
+			data = convertTextToBlocks(data);
+		}
 
-		} else { // data or code
-			if (data.length > (last - first) * 512) {
+		// Write file data
+		int first = getFirstBlock();
+		int last = getLastBlock();
+		int requiredBlocks = (data.length + 511) / 512;
+		if (data.length > (last - first) * 512) {
+			// we won't fit into the existing allocated space, time to recompute
+			first = 0;
+			for (PascalFileEntry fe : disk.getDirectory()) {
+				if (fe.getFirstBlock() != this.getFirstBlock()) {    // ignore this file
+					first = Math.max(first, fe.getLastBlock());
+				}
+			}
+			last = first+requiredBlocks;
+			if (first == 0 || last >= disk.getBlocksOnDisk()) {
+				// this throws an exception
 				storageError(textBundle.get("PascalFileEntry.NotEnoughRoom")); //$NON-NLS-1$
 			}
-			byte[] buf = new byte[512];
-			int blocks = data.length / 512;
-			int bytes = data.length % 512;
-			for (int i = 0; i < blocks; i++) {
-				System.arraycopy(data, i * 512, buf, 0, 512);
-				disk.writeBlock(first + i, buf);
-			}
-			if (bytes > 0) {
-				Arrays.fill(buf, (byte) 0);
-				System.arraycopy(data, blocks * 512, buf, 0, bytes);
-				disk.writeBlock(first + blocks, buf);
-				setLastBlock(first + blocks + 1);
-				setBytesUsedInLastBlock(bytes);
-			} else {
-				setLastBlock(first + blocks);
-				setBytesUsedInLastBlock(512);
-			}
 		}
-		// update this directory entry
-		writeFileEntry();
+		byte[] buf = new byte[512];
+		int blocks = data.length / 512;
+		int bytes = data.length % 512;
+		for (int i = 0; i < blocks; i++) {
+			System.arraycopy(data, i * 512, buf, 0, 512);
+			disk.writeBlock(first + i, buf);
+		}
+		if (bytes > 0) {
+			Arrays.fill(buf, (byte) 0);
+			System.arraycopy(data, blocks * 512, buf, 0, bytes);
+			disk.writeBlock(first + blocks, buf);
+			setFirstBlock(first);
+			setLastBlock(first + blocks + 1);
+			setBytesUsedInLastBlock(bytes);
+		} else {
+			setFirstBlock(first);
+			setLastBlock(first + blocks);
+			setBytesUsedInLastBlock(512);
+		}
 	}
 
 	/**
