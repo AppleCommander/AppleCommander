@@ -152,7 +152,8 @@ public class PascalFormatDisk extends FormattedDisk {
 		for (int i=0; i<count; i++) {
 			byte[] entry = new byte[entrySize];
 			System.arraycopy(directory, offset, entry, 0, entry.length);
-			list.add(new PascalFileEntry(entry, this));
+			// we skipped the "volume" entry, so the actual index value is +1:
+			list.add(new PascalFileEntry(entry, i+1, this));
 			offset+= entrySize;
 		}
 		return list;
@@ -169,7 +170,7 @@ public class PascalFormatDisk extends FormattedDisk {
 		for (int i = 0; i <= count; i++) {
 			byte[] entry = new byte[ENTRY_SIZE];
 			System.arraycopy(directory, offset, entry, 0, entry.length);
-			list.add(new PascalFileEntry(entry, this));
+			list.add(new PascalFileEntry(entry, i,this));
 			offset += ENTRY_SIZE;
 		}
 		return list;
@@ -219,7 +220,7 @@ public class PascalFormatDisk extends FormattedDisk {
 			volEntry.setFileCount(count);
 			dir.set(0, volEntry);
 			// add new entry to list
-			dir.add(index, new PascalFileEntry(new byte[ENTRY_SIZE], this));
+			dir.add(index, new PascalFileEntry(new byte[ENTRY_SIZE], index, this));
 			PascalFileEntry entry = (PascalFileEntry) dir.get(index);
 			// fill in plausible values; will rely index, first and last
 			first = ((PascalFileEntry) dir.get(index - 1)).getLastBlock();
@@ -229,10 +230,7 @@ public class PascalFormatDisk extends FormattedDisk {
 			entry.setFilename("x"); //$NON-NLS-1$
 			entry.setBytesUsedInLastBlock(512);
 			entry.setModificationDate(new Date());
-			entry.setEntryIndex(index);
-			dir.set(index, entry);
-			// write it back to disk
-			putDirectory(dir);
+			// Note that each "set" does an implicit write
 			return entry;
 		} else {
 			throw new DiskFullException(

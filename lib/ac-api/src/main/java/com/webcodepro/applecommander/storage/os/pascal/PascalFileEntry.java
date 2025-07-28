@@ -59,10 +59,33 @@ public class PascalFileEntry implements FileEntry {
 	/**
 	 * Constructor for PascalFileEntry.
 	 */
-	public PascalFileEntry(byte[] fileEntry, PascalFormatDisk disk) {
+	public PascalFileEntry(byte[] fileEntry, int index, PascalFormatDisk disk) {
 		super();
 		this.fileEntry = fileEntry;
+		this.index = index;
 		this.disk = disk;
+	}
+
+	/**
+	 * Write the fileEntry data to the disk image.
+	 */
+	protected void writeFileEntry() {
+		if (this.deleted) {
+			return;		// prevents trying to save a deleted file (not a reality in Pascal filesystem)
+		}
+		List<PascalFileEntry> dir = disk.getDirectory();
+		if (this.index < dir.size()) {
+			dir.set(this.index, this);
+		}
+		else if (this.index == dir.size()) {
+			dir.add(this.index, this);
+		}
+		else {
+			throw new RuntimeException(textBundle.format("PascalFormatDisk.UnexpectedDirectoryIndex", this.index, dir.size()));
+		}
+		// Since every "set" triggers a write, the file count tends to get whacked; this makes it sane.
+		dir.get(0).setFileCount(dir.size()-1);
+		disk.putDirectory(dir);
 	}
 
 	/**
@@ -77,6 +100,7 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	public void setFirstBlock(int first) {
 		AppleUtil.setWordValue(fileEntry, 0, first);
+		writeFileEntry();
 	}
 
 	/**
@@ -91,6 +115,7 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	public void setLastBlock(int last) {
 		AppleUtil.setWordValue(fileEntry, 2, last);
+		writeFileEntry();
 	}
 
 	/**
@@ -105,6 +130,7 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	public void setFilename(String filename) {
 		AppleUtil.setPascalString(fileEntry, 6, filename.toUpperCase(), 15);
+		writeFileEntry();
 	}
 
 	/**
@@ -147,6 +173,7 @@ public class PascalFileEntry implements FileEntry {
 		} else {
 			AppleUtil.setWordValue(fileEntry, 4, 0);
 		}
+		writeFileEntry();
 	}
 
 	/**
@@ -175,6 +202,7 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	public void setBytesUsedInLastBlock(int value) {
 		AppleUtil.setWordValue(fileEntry, 22, value);
+		writeFileEntry();
 	}
 
 	/**
@@ -235,7 +263,7 @@ public class PascalFileEntry implements FileEntry {
 		if (index != 0) {
 			dir.remove(index);
 			PascalFileEntry volEntry = (PascalFileEntry) dir.get(0);
-			volEntry.setFileCount(count - 2); // inlcudes the volume entry
+			volEntry.setFileCount(count - 2); // includes the volume entry
 			dir.set(0, volEntry);
 			disk.putDirectory(dir);
 			deleted = true;
@@ -254,6 +282,7 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	public void setModificationDate(Date date) {
 		AppleUtil.setPascalDate(fileEntry, 24, date);
+		writeFileEntry();
 	}
 
 	/**
@@ -375,7 +404,6 @@ public class PascalFileEntry implements FileEntry {
 	 * Set file data for this file entry. Because the directory entry may
 	 * have been changed, use this.index to determine which entry to update.
 	 * author John B. Matthews.
-	 * @see #setEntryIndex
 	 * @see PascalFormatDisk#createFile
 	 */
 	public void setFileData(byte[] data) throws DiskFullException {
@@ -448,11 +476,7 @@ public class PascalFileEntry implements FileEntry {
 			}
 		}
 		// update this directory entry
-		if (this.index > 0) {
-			List<PascalFileEntry> dir = disk.getDirectory();
-			dir.set(this.index, this);
-			disk.putDirectory(dir);
-		}
+		writeFileEntry();
 	}
 
 	/**
@@ -520,16 +544,6 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	public boolean canCompile() {
 		return false;
-	}
-
-	/**
-	 * Remember the index of a newly created file entry.
-	 * Required to update the entry after setFileData,
-	 * which may change any or all of the new entry's fields.
-	 * author John B. Matthews
-	 */
-	public void setEntryIndex(int index) {
-		this.index = index;
 	}
 
 	/**
