@@ -52,7 +52,7 @@ public class DosFileEntryReaderWriter implements FileEntryReader, FileEntryWrite
     }
     @Override
     public void setProdosFiletype(String filetype) {
-        String dosFiletype = fileEntry.getFormattedDisk().fromProdosFiletype(filetype);
+        String dosFiletype = fileEntry.getFormattedDisk().toNativeFiletype(filetype);
         fileEntry.setFiletype(dosFiletype);
     }
     

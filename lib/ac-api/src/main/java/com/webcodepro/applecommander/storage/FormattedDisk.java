@@ -415,9 +415,11 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 
 	/**
 	 * Provides conversation from a given ProDOS file type since as it is common across
-	 * many archiving tools.
+	 * many archiving tools. This should also allow "native" filetypes to just pass-through.
+	 * (For example, a "B" in a DOS disk should just return a "B" while a "BAS" would be
+	 * transformed to a "B" filetype.)
 	 */
-	public abstract String fromProdosFiletype(String prodosFiletype);
+	public abstract String toNativeFiletype(String prodosFiletype);
 	/**
 	 * Provides conversation to a given ProDOS file type since as it is common across
 	 * many archiving tools.

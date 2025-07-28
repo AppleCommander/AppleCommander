@@ -69,11 +69,7 @@ public class PascalFormatDisk extends FormattedDisk {
 			DATAFILE, "BIN",
 			"GRAF", "BIN",
 			"FOTO", "BIN",
-			"securedir", "BIN",
-
-			// Prodos => Pascal
-			"BIN", DATAFILE,
-			"TXT", TEXTFILE
+			"securedir", "BIN"
 		);
 
 	/**
@@ -689,8 +685,17 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * many archiving tools.
 	 */
 	@Override
-	public String fromProdosFiletype(String prodosFiletype) {
-		return FILE_TYPE_MAP.getOrDefault(prodosFiletype, DATAFILE);
+	public String toNativeFiletype(String prodosFiletype) {
+		// Note: Can't use the map due to the 1:N relationship, so this is somewhat manual.
+		for (String pascalFiletype : FILE_TYPES) {
+			if (prodosFiletype.equalsIgnoreCase(pascalFiletype)) {
+				return pascalFiletype;
+			}
+		}
+		if ("TXT".equalsIgnoreCase(prodosFiletype)) {
+			return TEXTFILE;
+		}
+		return DATAFILE;
 	}
 	/**
 	 * Provides conversation to a given ProDOS file type since as it is common across

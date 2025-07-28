@@ -50,7 +50,7 @@ public class PascalFileEntryReaderWriter implements FileEntryReader, FileEntryWr
     }
     @Override
     public void setProdosFiletype(String filetype) {
-        fileEntry.setFiletype(fileEntry.getFormattedDisk().fromProdosFiletype(filetype));
+        fileEntry.setFiletype(fileEntry.getFormattedDisk().toNativeFiletype(filetype));
     }
     
     @Override

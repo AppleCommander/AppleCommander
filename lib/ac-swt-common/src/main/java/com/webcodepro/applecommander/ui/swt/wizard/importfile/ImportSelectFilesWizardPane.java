@@ -211,7 +211,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 					AppleSingle as = AppleSingle.read(data);
 					suggestedFilename = Optional.ofNullable(as.getRealName())
 							                    .orElse(suggestedFilename);
-					suggestedFiletype = wizard.getDisk().fromProdosFiletype(
+					suggestedFiletype = wizard.getDisk().toNativeFiletype(
 							ProdosFormatDisk.getFiletype(as.getProdosFileInfo().getFileType()));
 					suggestedAddress = Optional.ofNullable(as.getProdosFileInfo())
 											   .map(ProdosFileInfo::getAuxType)
