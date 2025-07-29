@@ -82,9 +82,69 @@ public class ApplesoftTokenizer {
 	 * Indicates if there are more tokens in the Applesoft program.
 	 */
 	public boolean hasMoreTokens() {
-		return (offset < fileData.length);
+		return (offset < fileData.length) && nextAddress != 0;
 	}
-	
+
+	/**
+	 * Indicates where the tokenizer is in the file.
+	 * This can be used for those BASIC programs that nest multiple programs
+	 * within the file.
+	 */
+	public int getOffset() {
+		return offset;
+	}
+
+	/**
+	 * Set the offset in the file buffer. This allows the tokenizer to skip
+	 * over data (likely binary data and/or to another BASIC program).
+	 */
+	public void setOffset(int offset) {
+		this.offset = offset;
+		this.nextAddress = -1;
+	}
+
+	/**
+	 * Test this section of the file to see if it has the BASIC linked list.
+	 */
+	public boolean testValidity(int pos) {
+		// track line numbers; try to ensure we are ascending and no duplicates
+		int lastLineNumber = -1;
+		int lastAddr = 0;
+		while (pos < fileData.length) {
+			int nextAddr = AppleUtil.getWordValue(fileData, pos);
+			// if address is 0, this might be the end
+			if (nextAddr == 0) {
+				// we need to have seen one line (lastAddr != 0)
+				// and should be close to the end of the file
+				return lastAddr != 0 && pos >= fileData.length-5;
+			}
+			// Address must ascend
+			if (nextAddr <= lastAddr) {
+				return false;
+			}
+			lastAddr = nextAddr;
+
+			int nextLine = AppleUtil.getWordValue(fileData, pos+2);
+			// We assume line numbers must ascend
+			if (nextLine <= lastLineNumber) {
+				return false;
+			}
+			lastLineNumber = nextLine;
+
+			// scan to end of line -- ends in a $00
+			int lineLength = 0;
+			pos += 4;
+			while (pos < fileData.length && fileData[pos++] != 0) {
+				lineLength++;
+			}
+			// Ensure we have a likely valid line
+			if (lineLength == 0 || lineLength > 250) {
+				return false;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Answer with the next token in the Applesoft program.  This may be 
 	 * code, string pieces, line numbers.
@@ -96,7 +156,7 @@ public class ApplesoftTokenizer {
 				offset+= 2;
 				if (nextAddress == 0) {
 					// At end of file, ensure we don't try to continue processing...
-					offset = fileData.length;
+					//offset = fileData.length;
 					return null;
 				}
 				int lineNumber = AppleUtil.getWordValue(fileData, offset);

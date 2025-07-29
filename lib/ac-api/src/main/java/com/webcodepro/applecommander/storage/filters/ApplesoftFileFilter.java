@@ -19,13 +19,14 @@
  */
 package com.webcodepro.applecommander.storage.filters;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
-
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
+import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.ApplesoftToken;
 import com.webcodepro.applecommander.util.ApplesoftTokenizer;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 
 /**
  * Filter the given file as an Applesoft file.
@@ -49,6 +50,36 @@ public class ApplesoftFileFilter implements FileFilter {
 		ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
 		PrintWriter printWriter = new PrintWriter(byteArray, true);
 		ApplesoftTokenizer tokenizer = new ApplesoftTokenizer(fileEntry);
+		generateProgramCode(tokenizer, printWriter);
+		// should this be a while?
+		int lastOffset = tokenizer.getOffset();
+		if (tokenizer.getOffset() < fileEntry.getSize()) {
+			for (int n = tokenizer.getOffset(); n < fileEntry.getSize(); n++) {
+				if (tokenizer.testValidity(n)) {
+					if (n - lastOffset > 10) {
+						byte[] hexData = new byte[n - lastOffset];
+						System.arraycopy(fileEntry.getFileData(), lastOffset, hexData, 0, hexData.length);
+						printWriter.println();
+						printWriter.println(AppleUtil.getHexDump(hexData));
+					}
+					printWriter.println();
+					tokenizer.setOffset(n);
+					generateProgramCode(tokenizer, printWriter);
+					lastOffset = n;
+				}
+			}
+			if (fileEntry.getSize() - lastOffset > 10) {
+				byte[] hexData = new byte[fileEntry.getSize() - lastOffset];
+				System.arraycopy(fileEntry.getFileData(), lastOffset, hexData, 0, hexData.length);
+				printWriter.println();
+				printWriter.println(AppleUtil.getHexDump(hexData));
+			}
+		}
+		printWriter.close();
+		return byteArray.toByteArray();
+	}
+
+	protected void generateProgramCode(ApplesoftTokenizer tokenizer, PrintWriter printWriter) {
 		boolean firstLine = true;
 		while (tokenizer.hasMoreTokens()) {
 			ApplesoftToken token = tokenizer.getNextToken();
@@ -68,8 +99,7 @@ public class ApplesoftFileFilter implements FileFilter {
 				printWriter.print(token.getStringValue());
 			}
 		}
-		printWriter.close();
-		return byteArray.toByteArray();
+		printWriter.println();
 	}
 
 	/**
