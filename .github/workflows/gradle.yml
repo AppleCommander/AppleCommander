@@ -10,6 +10,8 @@ name: Build AppleCommander
 on:
   push:
     branches: [ "main" ]
+    tags:
+      - 1.*
   pull_request:
     branches: [ "main" ]
 
