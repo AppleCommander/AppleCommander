@@ -137,7 +137,7 @@ public class SwtAppleCommander implements Listener {
 				}
 			}
 		}
-		shell = new Shell(display, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.TITLE);
+		shell = new Shell(display, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.TITLE | SWT.RESIZE);
 		shell.setText(textBundle.get("SwtAppleCommander.AppleCommander")); //$NON-NLS-1$
 		shell.setImage(imageManager.get(ImageManager.ICON_DISK));
 		shell.addDisposeListener(new DisposeListener() {
