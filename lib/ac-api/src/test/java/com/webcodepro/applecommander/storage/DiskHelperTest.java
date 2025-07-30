@@ -50,6 +50,7 @@ public class DiskHelperTest {
 		assertTextFile(disks[0], "APPLE PROMS"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "BOOT13"); //$NON-NLS-1$
 		assertEquals(DOS33_FORMAT, disks[0].getFormat());
+		assertCanReadFiles(disks[0]);
 	}
 
 	@Test
@@ -68,6 +69,7 @@ public class DiskHelperTest {
 		assertApplesoftFile(disks[0], "COPY.ME"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "SETTINGS"); //$NON-NLS-1$
 		assertDisassemblyFile(disks[0], "PRODOS"); //$NON-NLS-1$
+		assertCanReadFiles(disks[0]);
 	}
 	
 	@Test
@@ -94,6 +96,7 @@ public class DiskHelperTest {
 		assertBinaryFile(disks[0], "TWN31"); //$NON-NLS-1$
 		assertTextFile(disks[0], "ITEM"); //$NON-NLS-1$
 		assertGraphicsFile(disks[0], "ICE DRAGON"); //$NON-NLS-1$
+		assertCanReadFiles(disks[0]);
 	}
 
 	@Test
@@ -109,6 +112,7 @@ public class DiskHelperTest {
 		assertBinaryFile(disks[0], "TWN21"); //$NON-NLS-1$
 		assertTextFile(disks[0], "ITEM"); //$NON-NLS-1$
 		assertGraphicsFile(disks[0], "ICE DRAGON"); //$NON-NLS-1$
+		assertCanReadFiles(disks[0]);
 	}
 
 	@Test
@@ -131,6 +135,7 @@ public class DiskHelperTest {
 		FormattedDisk[] disks = showDirectory(config.getDiskDir() 
 				+ "/CavernsOfFreitag.dsk"); //$NON-NLS-1$
 		assertGraphicsFile(disks[0], "TITLE.PIC"); //$NON-NLS-1$
+		assertCanReadFiles(disks[0]);
 	}
 	
 	@Test
@@ -153,6 +158,7 @@ public class DiskHelperTest {
 		assertIntegerFile(disks[0], "COPY"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "BOOT13"); //$NON-NLS-1$
 		assertEquals(DOS33_FORMAT, disks[0].getFormat());
+		assertCanReadFiles(disks[0]);
 	}
 
 	@Test
@@ -163,6 +169,7 @@ public class DiskHelperTest {
 		assertIntegerFile(disks[0], "COPY"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "BOOT13"); //$NON-NLS-1$
 		assertEquals(DOS33_FORMAT, disks[0].getFormat());
+		assertCanReadFiles(disks[0]);
 	}
 
 	@Test
@@ -172,6 +179,7 @@ public class DiskHelperTest {
 		assertIntegerFile(disks[0], "HELLO"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "UPDATE 3.2"); //$NON-NLS-1$
 		assertEquals(DOS32_FORMAT, disks[0].getFormat());
+		assertCanReadFiles(disks[0]);
 	}
 
 	@Test
@@ -182,6 +190,7 @@ public class DiskHelperTest {
 		assertBinaryFile(disks[0], "UPDATE 3.2.1");
 		assertTextFile(disks[0], "APPLE PROMS");
 		assertEquals(DOS32_FORMAT, disks[0].getFormat());
+		assertCanReadFiles(disks[0]);
 	}
 
 	protected FormattedDisk[] showDirectory(String imageName) throws IOException, DiskException {
@@ -299,5 +308,21 @@ public class DiskHelperTest {
 		assertNotNull(filename + " test: File not found", disk); //$NON-NLS-1$
 		assertTrue("GraphicsFileFilter was not chosen",  //$NON-NLS-1$
 			fileEntry.getSuggestedFilter() instanceof GraphicsFileFilter);
+	}
+
+	protected void assertCanReadFiles(DirectoryEntry dir) throws DiskException {
+		for (FileEntry file : dir.getFiles()) {
+			if (file instanceof DirectoryEntry) {
+				assertCanReadFiles((DirectoryEntry) file);
+			}
+			else {
+				try {
+					byte[] data = file.getFileData();
+					assertNotNull(data);
+				} catch (Exception e) {
+					throw new AssertionError(String.format("Unable to read file '%s'", file.getFilename()), e);
+				}
+			}
+		}
 	}
 }

@@ -300,8 +300,7 @@ public class WozOrder extends ImageOrder {
         byte[] details = readBytes(start + 6646, 10);
         int bytesUsed = AppleUtil.getWordValue(details, 0);
         int bitCount = AppleUtil.getWordValue(details, 2);
-        int end = start + bytesUsed;
-        byte[] rawData = readBytes(start, end);
+        byte[] rawData = readBytes(start, bytesUsed);
         return transformBitstream(rawData, bitCount);
     }
 

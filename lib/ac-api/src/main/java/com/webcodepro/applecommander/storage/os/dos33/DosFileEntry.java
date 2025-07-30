@@ -335,6 +335,9 @@ public class DosFileEntry implements FileEntry {
 	 * and length into Applesoft files.
 	 */
 	public byte[] getFileData() {
+		if (isDeleted()) {
+			return new byte[0];
+		}
 		byte[] rawdata = disk.getFileData(this);
 		byte[] filedata;
 		if (isBinaryFile()) {
