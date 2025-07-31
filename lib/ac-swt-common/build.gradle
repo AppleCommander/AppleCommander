@@ -2,8 +2,10 @@ plugins {
     id 'java-library'
 }
 
-sourceCompatibility = 11
-targetCompatibility = 11
+java {
+    sourceCompatibility = 11
+    targetCompatibility = 11
+}
 
 repositories {
     mavenCentral()
@@ -58,7 +60,7 @@ test {
     }
 }
 
-tasks.withType(Jar) {
+jar {
     archiveBaseName = 'AppleCommander'
     archiveAppendix = 'swt-common'
 }

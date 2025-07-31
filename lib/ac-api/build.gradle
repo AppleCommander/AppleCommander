@@ -7,8 +7,10 @@ plugins {
 ext.isSnapshotVersion = version.endsWith("SNAPSHOT")
 ext.isReleaseVersion = !ext.isSnapshotVersion
 
-sourceCompatibility = 11
-targetCompatibility = 11
+java {
+    sourceCompatibility = 11
+    targetCompatibility = 11
+}
 
 repositories {
     mavenCentral()
@@ -24,7 +26,7 @@ dependencies {
     testImplementation "junit:junit:$junitVersion"
 }
 
-tasks.withType(Jar) {
+jar {
     archiveBaseName = 'AppleCommander'
     archiveAppendix = 'api'
     manifest {
@@ -40,62 +42,62 @@ javadoc {
     options.addStringOption('Xdoclint:none', '-quiet')
 }
 
-task javadocJar(type: Jar) {
-    classifier = 'javadoc'
+tasks.register('javadocJar', Jar) {
+    archiveClassifier = 'javadoc'
     from javadoc
 }
 
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
+tasks.register('sourcesJar', Jar) {
+    archiveClassifier = 'sources'
     from sourceSets.main.allSource
 }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            artifact sourcesJar
-            artifact javadocJar
-            pom {
-                groupId = "net.sf.applecommander"
-                artifactId = "AppleCommander"
-                name = 'AppleCommander'
-                description = 'AppleCommander is a general utility for Apple II disk images.'
-                url = 'https://applecommander.github.io/'
-                licenses {
-                    license {
-                        name = 'The GNU General Public License (GPL) Version 2, June 1991'
-                        url = 'https://www.gnu.org/licenses/gpl-2.0.html'
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'robgreene'
-                        name = 'Rob Greene'
-                        email = 'robgreene@gmail.com'
-                    }
-                }
-                scm {
-                    connection = 'scm:git:https://github.com/AppleCommander/AppleCommander.git'
-                    developerConnection = 'scm:git:git@github.com:AppleCommander/AppleCommander.git'
-                    url = 'https://github.com/AppleCommander/AppleCommander'
-                }
-            }
-            repositories {
-                maven {
-                    def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-                    def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
-                    url = isSnapshotVersion ? snapshotsRepoUrl : releasesRepoUrl
-                    credentials {
-                        username = findProperty('ossrhUsername')
-                        password = findProperty('ossrhPassword')
-                    }
-                }
-            }
-        }
-    }
-}
-
-signing {
-    sign publishing.publications.mavenJava
-}
+//publishing {
+//    publications {
+//        mavenJava(MavenPublication) {
+//            from components.java
+//            artifact sourcesJar
+//            artifact javadocJar
+//            pom {
+//                groupId = "net.sf.applecommander"
+//                artifactId = "AppleCommander"
+//                name = 'AppleCommander'
+//                description = 'AppleCommander is a general utility for Apple II disk images.'
+//                url = 'https://applecommander.github.io/'
+//                licenses {
+//                    license {
+//                        name = 'The GNU General Public License (GPL) Version 2, June 1991'
+//                        url = 'https://www.gnu.org/licenses/gpl-2.0.html'
+//                    }
+//                }
+//                developers {
+//                    developer {
+//                        id = 'robgreene'
+//                        name = 'Rob Greene'
+//                        email = 'robgreene@gmail.com'
+//                    }
+//                }
+//                scm {
+//                    connection = 'scm:git:https://github.com/AppleCommander/AppleCommander.git'
+//                    developerConnection = 'scm:git:git@github.com:AppleCommander/AppleCommander.git'
+//                    url = 'https://github.com/AppleCommander/AppleCommander'
+//                }
+//            }
+//            repositories {
+//                maven {
+//                    def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+//                    def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+//                    url = isSnapshotVersion ? snapshotsRepoUrl : releasesRepoUrl
+//                    credentials {
+//                        username = findProperty('ossrhUsername')
+//                        password = findProperty('ossrhPassword')
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+//
+//signing {
+//    sign publishing.publications.mavenJava
+//}

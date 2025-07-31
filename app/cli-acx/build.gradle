@@ -4,8 +4,10 @@ plugins {
     id 'application'
 }
 
-sourceCompatibility = 11
-targetCompatibility = 11
+java {
+    sourceCompatibility = 11
+    targetCompatibility = 11
+}
 
 repositories {
     mavenCentral()
