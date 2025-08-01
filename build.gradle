@@ -9,7 +9,7 @@ ext {
     piSwtVersion = "3.8.2"
     junitVersion = "4.13.1"
     antVersion = "1.9.16"
-    commonsLang3Version = "3.7"
+    commonsLang3Version = "3.18.0"
     commonsCsvVersion = "1.8"
     gsonVersion = "2.8.9"
     picocliVersion = "4.6.2"
