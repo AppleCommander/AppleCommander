@@ -1,0 +1,18 @@
+// Shared settings across all build subprojects
+
+ext {
+    // Dependency versions
+    shkVersion = "1.2.2"
+    asVersion = "1.2.2"
+    btVersion = "0.4.0"
+    swtVersion = "3.123.0"
+    piSwtVersion = "3.8.2"
+    junitVersion = "4.13.1"
+    antVersion = "1.9.16"
+    commonsLang3Version = "3.7"
+    commonsCsvVersion = "1.8"
+    gsonVersion = "2.8.9"
+    picocliVersion = "4.6.2"
+    springBoot = "2.7.17"
+    acdasmVersion = "0.5.0"
+}
