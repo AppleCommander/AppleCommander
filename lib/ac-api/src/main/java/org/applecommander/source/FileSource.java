@@ -4,14 +4,19 @@ import org.applecommander.capability.Capability;
 import org.applecommander.util.DataBuffer;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class FileSource implements Source {
     private DataBuffer buffer;
 
-    public FileSource(Path path) throws IOException {
-        this.buffer = DataBuffer.wrap(Files.readAllBytes(path));
+    public FileSource(Path path) {
+        try {
+            this.buffer = DataBuffer.wrap(Files.readAllBytes(path));
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
     }
 
     @Override
