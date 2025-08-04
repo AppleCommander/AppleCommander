@@ -10,7 +10,7 @@ ext {
     junitVersion = "4.13.1"
     antVersion = "1.10.15"
     commonsLang3Version = "3.18.0"
-    commonsCsvVersion = "1.8"
+    commonsCsvVersion = "1.14.1"
     gsonVersion = "2.8.9"
     picocliVersion = "4.7.7"
     springBoot = "3.5.4"
