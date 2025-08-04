@@ -70,7 +70,7 @@ public class Nibble62Disk525Codec implements NibbleDiskCodec {
         // Decode data field
         DataBuffer sectorData = DataBuffer.create(SECTOR_SIZE);
         final int[] reverseValues = { 0x0, 0x2, 0x1, 0x3 };
-        for (int i=0; i<RAW_BUFFER_SIZE; i++) {
+        for (int i=0; i<sectorData.limit(); i++) {
             int b1 = buffer.getUnsignedByte(i);
             int lowerBits = RAW_BUFFER_SIZE - (i % 86) - 1;
             int b2 = buffer.getUnsignedByte(lowerBits);
