@@ -26,6 +26,11 @@ public class FileSource implements Source {
     }
 
     @Override
+    public DataBuffer readAllBytes() {
+        return buffer;
+    }
+
+    @Override
     public DataBuffer readBytes(int offset, int length) {
         return buffer.slice(offset, length);
     }

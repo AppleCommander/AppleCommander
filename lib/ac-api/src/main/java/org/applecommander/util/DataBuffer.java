@@ -12,6 +12,8 @@ import java.nio.ByteOrder;
  * the buffer and generate an error.
  */
 public class DataBuffer {
+    private static final int[] BIT_MASKS = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
+
     private ByteBuffer buffer;
 
     public static DataBuffer wrap(byte[] data) {
@@ -53,6 +55,9 @@ public class DataBuffer {
     public int getUnsignedByte(int index) {
         return Byte.toUnsignedInt(this.buffer.get(index));
     }
+    public int getUnsignedShort(int index) {
+        return Short.toUnsignedInt(this.buffer.getShort(index));
+    }
     public void put(int offset, DataBuffer data) {
         this.buffer.put(offset, data.buffer, 0, data.buffer.limit());
     }
@@ -63,6 +68,12 @@ public class DataBuffer {
         for (int value : values) {
             putByte(offset++, value);
         }
+    }
+    /**
+     * Determine if a specific bit is set.
+     */
+    public boolean isBitSet(int index, int bit) {
+        return (getUnsignedByte(index) & BIT_MASKS[bit]) != 0;
     }
 
     // READ/WRITE RELATED METHODS
@@ -78,6 +89,22 @@ public class DataBuffer {
     }
     public int readUnsignedByte() {
         return Byte.toUnsignedInt(this.buffer.get());
+    }
+    public int readUnsignedShort() {
+        return Short.toUnsignedInt(this.buffer.getShort());
+    }
+    public int readInt() {
+        return this.buffer.getInt();
+    }
+    public DataBuffer readBuffer(int length) {
+        DataBuffer buf = slice(position(), length);
+        this.buffer.position(position()+length);
+        return buf;
+    }
+    public String readFixedLengthString(int length) {
+        byte[] s = new byte[length];
+        this.buffer.get(s);
+        return new String(s);
     }
     public void writeByte(int value) {
         this.buffer.put((byte)value);
