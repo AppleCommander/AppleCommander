@@ -5,6 +5,7 @@ import org.applecommander.codec.Nibble53Disk525Codec;
 import org.applecommander.codec.Nibble62Disk525Codec;
 import org.applecommander.device.*;
 import org.applecommander.image.NibbleImage;
+import org.applecommander.image.UniversalDiskImage;
 import org.applecommander.image.WozImage;
 import org.applecommander.source.FileSource;
 import org.applecommander.source.Source;
@@ -74,6 +75,39 @@ public class NewDeviceTest {
         DosOrderedTrackSectorDevice tsDevice = new DosOrderedTrackSectorDevice(source);
         DataBuffer sectorData = tsDevice.readSector(17, 15);
         dumpAsHex(sectorData, filename);
+    }
+
+    @Test
+    public void read2ImgDisk() {
+        // Note: Writing this as if we have to determine details from the 2IMG structure itself
+        final String filename = "Marble Madness (1985)(Electronic Arts).2mg";
+        Source source = sourceDisk(filename);
+        UniversalDiskImage image = new UniversalDiskImage(source);
+        UniversalDiskImage.Info info = image.getInfo();
+        // An attempt at discovery
+        Object device = null;
+        if (info.isDOSOrdered() && info.dataLength() == 143360) {
+            device = new DosOrderedTrackSectorDevice(image);
+        }
+        else if (info.isProdosOrdered()) {
+            device = new ProdosOrderedBlockDevice(image, 512, info.prodosBlocks());
+        }
+        else if (info.isNibbleOrder()) {
+            // this is just guessing, and likely never occurs from what I've found, but...
+            NibbleTrackReaderWriter trackReaderWriter = new NibbleImage(image);
+            device = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), 16);
+        }
+        assert(device != null);
+        // Report out... making grand assumption that TS=DOS and block=ProDOS
+        if (device instanceof TrackSectorDevice tsDevice) {
+            DataBuffer sectorData = tsDevice.readSector(17, 15);
+            dumpAsHex(sectorData, filename);
+        }
+        else {
+            BlockDevice blkDevice = (BlockDevice) device;
+            DataBuffer blockData = blkDevice.readBlock(2);
+            dumpAsHex(blockData, filename);
+        }
     }
 
     public Source sourceDisk(String filename) {

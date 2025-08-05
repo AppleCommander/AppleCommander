@@ -58,6 +58,11 @@ public class DataBuffer {
     public int getUnsignedShort(int index) {
         return Short.toUnsignedInt(this.buffer.getShort(index));
     }
+    public String getFixedLengthString(int index, int length) {
+        byte[] s = new byte[length];
+        this.buffer.get(index, s);
+        return new String(s);
+    }
     public void put(int offset, DataBuffer data) {
         this.buffer.put(offset, data.buffer, 0, data.buffer.limit());
     }
@@ -95,6 +100,13 @@ public class DataBuffer {
     }
     public int readInt() {
         return this.buffer.getInt();
+    }
+    /** Read an int but in big endian format. Used for marker bytes so they "look" as expected in program code. */
+    public int readIntBE() {
+        this.buffer.order(ByteOrder.BIG_ENDIAN);
+        int value = this.buffer.getInt();
+        this.buffer.order(ByteOrder.LITTLE_ENDIAN);
+        return value;
     }
     public DataBuffer readBuffer(int length) {
         DataBuffer buf = slice(position(), length);
