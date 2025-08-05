@@ -1,6 +1,7 @@
-package org.applecommander.device;
+package org.applecommander.image;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.device.NibbleTrackReaderWriter;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
 

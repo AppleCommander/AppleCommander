@@ -4,6 +4,8 @@ import com.webcodepro.applecommander.testconfig.TestConfig;
 import org.applecommander.codec.Nibble53Disk525Codec;
 import org.applecommander.codec.Nibble62Disk525Codec;
 import org.applecommander.device.*;
+import org.applecommander.image.NibbleImage;
+import org.applecommander.image.WozImage;
 import org.applecommander.source.FileSource;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
