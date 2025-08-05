@@ -4,6 +4,7 @@ import com.webcodepro.applecommander.testconfig.TestConfig;
 import org.applecommander.codec.Nibble53Disk525Codec;
 import org.applecommander.codec.Nibble62Disk525Codec;
 import org.applecommander.device.*;
+import org.applecommander.image.DiskCopyImage;
 import org.applecommander.image.NibbleImage;
 import org.applecommander.image.UniversalDiskImage;
 import org.applecommander.image.WozImage;
@@ -108,6 +109,16 @@ public class NewDeviceTest {
             DataBuffer blockData = blkDevice.readBlock(2);
             dumpAsHex(blockData, filename);
         }
+    }
+
+    @Test
+    public void readDiskCopyDisk() {
+        final String filename = "Installer.dc";
+        Source source = sourceDisk(filename);
+        DiskCopyImage image = new DiskCopyImage(source);
+        BlockDevice device = new ProdosOrderedBlockDevice(image, 512, image.getInfo().dataSize() / 512);
+        DataBuffer block = device.readBlock(2);
+        dumpAsHex(block, filename);
     }
 
     public Source sourceDisk(String filename) {

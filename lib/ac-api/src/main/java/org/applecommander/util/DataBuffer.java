@@ -98,13 +98,20 @@ public class DataBuffer {
     public int readUnsignedShort() {
         return Short.toUnsignedInt(this.buffer.getShort());
     }
+    /** Read an short but in big endian format. Used for marker bytes so they "look" as expected in program code. */
+    public int readUnsignedShortBE() {
+        this.buffer.order(ByteOrder.BIG_ENDIAN);
+        int value = readUnsignedShort();
+        this.buffer.order(ByteOrder.LITTLE_ENDIAN);
+        return value;
+    }
     public int readInt() {
         return this.buffer.getInt();
     }
     /** Read an int but in big endian format. Used for marker bytes so they "look" as expected in program code. */
     public int readIntBE() {
         this.buffer.order(ByteOrder.BIG_ENDIAN);
-        int value = this.buffer.getInt();
+        int value = readInt();
         this.buffer.order(ByteOrder.LITTLE_ENDIAN);
         return value;
     }
@@ -116,6 +123,15 @@ public class DataBuffer {
     public String readFixedLengthString(int length) {
         byte[] s = new byte[length];
         this.buffer.get(s);
+        return new String(s);
+    }
+    public String readPascalString(int maxLength) {
+        int startingPosition = position();
+        int length = readUnsignedByte();
+        assert(length < maxLength);
+        byte[] s = new byte[length];
+        this.buffer.get(s);
+        this.position(startingPosition+maxLength);
         return new String(s);
     }
     public void writeByte(int value) {
