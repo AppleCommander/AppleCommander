@@ -7,6 +7,7 @@ import org.applecommander.util.DataBuffer;
 public class NibbleImage implements NibbleTrackReaderWriter {
     public static final int DISK_SIZE = 232960;
     public static final int TRACK_SIZE = 6656;
+    public static final int TRACKS_ON_DEVICE = DISK_SIZE / TRACK_SIZE;
 
     private Source source;
 
@@ -17,6 +18,11 @@ public class NibbleImage implements NibbleTrackReaderWriter {
     @Override
     public boolean can(Capability capability) {
         return capability == Capability.WRITE_TRACK;
+    }
+
+    @Override
+    public int getTracksOnDevice() {
+        return TRACKS_ON_DEVICE;
     }
 
     @Override

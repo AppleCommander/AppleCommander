@@ -5,6 +5,10 @@ import org.applecommander.util.DataBuffer;
 
 public interface NibbleTrackReaderWriter extends CapabilityProvider {
     /**
+     * The number of physical tracks on this device.
+     */
+    int getTracksOnDevice();
+    /**
      * Read nibbilized track data.
      */
     DataBuffer readTrackData(int track);

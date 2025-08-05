@@ -31,9 +31,6 @@ public class WozImage implements NibbleTrackReaderWriter {
     private List<TrkInfo> trks = new ArrayList<>();
 
     // Internal configuration settings
-    private boolean blockDevice;
-    private boolean trackAndSectorDevice;
-    private int blocksOnDevice;
     private Function<Integer,DataBuffer> trackReader = null;
 
     public WozImage(Source source) {
@@ -64,15 +61,9 @@ public class WozImage implements NibbleTrackReaderWriter {
                 case INFO_CHUNK_ID:
                     this.info = new InfoChunk(data);
                     if (this.info.getDiskType() == 1) { // DISK II - 5.25"
-                        this.blockDevice = false;
-                        this.trackAndSectorDevice = true;
-                        this.blocksOnDevice = 280;
                         tmapReader = this::readTmapChunk525;
                     }
                     else {  // 400K or 800K 3.5" disk
-                        this.blockDevice = true;
-                        this.trackAndSectorDevice = false;
-                        this.blocksOnDevice = this.info.getDiskSides() * 800;
                         tmapReader = this::readTmapChunk35;
                     }
                     break;
@@ -98,6 +89,11 @@ public class WozImage implements NibbleTrackReaderWriter {
     public boolean can(Capability capability) {
         // No track writing with WOZ images
         return false;
+    }
+
+    @Override
+    public int getTracksOnDevice() {
+        return tmap.size();
     }
 
     @Override

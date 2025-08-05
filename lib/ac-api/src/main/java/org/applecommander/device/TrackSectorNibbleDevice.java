@@ -12,8 +12,17 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
     private final NibbleTrackReaderWriter trackReaderWriter;
     private final DiskMarker diskMarker;
     private final NibbleDiskCodec dataCodec;
+    private final Geometry geometry;
 
-    @Override
+    public TrackSectorNibbleDevice(NibbleTrackReaderWriter trackReaderWriter, DiskMarker diskMarker,
+                                   NibbleDiskCodec dataCodec, int sectorsPerTrack) {
+        this.trackReaderWriter = trackReaderWriter;
+        this.diskMarker = diskMarker;
+        this.dataCodec = dataCodec;
+        this.geometry = new Geometry(trackReaderWriter.getTracksOnDevice(), sectorsPerTrack);
+    }
+
+   @Override
     public boolean can(Capability capability) {
         if (capability == Capability.WRITE_SECTOR) {
             return trackReaderWriter.can(Capability.WRITE_TRACK)  && dataCodec.can(Capability.ENCODE);
@@ -21,11 +30,9 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         return false;
     }
 
-    public TrackSectorNibbleDevice(NibbleTrackReaderWriter trackReaderWriter, DiskMarker diskMarker,
-                                   NibbleDiskCodec dataCodec) {
-        this.trackReaderWriter = trackReaderWriter;
-        this.diskMarker = diskMarker;
-        this.dataCodec = dataCodec;
+    @Override
+    public Geometry getGeometry() {
+        return geometry;
     }
 
     /**

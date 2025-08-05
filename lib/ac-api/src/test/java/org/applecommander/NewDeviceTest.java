@@ -20,7 +20,7 @@ public class NewDeviceTest {
         final String filename = "original321sysmaspls.nib";
         Source source = sourceDisk(filename);
         NibbleTrackReaderWriter trackReaderWriter = new NibbleImage(source);
-        TrackSectorDevice tsDevice = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector13(), new Nibble53Disk525Codec());
+        TrackSectorDevice tsDevice = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector13(), new Nibble53Disk525Codec(), 13);
         DataBuffer sectorData = tsDevice.readSector(17,12);
         dumpAsHex(sectorData, filename);
     }
@@ -30,7 +30,7 @@ public class NewDeviceTest {
         final String filename = "DOS 3.2 System Master.woz";
         Source source = sourceDisk(filename);
         NibbleTrackReaderWriter trackReaderWriter = new WozImage(source);
-        TrackSectorDevice tsDevice = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector13(), new Nibble53Disk525Codec());
+        TrackSectorDevice tsDevice = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector13(), new Nibble53Disk525Codec(), 13);
         DataBuffer sectorData = tsDevice.readSector(17, 12);
         dumpAsHex(sectorData, filename);
     }
@@ -40,7 +40,7 @@ public class NewDeviceTest {
         final String filename = "DOS 3.3 System Master.woz1";
         Source source = sourceDisk(filename);
         NibbleTrackReaderWriter trackReaderWriter = new WozImage(source);
-        TrackSectorDevice tsDevice = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector16(), new Nibble62Disk525Codec());
+        TrackSectorDevice tsDevice = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), 16);
         DataBuffer sectorData = tsDevice.readSector(17, 15);
         dumpAsHex(sectorData, filename);
     }
@@ -50,7 +50,26 @@ public class NewDeviceTest {
         final String filename = "DOS 3.3 System Master.woz2";
         Source source = sourceDisk(filename);
         NibbleTrackReaderWriter trackReaderWriter = new WozImage(source);
-        TrackSectorDevice tsDevice = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector16(), new Nibble62Disk525Codec());
+        TrackSectorDevice tsDevice = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), 16);
+        DataBuffer sectorData = tsDevice.readSector(17, 15);
+        dumpAsHex(sectorData, filename);
+    }
+
+    @Test
+    public void readBlockGalatt() {
+        final String filename = "galatt.dsk";
+        Source source = sourceDisk(filename);
+        DosOrderedTrackSectorDevice tsDevice = new DosOrderedTrackSectorDevice(source);
+        TrackSectorToBlockDevice blockDevice = new TrackSectorToBlockDevice(tsDevice);
+        DataBuffer blockData = blockDevice.readBlock(2);
+        dumpAsHex(blockData, filename);
+    }
+
+    @Test
+    public void readDOCavernsOfFreitag() {
+        final String filename = "CavernsOfFreitag.dsk";
+        Source source = sourceDisk(filename);
+        DosOrderedTrackSectorDevice tsDevice = new DosOrderedTrackSectorDevice(source);
         DataBuffer sectorData = tsDevice.readSector(17, 15);
         dumpAsHex(sectorData, filename);
     }

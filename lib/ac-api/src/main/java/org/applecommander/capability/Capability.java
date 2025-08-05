@@ -4,5 +4,6 @@ public enum Capability {
     ENCODE,
     WRITE_TRACK,
     WRITE_SECTOR,
+    WRITE_BLOCK,
     SAVE_SOURCE
 }
