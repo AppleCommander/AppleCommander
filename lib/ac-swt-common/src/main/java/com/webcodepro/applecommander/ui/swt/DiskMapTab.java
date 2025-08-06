@@ -304,7 +304,7 @@ public class DiskMapTab {
 			// under some circumstances
 			return;
 		}
-		Image image = new Image(canvas.getDisplay(), area);
+		Image image = new Image(canvas.getDisplay(), area.width, area.height);
 		GC gc = new GC(image);
 		int x = 0;
 		int y = 0;
