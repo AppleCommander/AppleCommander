@@ -8,6 +8,7 @@ import org.applecommander.image.DiskCopyImage;
 import org.applecommander.image.NibbleImage;
 import org.applecommander.image.UniversalDiskImage;
 import org.applecommander.image.WozImage;
+import org.applecommander.os.dos.UnidosAdapterStrategy;
 import org.applecommander.source.FileSource;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
@@ -64,7 +65,7 @@ public class NewDeviceTest {
         final String filename = "galatt.dsk";
         Source source = sourceDisk(filename);
         DosOrderedTrackSectorDevice tsDevice = new DosOrderedTrackSectorDevice(source);
-        TrackSectorToBlockDevice blockDevice = new TrackSectorToBlockDevice(tsDevice);
+        TrackSectorToBlockAdapter blockDevice = new TrackSectorToBlockAdapter(tsDevice);
         DataBuffer blockData = blockDevice.readBlock(2);
         dumpAsHex(blockData, filename);
     }
@@ -76,6 +77,19 @@ public class NewDeviceTest {
         DosOrderedTrackSectorDevice tsDevice = new DosOrderedTrackSectorDevice(source);
         DataBuffer sectorData = tsDevice.readSector(17, 15);
         dumpAsHex(sectorData, filename);
+    }
+
+    @Test
+    public void readUniDOS33() {
+        final String filename = "UniDOS_3.3.dsk";
+        Source source = sourceDisk(filename);
+        BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, 512, 1600);
+        TrackSectorDevice disk1 = new BlockToTrackSectorAdapter(blockDevice, UnidosAdapterStrategy.UNIDOS_DISK_1);
+        TrackSectorDevice disk2 = new BlockToTrackSectorAdapter(blockDevice, UnidosAdapterStrategy.UNIDOS_DISK_2);
+        DataBuffer sector1 = disk1.readSector(17, 31);
+        DataBuffer sector2 = disk2.readSector(17, 31);
+        dumpAsHex(sector1, filename + " (1)");
+        dumpAsHex(sector2, filename + " (2)");
     }
 
     @Test

@@ -5,8 +5,6 @@ import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
 
 public class DosOrderedTrackSectorDevice implements TrackSectorDevice {
-    private static final int SECTOR_SIZE = 256;
-
     private final Source source;
     private final Geometry geometry;
 

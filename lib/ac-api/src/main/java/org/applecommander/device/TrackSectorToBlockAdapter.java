@@ -5,13 +5,11 @@ import org.applecommander.util.DataBuffer;
 
 import java.util.function.BiConsumer;
 
-public class TrackSectorToBlockDevice implements BlockDevice {
-    private static final int BLOCK_SIZE = 512;
-
+public class TrackSectorToBlockAdapter implements BlockDevice {
     private final TrackSectorDevice device;
     private final Geometry geometry;
 
-    public TrackSectorToBlockDevice(TrackSectorDevice device) {
+    public TrackSectorToBlockAdapter(TrackSectorDevice device) {
         this.device = device;
         this.geometry = new Geometry(BLOCK_SIZE, device.getGeometry().getSectorsPerDisk() / 2);
     }
