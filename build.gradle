@@ -11,7 +11,7 @@ ext {
     antVersion = "1.10.15"
     commonsLang3Version = "3.18.0"
     commonsCsvVersion = "1.14.1"
-    gsonVersion = "2.8.9"
+    gsonVersion = "2.13.1"
     picocliVersion = "4.7.7"
     springBoot = "3.5.4"
     acdasmVersion = "0.5.0"
