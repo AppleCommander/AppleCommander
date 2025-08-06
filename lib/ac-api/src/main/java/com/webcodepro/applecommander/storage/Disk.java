@@ -49,7 +49,7 @@ public class Disk {
 	 * Specifies a filter to be used in determining filetypes which are supported.
 	 * This works from a file extension, so it may or may not apply to the Macintosh.
 	 */
-	public class FilenameFilter {
+	public static class FilenameFilter {
 		private String names;
 		private String[] extensions;
 		public FilenameFilter(String names, String... extensions) {
@@ -81,63 +81,28 @@ public class Disk {
 	public static final int APPLE_20MB_HARDDISK = 20971520;
 	public static final int APPLE_32MB_HARDDISK = 33553920;	// short one block!
 
-	private static FilenameFilter[] filenameFilters;
-	private static String[] allFileExtensions = null;
-	private TextBundle textBundle = StorageBundle.getInstance();
-	private String filename;
-	private boolean newImage = false;
-	private boolean isDC42 = false;
-	private ByteArrayImageLayout diskImageManager;
-	private ImageOrder imageOrder = null;
-
-	/**
-	 * Get the supported file filters supported by the Disk interface.
-	 * This is due to the fact that FilenameFilter is an inner class of Disk -
-	 * without an instance of the class, the filters cannot be created.
-	 */
-	public static FilenameFilter[] getFilenameFilters() {
-		if (filenameFilters == null) {
-			new Disk();
-		}
-		return filenameFilters;
-	}
-
-	/**
-	 * Get the supported file extensions supported by the Disk interface.
-	 * This is used by the Swing UI to populate the open file dialog box.
-	 */
-	public static String[] getAllExtensions() {
-		if (allFileExtensions == null) {
-			new Disk();
-		}
-		return allFileExtensions;
-	}
-
-	/**
-	 * Constructor for a Disk - used only to generate FilenameFilter objects.
-	 */
-	private Disk() {
-		filenameFilters = new FilenameFilter[] {
+	private static final TextBundle textBundle = StorageBundle.getInstance();
+	private static final FilenameFilter[] filenameFilters = new FilenameFilter[] {
 			new FilenameFilter(textBundle.get("Disk.AllImages"),  //$NON-NLS-1$
-				"*.do", "*.dsk", "*.po", "*.nib", "*.2mg", "*.2img", "*.hdv", "*.do.gz", "*.dsk.gz", "*.po.gz", "*.nib.gz", "*.2mg.gz", "*.2img.gz", "*.woz"), //$NON-NLS-1$
+					"*.do", "*.dsk", "*.po", "*.nib", "*.2mg", "*.2img", "*.hdv", "*.do.gz", "*.dsk.gz", "*.po.gz", "*.nib.gz", "*.2mg.gz", "*.2img.gz", "*.woz"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.140kDosImages"),  //$NON-NLS-1$
-				"*.do", "*.dsk", "*.do.gz", "*.dsk.gz"), //$NON-NLS-1$
+					"*.do", "*.dsk", "*.do.gz", "*.dsk.gz"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.140kNibbleImages"), //$NON-NLS-1$
-				"*.nib", "*.nib.gz"), //$NON-NLS-1$
+					"*.nib", "*.nib.gz"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.140kProdosImages"),  //$NON-NLS-1$
-				"*.po", "*.po.gz"), //$NON-NLS-1$
+					"*.po", "*.po.gz"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.800kProdosImages"),  //$NON-NLS-1$
-				"*.2mg", "*.2img", "*.2mg.gz", "*.2img.gz"), //$NON-NLS-1$
+					"*.2mg", "*.2img", "*.2mg.gz", "*.2img.gz"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.ApplePcImages"),  //$NON-NLS-1$
-				"*.hdv"), //$NON-NLS-1$
+					"*.hdv"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.CompressedImages"),  //$NON-NLS-1$
-				"*.sdk", "*.shk", "*.do.gz", "*.dsk.gz", "*.po.gz", "*.2mg.gz", "*.2img.gz"), //$NON-NLS-1$
+					"*.sdk", "*.shk", "*.do.gz", "*.dsk.gz", "*.po.gz", "*.2mg.gz", "*.2img.gz"), //$NON-NLS-1$
 			new FilenameFilter(textBundle.get("Disk.WozImages"),
-				"*.woz"),
+					"*.woz"),
 			new FilenameFilter(textBundle.get("Disk.AllFiles"),  //$NON-NLS-1$
-				"*.*") //$NON-NLS-1$
+					"*.*") //$NON-NLS-1$
 		};
-		allFileExtensions = new String[] {
+	private static final String[] allFileExtensions = new String[] {
 			".do",		//$NON-NLS-1$
 			".dsk",		//$NON-NLS-1$
 			".po",		//$NON-NLS-1$
@@ -152,8 +117,31 @@ public class Disk {
 			".po.gz",	//$NON-NLS-1$
 			".nib.gz",	//$NON-NLS-1$
 			".2mg.gz",	//$NON-NLS-1$
-			".2img.gz"	//$NON-NLS-1$
+			".2img.gz",
+			".woz"
 		};
+
+	private String filename;
+	private boolean newImage = false;
+	private boolean isDC42 = false;
+	private ByteArrayImageLayout diskImageManager;
+	private ImageOrder imageOrder = null;
+
+	/**
+	 * Get the supported file filters supported by the Disk interface.
+	 * This is due to the fact that FilenameFilter is an inner class of Disk -
+	 * without an instance of the class, the filters cannot be created.
+	 */
+	public static FilenameFilter[] getFilenameFilters() {
+		return filenameFilters;
+	}
+
+	/**
+	 * Get the supported file extensions supported by the Disk interface.
+	 * This is used by the Swing UI to populate the open file dialog box.
+	 */
+	public static String[] getAllExtensions() {
+		return allFileExtensions;
 	}
 
 	/**
