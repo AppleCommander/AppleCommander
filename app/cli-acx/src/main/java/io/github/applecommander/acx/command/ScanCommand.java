@@ -152,8 +152,8 @@ public class ScanCommand extends ReusableCommandOptions {
                 if (errors.size() > MAX_ERRORS) return;
                 if (fe.isDeleted()) {
                     deletedFiles++;
-                } else if (fe.isDirectory()) {
-                    readAllFiles(dir);
+                } else if (fe instanceof DirectoryEntry directoryEntry) {
+                    readAllFiles(directoryEntry);
                 } else {
                     filesVisited++;
                     try {
@@ -161,8 +161,8 @@ public class ScanCommand extends ReusableCommandOptions {
                             filesRead++;
                         }
                     } catch (Throwable t) {
-                        errors.add(String.format("Unable to read file %d/%s/%s", dir.getFormattedDisk().getLogicalDiskNumber(),
-                                dir.getDirname(), fe.getFilename()));
+                        errors.add(String.format("Unable to read file %d/%s/%s: %s", dir.getFormattedDisk().getLogicalDiskNumber(),
+                                dir.getDirname(), fe.getFilename(), t.getMessage()));
                     }
                 }
             }
