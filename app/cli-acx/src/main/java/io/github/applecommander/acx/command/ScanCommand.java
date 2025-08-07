@@ -170,7 +170,10 @@ public class ScanCommand extends ReusableCommandOptions {
 
         private void readAllCPMBlocks(CpmFormatDisk cpm) {
             dataType = "CPM blocks";
-            for (int b=0; b<cpm.getBitmapLength() && errors.size() < MAX_ERRORS; b++) {
+            // This adjusts for the start. The CPM filesystem ignores the first 3 tracks on disk.
+            int blocksToRead = cpm.getBitmapLength() -
+                    (CpmFormatDisk.PHYSICAL_BLOCK_TRACK_START * CpmFormatDisk.CPM_BLOCKS_PER_TRACK);
+            for (int b=0; b<blocksToRead && errors.size() < MAX_ERRORS; b++) {
                 try {
                     cpm.readCpmBlock(b);
                     dataRead++;
