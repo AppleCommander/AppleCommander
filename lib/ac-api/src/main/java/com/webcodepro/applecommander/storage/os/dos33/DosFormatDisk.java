@@ -434,9 +434,9 @@ public class DosFormatDisk extends FormattedDisk {
 		DosFileEntry dosEntry = (DosFileEntry) fileEntry;
 		// Size is calculated by sectors used - not actual size - as size varies
 		// on filetype, etc.
-		int filesize = dosEntry.getSectorsUsed();
+		int sectorsRemaining = dosEntry.getSectorsUsed();
 		byte[] fileData = null;
-		if (filesize > 0) {
+		if (sectorsRemaining > 0) {
 			fileData = new byte[(dosEntry.getSectorsUsed()-1) * SECTOR_SIZE];
 		} else {
 			fileData = new byte[0];
@@ -446,17 +446,19 @@ public class DosFormatDisk extends FormattedDisk {
 		int track = dosEntry.getTrack();
 		int sector = dosEntry.getSector();
 		int offset = 0;
-		while (track != 0) {
+		while (track != 0 && sectorsRemaining > 0) {
 			byte[] trackSectorList = readSector(track, sector);
+			sectorsRemaining--;
 			track = AppleUtil.getUnsignedByte(trackSectorList[0x01]);
 			sector = AppleUtil.getUnsignedByte(trackSectorList[0x02]);
-			for (int i=0x0c; i<0x100; i+=2) {
+			for (int i=0x0c; i<0x100 && sectorsRemaining > 0; i+=2) {
 				int t = AppleUtil.getUnsignedByte(trackSectorList[i]);
 				if (t == 0) break;
 				int s = AppleUtil.getUnsignedByte(trackSectorList[i+1]);
 				byte[] sectorData = readSector(t,s);
 				System.arraycopy(sectorData, 0, fileData, offset, sectorData.length);
 				offset+= sectorData.length;
+				sectorsRemaining--;		// only count the number of sectors DOS says it's using?
 			}
 		}
 		return fileData;
