@@ -16,6 +16,7 @@ import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
@@ -34,19 +35,26 @@ public class ScanCommand extends ReusableCommandOptions {
     @Option(names = { "-o", "--output" }, description = "Name of report file", defaultValue = "report.txt")
     private Path reportPath;
 
+    @Option(names = { "--progress" }, description = "Show progress be listing each image as it is processed",
+            defaultValue = "false")
+    private boolean progress;
+
     @Override
     public int handleCommand() throws Exception {
-        FileVisitor visitor = new FileVisitor();
+        PrintStream output = System.out;
+        if (reportPath != null) {
+            output = new PrintStream(Files.newOutputStream(reportPath));
+        }
+        FileVisitor visitor = new FileVisitor(output, progress);
         for (Path dir : directories) {
             Files.walkFileTree(dir, visitor);
         }
-        LOG.info(() -> String.format("Scanned %d files.", visitor.getReports().size()));
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        System.out.println(gson.toJson(visitor.getReports()));
+        System.out.printf("Scanned %d disk images.\n", visitor.getCounter());
         return 0;
     }
 
     private static class FileVisitor extends SimpleFileVisitor<Path> {
+        private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
         private static final PathMatcher globMatcher;
         static {
             // Build "glob:**.{do,po,dsk,...}"
@@ -64,16 +72,28 @@ public class ScanCommand extends ReusableCommandOptions {
             globMatcher = fs.getPathMatcher(globs.toString());
         }
 
-        private final List<Report> reports = new ArrayList<>();
+        private int counter;
+        private final PrintStream output;
+        private final boolean progress;
 
-        public List<Report> getReports() {
-            return reports;
+        public FileVisitor(PrintStream output, boolean progress) {
+            this.output = output;
+            this.progress = progress;
+        }
+
+        public int getCounter() {
+            return counter;
         }
 
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
             if (globMatcher.matches(file)) {
-                reports.add(scanFile(file));
+                counter++;
+                if (progress) {
+                    System.out.printf("#%05d: %s\n", counter, file.toString());
+                }
+                Report report = scanFile(file);
+                output.println(gson.toJson(report));
             }
             return FileVisitResult.CONTINUE;
         }
