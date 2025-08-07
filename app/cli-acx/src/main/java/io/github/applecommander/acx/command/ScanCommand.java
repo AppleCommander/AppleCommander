@@ -1,11 +1,17 @@
 package io.github.applecommander.acx.command;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.google.gson.GsonBuilder;
+import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
+import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
+import com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk;
+import com.webcodepro.applecommander.storage.os.nakedos.NakedosFormatDisk;
+import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
+import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
 
@@ -28,10 +34,6 @@ public class ScanCommand extends ReusableCommandOptions {
     @Option(names = { "-o", "--output" }, description = "Name of report file", defaultValue = "report.txt")
     private Path reportPath;
 
-    @Option(names = "--json", description = "Save format in JSON format; changes default to report.json.")
-    private boolean jsonFormat;
-    private static Gson gson = new Gson();
-
     @Override
     public int handleCommand() throws Exception {
         FileVisitor visitor = new FileVisitor();
@@ -39,27 +41,8 @@ public class ScanCommand extends ReusableCommandOptions {
             Files.walkFileTree(dir, visitor);
         }
         LOG.info(() -> String.format("Scanned %d files.", visitor.getReports().size()));
-        if (jsonFormat) {
-            JsonArray reports = new JsonArray();
-            visitor.getReports().forEach(r -> {
-                JsonObject report = new JsonObject();
-                report.addProperty("imageName", r.imageName().toString());
-                report.addProperty("success", r.success());
-                report.addProperty("imageType", r.imageType());
-                report.addProperty("deletedFiles", r.deletedFiles());
-                report.addProperty("directoriesVisited", r.directoriesVisited());
-                report.addProperty("logicalDisks", r.logicalDisks());
-                report.addProperty("filesVisited", r.filesVisited());
-                report.addProperty("filesRead", r.filesRead());
-                report.addProperty("dataRead", r.dataRead());
-                report.addProperty("errorText", r.errorText());
-                reports.add(report);
-            });
-            System.out.println(gson.toJson(reports));
-        }
-        else {
-            visitor.getReports().forEach(System.out::println);
-        }
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        System.out.println(gson.toJson(visitor.getReports()));
         return 0;
     }
 
@@ -96,75 +79,145 @@ public class ScanCommand extends ReusableCommandOptions {
         }
 
         private Report scanFile(Path file) {
-            boolean success = false;
-            String imageType = "unknown";
-            int logicalDisks = 0;
-            int deletedFiles = 0;
-            int directoriesVisited = 0;
-            int filesVisited = 0;
-            int filesRead = 0;
-            int dataRead = 0;
-            String message = "-";
-
             try {
+                return new Report(file);
+            } catch (Throwable t) {
+                return new Report(file, t);
+            }
+        }
+    }
+
+    private static class Report {
+        static final int MAX_ERRORS = 20;
+
+        String imageName;
+        boolean success = false;
+        String imageType = "unknown";
+        int logicalDisks = 0;
+        int deletedFiles = 0;
+        int directoriesVisited = 0;
+        int filesVisited = 0;
+        int filesRead = 0;
+        String dataType = "unknown";
+        int dataRead = 0;
+        List<String> errors = new ArrayList<>();
+
+        /** A failure report. */
+        Report(Path file, Throwable t) {
+            this.imageName = file.toString();
+            this.errors.add(t.getMessage());
+        }
+
+        Report(Path file) {
+            try {
+                imageName = file.toString();
                 Disk disk = new Disk(file.toString());
                 for (FormattedDisk fdisk : disk.getFormattedDisks()) {
                     logicalDisks++;
                     imageType = fdisk.getFormat();
-                    // Read all files
-                    for (FileEntry fe : fdisk.getFiles()) {
-                        if (fe.isDeleted()) {
-                            deletedFiles++;
-                        }
-                        else if (fe.isDirectory()) {
-                            directoriesVisited++;
-                        }
-                        else {
-                            filesVisited++;
-                            if (fe.getFileData() != null) {
-                                filesRead++;
-                            }
-                        }
-                    }
+                    readAllFiles(fdisk);
                     // Read all data
-                    if (fdisk instanceof RdosFormatDisk rdos) {
-                        for (int b=0; b<rdos.getBitmapLength(); b++) {
-                            rdos.readRdosBlock(b);
-                            dataRead++;
-                        }
-                    }
-                    else if (fdisk.getBitmapDimensions() == null) {
-                        for (int b=0; b<fdisk.getBitmapLength(); b++) {
-                            fdisk.readBlock(b);
-                            dataRead++;
-                        }
-                    }
-                    else {
-                        int[] dims = fdisk.getBitmapDimensions();
-                        for (int t=0; t<dims[0]; t++) {
-                            for (int s=0; s<dims[1]; s++) {
-                                fdisk.readSector(t,s);
-                                dataRead++;
-                            }
-                        }
+                    switch (fdisk) {
+                        case CpmFormatDisk cpm -> readAllCPMBlocks(cpm);
+                        case DosFormatDisk dos -> readAllSectors(dos);
+                        case GutenbergFormatDisk gutenberg -> readAllSectors(gutenberg);
+                        case NakedosFormatDisk nakedos -> readAllSectors(nakedos);
+                        case PascalFormatDisk pascal -> readAllBlocks(pascal);
+                        case ProdosFormatDisk prodos -> readAllBlocks(prodos);
+                        case RdosFormatDisk rdos -> readAllRDOSBlocks(rdos);
+                        default -> throw new RuntimeException("Unexpected disk type: " + fdisk.getFormat());
                     }
                 }
-                success = true;
+                success = errors.isEmpty();
             } catch (Throwable t) {
                 success = false;
-                message = t.getMessage();
+                String msg = t.getMessage();
+                if (msg == null) msg = t.getClass().getName();
+                errors.add(msg);
             }
-            return new Report(file, success, imageType,
-                    logicalDisks, deletedFiles, directoriesVisited,
-                    filesVisited, filesRead, dataRead,
-                    message);
         }
-    }
 
-    private record Report(Path imageName, boolean success, String imageType,
-                          int logicalDisks, int deletedFiles, int directoriesVisited,
-                          int filesVisited, int filesRead, int dataRead,
-                          String errorText) {
+        /** Read all files, capturing errors. */
+        private void readAllFiles(DirectoryEntry dir) {
+            directoriesVisited++;
+            List<FileEntry> files;
+            try {
+                files = dir.getFiles();
+            } catch (Throwable t) {
+                errors.add(String.format("Unable to read directory %d/%s", dir.getFormattedDisk().getLogicalDiskNumber(),
+                        dir.getDirname()));
+                return;
+            }
+            for (FileEntry fe : files) {
+                if (errors.size() > MAX_ERRORS) return;
+                if (fe.isDeleted()) {
+                    deletedFiles++;
+                } else if (fe.isDirectory()) {
+                    readAllFiles(dir);
+                } else {
+                    filesVisited++;
+                    try {
+                        if (fe.getFileData() != null) {
+                            filesRead++;
+                        }
+                    } catch (Throwable t) {
+                        errors.add(String.format("Unable to read file %d/%s/%s", dir.getFormattedDisk().getLogicalDiskNumber(),
+                                dir.getDirname(), fe.getFilename()));
+                    }
+                }
+            }
+        }
 
+        private void readAllCPMBlocks(CpmFormatDisk cpm) {
+            dataType = "CPM blocks";
+            for (int b=0; b<cpm.getBitmapLength() && errors.size() < MAX_ERRORS; b++) {
+                try {
+                    cpm.readCpmBlock(b);
+                    dataRead++;
+                } catch (Throwable t) {
+                    errors.add(String.format("Unable to read CPM block #%d for disk #%d", b, cpm.getLogicalDiskNumber()));
+                }
+            }
+        }
+
+        private void readAllBlocks(FormattedDisk fdisk) {
+            dataType = "blocks";
+            for (int b = 0; b < fdisk.getBitmapLength() && errors.size() < MAX_ERRORS; b++) {
+                try {
+                    fdisk.readBlock(b);
+                    dataRead++;
+                } catch (Throwable t) {
+                    errors.add(String.format("Unable to read block #%d for disk #%d", b, fdisk.getLogicalDiskNumber()));
+                }
+            }
+        }
+
+        private void readAllRDOSBlocks(RdosFormatDisk rdos) {
+            dataType = "RDOS blocks";
+            for (int b = 0; b < rdos.getBitmapLength() && errors.size() < MAX_ERRORS; b++) {
+                try {
+                    rdos.readRdosBlock(b);
+                    dataRead++;
+                } catch (Throwable t) {
+                    errors.add(String.format("Unable to read RDOS block #%d for disk #%d", b, rdos.getLogicalDiskNumber()));
+                }
+            }
+        }
+
+        private void readAllSectors(FormattedDisk fdisk) {
+            dataType = "sectors";
+            int[] dims = fdisk.getBitmapDimensions();
+            for (int track = 0; track < dims[0] && errors.size() < MAX_ERRORS; track++) {
+                for (int sector = 0; sector < dims[1] && errors.size() < MAX_ERRORS; sector++) {
+                    try {
+                        fdisk.readSector(track, sector);
+                        dataRead++;
+                    } catch (Throwable t) {
+                        errors.add(String.format("Unable to read sector T%d,S%s for disk #%d",
+                                track, sector, fdisk.getLogicalDiskNumber()));
+                    }
+                }
+            }
+        }
     }
 }
