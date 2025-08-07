@@ -19,35 +19,16 @@
  */
 package io.github.applecommander.acx;
 
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
-
-import io.github.applecommander.acx.command.CompareCommand;
-import io.github.applecommander.acx.command.ConvertCommand;
-import io.github.applecommander.acx.command.CopyFileCommand;
-import io.github.applecommander.acx.command.CreateDiskCommand;
-import io.github.applecommander.acx.command.DeleteCommand;
-import io.github.applecommander.acx.command.DiskMapCommand;
-import io.github.applecommander.acx.command.DumpCommand;
-import io.github.applecommander.acx.command.ExportCommand;
-import io.github.applecommander.acx.command.FindDuplicateFilesCommand;
-import io.github.applecommander.acx.command.ImportCommand;
-import io.github.applecommander.acx.command.InfoCommand;
-import io.github.applecommander.acx.command.ListCommand;
-import io.github.applecommander.acx.command.LockCommand;
-import io.github.applecommander.acx.command.MkdirCommand;
-import io.github.applecommander.acx.command.ReadCommand;
-import io.github.applecommander.acx.command.RenameDiskCommand;
-import io.github.applecommander.acx.command.RenameFileCommand;
-import io.github.applecommander.acx.command.RmdirCommand;
-import io.github.applecommander.acx.command.UnlockCommand;
-import io.github.applecommander.acx.command.WriteCommand;
+import io.github.applecommander.acx.command.*;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
 import picocli.CommandLine.Option;
+
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 /**
  * Primary entry point into the 'acx' utility. 
@@ -77,6 +58,7 @@ import picocli.CommandLine.Option;
             RenameFileCommand.class,
             RenameDiskCommand.class,
             RmdirCommand.class,
+            ScanCommand.class,
             UnlockCommand.class,
             WriteCommand.class
     })
