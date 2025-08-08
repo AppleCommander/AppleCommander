@@ -48,6 +48,7 @@ import java.util.logging.Logger;
     		DumpCommand.class,
             ExportCommand.class,
             FindDuplicateFilesCommand.class,
+            FindFileCommand.class,
             HelpCommand.class,
             ImportCommand.class,
             InfoCommand.class,
