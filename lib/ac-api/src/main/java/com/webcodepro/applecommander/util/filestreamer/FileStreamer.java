@@ -223,7 +223,10 @@ public class FileStreamer {
             List<FileTuple> list = new ArrayList<>();
             try {
                 for (FileEntry fileEntry : tuple.directoryEntry.getFiles()) {
-                    list.add(tuple.of(fileEntry));
+                    FileTuple temp = tuple.of(fileEntry);
+                    if (filters.test(temp)) {
+                        list.add(temp);
+                    }
                 }
             } catch (DiskException e) {
                 if (!ignoreErrorsFlag) {
