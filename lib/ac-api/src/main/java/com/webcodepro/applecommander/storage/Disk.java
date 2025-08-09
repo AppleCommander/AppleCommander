@@ -33,8 +33,14 @@ import com.webcodepro.applecommander.storage.physical.*;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.image.DiskCopyImage;
+import org.applecommander.image.UniversalDiskImage;
+import org.applecommander.source.FileSource;
+import org.applecommander.source.Source;
+import org.applecommander.util.DataBuffer;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -75,7 +81,7 @@ public class Disk {
 	public static final int APPLE_140KB_NIBBLE_DISK = 232960;
 	public static final int APPLE_800KB_DISK = 819200;
 	public static final int APPLE_800KB_2IMG_DISK =
-		APPLE_800KB_DISK + UniversalDiskImageLayout.OFFSET;
+		APPLE_800KB_DISK + UniversalDiskImage.HEADER_SIZE;
 	public static final int APPLE_5MB_HARDDISK = 5242880;
 	public static final int APPLE_10MB_HARDDISK = 10485760;
 	public static final int APPLE_20MB_HARDDISK = 20971520;
@@ -87,7 +93,7 @@ public class Disk {
 	private String filename;
 	private boolean newImage = false;
 	private boolean isDC42 = false;
-	private ByteArrayImageLayout diskImageManager;
+	private Source diskImageManager;
 	private ImageOrder imageOrder = null;
 
 	/**
@@ -233,28 +239,18 @@ public class Disk {
 		/* Does it have the DiskCopy 4.2 header? */
 		else if (Disk.isDC42(diskImage)) {
 			isDC42 = true;
-			long end = AppleUtil.getLongValue(diskImage,0x40);
-			if (end < diskImage.length - 83) {
-				diskImageDC42 = new byte[(int)end];
-				System.arraycopy(diskImage, 84, diskImageDC42, 0, (int)end); // 84 bytes into the DC42 stream is where the real data starts
-				diskImageManager = new ByteArrayImageLayout(diskImageDC42);
-				// Since we don't want to overwrite their dmg or dc42 with a raw ProDOS image,
-				// add a .po extension to it
-				this.filename += ".po"; //$NON-NLS-1$
-			}
-			else
-				throw new IllegalArgumentException(textBundle.get("CommandLineDC42Bad")); //$NON-NLS-1$
 		}
-		if (is2img == true || diskImage.length == APPLE_800KB_DISK + UniversalDiskImageLayout.OFFSET 
-				|| diskImage.length == APPLE_5MB_HARDDISK + UniversalDiskImageLayout.OFFSET 
-				|| diskImage.length == APPLE_10MB_HARDDISK + UniversalDiskImageLayout.OFFSET 
-				|| diskImage.length == APPLE_20MB_HARDDISK + UniversalDiskImageLayout.OFFSET 
-				|| diskImage.length == APPLE_32MB_HARDDISK + UniversalDiskImageLayout.OFFSET) {
-			diskImageManager = new UniversalDiskImageLayout(diskImage);
+		Path sourcePath = Path.of(filename);
+		if (is2img || diskImage.length == APPLE_800KB_DISK + UniversalDiskImage.HEADER_SIZE
+				|| diskImage.length == APPLE_5MB_HARDDISK + UniversalDiskImage.HEADER_SIZE
+				|| diskImage.length == APPLE_10MB_HARDDISK + UniversalDiskImage.HEADER_SIZE
+				|| diskImage.length == APPLE_20MB_HARDDISK + UniversalDiskImage.HEADER_SIZE
+				|| diskImage.length == APPLE_32MB_HARDDISK + UniversalDiskImage.HEADER_SIZE) {
+			diskImageManager = new UniversalDiskImage(new FileSource(sourcePath));
 		} else if (isDC42) {
-			diskImageManager = new ByteArrayImageLayout(diskImageDC42);
+			diskImageManager = new DiskCopyImage(new FileSource(sourcePath));
 		} else {
-			diskImageManager = new ByteArrayImageLayout(diskImage);
+			diskImageManager = new FileSource(sourcePath);
 		}
 
 		ImageOrder dosOrder = new DosOrder(diskImageManager);
@@ -334,7 +330,7 @@ public class Disk {
 	 */
 	public int testImageOrder()
 	{
-		int rc = (true == isProdosFormat() ? 1 : 0) + (true == isDosFormat() ? 2 : 0) + (true == isCpmFormat() ? 4 : 0) + (true == isUniDosFormat() ? 8 : 0) + (true == isPascalFormat() ? 16 : 0) + (true == isOzDosFormat() ? 32 : 0);
+		int rc = (isProdosFormat() ? 1 : 0) + (isDosFormat() ? 2 : 0) + (isCpmFormat() ? 4 : 0) + (isUniDosFormat() ? 8 : 0) + (isPascalFormat() ? 16 : 0) + (isOzDosFormat() ? 32 : 0);
 		if (rc == 0)
 			rc = -1;
 		return rc;
@@ -352,9 +348,12 @@ public class Disk {
 		if (isCompressed()) {
 			output = new GZIPOutputStream(output);
 		}
-		output.write(getDiskImageManager().getDiskImage());
+		DataBuffer data =getDiskImageManager().readAllBytes();
+		byte[] fileData = new byte[data.limit()];
+		data.read(fileData);
+		output.write(fileData);
 		output.close();
-		getDiskImageManager().setChanged(false);
+		getDiskImageManager().clearChanges();
 		newImage = false;
 	}
 
@@ -411,9 +410,9 @@ public class Disk {
 
 	/**
 	 * Returns the diskImageManager.
-	 * @return ByteArrayImageLayout diskImageManager The disk Image Manager of this disk
+	 * @return Source diskImageManager The disk Image Manager of this disk
 	 */
-	public ByteArrayImageLayout getDiskImageManager() {
+	public Source getDiskImageManager() {
 		if (imageOrder != null) {
 			return imageOrder.getDiskImageManager();
 		}
@@ -523,7 +522,7 @@ public class Disk {
 			return getImageOrder().getPhysicalSize();
 		}
 		if (getDiskImageManager() != null) {
-			return getDiskImageManager().getPhysicalSize();
+			return getDiskImageManager().getSize();
 		}
 		return getImageOrder().getPhysicalSize();
 	}
@@ -540,10 +539,8 @@ public class Disk {
 			throw new IllegalArgumentException(
 				textBundle.get("Disk.ResizeDiskError")); //$NON-NLS-1$
 		}
-		byte[] newDiskImage = new byte[newSize];
-		byte[] oldDiskImage = imageOrder.getDiskImageManager().getDiskImage();
-		System.arraycopy(oldDiskImage, 0, newDiskImage, 0, oldDiskImage.length);
-		imageOrder.getDiskImageManager().setDiskImage(newDiskImage);
+		DataBuffer backingBuffer = imageOrder.getDiskImageManager().get(DataBuffer.class).orElseThrow();
+		backingBuffer.limit(newSize);
 	}
 	
 	/**
@@ -866,32 +863,6 @@ public class Disk {
 	}
 
 	/**
-	 * Change underlying image order to DOS ImageOrder.
-	 * Assumes this is a 140k disk image.
-	 * 
-	 * @see ImageOrder
-	 */
-	public void makeDosOrder()
-	{
-		DosOrder doso = new DosOrder(new ByteArrayImageLayout(Disk.APPLE_140KB_DISK));
-		changeImageOrderByTrackAndSector(getImageOrder(), doso);
-		setImageOrder(doso);
-	}
-
-	/**
-	 * Change to a different ImageOrder. Remains in ProDOS format but the
-	 * underlying order can change.
-	 * 
-	 * @see ImageOrder
-	 */
-	public void makeProdosOrder()
-	{
-		ProdosOrder pdo = new ProdosOrder(new ByteArrayImageLayout(Disk.APPLE_140KB_DISK));
-		changeImageOrderByBlock(getImageOrder(), pdo);
-		setImageOrder(pdo);
-	}
-
-	/**
 	 * Find the standard sized disk that will fit the requested number of bytes.
 	 * @return int size of the disk if it will satisfy the request, -1 otherwise 
 	 */
@@ -905,8 +876,6 @@ public class Disk {
 		} else if (bytes < APPLE_10MB_HARDDISK) {
 			return APPLE_10MB_HARDDISK;
 		} else if (bytes < APPLE_20MB_HARDDISK) {
-			return APPLE_20MB_HARDDISK;
-		} else if (bytes < APPLE_32MB_HARDDISK) {
 			return APPLE_20MB_HARDDISK;
 		} else if (bytes < APPLE_32MB_HARDDISK) {
 			return APPLE_32MB_HARDDISK;

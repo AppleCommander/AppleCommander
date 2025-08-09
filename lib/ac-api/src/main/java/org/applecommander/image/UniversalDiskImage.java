@@ -4,6 +4,8 @@ import org.applecommander.capability.Capability;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
 
+import java.util.Optional;
+
 public class UniversalDiskImage implements Source {
     public static final int MAGIC = 0x32494d47;     // "2IMG" marker
     public static final int HEADER_SIZE = 0x40;     // documented header size
@@ -57,6 +59,24 @@ public class UniversalDiskImage implements Source {
     }
 
     @Override
+    public int getSize() {
+        return source.getSize() - HEADER_SIZE;
+    }
+
+    @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        if (iface.isInstance(source)) {
+            return Optional.of(iface.cast(source));
+        }
+        else if (iface.isInstance(info)) {
+            return Optional.of(iface.cast(info));
+        }
+        else {
+            return source.get(iface);
+        }
+    }
+
+    @Override
     public DataBuffer readAllBytes() {
         return source.readBytes(this.info.dataOffset, this.info.dataLength);
     }
@@ -69,6 +89,16 @@ public class UniversalDiskImage implements Source {
     @Override
     public void writeBytes(int offset, DataBuffer data) {
         source.writeBytes(this.info.dataOffset + offset, data);
+    }
+
+    @Override
+    public boolean hasChanged() {
+        return source.hasChanged();
+    }
+
+    @Override
+    public void clearChanges() {
+        source.clearChanges();
     }
 
     public record Info(String creator, int headerSize, int version, int imageFormat, int flags,

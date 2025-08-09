@@ -23,6 +23,7 @@ import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.os.dos33.DosSectorAddress;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.source.Source;
 
 /**
  * Supports disk images stored in DOS physical order.
@@ -34,7 +35,7 @@ public class DosOrder extends ImageOrder {
 	/**
 	 * Construct a DosOrder.
 	 */
-	public DosOrder(ByteArrayImageLayout diskImageManager) {
+	public DosOrder(Source diskImageManager) {
 		super(diskImageManager);
 	}
 

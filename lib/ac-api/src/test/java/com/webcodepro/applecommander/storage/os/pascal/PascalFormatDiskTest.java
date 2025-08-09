@@ -21,19 +21,21 @@ package com.webcodepro.applecommander.storage.os.pascal;
 
 import static org.junit.Assert.assertEquals;
 
+import org.applecommander.source.FileSource;
+import org.applecommander.source.Source;
+import org.applecommander.util.DataBuffer;
 import org.junit.Test;
 
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DiskFullException;
-import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 
 public class PascalFormatDiskTest {
     @Test
     public void testSanitizeFilename() throws DiskFullException {
-        ByteArrayImageLayout layout = new ByteArrayImageLayout(Disk.APPLE_140KB_DISK);
-        ImageOrder order = new ProdosOrder(layout);
+        Source source = new FileSource(DataBuffer.create(Disk.APPLE_140KB_DISK));
+        ImageOrder order = new ProdosOrder(source);
         PascalFormatDisk[] disks = PascalFormatDisk.create("deleteme.po", "TEST", order); 
         PascalFormatDisk disk = disks[0];
         

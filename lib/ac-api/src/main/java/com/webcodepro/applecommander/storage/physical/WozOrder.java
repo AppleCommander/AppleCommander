@@ -22,6 +22,8 @@ package com.webcodepro.applecommander.storage.physical;
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.os.dos33.DosSectorAddress;
 import com.webcodepro.applecommander.util.AppleUtil;
+import org.applecommander.source.Source;
+import org.applecommander.util.DataBuffer;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
@@ -64,14 +66,13 @@ public class WozOrder extends ImageOrder {
     private Function<Integer,byte[]> blockReader = this::readBlock525;
     private BiFunction<Integer,Integer,byte[]> sectorReader = this::readSector525;
 
-    public WozOrder(ByteArrayImageLayout layout) {
-        super(layout);
+    public WozOrder(Source source) {
+        super(source);
 
-        ByteBuffer bb = ByteBuffer.wrap(layout.getDiskImage());
-        bb.order(ByteOrder.LITTLE_ENDIAN);
+        DataBuffer bb = source.readAllBytes();
 
-        int sig = bb.getInt();
-        int test = bb.getInt();
+        int sig = bb.readInt();
+        int test = bb.readInt();
         final int testExpected = 0xa0d0aff;
         if (sig == WOZ1_MAGIC && test == testExpected) {
             this.trackReader = this::readTrackDataWOZ1;
@@ -82,14 +83,14 @@ public class WozOrder extends ImageOrder {
         else {
             throw new RuntimeException("Not a WOZ1 or WOZ2 format file.");
         }
-        bb.getInt();    // ignoring CRC
+        bb.readInt();    // ignoring CRC
 
         Consumer<byte[]> tmapReader = this::readTmapChunk525;
         while (bb.hasRemaining()) {
-            int chunkId = bb.getInt();
-            int chunkSize = bb.getInt();
+            int chunkId = bb.readInt();
+            int chunkSize = bb.readInt();
             byte[] data = new byte[chunkSize];
-            bb.get(data);
+            bb.read(data);
             switch (chunkId) {
                 case INFO_CHUNK_ID:
                     this.info = new InfoChunk(data);

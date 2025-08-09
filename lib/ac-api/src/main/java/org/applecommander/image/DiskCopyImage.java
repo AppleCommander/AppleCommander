@@ -4,6 +4,8 @@ import org.applecommander.capability.Capability;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
 
+import java.util.Optional;
+
 public class DiskCopyImage implements Source {
     public static final int HEADER_SIZE = 84;
 
@@ -33,8 +35,26 @@ public class DiskCopyImage implements Source {
         return false;
     }
 
+    @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        if (iface.isInstance(source)) {
+            return Optional.of(iface.cast(source));
+        }
+        else if (iface.isInstance(info)) {
+            return Optional.of(iface.cast(info));
+        }
+        else {
+            return source.get(iface);
+        }
+    }
+
     public Info getInfo() {
         return info;
+    }
+
+    @Override
+    public int getSize() {
+        return source.getSize() - HEADER_SIZE;
     }
 
     @Override
@@ -50,6 +70,16 @@ public class DiskCopyImage implements Source {
     @Override
     public void writeBytes(int offset, DataBuffer data) {
         this.source.writeBytes(HEADER_SIZE+offset, data);
+    }
+
+    @Override
+    public boolean hasChanged() {
+        return source.hasChanged();
+    }
+
+    @Override
+    public void clearChanges() {
+        source.clearChanges();
     }
 
     public record Info(String diskName, int dataSize, int tagSize, int dataChecksum, int tagChecksum,

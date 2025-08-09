@@ -20,6 +20,8 @@
 package com.webcodepro.applecommander.storage.physical;
 
 import com.webcodepro.applecommander.storage.Disk;
+import org.applecommander.source.Source;
+import org.applecommander.util.DataBuffer;
 
 /**
  * Manages the interface between the physical disk image order and the
@@ -57,19 +59,19 @@ public abstract class ImageOrder {
 	 * This is the physical copy of the disk image which a particular
 	 * implementation of ImageOrder will interpret.
 	 */
-	private ByteArrayImageLayout diskImageManager;
+	private Source diskImageManager;
 	
 	/**
 	 * Construct a ImageOrder.
 	 */
-	public ImageOrder(ByteArrayImageLayout diskImageManager) {
+	public ImageOrder(Source diskImageManager) {
 		setDiskImageManager(diskImageManager);
 	}
 
 	/**
 	 * Get the physical disk image.
 	 */
-	public ByteArrayImageLayout getDiskImageManager() {
+	public Source getDiskImageManager() {
 		return diskImageManager;
 	}
 	
@@ -77,13 +79,13 @@ public abstract class ImageOrder {
 	 * Answer with the physical size of this disk volume.
 	 */
 	public int getPhysicalSize() {
-		return diskImageManager.getPhysicalSize();
+		return diskImageManager.getSize();
 	}
 	
 	/**
 	 * Set the physical disk image.
 	 */
-	public void setDiskImageManager(ByteArrayImageLayout diskImageManager) {
+	public void setDiskImageManager(Source diskImageManager) {
 		this.diskImageManager = diskImageManager;
 	}
 	
@@ -91,14 +93,17 @@ public abstract class ImageOrder {
 	 * Extract a portion of the disk image.
 	 */
 	public byte[] readBytes(int start, int length) {
-		return diskImageManager.readBytes(start, length);
+		DataBuffer data = diskImageManager.readBytes(start, length);
+		byte[] bytes = new byte[length];
+		data.get(0, bytes);
+		return bytes;
 	}
 	
 	/**
 	 * Write data to the disk image.
 	 */
 	public void writeBytes(int start, byte[] bytes) {
-		diskImageManager.writeBytes(start, bytes);
+		diskImageManager.writeBytes(start, DataBuffer.wrap(bytes));
 	}
 
 	/**
@@ -178,8 +183,8 @@ public abstract class ImageOrder {
 	 * sector markers. 
 	 */
 	public void format() {
-		int size = diskImageManager.getPhysicalSize();
-		diskImageManager.setDiskImage(new byte[size]);
+		int size = diskImageManager.getSize();
+		diskImageManager.writeBytes(0, DataBuffer.create(size));
 	}
 	
 	/**

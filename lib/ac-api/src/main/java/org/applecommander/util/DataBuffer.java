@@ -49,6 +49,9 @@ public class DataBuffer {
     public int limit() {
         return this.buffer.limit();
     }
+    public void limit(int newLimit) {
+        this.buffer.limit(newLimit);
+    }
 
     // GET/PUT RELATED FUNCTIONS
 
@@ -58,6 +61,11 @@ public class DataBuffer {
     public int getUnsignedShort(int index) {
         return Short.toUnsignedInt(this.buffer.getShort(index));
     }
+    public void get(int position, byte[] data) {
+        // Hopefully this is a bridge method and can be removed over time
+        this.buffer.get(position, data);
+    }
+
     public String getFixedLengthString(int index, int length) {
         byte[] s = new byte[length];
         this.buffer.get(index, s);
@@ -104,6 +112,9 @@ public class DataBuffer {
         int value = readUnsignedShort();
         this.buffer.order(ByteOrder.LITTLE_ENDIAN);
         return value;
+    }
+    public void read(byte[] data) {
+        this.buffer.get(data);
     }
     public int readInt() {
         return this.buffer.getInt();

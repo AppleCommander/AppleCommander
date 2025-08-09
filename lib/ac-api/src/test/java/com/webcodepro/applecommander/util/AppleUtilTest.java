@@ -26,10 +26,11 @@ import com.webcodepro.applecommander.storage.compare.ComparisonResult;
 import com.webcodepro.applecommander.storage.compare.DiskDiff;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
-import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
 import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.NibbleOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
+import org.applecommander.source.FileSource;
+import org.applecommander.util.DataBuffer;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -80,14 +81,14 @@ public class AppleUtilTest {
 	public void testChangeDosImageOrder() throws DiskFullException {
 		// Straight DOS disk in standard DOS order
 		DosFormatDisk dosDiskDosOrder = DosFormatDisk.create("dostemp.dsk",  //$NON-NLS-1$
-			new DosOrder(new ByteArrayImageLayout(Disk.APPLE_140KB_DISK)))[0];
+			new DosOrder(new FileSource(DataBuffer.create(Disk.APPLE_140KB_DISK))))[0];
 		FileEntry fileEntry = dosDiskDosOrder.createFile();
 		fileEntry.setFilename("TESTFILE"); //$NON-NLS-1$
 		fileEntry.setFiletype("T"); //$NON-NLS-1$
 		fileEntry.setFileData("This is a test file.".getBytes()); //$NON-NLS-1$
 		// A duplicate - then we change it to a NIB disk image...
 		DosFormatDisk dosDiskNibbleOrder = DosFormatDisk.create("dostemp2.nib", //$NON-NLS-1$
-			new NibbleOrder(new ByteArrayImageLayout(Disk.APPLE_140KB_DISK)))[0];
+			new NibbleOrder(new FileSource(DataBuffer.create(Disk.APPLE_140KB_NIBBLE_DISK))))[0];
 		AppleUtil.changeImageOrderByTrackAndSector(dosDiskDosOrder.getImageOrder(),
 			dosDiskNibbleOrder.getImageOrder());
 		// Confirm that these disks are identical:
@@ -101,7 +102,7 @@ public class AppleUtilTest {
 		// Straight ProDOS disk in standard ProDOS block order
 		ProdosFormatDisk prodosDiskDosOrder = ProdosFormatDisk.create("prodostemp.po",  //$NON-NLS-1$
 			"prodostemp", //$NON-NLS-1$
-			new ProdosOrder(new ByteArrayImageLayout(Disk.APPLE_140KB_DISK)))[0];
+			new ProdosOrder(new FileSource(DataBuffer.create(Disk.APPLE_140KB_DISK))))[0];
 		FileEntry fileEntry = prodosDiskDosOrder.createFile();
 		fileEntry.setFilename("TESTFILE"); //$NON-NLS-1$
 		fileEntry.setFiletype("TXT"); //$NON-NLS-1$
@@ -109,7 +110,7 @@ public class AppleUtilTest {
 		// A duplicate - then we change it to a NIB disk image...
 		ProdosFormatDisk prodosDiskNibbleOrder = ProdosFormatDisk.create("prodostemp2.nib", //$NON-NLS-1$
 			"prodostemp2", //$NON-NLS-1$
-			new NibbleOrder(new ByteArrayImageLayout(Disk.APPLE_140KB_DISK)))[0];
+			new NibbleOrder(new FileSource(DataBuffer.create(Disk.APPLE_140KB_NIBBLE_DISK))))[0];
 		AppleUtil.changeImageOrderByBlock(prodosDiskDosOrder.getImageOrder(),
 			prodosDiskNibbleOrder.getImageOrder());
 		// Confirm that these disks are identical:
