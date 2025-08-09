@@ -1,0 +1,5 @@
+Yet to do
+==========
+1. Need some logging capability to capture messages (instead of a single exception) across an entire "file store".
+2. There are coded assertions that likely should be actual logging.
+3. Review exceptions and see if there should be some structure; now defaulting to runtime exceptions.

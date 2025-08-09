@@ -19,6 +19,9 @@
  */
 package com.webcodepro.applecommander.ui.swt.wizard.diskimage;
 
+import org.applecommander.source.FileSource;
+import org.applecommander.source.Source;
+import org.applecommander.util.DataBuffer;
 import org.eclipse.swt.widgets.Shell;
 
 import com.webcodepro.applecommander.storage.Disk;
@@ -30,7 +33,6 @@ import com.webcodepro.applecommander.storage.os.dos33.UniDosFormatDisk;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
-import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
 import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.NibbleOrder;
@@ -92,17 +94,17 @@ public class DiskImageWizard extends Wizard {
 		if (isCompressed()) {
 			name.append(".gz"); //$NON-NLS-1$
 		}
-		ByteArrayImageLayout imageLayout = new ByteArrayImageLayout(getSize());
+		Source source = new FileSource(DataBuffer.create(getSize()));
 		ImageOrder imageOrder = null;
 		switch (getOrder()) {
 			case ORDER_DOS:
-				imageOrder = new DosOrder(imageLayout);
+				imageOrder = new DosOrder(source);
 				break;
 			case ORDER_NIBBLE:
-				imageOrder = new NibbleOrder(imageLayout);
+				imageOrder = new NibbleOrder(source);
 				break;
 			case ORDER_PRODOS:
-				imageOrder = new ProdosOrder(imageLayout);
+				imageOrder = new ProdosOrder(source);
 				break;
 		}
 		switch (format) {

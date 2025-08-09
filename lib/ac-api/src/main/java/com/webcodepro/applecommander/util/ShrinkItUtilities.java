@@ -28,13 +28,15 @@ import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
-import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import com.webcodepro.shrinkit.HeaderBlock;
 import com.webcodepro.shrinkit.NuFileArchive;
 import com.webcodepro.shrinkit.ThreadRecord;
 import com.webcodepro.shrinkit.io.LittleEndianByteInputStream;
+import org.applecommander.source.FileSource;
+import org.applecommander.source.Source;
+import org.applecommander.util.DataBuffer;
 
 /**
  * Some higher-level utilities for dealing with a NuFX archive.
@@ -83,8 +85,8 @@ public class ShrinkItUtilities
 		int newDiskSize = Disk.sizeToFit(a.getArchiveSize());
 		if (startBlocks > 0)
 			newDiskSize = startBlocks*512;
-		ByteArrayImageLayout layout = new ByteArrayImageLayout(newDiskSize);
-		ImageOrder imageOrder = new ProdosOrder(layout);
+		Source source = new FileSource(DataBuffer.create(newDiskSize));
+		ImageOrder imageOrder = new ProdosOrder(source);
 		// Create a new disk in anticipation of unpacking files - we don't actually know if we'll need it yet, though.
 		FormattedDisk[] disks = ProdosFormatDisk.create(fileName, "APPLECOMMANDER", imageOrder); //$NON-NLS-1$
 		// Make some typing easier... get a handle to the disk we created, with ProdosFormatDisk extensions. 

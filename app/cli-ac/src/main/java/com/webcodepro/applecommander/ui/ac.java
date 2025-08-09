@@ -46,7 +46,6 @@ import com.webcodepro.applecommander.storage.filters.HexDumpFileFilter;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
-import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
 import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
@@ -63,6 +62,9 @@ import io.github.applecommander.bastools.api.TokenReader;
 import io.github.applecommander.bastools.api.Visitors;
 import io.github.applecommander.bastools.api.model.Program;
 import io.github.applecommander.bastools.api.model.Token;
+import org.applecommander.source.FileSource;
+import org.applecommander.source.Source;
+import org.applecommander.util.DataBuffer;
 
 /**
  * ac provides a command line interface to key AppleCommander functions. Text
@@ -611,8 +613,8 @@ public class ac {
 	 */
 	public static void createDosDisk(String fileName, int imageSize)
 		throws IOException {
-		ByteArrayImageLayout layout = new ByteArrayImageLayout(imageSize);
-		ImageOrder imageOrder = new DosOrder(layout);
+		Source source = new FileSource(DataBuffer.create(imageSize));
+		ImageOrder imageOrder = new DosOrder(source);
 		FormattedDisk[] disks = DosFormatDisk.create(fileName, imageOrder);
 		disks[0].save();
 	}
@@ -622,8 +624,8 @@ public class ac {
 	 */
 	public static void createPasDisk(String fileName, String volName, int imageSize)
 		throws IOException {
-		ByteArrayImageLayout layout = new ByteArrayImageLayout(imageSize);
-		ImageOrder imageOrder = new ProdosOrder(layout);
+		Source source = new FileSource(DataBuffer.create(imageSize));
+		ImageOrder imageOrder = new ProdosOrder(source);
 		FormattedDisk[] disks = PascalFormatDisk.create(fileName, volName, imageOrder);
 		disks[0].save();
 	}
@@ -633,8 +635,8 @@ public class ac {
 	 */
 	public static void createProDisk(String fileName, String volName, int imageSize)
 		throws IOException {
-		ByteArrayImageLayout layout = new ByteArrayImageLayout(imageSize);
-		ImageOrder imageOrder = new ProdosOrder(layout);
+		Source source = new FileSource(DataBuffer.create(imageSize));
+		ImageOrder imageOrder = new ProdosOrder(source);
 		FormattedDisk[] disks = ProdosFormatDisk.create(fileName, volName, imageOrder);
 		disks[0].save();
 	}

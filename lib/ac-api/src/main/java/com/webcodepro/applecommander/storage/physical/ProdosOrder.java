@@ -22,6 +22,7 @@ package com.webcodepro.applecommander.storage.physical;
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.source.Source;
 
 /**
  * Supports disk images stored in ProDOS physical order.
@@ -47,7 +48,7 @@ public class ProdosOrder extends ImageOrder {
 	/**
 	 * Construct a ProdosOrder.
 	 */
-	public ProdosOrder(ByteArrayImageLayout diskImageManager) {
+	public ProdosOrder(Source diskImageManager) {
 		super(diskImageManager);
 	}
 	

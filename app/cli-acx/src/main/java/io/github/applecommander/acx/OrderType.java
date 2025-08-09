@@ -23,11 +23,13 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 
 import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.physical.ByteArrayImageLayout;
 import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.NibbleOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
+import org.applecommander.source.FileSource;
+import org.applecommander.source.Source;
+import org.applecommander.util.DataBuffer;
 
 public enum OrderType {
     DOS(OrderType::createDosImageOrder), 
@@ -62,8 +64,8 @@ public enum OrderType {
             LOG.warning("Setting image size to 800KB.");
             size = Disk.APPLE_800KB_DISK;
         }
-        ByteArrayImageLayout layout = new ByteArrayImageLayout(new byte[size]);
-        return new DosOrder(layout);
+        Source source = new FileSource(DataBuffer.create(size));
+        return new DosOrder(source);
     }
     /**
      * Nibblized disks are always 140K disks (or ~230K on disk). 
@@ -72,8 +74,8 @@ public enum OrderType {
         if (size != Disk.APPLE_140KB_NIBBLE_DISK && size != Disk.APPLE_140KB_DISK) {
             LOG.warning("Setting image size to 140KB");
         }
-        ByteArrayImageLayout layout = new ByteArrayImageLayout(new byte[Disk.APPLE_140KB_NIBBLE_DISK]);
-        return new NibbleOrder(layout);
+        Source source = new FileSource(DataBuffer.create(Disk.APPLE_140KB_NIBBLE_DISK));
+        return new NibbleOrder(source);
     }
     /** 
      * Lock ProDOS into 140K, 800K, or anything between 800K and 32M.
@@ -95,8 +97,7 @@ public enum OrderType {
             LOG.warning("Setting image size to 32MB.");
             size = Disk.APPLE_32MB_HARDDISK;
         }
-        ByteArrayImageLayout layout = new ByteArrayImageLayout(size);
-        return new ProdosOrder(layout);
+        Source source = new FileSource(DataBuffer.create(size));
+        return new ProdosOrder(source);
     }
-
 }

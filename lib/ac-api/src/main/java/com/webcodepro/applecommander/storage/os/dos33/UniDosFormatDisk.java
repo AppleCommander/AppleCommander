@@ -100,7 +100,7 @@ public class UniDosFormatDisk extends DosFormatDisk {
 		final int tracksPerDisk = 50;
 		final int sectorsPerTrack = 32;
 		final int firstCatalogSector = 31;
-		// We can't use the ImageLayout to format this disk since that actually wipes the entire
+		// We can't use the DataBuffer to wipe this disk since that actually wipes the entire
 		// 800K volume (that is, both disk1 and disk2 get cleared).
 		byte[] data = new byte[SECTOR_SIZE];
 		for (int t = 0; t < tracksPerDisk; t++) {
