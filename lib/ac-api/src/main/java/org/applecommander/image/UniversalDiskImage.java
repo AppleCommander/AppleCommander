@@ -4,7 +4,9 @@ import org.applecommander.capability.Capability;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+import org.applecommander.util.Information;
 
+import java.util.List;
 import java.util.Optional;
 
 public class UniversalDiskImage implements Source {
@@ -92,6 +94,37 @@ public class UniversalDiskImage implements Source {
     @Override
     public void clearChanges() {
         source.clearChanges();
+    }
+
+    @Override
+    public List<Information> information() {
+        List<Information> list = source.information();
+        Info info = getInfo();
+        list.add(Information.builder("Image Type").value("Universal Disk Image (2IMG/2MG)"));
+        list.add(Information.builder("Creator ID").value("%s (%s)", info.creator(),
+                switch(info.creator()) {
+                    case "!nfc" -> "ASIMOV2";
+                    case "B2TR" -> "Bernie [] the Rescue";
+                    case "CTKG" -> "Catakig";
+                    case "ShIm" -> "Shelly's ImageMaker";
+                    case "WOOF" -> "Sweet 16";
+                    default -> "Unknown";
+                }));
+        list.add(Information.builder("Version").value(info.version()));
+        list.add(Information.builder("Image Format").value("%d (%s)", info.imageFormat(),
+                switch(info.imageFormat()) {
+                    case 0 -> "DOS 3.3 sector order";
+                    case 1 -> "ProDOS sector order";
+                    case 2 -> "Nibble data";
+                    default -> "Unknown";
+                }));
+        list.add(Information.builder("Flags").value("$%02x (%s locked; volume %d)",
+                info.flags(), info.isLocked() ? "is" : "is not", info.getDosVolumeNumber()));
+        list.add(Information.builder("ProDOS Blocks").value(info.prodosBlocks()));
+        list.add(Information.builder("Data Offset & Length").value("$%08x & %08x",
+                info.dataOffset(), info.dataLength()));
+        list.add(Information.builder("Comment").value(info.comment()));
+        return list;
     }
 
     public record Info(String creator, int headerSize, int version, int imageFormat, int flags,
