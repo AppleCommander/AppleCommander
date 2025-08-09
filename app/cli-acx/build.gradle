@@ -20,6 +20,7 @@ dependencies {
     implementation "net.sf.applecommander:applesingle-api:$asVersion"
     implementation "net.sf.applecommander:bastools-api:$btVersion"
     implementation "net.sf.applecommander:acdasm:$acdasmVersion"
+    implementation "com.google.code.gson:gson:$gsonVersion"
 
     testImplementation "junit:junit:$junitVersion"
 }
