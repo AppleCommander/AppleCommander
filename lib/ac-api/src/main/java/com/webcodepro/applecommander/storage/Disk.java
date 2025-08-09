@@ -238,7 +238,7 @@ public class Disk {
 		} else if (isDC42) {
 			diskImageManager = new DiskCopyImage(new FileSource(sourcePath));
 		} else {
-			diskImageManager = new FileSource(sourcePath);
+			diskImageManager = new FileSource(sourcePath, DataBuffer.wrap(diskImage));
 		}
 
 		ImageOrder dosOrder = new DosOrder(diskImageManager);

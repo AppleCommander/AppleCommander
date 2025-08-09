@@ -22,19 +22,13 @@ public class FileSource implements Source {
             this.path = path;
             byte[] rawData = Files.readAllBytes(path);
             this.buffer = DataBuffer.wrap(rawData);
-            if (this.buffer.getUnsignedShort(0) == GZIPInputStream.GZIP_MAGIC) {
-                try (
-                    ByteArrayInputStream inputStream = new ByteArrayInputStream(rawData);
-                    GZIPInputStream gzipStream = new GZIPInputStream(inputStream);
-                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                ) {
-                    gzipStream.transferTo(outputStream);
-                    this.buffer = DataBuffer.wrap(outputStream.toByteArray());
-                }
-            }
         } catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
+    }
+    public FileSource(Path path, DataBuffer buffer) {
+        this.path = path;
+        this.buffer = buffer;
     }
     // TODO should this be separate or is "FileSource" a misnomer?
     public FileSource(DataBuffer buffer) {
