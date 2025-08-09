@@ -234,9 +234,9 @@ public class Disk {
 				|| diskImage.length == APPLE_10MB_HARDDISK + UniversalDiskImage.HEADER_SIZE
 				|| diskImage.length == APPLE_20MB_HARDDISK + UniversalDiskImage.HEADER_SIZE
 				|| diskImage.length == APPLE_32MB_HARDDISK + UniversalDiskImage.HEADER_SIZE) {
-			diskImageManager = new UniversalDiskImage(new FileSource(sourcePath));
+			diskImageManager = new UniversalDiskImage(new FileSource(sourcePath, DataBuffer.wrap(diskImage)));
 		} else if (isDC42) {
-			diskImageManager = new DiskCopyImage(new FileSource(sourcePath));
+			diskImageManager = new DiskCopyImage(new FileSource(sourcePath, DataBuffer.wrap(diskImage)));
 		} else {
 			diskImageManager = new FileSource(sourcePath, DataBuffer.wrap(diskImage));
 		}
