@@ -2,6 +2,7 @@ package org.applecommander.image;
 
 import org.applecommander.capability.Capability;
 import org.applecommander.source.Source;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
 import java.util.Optional;
@@ -65,15 +66,7 @@ public class UniversalDiskImage implements Source {
 
     @Override
     public <T> Optional<T> get(Class<T> iface) {
-        if (iface.isInstance(source)) {
-            return Optional.of(iface.cast(source));
-        }
-        else if (iface.isInstance(info)) {
-            return Optional.of(iface.cast(info));
-        }
-        else {
-            return source.get(iface);
-        }
+        return Container.get(iface, this, source, info);
     }
 
     @Override
