@@ -3,11 +3,14 @@ package org.applecommander.source;
 import org.applecommander.capability.Capability;
 import org.applecommander.util.DataBuffer;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.zip.GZIPInputStream;
 
 public class FileSource implements Source {
     private Path path;
@@ -17,7 +20,18 @@ public class FileSource implements Source {
     public FileSource(Path path) {
         try {
             this.path = path;
-            this.buffer = DataBuffer.wrap(Files.readAllBytes(path));
+            byte[] rawData = Files.readAllBytes(path);
+            this.buffer = DataBuffer.wrap(rawData);
+            if (this.buffer.getUnsignedShort(0) == GZIPInputStream.GZIP_MAGIC) {
+                try (
+                    ByteArrayInputStream inputStream = new ByteArrayInputStream(rawData);
+                    GZIPInputStream gzipStream = new GZIPInputStream(inputStream);
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                ) {
+                    gzipStream.transferTo(outputStream);
+                    this.buffer = DataBuffer.wrap(outputStream.toByteArray());
+                }
+            }
         } catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
