@@ -15,4 +15,33 @@ import java.util.Optional;
  */
 public interface Container {
     <T> Optional<T> get(Class<T> iface);
+
+    /**
+     * This helper method implements the interface logic. Just use it with:
+     * <p/>
+     * {@snippet lang=java :
+     *     @Override
+     *     public <T> Optional<T> get(Class<T> iface) {
+     *         return Container.get(iface, this, object1, object2);
+     *     }
+     * }
+     */
+    static <T> Optional<T> get(Class<T> iface, Object... objects) {
+        // First: Check if we have an the Class<T> type...
+        for (Object object : objects) {
+            if (iface.isInstance(object)) {
+                return Optional.of(iface.cast(object));
+            }
+        }
+        // Second: Check if any of these objects are a Container...
+        for (Object object : objects) {
+            if (object instanceof Container container) {
+                Optional<T> opt = container.get(iface);
+                if (opt.isPresent()) {
+                    return opt;
+                }
+            }
+        }
+        return Optional.empty();
+    }
 }

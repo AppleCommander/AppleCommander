@@ -1,16 +1,17 @@
 package org.applecommander.source;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+import org.applecommander.util.Information;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.zip.GZIPInputStream;
 
 public class FileSource implements Source {
     private Path path;
@@ -43,10 +44,7 @@ public class FileSource implements Source {
 
     @Override
     public <T> Optional<T> get(Class<T> iface) {
-        if (iface.isInstance(buffer)) {
-            return Optional.of(iface.cast(this));
-        }
-        return Optional.empty();
+        return Container.get(iface, this, buffer);
     }
 
     @Override
@@ -78,5 +76,12 @@ public class FileSource implements Source {
     @Override
     public void clearChanges() {
         changed = false;
+    }
+
+    @Override
+    public List<Information> information() {
+        List<Information> list = new ArrayList<>();
+        list.add(Information.builder("File Path").value(path.toString()));
+        return list;
     }
 }

@@ -75,7 +75,7 @@ public class DiskMapTab {
 	protected void createDiskMapTab(CTabFolder tabFolder) {	
 		CTabItem item = new CTabItem(tabFolder, SWT.NULL);
 		if (disk.getLogicalDiskNumber() > 0) {
-			item.setText(textBundle.get("DiskMapTab.MultipleTabsTitle") + disk.getLogicalDiskNumber()); //$NON-NLS-1$
+			item.setText(textBundle.format("DiskMapTab.MultipleTabsTitle", disk.getLogicalDiskNumber()));
 		} else {
 			item.setText(textBundle.get("DiskMapTab.SingleTabTitle")); //$NON-NLS-1$
 		}

@@ -19,6 +19,8 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
+import org.applecommander.source.Source;
+import org.applecommander.util.Information;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -38,6 +40,9 @@ import com.webcodepro.applecommander.storage.FormattedDisk.DiskInformation;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.util.TextBundle;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Build the Disk Info tab for the Disk Window.
  * <p>
@@ -46,7 +51,7 @@ import com.webcodepro.applecommander.util.TextBundle;
  */
 public class DiskInfoTab {
 	private TextBundle textBundle = UiBundle.getInstance();
-	private Table infoTable;
+	private List<Table> infoTables = new ArrayList<>();
 	private Composite composite;
 	private FormattedDisk[] formattedDisks;
 	/**
@@ -60,8 +65,12 @@ public class DiskInfoTab {
 		
 		tabFolder.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				getInfoTable().removeAll();
-				buildDiskInfoTable(getFormattedDisk(0));	// FIXME!
+				int diskNumber = 0;
+				for (Table table : getInfoTables()) {
+					table.removeAll();
+					// We assume that the number of FormattedDisks and InfoTables match...
+					buildDiskInfoTable(table, getFormattedDisk(diskNumber));
+				}
 			}
 		});
 		
@@ -72,7 +81,6 @@ public class DiskInfoTab {
 		ctabitem.setControl(scrolledComposite);
 		
 		composite = new Composite(scrolledComposite, SWT.NONE);
-		createDiskInfoTable();
 		if (disks.length > 1) {
 			RowLayout layout = new RowLayout(SWT.VERTICAL);
 			layout.wrap = false;
@@ -80,11 +88,15 @@ public class DiskInfoTab {
 			for (int i=0; i<disks.length; i++) {
 				Label label = new Label(composite, SWT.NULL);
 				label.setText(disks[i].getDiskName());
-				buildDiskInfoTable(disks[i]);
+				Table table = createDiskInfoTable();
+				infoTables.add(table);
+				buildDiskInfoTable(table, disks[i]);
 			}
 		} else {
+			Table table = createDiskInfoTable();
+			infoTables.add(table);
 			composite.setLayout(new FillLayout());
-			buildDiskInfoTable(disks[0]);
+			buildDiskInfoTable(table, disks[0]);
 		}
 		composite.pack();
 		scrolledComposite.setContent(composite);
@@ -94,37 +106,45 @@ public class DiskInfoTab {
 	/**
 	 * Create the table describing the given disk.
 	 */
-	public void createDiskInfoTable() {
-		infoTable = new Table(composite, SWT.FULL_SELECTION);
-		infoTable.setHeaderVisible(true);
-		TableColumn column = new TableColumn(infoTable, SWT.LEFT);
+	public Table createDiskInfoTable() {
+		Table table = new Table(composite, SWT.FULL_SELECTION);
+		table.setHeaderVisible(true);
+		TableColumn column = new TableColumn(table, SWT.LEFT);
 		column.setResizable(true);
 		column.setText(textBundle.get("DiskInfoTab.LabelHeader")); //$NON-NLS-1$
 		column.setWidth(200);
-		column = new TableColumn(infoTable, SWT.LEFT);
+		column = new TableColumn(table, SWT.LEFT);
 		column.setResizable(true);
 		column.setText(textBundle.get("DiskInfoTab.ValueHeader")); //$NON-NLS-1$
 		column.setWidth(400);
+		return table;
 	}
 	/**
 	 * Build the table describing the given disk.
 	 */
-	public void buildDiskInfoTable(FormattedDisk disk) {
-		TableItem item = null;
+	public void buildDiskInfoTable(Table table, FormattedDisk disk) {
 		for (DiskInformation diskinfo : disk.getDiskInformation()) {
-			item = new TableItem(infoTable, SWT.NULL);
+			TableItem item = new TableItem(table, SWT.NULL);
 			item.setText(new String[] { diskinfo.getLabel(), diskinfo.getValue() });
 		}
+		disk.getDiskImageManager().get(Source.class).ifPresent(source -> {
+			for (Information info : source.information()) {
+				TableItem item = new TableItem(table, SWT.NULL);
+				item.setText(new String[] { info.label(), info.value() });
+			}
+		});
 	}
 	/**
 	 * Dispose of resources.
 	 */
 	public void dispose() {
-		infoTable.dispose();
+		for (Table table : infoTables) {
+			table.dispose();
+		}
 		composite.dispose();
 	}
-	protected Table getInfoTable() {
-		return infoTable;
+	protected List<Table> getInfoTables() {
+		return infoTables;
 	}
 	protected FormattedDisk getFormattedDisk(int diskNumber) {
 		return formattedDisks[diskNumber];

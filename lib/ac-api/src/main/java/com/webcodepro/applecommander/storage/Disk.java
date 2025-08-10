@@ -41,6 +41,8 @@ import org.applecommander.util.DataBuffer;
 
 import java.io.*;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -88,44 +90,42 @@ public class Disk {
 	public static final int APPLE_32MB_HARDDISK = 33553920;	// short one block!
 
 	private static final TextBundle textBundle = StorageBundle.getInstance();
-	private static final FilenameFilter[] filenameFilters = new FilenameFilter[] {
-			new FilenameFilter(textBundle.get("Disk.AllImages"),  //$NON-NLS-1$
-					"*.do", "*.dsk", "*.po", "*.nib", "*.2mg", "*.2img", "*.hdv", "*.do.gz", "*.dsk.gz", "*.po.gz", "*.nib.gz", "*.2mg.gz", "*.2img.gz", "*.woz"), //$NON-NLS-1$
-			new FilenameFilter(textBundle.get("Disk.140kDosImages"),  //$NON-NLS-1$
-					"*.do", "*.dsk", "*.do.gz", "*.dsk.gz"), //$NON-NLS-1$
-			new FilenameFilter(textBundle.get("Disk.140kNibbleImages"), //$NON-NLS-1$
-					"*.nib", "*.nib.gz"), //$NON-NLS-1$
-			new FilenameFilter(textBundle.get("Disk.140kProdosImages"),  //$NON-NLS-1$
-					"*.po", "*.po.gz"), //$NON-NLS-1$
-			new FilenameFilter(textBundle.get("Disk.800kProdosImages"),  //$NON-NLS-1$
-					"*.2mg", "*.2img", "*.2mg.gz", "*.2img.gz"), //$NON-NLS-1$
-			new FilenameFilter(textBundle.get("Disk.ApplePcImages"),  //$NON-NLS-1$
-					"*.hdv"), //$NON-NLS-1$
-			new FilenameFilter(textBundle.get("Disk.CompressedImages"),  //$NON-NLS-1$
-					"*.sdk", "*.shk", "*.do.gz", "*.dsk.gz", "*.po.gz", "*.2mg.gz", "*.2img.gz"), //$NON-NLS-1$
-			new FilenameFilter(textBundle.get("Disk.WozImages"),
-					"*.woz"),
-			new FilenameFilter(textBundle.get("Disk.AllFiles"),  //$NON-NLS-1$
-					"*.*") //$NON-NLS-1$
-		};
-	private static final String[] allFileExtensions = new String[] {
-			".do",		//$NON-NLS-1$
-			".dsk",		//$NON-NLS-1$
-			".po",		//$NON-NLS-1$
-			".nib",		//$NON-NLS-1$
-			".sdk",		//$NON-NLS-1$
-			".shk",		//$NON-NLS-1$
-			".2mg",		//$NON-NLS-1$
-			".2img",	//$NON-NLS-1$
-			".hdv",		//$NON-NLS-1$
-			".do.gz",	//$NON-NLS-1$
-			".dsk.gz",	//$NON-NLS-1$
-			".po.gz",	//$NON-NLS-1$
-			".nib.gz",	//$NON-NLS-1$
-			".2mg.gz",	//$NON-NLS-1$
-			".2img.gz",
-			".woz"
-		};
+	private static final FilenameFilter[] filenameFilters;
+	private static final String[] allFileExtensions;
+	static {
+		// Build everything dynamically
+		List<String> templates = List.of(
+				"140kDosImages:do,dsk",
+				"140kProdosImages:po",
+				"140kNibbleImages:nib",
+				"800kProdosImages:2mg,2img",
+				"ApplePcImages:hdv",
+				"WozImages:woz",
+				"DiskCopyImages:dc");
+		List<FilenameFilter> filters = new ArrayList<>();
+		List<String> allImages = new ArrayList<>();
+		List<String> compressedImages = new ArrayList<>();
+		for (String template : templates) {
+			String[] parts = template.split(":");
+			String bundleName = String.format("Disk.%s", parts[0]);
+			List<String> extensions = new ArrayList<>();
+			for (String extension : parts[1].split(",")) {
+				String ext1 = String.format("*.%s", extension);
+				String ext2 = String.format("*.%s.gz", extension);
+				extensions.add(ext1);
+				extensions.add(ext2);
+				compressedImages.add(ext2);
+			}
+			allImages.addAll(extensions);
+			String text = textBundle.get(bundleName);
+			filters.add(new FilenameFilter(text, extensions.toArray(new String[0])));
+		}
+		filters.addFirst(new FilenameFilter(textBundle.get("Disk.AllImages"), allImages.toArray(new String[0])));
+		filters.add(new FilenameFilter(textBundle.get("Disk.CompressedImages"), compressedImages.toArray(new String[0])));
+		filters.add(new FilenameFilter(textBundle.get("Disk.AllFiles"), "*.*"));
+		filenameFilters = filters.toArray(new FilenameFilter[0]);
+		allFileExtensions = allImages.toArray(new String[0]);
+	}
 
 	private String filename;
 	private boolean newImage = false;

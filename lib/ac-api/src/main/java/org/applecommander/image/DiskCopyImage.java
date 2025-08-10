@@ -2,8 +2,11 @@ package org.applecommander.image;
 
 import org.applecommander.capability.Capability;
 import org.applecommander.source.Source;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+import org.applecommander.util.Information;
 
+import java.util.List;
 import java.util.Optional;
 
 public class DiskCopyImage implements Source {
@@ -37,15 +40,7 @@ public class DiskCopyImage implements Source {
 
     @Override
     public <T> Optional<T> get(Class<T> iface) {
-        if (iface.isInstance(source)) {
-            return Optional.of(iface.cast(source));
-        }
-        else if (iface.isInstance(info)) {
-            return Optional.of(iface.cast(info));
-        }
-        else {
-            return source.get(iface);
-        }
+        return Container.get(iface, this, source, info);
     }
 
     public Info getInfo() {
@@ -80,6 +75,35 @@ public class DiskCopyImage implements Source {
     @Override
     public void clearChanges() {
         source.clearChanges();
+    }
+
+    @Override
+    public List<Information> information() {
+        List<Information> list = source.information();
+        Info info = getInfo();
+        list.add(Information.builder("Image Type").value("Disk Copy"));
+        list.add(Information.builder("Disk Name").value(info.diskName()));
+        list.add(Information.builder("Data Size").value(info.dataSize()));
+        list.add(Information.builder("Tag Size").value(info.tagSize()));
+        list.add(Information.builder("Data Checksum").value("$%08x", info.dataChecksum()));
+        list.add(Information.builder("Tag Checksum").value("$%08x", info.tagChecksum()));
+        list.add(Information.builder("Disk Format").value("%d (%s)", info.diskFormat(),
+                switch(info.diskFormat()) {
+                    case 0 -> "400K - GCR CLV ssdd";
+                    case 1 -> "800K - GCR CLV dsdd";
+                    case 2 -> "720K - MFM CAV dsdd";
+                    case 3 -> "1440K - MFM CAV dshd";
+                    default -> "Reserved";
+                }));
+        list.add(Information.builder("Format Byte").value("%02x (%s)", info.formatByte(),
+                switch(info.formatByte()) {
+                    case 0x02 -> "400K Macintosh";
+                    case 0x12 -> "400K";
+                    case 0x22 -> "800K Macintosh";
+                    case 0x24 -> "800K Apple II";
+                    default -> "Other";
+                }));
+        return list;
     }
 
     public record Info(String diskName, int dataSize, int tagSize, int dataChecksum, int tagChecksum,

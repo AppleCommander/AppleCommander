@@ -65,6 +65,7 @@ import io.github.applecommander.bastools.api.model.Token;
 import org.applecommander.source.FileSource;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
+import org.applecommander.util.Information;
 
 /**
  * ac provides a command line interface to key AppleCommander functions. Text
@@ -553,6 +554,11 @@ public class ac {
 				for (DiskInformation diskinfo : formattedDisk.getDiskInformation()) {
 					System.out.println(diskinfo.getLabel() + ": " + diskinfo.getValue());
 				}
+				formattedDisk.getDiskImageManager().get(Source.class).ifPresent(source -> {
+					for (Information info : source.information()) {
+						System.out.println(info.label() + ": " + info.value());
+					}
+				});
 			}
 			System.out.println();
 		}
