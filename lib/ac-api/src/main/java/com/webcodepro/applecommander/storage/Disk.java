@@ -90,7 +90,7 @@ public class Disk {
 
 	private static final TextBundle textBundle = StorageBundle.getInstance();
 	private static final FilenameFilter[] filenameFilters;
-	private static final String[] allFileExtensions;
+	private static final List<String> allFileExtensions;
 	static {
 		// Build everything dynamically
 		List<String> templates = List.of(
@@ -102,8 +102,8 @@ public class Disk {
 				"WozImages:woz",
 				"DiskCopyImages:dc");
 		List<FilenameFilter> filters = new ArrayList<>();
-		List<String> allImages = new ArrayList<>();
-		List<String> compressedImages = new ArrayList<>();
+		List<String> allImages = new ArrayList<>(List.of("*.shk", "*.sdk"));
+		List<String> compressedImages = new ArrayList<>(allImages);
 		for (String template : templates) {
 			String[] parts = template.split(":");
 			String bundleName = String.format("Disk.%s", parts[0]);
@@ -123,7 +123,8 @@ public class Disk {
 		filters.add(new FilenameFilter(textBundle.get("Disk.CompressedImages"), compressedImages.toArray(new String[0])));
 		filters.add(new FilenameFilter(textBundle.get("Disk.AllFiles"), "*.*"));
 		filenameFilters = filters.toArray(new FilenameFilter[0]);
-		allFileExtensions = allImages.toArray(new String[0]);
+		// allFileExtensions is of the format ".dsk", ".dsk.gz", so we just strip the first character off...
+		allFileExtensions = allImages.stream().map(s -> s.substring(1)).toList();
 	}
 
 	private String filename;
@@ -145,7 +146,7 @@ public class Disk {
 	 * Get the supported file extensions supported by the Disk interface.
 	 * This is used by the Swing UI to populate the open file dialog box.
 	 */
-	public static String[] getAllExtensions() {
+	public static List<String> getAllExtensions() {
 		return allFileExtensions;
 	}
 
