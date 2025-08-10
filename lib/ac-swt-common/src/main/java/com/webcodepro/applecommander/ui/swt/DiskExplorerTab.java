@@ -432,7 +432,7 @@ public class DiskExplorerTab {
 		});
 
 		item = new MenuItem(menu, SWT.NONE);
-		item.setText(textBundle.get("VeiwAsGraphicsMenuItem")); //$NON-NLS-1$
+		item.setText(textBundle.get("ViewAsGraphicsMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				try {
