@@ -19,17 +19,17 @@
  */
 package com.webcodepro.applecommander.storage.os.dos33;
 
-import static org.junit.Assert.assertEquals;
-
 import org.applecommander.source.FileSource;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DosFormatDiskTest {
     @Test

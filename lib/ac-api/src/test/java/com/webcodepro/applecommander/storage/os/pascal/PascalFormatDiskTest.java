@@ -19,17 +19,17 @@
  */
 package com.webcodepro.applecommander.storage.os.pascal;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.applecommander.source.FileSource;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
-import org.junit.Test;
 
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
+import org.junit.jupiter.api.Test;
 
 public class PascalFormatDiskTest {
     @Test

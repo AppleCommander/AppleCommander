@@ -19,6 +19,9 @@
  */
 package com.webcodepro.applecommander.util;
 
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -27,16 +30,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-@RunWith(Parameterized.class)
 public class TranslatorStreamTest {
-    @Parameters(name = "{index}: {0}")
     public static Collection<TestData> data() {
         return Arrays.asList(
                 TestData.builder().unixLineEndings().highBitSet().build(),
@@ -47,12 +43,10 @@ public class TranslatorStreamTest {
                 TestData.builder().appleLineEndings().highBitClear().build()
             );
     }
-    
-    @Parameter
-    public TestData testData;
 
-    @Test
-    public void test() throws IOException {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void test(TestData testData) throws IOException {
         InputStream is = testData.getSourceStream();
         
         byte[] actual = null;
@@ -61,7 +55,7 @@ public class TranslatorStreamTest {
             actual = os.toByteArray();
         }
         
-        Assert.assertArrayEquals(testData.getExpected(), actual);
+        assertArrayEquals(testData.getExpected(), actual);
     }
     
     public static class TestData {

@@ -21,11 +21,14 @@ dependencies {
     implementation "net.sf.applecommander:applesingle-api:$asVersion"
     implementation "net.sf.applecommander:bastools-api:$btVersion"
 
-    testImplementation "junit:junit:$junitVersion"
+    testImplementation platform("org.junit:junit-bom:$junitVersion")
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation "org.apache.commons:commons-lang3:$commonsLang3Version"
 }
 
 test {
+    useJUnitPlatform()
     String osName = System.getProperty('os.name').toLowerCase().split()[0]
     String osArch = System.getProperty('os.arch').toLowerCase().split()[0]
     switch (osArch) {

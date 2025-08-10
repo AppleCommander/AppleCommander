@@ -31,9 +31,9 @@ import com.webcodepro.applecommander.storage.physical.NibbleOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import org.applecommander.source.FileSource;
 import org.applecommander.util.DataBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test AppleUtil.
@@ -94,7 +94,7 @@ public class AppleUtilTest {
 		// Confirm that these disks are identical:
         ComparisonResult result = DiskDiff.create(dosDiskDosOrder, dosDiskDosOrder)
                 .selectCompareByTrackSectorGeometry().compare();
-        assertEquals("Expected disks to have no differences", 0, result.getDifferenceCount());
+        assertEquals(0, result.getDifferenceCount(), "Expected disks to have no differences");
 	}
 
 	@Test
@@ -116,7 +116,7 @@ public class AppleUtilTest {
 		// Confirm that these disks are identical:
 		ComparisonResult result = DiskDiff.create(prodosDiskDosOrder, prodosDiskNibbleOrder)
 		        .selectCompareByBlockGeometry().compare();
-		assertEquals("Expected disks to have no differences", 0, result.getDifferenceCount());
+		assertEquals(0, result.getDifferenceCount(), "Expected disks to have no differences");
 	}
 	
 	@Test
@@ -136,7 +136,7 @@ public class AppleUtilTest {
             System.out.println(line);
 	        if (line.startsWith("$")) {
 	            assertEquals(expectedWidth, line.length());
-	            line.chars().forEach(i -> assertTrue(Integer.toString(i), i >= ' '));
+	            line.chars().forEach(i -> assertTrue(i >= ' ', Integer.toString(i)));
 	        }
 	    }
 	}

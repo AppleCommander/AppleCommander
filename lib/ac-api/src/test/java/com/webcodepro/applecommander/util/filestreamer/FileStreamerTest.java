@@ -19,16 +19,15 @@
  */
 package com.webcodepro.applecommander.util.filestreamer;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
-
 import com.webcodepro.applecommander.storage.DiskUnrecognizedException;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FileStreamerTest {
     private static final List<String> EXPECTED_MERLIN = Arrays.asList(

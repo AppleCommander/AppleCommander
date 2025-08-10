@@ -19,17 +19,17 @@
  */
 package com.webcodepro.applecommander.storage.os.prodos;
 
-import static org.junit.Assert.*;
-
 import org.applecommander.source.FileSource;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ProdosFormatDiskTest {
     @Test
