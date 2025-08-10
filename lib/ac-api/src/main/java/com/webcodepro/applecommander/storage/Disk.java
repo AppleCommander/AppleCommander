@@ -31,18 +31,18 @@ import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import com.webcodepro.applecommander.storage.physical.*;
 import com.webcodepro.applecommander.util.AppleUtil;
-import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 import org.applecommander.image.UniversalDiskImage;
+import org.applecommander.image.WozImage;
 import org.applecommander.source.FileSource;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -190,34 +190,25 @@ public class Disk {
 	public Disk(String filename, int startBlocks, boolean knownProDOSOrder) throws IOException {
 		this.filename = filename;
 		int diskSize = 0;
-		byte[] diskImage = null;
 
 		if (isSDK() || isSHK() || isBXY()) {
 			// If we have an SDK, unpack it and send along the byte array
 			// If we have a SHK, build a new disk and unpack the contents on to it
-			diskImage = com.webcodepro.applecommander.util.ShrinkItUtilities.unpackSHKFile(filename, startBlocks);
+			byte[] diskImage = com.webcodepro.applecommander.util.ShrinkItUtilities.unpackSHKFile(filename, startBlocks);
 			diskSize = diskImage.length;
 			// Since we don't want to overwrite their shrinkit with a raw ProDOS image,
 			// add a .po extension to it
 			this.filename += ".po"; //$NON-NLS-1$
+			this.diskImageManager = new FileSource(Path.of(this.filename), DataBuffer.wrap(diskImage));
 		} else {
-			File file = new File(filename);
-			diskSize = (int) file.length();
-			InputStream input = new FileInputStream(file);
-			if (isCompressed()) {
-				input = new GZIPInputStream(input);
-			}
-			ByteArrayOutputStream diskImageByteArray = new ByteArrayOutputStream(diskSize);
-			StreamUtil.copy(input, diskImageByteArray);
-			diskImage = diskImageByteArray.toByteArray();
+			Path sourcePath = Path.of(filename);
+			diskSize = (int) Files.size(sourcePath);
+			diskImageManager = Source.create(sourcePath).orElseThrow();
 		}
 
 		/* Does it have the WOZ1 or WOZ2 header? */
-		boolean isWoz = (diskImage[0] == 0x57) && (diskImage[1] == 0x4f) && (diskImage[2] == 0x5a)
-				&& ((diskImage[3] == 0x31) || (diskImage[3] == 0x32));
-
-        Path sourcePath = Path.of(filename);
-		diskImageManager = Source.create(new FileSource(sourcePath, DataBuffer.wrap(diskImage))).orElseThrow();
+		int signature = diskImageManager.readBytes(0, 4).readInt();
+		boolean isWoz = WozImage.WOZ1_MAGIC == signature || WozImage.WOZ2_MAGIC == signature;
 
 		ImageOrder dosOrder = new DosOrder(diskImageManager);
 		ImageOrder proDosOrder = new ProdosOrder(diskImageManager);
