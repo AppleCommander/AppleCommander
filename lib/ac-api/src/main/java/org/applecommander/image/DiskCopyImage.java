@@ -160,9 +160,9 @@ public class DiskCopyImage implements Source {
                 else if (header.getUnsignedByte(0) > 63) {
                     // Name length must fit in first 64 bytes
                 }
-                else if (HEADER_SIZE + header.getIntBE(64) + header.getIntBE(68) > source.getSize()) {
-                    // Header + Data + Tag length is too big
-                }
+//                else if (HEADER_SIZE + header.getIntBE(64) + header.getIntBE(68) > source.getSize()) {
+//                    // Header + Data + Tag length is too big
+//                }
                 else {
                     return Optional.of(new DiskCopyImage(source));
                 }
