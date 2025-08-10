@@ -12,6 +12,7 @@ import java.util.Optional;
 public class UniversalDiskImage implements Source {
     public static final int MAGIC = 0x32494d47;     // "2IMG" marker
     public static final int HEADER_SIZE = 0x40;     // documented header size
+    public static final int HEADER_SIZE_ALT = 0x34; // found in KeyWin.2mg
 
     private final Source source;
     private final Info info;
@@ -25,7 +26,7 @@ public class UniversalDiskImage implements Source {
         }
         String creator = header.readFixedLengthString(4);
         int headerSize = header.readUnsignedShort();
-        assert(headerSize == HEADER_SIZE);
+        assert(headerSize == HEADER_SIZE || headerSize == HEADER_SIZE_ALT);
         int version = header.readUnsignedShort();
         assert(version == 0 || version == 1);
         int imageFormat = header.readInt();
@@ -164,7 +165,8 @@ public class UniversalDiskImage implements Source {
                 if (header.getIntBE(0) != MAGIC) {
                     // Need the magic bytes!
                 }
-                else if (header.getUnsignedShort(8) != HEADER_SIZE) {
+                else if (header.getUnsignedShort(8) != HEADER_SIZE
+                         && header.getUnsignedShort(8) != HEADER_SIZE_ALT) {
                     // Expecting header size to match
                 }
                 else if (header.getUnsignedShort(10) > 1) {
