@@ -9,8 +9,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SourceFactoryTest {
     private static final String DISKS = TestConfig.getInstance().getDiskDir();
@@ -57,6 +56,10 @@ public class SourceFactoryTest {
         Optional<Source> source = Source.create(path);
         assertTrue(source.isPresent());
         assertInstanceOf(DiskCopyImage.class, source.get());
+        // We are assuming that these DiskCopy images are well-formed to validate the checksum algorithm
+        DiskCopyImage dcImage = source.get().get(DiskCopyImage.class).orElseThrow();
+        assertEquals(dcImage.getInfo().dataChecksum(), dcImage.getInfo().calculatedDataChecksum());
+        assertEquals(dcImage.getInfo().tagChecksum(), dcImage.getInfo().calculatedTagChecksum());
     }
 
     @ParameterizedTest
