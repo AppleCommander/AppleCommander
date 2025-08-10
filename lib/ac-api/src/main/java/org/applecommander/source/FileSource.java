@@ -84,4 +84,19 @@ public class FileSource implements Source {
         list.add(Information.builder("File Path").value(path.toString()));
         return list;
     }
+
+    public static class Factory implements Source.Factory {
+        @Override
+        public Optional<Source> fromObject(Object object) {
+            if (object instanceof Path path) {
+                return Optional.of(new FileSource(path));
+            }
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<Source> fromSource(Source source) {
+            return Optional.empty();
+        }
+    }
 }

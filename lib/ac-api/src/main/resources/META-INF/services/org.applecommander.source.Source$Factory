@@ -1,0 +1,6 @@
+# These are "fromObject" sources
+org.applecommander.source.FileSource$Factory
+
+# These are "fromSource" (wrapper) sources
+org.applecommander.image.DiskCopyImage$Factory
+org.applecommander.image.UniversalDiskImage$Factory

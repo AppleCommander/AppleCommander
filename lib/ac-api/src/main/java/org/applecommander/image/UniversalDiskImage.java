@@ -150,4 +150,34 @@ public class UniversalDiskImage implements Source {
             return 0;
         }
     }
+
+    public static class Factory implements Source.Factory {
+        @Override
+        public Optional<Source> fromObject(Object object) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<Source> fromSource(Source source) {
+            if (source.getSize() > HEADER_SIZE) {
+                DataBuffer header = source.readBytes(0, HEADER_SIZE);
+                if (header.getIntBE(0) != MAGIC) {
+                    // Need the magic bytes!
+                }
+                else if (header.getUnsignedShort(8) != HEADER_SIZE) {
+                    // Expecting header size to match
+                }
+                else if (header.getUnsignedShort(10) > 1) {
+                    // We only have seen versions 0 and 1
+                }
+                else if (header.getInt(0x18) + header.getInt(0x1c) > source.getSize()) {
+                    // We at least expect data to be a valid size within the file
+                }
+                else {
+                    return Optional.of(new UniversalDiskImage(source));
+                }
+            }
+            return Optional.empty();
+        }
+    }
 }

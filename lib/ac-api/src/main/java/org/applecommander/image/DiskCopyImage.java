@@ -109,4 +109,31 @@ public class DiskCopyImage implements Source {
     public record Info(String diskName, int dataSize, int tagSize, int dataChecksum, int tagChecksum,
                        int diskFormat, int formatByte) {
     }
+
+    public static class Factory implements Source.Factory {
+        @Override
+        public Optional<Source> fromObject(Object object) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<Source> fromSource(Source source) {
+            if (source.getSize() > HEADER_SIZE) {
+                DataBuffer header = source.readBytes(0, HEADER_SIZE);
+                if (header.getUnsignedShortBE(HEADER_SIZE-2) != 0x100) {
+                    // Not Disk Copy
+                }
+                else if (header.getUnsignedByte(0) > 63) {
+                    // Name length must fit in first 64 bytes
+                }
+                else if (HEADER_SIZE + header.getIntBE(64) + header.getIntBE(68) > source.getSize()) {
+                    // Header + Data + Tag length is too big
+                }
+                else {
+                    return Optional.of(new DiskCopyImage(source));
+                }
+            }
+            return Optional.empty();
+        }
+    }
 }

@@ -61,11 +61,25 @@ public class DataBuffer {
     public int getUnsignedShort(int index) {
         return Short.toUnsignedInt(this.buffer.getShort(index));
     }
+    public int getUnsignedShortBE(int index) {
+        this.buffer.order(ByteOrder.BIG_ENDIAN);
+        int value = getUnsignedShort(index);
+        this.buffer.order(ByteOrder.LITTLE_ENDIAN);
+        return value;
+    }
+    public int getInt(int index) {
+        return this.buffer.getInt(index);
+    }
+    public int getIntBE(int index) {
+        this.buffer.order(ByteOrder.BIG_ENDIAN);
+        int value = getInt(index);
+        this.buffer.order(ByteOrder.LITTLE_ENDIAN);
+        return value;
+    }
     public void get(int position, byte[] data) {
         // Hopefully this is a bridge method and can be removed over time
         this.buffer.get(position, data);
     }
-
     public String getFixedLengthString(int index, int length) {
         byte[] s = new byte[length];
         this.buffer.get(index, s);

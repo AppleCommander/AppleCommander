@@ -33,7 +33,6 @@ import com.webcodepro.applecommander.storage.physical.*;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
-import org.applecommander.image.DiskCopyImage;
 import org.applecommander.image.UniversalDiskImage;
 import org.applecommander.source.FileSource;
 import org.applecommander.source.Source;
@@ -153,7 +152,6 @@ public class Disk {
 	/**
 	 * Construct a Disk with the given byte array.
 	 */
-
 	protected Disk(String filename, ImageOrder imageOrder) {
 		this.imageOrder = imageOrder;
 		this.filename = filename;
@@ -192,7 +190,6 @@ public class Disk {
 		this.filename = filename;
 		int diskSize = 0;
 		byte[] diskImage = null;
-		byte[] diskImageDC42 = null;
 
 		if (isSDK() || isSHK() || isBXY()) {
 			// If we have an SDK, unpack it and send along the byte array
@@ -213,33 +210,13 @@ public class Disk {
 			StreamUtil.copy(input, diskImageByteArray);
 			diskImage = diskImageByteArray.toByteArray();
 		}
-		boolean is2img = false;
-		boolean isWoz = false;
-		/* Does it have the 2IMG header? */
-		if ((diskImage[0] == 0x32) && (diskImage[1] == 0x49) && (diskImage[2] == 0x4D) && (diskImage[3]) == 0x47) {
-			is2img = true;
-		}
+
 		/* Does it have the WOZ1 or WOZ2 header? */
-		else if ((diskImage[0] == 0x57) && (diskImage[1] == 0x4f) && (diskImage[2] == 0x5a)
-				&& ((diskImage[3] == 0x31) || (diskImage[3] == 0x32))) {
-			isWoz = true;
-		}
-		/* Does it have the DiskCopy 4.2 header? */
-		else if (Disk.isDC42(diskImage)) {
-			isDC42 = true;
-		}
-		Path sourcePath = Path.of(filename);
-		if (is2img || diskImage.length == APPLE_800KB_DISK + UniversalDiskImage.HEADER_SIZE
-				|| diskImage.length == APPLE_5MB_HARDDISK + UniversalDiskImage.HEADER_SIZE
-				|| diskImage.length == APPLE_10MB_HARDDISK + UniversalDiskImage.HEADER_SIZE
-				|| diskImage.length == APPLE_20MB_HARDDISK + UniversalDiskImage.HEADER_SIZE
-				|| diskImage.length == APPLE_32MB_HARDDISK + UniversalDiskImage.HEADER_SIZE) {
-			diskImageManager = new UniversalDiskImage(new FileSource(sourcePath, DataBuffer.wrap(diskImage)));
-		} else if (isDC42) {
-			diskImageManager = new DiskCopyImage(new FileSource(sourcePath, DataBuffer.wrap(diskImage)));
-		} else {
-			diskImageManager = new FileSource(sourcePath, DataBuffer.wrap(diskImage));
-		}
+		boolean isWoz = (diskImage[0] == 0x57) && (diskImage[1] == 0x4f) && (diskImage[2] == 0x5a)
+				&& ((diskImage[3] == 0x31) || (diskImage[3] == 0x32));
+
+        Path sourcePath = Path.of(filename);
+		diskImageManager = Source.create(new FileSource(sourcePath, DataBuffer.wrap(diskImage))).orElseThrow();
 
 		ImageOrder dosOrder = new DosOrder(diskImageManager);
 		ImageOrder proDosOrder = new ProdosOrder(diskImageManager);
