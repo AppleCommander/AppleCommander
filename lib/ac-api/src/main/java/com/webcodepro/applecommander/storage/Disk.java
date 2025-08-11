@@ -36,6 +36,7 @@ import org.applecommander.image.UniversalDiskImage;
 import org.applecommander.image.WozImage;
 import org.applecommander.source.FileSource;
 import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 import org.applecommander.util.DataBuffer;
 
 import java.io.*;
@@ -203,7 +204,7 @@ public class Disk {
 		} else {
 			Path sourcePath = Path.of(filename);
 			diskSize = (int) Files.size(sourcePath);
-			diskImageManager = Source.create(sourcePath).orElseThrow();
+			diskImageManager = Sources.create(sourcePath).orElseThrow();
 		}
 
 		/* Does it have the WOZ1 or WOZ2 header? */

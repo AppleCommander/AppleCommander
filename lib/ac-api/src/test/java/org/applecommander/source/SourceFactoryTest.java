@@ -41,7 +41,7 @@ public class SourceFactoryTest {
         })
     public void testFileSourceRecognition(String filename) {
         Path path = Path.of(DISKS, filename);
-        Optional<Source> source = Source.create(path);
+        Optional<Source> source = Sources.create(path);
         assertTrue(source.isPresent());
         assertInstanceOf(FileSource.class, source.get());
     }
@@ -53,7 +53,7 @@ public class SourceFactoryTest {
         })
     public void testDiskCopyImageRecognition(String filename) {
         Path path = Path.of(DISKS, filename);
-        Optional<Source> source = Source.create(path);
+        Optional<Source> source = Sources.create(path);
         assertTrue(source.isPresent());
         assertInstanceOf(DiskCopyImage.class, source.get());
         // We are assuming that these DiskCopy images are well-formed to validate the checksum algorithm
@@ -68,7 +68,7 @@ public class SourceFactoryTest {
         })
     public void testUniversalDiskImageRecognition(String filename) {
         Path path = Path.of(DISKS, filename);
-        Optional<Source> source = Source.create(path);
+        Optional<Source> source = Sources.create(path);
         assertTrue(source.isPresent());
         assertInstanceOf(UniversalDiskImage.class, source.get());
     }
