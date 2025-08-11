@@ -1580,10 +1580,11 @@ public class DiskExplorerTab {
 					FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 					DiskWindow diskWindow = new DiskWindow(shell, formattedDisks, imageManager);
 					diskWindow.open();
+					return;
 				} catch (IOException e) {
-					SwtUtil.showSystemErrorDialog(shell, e);
+					// Fall through to the default (match the else statement)
+					window = new FileViewerWindow(shell, fileEntry, imageManager);
 				}
-				return;
 			} else {
 				window = new FileViewerWindow(shell, fileEntry, imageManager);
 			}
