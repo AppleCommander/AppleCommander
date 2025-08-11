@@ -510,11 +510,4 @@ public class DosFileEntry implements FileEntry {
         }
         return 0;
     }
-
-	/**
-	 * Indicates that this filetype can be compiled.
-	 */
-	public boolean canCompile() {
-		return isApplesoftBasicFile();
-	}
 }

@@ -52,7 +52,6 @@ public class ImageManager {
 	public static final String ICON_OPEN_DISK_IMAGE = "opendisk.gif"; //$NON-NLS-1$
 	public static final String ICON_NEW_DISK_IMAGE = "newdisk.gif"; //$NON-NLS-1$
 	public static final String ICON_ABOUT_APPLECOMMANDER = "about.gif"; //$NON-NLS-1$
-	public static final String ICON_COMPILE_FILE = "compile.gif"; //$NON-NLS-1$
 	public static final String ICON_VIEW_FILE = "viewfile.gif"; //$NON-NLS-1$
 	public static final String ICON_SAVE_DISK_IMAGE_AS = "saveas.gif"; //$NON-NLS-1$
 	public static final String ICON_VIEW_AS_DATABASE = "database.gif"; //$NON-NLS-1$
@@ -68,12 +67,12 @@ public class ImageManager {
 	public static final String ICON_COMPARE_DISKS = "comparedisks.gif"; //$NON-NLS-1$
 	public static final String ICON_CHANGE_IMAGE_ORDER = "changeorder.gif"; //$NON-NLS-1$
 	public static final String ICON_SHAPE_TABLE = "shape_table.gif";
+	public static final String ICON_DISASSEMBLE_FILE = "disassemble.gif";
 
 	public static final String LOGO_EXPORT_WIZARD        = "ExportWizardLogo.jpg"; //$NON-NLS-1$
 	public static final String LOGO_APPLECOMMANDER       = "AppleCommanderLogo.jpg"; //$NON-NLS-1$
 	public static final String LOGO_DISK_IMAGE_WIZARD    = "DiskImageWizardLogo.jpg"; //$NON-NLS-1$
 	public static final String LOGO_IMPORT_WIZARD        = "ImportWizardLogo.jpg"; //$NON-NLS-1$
-	public static final String LOGO_COMPILE_WIZARD       = "CompileWizardLogo.jpg"; //$NON-NLS-1$
 	public static final String LOGO_COMPARE_IMAGE_WIZARD = "CompareImageWizardLogo.jpg"; //$NON-NLS-1$
 	
 	private Map<String,Image> images = new HashMap<>();
@@ -85,7 +84,7 @@ public class ImageManager {
 		ICON_SAVE_DISK_IMAGE,		ICON_DELETE_FILE,
 		ICON_SHOW_DELETED_FILES,	ICON_OPEN_DISK_IMAGE,
 		ICON_NEW_DISK_IMAGE,		ICON_ABOUT_APPLECOMMANDER,
-		ICON_COMPILE_FILE,			ICON_VIEW_FILE,
+		ICON_DISASSEMBLE_FILE,		ICON_VIEW_FILE,
 		ICON_SAVE_DISK_IMAGE_AS,	ICON_VIEW_AS_DATABASE,
 		ICON_VIEW_IN_HEX,			ICON_VIEW_AS_IMAGE,
 		ICON_PRINT_FILE,			ICON_VIEW_IN_RAW_HEX,
@@ -96,7 +95,7 @@ public class ImageManager {
 		// Logos:
 		LOGO_EXPORT_WIZARD,			LOGO_APPLECOMMANDER,
 		LOGO_DISK_IMAGE_WIZARD,		LOGO_IMPORT_WIZARD,
-		LOGO_COMPILE_WIZARD,		LOGO_COMPARE_IMAGE_WIZARD
+		LOGO_COMPARE_IMAGE_WIZARD
 	};
 	/**
 	 * Construct the ImageManager and load all images.

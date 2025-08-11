@@ -535,13 +535,6 @@ public class PascalFileEntry implements FileEntry {
     }
 
 	/**
-	 * Indicates that this filetype can be compiled.
-	 */
-	public boolean canCompile() {
-		return false;
-	}
-
-	/**
 	 * Set the file count in a volume entry.
 	 * Use only on the volume entry: dir.get(0).
 	 * author John B. Matthews

@@ -340,11 +340,4 @@ public class GutenbergFileEntry implements FileEntry {
     public int getAddress() {
         return 0;   // Does not apply.
     }
-	
-	/**
-	 * Indicates that this filetype can be compiled.
-	 */
-	public boolean canCompile() {
-		return false;
-	}
 }

@@ -253,14 +253,6 @@ public class NakedosFileEntry implements FileEntry {
         return 0;   // Does not apply.
     }
 
-
-	/**
-	 * Indicates that this filetype can be compiled.
-	 */
-	public boolean canCompile() {
-		return false;
-	}
-
 	public boolean equals (Object o) {
 		return this.getFilename().equals(((NakedosFileEntry)o).getFilename());
 	}
