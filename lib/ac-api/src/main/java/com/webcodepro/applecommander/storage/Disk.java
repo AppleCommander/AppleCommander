@@ -40,7 +40,6 @@ import org.applecommander.source.Sources;
 import org.applecommander.util.DataBuffer;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -189,22 +188,24 @@ public class Disk {
 	 * Read in the entire contents of the file.
 	 */
 	public Disk(String filename, int startBlocks, boolean knownProDOSOrder) throws IOException {
+		this(filename, Sources.create(Path.of(filename)).orElseThrow(), startBlocks, knownProDOSOrder);
+	}
+
+	public Disk(String filename, Source source, int startBlocks, boolean knownProDOSOrder) throws IOException {
 		this.filename = filename;
-		int diskSize = 0;
+		this.diskImageManager = source;
+		int diskSize = source.getSize();
 
 		if (isSDK() || isSHK() || isBXY()) {
 			// If we have an SDK, unpack it and send along the byte array
 			// If we have a SHK, build a new disk and unpack the contents on to it
-			byte[] diskImage = com.webcodepro.applecommander.util.ShrinkItUtilities.unpackSHKFile(filename, startBlocks);
+			byte[] diskImage = com.webcodepro.applecommander.util.ShrinkItUtilities.unpackSHKFile(
+				filename, source, startBlocks);
 			diskSize = diskImage.length;
 			// Since we don't want to overwrite their shrinkit with a raw ProDOS image,
 			// add a .po extension to it
 			this.filename += ".po"; //$NON-NLS-1$
 			this.diskImageManager = new FileSource(Path.of(this.filename), DataBuffer.wrap(diskImage));
-		} else {
-			Path sourcePath = Path.of(filename);
-			diskSize = (int) Files.size(sourcePath);
-			diskImageManager = Sources.create(sourcePath).orElseThrow();
 		}
 
 		/* Does it have the WOZ1 or WOZ2 header? */

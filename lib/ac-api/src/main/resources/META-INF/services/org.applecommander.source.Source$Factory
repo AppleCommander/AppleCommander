@@ -1,5 +1,6 @@
 # These are "fromObject" sources
 org.applecommander.source.FileSource$Factory
+com.webcodepro.applecommander.storage.FileEntrySource$Factory
 
 # These are "fromSource" (wrapper) sources
 org.applecommander.image.DiskCopyImage$Factory
