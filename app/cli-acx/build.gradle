@@ -22,7 +22,13 @@ dependencies {
     implementation "net.sf.applecommander:acdasm:$acdasmVersion"
     implementation "com.google.code.gson:gson:$gsonVersion"
 
-    testImplementation "junit:junit:$junitVersion"
+    testImplementation platform("org.junit:junit-bom:$junitVersion")
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 application {

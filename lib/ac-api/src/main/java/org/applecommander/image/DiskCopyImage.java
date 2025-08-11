@@ -7,7 +7,9 @@ import org.applecommander.util.DataBuffer;
 import org.applecommander.util.Information;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
 
 public class DiskCopyImage implements Source {
     public static final int HEADER_SIZE = 84;
@@ -29,7 +31,31 @@ public class DiskCopyImage implements Source {
         int magic = header.readUnsignedShortBE();
         assert(magic == 0x100);
         assert(header.position() == HEADER_SIZE);
-        this.info = new Info(diskName, dataSize, tagSize, dataChecksum, tagChecksum, diskFormat, formatByte);
+        int calculatedDataChecksum = checksum(HEADER_SIZE, dataSize);
+        int calculatedTagChecksum = checksum(HEADER_SIZE+dataSize, tagSize);
+        this.info = new Info(diskName, dataSize, tagSize, dataChecksum, tagChecksum, diskFormat, formatByte,
+                calculatedDataChecksum, calculatedTagChecksum);
+    }
+
+    /**
+     * Calculate the expected checksum. Note that we try to be careful about length as there
+     * are DiskCopy images that appear to have been truncated over time. Since the checksums should NOT
+     * match, presumably the user may notice that detail!
+     */
+    public int checksum(int offset, int requestedLength) {
+        int checksum = 0;
+        if (offset < source.getSize() && requestedLength > 0) {
+            int length = Math.min(source.getSize()-offset, requestedLength);
+            DataBuffer data = source.readBytes(offset, length);
+            while (length > 0) {
+                checksum += data.readUnsignedShortBE();
+                int carry = checksum & 1;
+                checksum >>>= 1;
+                checksum |= carry << 31;
+                length -= 2;
+            }
+        }
+        return checksum;
     }
 
     @Override
@@ -79,14 +105,22 @@ public class DiskCopyImage implements Source {
 
     @Override
     public List<Information> information() {
+        BiFunction<Integer,Integer,String> cksumFn = (a, e) -> {
+            if (Objects.equals(a, e)) {
+                return String.format("$%08x (verified)", a);
+            }
+            return String.format("$%08x (expected $%08x)", a, e);
+        };
         List<Information> list = source.information();
         Info info = getInfo();
         list.add(Information.builder("Image Type").value("Disk Copy"));
         list.add(Information.builder("Disk Name").value(info.diskName()));
         list.add(Information.builder("Data Size").value(info.dataSize()));
         list.add(Information.builder("Tag Size").value(info.tagSize()));
-        list.add(Information.builder("Data Checksum").value("$%08x", info.dataChecksum()));
-        list.add(Information.builder("Tag Checksum").value("$%08x", info.tagChecksum()));
+        list.add(Information.builder("Data Checksum")
+                .value(cksumFn.apply(info.dataChecksum(), info.calculatedDataChecksum())));
+        list.add(Information.builder("Tag Checksum")
+                .value(cksumFn.apply(info.tagChecksum(), getInfo().calculatedTagChecksum())));
         list.add(Information.builder("Disk Format").value("%d (%s)", info.diskFormat(),
                 switch(info.diskFormat()) {
                     case 0 -> "400K - GCR CLV ssdd";
@@ -107,6 +141,33 @@ public class DiskCopyImage implements Source {
     }
 
     public record Info(String diskName, int dataSize, int tagSize, int dataChecksum, int tagChecksum,
-                       int diskFormat, int formatByte) {
+                       int diskFormat, int formatByte, int calculatedDataChecksum, int calculatedTagChecksum) {
+    }
+
+    public static class Factory implements Source.Factory {
+        @Override
+        public Optional<Source> fromObject(Object object) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<Source> fromSource(Source source) {
+            if (source.getSize() > HEADER_SIZE) {
+                DataBuffer header = source.readBytes(0, HEADER_SIZE);
+                if (header.getUnsignedShortBE(HEADER_SIZE-2) != 0x100) {
+                    // Not Disk Copy
+                }
+                else if (header.getUnsignedByte(0) > 63) {
+                    // Name length must fit in first 64 bytes
+                }
+//                else if (HEADER_SIZE + header.getIntBE(64) + header.getIntBE(68) > source.getSize()) {
+//                    // Header + Data + Tag length is too big
+//                }
+                else {
+                    return Optional.of(new DiskCopyImage(source));
+                }
+            }
+            return Optional.empty();
+        }
     }
 }

@@ -19,23 +19,22 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assume.assumeThat;
-import static org.junit.Assume.assumeTrue;
-
 import java.io.File;
 import java.io.FileOutputStream;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Exercise the SwtImage class for all known types.
  * @author Rob
  */
 public class SwtImageTest {
-	@Before
+	@BeforeEach
 	public void beforeMethod() {
 		assumeTrue(System.getenv("AC_SKIP_SWT_TESTS") == null);
 	}
@@ -43,64 +42,58 @@ public class SwtImageTest {
 	@Test
 	public void testPNG() throws Exception {
 		// SwtImage unit test fails on Mac, appears to be the thread deal. Disabling for now.
-		assumeThat(SystemUtils.IS_OS_MAC, is(false));
+		assumeFalse(SystemUtils.IS_OS_MAC);
 		// ... and on Rasbian 32-bit; disabling.
-        if (SystemUtils.IS_OS_LINUX) {
-            assumeThat(SystemUtils.OS_ARCH.equals("arm"), is(false));
-        }
+		assumeFalse(SystemUtils.IS_OS_LINUX && "arm".equals(SystemUtils.OS_ARCH));
+
 		performTest("PNG"); //$NON-NLS-1$
 	}
 	
 	@Test
 	public void testJPEG() throws Exception {
 		// SwtImage unit test fails on Mac, appears to be the thread deal. Disabling for now.
-		assumeThat(SystemUtils.IS_OS_MAC, is(false));
+		assumeFalse(SystemUtils.IS_OS_MAC);
 		// ... and on Rasbian 32-bit; disabling.
-        if (SystemUtils.IS_OS_LINUX) {
-            assumeThat(SystemUtils.OS_ARCH.equals("arm"), is(false));
-        }
+		assumeFalse(SystemUtils.IS_OS_LINUX && "arm".equals(SystemUtils.OS_ARCH));
+
 		performTest("JPEG"); //$NON-NLS-1$
 	}
 	
 	@Test
 	public void testBMP() throws Exception {
 		// SwtImage unit test fails on Mac, appears to be the thread deal. Disabling for now.
-		assumeThat(SystemUtils.IS_OS_MAC, is(false));
+		assumeFalse(SystemUtils.IS_OS_MAC);
 		// ... and on Rasbian 32-bit; disabling.
-        if (SystemUtils.IS_OS_LINUX) {
-            assumeThat(SystemUtils.OS_ARCH.equals("arm"), is(false));
-        }
+		assumeFalse(SystemUtils.IS_OS_LINUX && "arm".equals(SystemUtils.OS_ARCH));
+
 		performTest("BMP"); //$NON-NLS-1$
 	}
 	
 	@Test
 	public void testBMP_RLE() throws Exception {
 		// SwtImage unit test fails on Mac, appears to be the thread deal. Disabling for now.
-		assumeThat(SystemUtils.IS_OS_MAC, is(false));
+		assumeFalse(SystemUtils.IS_OS_MAC);
 		// ... and on Rasbian 32-bit; disabling.
-        if (SystemUtils.IS_OS_LINUX) {
-            assumeThat(SystemUtils.OS_ARCH.equals("arm"), is(false));
-        }
+		assumeFalse(SystemUtils.IS_OS_LINUX && "arm".equals(SystemUtils.OS_ARCH));
+
 		performTest("RLE"); //$NON-NLS-1$
 	}
 	
 	@Test
 	public void testGIF() throws Exception {
-		// GIF unit test fails on Linux, assuming it is an SWT component issue...
-		assumeThat(SystemUtils.IS_OS_LINUX, is(false));
 		// SwtImage unit test fails on Mac, appears to be the thread deal. Disabling for now.
-		assumeThat(SystemUtils.IS_OS_MAC, is(false));
+		assumeFalse(SystemUtils.IS_OS_MAC);
+
 		performTest("GIF"); //$NON-NLS-1$
 	}
 	
 	@Test
 	public void testICO() throws Exception {
 		// SwtImage unit test fails on Mac, appears to be the thread deal. Disabling for now.
-		assumeThat(SystemUtils.IS_OS_MAC, is(false));
+		assumeFalse(SystemUtils.IS_OS_MAC);
 		// ... and on Rasbian 32-bit; disabling.
-        if (SystemUtils.IS_OS_LINUX) {
-            assumeThat(SystemUtils.OS_ARCH.equals("arm"), is(false));
-        }
+		assumeFalse(SystemUtils.IS_OS_LINUX && "arm".equals(SystemUtils.OS_ARCH));
+
 		performTest("ICO"); //$NON-NLS-1$
 	}
 	

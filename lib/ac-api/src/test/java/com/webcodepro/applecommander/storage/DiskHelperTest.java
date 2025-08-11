@@ -22,12 +22,12 @@ package com.webcodepro.applecommander.storage;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
 import com.webcodepro.applecommander.storage.filters.*;
 import com.webcodepro.applecommander.testconfig.TestConfig;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test Disk and FormattedDisk for read.
@@ -263,51 +263,45 @@ public class DiskHelperTest {
 	}
 	
 	protected void assertApplesoftFile(FormattedDisk disk, String filename) throws DiskException {
-		assertNotNull(filename + " test: Disk should not be null", disk); //$NON-NLS-1$
+		assertNotNull(disk, filename + " test: Disk should not be null");
 		FileEntry fileEntry = disk.getFile(filename);
-		assertNotNull(filename + " test: File not found", disk); //$NON-NLS-1$
-		assertTrue("ApplesoftFileFilter was not chosen",  //$NON-NLS-1$
-			fileEntry.getSuggestedFilter() instanceof ApplesoftFileFilter);
+		assertNotNull(fileEntry, filename + " test: File not found");
+        assertInstanceOf(ApplesoftFileFilter.class, fileEntry.getSuggestedFilter(), "ApplesoftFileFilter was not chosen");
 	}
 
 	protected void assertIntegerFile(FormattedDisk disk, String filename) throws DiskException {
-		assertNotNull(filename + " test: Disk should not be null", disk); //$NON-NLS-1$
+		assertNotNull(disk, filename + " test: Disk should not be null");
 		FileEntry fileEntry = disk.getFile(filename);
-		assertNotNull(filename + " test: File not found", disk); //$NON-NLS-1$
-		assertTrue("IntegerBasicFileFilter was not chosen",  //$NON-NLS-1$
-			fileEntry.getSuggestedFilter() instanceof IntegerBasicFileFilter);
+		assertNotNull(fileEntry, filename + " test: File not found");
+        assertInstanceOf(IntegerBasicFileFilter.class, fileEntry.getSuggestedFilter(), "IntegerBasicFileFilter was not chosen");
 	}
 	
 	protected void assertTextFile(FormattedDisk disk, String filename) throws DiskException {
-		assertNotNull(filename + " test: Disk should not be null", disk); //$NON-NLS-1$
+		assertNotNull(disk, filename + " test: Disk should not be null");
 		FileEntry fileEntry = disk.getFile(filename);
-		assertNotNull(filename + " test: File not found", disk); //$NON-NLS-1$
-		assertTrue("TextFileFilter was not chosen",  //$NON-NLS-1$
-			fileEntry.getSuggestedFilter() instanceof TextFileFilter);
+		assertNotNull(fileEntry, filename + " test: File not found");
+        assertInstanceOf(TextFileFilter.class, fileEntry.getSuggestedFilter(), "TextFileFilter was not chosen");
 	}
 	
 	protected void assertBinaryFile(FormattedDisk disk, String filename) throws DiskException {
-		assertNotNull(filename + " test: Disk should not be null", disk); //$NON-NLS-1$
+		assertNotNull(disk, filename + " test: Disk should not be null");
 		FileEntry fileEntry = disk.getFile(filename);
-		assertNotNull(filename + " test: File not found", disk); //$NON-NLS-1$
-		assertTrue("BinaryFileFilter was not chosen",  //$NON-NLS-1$
-			fileEntry.getSuggestedFilter() instanceof BinaryFileFilter);
+		assertNotNull(fileEntry, filename + " test: File not found");
+        assertInstanceOf(BinaryFileFilter.class, fileEntry.getSuggestedFilter(), "BinaryFileFilter was not chosen");
 	}
 	
 	protected void assertDisassemblyFile(FormattedDisk disk, String filename) throws DiskException {
-        assertNotNull(filename + " test: Disk should not be null", disk);
+        assertNotNull(disk, filename + " test: Disk should not be null");
         FileEntry fileEntry = disk.getFile(filename);
-        assertNotNull(filename + " test: File not found", disk);
-        assertTrue("DisassemblyFileFilter was not chosen",
-            fileEntry.getSuggestedFilter() instanceof DisassemblyFileFilter);
+        assertNotNull(fileEntry, filename + " test: File not found");
+        assertInstanceOf(DisassemblyFileFilter.class, fileEntry.getSuggestedFilter(), "DisassemblyFileFilter was not chosen");
 	}
 	
 	protected void assertGraphicsFile(FormattedDisk disk, String filename) throws DiskException {
-		assertNotNull(filename + " test: Disk should not be null", disk); //$NON-NLS-1$
+		assertNotNull(disk, filename + " test: Disk should not be null");
 		FileEntry fileEntry = disk.getFile(filename);
-		assertNotNull(filename + " test: File not found", disk); //$NON-NLS-1$
-		assertTrue("GraphicsFileFilter was not chosen",  //$NON-NLS-1$
-			fileEntry.getSuggestedFilter() instanceof GraphicsFileFilter);
+		assertNotNull(fileEntry, filename + " test: File not found");
+        assertInstanceOf(GraphicsFileFilter.class, fileEntry.getSuggestedFilter(), "GraphicsFileFilter was not chosen");
 	}
 
 	protected void assertCanReadFiles(DirectoryEntry dir) throws DiskException {

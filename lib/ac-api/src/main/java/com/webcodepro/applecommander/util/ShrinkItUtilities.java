@@ -18,10 +18,7 @@
  */
 package com.webcodepro.applecommander.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.FormattedDisk;
@@ -55,37 +52,19 @@ public class ShrinkItUtilities
 	 * @throws IOException
 	 *             the file has some malformed-ness about it
 	 */
-	public static byte[] unpackSHKFile(String fileName) throws IOException
-	{
-		return unpackSHKFile(fileName, 0);
-	}
-
-	/**
-	 * Interpret a NuFile/NuFX/Shrinkit archive as a full disk image.
-	 * 
-	 * @return byte[] buffer containing full disk of data; null if unable to
-	 *         read
-	 * @throws IllegalArgumentException
-	 *             if the filename is not able to be read
-	 * @throws IOException
-	 *             the file has some malformed-ness about it
-	 */
-	public static byte[] unpackSHKFile(String fileName, int startBlocks) throws IOException
+	public static byte[] unpackSHKFile(String fileName, Source source, int startBlocks) throws IOException
 	{
 		TextBundle textBundle = StorageBundle.getInstance();
 		byte dmgBuffer[] = null;
-		File file = new File(fileName);
-		if (file.isDirectory() || !file.canRead())
-		{
-			throw new IOException(textBundle.format("NotAFile", fileName, 1)); //$NON-NLS-1$ 
-		}
-		InputStream is = new FileInputStream(file);
+		byte[] sourceData = new byte[source.getSize()];
+		source.readAllBytes().get(0, sourceData);
+		InputStream is = new ByteArrayInputStream(sourceData);
 		NuFileArchive a = new NuFileArchive(is);
 		// If we need to build a disk to hold files (i.e. .shk vs. .sdk), how big would that disk need to be?
 		int newDiskSize = Disk.sizeToFit(a.getArchiveSize());
 		if (startBlocks > 0)
 			newDiskSize = startBlocks*512;
-		Source source = new FileSource(DataBuffer.create(newDiskSize));
+		source = new FileSource(DataBuffer.create(newDiskSize));
 		ImageOrder imageOrder = new ProdosOrder(source);
 		// Create a new disk in anticipation of unpacking files - we don't actually know if we'll need it yet, though.
 		FormattedDisk[] disks = ProdosFormatDisk.create(fileName, "APPLECOMMANDER", imageOrder); //$NON-NLS-1$

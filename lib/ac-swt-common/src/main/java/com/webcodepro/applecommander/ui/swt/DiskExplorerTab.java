@@ -42,6 +42,7 @@ import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 import io.github.applecommander.applesingle.AppleSingle;
 import org.applecommander.source.FileSource;
+import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -985,7 +986,6 @@ public class DiskExplorerTab {
 					outputStream.write(data);
 					outputStream.close();
 				} catch (Exception ex) {
-				    ex.printStackTrace();
 					String errorMessage = ex.getMessage();
 					if (errorMessage == null) {
 						errorMessage = ex.getClass().getName();
@@ -1566,21 +1566,25 @@ public class DiskExplorerTab {
 				fileFilter = constructor.newInstance();
 			} catch (NullPointerException ex) {
 				// This is expected
-			} catch (InstantiationException e) {
+			} catch (InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException |
+                     IllegalArgumentException | InvocationTargetException e) {
 				SwtUtil.showSystemErrorDialog(shell, e);
-			} catch (IllegalAccessException e) {
-				SwtUtil.showSystemErrorDialog(shell, e);
-			} catch (NoSuchMethodException e) {
-                SwtUtil.showSystemErrorDialog(shell, e);
-            } catch (SecurityException e) {
-                SwtUtil.showSystemErrorDialog(shell, e);
-            } catch (IllegalArgumentException e) {
-                SwtUtil.showSystemErrorDialog(shell, e);
-            } catch (InvocationTargetException e) {
-                SwtUtil.showSystemErrorDialog(shell, e);
-            }
-			if (fileFilter != null) {
+			}
+            if (fileFilter != null) {
 				window = new FileViewerWindow(shell, fileEntry, imageManager, fileFilter);
+			} else if (fileEntry.getFilename().toLowerCase().endsWith(".shk")
+				    || fileEntry.getFilename().toLowerCase().endsWith(".sdk")) {
+				try {
+					Source source = new FileEntrySource(fileEntry);
+					Disk disk = new Disk(fileEntry.getFilename(), source, 0, true);
+					FormattedDisk[] formattedDisks = disk.getFormattedDisks();
+					DiskWindow diskWindow = new DiskWindow(shell, formattedDisks, imageManager);
+					diskWindow.open();
+					return;
+				} catch (IOException e) {
+					// Fall through to the default (match the else statement)
+					window = new FileViewerWindow(shell, fileEntry, imageManager);
+				}
 			} else {
 				window = new FileViewerWindow(shell, fileEntry, imageManager);
 			}

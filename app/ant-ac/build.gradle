@@ -29,6 +29,7 @@ jar {
 }
 
 // Automagically run the Ant tests as part of the build process.
+// See: https://docs.gradle.org/current/userguide/ant.html
 ant.importBuild('src/test/resources/build-testacant.xml') { antTargetName ->
     'anttest-' + antTargetName
 }

@@ -19,14 +19,9 @@
  */
 package com.webcodepro.applecommander.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-
-import org.junit.Test;
 
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DiskException;
@@ -34,6 +29,10 @@ import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
 import com.webcodepro.applecommander.ui.ac;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class AppleSingleTest {
 	private static final String AS_HELLO_BIN = "/hello.applesingle.bin";
@@ -56,7 +55,7 @@ public class AppleSingleTest {
 		List<FileEntry> files = formattedDisk.getFiles();
 		assertNotNull(files);
 		assertEquals(1, files.size());
-		ProdosFileEntry file = (ProdosFileEntry)files.get(0);
+		ProdosFileEntry file = (ProdosFileEntry)files.getFirst();
 		assertEquals("HELLO", file.getFilename());
 		assertEquals("BIN", file.getFiletype());
 		assertEquals(0x0803, file.getAuxiliaryType());

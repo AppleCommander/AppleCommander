@@ -52,9 +52,19 @@ import org.apache.tools.ant.Task;
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import org.applecommander.image.DiskCopyImage;
+import org.applecommander.image.UniversalDiskImage;
+import org.applecommander.source.FileSource;
+import org.applecommander.source.Sources;
 
 public class AntTask extends Task
 {
+	static {
+		// This is a hack to deal with -whatever- is going on with the Ant classpath.
+		// Issue was verified by creating a simple (and separate) Main class and then doing a source identification.
+		Sources.setFactories(new FileSource.Factory(), new UniversalDiskImage.Factory(), new DiskCopyImage.Factory());
+	}
+
 	public void execute() throws BuildException
 	{
 		/*

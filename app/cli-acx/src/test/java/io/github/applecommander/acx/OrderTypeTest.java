@@ -19,11 +19,10 @@
  */
 package io.github.applecommander.acx;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-
 import com.webcodepro.applecommander.storage.Disk;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class OrderTypeTest {
     @Test

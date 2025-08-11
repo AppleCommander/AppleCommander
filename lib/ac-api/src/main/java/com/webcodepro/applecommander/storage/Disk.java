@@ -31,19 +31,18 @@ import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import com.webcodepro.applecommander.storage.physical.*;
 import com.webcodepro.applecommander.util.AppleUtil;
-import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
-import org.applecommander.image.DiskCopyImage;
 import org.applecommander.image.UniversalDiskImage;
+import org.applecommander.image.WozImage;
 import org.applecommander.source.FileSource;
 import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 import org.applecommander.util.DataBuffer;
 
 import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -91,7 +90,7 @@ public class Disk {
 
 	private static final TextBundle textBundle = StorageBundle.getInstance();
 	private static final FilenameFilter[] filenameFilters;
-	private static final String[] allFileExtensions;
+	private static final List<String> allFileExtensions;
 	static {
 		// Build everything dynamically
 		List<String> templates = List.of(
@@ -103,8 +102,8 @@ public class Disk {
 				"WozImages:woz",
 				"DiskCopyImages:dc");
 		List<FilenameFilter> filters = new ArrayList<>();
-		List<String> allImages = new ArrayList<>();
-		List<String> compressedImages = new ArrayList<>();
+		List<String> allImages = new ArrayList<>(List.of("*.shk", "*.sdk"));
+		List<String> compressedImages = new ArrayList<>(allImages);
 		for (String template : templates) {
 			String[] parts = template.split(":");
 			String bundleName = String.format("Disk.%s", parts[0]);
@@ -124,7 +123,8 @@ public class Disk {
 		filters.add(new FilenameFilter(textBundle.get("Disk.CompressedImages"), compressedImages.toArray(new String[0])));
 		filters.add(new FilenameFilter(textBundle.get("Disk.AllFiles"), "*.*"));
 		filenameFilters = filters.toArray(new FilenameFilter[0]);
-		allFileExtensions = allImages.toArray(new String[0]);
+		// allFileExtensions is of the format ".dsk", ".dsk.gz", so we just strip the first character off...
+		allFileExtensions = allImages.stream().map(s -> s.substring(1)).toList();
 	}
 
 	private String filename;
@@ -146,14 +146,13 @@ public class Disk {
 	 * Get the supported file extensions supported by the Disk interface.
 	 * This is used by the Swing UI to populate the open file dialog box.
 	 */
-	public static String[] getAllExtensions() {
+	public static List<String> getAllExtensions() {
 		return allFileExtensions;
 	}
 
 	/**
 	 * Construct a Disk with the given byte array.
 	 */
-
 	protected Disk(String filename, ImageOrder imageOrder) {
 		this.imageOrder = imageOrder;
 		this.filename = filename;
@@ -189,57 +188,29 @@ public class Disk {
 	 * Read in the entire contents of the file.
 	 */
 	public Disk(String filename, int startBlocks, boolean knownProDOSOrder) throws IOException {
+		this(filename, Sources.create(Path.of(filename)).orElseThrow(), startBlocks, knownProDOSOrder);
+	}
+
+	public Disk(String filename, Source source, int startBlocks, boolean knownProDOSOrder) throws IOException {
 		this.filename = filename;
-		int diskSize = 0;
-		byte[] diskImage = null;
-		byte[] diskImageDC42 = null;
+		this.diskImageManager = source;
+		int diskSize = source.getSize();
 
 		if (isSDK() || isSHK() || isBXY()) {
 			// If we have an SDK, unpack it and send along the byte array
 			// If we have a SHK, build a new disk and unpack the contents on to it
-			diskImage = com.webcodepro.applecommander.util.ShrinkItUtilities.unpackSHKFile(filename, startBlocks);
+			byte[] diskImage = com.webcodepro.applecommander.util.ShrinkItUtilities.unpackSHKFile(
+				filename, source, startBlocks);
 			diskSize = diskImage.length;
 			// Since we don't want to overwrite their shrinkit with a raw ProDOS image,
 			// add a .po extension to it
 			this.filename += ".po"; //$NON-NLS-1$
-		} else {
-			File file = new File(filename);
-			diskSize = (int) file.length();
-			InputStream input = new FileInputStream(file);
-			if (isCompressed()) {
-				input = new GZIPInputStream(input);
-			}
-			ByteArrayOutputStream diskImageByteArray = new ByteArrayOutputStream(diskSize);
-			StreamUtil.copy(input, diskImageByteArray);
-			diskImage = diskImageByteArray.toByteArray();
+			this.diskImageManager = new FileSource(Path.of(this.filename), DataBuffer.wrap(diskImage));
 		}
-		boolean is2img = false;
-		boolean isWoz = false;
-		/* Does it have the 2IMG header? */
-		if ((diskImage[0] == 0x32) && (diskImage[1] == 0x49) && (diskImage[2] == 0x4D) && (diskImage[3]) == 0x47) {
-			is2img = true;
-		}
+
 		/* Does it have the WOZ1 or WOZ2 header? */
-		else if ((diskImage[0] == 0x57) && (diskImage[1] == 0x4f) && (diskImage[2] == 0x5a)
-				&& ((diskImage[3] == 0x31) || (diskImage[3] == 0x32))) {
-			isWoz = true;
-		}
-		/* Does it have the DiskCopy 4.2 header? */
-		else if (Disk.isDC42(diskImage)) {
-			isDC42 = true;
-		}
-		Path sourcePath = Path.of(filename);
-		if (is2img || diskImage.length == APPLE_800KB_DISK + UniversalDiskImage.HEADER_SIZE
-				|| diskImage.length == APPLE_5MB_HARDDISK + UniversalDiskImage.HEADER_SIZE
-				|| diskImage.length == APPLE_10MB_HARDDISK + UniversalDiskImage.HEADER_SIZE
-				|| diskImage.length == APPLE_20MB_HARDDISK + UniversalDiskImage.HEADER_SIZE
-				|| diskImage.length == APPLE_32MB_HARDDISK + UniversalDiskImage.HEADER_SIZE) {
-			diskImageManager = new UniversalDiskImage(new FileSource(sourcePath, DataBuffer.wrap(diskImage)));
-		} else if (isDC42) {
-			diskImageManager = new DiskCopyImage(new FileSource(sourcePath, DataBuffer.wrap(diskImage)));
-		} else {
-			diskImageManager = new FileSource(sourcePath, DataBuffer.wrap(diskImage));
-		}
+		int signature = diskImageManager.readBytes(0, 4).readInt();
+		boolean isWoz = WozImage.WOZ1_MAGIC == signature || WozImage.WOZ2_MAGIC == signature;
 
 		ImageOrder dosOrder = new DosOrder(diskImageManager);
 		ImageOrder proDosOrder = new ProdosOrder(diskImageManager);

@@ -12,6 +12,7 @@ import java.util.Optional;
 public class UniversalDiskImage implements Source {
     public static final int MAGIC = 0x32494d47;     // "2IMG" marker
     public static final int HEADER_SIZE = 0x40;     // documented header size
+    public static final int HEADER_SIZE_ALT = 0x34; // found in KeyWin.2mg
 
     private final Source source;
     private final Info info;
@@ -25,7 +26,7 @@ public class UniversalDiskImage implements Source {
         }
         String creator = header.readFixedLengthString(4);
         int headerSize = header.readUnsignedShort();
-        assert(headerSize == HEADER_SIZE);
+        assert(headerSize == HEADER_SIZE || headerSize == HEADER_SIZE_ALT);
         int version = header.readUnsignedShort();
         assert(version == 0 || version == 1);
         int imageFormat = header.readInt();
@@ -148,6 +149,37 @@ public class UniversalDiskImage implements Source {
                 return volume;
             }
             return 0;
+        }
+    }
+
+    public static class Factory implements Source.Factory {
+        @Override
+        public Optional<Source> fromObject(Object object) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<Source> fromSource(Source source) {
+            if (source.getSize() > HEADER_SIZE) {
+                DataBuffer header = source.readBytes(0, HEADER_SIZE);
+                if (header.getIntBE(0) != MAGIC) {
+                    // Need the magic bytes!
+                }
+                else if (header.getUnsignedShort(8) != HEADER_SIZE
+                         && header.getUnsignedShort(8) != HEADER_SIZE_ALT) {
+                    // Expecting header size to match
+                }
+                else if (header.getUnsignedShort(10) > 1) {
+                    // We only have seen versions 0 and 1
+                }
+                else if (header.getInt(0x18) + header.getInt(0x1c) > source.getSize()) {
+                    // We at least expect data to be a valid size within the file
+                }
+                else {
+                    return Optional.of(new UniversalDiskImage(source));
+                }
+            }
+            return Optional.empty();
         }
     }
 }

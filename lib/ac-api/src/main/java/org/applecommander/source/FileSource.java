@@ -5,6 +5,8 @@ import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.Information;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -12,6 +14,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.zip.GZIPInputStream;
 
 public class FileSource implements Source {
     private Path path;
@@ -23,6 +26,17 @@ public class FileSource implements Source {
             this.path = path;
             byte[] rawData = Files.readAllBytes(path);
             this.buffer = DataBuffer.wrap(rawData);
+            if (this.buffer.getUnsignedShort(0) == GZIPInputStream.GZIP_MAGIC) {
+                try (
+                    GZIPInputStream inputStream = new GZIPInputStream(new ByteArrayInputStream(rawData));
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                ) {
+                    inputStream.transferTo(outputStream);
+                    this.buffer = DataBuffer.wrap(outputStream.toByteArray());
+                } catch (Throwable ignored) {
+                    // assuming that we somehow mis-interpreted the magic bytes
+                }
+            }
         } catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
@@ -83,5 +97,20 @@ public class FileSource implements Source {
         List<Information> list = new ArrayList<>();
         list.add(Information.builder("File Path").value(path.toString()));
         return list;
+    }
+
+    public static class Factory implements Source.Factory {
+        @Override
+        public Optional<Source> fromObject(Object object) {
+            if (object instanceof Path path) {
+                return Optional.of(new FileSource(path));
+            }
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<Source> fromSource(Source source) {
+            return Optional.empty();
+        }
     }
 }

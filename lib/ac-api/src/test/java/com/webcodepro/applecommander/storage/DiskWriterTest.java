@@ -19,16 +19,13 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.util.List;
 
 import org.applecommander.source.FileSource;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
@@ -40,6 +37,9 @@ import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.NibbleOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test Disk and FormattedDisk for write.
@@ -367,10 +367,10 @@ public class DiskWriterTest {
 		entry.setFileData(data);
 		byte[] data2 = entry.getFileData();
 		if (test) {
-			assertTrue("File lengths do not match", data.length == data2.length); //$NON-NLS-1$
+            assertEquals(data.length, data2.length, "File lengths do not match");
 			//assertTrue("File contents do not match", Arrays.equals(data, data2));
 			for (int i=0; i<data.length; i++) {
-				assertTrue("File contents differ at " + i, data[i] == data2[i]); //$NON-NLS-1$
+                assertEquals(data[i], data2[i], "File contents differ at " + i);
 			}
 		}
 	}
@@ -490,10 +490,8 @@ public class DiskWriterTest {
 					entry.delete();
 				}
 				// Verify that we're back to what we started with:
-				assertTrue("Free space does not match",  //$NON-NLS-1$
-					originalFree == disk.getFreeSpace());
-				assertTrue("Used space does not match",  //$NON-NLS-1$
-					originalUsed == disk.getUsedSpace());
+                assertEquals(originalFree, disk.getFreeSpace(), "Free space does not match");
+                assertEquals(originalUsed, disk.getUsedSpace(), "Used space does not match");
 			}
 		}
 	}

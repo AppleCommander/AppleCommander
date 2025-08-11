@@ -95,7 +95,6 @@ public class DiskWindow {
 		diskInfoTab = new DiskInfoTab(tabFolder, disks);
 		tabFolder.setSelection(tabFolder.getItems()[0]);
 		
-		
 		shell.open();
 	}
 	

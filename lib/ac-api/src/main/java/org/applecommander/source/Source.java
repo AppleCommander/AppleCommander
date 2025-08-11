@@ -6,9 +6,21 @@ import org.applecommander.util.DataBuffer;
 import org.applecommander.util.Information;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
- * Source for an archive or disk in AppleCommander.
+ * Source and Factory for an archive or disk in AppleCommander.
+ * <p/>
+ * Typical usage:
+ * {@snippet lang=java:
+ *    Optional<Source> sourceOpt = Source.create(Path.of(filename));
+ *    if (sourceOpt.isPresent()) {
+ *      // do something with sourceOpt.get()
+ *      System.out.println(sourceOpt.get().getSize());
+  *    }
+ *    // Only happens if the initiating object is not understood
+ *    throw new RuntimeException("Unable to create image source");
+ * }
  */
 public interface Source extends CapabilityProvider, Container {
     int getSize();
@@ -18,4 +30,9 @@ public interface Source extends CapabilityProvider, Container {
     boolean hasChanged();
     void clearChanges();
     List<Information> information();
+
+    interface Factory {
+        Optional<Source> fromObject(Object object);
+        Optional<Source> fromSource(Source source);
+    }
 }

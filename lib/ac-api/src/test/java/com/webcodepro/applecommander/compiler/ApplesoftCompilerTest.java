@@ -21,12 +21,11 @@ package com.webcodepro.applecommander.compiler;
 
 import java.io.FileOutputStream;
 
-import org.junit.Test;
-
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.testconfig.TestConfig;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test the ApplesoftCompiler. 

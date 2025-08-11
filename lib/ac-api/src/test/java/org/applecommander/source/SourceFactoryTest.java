@@ -1,0 +1,75 @@
+package org.applecommander.source;
+
+import com.webcodepro.applecommander.testconfig.TestConfig;
+import org.applecommander.image.DiskCopyImage;
+import org.applecommander.image.UniversalDiskImage;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import java.nio.file.Path;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class SourceFactoryTest {
+    private static final String DISKS = TestConfig.getInstance().getDiskDir();
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "CavernsOfFreitag.dsk",
+            "D3110.dsk",
+            "D3151.dsk",
+            "DOS 3.2 System Master.woz",
+            "DOS 3.3.po",
+            "DOS 3.3 System Master.woz1",
+            "DOS 3.3 System Master.woz2",
+            "galatt.dsk",
+            "MASTER.DSK",
+            "MERLIN8PRO1.DSK",
+            "original321sysmaspls.nib",
+            "original332sysmas.do",
+            "phan2d1.dsk",
+            "phan2d2.dsk",
+            "PHANTA31.DSK",
+            "PHANTA32.DSK",
+            "Phantasie1.dsk",
+            "Phantasie2.dsk",
+            "Prodos.dsk",
+            "RDOSboot.dsk",
+            "SSIsave.dsk",
+            "UniDOS_3.3.dsk"
+        })
+    public void testFileSourceRecognition(String filename) {
+        Path path = Path.of(DISKS, filename);
+        Optional<Source> source = Sources.create(path);
+        assertTrue(source.isPresent());
+        assertInstanceOf(FileSource.class, source.get());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "Installer.dc",
+            "3132.DSK.gz"
+        })
+    public void testDiskCopyImageRecognition(String filename) {
+        Path path = Path.of(DISKS, filename);
+        Optional<Source> source = Sources.create(path);
+        assertTrue(source.isPresent());
+        assertInstanceOf(DiskCopyImage.class, source.get());
+        // We are assuming that these DiskCopy images are well-formed to validate the checksum algorithm
+        DiskCopyImage dcImage = source.get().get(DiskCopyImage.class).orElseThrow();
+        assertEquals(dcImage.getInfo().dataChecksum(), dcImage.getInfo().calculatedDataChecksum());
+        assertEquals(dcImage.getInfo().tagChecksum(), dcImage.getInfo().calculatedTagChecksum());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "Marble Madness (1985)(Electronic Arts).2mg"
+        })
+    public void testUniversalDiskImageRecognition(String filename) {
+        Path path = Path.of(DISKS, filename);
+        Optional<Source> source = Sources.create(path);
+        assertTrue(source.isPresent());
+        assertInstanceOf(UniversalDiskImage.class, source.get());
+    }
+}

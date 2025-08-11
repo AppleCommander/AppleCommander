@@ -19,11 +19,11 @@
  */
 package io.github.applecommander.acx.converter;
 
+import org.junit.jupiter.api.Test;
+
 import static io.github.applecommander.acx.converter.DataSizeConverter.KB;
 import static io.github.applecommander.acx.converter.DataSizeConverter.MB;
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DataSizeConverterTest {
 	@Test
