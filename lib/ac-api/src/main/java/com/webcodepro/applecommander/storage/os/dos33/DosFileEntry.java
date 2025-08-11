@@ -506,7 +506,9 @@ public class DosFileEntry implements FileEntry {
     public int getAddress() {
         if (needsAddress()) {
             byte[] rawData = disk.getFileData(this);
-            return AppleUtil.getWordValue(rawData, 0);
+			if (rawData != null && rawData.length > 2) {
+				return AppleUtil.getWordValue(rawData, 0);
+			}
         }
         return 0;
     }

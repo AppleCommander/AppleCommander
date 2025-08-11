@@ -432,6 +432,10 @@ public class DosFormatDisk extends FormattedDisk {
 			throw new IllegalArgumentException(textBundle.get("DosFormatDisk.InvalidFileEntryError")); //$NON-NLS-1$
 		}
 		DosFileEntry dosEntry = (DosFileEntry) fileEntry;
+		if (dosEntry.isDeleted()) {
+			// track for T/S is whacked; we don't know if the old byte is valid or not, so not trying
+			return new byte[0];
+		}
 		// Size is calculated by sectors used - not actual size - as size varies
 		// on filetype, etc.
 		int sectorsRemaining = dosEntry.getSectorsUsed();
