@@ -1,6 +1,7 @@
 package org.applecommander.source;
 
 import org.applecommander.capability.CapabilityProvider;
+import org.applecommander.hint.HintProvider;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.Information;
@@ -22,7 +23,7 @@ import java.util.Optional;
  *    throw new RuntimeException("Unable to create image source");
  * }
  */
-public interface Source extends CapabilityProvider, Container {
+public interface Source extends CapabilityProvider, HintProvider, Container {
     int getSize();
     DataBuffer readAllBytes();
     DataBuffer readBytes(int offset, int length);

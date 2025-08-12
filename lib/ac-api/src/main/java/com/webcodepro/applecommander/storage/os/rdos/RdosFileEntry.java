@@ -319,13 +319,4 @@ public class RdosFileEntry implements FileEntry {
 	public void setAddress(int address) {
 		// FIXME - need to implement
 	}
-
-	/**
-	 * Indicates that this filetype can be compiled.
-	 * WARNING: RDOS programs most likely will not have the
-	 * DOS routines handled by the compiler.
-	 */
-	public boolean canCompile() {
-		return isApplesoftBasicFile();
-	}
 }

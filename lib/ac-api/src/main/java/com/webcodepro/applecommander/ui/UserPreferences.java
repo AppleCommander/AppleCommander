@@ -36,7 +36,6 @@ public class UserPreferences {
 	private static final String FILENAME = "AppleCommander.preferences"; //$NON-NLS-1$
 	private static final String IMAGE_DIRECTORY = "imageDirectory"; //$NON-NLS-1$
 	private static final String EXPORT_DIRECTORY = "exportDirectory"; //$NON-NLS-1$
-	private static final String COMPILE_DIRECTORY = "compileDirectory"; //$NON-NLS-1$
 	private static final String SAVE_DIRECTORY = "saveDirectory"; //$NON-NLS-1$
 	private static final String IMPORT_DIRECTORY = "importDirectory"; //$NON-NLS-1$
 	private static UserPreferences instance;
@@ -97,12 +96,6 @@ public class UserPreferences {
 		return properties.getProperty(EXPORT_DIRECTORY);
 	}
 	/**
-	 * Get the compile directory.
-	 */
-	public String getCompileDirectory() {
-		return properties.getProperty(COMPILE_DIRECTORY);
-	}
-	/**
 	 * Get the save directory.
 	 */
 	public String getSaveDirectory() {
@@ -125,12 +118,6 @@ public class UserPreferences {
 	 */
 	public void setExportDirectory(String exportDirectory) {
 		properties.setProperty(EXPORT_DIRECTORY, exportDirectory);
-	}
-	/**
-	 * Set the compile directory.
-	 */
-	public void setCompileDirectory(String compileDirectory) {
-		properties.setProperty(COMPILE_DIRECTORY, compileDirectory);
 	}
 	/**
 	 * Set the save directory.

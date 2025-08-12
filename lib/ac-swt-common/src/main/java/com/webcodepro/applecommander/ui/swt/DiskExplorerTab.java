@@ -19,7 +19,6 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import com.webcodepro.applecommander.compiler.ApplesoftCompiler;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.FormattedDisk.FileColumnHeader;
@@ -33,7 +32,6 @@ import com.webcodepro.applecommander.ui.UserPreferences;
 import com.webcodepro.applecommander.ui.swt.util.DropDownSelectionListener;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
-import com.webcodepro.applecommander.ui.swt.wizard.compilefile.CompileWizard;
 import com.webcodepro.applecommander.ui.swt.wizard.exportfile.ExportWizard;
 import com.webcodepro.applecommander.ui.swt.wizard.importfile.ImportWizard;
 import com.webcodepro.applecommander.util.AppleUtil;
@@ -100,7 +98,6 @@ public class DiskExplorerTab {
 	private ToolItem showDeletedFilesToolItem;
 	private ToolItem exportToolItem;
 	private ToolItem importToolItem;
-	private ToolItem compileToolItem;
 	private ToolItem viewFileItem;
 	private ToolItem printToolItem;
 	private ToolItem deleteToolItem;
@@ -147,7 +144,6 @@ public class DiskExplorerTab {
 		exportToolItem.dispose();
 		importToolItem.dispose();
 		deleteToolItem.dispose();
-		compileToolItem.dispose();
 		viewFileItem.dispose();
 		toolBar.dispose();
 		changeOrderToolItem.dispose();
@@ -342,19 +338,15 @@ public class DiskExplorerTab {
 				subItems[1].setEnabled(getDisk(0).canReadFileData() 
 					&& fileEntry != null && !fileEntry.isDeleted() 
 					&& !fileEntry.isDirectory());
-				// Compile File
-				subItems[3].setEnabled(getDisk(0).canReadFileData()
-					&& fileEntry != null && fileEntry.canCompile()
-					&& !fileEntry.isDeleted());
 				// Export File
-				subItems[5].setEnabled(getDisk(0).canReadFileData()
+				subItems[3].setEnabled(getDisk(0).canReadFileData()
 					&& fileEntry != null && !fileEntry.isDeleted()
 					&& !fileEntry.isDirectory());
-				subItems[6].setEnabled(getDisk(0).canReadFileData()
+				subItems[4].setEnabled(getDisk(0).canReadFileData()
 					&& fileEntry != null && !fileEntry.isDeleted()
 					&& !fileEntry.isDirectory());
 				// Delete File
-				subItems[8].setEnabled(getDisk(0).canDeleteFile()
+				subItems[6].setEnabled(getDisk(0).canDeleteFile()
 					&& fileEntry != null && !fileEntry.isDeleted());
 			}
 		});
@@ -380,21 +372,15 @@ public class DiskExplorerTab {
 		item = new MenuItem(menu, SWT.SEPARATOR);
 	
 		item = new MenuItem(menu, SWT.CASCADE);
-		item.setText(textBundle.get("CompileMenuItem")); //$NON-NLS-1$
-		item.setAccelerator(SWT.CTRL+'C');
-		item.setImage(imageManager.get(ImageManager.ICON_COMPILE_FILE));
-		item.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent event) {
-				compileFileWizard();
-			}
-		});
-		
-		item = new MenuItem(menu, SWT.SEPARATOR);
-		
-		item = new MenuItem(menu, SWT.CASCADE);
 		item.setText(textBundle.get("ExportWizardMenuItem")); //$NON-NLS-1$
 		item.setAccelerator(SWT.CTRL+'E');
 		item.setImage(imageManager.get(ImageManager.ICON_EXPORT_FILE));
+		item.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				exportFileWizard();
+			}
+		});
 	
 		item = new MenuItem(menu, SWT.CASCADE);
 		item.setText(textBundle.get("ExportAsMenuItem")); //$NON-NLS-1$
@@ -851,15 +837,12 @@ public class DiskExplorerTab {
 				public void widgetSelected(SelectionEvent event) {
 					getImportToolItem().setEnabled(getDisk(0).canCreateFile() && getDisk(0).canWriteFileData());
 					if (getFileTable().getSelectionCount() > 0) {
-						FileEntry fileEntry = getSelectedFileEntry();
 						getExportToolItem().setEnabled(getDisk(0).canReadFileData());
 						getDeleteToolItem().setEnabled(getDisk(0).canDeleteFile());
-						getCompileToolItem().setEnabled(fileEntry != null && fileEntry.canCompile());
 						getViewFileToolItem().setEnabled(true);
 					} else {
 						getExportToolItem().setEnabled(false);
 						getDeleteToolItem().setEnabled(false);
-						getCompileToolItem().setEnabled(false);
 						getViewFileToolItem().setEnabled(false);
 					}
 				}
@@ -913,7 +896,6 @@ public class DiskExplorerTab {
 		// disable all file-level operations:
 		exportToolItem.setEnabled(false);
 		deleteToolItem.setEnabled(false);
-		compileToolItem.setEnabled(false);
 		viewFileItem.setEnabled(false);
 	}
 	/**
@@ -993,72 +975,6 @@ public class DiskExplorerTab {
 					int answer = SwtUtil.showOkCancelErrorDialog(shell,
 							textBundle.get("ExportErrorTitle"), //$NON-NLS-1$
 							textBundle.format("ExportErrorMessage",  //$NON-NLS-1$
-									filename, errorMessage));
-					if (answer == SWT.CANCEL) break;	// break out of loop
-				}
-			}
-		}
-	}
-	/**
-	 * Launch the compile file wizard.
-	 */
-	protected void compileFileWizard() {
-		FileEntry fileEntry = getSelectedFileEntry();
-		CompileWizard wizard = new CompileWizard(shell, 
-			imageManager, fileEntry.getFormattedDisk());
-		wizard.setDirectory(userPreferences.getCompileDirectory());
-		wizard.open();
-		if (wizard.isWizardCompleted()) {
-			String compileDirectory = wizard.getDirectory();
-			compileFile(compileDirectory);
-		}
-	}
-	/**
-	 * Compile all selected files.
-	 * FIXME: This is a near duplicate of exportFile.  Can they be merged?
-	 */
-	private void compileFile(String directory) {
-		boolean promptForIndividualFiles = (directory == null);
-		TableItem[] selection = fileTable.getSelection();
-		for (int i=0; i<selection.length; i++) {
-			TableItem tableItem = selection[i];
-			FileEntry fileEntry = (FileEntry) tableItem.getData();
-			String filename = null;
-			if (promptForIndividualFiles) {
-				FileDialog fileDialog = new FileDialog(shell, SWT.SAVE);
-				fileDialog.setFilterPath(userPreferences.getCompileDirectory());
-				fileDialog.setFileName(fileEntry.getFilename() + ".S"); //$NON-NLS-1$
-				filename = fileDialog.open();
-				directory = fileDialog.getFilterPath();
-			} else {
-				filename = directory + File.separator + AppleUtil.
-					getNiceFilename(fileEntry.getFilename() + ".S"); //$NON-NLS-1$
-			}
-			if (filename != null) {
-				userPreferences.setCompileDirectory(directory);
-				try {
-					File file = new File(filename);
-					if (file.exists()) {
-						int answer = SwtUtil.showYesNoDialog(shell,
-								textBundle.get("FileExistsTitle"), //$NON-NLS-1$
-								textBundle.format("FileExistsMessage", filename)); //$NON-NLS-1$
-						if (answer == SWT.NO) {
-							return;	// do not overwrite file
-						}
-					}
-					ApplesoftCompiler compiler = new ApplesoftCompiler(fileEntry);
-					byte[] assembly = compiler.compile();
-					OutputStream outputStream = new FileOutputStream(file);
-					outputStream.write(assembly);
-					outputStream.close();
-				} catch (Exception ex) {
-					String errorMessage = ex.getMessage();
-					if (errorMessage == null) {
-						errorMessage = ex.getClass().getName();
-					}
-					int answer = SwtUtil.showOkCancelErrorDialog(shell,
-							textBundle.get("UnableToCompileTitle"), //$NON-NLS-1$
-							textBundle.format("UnableToCompileMessage", //$NON-NLS-1$
 									filename, errorMessage));
 					if (answer == SWT.CANCEL) break;	// break out of loop
 				}
@@ -1311,18 +1227,6 @@ public class DiskExplorerTab {
 		
 		new ToolItem(toolBar, SWT.SEPARATOR);
 
-		compileToolItem = new ToolItem(toolBar, SWT.PUSH);
-		compileToolItem.setImage(imageManager.get(ImageManager.ICON_COMPILE_FILE));
-		compileToolItem.setText(textBundle.get("CompileWizardToolItem")); //$NON-NLS-1$
-		compileToolItem.setToolTipText(textBundle.get("CompileWizardHoverText")); //$NON-NLS-1$
-		compileToolItem.setEnabled(false);
-		compileToolItem.addSelectionListener(new SelectionAdapter () {
-			public void widgetSelected(SelectionEvent event) {
-				if (event.detail != SWT.ARROW) {
-					compileFileWizard();
-				}
-			}
-		});
 		viewFileItem = new ToolItem(toolBar, SWT.PUSH);
 		viewFileItem.setImage(imageManager.get(ImageManager.ICON_VIEW_FILE));
 		viewFileItem.setText(textBundle.get("ViewFileToolItem")); //$NON-NLS-1$
@@ -1622,11 +1526,6 @@ public class DiskExplorerTab {
 				if (fileEntry != null && event.type == SWT.KeyUp && (event.stateMask & SWT.CTRL) != 0) {
 					try { 
 						switch (event.character) {
-							case CTRL_C:	// Compile Wizard
-								if (getCompileToolItem().isEnabled()) {
-									compileFileWizard();
-								}
-								break;
 							case CTRL_D:	// Delete file
 								if (getDeleteToolItem().isEnabled()) {
 									deleteFile();
@@ -2049,11 +1948,7 @@ public class DiskExplorerTab {
 	protected ToolItem getExportToolItem() {
 		return exportToolItem;
 	}
-	
-	protected ToolItem getCompileToolItem() {
-		return compileToolItem;
-	}
-	
+
 	protected Table getFileTable() {
 		return fileTable;
 	}

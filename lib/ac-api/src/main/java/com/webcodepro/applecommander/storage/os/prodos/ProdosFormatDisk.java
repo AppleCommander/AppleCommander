@@ -77,12 +77,10 @@ public class ProdosFormatDisk extends FormattedDisk {
 		private byte type;
 		private String string;
 		private boolean addressRequired;
-		private boolean canCompile;
-		public ProdosFileType(byte type, String string, boolean addressRequired, boolean canCompile) {
+		public ProdosFileType(byte type, String string, boolean addressRequired) {
 			this.type = type;
 			this.string = string;
 			this.addressRequired = addressRequired;
-			this.canCompile = canCompile;
 		}
 		public byte getType() {
 			return type;
@@ -92,9 +90,6 @@ public class ProdosFormatDisk extends FormattedDisk {
 		}
 		public boolean needsAddress() {
 			return addressRequired;
-		}
-		public boolean canCompile() {
-			return canCompile;
 		}
 	}
 
@@ -156,9 +151,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 				}
 				boolean addressRequired = Boolean.valueOf((String) properties.get(
 					"filetype." + byt + ".address")).booleanValue(); //$NON-NLS-1$ //$NON-NLS-2$
-				boolean canCompile = Boolean.valueOf((String) properties.get(
-					"filetype." + byt + ".compile")).booleanValue(); //$NON-NLS-1$ //$NON-NLS-2$
-				fileTypes[i] = new ProdosFileType((byte)i, string, addressRequired, canCompile);
+				fileTypes[i] = new ProdosFileType((byte)i, string, addressRequired);
 			}
 		} catch (IOException ignored) {
 			// Ignored
@@ -1315,17 +1308,6 @@ public class ProdosFormatDisk extends FormattedDisk {
 		ProdosFileType fileType = findFileType(filetype);
 		if (fileType != null) {
 			return fileType.needsAddress();
-		}
-		return false;
-	}
-
-	/**
-	 * Indicates if this filetype can be compiled.
-	 */
-	public boolean canCompile(String filetype) {
-		ProdosFileType fileType = findFileType(filetype);
-		if (fileType != null) {
-			return fileType.canCompile();
 		}
 		return false;
 	}

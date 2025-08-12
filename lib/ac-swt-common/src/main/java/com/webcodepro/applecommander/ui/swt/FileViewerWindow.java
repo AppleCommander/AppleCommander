@@ -29,7 +29,6 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -224,7 +223,7 @@ public class FileViewerWindow {
 		nativeFilterAdapterMap.put(DisassemblyFileFilter.class, 
 		    new DisassemblyFilterAdapter(this, textBundle.get("FileViewerWindow.DisassemblyButton"),
                 textBundle.get("FileViewerWindow.DisassemblyTooltip"),
-                imageManager.get(ImageManager.ICON_COMPILE_FILE)
+                imageManager.get(ImageManager.ICON_DISASSEMBLE_FILE)
             ));
         nativeFilterAdapterMap.put(ShapeTableFileFilter.class, 
             new ShapeTableFilterAdapter(this, textBundle.get("FileViewerWindow.ShapeTableButton"),
@@ -309,7 +308,7 @@ public class FileViewerWindow {
     protected ToolItem createDisassemblyToolItem() {
         disassemblyFilterAdapter = new DisassemblyFilterAdapter(this, textBundle.get("FileViewerWindow.DisassemblyButton"),  //$NON-NLS-1$
                 textBundle.get("FileViewerWindow.DisassemblyTooltip"),  //$NON-NLS-1$
-                imageManager.get(ImageManager.ICON_COMPILE_FILE));
+                imageManager.get(ImageManager.ICON_DISASSEMBLE_FILE));
         disassemblyFilterAdapter.setDisassemblySelected();
         ToolItem toolItem = disassemblyFilterAdapter.create(toolBar);
         return toolItem;

@@ -486,15 +486,6 @@ public class CpmFileEntry implements FileEntry {
 
 
 	/**
-	 * Indicates that this filetype can be compiled.
-	 * AppleCommander cannot do much with CP/M files.
-	 * @see com.webcodepro.applecommander.storage.FileEntry#canCompile()
-	 */
-	public boolean canCompile() {
-		return false;
-	}
-
-	/**
 	 * Indicates if this is an empty file entry.
 	 * An empty file entry contains all 0xE5.
 	 */
