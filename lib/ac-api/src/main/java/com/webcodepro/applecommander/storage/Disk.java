@@ -32,6 +32,7 @@ import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import com.webcodepro.applecommander.storage.physical.*;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.hint.Hint;
 import org.applecommander.image.UniversalDiskImage;
 import org.applecommander.image.WozImage;
 import org.applecommander.source.FileSource;
@@ -195,6 +196,8 @@ public class Disk {
 		this.filename = filename;
 		this.diskImageManager = source;
 		int diskSize = source.getSize();
+
+		knownProDOSOrder |= source.is(Hint.PRODOS_BLOCK_ORDER);
 
 		if (isSDK() || isSHK() || isBXY()) {
 			// If we have an SDK, unpack it and send along the byte array

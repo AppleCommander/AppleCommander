@@ -1,6 +1,7 @@
 package org.applecommander.source;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.hint.Hint;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.Information;
@@ -53,6 +54,12 @@ public class FileSource implements Source {
     @Override
     public boolean can(Capability capability) {
         // TODO - we haven't actually identified save yet!
+        return false;
+    }
+
+    @Override
+    public boolean is(Hint hint) {
+        // We know nothing!
         return false;
     }
 

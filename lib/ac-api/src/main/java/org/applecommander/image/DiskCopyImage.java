@@ -1,6 +1,7 @@
 package org.applecommander.image;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
@@ -67,6 +68,11 @@ public class DiskCopyImage implements Source {
     @Override
     public <T> Optional<T> get(Class<T> iface) {
         return Container.get(iface, this, source, info);
+    }
+
+    @Override
+    public boolean is(Hint hint) {
+        return hint == Hint.PRODOS_BLOCK_ORDER;
     }
 
     public Info getInfo() {

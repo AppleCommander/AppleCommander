@@ -1,6 +1,7 @@
 package com.webcodepro.applecommander.storage;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
@@ -28,6 +29,12 @@ public class FileEntrySource implements Source {
     @Override
     public <T> Optional<T> get(Class<T> iface) {
         return Container.get(iface, fileEntry, buffer);
+    }
+
+    @Override
+    public boolean is(Hint hint) {
+        // Right now this is all SHK/SDK
+        return hint == Hint.PRODOS_BLOCK_ORDER;
     }
 
     @Override

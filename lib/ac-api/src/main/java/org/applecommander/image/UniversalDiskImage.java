@@ -1,6 +1,7 @@
 package org.applecommander.image;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
@@ -70,6 +71,16 @@ public class UniversalDiskImage implements Source {
     @Override
     public <T> Optional<T> get(Class<T> iface) {
         return Container.get(iface, this, source, info);
+    }
+
+    @Override
+    public boolean is(Hint hint) {
+        return switch (hint) {
+            case DOS_SECTOR_ORDER -> info.imageFormat() == 0;
+            case PRODOS_BLOCK_ORDER -> info.imageFormat() == 1;
+            case NIBBLE_SECTOR_ORDER -> info.imageFormat() == 2;
+            default -> false;
+        };
     }
 
     @Override
