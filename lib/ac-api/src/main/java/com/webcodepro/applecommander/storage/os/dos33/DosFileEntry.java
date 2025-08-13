@@ -204,7 +204,7 @@ public class DosFileEntry implements FileEntry {
 		// default to nothing special, just compute from number of sectors
 		int size = (getSectorsUsed()-1) * Disk.SECTOR_SIZE;
 		if (size < 1) size = 0;	// we assume a T/S block is included (may not be)
-		if (rawdata != null) {
+		if (rawdata != null && rawdata.length >= 4) {
 			if ("B".equals(getFiletype())) { //$NON-NLS-1$
 				// binary
 				return AppleUtil.getWordValue(rawdata, 2);
@@ -340,11 +340,11 @@ public class DosFileEntry implements FileEntry {
 		}
 		byte[] rawdata = disk.getFileData(this);
 		byte[] filedata;
-		if (isBinaryFile()) {
+		if (isBinaryFile() && rawdata.length >= 2) {
 			int length = AppleUtil.getWordValue(rawdata, 2);
 			filedata = new byte[length];
 			System.arraycopy(rawdata, 4, filedata, 0, length);
-		} else if (isApplesoftBasicFile() || isIntegerBasicFile()) {
+		} else if ((isApplesoftBasicFile() || isIntegerBasicFile()) && rawdata.length >= 4) {
 			filedata = new byte[getSize()];
 			System.arraycopy(rawdata, 2, filedata, 0, filedata.length);
 		} else {
