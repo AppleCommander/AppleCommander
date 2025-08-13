@@ -10,7 +10,7 @@ public class Nibble62Disk525Codec implements NibbleDiskCodec {
      * This is the 6 and 2 write translate table, as given in Beneath
      * Apple DOS, pg 3-21.
      */
-    private static final int[] writeTranslateTable62 = {
+    public static final int[] writeTranslateTable62 = {
             //$0    $1    $2    $3    $4    $5    $6    $7
             0x96, 0x97, 0x9a, 0x9b, 0x9d, 0x9e, 0x9f, 0xa6,	// +$00
             0xa7, 0xab, 0xac, 0xad, 0xae, 0xaf, 0xb2, 0xb3, // +$08
@@ -26,7 +26,7 @@ public class Nibble62Disk525Codec implements NibbleDiskCodec {
      * write translate table.  Used to decode a disk byte into a
      * value from 0x00 to 0x3f which is further decoded...
      */
-    private static final int[] readTranslateTable62;
+    public static final int[] readTranslateTable62;
     static {
         // Construct the read translation table:
         readTranslateTable62 = new int[256];

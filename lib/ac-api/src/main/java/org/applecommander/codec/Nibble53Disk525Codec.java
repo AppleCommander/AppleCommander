@@ -10,7 +10,7 @@ public class Nibble53Disk525Codec implements NibbleDiskCodec {
      * This is the 5 and 3 write translate table, as given in Beneath
      * Apple DOS and Beneath Apple ProDOS 2020, pg 25.
      */
-    private static final int[] writeTranslateTable53 = {
+    public static final int[] writeTranslateTable53 = {
             //$0    $1    $2    $3    $4    $5    $6    $7
             0xab, 0xad, 0xae, 0xaf, 0xb5, 0xb6, 0xb7, 0xba, // +$00
             0xbb, 0xbd, 0xbe, 0xbf, 0xd6, 0xd7, 0xda, 0xdb, // +$08
@@ -22,7 +22,7 @@ public class Nibble53Disk525Codec implements NibbleDiskCodec {
      * write translate table.  Used to decode a disk byte into a
      * value from 0x00 to 0x1f which is further decoded...
      */
-    private static final int[] readTranslateTable53;
+    public static final int[] readTranslateTable53;
     static {
         // Construct the read translation table:
         readTranslateTable53 = new int[256];
