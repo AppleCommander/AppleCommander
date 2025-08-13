@@ -160,7 +160,11 @@ public class DosFormatDisk extends FormattedDisk {
 			byte[] catalogSector = readSector(track, sector);
 			int offset = 0x0b;
 			while (offset < 0xff) {	// iterate through all entries
-				if (catalogSector[offset] != 0) {
+				if (catalogSector[offset] == 0) {
+					// Mimicking DOS by exiting CATALOG when we encounter a Track = 0
+					break;
+				}
+				else {
 					list.add(new DosFileEntry(this, track, sector, offset));
 				}
 				offset+= DosFileEntry.FILE_DESCRIPTIVE_ENTRY_LENGTH;
@@ -298,8 +302,12 @@ public class DosFormatDisk extends FormattedDisk {
 	 * Get the number of tracks on this disk.
 	 */
 	public int getTracks() {
+		int physicalTracks = getImageOrder().getTracksPerDisk();
 		byte[] vtoc = readVtoc();
-		return AppleUtil.getUnsignedByte(vtoc[0x34]);
+		int dosTracks = AppleUtil.getUnsignedByte(vtoc[0x34]);
+		// Attempting to be sensible in sizing. There are DOS disk images saying they have 40
+		// tracks but the image itself is only 35 tracks.
+		return Math.min(dosTracks, physicalTracks);
 	}
 
 	/**
