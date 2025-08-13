@@ -2,6 +2,7 @@ package io.github.applecommander.acx.command;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonStreamParser;
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.FileEntry;
@@ -15,12 +16,11 @@ import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
 
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
 import static picocli.CommandLine.*;
@@ -29,10 +29,13 @@ import static picocli.CommandLine.*;
 public class ScanCommand extends ReusableCommandOptions {
     private static Logger LOG = Logger.getLogger(ScanCommand.class.getName());
 
-    @Parameters(arity = "*", description = "directories to scan", defaultValue = ".")
+    @Parameters(arity = "*", description = "directories to scan")
     private List<Path> directories;
 
-    @Option(names = { "-o", "--output" }, description = "Name of report file", defaultValue = "report.txt")
+    @Option(names = { "-c", "--compare-to" }, description = "Compare to existing report")
+    private Path priorReportPath;
+
+    @Option(names = { "-o", "--output" }, description = "Name of report file")
     private Path reportPath;
 
     @Option(names = { "--progress" }, description = "Show progress be listing each image as it is processed",
@@ -45,15 +48,90 @@ public class ScanCommand extends ReusableCommandOptions {
         if (reportPath != null) {
             output = new PrintStream(Files.newOutputStream(reportPath));
         }
+
         FileVisitor visitor = new FileVisitor(output, progress);
-        for (Path dir : directories) {
-            Files.walkFileTree(dir, visitor);
+        if (priorReportPath != null) {
+            compare(visitor);
         }
-        System.out.printf("Scanned %d disk images.\n", visitor.getCounter());
+
+        if (directories != null) {
+            for (Path dir : directories) {
+                Files.walkFileTree(dir, visitor);
+            }
+            showReport(visitor.reportData);
+            System.out.printf("Scanned %d disk images.\n", visitor.getCounter());
+        }
         return 0;
     }
 
-    private static class FileVisitor extends SimpleFileVisitor<Path> {
+    public void compare(FileVisitor visitor) {
+        try (Reader reader = new FileReader(priorReportPath.toFile())) {
+            Gson gson = new GsonBuilder().create();
+            JsonStreamParser parser = new JsonStreamParser(reader);
+            ReportData oldData = new ReportData("Old");
+            ReportData newData = new ReportData("New");
+            while (parser.hasNext()) {
+                Report oldReport = gson.fromJson(parser.next(), Report.class);
+                Report newReport = visitor.scanFile(Path.of(oldReport.imageName));
+                oldData.tallyData(oldReport);
+                newData.tallyData(newReport);
+                if (oldReport.success && !newReport.success) {
+                    System.out.printf("Degradation with: %s\n", oldReport.imageName);
+                }
+            }
+            showReport(oldData, newData);
+        } catch (IOException e) {
+            LOG.severe(e.getMessage());
+        }
+    }
+
+    public void showReport(ReportData... data) {
+        System.out.println();
+        showString("Title", ReportData::getTitle, data);
+        showInteger("Total Images", ReportData::getReportCount, data);
+        showInteger("Successes", ReportData::getSuccesses, data);
+        showCounts("Image Types", ReportData::getImageTypes, data);
+        showInteger("Logical Disks", ReportData::getLogicalDisks, data);
+        showInteger("Deleted Files", ReportData::getDeletedFiles, data);
+        showInteger("Directories Visited", ReportData::getDirectoriesVisited, data);
+        showInteger("Files Visited", ReportData::getFilesVisited, data);
+        showInteger("Files Read", ReportData::getFilesRead, data);
+        showCounts("Data Types Read", ReportData::getDataTypesRead, data);
+        showInteger("Error Count", ReportData::getErrorCount, data);
+        System.out.println();
+    }
+    private void showString(String heading, Function<ReportData,String> stringFn, ReportData... data) {
+        System.out.printf("%-20s ", heading);
+        for (ReportData r : data) {
+            System.out.printf("%10s ", stringFn.apply(r));
+        }
+        System.out.println();
+    }
+    private void showInteger(String heading, Function<ReportData,Integer> intFn, ReportData... data) {
+        System.out.printf("%-20s ", heading);
+        for (ReportData r : data) {
+            System.out.printf("%10d ", intFn.apply(r));
+        }
+        System.out.println();
+    }
+    private void showCounts(String heading, Function<ReportData,Map<String,Integer>> mapFn, ReportData... data) {
+        System.out.println(heading);
+        Set<String> keys = new TreeSet<>();
+        for (ReportData r : data) {
+            Map<String,Integer> map = mapFn.apply(r);
+            keys.addAll(map.keySet());
+        }
+        for (String key : keys) {
+            System.out.printf("* %-18s ", key);
+            for (ReportData r : data) {
+                Map<String,Integer> map = mapFn.apply(r);
+                System.out.printf("%10d ", map.getOrDefault(key, 0));
+            }
+            System.out.println();
+        }
+    }
+
+    public static class FileVisitor extends SimpleFileVisitor<Path> {
         private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
         private static final PathMatcher globMatcher;
         static {
@@ -75,6 +153,7 @@ public class ScanCommand extends ReusableCommandOptions {
         private int counter;
         private final PrintStream output;
         private final boolean progress;
+        private ReportData reportData = new ReportData("Scan");
 
         public FileVisitor(PrintStream output, boolean progress) {
             this.output = output;
@@ -93,12 +172,13 @@ public class ScanCommand extends ReusableCommandOptions {
                     System.out.printf("#%05d: %s\n", counter, file.toString());
                 }
                 Report report = scanFile(file);
+                reportData.tallyData(report);
                 output.println(gson.toJson(report));
             }
             return FileVisitResult.CONTINUE;
         }
 
-        private Report scanFile(Path file) {
+        public Report scanFile(Path file) {
             try {
                 return new Report(file);
             } catch (Throwable t) {
@@ -107,7 +187,72 @@ public class ScanCommand extends ReusableCommandOptions {
         }
     }
 
-    private static class Report {
+    public static class ReportData {
+        final String title;
+        int reportCount = 0;
+        int successes = 0;
+        Map<String,Integer> imageTypes = new HashMap<>();
+        int logicalDisks = 0;
+        int deletedFiles = 0;
+        int directoriesVisited = 0;
+        int filesVisited = 0;
+        int filesRead = 0;
+        Map<String,Integer> dataTypesRead = new HashMap<>();
+        int errorCount = 0;
+
+        ReportData(String title) {
+            this.title = title;
+        }
+
+        void tallyData(Report report) {
+            reportCount++;
+            if (report.success) successes++;
+            imageTypes.merge(report.imageType, 1, Integer::sum);
+            logicalDisks += report.logicalDisks;
+            deletedFiles += report.deletedFiles;
+            directoriesVisited += report.directoriesVisited;
+            filesVisited += report.filesVisited;
+            filesRead += report.filesRead;
+            dataTypesRead.merge(report.dataType, report.dataRead, Integer::sum);
+            errorCount += report.errors.size();
+        }
+
+        public String getTitle() {
+            return title;
+        }
+        public int getReportCount() {
+            return reportCount;
+        }
+        public int getSuccesses() {
+            return successes;
+        }
+        public Map<String, Integer> getImageTypes() {
+            return imageTypes;
+        }
+        public int getLogicalDisks() {
+            return logicalDisks;
+        }
+        public int getDeletedFiles() {
+            return deletedFiles;
+        }
+        public int getDirectoriesVisited() {
+            return directoriesVisited;
+        }
+        public int getFilesVisited() {
+            return filesVisited;
+        }
+        public int getFilesRead() {
+            return filesRead;
+        }
+        public Map<String, Integer> getDataTypesRead() {
+            return dataTypesRead;
+        }
+        public int getErrorCount() {
+            return errorCount;
+        }
+    }
+
+    public static class Report {
         static final int MAX_ERRORS = 20;
 
         String imageName;
