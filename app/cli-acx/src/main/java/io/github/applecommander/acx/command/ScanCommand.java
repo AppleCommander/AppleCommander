@@ -35,7 +35,7 @@ public class ScanCommand extends ReusableCommandOptions {
     @Option(names = { "-c", "--compare-to" }, description = "Compare to existing report")
     private Path priorReportPath;
 
-    @Option(names = { "-o", "--output" }, description = "Name of report file", defaultValue = "report.txt")
+    @Option(names = { "-o", "--output" }, description = "Name of report file")
     private Path reportPath;
 
     @Option(names = { "--progress" }, description = "Show progress be listing each image as it is processed",
