@@ -25,6 +25,7 @@ import java.util.Optional;
  */
 public interface Source extends CapabilityProvider, HintProvider, Container {
     int getSize();
+    String getName();
     DataBuffer readAllBytes();
     DataBuffer readBytes(int offset, int length);
     void writeBytes(int offset, DataBuffer data);

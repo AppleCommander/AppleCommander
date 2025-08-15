@@ -69,6 +69,11 @@ public class UniversalDiskImage implements Source {
     }
 
     @Override
+    public String getName() {
+        return source.getName();
+    }
+
+    @Override
     public <T> Optional<T> get(Class<T> iface) {
         return Container.get(iface, this, source, info);
     }

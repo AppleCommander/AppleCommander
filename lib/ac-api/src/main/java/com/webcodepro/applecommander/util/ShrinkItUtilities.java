@@ -31,9 +31,8 @@ import com.webcodepro.shrinkit.HeaderBlock;
 import com.webcodepro.shrinkit.NuFileArchive;
 import com.webcodepro.shrinkit.ThreadRecord;
 import com.webcodepro.shrinkit.io.LittleEndianByteInputStream;
-import org.applecommander.source.FileSource;
+import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
-import org.applecommander.util.DataBuffer;
 
 /**
  * Some higher-level utilities for dealing with a NuFX archive.
@@ -64,7 +63,7 @@ public class ShrinkItUtilities
 		int newDiskSize = Disk.sizeToFit(a.getArchiveSize());
 		if (startBlocks > 0)
 			newDiskSize = startBlocks*512;
-		source = new FileSource(DataBuffer.create(newDiskSize));
+		source = DataBufferSource.create(newDiskSize, source.getName()).get();
 		ImageOrder imageOrder = new ProdosOrder(source);
 		// Create a new disk in anticipation of unpacking files - we don't actually know if we'll need it yet, though.
 		FormattedDisk[] disks = ProdosFormatDisk.create(fileName, "APPLECOMMANDER", imageOrder); //$NON-NLS-1$

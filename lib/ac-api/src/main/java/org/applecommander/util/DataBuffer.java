@@ -2,6 +2,7 @@ package org.applecommander.util;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 /**
  * A DataBuffer is a bunch of bytes with Apple II knowledge.
@@ -51,6 +52,11 @@ public class DataBuffer {
     }
     public void limit(int newLimit) {
         this.buffer.limit(newLimit);
+    }
+    public boolean matches(int offset, byte... data) {
+        byte[] match = new byte[data.length];
+        get(offset, match);
+        return Arrays.equals(data, match);
     }
 
     // GET/PUT RELATED FUNCTIONS

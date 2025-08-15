@@ -69,7 +69,7 @@ public abstract class Wizard {
 	 * Create the dialog.
 	 */
 	private void createDialog() {
-		int styles = SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL;
+		int styles = SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.RESIZE;
 		if (Host.isMacosx()) {
 			styles |= SWT.SHEET;
 		}

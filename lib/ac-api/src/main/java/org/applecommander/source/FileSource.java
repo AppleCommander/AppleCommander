@@ -19,6 +19,7 @@ import java.util.zip.GZIPInputStream;
 
 public class FileSource implements Source {
     private Path path;
+    private String filename;
     private DataBuffer buffer;
     private boolean changed;
 
@@ -44,10 +45,7 @@ public class FileSource implements Source {
     }
     public FileSource(Path path, DataBuffer buffer) {
         this.path = path;
-        this.buffer = buffer;
-    }
-    // TODO should this be separate or is "FileSource" a misnomer?
-    public FileSource(DataBuffer buffer) {
+        this.filename = path.getFileName().toString();
         this.buffer = buffer;
     }
 
@@ -71,6 +69,11 @@ public class FileSource implements Source {
     @Override
     public int getSize() {
         return buffer.limit();
+    }
+
+    @Override
+    public String getName() {
+        return filename;
     }
 
     @Override

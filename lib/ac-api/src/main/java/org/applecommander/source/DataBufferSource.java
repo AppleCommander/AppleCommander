@@ -1,0 +1,124 @@
+package org.applecommander.source;
+
+import org.applecommander.capability.Capability;
+import org.applecommander.hint.Hint;
+import org.applecommander.util.Container;
+import org.applecommander.util.DataBuffer;
+import org.applecommander.util.Information;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+public class DataBufferSource implements Source {
+    private final DataBuffer dataBuffer;
+    private final String name;
+    private final Set<Capability> capabilities;
+    private final Set<Hint> hints;
+    private final List<Information> information;
+    boolean changed;
+
+    private DataBufferSource(DataBuffer dataBuffer, String name, Set<Capability> capabilities, Set<Hint> hints,
+                             List<Information> information) {
+        this.dataBuffer = dataBuffer;
+        this.name = name;
+        this.capabilities = capabilities;
+        this.hints = hints;
+        this.information = information;
+    }
+
+    @Override
+    public int getSize() {
+        return dataBuffer.limit();
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public DataBuffer readAllBytes() {
+        return dataBuffer;
+    }
+
+    @Override
+    public DataBuffer readBytes(int offset, int length) {
+        return dataBuffer.slice(offset, length);
+    }
+
+    @Override
+    public void writeBytes(int offset, DataBuffer data) {
+        dataBuffer.put(offset, data);
+        changed = true;
+    }
+
+    @Override
+    public boolean hasChanged() {
+        return changed;
+    }
+
+    @Override
+    public void clearChanges() {
+        changed = false;
+    }
+
+    @Override
+    public List<Information> information() {
+        return information;
+    }
+
+    @Override
+    public boolean can(Capability capability) {
+        return capabilities.contains(capability);
+    }
+
+    @Override
+    public boolean is(Hint hint) {
+        return hints.contains(hint);
+    }
+
+    @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        return Container.get(iface, this, dataBuffer);
+    }
+
+    public static Builder create(DataBuffer dataBuffer, String name) {
+        return new Builder(dataBuffer, name);
+    }
+    public static Builder create(byte[] rawData, String name) {
+        return new Builder(DataBuffer.wrap(rawData), name);
+    }
+    public static Builder create(int imageSize, String name) {
+        return new Builder(DataBuffer.create(imageSize), name);
+    }
+
+    public static class Builder {
+        private final DataBuffer dataBuffer;
+        private final String name;
+        private Set<Capability> capabilities = Collections.emptySet();
+        private Set<Hint> hints = Collections.emptySet();
+        private List<Information> information = Collections.emptyList();
+
+        private Builder(DataBuffer dataBuffer, String name) {
+            this.dataBuffer = dataBuffer;
+            this.name = name;
+        }
+        public Builder capabilities(Capability... capabilities) {
+            this.capabilities = Set.of(capabilities);
+            return this;
+        }
+        public Builder hints(Hint... hints) {
+            this.hints = Set.of(hints);
+            return this;
+        }
+        public Builder information(Information... information) {
+            this.information = List.of(information);
+            return this;
+        }
+        public DataBufferSource get() {
+            return new DataBufferSource(dataBuffer, name, capabilities, hints, information);
+        }
+    }
+}

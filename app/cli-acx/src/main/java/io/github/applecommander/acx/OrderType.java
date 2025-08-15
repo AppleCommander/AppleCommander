@@ -27,9 +27,9 @@ import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.NibbleOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
-import org.applecommander.source.FileSource;
+import org.applecommander.hint.Hint;
+import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
-import org.applecommander.util.DataBuffer;
 
 public enum OrderType {
     DOS(OrderType::createDosImageOrder), 
@@ -64,7 +64,7 @@ public enum OrderType {
             LOG.warning("Setting image size to 800KB.");
             size = Disk.APPLE_800KB_DISK;
         }
-        Source source = new FileSource(DataBuffer.create(size));
+        Source source = DataBufferSource.create(size, "new-disk").hints(Hint.DOS_SECTOR_ORDER).get();
         return new DosOrder(source);
     }
     /**
@@ -74,7 +74,7 @@ public enum OrderType {
         if (size != Disk.APPLE_140KB_NIBBLE_DISK && size != Disk.APPLE_140KB_DISK) {
             LOG.warning("Setting image size to 140KB");
         }
-        Source source = new FileSource(DataBuffer.create(Disk.APPLE_140KB_NIBBLE_DISK));
+        Source source = DataBufferSource.create(Disk.APPLE_140KB_NIBBLE_DISK, "new-disk").get();
         return new NibbleOrder(source);
     }
     /** 
@@ -97,7 +97,7 @@ public enum OrderType {
             LOG.warning("Setting image size to 32MB.");
             size = Disk.APPLE_32MB_HARDDISK;
         }
-        Source source = new FileSource(DataBuffer.create(size));
+        Source source = DataBufferSource.create(size, "new-disk").hints(Hint.PRODOS_BLOCK_ORDER).get();
         return new ProdosOrder(source);
     }
 }
