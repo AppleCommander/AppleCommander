@@ -407,22 +407,6 @@ public class Disk {
 	}
 
 	/**
-	 * Indicate if this disk is a ShrinkIt-compressed package.
-	 */
-	public boolean isSHK()
-	{
-		return filename.toLowerCase().endsWith(".shk"); //$NON-NLS-1$
-	}
-
-	/**
-	 * Indicate if this disk is a ShrinkIt-compressed binary II archive.
-	 */
-	public boolean isBXY()
-	{
-		return filename.toLowerCase().endsWith(".bxy"); //$NON-NLS-1$
-	}
-
-	/**
 	 * Indicate if this disk is ProDOS ordered (beginning with block 0).
 	 */
 	public boolean isProdosOrder() {
@@ -770,18 +754,6 @@ public class Disk {
 	}
 
 	/**
-	 * Indicates if a given byte sequence is likely to be a DiskCopy 42 stream.
-	 * 
-	 * @return boolean liklihood it is a DC42 stream
-	 */
-	private static boolean isDC42(byte[] buffer) {
-		return (((buffer[0x52] == 0x01) && (buffer[0x53] == 0x00)) &&
-				((buffer[0x51] == 0x02) || (buffer[0x51] == 0x22) || (buffer[0x51] == 0x24)));
-	}
-	public boolean isDC42() {
-		return isDC42;
-	}
-	/**
 	 * Indicates if the disk has changed. Triggered when data is
 	 * written and cleared when data is saved.
 	 */
@@ -831,53 +803,4 @@ public class Disk {
 		}
 		return -1;
 	}
-
-	/**
-	 * Change ImageOrder from source order to target order by copying sector by
-	 * sector.
-	 */
-	private void changeImageOrderByTrackAndSector(ImageOrder sourceOrder, ImageOrder targetOrder)
-	{
-		if (!sameSectorsPerDisk(sourceOrder, targetOrder)) {
-			throw new IllegalArgumentException(textBundle.get("Disk.ResizeDiskError"));
-		}
-		for (int track = 0; track < sourceOrder.getTracksPerDisk(); track++) {
-			for (int sector = 0; sector < sourceOrder.getSectorsPerTrack(); sector++) {
-				byte[] data = sourceOrder.readSector(track, sector);
-				targetOrder.writeSector(track, sector, data);
-			}
-		}
-	}
-
-	/**
-	 * Change ImageOrder from source order to target order by copying block by
-	 * block.
-	 */
-	private void changeImageOrderByBlock(ImageOrder sourceOrder, ImageOrder targetOrder)
-	{
-		if (!sameBlocksPerDisk(sourceOrder, targetOrder)) {
-			throw new IllegalArgumentException(textBundle.get("Disk.ResizeDiskError"));
-		}
-		for (int block = 0; block < sourceOrder.getBlocksOnDevice(); block++) {
-			byte[] blockData = sourceOrder.readBlock(block);
-			targetOrder.writeBlock(block, blockData);
-		}
-	}
-
-	/**
-	 * Answers true if the two disks have the same number of blocks per disk.
-	 */
-	private static boolean sameBlocksPerDisk(ImageOrder sourceOrder, ImageOrder targetOrder)
-	{
-		return sourceOrder.getBlocksOnDevice() == targetOrder.getBlocksOnDevice();
-	}
-
-	/**
-	 * Answers true if the two disks have the same number of sectors per disk.
-	 */
-	private static boolean sameSectorsPerDisk(ImageOrder sourceOrder, ImageOrder targetOrder)
-	{
-		return sourceOrder.getSectorsPerDisk() == targetOrder.getSectorsPerDisk();
-	}
-
 }
