@@ -100,7 +100,6 @@ public class DosDiskFactory implements DiskFactory {
                     actualSectorPointers++;
                 }
             }
-            System.out.printf("next sector = %d, actual sector = %d\n", nextSectorPointers, actualSectorPointers);
             good = (nextSectorPointers == actualSectorPointers);
         }
         return good;
