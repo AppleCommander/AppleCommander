@@ -9,7 +9,7 @@ import java.util.ServiceLoader;
 public interface DiskFactory {
     void inspect(Context ctx);
 
-    public class Context {
+    class Context {
         public final Source source;
         public final List<FormattedDisk> disks = new ArrayList<>();
 
