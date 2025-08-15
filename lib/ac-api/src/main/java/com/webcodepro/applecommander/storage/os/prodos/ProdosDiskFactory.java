@@ -45,17 +45,25 @@ public class ProdosDiskFactory implements DiskFactory {
 
     public boolean check(FormattedDisk fdisk) {
         DataBuffer volumeDirectory = DataBuffer.wrap(fdisk.readBlock(2));
+        int priorBlock = volumeDirectory.getUnsignedShort(0x00);
+        int storageType = volumeDirectory.getUnsignedByte(0x04) >> 4;
+        int entryLength = volumeDirectory.getUnsignedByte(0x23);
+        int entriesPerBlock = volumeDirectory.getUnsignedByte(0x24);
         // Check primary block for values
-        boolean good = volumeDirectory.getUnsignedShort(0x00) == 0              // prior block pointer is zero
-                    && (volumeDirectory.getUnsignedByte(0x04)&0xf0) == 0xf0     // storage_type = $f
-                    && volumeDirectory.getUnsignedByte(0x23) == 0x27            // entry_length = $27
-                    && volumeDirectory.getUnsignedByte(0x24) == 0x0d;           // entries_per_block = $d
+        boolean good = priorBlock == 0
+                    && storageType == 0xf
+                    && entryLength == 0x27
+                    && entriesPerBlock == 0x0d;
         // Now follow the directory blocks
+        int currentBlock = 2;
         while (good) {
             int nextBlock = volumeDirectory.getUnsignedShort(0x02);
+            if (nextBlock == 0) break;
             volumeDirectory = DataBuffer.wrap(fdisk.readBlock(nextBlock));
             // Ensure that the prior link points to the block we just read
-            good = volumeDirectory.getUnsignedShort(0x00) == nextBlock;
+            priorBlock = volumeDirectory.getUnsignedShort(0x00);
+            good = (priorBlock == currentBlock);
+            currentBlock = nextBlock;
         }
         return good;
     }
