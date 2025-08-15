@@ -35,7 +35,6 @@ import com.webcodepro.applecommander.util.TextBundle;
 import org.applecommander.hint.Hint;
 import org.applecommander.image.UniversalDiskImage;
 import org.applecommander.image.WozImage;
-import org.applecommander.source.FileSource;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 import org.applecommander.util.DataBuffer;
@@ -198,18 +197,6 @@ public class Disk {
 		int diskSize = source.getSize();
 
 		knownProDOSOrder |= source.is(Hint.PRODOS_BLOCK_ORDER);
-
-		if (isSDK() || isSHK() || isBXY()) {
-			// If we have an SDK, unpack it and send along the byte array
-			// If we have a SHK, build a new disk and unpack the contents on to it
-			byte[] diskImage = com.webcodepro.applecommander.util.ShrinkItUtilities.unpackSHKFile(
-				filename, source, startBlocks);
-			diskSize = diskImage.length;
-			// Since we don't want to overwrite their shrinkit with a raw ProDOS image,
-			// add a .po extension to it
-			this.filename += ".po"; //$NON-NLS-1$
-			this.diskImageManager = new FileSource(Path.of(this.filename), DataBuffer.wrap(diskImage));
-		}
 
 		/* Does it have the WOZ1 or WOZ2 header? */
 		int signature = diskImageManager.readBytes(0, 4).readInt();

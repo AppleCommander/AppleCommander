@@ -19,9 +19,8 @@
  */
 package com.webcodepro.applecommander.ui.swt.wizard.diskimage;
 
-import org.applecommander.source.FileSource;
+import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
-import org.applecommander.util.DataBuffer;
 import org.eclipse.swt.widgets.Shell;
 
 import com.webcodepro.applecommander.storage.Disk;
@@ -94,7 +93,7 @@ public class DiskImageWizard extends Wizard {
 		if (isCompressed()) {
 			name.append(".gz"); //$NON-NLS-1$
 		}
-		Source source = new FileSource(DataBuffer.create(getSize()));
+		Source source = DataBufferSource.create(getSize(), name.toString()).get();
 		ImageOrder imageOrder = null;
 		switch (getOrder()) {
 			case ORDER_DOS:

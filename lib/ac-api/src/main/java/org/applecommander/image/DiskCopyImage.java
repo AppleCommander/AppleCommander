@@ -85,6 +85,11 @@ public class DiskCopyImage implements Source {
     }
 
     @Override
+    public String getName() {
+        return source.getName();
+    }
+
+    @Override
     public DataBuffer readAllBytes() {
         return this.source.readBytes(HEADER_SIZE, getInfo().dataSize());
     }

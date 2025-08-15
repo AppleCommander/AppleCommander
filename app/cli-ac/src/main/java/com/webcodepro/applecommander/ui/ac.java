@@ -62,9 +62,9 @@ import io.github.applecommander.bastools.api.TokenReader;
 import io.github.applecommander.bastools.api.Visitors;
 import io.github.applecommander.bastools.api.model.Program;
 import io.github.applecommander.bastools.api.model.Token;
-import org.applecommander.source.FileSource;
+import org.applecommander.hint.Hint;
+import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
-import org.applecommander.util.DataBuffer;
 import org.applecommander.util.Information;
 
 /**
@@ -619,7 +619,7 @@ public class ac {
 	 */
 	public static void createDosDisk(String fileName, int imageSize)
 		throws IOException {
-		Source source = new FileSource(DataBuffer.create(imageSize));
+		Source source = DataBufferSource.create(imageSize, fileName).hints(Hint.DOS_SECTOR_ORDER).get();
 		ImageOrder imageOrder = new DosOrder(source);
 		FormattedDisk[] disks = DosFormatDisk.create(fileName, imageOrder);
 		disks[0].save();
@@ -630,7 +630,7 @@ public class ac {
 	 */
 	public static void createPasDisk(String fileName, String volName, int imageSize)
 		throws IOException {
-		Source source = new FileSource(DataBuffer.create(imageSize));
+		Source source = DataBufferSource.create(imageSize, fileName).hints(Hint.PRODOS_BLOCK_ORDER).get();
 		ImageOrder imageOrder = new ProdosOrder(source);
 		FormattedDisk[] disks = PascalFormatDisk.create(fileName, volName, imageOrder);
 		disks[0].save();
@@ -641,7 +641,7 @@ public class ac {
 	 */
 	public static void createProDisk(String fileName, String volName, int imageSize)
 		throws IOException {
-		Source source = new FileSource(DataBuffer.create(imageSize));
+		Source source = DataBufferSource.create(imageSize, fileName).hints(Hint.PRODOS_BLOCK_ORDER).get();
 		ImageOrder imageOrder = new ProdosOrder(source);
 		FormattedDisk[] disks = ProdosFormatDisk.create(fileName, volName, imageOrder);
 		disks[0].save();

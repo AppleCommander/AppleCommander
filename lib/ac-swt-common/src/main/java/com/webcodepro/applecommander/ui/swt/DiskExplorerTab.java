@@ -39,9 +39,8 @@ import com.webcodepro.applecommander.util.Host;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 import io.github.applecommander.applesingle.AppleSingle;
-import org.applecommander.source.FileSource;
+import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
-import org.applecommander.util.DataBuffer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -1858,7 +1857,7 @@ public class DiskExplorerTab {
 			public void widgetSelected(SelectionEvent event) {
 				if (!getDisk(0).isNibbleOrder()) {
 					NibbleOrder nibbleOrder = new NibbleOrder(
-						new FileSource(DataBuffer.create(Disk.APPLE_140KB_NIBBLE_DISK)));
+						DataBufferSource.create(Disk.APPLE_140KB_NIBBLE_DISK, "new-image.nib").get());
 					nibbleOrder.format();
 					changeImageOrder("nib", nibbleOrder); //$NON-NLS-1$
 				}
@@ -1871,7 +1870,7 @@ public class DiskExplorerTab {
 			public void widgetSelected(SelectionEvent event) {
 				if (!getDisk(0).isDosOrder()) {
 					changeImageOrder("dsk", new DosOrder( //$NON-NLS-1$
-						new FileSource(DataBuffer.create(Disk.APPLE_140KB_DISK))));
+						DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-image.dsk").get()));
 				}
 			}
 		});
@@ -1882,7 +1881,7 @@ public class DiskExplorerTab {
 			public void widgetSelected(SelectionEvent event) {
 				if (!getDisk(0).isProdosOrder()) {
 					changeImageOrder("po", new ProdosOrder( //$NON-NLS-1$
-						new FileSource(DataBuffer.create(Disk.APPLE_140KB_DISK))));
+						DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-image.po").get()));
 				}
 			}
 		});

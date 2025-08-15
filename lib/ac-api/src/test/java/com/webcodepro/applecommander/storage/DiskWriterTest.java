@@ -22,9 +22,8 @@ package com.webcodepro.applecommander.storage;
 import java.io.IOException;
 import java.util.List;
 
-import org.applecommander.source.FileSource;
+import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
-import org.applecommander.util.DataBuffer;
 import org.junit.jupiter.api.Test;
 
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
@@ -59,7 +58,7 @@ public class DiskWriterTest {
 	 */
 	@Test
 	public void testWriteToDos33() throws IOException, DiskException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_140KB_DISK));
+		Source source = DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-disk").get();
 		ImageOrder imageOrder = new DosOrder(source);
 		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.dsk", imageOrder); //$NON-NLS-1$
 		writeFiles(disks, "B", "T", false); //$NON-NLS-1$ //$NON-NLS-2$
@@ -71,7 +70,7 @@ public class DiskWriterTest {
 	 */
 	@Test
 	public void testWriteToDos33Nibble() throws IOException, DiskException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_140KB_NIBBLE_DISK));
+		Source source = DataBufferSource.create(Disk.APPLE_140KB_NIBBLE_DISK, "new-disk").get();
 		ImageOrder imageOrder = new NibbleOrder(source);
 		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.nib", imageOrder); //$NON-NLS-1$
 		writeFiles(disks, "B", "T", false); //$NON-NLS-1$ //$NON-NLS-2$
@@ -83,7 +82,7 @@ public class DiskWriterTest {
 	 */	
 	@Test
 	public void testWriteToPascal140kDisk() throws IOException, DiskException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_140KB_DISK));
+		Source source = DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-disk").get();
 		ImageOrder imageOrder = new ProdosOrder(source);
 		FormattedDisk[] disks = PascalFormatDisk.create(
 			"write-test-pascal-140k.po", "TEST", imageOrder); //$NON-NLS-1$ //$NON-NLS-2$
@@ -96,7 +95,7 @@ public class DiskWriterTest {
 	 */	
 	@Test
 	public void testWriteToPascal800kDisk() throws DiskFullException, IOException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_800KB_DISK));
+		Source source = DataBufferSource.create(Disk.APPLE_800KB_DISK, "new-disk").get();
 		ImageOrder imageOrder = new ProdosOrder(source);
 		FormattedDisk[] disks = PascalFormatDisk.create(
 			"write-test-pascal-800k.po", "TEST", imageOrder); //$NON-NLS-1$ //$NON-NLS-2$
@@ -109,7 +108,7 @@ public class DiskWriterTest {
 	 */	
 	@Test
 	public void testWriteToProdos140kDisk() throws IOException, DiskException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_140KB_DISK));
+		Source source = DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-disk").get();
 		ImageOrder imageOrder = new ProdosOrder(source);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"write-test-prodos-140k.dsk", "TEST", imageOrder); //$NON-NLS-1$ //$NON-NLS-2$
@@ -122,7 +121,7 @@ public class DiskWriterTest {
 	 */	
 	@Test
 	public void testWriteToProdos800kDisk() throws IOException, DiskException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_800KB_DISK));
+		Source source = DataBufferSource.create(Disk.APPLE_800KB_DISK, "new-disk").get();
 		ImageOrder imageOrder = new ProdosOrder(source);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"write-test-prodos-800k.po", "TEST", imageOrder); //$NON-NLS-1$ //$NON-NLS-2$
@@ -135,7 +134,7 @@ public class DiskWriterTest {
 	 */	
 	@Test
 	public void testWriteToProdos5mbDisk() throws IOException, DiskException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_5MB_HARDDISK));
+		Source source = DataBufferSource.create(Disk.APPLE_5MB_HARDDISK, "new-disk").get();
 		ImageOrder imageOrder = new ProdosOrder(source);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"write-test-prodos-5mb.hdv", "TEST", imageOrder); //$NON-NLS-1$ //$NON-NLS-2$
@@ -148,7 +147,7 @@ public class DiskWriterTest {
 	 */
 	@Test
 	public void testCreateAndDeleteDos33() throws IOException, DiskException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_140KB_DISK));
+		Source source = DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-disk").get();
 		ImageOrder imageOrder = new DosOrder(source);
 		FormattedDisk[] disks = DosFormatDisk.create(
 			"createanddelete-test-dos33.dsk", imageOrder); //$NON-NLS-1$
@@ -161,7 +160,7 @@ public class DiskWriterTest {
 	 */
 	@Test
 	public void testCreateAndDeleteOzDos() throws IOException, DiskException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_800KB_DISK));
+		Source source = DataBufferSource.create(Disk.APPLE_800KB_DISK, "new-disk").get();
 		ImageOrder imageOrder = new ProdosOrder(source);
 		FormattedDisk[] disks = OzDosFormatDisk.create(
 			"createanddelete-test-ozdos.po", imageOrder); //$NON-NLS-1$
@@ -174,7 +173,7 @@ public class DiskWriterTest {
 	 */
 	@Test
 	public void testCreateAndDeleteUniDos() throws IOException, DiskException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_800KB_DISK));
+		Source source = DataBufferSource.create(Disk.APPLE_800KB_DISK, "new-disk").get();
 		ImageOrder imageOrder = new DosOrder(source);
 		FormattedDisk[] disks = UniDosFormatDisk.create(
 			"createanddelete-test-unidos.dsk", imageOrder); //$NON-NLS-1$
@@ -187,7 +186,7 @@ public class DiskWriterTest {
 	 */
 	@Test
 	public void testCreateAndDeletePascal140kDisk() throws IOException, DiskException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_140KB_DISK));
+		Source source = DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-disk").get();
 		ImageOrder imageOrder = new ProdosOrder(source);
 		FormattedDisk[] disks = PascalFormatDisk.create(
 			"createanddelete-test-pascal-140k.po", "TEST",  //$NON-NLS-1$ //$NON-NLS-2$
@@ -201,7 +200,7 @@ public class DiskWriterTest {
 	 */
 	@Test
 	public void testCreateAndDeletePascal800kDisk() throws IOException, DiskException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_800KB_DISK));
+		Source source = DataBufferSource.create(Disk.APPLE_800KB_DISK, "new-disk").get();
 		ImageOrder imageOrder = new ProdosOrder(source);
 		FormattedDisk[] disks = PascalFormatDisk.create(
 			"createanddelete-test-pascal-800k.po", "TEST",  //$NON-NLS-1$ //$NON-NLS-2$
@@ -215,7 +214,7 @@ public class DiskWriterTest {
 	 */
 	@Test
 	public void testCreateAndDeleteProdos140kDisk() throws IOException, DiskException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_140KB_DISK));
+		Source source = DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-disk").get();
 		ImageOrder imageOrder = new DosOrder(source);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"createanddelete-test-prodos-140k.dsk", "TEST",  //$NON-NLS-1$ //$NON-NLS-2$
@@ -229,7 +228,7 @@ public class DiskWriterTest {
 	 */
 	@Test
 	public void testCreateAndDeleteProdos800kDisk() throws IOException, DiskException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_800KB_DISK));
+		Source source = DataBufferSource.create(Disk.APPLE_800KB_DISK, "new-disk").get();
 		ImageOrder imageOrder = new ProdosOrder(source);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"createanddelete-test-prodos-800k.po", "TEST", //$NON-NLS-1$ //$NON-NLS-2$
@@ -244,7 +243,7 @@ public class DiskWriterTest {
 	 */
 	@Test
 	public void testCreateDeleteCreateDosDisk() throws IOException, DiskException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_140KB_DISK));
+		Source source = DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-disk").get();
 		ImageOrder imageOrder = new DosOrder(source);
 		FormattedDisk[] disks = DosFormatDisk.create(
 			"createdeletecreate-test-dos-140k.dsk", imageOrder); //$NON-NLS-1$
@@ -258,7 +257,7 @@ public class DiskWriterTest {
 	 */
 	@Test
 	public void testCreateDeleteCreateOzdosDisk() throws IOException, DiskException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_800KB_DISK));
+		Source source = DataBufferSource.create(Disk.APPLE_800KB_DISK, "new-disk").get();
 		ImageOrder imageOrder = new ProdosOrder(source);
 		FormattedDisk[] disks = OzDosFormatDisk.create(
 			"createdeletecreate-test-ozdos-800k.po", imageOrder); //$NON-NLS-1$
@@ -272,7 +271,7 @@ public class DiskWriterTest {
 	 */
 	@Test
 	public void testCreateDeleteCreateUnidosDisk() throws IOException, DiskException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_800KB_DISK));
+		Source source = DataBufferSource.create(Disk.APPLE_800KB_DISK, "new-disk").get();
 		ImageOrder imageOrder = new DosOrder(source);
 		FormattedDisk[] disks = UniDosFormatDisk.create(
 			"createdeletecreate-test-unidos-800k.dsk", imageOrder); //$NON-NLS-1$
@@ -286,7 +285,7 @@ public class DiskWriterTest {
 	 */
 	@Test
 	public void testCreateDeleteCreatePascalDisk() throws IOException, DiskException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_140KB_DISK));
+		Source source = DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-disk").get();
 		ImageOrder imageOrder = new ProdosOrder(source);
 		FormattedDisk[] disks = PascalFormatDisk.create(
 			"createdeletecreate-test-pascal-140k.po", "TEST", //$NON-NLS-1$ //$NON-NLS-2$
@@ -301,7 +300,7 @@ public class DiskWriterTest {
 	 */
 	@Test
 	public void testCreateDeleteCreateProdosDisk() throws IOException, DiskException {
-		Source source = new FileSource(DataBuffer.create(Disk.APPLE_140KB_DISK));
+		Source source = DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-disk").get();
 		ImageOrder imageOrder = new ProdosOrder(source);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"createdeletecreate-test-prodos-140k.dsk", "TEST", //$NON-NLS-1$ //$NON-NLS-2$

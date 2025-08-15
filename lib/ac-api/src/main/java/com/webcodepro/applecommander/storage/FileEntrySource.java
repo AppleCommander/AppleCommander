@@ -43,6 +43,11 @@ public class FileEntrySource implements Source {
     }
 
     @Override
+    public String getName() {
+        return fileEntry.getFilename();
+    }
+
+    @Override
     public DataBuffer readAllBytes() {
         return buffer;
     }
