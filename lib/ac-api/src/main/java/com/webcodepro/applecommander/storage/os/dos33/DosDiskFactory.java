@@ -18,7 +18,7 @@ public class DosDiskFactory implements DiskFactory {
         // A Source should be removing any headers in the file, so we test against actual sizing:
         boolean is140K = ctx.source.getSize() == Disk.APPLE_140KB_DISK;
         boolean isNibble = ctx.source.getSize() == Disk.APPLE_140KB_NIBBLE_DISK;
-        boolean is400KOrLess = ctx.source.getSize() <= 50*16*256;     // Max DOS dize
+        boolean is400KOrLess = ctx.source.getSize() <= 50*16*256;     // Max DOS size
         boolean is800K = ctx.source.getSize() == Disk.APPLE_800KB_DISK;
         // It seems easiest to gather all possibilities first...
         List<FormattedDisk> tests = new ArrayList<>();
