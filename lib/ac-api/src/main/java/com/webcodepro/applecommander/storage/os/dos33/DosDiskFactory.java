@@ -8,6 +8,7 @@ import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.NibbleOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import org.applecommander.hint.Hint;
+import org.applecommander.util.DataBuffer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,27 +56,52 @@ public class DosDiskFactory implements DiskFactory {
      * Test this image order by looking for a likely DOS VTOC and set of catalog sectors.
      */
     public boolean check(FormattedDisk disk, final int track) {
-        byte[] vtoc = disk.readSector(track, 0);
+        DataBuffer vtoc = DataBuffer.wrap(disk.readSector(track, 0));
+        int nextTrack = vtoc.getUnsignedByte(0x01);
+        int nextSector = vtoc.getUnsignedByte(0x02);
+        int tsPairs = vtoc.getUnsignedByte(0x27);
+        int tracksPerDisk = vtoc.getUnsignedByte(0x34);
+        int sectorsPerTrack = vtoc.getUnsignedByte(0x35);
+        int bytesPerSector = vtoc.getUnsignedShort(0x36);
         // Start with VTOC test
-        boolean good = vtoc[0x01] == track      // expect catalog to match our track
-                    && vtoc[0x02] > 0           // expect catalog to be...
-                    && vtoc[0x02] < 32          // ... a legitimate sector
-                    && vtoc[0x27] == 122        // expect 122 track/sectors pairs per sector
-                    && vtoc[0x34] >= track      // expect sensible...
-                    && vtoc[0x34] <= 50         // ... tracks per disk
-                    && vtoc[0x35] > 10          // expect sensible...
-                    && vtoc[0x35] <= 32         // ... sectors per disk
-                    && vtoc[0x36] == 0          // bytes per sector (low byte)
-                    && vtoc[0x37] == 1;         // bytes per sector (high byte)
+        boolean good = nextTrack == track       // expect catalog to match our track
+                    && nextSector > 0           // expect catalog to be...
+                    && nextSector < 32          // ... a legitimate sector
+                    && tsPairs == 122           // expect 122 track/sectors pairs per sector
+                    && tracksPerDisk >= track   // expect sensible...
+                    && tracksPerDisk <= 50      // ... tracks per disk
+                    && sectorsPerTrack > 10     // expect sensible...
+                    && sectorsPerTrack <= 32    // ... sectors per disk
+                    && bytesPerSector == 0x100; // expect 256 bytes per sector
         // Now chase the directory links (note we assume catalog is all on same track).
-        int sector = vtoc[0x02];
+        int sector = nextSector;
+        int nextSectorPointers = 0;
         while (good) {
-            byte[] cat = disk.readSector(track,sector);
+            nextSectorPointers++;
+            DataBuffer cat = DataBuffer.wrap(disk.readSector(track,sector));
+            nextTrack = cat.getUnsignedByte(0x01);
+            nextSector = cat.getUnsignedByte(0x02);
+            if (nextTrack == 0) break;  // at end
             good = false;
-            if (track == cat[0x01] && sector == cat[0x02]+1) {
-                sector = cat[0x02];
+            if (track == nextTrack && sector == nextSector+1) {
+                sector = nextSector;
                 good = true;
             }
+        }
+        // Finally, due to PO and DO mapping, make certain we traversed as many sectors as expected
+        // Note that we are NOT following the linkages, just reading all sectors.
+        if (good) {
+            int actualSectorPointers = 0;
+            for (sector=0; sector<sectorsPerTrack; sector++) {
+                DataBuffer cat = DataBuffer.wrap(disk.readSector(track,sector));
+                nextTrack = cat.getUnsignedByte(0x01);
+                nextSector = cat.getUnsignedByte(0x02);
+                if (track == nextTrack && nextSector != 0) {
+                    actualSectorPointers++;
+                }
+            }
+            System.out.printf("next sector = %d, actual sector = %d\n", nextSectorPointers, actualSectorPointers);
+            good = (nextSectorPointers == actualSectorPointers);
         }
         return good;
     }
