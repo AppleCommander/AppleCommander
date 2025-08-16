@@ -33,6 +33,25 @@ public interface Source extends CapabilityProvider, HintProvider, Container {
     void clearChanges();
     List<Information> information();
 
+    /**
+     * Indicates if the source image is approximately equal to this size
+     * (less any image over-read).
+     * Currently, hardcoded to allow up to 10 extra bytes at the end of a
+     * disk image.  Must be at least the requested size!
+     */
+    default boolean isApproxEQ(int value) {
+        return getSize() >= value && getSize() <= value + 10;
+    }
+    /**
+     * Indicates if the source image is approximately less than this
+     * size (less any image over-read).
+     * Currently, hardcoded to allow up to 10 extra bytes at the end of a
+     * disk image.  Must be at least the requested size!
+     */
+    default boolean isApproxLE(int value) {
+        return getSize() <= value + 10;
+    }
+
     interface Factory {
         Optional<Source> fromObject(Object object);
         Optional<Source> fromSource(Source source);

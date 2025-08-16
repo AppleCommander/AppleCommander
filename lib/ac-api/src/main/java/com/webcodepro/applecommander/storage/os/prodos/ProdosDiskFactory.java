@@ -16,8 +16,8 @@ public class ProdosDiskFactory implements DiskFactory {
     @Override
     public void inspect(Context ctx) {
         // A Source should be removing any headers in the file, so we test against actual sizing:
-        boolean is140K = ctx.source.getSize() == Disk.APPLE_140KB_DISK;
-        boolean isNibble = ctx.source.getSize() == Disk.APPLE_140KB_NIBBLE_DISK;
+        boolean is140K = ctx.source.isApproxEQ(Disk.APPLE_140KB_DISK);
+        boolean isNibble = ctx.source.isApproxEQ(Disk.APPLE_140KB_NIBBLE_DISK);
         boolean is400KPlus = ctx.source.getSize() > 50*16*256;     // Max DOS size
         // It seems easiest to gather all possibilities first...
         List<FormattedDisk> tests = new ArrayList<>();
