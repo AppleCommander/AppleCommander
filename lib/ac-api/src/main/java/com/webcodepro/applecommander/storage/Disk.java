@@ -80,6 +80,7 @@ public class Disk {
 	public static final int DOS33_SECTORS_ON_140KB_DISK = 560;
 	public static final int APPLE_140KB_DISK = 143360;
 	public static final int APPLE_140KB_NIBBLE_DISK = 232960;
+    public static final int APPLE_400KB_DISK = 409600;
 	public static final int APPLE_800KB_DISK = 819200;
 	public static final int APPLE_800KB_2IMG_DISK =
 		APPLE_800KB_DISK + UniversalDiskImage.HEADER_SIZE;

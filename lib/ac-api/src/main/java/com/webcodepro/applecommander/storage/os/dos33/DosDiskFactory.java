@@ -1,13 +1,8 @@
 package com.webcodepro.applecommander.storage.os.dos33;
 
-import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DiskFactory;
 import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import com.webcodepro.applecommander.storage.physical.NibbleOrder;
-import com.webcodepro.applecommander.storage.physical.ProdosOrder;
-import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 
 import java.util.*;
@@ -15,37 +10,29 @@ import java.util.*;
 public class DosDiskFactory implements DiskFactory {
     @Override
     public void inspect(Context ctx) {
-        // A Source should be removing any headers in the file, so we test against actual sizing:
-        boolean is140K = ctx.source.isApproxEQ(Disk.APPLE_140KB_DISK);
-        boolean isNibble = ctx.source.isApproxEQ(Disk.APPLE_140KB_NIBBLE_DISK);
-        boolean is400KOrLess = ctx.source.isApproxLE(50*16*256);     // Max DOS size
-        boolean is800K = ctx.source.isApproxEQ(Disk.APPLE_800KB_DISK);
         // It seems easiest to gather all possibilities first...
         List<FormattedDisk> tests = new ArrayList<>();
-        if (ctx.source.is(Hint.NIBBLE_SECTOR_ORDER) || isNibble) {
-            tests.add(new DosFormatDisk(ctx.source.getName(), new NibbleOrder(ctx.source)));
+        if (ctx.orders.size() == 1) {
+            ImageOrder order = ctx.orders.getFirst();
+            if (order.isSizeApprox(FormattedDisk.APPLE_800KB_DISK)) {
+                tests.add(new UniDosFormatDisk(ctx.source.getName(), order, UniDosFormatDisk.UNIDOS_DISK_1));
+                tests.add(new UniDosFormatDisk(ctx.source.getName(), order, UniDosFormatDisk.UNIDOS_DISK_2));
+                tests.add(new OzDosFormatDisk(ctx.source.getName(), order, OzDosFormatDisk.OZDOS_DISK_1));
+                tests.add(new OzDosFormatDisk(ctx.source.getName(), order, OzDosFormatDisk.OZDOS_DISK_2));
+            }
+            else {
+                tests.add(new DosFormatDisk(ctx.source.getName(), ctx.orders.getFirst()));
+            }
         }
-        else if (is800K) {
-            ImageOrder order = new ProdosOrder(ctx.source);
-            tests.add(new UniDosFormatDisk(ctx.source.getName(), order, UniDosFormatDisk.UNIDOS_DISK_1));
-            tests.add(new UniDosFormatDisk(ctx.source.getName(), order, UniDosFormatDisk.UNIDOS_DISK_2));
-            tests.add(new OzDosFormatDisk(ctx.source.getName(), order, OzDosFormatDisk.OZDOS_DISK_1));
-            tests.add(new OzDosFormatDisk(ctx.source.getName(), order, OzDosFormatDisk.OZDOS_DISK_2));
-        }
-        else if (ctx.source.is(Hint.PRODOS_BLOCK_ORDER) && is400KOrLess) {
-            tests.add(new DosFormatDisk(ctx.source.getName(), new ProdosOrder(ctx.source)));
-        }
-        else if (ctx.source.is(Hint.DOS_SECTOR_ORDER)) {
-            tests.add(new DosFormatDisk(ctx.source.getName(), new DosOrder(ctx.source)));
-        }
-        else if (is140K) {
-            // Could be either, so count both PO and DO and choose the longest catalog
-            FormattedDisk poDisk = new DosFormatDisk(ctx.source.getName(), new ProdosOrder(ctx.source));
-            FormattedDisk doDisk = new DosFormatDisk(ctx.source.getName(), new DosOrder(ctx.source));
-            int poCount = count(poDisk, 17);
-            int doCount = count(doDisk, 17);
-            if (poCount > doCount) tests.add(poDisk);
-            else tests.add(doDisk); // note the slight edge for DO disks
+        else if (ctx.orders.size() == 2) {
+            // Could be either, so count both (should be PO vs DO) and choose the longest catalog
+            FormattedDisk fdisk1 = new DosFormatDisk(ctx.source.getName(), ctx.orders.get(0));
+            FormattedDisk fdisk2 = new DosFormatDisk(ctx.source.getName(), ctx.orders.get(1));
+            int count1 = count(fdisk1, 17);
+            int count2 = count(fdisk2, 17);
+            // Note this assumes DO was the first ImageOrder in the list to give it an edge
+            if (count1 >= count2) tests.add(fdisk1);
+            else tests.add(fdisk2);
         }
         // ... and then test for DOS VTOC etc. Passing track number along to hopefully handle it later!
         for (FormattedDisk fdisk : tests) {

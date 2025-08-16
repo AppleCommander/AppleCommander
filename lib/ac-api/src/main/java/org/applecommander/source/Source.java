@@ -52,6 +52,16 @@ public interface Source extends CapabilityProvider, HintProvider, Container {
         return getSize() <= value + 10;
     }
 
+    /**
+     * Test if this name has a given file extension.
+     */
+    default boolean extensionLike(String extension) {
+        String name = getName().toLowerCase();
+        String ext1 = String.format(".%s", extension.toLowerCase());
+        String ext2 = String.format(".%s.gz", extension.toLowerCase());
+        return name.endsWith(ext1) || name.endsWith(ext2);
+    }
+
     interface Factory {
         Optional<Source> fromObject(Object object);
         Optional<Source> fromSource(Source source);
