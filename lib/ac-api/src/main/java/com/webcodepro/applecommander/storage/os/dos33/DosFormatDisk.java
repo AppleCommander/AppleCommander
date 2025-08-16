@@ -149,6 +149,11 @@ public class DosFormatDisk extends FormattedDisk {
 		byte[] vtoc = readVtoc();
 		int track = AppleUtil.getUnsignedByte(vtoc[1]);
 		int sector = AppleUtil.getUnsignedByte(vtoc[2]);
+        int sectorsPerTrack = AppleUtil.getUnsignedByte(vtoc[0x35]);
+        if (sector == 0 && track != 0) {
+            // Some folks "hid" the catalog by setting the pointer to T17,S0 - try and adjust
+            sector = sectorsPerTrack-1;
+        }
 		final Set<DosSectorAddress> visits = new HashSet<>();
 		while (sector != 0) { // bug fix: iterate through all catalog _sectors_
 
