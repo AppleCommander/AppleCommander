@@ -45,12 +45,16 @@ public class DosDiskFactory implements DiskFactory {
             int poCount = count(poDisk, 17);
             int doCount = count(doDisk, 17);
             if (poCount > doCount) tests.add(poDisk);
-            else tests.add(doDisk);
+            else tests.add(doDisk); // note the slight edge for DO disks
         }
         // ... and then test for DOS VTOC etc. Passing track number along to hopefully handle it later!
         for (FormattedDisk fdisk : tests) {
-            if (check(fdisk, 17)) {
-                ctx.disks.add(fdisk);
+            try {
+                if (check(fdisk, 17)) {
+                    ctx.disks.add(fdisk);
+                }
+            } catch (Throwable t) {
+                // obviously wrong configuration
             }
         }
     }
@@ -65,15 +69,19 @@ public class DosDiskFactory implements DiskFactory {
         int tsPairs = vtoc.getUnsignedByte(0x27);
         int tracksPerDisk = vtoc.getUnsignedByte(0x34);
         int sectorsPerTrack = vtoc.getUnsignedByte(0x35);
+        if (nextSector == 0 && nextTrack != 0) {
+            // Some folks "hid" the catalog by setting the pointer to T17,S0 - try and adjust
+            nextSector = sectorsPerTrack-1;
+        }
         // Start with VTOC test
-        boolean good = nextTrack == vtocTrack       // expect catalog to match our track
-                    && nextSector > 0               // expect catalog to be...
-                    && nextSector < 32              // ... a legitimate sector
-                    && tsPairs == 122               // expect 122 track/sectors pairs per sector
-                    && tracksPerDisk >= vtocTrack   // expect sensible...
-                    && tracksPerDisk <= 50          // ... tracks per disk
-                    && sectorsPerTrack > 10         // expect sensible...
-                    && sectorsPerTrack <= 32;       // ... sectors per disk
+        boolean good = nextTrack == vtocTrack           // expect catalog to match our track
+                    && nextSector > 0                   // expect catalog to be...
+                    && nextSector < sectorsPerTrack     // ... a legitimate sector
+                    && tsPairs == 122                   // expect 122 track/sectors pairs per sector
+                    && tracksPerDisk >= vtocTrack       // expect sensible...
+                    && tracksPerDisk <= 50              // ... tracks per disk
+                    && sectorsPerTrack > 10             // expect sensible...
+                    && sectorsPerTrack <= 32;           // ... sectors per disk
         // Now chase the directory links (note we assume catalog is all on same track).
         Set<Integer> visited = new HashSet<>();
         while (good) {
@@ -84,7 +92,7 @@ public class DosDiskFactory implements DiskFactory {
             nextTrack = cat.getUnsignedByte(0x01);
             nextSector = cat.getUnsignedByte(0x02);
             if (nextTrack == 0) break;  // at end
-            good = nextTrack < tracksPerDisk && nextSector < sectorsPerTrack;
+            good = checkCatalogValidity(cat, tracksPerDisk, sectorsPerTrack);
         }
         return good;
     }
@@ -93,17 +101,51 @@ public class DosDiskFactory implements DiskFactory {
         DataBuffer vtoc = DataBuffer.wrap(disk.readSector(vtocTrack, 0));
         int nextTrack = vtoc.getUnsignedByte(0x01);
         int nextSector = vtoc.getUnsignedByte(0x02);
+        int tracksPerDisk = vtoc.getUnsignedByte(0x34);
+        int sectorsPerTrack = vtoc.getUnsignedByte(0x35);
+        if (tracksPerDisk > 50 || sectorsPerTrack > 32) {
+            return 0;
+        }
+        if (nextSector == 0 && nextTrack != 0) {
+            // Some folks "hid" the catalog by setting the pointer to T17,S0 - try and adjust
+            nextSector = sectorsPerTrack-1;
+        }
         int count = 0;
         Set<Integer> visited = new HashSet<>();
-        while (nextTrack > 0 && nextTrack <= 50 && nextSector > 0 && nextSector < 32) {
+        while (nextTrack > 0 && nextTrack <= tracksPerDisk && nextSector > 0 && nextSector < sectorsPerTrack) {
             int mark = nextTrack * 100 + nextSector;
             if (visited.contains(mark)) break;
             visited.add(mark);
             count++;
             DataBuffer data = DataBuffer.wrap(disk.readSector(nextTrack, nextSector));
+            if (!checkCatalogValidity(data, tracksPerDisk, sectorsPerTrack)) break;
             nextTrack = data.getUnsignedByte(0x01);
             nextSector = data.getUnsignedByte(0x02);
         }
         return count;
+    }
+
+    // Notes (all of this makes it more difficult to test!):
+    // 1. File type isn't always as designated by Apple DOS.
+    // 2. Sector size is frequently bunk (as in > 560).
+    // 3. T/S pair can be bunk - trying to do the test but exclude "bad" components
+    public boolean checkCatalogValidity(DataBuffer data, int tracksPerDisk, int sectorsPerTrack) {
+        int nextTrack = data.getUnsignedByte(0x01);
+        int nextSector = data.getUnsignedByte(0x02);
+        if (nextTrack > tracksPerDisk || nextSector > sectorsPerTrack) return false;
+        for (int offset=0x0b; offset<0xff; offset+=0x23) {
+            int track = data.getUnsignedByte(offset);
+            if (track == 0) break;
+            if (track == 0xff) continue;    // just skip deleted files
+            int sector = data.getUnsignedByte(offset+0x01);
+            int sectorSize = data.getUnsignedShort(offset+0x21);
+            // Allow potentially bad T/S if the file size is 0.
+            if (sectorSize == 0) continue;
+            // Otherwise expect things to be legit.
+            if (track > tracksPerDisk || sector > sectorsPerTrack) {
+                return false;
+            }
+        }
+        return true;
     }
 }
