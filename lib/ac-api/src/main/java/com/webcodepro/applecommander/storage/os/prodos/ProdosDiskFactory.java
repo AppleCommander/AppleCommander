@@ -54,16 +54,14 @@ public class ProdosDiskFactory implements DiskFactory {
                     && storageType == 0xf
                     && entryLength == 0x27
                     && entriesPerBlock == 0x0d;
-        // Now follow the directory blocks
-        int currentBlock = 2;
+        // Now follow the directory blocks -- but only forward; it seems some images have "bad" backward links!
         while (good) {
             int nextBlock = volumeDirectory.getUnsignedShort(0x02);
             if (nextBlock == 0) break;
             volumeDirectory = DataBuffer.wrap(fdisk.readBlock(nextBlock));
             // Ensure that the prior link points to the block we just read
             priorBlock = volumeDirectory.getUnsignedShort(0x00);
-            good = (priorBlock == currentBlock);
-            currentBlock = nextBlock;
+            good = (priorBlock != 0);
         }
         return good;
     }

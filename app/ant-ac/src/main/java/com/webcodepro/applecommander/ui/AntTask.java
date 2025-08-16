@@ -46,12 +46,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import com.webcodepro.applecommander.storage.*;
+import com.webcodepro.applecommander.storage.os.dos33.DosDiskFactory;
+import com.webcodepro.applecommander.storage.os.prodos.ProdosDiskFactory;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.DiskException;
-import com.webcodepro.applecommander.storage.FormattedDisk;
 import org.applecommander.image.DiskCopyImage;
 import org.applecommander.image.UniversalDiskImage;
 import org.applecommander.source.FileSource;
@@ -62,7 +62,9 @@ public class AntTask extends Task
 	static {
 		// This is a hack to deal with -whatever- is going on with the Ant classpath.
 		// Issue was verified by creating a simple (and separate) Main class and then doing a source identification.
-		Sources.setFactories(new FileSource.Factory(), new UniversalDiskImage.Factory(), new DiskCopyImage.Factory());
+		Sources.setFactories(new FileSource.Factory(), new UniversalDiskImage.Factory(), new DiskCopyImage.Factory(),
+				new FileEntrySource.Factory(), new ShrinkitSourceFactory());
+		Disks.setFactories(new DosDiskFactory(), new ProdosDiskFactory());
 	}
 
 	public void execute() throws BuildException

@@ -174,7 +174,7 @@ public class DiskWriterTest {
 	@Test
 	public void testCreateAndDeleteUniDos() throws IOException, DiskException {
 		Source source = DataBufferSource.create(Disk.APPLE_800KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new DosOrder(source);
+		ImageOrder imageOrder = new ProdosOrder(source);
 		FormattedDisk[] disks = UniDosFormatDisk.create(
 			"createanddelete-test-unidos.dsk", imageOrder); //$NON-NLS-1$
 		createAndDeleteFiles(disks, "B"); //$NON-NLS-1$
@@ -272,7 +272,7 @@ public class DiskWriterTest {
 	@Test
 	public void testCreateDeleteCreateUnidosDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(Disk.APPLE_800KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new DosOrder(source);
+		ImageOrder imageOrder = new ProdosOrder(source);
 		FormattedDisk[] disks = UniDosFormatDisk.create(
 			"createdeletecreate-test-unidos-800k.dsk", imageOrder); //$NON-NLS-1$
 		createDeleteCreate(disks, "B"); //$NON-NLS-1$

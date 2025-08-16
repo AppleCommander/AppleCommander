@@ -10,8 +10,7 @@ import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class DosDiskFactory implements DiskFactory {
     @Override
@@ -40,9 +39,13 @@ public class DosDiskFactory implements DiskFactory {
             tests.add(new DosFormatDisk(ctx.source.getName(), new DosOrder(ctx.source)));
         }
         else if (is140K) {
-            // Could be either, so try both PO and DO
-            tests.add(new DosFormatDisk(ctx.source.getName(), new ProdosOrder(ctx.source)));
-            tests.add(new DosFormatDisk(ctx.source.getName(), new DosOrder(ctx.source)));
+            // Could be either, so count both PO and DO and choose the longest catalog
+            FormattedDisk poDisk = new DosFormatDisk(ctx.source.getName(), new ProdosOrder(ctx.source));
+            FormattedDisk doDisk = new DosFormatDisk(ctx.source.getName(), new DosOrder(ctx.source));
+            int poCount = count(poDisk, 17);
+            int doCount = count(doDisk, 17);
+            if (poCount > doCount) tests.add(poDisk);
+            else tests.add(doDisk);
         }
         // ... and then test for DOS VTOC etc. Passing track number along to hopefully handle it later!
         for (FormattedDisk fdisk : tests) {
@@ -55,53 +58,52 @@ public class DosDiskFactory implements DiskFactory {
     /**
      * Test this image order by looking for a likely DOS VTOC and set of catalog sectors.
      */
-    public boolean check(FormattedDisk disk, final int track) {
-        DataBuffer vtoc = DataBuffer.wrap(disk.readSector(track, 0));
+    public boolean check(FormattedDisk disk, final int vtocTrack) {
+        DataBuffer vtoc = DataBuffer.wrap(disk.readSector(vtocTrack, 0));
         int nextTrack = vtoc.getUnsignedByte(0x01);
         int nextSector = vtoc.getUnsignedByte(0x02);
         int tsPairs = vtoc.getUnsignedByte(0x27);
         int tracksPerDisk = vtoc.getUnsignedByte(0x34);
         int sectorsPerTrack = vtoc.getUnsignedByte(0x35);
-        int bytesPerSector = vtoc.getUnsignedShort(0x36);
         // Start with VTOC test
-        boolean good = nextTrack == track       // expect catalog to match our track
-                    && nextSector > 0           // expect catalog to be...
-                    && nextSector < 32          // ... a legitimate sector
-                    && tsPairs == 122           // expect 122 track/sectors pairs per sector
-                    && tracksPerDisk >= track   // expect sensible...
-                    && tracksPerDisk <= 50      // ... tracks per disk
-                    && sectorsPerTrack > 10     // expect sensible...
-                    && sectorsPerTrack <= 32    // ... sectors per disk
-                    && bytesPerSector == 0x100; // expect 256 bytes per sector
+        boolean good = nextTrack == vtocTrack       // expect catalog to match our track
+                    && nextSector > 0               // expect catalog to be...
+                    && nextSector < 32              // ... a legitimate sector
+                    && tsPairs == 122               // expect 122 track/sectors pairs per sector
+                    && tracksPerDisk >= vtocTrack   // expect sensible...
+                    && tracksPerDisk <= 50          // ... tracks per disk
+                    && sectorsPerTrack > 10         // expect sensible...
+                    && sectorsPerTrack <= 32;       // ... sectors per disk
         // Now chase the directory links (note we assume catalog is all on same track).
-        int sector = nextSector;
-        int nextSectorPointers = 0;
+        Set<Integer> visited = new HashSet<>();
         while (good) {
-            nextSectorPointers++;
-            DataBuffer cat = DataBuffer.wrap(disk.readSector(track,sector));
+            int mark = nextTrack * 100 + nextSector;
+            if (visited.contains(mark)) break;
+            visited.add(mark);
+            DataBuffer cat = DataBuffer.wrap(disk.readSector(nextTrack,nextSector));
             nextTrack = cat.getUnsignedByte(0x01);
             nextSector = cat.getUnsignedByte(0x02);
             if (nextTrack == 0) break;  // at end
-            good = false;
-            if (track == nextTrack && sector == nextSector+1) {
-                sector = nextSector;
-                good = true;
-            }
-        }
-        // Finally, due to PO and DO mapping, make certain we traversed as many sectors as expected
-        // Note that we are NOT following the linkages, just reading all sectors.
-        if (good) {
-            int actualSectorPointers = 0;
-            for (sector=0; sector<sectorsPerTrack; sector++) {
-                DataBuffer cat = DataBuffer.wrap(disk.readSector(track,sector));
-                nextTrack = cat.getUnsignedByte(0x01);
-                nextSector = cat.getUnsignedByte(0x02);
-                if (track == nextTrack && nextSector != 0) {
-                    actualSectorPointers++;
-                }
-            }
-            good = (nextSectorPointers == actualSectorPointers);
+            good = nextTrack < tracksPerDisk && nextSector < sectorsPerTrack;
         }
         return good;
+    }
+
+    public int count(FormattedDisk disk, final int vtocTrack) {
+        DataBuffer vtoc = DataBuffer.wrap(disk.readSector(vtocTrack, 0));
+        int nextTrack = vtoc.getUnsignedByte(0x01);
+        int nextSector = vtoc.getUnsignedByte(0x02);
+        int count = 0;
+        Set<Integer> visited = new HashSet<>();
+        while (nextTrack > 0 && nextTrack <= 50 && nextSector > 0 && nextSector < 32) {
+            int mark = nextTrack * 100 + nextSector;
+            if (visited.contains(mark)) break;
+            visited.add(mark);
+            count++;
+            DataBuffer data = DataBuffer.wrap(disk.readSector(nextTrack, nextSector));
+            nextTrack = data.getUnsignedByte(0x01);
+            nextSector = data.getUnsignedByte(0x02);
+        }
+        return count;
     }
 }
