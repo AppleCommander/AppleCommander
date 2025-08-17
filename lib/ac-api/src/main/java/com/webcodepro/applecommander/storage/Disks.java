@@ -30,7 +30,13 @@ public class Disks {
      */
     static List<FormattedDisk> inspect(Source source) {
         DiskFactory.Context ctx = new DiskFactory.Context(source);
-        FACTORIES.forEach(factory -> factory.inspect(ctx));
+        FACTORIES.forEach(factory -> {
+            try {
+                factory.inspect(ctx);
+            } catch (Throwable t) {
+                // ignore it
+            }
+        });
         return ctx.disks;
     }
 }
