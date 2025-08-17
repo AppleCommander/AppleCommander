@@ -22,25 +22,44 @@ public class ProdosDiskFactory implements DiskFactory {
     }
 
     public boolean check(FormattedDisk fdisk) {
-        DataBuffer volumeDirectory = DataBuffer.wrap(fdisk.readBlock(2));
+        int nextBlock = 2;
+        DataBuffer volumeDirectory = DataBuffer.wrap(fdisk.readBlock(nextBlock));
         int priorBlock = volumeDirectory.getUnsignedShort(0x00);
         int storageType = volumeDirectory.getUnsignedByte(0x04) >> 4;
         int entryLength = volumeDirectory.getUnsignedByte(0x23);
+        int bitmapPointer = volumeDirectory.getUnsignedShort(0x27);
+        int totalBlocks = volumeDirectory.getUnsignedShort(0x29);
         // Note entriesPerBlock is documented as $D, but other values exist as well ($C, for instance)
         int entriesPerBlock = volumeDirectory.getUnsignedByte(0x24);
         // Check primary block for values
         boolean good = priorBlock == 0
                     && storageType == 0xf
                     && entryLength == 0x27
-                    && (entryLength * entriesPerBlock) < FormattedDisk.BLOCK_SIZE;
+                    && (entryLength * entriesPerBlock) < FormattedDisk.BLOCK_SIZE
+                    && bitmapPointer < totalBlocks;
         // Now follow the directory blocks -- but only forward; it seems some images have "bad" backward links!
         while (good) {
-            int nextBlock = volumeDirectory.getUnsignedShort(0x02);
+            // Verify the entries a bit
+            for (int i=0x04; i<256; i+=0x27) {
+                // skip the volume directory header
+                if (nextBlock == 2 && i == 0x04) continue;
+                // Skip deleted files
+                storageType = volumeDirectory.getUnsignedByte(i) >> 4;
+                if (storageType == 0) continue;
+
+                int keyPointer = volumeDirectory.getUnsignedShort(i+0x11);
+                int blocksUsed = volumeDirectory.getUnsignedShort(i+0x13);
+                int headerPointer = volumeDirectory.getUnsignedShort(i+0x25);
+                good = keyPointer != 0
+                        && keyPointer < totalBlocks
+                        && blocksUsed < totalBlocks
+                        && headerPointer < totalBlocks;
+                if (!good) return false;
+            }
+            nextBlock = volumeDirectory.getUnsignedShort(0x02);
             if (nextBlock == 0) break;
+            if (nextBlock >= totalBlocks) return false;
             volumeDirectory = DataBuffer.wrap(fdisk.readBlock(nextBlock));
-            // Ensure that the prior link points to the block we just read
-            priorBlock = volumeDirectory.getUnsignedShort(0x00);
-            good = (priorBlock != 0);
         }
         return good;
     }
