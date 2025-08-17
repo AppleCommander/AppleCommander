@@ -26,12 +26,13 @@ public class ProdosDiskFactory implements DiskFactory {
         int priorBlock = volumeDirectory.getUnsignedShort(0x00);
         int storageType = volumeDirectory.getUnsignedByte(0x04) >> 4;
         int entryLength = volumeDirectory.getUnsignedByte(0x23);
+        // Note entriesPerBlock is documented as $D, but other values exist as well ($C, for instance)
         int entriesPerBlock = volumeDirectory.getUnsignedByte(0x24);
         // Check primary block for values
         boolean good = priorBlock == 0
                     && storageType == 0xf
                     && entryLength == 0x27
-                    && entriesPerBlock == 0x0d;
+                    && (entryLength * entriesPerBlock) < FormattedDisk.BLOCK_SIZE;
         // Now follow the directory blocks -- but only forward; it seems some images have "bad" backward links!
         while (good) {
             int nextBlock = volumeDirectory.getUnsignedShort(0x02);
