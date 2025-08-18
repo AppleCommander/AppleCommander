@@ -36,13 +36,14 @@ public class PascalDiskFactory implements DiskFactory {
             int dBlocksOnDisk = dir.getUnsignedShort(14);
             int dFilesOnDisk = dir.getUnsignedShort(16);
             int dZeroBlock = dir.getUnsignedShort(18);
+            if (dBlocksOnDisk == 0) dBlocksOnDisk = 280;    // patch for some Pascal disks found
             good = dFirstBlock == 0 && dLastBlock == 6 && dEntryType == 0
-                && (dNameLength > 0 && dNameLength < 8)
+                && dNameLength < 8
                 && dFilesOnDisk < 78
                 && dBlocksOnDisk >= 280 && dZeroBlock == 0;
             // Check (any) existing file entries
             int offset = 26;
-            while (good && offset < dir.limit()) {
+            while (good && dFilesOnDisk > 0 && offset < dir.limit()) {
                 int fFirstBlock = dir.getUnsignedShort(offset);
                 int fLastBlock = dir.getUnsignedShort(offset+2);
                 int fEntryType = dir.getUnsignedShort(offset+4);
@@ -51,12 +52,11 @@ public class PascalDiskFactory implements DiskFactory {
                 if (fNameLength == 0) break;    // last entry?
                 good = fFirstBlock < fLastBlock
                     && fLastBlock <= dBlocksOnDisk
-                    && fEntryType < 9
+                    && (fEntryType & 0x7fff) < 9
                     && fNameLength < 16
                     && fBytesLastBlock <= 512;
                 offset += 26;
                 dFilesOnDisk--;
-                if (dFilesOnDisk == 0) break;
             }
         }
         return good;
