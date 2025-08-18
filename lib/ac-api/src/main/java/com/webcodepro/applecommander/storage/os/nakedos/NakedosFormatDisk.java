@@ -71,7 +71,7 @@ public class NakedosFormatDisk extends FormattedDisk {
 	 * Use this inner interface for managing the disk usage data.
 	 * This off-loads format-specific implementation to the implementing class.
 	 */
-	private class WPDiskUsage implements DiskUsage {
+	private class NakedosDiskUsage implements DiskUsage {
 		private int[] location = null;
 		public boolean hasNext() {
 			return location == null
@@ -261,7 +261,7 @@ public class NakedosFormatDisk extends FormattedDisk {
 	 * Get the disk usage iterator.
 	 */
 	public DiskUsage getDiskUsage() {
-		return new WPDiskUsage();
+		return new NakedosDiskUsage();
 	}
 
 	/**
@@ -304,7 +304,7 @@ public class NakedosFormatDisk extends FormattedDisk {
 	}
 	
 	/**
-	 * Get WP-specific disk information.
+	 * Get NakedOS-specific disk information.
 	 */
 	public List<DiskInformation> getDiskInformation() {
 		getFiles();
