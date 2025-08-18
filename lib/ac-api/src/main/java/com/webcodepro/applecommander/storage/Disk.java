@@ -30,7 +30,6 @@ import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 import org.applecommander.hint.Hint;
 import org.applecommander.image.UniversalDiskImage;
-import org.applecommander.image.WozImage;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 import org.applecommander.util.DataBuffer;
@@ -126,7 +125,6 @@ public class Disk {
 
 	private String filename;
 	private boolean newImage = false;
-	private boolean isDC42 = false;
 	private Source diskImageManager;
 	private ImageOrder imageOrder = null;
 	private FormattedDisk[] formattedDisks;
