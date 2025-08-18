@@ -21,13 +21,9 @@ package com.webcodepro.applecommander.storage;
 
 import com.webcodepro.applecommander.storage.os.cpm.CpmFileEntry;
 import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
-import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
-import com.webcodepro.applecommander.storage.os.dos33.OzDosFormatDisk;
-import com.webcodepro.applecommander.storage.os.dos33.UniDosFormatDisk;
 import com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk;
 import com.webcodepro.applecommander.storage.os.nakedos.NakedosFormatDisk;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
-import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import com.webcodepro.applecommander.storage.physical.*;
 import com.webcodepro.applecommander.util.AppleUtil;
@@ -133,6 +129,7 @@ public class Disk {
 	private boolean isDC42 = false;
 	private Source diskImageManager;
 	private ImageOrder imageOrder = null;
+	private FormattedDisk[] formattedDisks;
 
 	/**
 	 * Get the supported file filters supported by the Disk interface.
@@ -195,21 +192,22 @@ public class Disk {
 	public Disk(String filename, Source source, int startBlocks, boolean knownProDOSOrder) throws IOException {
 		this.filename = filename;
 		this.diskImageManager = source;
+
+		// Temporary shim to allow early testing of DiskFactory recognition.
+		List<FormattedDisk> foundDisks = Disks.inspect(source);
+		if (!foundDisks.isEmpty()) {
+			formattedDisks = foundDisks.toArray(new FormattedDisk[0]);
+		}
+
 		int diskSize = source.getSize();
 
 		knownProDOSOrder |= source.is(Hint.PRODOS_BLOCK_ORDER);
-
-		/* Does it have the WOZ1 or WOZ2 header? */
-		int signature = diskImageManager.readBytes(0, 4).readInt();
-		boolean isWoz = WozImage.WOZ1_MAGIC == signature || WozImage.WOZ2_MAGIC == signature;
 
 		ImageOrder dosOrder = new DosOrder(diskImageManager);
 		ImageOrder proDosOrder = new ProdosOrder(diskImageManager);
 
 		if (isSDK()) {
 			imageOrder = proDosOrder; // SDKs are always in ProDOS order
-		} else if (isWoz) {
-			imageOrder = new WozOrder(diskImageManager);
 		} else {
 			/*
 			 * First step: test physical disk orders for viable file systems.
@@ -321,25 +319,11 @@ public class Disk {
 	 * @throws DiskUnrecognizedException 
 	 */
 	public FormattedDisk[] getFormattedDisks() throws DiskUnrecognizedException {
-		if (isProdosFormat()) {
-			return new FormattedDisk[]
-				{ new ProdosFormatDisk(filename, imageOrder) };
-		} else if (isUniDosFormat()) {
-			return new FormattedDisk[] {
-				new UniDosFormatDisk(filename, imageOrder, 
-									UniDosFormatDisk.UNIDOS_DISK_1),
-				new UniDosFormatDisk(filename, imageOrder, 
-									UniDosFormatDisk.UNIDOS_DISK_2) };
-		} else if (isOzDosFormat()) {
-			return new FormattedDisk[] {
-				new OzDosFormatDisk(filename, imageOrder,
-									OzDosFormatDisk.OZDOS_DISK_1),
-				new OzDosFormatDisk(filename, imageOrder,
-									OzDosFormatDisk.OZDOS_DISK_2) };
-		} else if (isDosFormat()) {
-			return new FormattedDisk[]
-				{ new DosFormatDisk(filename, imageOrder) };
-		} else if (isNakedosFormat()) {
+		if (formattedDisks != null && formattedDisks.length > 0) {
+			return formattedDisks;
+		}
+		// Old logic
+		if (isNakedosFormat()) {
 			return new FormattedDisk[]
 				{ new NakedosFormatDisk(filename, imageOrder) };
 		} else if (isPascalFormat()) {
