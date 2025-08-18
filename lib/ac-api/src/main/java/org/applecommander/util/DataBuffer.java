@@ -67,6 +67,10 @@ public class DataBuffer {
     public int getUnsignedShort(int index) {
         return Short.toUnsignedInt(this.buffer.getShort(index));
     }
+    /** Retrieve a 3 byte number (as in ProDOS EOF values). */
+    public int getUnsignedShort3(int index) {
+        return getUnsignedByte(index)<<16 | getUnsignedShort(index+1);
+    }
     public int getUnsignedShortBE(int index) {
         this.buffer.order(ByteOrder.BIG_ENDIAN);
         int value = getUnsignedShort(index);
