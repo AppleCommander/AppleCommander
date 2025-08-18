@@ -324,9 +324,6 @@ public class Disk {
 		if (isNakedosFormat()) {
 			return new FormattedDisk[]
 				{ new NakedosFormatDisk(filename, imageOrder) };
-		} else if (isPascalFormat()) {
-			return new FormattedDisk[]
-				{ new PascalFormatDisk(filename, imageOrder) };
 		} else if (isRdosFormat()) {
 			return new FormattedDisk[]
 				{ new RdosFormatDisk(filename, imageOrder) };
