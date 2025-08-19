@@ -51,6 +51,7 @@ import com.webcodepro.applecommander.storage.os.dos33.DosDiskFactory;
 import com.webcodepro.applecommander.storage.os.nakedos.NakedosDiskFactory;
 import com.webcodepro.applecommander.storage.os.pascal.PascalDiskFactory;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosDiskFactory;
+import com.webcodepro.applecommander.storage.os.rdos.RdosDiskFactory;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
@@ -67,7 +68,7 @@ public class AntTask extends Task
 		Sources.setFactories(new FileSource.Factory(), new UniversalDiskImage.Factory(), new DiskCopyImage.Factory(),
 				new FileEntrySource.Factory(), new ShrinkitSourceFactory());
 		Disks.setFactories(new DosDiskFactory(), new NakedosDiskFactory(), new PascalDiskFactory(),
-                new ProdosDiskFactory());
+                new ProdosDiskFactory(), new RdosDiskFactory());
 	}
 
 	public void execute() throws BuildException

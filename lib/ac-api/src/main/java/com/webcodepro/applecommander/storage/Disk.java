@@ -22,7 +22,6 @@ package com.webcodepro.applecommander.storage;
 import com.webcodepro.applecommander.storage.os.cpm.CpmFileEntry;
 import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
 import com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk;
-import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import com.webcodepro.applecommander.storage.physical.*;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
@@ -319,10 +318,7 @@ public class Disk {
 			return formattedDisks;
 		}
 		// Old logic
-		if (isRdosFormat()) {
-			return new FormattedDisk[]
-				{ new RdosFormatDisk(filename, imageOrder) };
-		} else if (isCpmFormat()) {
+        if (isCpmFormat()) {
 			return new FormattedDisk[]
 				{ new CpmFormatDisk(filename, imageOrder) };
 		} else if (isWPFormat()) {
