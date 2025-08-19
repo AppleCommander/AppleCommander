@@ -48,6 +48,7 @@ import java.io.PrintStream;
 
 import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.os.dos33.DosDiskFactory;
+import com.webcodepro.applecommander.storage.os.nakedos.NakedosDiskFactory;
 import com.webcodepro.applecommander.storage.os.pascal.PascalDiskFactory;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosDiskFactory;
 import org.apache.tools.ant.BuildException;
@@ -65,7 +66,8 @@ public class AntTask extends Task
 		// Issue was verified by creating a simple (and separate) Main class and then doing a source identification.
 		Sources.setFactories(new FileSource.Factory(), new UniversalDiskImage.Factory(), new DiskCopyImage.Factory(),
 				new FileEntrySource.Factory(), new ShrinkitSourceFactory());
-		Disks.setFactories(new DosDiskFactory(), new PascalDiskFactory(), new ProdosDiskFactory());
+		Disks.setFactories(new DosDiskFactory(), new NakedosDiskFactory(), new PascalDiskFactory(),
+                new ProdosDiskFactory());
 	}
 
 	public void execute() throws BuildException
