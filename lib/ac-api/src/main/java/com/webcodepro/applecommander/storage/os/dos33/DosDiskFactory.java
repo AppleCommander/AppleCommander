@@ -53,7 +53,6 @@ public class DosDiskFactory implements DiskFactory {
         DataBuffer vtoc = DataBuffer.wrap(disk.readSector(vtocTrack, 0));
         int nextTrack = vtoc.getUnsignedByte(0x01);
         int nextSector = vtoc.getUnsignedByte(0x02);
-        int tsPairs = vtoc.getUnsignedByte(0x27);
         int tracksPerDisk = vtoc.getUnsignedByte(0x34);
         int sectorsPerTrack = vtoc.getUnsignedByte(0x35);
         if (nextSector == 0 && nextTrack != 0) {
@@ -64,7 +63,6 @@ public class DosDiskFactory implements DiskFactory {
         boolean good = nextTrack == vtocTrack           // expect catalog to match our track
                     && nextSector > 0                   // expect catalog to be...
                     && nextSector < sectorsPerTrack     // ... a legitimate sector
-                    && tsPairs == 122                   // expect 122 track/sectors pairs per sector
                     && tracksPerDisk >= vtocTrack       // expect sensible...
                     && tracksPerDisk <= 50              // ... tracks per disk
                     && sectorsPerTrack > 10             // expect sensible...
