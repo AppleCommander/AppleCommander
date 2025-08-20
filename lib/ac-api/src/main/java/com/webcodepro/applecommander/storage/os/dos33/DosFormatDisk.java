@@ -155,6 +155,10 @@ public class DosFormatDisk extends FormattedDisk {
             // Some folks "hid" the catalog by setting the pointer to T17,S0 - try and adjust
             sector = sectorsPerTrack-1;
         }
+        if (sector != 0 && track == 0) {
+            // Some folks zeroed out the next track field, so try the same as VTOC (T17)
+            track = CATALOG_TRACK;
+        }
 		final Set<DosSectorAddress> visits = new HashSet<>();
 		while (sector != 0) { // bug fix: iterate through all catalog _sectors_
 

@@ -59,6 +59,10 @@ public class DosDiskFactory implements DiskFactory {
             // Some folks "hid" the catalog by setting the pointer to T17,S0 - try and adjust
             nextSector = sectorsPerTrack-1;
         }
+        if (nextSector != 0 && nextTrack == 0) {
+            // Some folks zeroed out the next track field, so try the same as VTOC (T17)
+            nextTrack = vtocTrack;
+        }
         // Start with VTOC test
         boolean good = nextTrack == vtocTrack           // expect catalog to match our track
                     && nextSector > 0                   // expect catalog to be...
