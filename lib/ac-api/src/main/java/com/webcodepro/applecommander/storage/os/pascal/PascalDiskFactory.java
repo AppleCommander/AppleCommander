@@ -13,7 +13,7 @@ public class PascalDiskFactory implements DiskFactory {
     public void inspect(Context ctx) {
         ctx.orders.forEach(order -> {
             if (check(order)) {
-                ctx.disks.add(new PascalFormatDisk(order.getName(), order));
+                ctx.disks.add(new PascalFormatDisk(ctx.source.getName(), order));
             }
         });
     }

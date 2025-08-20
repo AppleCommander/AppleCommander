@@ -12,7 +12,7 @@ public class GutenbergDiskFactory implements DiskFactory {
     public void inspect(Context ctx) {
         ctx.orders.forEach(order -> {
             if (check(order)) {
-                ctx.disks.add(new GutenbergFormatDisk(order.getName(), order));
+                ctx.disks.add(new GutenbergFormatDisk(ctx.source.getName(), order));
             }
         });
     }

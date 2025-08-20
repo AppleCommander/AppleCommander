@@ -16,7 +16,7 @@ public class RdosDiskFactory implements DiskFactory {
         ctx.orders.forEach(order -> {
             int sectorsPerTrack = check(order);
             if (sectorsPerTrack > 0) {
-                ctx.disks.add(new RdosFormatDisk(order.getName(), order, sectorsPerTrack));
+                ctx.disks.add(new RdosFormatDisk(ctx.source.getName(), order, sectorsPerTrack));
             }
         });
     }

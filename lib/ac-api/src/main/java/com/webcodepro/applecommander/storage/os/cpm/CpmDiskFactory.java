@@ -14,7 +14,7 @@ public class CpmDiskFactory implements DiskFactory {
     public void inspect(Context ctx) {
         ctx.orders.forEach(order -> {
             if (order.isSizeApprox(Disk.APPLE_140KB_DISK) || order.isSizeApprox(Disk.APPLE_140KB_NIBBLE_DISK)) {
-                CpmFormatDisk disk = new CpmFormatDisk(order.getName(), order);
+                CpmFormatDisk disk = new CpmFormatDisk(ctx.source.getName(), order);
                 if (check(disk)) {
                     ctx.disks.add(disk);
                 }

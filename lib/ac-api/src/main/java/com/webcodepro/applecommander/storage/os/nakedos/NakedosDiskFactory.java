@@ -10,7 +10,7 @@ public class NakedosDiskFactory implements DiskFactory {
     public void inspect(Context ctx) {
         ctx.orders.forEach(order -> {
             if (check(order)) {
-                ctx.disks.add(new NakedosFormatDisk(order.getName(), order));
+                ctx.disks.add(new NakedosFormatDisk(ctx.source.getName(), order));
             }
         });
     }
