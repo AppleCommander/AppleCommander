@@ -211,6 +211,13 @@ public class DiskHelperTest {
         assertCanReadFiles(disks);
     }
 
+    @Test
+    public void testLoadGutenbergDisk() throws DiskException, IOException {
+        FormattedDisk[] disks = showDirectory(config.getDiskDir() +
+                "/Gutenberg_side1.DSK");
+        assertCanReadFiles(disks);
+    }
+
 	protected FormattedDisk[] showDirectory(String imageName) throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
 		FormattedDisk[] formattedDisks = disk.getFormattedDisks();

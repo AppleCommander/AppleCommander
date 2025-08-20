@@ -21,7 +21,6 @@ package com.webcodepro.applecommander.storage;
 
 import com.webcodepro.applecommander.storage.os.cpm.CpmFileEntry;
 import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
-import com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk;
 import com.webcodepro.applecommander.storage.physical.*;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
@@ -321,9 +320,6 @@ public class Disk {
         if (isCpmFormat()) {
 			return new FormattedDisk[]
 				{ new CpmFormatDisk(filename, imageOrder) };
-		} else if (isWPFormat()) {
-			return new FormattedDisk[]
-				{ new GutenbergFormatDisk(filename, imageOrder) };
 		}
 		throw new DiskUnrecognizedException(filename);
 	}
