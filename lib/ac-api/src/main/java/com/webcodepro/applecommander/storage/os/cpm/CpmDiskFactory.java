@@ -35,9 +35,10 @@ public class CpmDiskFactory implements DiskFactory {
                 // Check user number. Should be 0-15 or 0xE5
                 int userNumber = entries.getUnsignedByte(offset);
                 if (userNumber > 15 && userNumber != 0xe5) return false;
-                // Validate filename has highbit off
+                // Validate filename has highbit off and is a character
                 for (int i=0; i<8; i++) {
-                    if (entries.getUnsignedByte(offset+1+i) > 127) return false;
+                    int ch = entries.getUnsignedByte(offset+1+i);
+                    if (ch < 0x20 || ch > 127) return false;
                 }
                 // Extent should be 0-31 (low = 0-31 and high = 0)
                 int exLow = entries.getUnsignedByte(offset+0xc);
