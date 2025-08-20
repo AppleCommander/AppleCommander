@@ -50,6 +50,6 @@ public class CpmDiskFactory implements DiskFactory {
             // Next entry
             offset+= CpmFileEntry.ENTRY_LENGTH;
         }
-        return false;
+        return true;
     }
 }
