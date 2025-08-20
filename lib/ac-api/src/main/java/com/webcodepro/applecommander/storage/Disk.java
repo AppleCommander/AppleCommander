@@ -316,11 +316,6 @@ public class Disk {
 		if (formattedDisks != null && formattedDisks.length > 0) {
 			return formattedDisks;
 		}
-		// Old logic
-        if (isCpmFormat()) {
-			return new FormattedDisk[]
-				{ new CpmFormatDisk(filename, imageOrder) };
-		}
 		throw new DiskUnrecognizedException(filename);
 	}
 

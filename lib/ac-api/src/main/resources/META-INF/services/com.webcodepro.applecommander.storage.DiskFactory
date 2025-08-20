@@ -1,3 +1,4 @@
+com.webcodepro.applecommander.storage.os.cpm.CpmDiskFactory
 com.webcodepro.applecommander.storage.os.dos33.DosDiskFactory
 com.webcodepro.applecommander.storage.os.gutenberg.GutenbergDiskFactory
 com.webcodepro.applecommander.storage.os.nakedos.NakedosDiskFactory
