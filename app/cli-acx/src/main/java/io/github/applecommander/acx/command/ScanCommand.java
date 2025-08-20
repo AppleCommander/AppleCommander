@@ -189,7 +189,13 @@ public class ScanCommand extends ReusableCommandOptions {
             for (String ext : Disk.getAllExtensions()) {
                 if (!first) globs.append(",");
                 ext = ext.substring(1); // skip the "." - lots of assumptions here!
-                globs.append(ext);
+                // Unix is case-sensitive, so we need to make the pattern case-insensitive (yuck)
+                for (char ch : ext.toCharArray()) {
+                    globs.append("[");
+                    globs.append(Character.toLowerCase(ch));
+                    globs.append(Character.toUpperCase(ch));
+                    globs.append("]");
+                }
                 first = false;
             }
             globs.append("}");
