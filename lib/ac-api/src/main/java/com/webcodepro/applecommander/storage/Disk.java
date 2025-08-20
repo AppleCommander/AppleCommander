@@ -319,6 +319,15 @@ public class Disk {
 		throw new DiskUnrecognizedException(filename);
 	}
 
+    /**
+     * Allows super-classes to pass in the specific FormattedDisk to support new discovery mechanism.
+     * (Discovery occurs at class construction, not every time a formatted disk is pulled.)
+     */
+    protected void setFormattedDisks(FormattedDisk... formattedDisks) {
+        assert(formattedDisks != null);
+        this.formattedDisks = formattedDisks;
+    }
+
 	/**
 	 * Returns the diskImageManager.
 	 * @return Source diskImageManager The disk Image Manager of this disk

@@ -65,6 +65,8 @@ public class OzDosFormatDisk extends DosFormatDisk {
 		OzDosFormatDisk disk2 = new OzDosFormatDisk(filename, imageOrder, OZDOS_DISK_2);
 		disk1.format();
 		disk2.format();
+        disk1.setFormattedDisks(disk1, disk2);
+        disk2.setFormattedDisks(disk1, disk2);
 		return new OzDosFormatDisk[] { disk1, disk2 };
 	}
 	/**

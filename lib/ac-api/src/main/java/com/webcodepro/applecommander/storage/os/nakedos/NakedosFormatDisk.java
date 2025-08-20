@@ -119,6 +119,7 @@ public class NakedosFormatDisk extends FormattedDisk {
 	public static NakedosFormatDisk[] create(String filename, ImageOrder imageOrder) {
 		NakedosFormatDisk disk = new NakedosFormatDisk(filename, imageOrder);
 		disk.format();
+        disk.setFormattedDisks(disk);
 		return new NakedosFormatDisk[] { disk };
 	}
 
