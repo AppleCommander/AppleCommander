@@ -64,7 +64,7 @@ public class DosDiskFactory implements DiskFactory {
             nextTrack = vtocTrack;
         }
         // Start with VTOC test
-        boolean good = nextTrack == vtocTrack           // expect catalog to match our track
+        boolean good = nextTrack <= tracksPerDisk       // expect catalog to be sensible
                     && nextSector > 0                   // expect catalog to be...
                     && nextSector < sectorsPerTrack     // ... a legitimate sector
                     && tracksPerDisk >= vtocTrack       // expect sensible...
