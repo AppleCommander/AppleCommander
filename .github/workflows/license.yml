@@ -1,0 +1,27 @@
+# Check AppleCommander license files
+---
+name: license
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:
+      - 1.*
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  license:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check license headers
+        uses: viperproject/check-license-header@v2
+        with:
+          path: .
+          config: ./license-config.json
+          strict: false

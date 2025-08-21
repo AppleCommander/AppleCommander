@@ -1,0 +1,25 @@
+[
+  {
+    "include": [
+      "**/*.java"
+    ],
+    "exclude": [
+      "**/AntTask.java",
+      "**/ac.java",
+      "**/Sleak.java"
+    ],
+    "license": ".github/license-check/HEADER-standard.txt"
+  },
+  {
+    "include": [
+      "**/AntTask.java"
+    ],
+    "license": ".github/license-check/HEADER-anttask.txt"
+  },
+  {
+    "include": [
+      "**/ac.java"
+    ],
+    "license": ".github/license-check/HEADER-ac.txt"
+  }
+]
