@@ -1,14 +1,22 @@
 [
   {
     "include": [
-      "**/*.java"
+      "**/com/webcodepro/**/*.java"
     ],
     "exclude": [
       "**/AntTask.java",
       "**/ac.java",
-      "**/Sleak.java"
+      "**/Sleak.java",
+      "**/*DiskFactory.java"
     ],
     "license": ".github/license-check/HEADER-standard.txt"
+  },
+  {
+    "include": [
+      "**/org/applecommander/**/*.java",
+      "**/*DiskFactory.java"
+    ],
+    "license": ".github/license-check/HEADER-newfiles.txt"
   },
   {
     "include": [
@@ -21,5 +29,19 @@
       "**/ac.java"
     ],
     "license": ".github/license-check/HEADER-ac.txt"
+  },
+  {
+    "include": [
+      "**/*.md",
+      "swt-lib/**",
+      "documentation/**",
+      "gradle/**",
+      "**/*.gradle",
+      "**/resources/**",
+      "gradlew*",
+      "VERSIONS",
+      "LICENSE",
+      "HEADER"
+    ]
   }
 ]
