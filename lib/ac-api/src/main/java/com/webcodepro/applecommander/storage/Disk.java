@@ -19,12 +19,8 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import com.webcodepro.applecommander.storage.os.cpm.CpmFileEntry;
-import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
 import com.webcodepro.applecommander.storage.physical.*;
-import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
-import org.applecommander.hint.Hint;
 import org.applecommander.image.UniversalDiskImage;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
@@ -187,95 +183,15 @@ public class Disk {
 		this.filename = filename;
 		this.diskImageManager = source;
 
-		// Temporary shim to allow early testing of DiskFactory recognition.
 		List<FormattedDisk> foundDisks = Disks.inspect(source);
 		if (!foundDisks.isEmpty()) {
 			formattedDisks = foundDisks.toArray(new FormattedDisk[0]);
+			imageOrder = foundDisks.getFirst().getImageOrder();
 		}
-
-		int diskSize = source.getSize();
-
-		knownProDOSOrder |= source.is(Hint.PRODOS_BLOCK_ORDER);
-
-		ImageOrder dosOrder = new DosOrder(diskImageManager);
-		ImageOrder proDosOrder = new ProdosOrder(diskImageManager);
-
-		if (isSDK()) {
-			imageOrder = proDosOrder; // SDKs are always in ProDOS order
-		} else {
-			/*
-			 * First step: test physical disk orders for viable file systems.
-			 */
-			int rc = -1;
-			if (diskSize == APPLE_140KB_DISK) {
-				// First, test the really-really likely orders/formats for
-				// 5-1/4" disks.
-				imageOrder = dosOrder;
-				if ((isProdosFormat() || isDosFormat()) && !knownProDOSOrder) {
-					rc = 0;
-				} else {
-					imageOrder = proDosOrder;
-					if (knownProDOSOrder || isProdosFormat() || isDosFormat() || isRdos33Format()) {
-						rc = 0;
-					}
-				}
-				if (rc == -1) {
-					/*
-				 	* Check filenames for something deterministic.
-				 	*/
-					if (isProdosOrder() || is2ImgOrder()) {
-						imageOrder = proDosOrder;
-						rc = 0;
-					} else if (isDosOrder()) {
-						imageOrder = dosOrder;
-						rc = 0;
-					} else if (isNibbleOrder()) {
-						imageOrder = new NibbleOrder(diskImageManager);
-						rc = 0;
-					}
-				}
-				if (rc == -1) {
-					/*
-					 * Ok, it's not one of those. Now, let's go back to DOS
-					 * order, and see if we recognize other things. If not,
-					 * we'll fall through to other processing later.
-					 */
-					imageOrder = dosOrder;
-					rc = testImageOrder();
-				}
-			}
-			if (rc == -1) {
-				imageOrder = proDosOrder;
-				rc = testImageOrder();
-				if (rc == -1) {
-					/*
-				 	* Couldn't find anything recognizable. Final step: 
-				 	* just punt and start testing filenames.
-				 	*/
-					if (isProdosOrder() || is2ImgOrder()) {
-						imageOrder = proDosOrder;
-					} else if (isDosOrder()) {
-						imageOrder = dosOrder;
-					} else if (isNibbleOrder()) {
-						imageOrder = new NibbleOrder(diskImageManager);
-					} else {
-						imageOrder = proDosOrder;
-					}
-				}
-			}
+		else {
+			DiskFactory.Context ctx = new DiskFactory.Context(source);
+			imageOrder = ctx.orders.getFirst();
 		}
-	}
-	
-	/**
-	 * Test the image order to see if we can recognize a file system. Returns: 0
-	 * on recognition; -1 on failure.
-	 */
-	public int testImageOrder()
-	{
-		int rc = (isProdosFormat() ? 1 : 0) + (isDosFormat() ? 2 : 0) + (isCpmFormat() ? 4 : 0) + (isUniDosFormat() ? 8 : 0) + (isPascalFormat() ? 16 : 0) + (isOzDosFormat() ? 32 : 0);
-		if (rc == 0)
-			rc = -1;
-		return rc;
 	}
 
 	/**
@@ -475,199 +391,7 @@ public class Disk {
 			throws IllegalArgumentException {
 		imageOrder.writeSector(track, sector, bytes);
 	}
-	
-	/**
-	 * Test the disk format to see if this is a ProDOS formatted
-	 * disk.
-	 */
-	public boolean isProdosFormat() {
-		byte[] prodosVolumeDirectory = readBlock(2);
-		int volDirEntryLength = prodosVolumeDirectory[0x23];
-		int volDirEntriesPerBlock = prodosVolumeDirectory[0x24];
 
-		return prodosVolumeDirectory[0] == 0 &&
-			prodosVolumeDirectory[1] == 0 &&
-			(prodosVolumeDirectory[4]&0xf0) == 0xf0 &&
-			(volDirEntryLength * volDirEntriesPerBlock <= BLOCK_SIZE);
-	}
-	
-	/**
-	 * Test the disk format to see if this is a DOS 3.3 formatted
-	 * disk.  This is a little nasty - since 800KB and 140KB images have
-	 * different characteristics.  This just tests 140KB images.
-	 */
-	public boolean isDosFormat() {
-		boolean good = false;
-		if (!is140KbDisk()) {
-			return false;
-		}
-		try {
-			byte[] vtoc = readSector(17, 0);
-			good = (imageOrder.isSizeApprox(APPLE_140KB_DISK)
-					 || imageOrder.isSizeApprox(APPLE_140KB_NIBBLE_DISK))						 
-						&& vtoc[0x01] == 17		// expect catalog to start on track 17
-			// can vary	&& vtoc[0x02] == 15		// expect catalog to start on sector 15 (140KB disk only!)
-						&& vtoc[0x27] == 122	// expect 122 track/sector pairs per sector
-						&& (vtoc[0x34] == 35 || vtoc[0x34] == 40) // expect 35 or 40 tracks per disk (140KB disk only!)
-						&& (vtoc[0x35] == 16 || vtoc[0x35] == 13) // expect 13 or 16 sectors per disk (140KB disk only!)
-						;
-			if (good) {
-				int catTrack = vtoc[0x01]; // Pull out the first catalog track/sector
-				int catSect = vtoc[0x02];
-				byte[] cat = readSector(catTrack, catSect);
-				if (catTrack == cat[1] && catSect == cat[2] + 1) {
-					// Still good... let's follow one more
-					catTrack = cat[1];
-					catSect = cat[2];
-					cat = readSector(catTrack, catSect);
-					if (catTrack == cat[1] && catSect == cat[2] + 1) {
-						good = true;
-					} else {
-						good = false;
-					}
-				}
-			}
-		} catch (Exception ex) {
-			/*
-			 *  If we get various exceptions from reading tracks and sectors, then we
-			 *  definitely don't have a valid DOS image. 
-			 */
-			good = false;
-		}
-		return good;
-	}
-
-	/**
-	 * Test the disk format to see if this is a UniDOS formatted
-	 * disk.  UniDOS creates two logical disks on an 800KB physical disk.
-	 * The first logical disk takes up the first 400KB and the second
-	 * logical disk takes up the second 400KB.
-	 */
-	public boolean isUniDosFormat() {
-		if (!is800KbDisk()) return false;
-		byte[] vtoc1 = readSector(17, 0);	// logical disk #1
-		byte[] vtoc2 = readSector(67, 0);	// logical disk #2
-		return
-			// LOGICAL DISK #1
-			vtoc1[0x01] == 17		// expect catalog to start on track 17
-			&& vtoc1[0x02] == 31	// expect catalog to start on sector 31
-			&& vtoc1[0x27] == 122	// expect 122 tract/sector pairs per sector
-			&& vtoc1[0x34] == 50	// expect 50 tracks per disk
-			&& vtoc1[0x35] == 32	// expect 32 sectors per disk
-			&& vtoc1[0x36] == 0		// bytes per sector (low byte)
-			&& vtoc1[0x37] == 1		// bytes per sector (high byte)
-			// LOGICAL DISK #2
-			&& vtoc2[0x01] == 17	// expect catalog to start on track 17
-			&& vtoc2[0x02] == 31	// expect catalog to start on sector 31
-			&& vtoc2[0x27] == 122	// expect 122 tract/sector pairs per sector
-			&& vtoc2[0x34] == 50	// expect 50 tracks per disk
-			&& vtoc2[0x35] == 32	// expect 32 sectors per disk
-			&& vtoc2[0x36] == 0		// bytes per sector (low byte)
-			&& vtoc2[0x37] == 1;	// bytes per sector (high byte)
-	}
-
-	/**
-	 * Test the disk format to see if this is a OzDOS formatted
-	 * disk.  OzDOS creates two logical disks on an 800KB physical disk.
-	 * The first logical disk takes the first half of each block and
-	 * the second logical disk takes the second half of each block.
-	 */
-	public boolean isOzDosFormat() {
-		if (!is800KbDisk()) return false;
-		byte[] vtoc = readBlock(544);	// contains BOTH VTOCs!
-		return
-			// LOGICAL DISK #1
-			vtoc[0x001] == 17		// expect catalog to start on track 17
-			&& vtoc[0x002] == 31	// expect catalog to start on sector 31
-			&& vtoc[0x027] == 122	// expect 122 tract/sector pairs per sector
-			&& vtoc[0x034] == 50	// expect 50 tracks per disk
-			&& vtoc[0x035] == 32	// expect 32 sectors per disk
-			&& vtoc[0x036] == 0		// bytes per sector (low byte)
-			&& vtoc[0x037] == 1		// bytes per sector (high byte)
-			// LOGICAL DISK #2
-			&& vtoc[0x137] == 1		// bytes per sector (high byte)
-			&& vtoc[0x101] == 17	// expect catalog to start on track 17
-			&& vtoc[0x102] == 31	// expect catalog to start on sector 31
-			&& vtoc[0x127] == 122	// expect 122 tract/sector pairs per sector
-			&& vtoc[0x134] == 50	// expect 50 tracks per disk
-			&& vtoc[0x135] == 32	// expect 32 sectors per disk
-			&& vtoc[0x136] == 0		// bytes per sector (low byte)
-			&& vtoc[0x137] == 1;	// bytes per sector (high byte)
-	}
-	
-	/**
-	 * Test the disk format to see if this is a NakedOS formatted
-	 * disk.  
-	 */
-	public boolean isNakedosFormat() {
-		if (!is140KbDisk()) return false;
-		byte[] vtoc = readSector(0, 3); // VTOC starts on sector 9 (mapped to 3)
-		return (imageOrder.isSizeApprox(APPLE_140KB_DISK)
-				 || imageOrder.isSizeApprox(APPLE_140KB_NIBBLE_DISK))						 
-			&& vtoc[0xd0] == -2		// expect DOS as reserved
-			&& vtoc[0xd1] == -2		// expect DOS as reserved
-			&& vtoc[0xd2] == -2		// expect DOS as reserved
-			&& vtoc[0xd3] == -2		// expect DOS as reserved
-			&& vtoc[0xd4] == -2		// expect DOS as reserved
-			&& vtoc[0xd5] == -2		// expect DOS as reserved
-			&& vtoc[0xd6] == -2		// expect DOS as reserved
-			&& vtoc[0xd7] == -2		// expect DOS as reserved
-			&& vtoc[0xd8] == -2		// expect DOS as reserved
-			&& vtoc[0xd9] == -2		// expect DOS as reserved
-			&& vtoc[0xda] == -2		// expect DOS as reserved
-			&& vtoc[0xdb] == -2		// expect DOS as reserved
-			&& vtoc[0xdc] != -2		// expect something besides DOS next
-			;
-	}
-
-	/**
-	 * Test the disk format to see if this is a Pascal formatted
-	 * disk. Pascal disks may be either 140K or 800K.
-	 */
-	public boolean isPascalFormat() {
-		if (!(is140KbDisk() || is800KbDisk())) return false;
-		byte[] directory = readBlock(2);
-		return directory[0] == 0 && directory[1] == 0
-			&& directory[2] == 6 && directory[3] == 0
-			&& directory[4] == 0 && directory[5] == 0;
-	}
-	
-	/**
-	 * Test the disk format to see if this is a CP/M formatted disk.
-	 * Check the first 256 bytes of the CP/M directory for validity.
-	 */
-	public boolean isCpmFormat() {
-		if (!is140KbDisk()) return false;
-		byte[] directory = readSector(3, 0);
-		int bytes[] = new int[256];
-		for (int i=0; i<directory.length; i++) {
-			bytes[i] = AppleUtil.getUnsignedByte(directory[i]);
-		}
-		int offset = 0;
-		while (offset < directory.length) {
-			// Check if this is an empty directory entry (and ignore it)
-			int e5count = 0;
-			for (int i=0; i<CpmFileEntry.ENTRY_LENGTH; i++) {
-				e5count+= bytes[offset+i] == 0xe5 ? 1 : 0;
-			}
-			if (e5count != CpmFileEntry.ENTRY_LENGTH) {	// Not all bytes were 0xE5
-				// Check user number. Should be 0-15 or 0xE5
-				if (bytes[offset] > 15 && bytes[offset] != 0xe5) return false;
-				// Validate filename has highbit off
-				for (int i=0; i<8; i++) {
-					if (bytes[offset+1+i] > 127) return false; 
-				}
-				// Extent should be 0-31 (low = 0-31 and high = 0)
-				if (bytes[offset+0xc] > 31 || bytes[offset+0xe] > 0) return false;
-				// Number of used records cannot exceed 0x80
-				if (bytes[offset+0xf] > 0x80) return false;
-			}
-			// Next entry
-			offset+= CpmFileEntry.ENTRY_LENGTH;
-		}
-		return true;
-	}
-	
 	/**
 	 * Answers true if this disk image is within the expected 140K
 	 * disk size.  Can vary if a header has been applied or if this is
@@ -676,52 +400,6 @@ public class Disk {
 	protected boolean is140KbDisk() {
 		return getPhysicalSize() >= APPLE_140KB_DISK
 			&& getPhysicalSize() <= APPLE_140KB_NIBBLE_DISK;
-	}
-
-	/**
-	 * Answers true if this disk image is within the expected 800K
-	 * disk size.  Can vary if a 2IMG header has been applied.
-	 */
-	protected boolean is800KbDisk() {
-		return getPhysicalSize() >= APPLE_800KB_DISK
-			&& getPhysicalSize() <= APPLE_800KB_2IMG_DISK;
-	}
-	
-	/**
-	 * Test the disk format to see if this is a RDOS formatted
-	 * disk.
-	 */
-	public boolean isRdosFormat() {
-		if (!is140KbDisk()) return false;
-		if (getImageOrder().getSectorsPerTrack() != 16) return false;
-		byte[] block = readSector(0, 0x0d);
-		String id = AppleUtil.getString(block, 0xe0, 4);
-		return "RDOS".equals(id) || isRdos33Format(); //$NON-NLS-1$
-	}
-	
-	/**
-	 * Test the disk format to see if this is a RDOS 33 formatted
-	 * disk.
-	 */
-	public boolean isRdos33Format() {
-		if (!is140KbDisk()) return false;
-		byte[] block = readSector(1, 0x0);
-		String id = AppleUtil.getString(block, 0x0, 6);
-		return "RDOS 3".equals(id); //$NON-NLS-1$
-	}
-
-	/**
-	 * Test the disk format to see if this is a WP formatted
-	 * disk.
-	 */
-	public boolean isWPFormat() {
-		if (!is140KbDisk()) return false;
-		byte[] vtoc = readSector(17, 7);
-		return (imageOrder.isSizeApprox(APPLE_140KB_DISK)
-				 || imageOrder.isSizeApprox(APPLE_140KB_NIBBLE_DISK))						 
-			&& vtoc[0x00] == 17		// expect catalog to start on track 17
-			&& vtoc[0x01] == 7		// expect catalog to start on sector 7
-			&& vtoc[0x0f] == -115;		// expect 0x8d's every 16 bytes
 	}
 
 	/**
