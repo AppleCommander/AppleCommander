@@ -71,6 +71,23 @@ public class DosDiskFactory implements DiskFactory {
                     && tracksPerDisk <= 50              // ... tracks per disk
                     && sectorsPerTrack > 10             // expect sensible...
                     && sectorsPerTrack <= 32;           // ... sectors per disk
+        // Check that the free sectors are sensible (really only valid for 13 or 16 sector disks)
+        if (sectorsPerTrack == 13 || sectorsPerTrack == 16) {
+            // We only check that which is in common (bytes 3+4 of 1-4).
+            // Some DOS 3.2 cracks are on DOS 3.3 disks but report as 13 sector.
+            int unexpectedValue = 0;
+            for (int i=0; i<tracksPerDisk; i++) {
+                int offset = 0x38 + (i * 4);
+                int t3 = vtoc.getUnsignedByte(offset+2);
+                int t4 = vtoc.getUnsignedByte(offset+3);
+                // Found a free sector that should not exist
+                if (t3 != 0 || t4 != 0) unexpectedValue++;
+            }
+            // Totally arbitrary. Allow some errors but not a lot.
+            if (unexpectedValue > 3) {
+                return false;
+            }
+        }
         // Now chase the directory links (note we assume catalog is all on same track).
         Set<Integer> visited = new HashSet<>();
         while (good) {
