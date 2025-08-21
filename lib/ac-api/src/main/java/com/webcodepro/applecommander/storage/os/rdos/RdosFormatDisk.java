@@ -21,7 +21,6 @@ package com.webcodepro.applecommander.storage.os.rdos;
 
 import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 
@@ -54,7 +53,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * ordering.  It appears that RDOS may use the physical sector number
 	 * instead of the logical sector.
 	 */
-	private static final int sectorSkew[] = { 
+	public static final int[] sectorSkew = {
 		0, 7, 0x0e, 6, 0x0d, 5, 0x0c, 4,
 		0x0b, 3, 0x0a, 2, 9, 1, 8, 0x0f 
 		};
@@ -82,15 +81,13 @@ public class RdosFormatDisk extends FormattedDisk {
 			"B", "BIN"
 		);
 
+    private final int sectorsPerTrack;
+
 	/**
 	 * 13 sectors for RDOS 2.1/3.2, native sectoring (16) for RDOS 3.3
 	 */
 	private int SectorsPerTrack() {
-		if (getImageOrder() instanceof ProdosOrder) {
-			return getImageOrder().getSectorsPerTrack();
-		} else {
-			return 13;
-		}
+        return sectorsPerTrack;
 	}
 
 	/**
@@ -152,15 +149,16 @@ public class RdosFormatDisk extends FormattedDisk {
 	/**
 	 * Constructor for RdosFormatDisk.
 	 */
-	public RdosFormatDisk(String filename, ImageOrder imageOrder) {
+	public RdosFormatDisk(String filename, ImageOrder imageOrder, int sectorsPerTrack) {
 		super(filename, imageOrder);
+        this.sectorsPerTrack = sectorsPerTrack;
 	}
 	
 	/**
 	 * Create a RdosFormatDisk.
 	 */
 	public static RdosFormatDisk[] create(String filename, ImageOrder imageOrder) {
-		RdosFormatDisk disk = new RdosFormatDisk(filename, imageOrder);
+		RdosFormatDisk disk = new RdosFormatDisk(filename, imageOrder, 16);
 		disk.format();
 		return new RdosFormatDisk[] { disk };
 	}

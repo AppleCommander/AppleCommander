@@ -15,6 +15,15 @@ dependencies {
     implementation project(':app:cli-ac')
     implementation project(':lib:ac-api')
     compileOnly "org.apache.ant:ant:$antVersion"
+
+    testImplementation platform("org.junit:junit-bom:$junitVersion")
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation "org.apache.ant:ant:$antVersion"
+}
+
+test {
+    useJUnitPlatform()
 }
 
 jar {

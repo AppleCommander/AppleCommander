@@ -63,6 +63,7 @@ import io.github.applecommander.bastools.api.Visitors;
 import io.github.applecommander.bastools.api.model.Program;
 import io.github.applecommander.bastools.api.model.Token;
 import org.applecommander.hint.Hint;
+import org.applecommander.image.DiskCopyImage;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.applecommander.util.Information;
@@ -240,7 +241,7 @@ public class ac {
 	}
 
 	/**
-	 * Put fileName from the local filesytem into the file named fileOnImageName on the disk named imageName;
+	 * Put fileName from the local filesystem into the file named fileOnImageName on the disk named imageName;
 	 * Note: only volume level supported; input size unlimited.
 	 */
 	public static void putFile(String fileName, String imageName, String fileOnImageName, String fileType, String address) throws IOException, DiskException {
@@ -315,7 +316,8 @@ public class ac {
 		if (formattedDisks == null)
 			System.out.println("Dude, formattedDisks is null!");
 		FormattedDisk formattedDisk = formattedDisks[0];
-		if (!disk.isSDK() && !disk.isDC42()) {
+		boolean isDC42 = disk.getDiskImageManager() instanceof DiskCopyImage;
+		if (!disk.isSDK() && !isDC42) {
 			FileEntry entry = name.createEntry(formattedDisk);
 			if (entry != null) {
 				entry.setFiletype(fileType);
@@ -410,7 +412,8 @@ public class ac {
 		throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
 		Name name = new Name(fileName);
-		if (!disk.isSDK() && !disk.isDC42()) {
+		boolean isDC42 = disk.getDiskImageManager() instanceof DiskCopyImage;
+		if (!disk.isSDK() && !isDC42) {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 			for (int i = 0; i < formattedDisks.length; i++) {
 				FormattedDisk formattedDisk = formattedDisks[i];
@@ -579,7 +582,8 @@ public class ac {
 	static void setFileLocked(String imageName, Name name,
 		boolean lockState) throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
-		if (!disk.isSDK() && !disk.isDC42()) {
+		boolean isDC42 = disk.getDiskImageManager() instanceof DiskCopyImage;
+		if (!disk.isSDK() && !isDC42) {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 			for (int i = 0; i < formattedDisks.length; i++) {
 				FormattedDisk formattedDisk = formattedDisks[i];
@@ -604,7 +608,8 @@ public class ac {
 	public static void setDiskName(String imageName, String volName)
 		throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
-		if (!disk.isSDK() && !disk.isDC42()) {
+		boolean isDC42 = disk.getDiskImageManager() instanceof DiskCopyImage;
+		if (!disk.isSDK() && !isDC42) {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 			FormattedDisk formattedDisk = formattedDisks[0];
 			formattedDisk.setDiskName(volName);

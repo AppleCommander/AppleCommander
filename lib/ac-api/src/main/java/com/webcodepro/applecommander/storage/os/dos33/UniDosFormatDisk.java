@@ -63,6 +63,8 @@ public class UniDosFormatDisk extends DosFormatDisk {
 		UniDosFormatDisk disk2 = new UniDosFormatDisk(filename, imageOrder, UNIDOS_DISK_2);
 		disk1.format();
 		disk2.format();
+        disk1.setFormattedDisks(disk1, disk2);
+        disk2.setFormattedDisks(disk1, disk2);
 		return new UniDosFormatDisk[] { disk1, disk2 };
 	}
 	/**
@@ -116,14 +118,29 @@ public class UniDosFormatDisk extends DosFormatDisk {
 	 * Retrieve the specified sector.
 	 */
 	public byte[] readSector(int track, int sector) throws IllegalArgumentException {
-		return getImageOrder().readSector(track+logicalOffset, sector);
+		byte[] blockData = readBlock(getBlockNumber(track, sector));
+		int offset = getBlockOffset(sector);
+		byte[] sectorData = new byte[SECTOR_SIZE];
+		System.arraycopy(blockData, offset, sectorData, 0, sectorData.length);
+		return sectorData;
 	}
 	
 	/**
 	 * Write the specified sector.
 	 */
-	public void writeSector(int track, int sector, byte[] bytes) 
+	public void writeSector(int track, int sector, byte[] sectorData)
 			throws IllegalArgumentException {
-		getImageOrder().writeSector(track+logicalOffset, sector, bytes);
+		int block = getBlockNumber(track, sector);
+		byte[] blockData = readBlock(block);
+		int offset = getBlockOffset(sector);
+		System.arraycopy(sectorData, 0, blockData, offset, sectorData.length);
+		writeBlock(block, blockData);
+	}
+
+	public int getBlockNumber(int track, int sector) {
+		return ((track+logicalOffset)*32 + sector)/2;
+	}
+	public int getBlockOffset(int sector) {
+		return (sector & 0x1) * 0x100;
 	}
 }

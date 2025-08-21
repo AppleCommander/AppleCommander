@@ -103,6 +103,7 @@ public class CpmFormatDisk extends FormattedDisk {
 	public static CpmFormatDisk[] create(String filename, ImageOrder imageOrder) {
 		CpmFormatDisk disk = new CpmFormatDisk(filename, imageOrder);
 		disk.format();
+        disk.setFormattedDisks(disk);
 		return new CpmFormatDisk[] { disk };
 	}
 

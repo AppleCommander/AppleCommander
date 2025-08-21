@@ -114,6 +114,7 @@ public class GutenbergFormatDisk extends FormattedDisk {
 	public static GutenbergFormatDisk[] create(String filename, ImageOrder imageOrder) {
 		GutenbergFormatDisk disk = new GutenbergFormatDisk(filename, imageOrder);
 		disk.format();
+        disk.setFormattedDisks(disk);
 		return new GutenbergFormatDisk[] { disk };
 	}
 

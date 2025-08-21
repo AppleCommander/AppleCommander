@@ -26,6 +26,7 @@ public class FileSource implements Source {
     public FileSource(Path path) {
         try {
             this.path = path;
+            this.filename = path.toString();
             byte[] rawData = Files.readAllBytes(path);
             this.buffer = DataBuffer.wrap(rawData);
             if (this.buffer.getUnsignedShort(0) == GZIPInputStream.GZIP_MAGIC) {
@@ -42,11 +43,6 @@ public class FileSource implements Source {
         } catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
-    }
-    public FileSource(Path path, DataBuffer buffer) {
-        this.path = path;
-        this.filename = path.getFileName().toString();
-        this.buffer = buffer;
     }
 
     @Override

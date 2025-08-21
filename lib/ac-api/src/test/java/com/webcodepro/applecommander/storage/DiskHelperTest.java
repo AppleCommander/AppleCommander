@@ -50,17 +50,19 @@ public class DiskHelperTest {
 		assertTextFile(disks[0], "APPLE PROMS"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "BOOT13"); //$NON-NLS-1$
 		assertEquals(DOS33_FORMAT, disks[0].getFormat());
-		assertCanReadFiles(disks[0]);
+        assertCanReadFiles(disks);
 	}
 
 	@Test
 	public void testLoadMaster() throws IOException, DiskException {
-		showDirectory(config.getDiskDir() + "/MASTER.DSK"); //$NON-NLS-1$
+        FormattedDisk[] disks = showDirectory(config.getDiskDir() + "/MASTER.DSK"); //$NON-NLS-1$
+        assertCanReadFiles(disks);
 	}
 	
 	@Test
 	public void testLoadGalacticAttack1() throws IOException, DiskException {
-		showDirectory(config.getDiskDir() + "/galatt.dsk"); //$NON-NLS-1$
+        FormattedDisk[] disks = showDirectory(config.getDiskDir() + "/galatt.dsk"); //$NON-NLS-1$
+        assertCanReadFiles(disks);
 	}
 	
 	@Test
@@ -69,23 +71,26 @@ public class DiskHelperTest {
 		assertApplesoftFile(disks[0], "COPY.ME"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "SETTINGS"); //$NON-NLS-1$
 		assertDisassemblyFile(disks[0], "PRODOS"); //$NON-NLS-1$
-		assertCanReadFiles(disks[0]);
+        assertCanReadFiles(disks);
 	}
 	
 	@Test
 	public void testLoadMarbleMadness() throws IOException, DiskException {
-		showDirectory(config.getDiskDir() 
+        FormattedDisk[] disks = showDirectory(config.getDiskDir()
 				+ "/Marble Madness (1985)(Electronic Arts).2mg"); //$NON-NLS-1$
+        assertCanReadFiles(disks);
 	}
 	
 	@Test
 	public void testRdosBoot() throws IOException, DiskException {
-		showDirectory(config.getDiskDir() + "/RDOSboot.dsk"); //$NON-NLS-1$
+        FormattedDisk[] disks = showDirectory(config.getDiskDir() + "/RDOSboot.dsk"); //$NON-NLS-1$
+        assertCanReadFiles(disks);
 	}
 
 	@Test
 	public void testSsiSave() throws IOException, DiskException {
-		showDirectory(config.getDiskDir() + "/SSIsave.dsk"); //$NON-NLS-1$
+        FormattedDisk[] disks = showDirectory(config.getDiskDir() + "/SSIsave.dsk"); //$NON-NLS-1$
+        assertCanReadFiles(disks);
 	}
 
 	@Test
@@ -96,12 +101,13 @@ public class DiskHelperTest {
 		assertBinaryFile(disks[0], "TWN31"); //$NON-NLS-1$
 		assertTextFile(disks[0], "ITEM"); //$NON-NLS-1$
 		assertGraphicsFile(disks[0], "ICE DRAGON"); //$NON-NLS-1$
-		assertCanReadFiles(disks[0]);
+        assertCanReadFiles(disks);
 	}
 
 	@Test
 	public void testPhanta32() throws IOException, DiskException {
-		showDirectory(config.getDiskDir() + "/PHANTA32.DSK"); //$NON-NLS-1$
+        FormattedDisk[] disks = showDirectory(config.getDiskDir() + "/PHANTA32.DSK"); //$NON-NLS-1$
+        assertCanReadFiles(disks);
 	}
 
 	@Test
@@ -112,22 +118,25 @@ public class DiskHelperTest {
 		assertBinaryFile(disks[0], "TWN21"); //$NON-NLS-1$
 		assertTextFile(disks[0], "ITEM"); //$NON-NLS-1$
 		assertGraphicsFile(disks[0], "ICE DRAGON"); //$NON-NLS-1$
-		assertCanReadFiles(disks[0]);
+        assertCanReadFiles(disks);
 	}
 
 	@Test
 	public void testPhan2d2() throws IOException, DiskException {
-		showDirectory(config.getDiskDir() + "/phan2d2.dsk"); //$NON-NLS-1$
+        FormattedDisk[] disks = showDirectory(config.getDiskDir() + "/phan2d2.dsk"); //$NON-NLS-1$
+        assertCanReadFiles(disks);
 	}
 
 	@Test
 	public void testPhantasie1() throws IOException, DiskException {
-		showDirectory(config.getDiskDir() + "/Phantasie1.dsk"); //$NON-NLS-1$
+        FormattedDisk[] disks = showDirectory(config.getDiskDir() + "/Phantasie1.dsk"); //$NON-NLS-1$
+        assertCanReadFiles(disks);
 	}
 
 	@Test
 	public void testPhantasie2() throws IOException, DiskException {
-		showDirectory(config.getDiskDir() + "/Phantasie2.dsk"); //$NON-NLS-1$
+        FormattedDisk[] disks = showDirectory(config.getDiskDir() + "/Phantasie2.dsk"); //$NON-NLS-1$
+        assertCanReadFiles(disks);
 	}
 
 	@Test
@@ -135,19 +144,21 @@ public class DiskHelperTest {
 		FormattedDisk[] disks = showDirectory(config.getDiskDir() 
 				+ "/CavernsOfFreitag.dsk"); //$NON-NLS-1$
 		assertGraphicsFile(disks[0], "TITLE.PIC"); //$NON-NLS-1$
-		assertCanReadFiles(disks[0]);
+        assertCanReadFiles(disks);
 	}
 	
 	@Test
 	public void testUniDosD3110() throws IOException, DiskException {
-		showDirectory(config.getDiskDir() 
+        FormattedDisk[] disks = showDirectory(config.getDiskDir()
 				+ "/D3110.dsk"); //$NON-NLS-1$
+        assertCanReadFiles(disks);
 	}
 
 	@Test
 	public void testUniDosD3151() throws IOException, DiskException {
-		showDirectory(config.getDiskDir() 
+		FormattedDisk[] disks = showDirectory(config.getDiskDir()
 				+ "/D3151.dsk"); //$NON-NLS-1$
+        assertCanReadFiles(disks);
 	}
 
 	@Test
@@ -158,7 +169,7 @@ public class DiskHelperTest {
 		assertIntegerFile(disks[0], "COPY"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "BOOT13"); //$NON-NLS-1$
 		assertEquals(DOS33_FORMAT, disks[0].getFormat());
-		assertCanReadFiles(disks[0]);
+        assertCanReadFiles(disks);
 	}
 
 	@Test
@@ -169,7 +180,7 @@ public class DiskHelperTest {
 		assertIntegerFile(disks[0], "COPY"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "BOOT13"); //$NON-NLS-1$
 		assertEquals(DOS33_FORMAT, disks[0].getFormat());
-		assertCanReadFiles(disks[0]);
+        assertCanReadFiles(disks);
 	}
 
 	@Test
@@ -179,7 +190,7 @@ public class DiskHelperTest {
 		assertIntegerFile(disks[0], "HELLO"); //$NON-NLS-1$
 		assertBinaryFile(disks[0], "UPDATE 3.2"); //$NON-NLS-1$
 		assertEquals(DOS32_FORMAT, disks[0].getFormat());
-		assertCanReadFiles(disks[0]);
+        assertCanReadFiles(disks);
 	}
 
 	@Test
@@ -190,8 +201,22 @@ public class DiskHelperTest {
 		assertBinaryFile(disks[0], "UPDATE 3.2.1");
 		assertTextFile(disks[0], "APPLE PROMS");
 		assertEquals(DOS32_FORMAT, disks[0].getFormat());
-		assertCanReadFiles(disks[0]);
+        assertCanReadFiles(disks);
 	}
+
+    @Test
+    public void testLoadNakedosSuperMonDisk() throws DiskException, IOException {
+        FormattedDisk[] disks = showDirectory(config.getDiskDir() +
+                "/Super-Mon-dev.dsk");
+        assertCanReadFiles(disks);
+    }
+
+    @Test
+    public void testLoadGutenbergDisk() throws DiskException, IOException {
+        FormattedDisk[] disks = showDirectory(config.getDiskDir() +
+                "/Gutenberg_side1.DSK");
+        assertCanReadFiles(disks);
+    }
 
 	protected FormattedDisk[] showDirectory(String imageName) throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
@@ -304,12 +329,18 @@ public class DiskHelperTest {
         assertInstanceOf(GraphicsFileFilter.class, fileEntry.getSuggestedFilter(), "GraphicsFileFilter was not chosen");
 	}
 
+    protected void assertCanReadFiles(FormattedDisk... disks) throws DiskException {
+        for (FormattedDisk disk : disks) assertCanReadFiles((DirectoryEntry) disk);
+    }
+
 	protected void assertCanReadFiles(DirectoryEntry dir) throws DiskException {
 		for (FileEntry file : dir.getFiles()) {
 			if (file instanceof DirectoryEntry) {
 				assertCanReadFiles((DirectoryEntry) file);
 			}
-			else {
+            else if (file.isDeleted()) {
+                System.out.printf("Skipping deleted file: %s\n", file.getFilename());
+            } else {
 				try {
 					byte[] data = file.getFileData();
 					assertNotNull(data);

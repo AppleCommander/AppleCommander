@@ -66,12 +66,12 @@ public class NakedosFormatDisk extends FormattedDisk {
 	 */
 	private int usedSectors = 0;
 
-	private static final int[] sectorTranslate = {0, 7, 14, 6, 13, 5, 12, 4, 11, 3, 10, 2, 9, 1, 8, 15};
+	public static final int[] sectorTranslate = {0, 7, 14, 6, 13, 5, 12, 4, 11, 3, 10, 2, 9, 1, 8, 15};
 	/**
 	 * Use this inner interface for managing the disk usage data.
 	 * This off-loads format-specific implementation to the implementing class.
 	 */
-	private class WPDiskUsage implements DiskUsage {
+	private class NakedosDiskUsage implements DiskUsage {
 		private int[] location = null;
 		public boolean hasNext() {
 			return location == null
@@ -119,6 +119,7 @@ public class NakedosFormatDisk extends FormattedDisk {
 	public static NakedosFormatDisk[] create(String filename, ImageOrder imageOrder) {
 		NakedosFormatDisk disk = new NakedosFormatDisk(filename, imageOrder);
 		disk.format();
+        disk.setFormattedDisks(disk);
 		return new NakedosFormatDisk[] { disk };
 	}
 
@@ -261,7 +262,7 @@ public class NakedosFormatDisk extends FormattedDisk {
 	 * Get the disk usage iterator.
 	 */
 	public DiskUsage getDiskUsage() {
-		return new WPDiskUsage();
+		return new NakedosDiskUsage();
 	}
 
 	/**
@@ -304,7 +305,7 @@ public class NakedosFormatDisk extends FormattedDisk {
 	}
 	
 	/**
-	 * Get WP-specific disk information.
+	 * Get NakedOS-specific disk information.
 	 */
 	public List<DiskInformation> getDiskInformation() {
 		getFiles();

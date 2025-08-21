@@ -58,7 +58,7 @@ public class ScanCommand extends ReusableCommandOptions {
             for (Path dir : directories) {
                 Files.walkFileTree(dir, visitor);
             }
-            showReport(visitor.reportData);
+            showReportData(visitor.reportData);
             System.out.printf("Scanned %d disk images.\n", visitor.getCounter());
         }
         return 0;
@@ -70,22 +70,70 @@ public class ScanCommand extends ReusableCommandOptions {
             JsonStreamParser parser = new JsonStreamParser(reader);
             ReportData oldData = new ReportData("Old");
             ReportData newData = new ReportData("New");
+            int degradationCount = 0;
+            int improvementCount = 0;
             while (parser.hasNext()) {
                 Report oldReport = gson.fromJson(parser.next(), Report.class);
                 Report newReport = visitor.scanFile(Path.of(oldReport.imageName));
                 oldData.tallyData(oldReport);
                 newData.tallyData(newReport);
                 if (oldReport.success && !newReport.success) {
-                    System.out.printf("Degradation with: %s\n", oldReport.imageName);
+                    degradationCount++;
+                    List<String> diffs = diffReport(oldReport, newReport);
+                    if (!diffs.isEmpty()) {
+                        System.out.printf("Degradation with: %s (%s)\n", oldReport.imageName, String.join(",", diffs));
+                    }
+                }
+                else if (!oldReport.success && newReport.success) {
+                    improvementCount++;
                 }
             }
-            showReport(oldData, newData);
+            System.out.println();
+            System.out.printf("Recognition degraded by %d disks and improved by %d disks.\n", degradationCount, improvementCount);
+            System.out.println();
+            showReportData(oldData, newData);
         } catch (IOException e) {
             LOG.severe(e.getMessage());
         }
     }
 
-    public void showReport(ReportData... data) {
+    public List<String> diffReport(Report oldReport, Report newReport) {
+        List<String> diffs = new ArrayList<>();
+        diffBoolean(diffs, "success", r->r.success, oldReport, newReport);
+        diffString(diffs, "type", r->r.imageType, oldReport, newReport);
+        diffInt(diffs, "disks", r->r.logicalDisks, oldReport, newReport);
+        diffInt(diffs, "deleted", r->r.deletedFiles, oldReport, newReport);
+        diffInt(diffs, "dirs", r->r.directoriesVisited, oldReport, newReport);
+        diffInt(diffs, "visited", r->r.filesVisited, oldReport, newReport);
+        diffInt(diffs, "read", r->r.filesRead, oldReport, newReport);
+        diffString(diffs, "geometry", r->r.dataType, oldReport, newReport);
+        diffInt(diffs, "georead", r->r.dataRead, oldReport, newReport);
+        diffInt(diffs, "errors", r->r.errors.size(), oldReport, newReport);
+        return diffs;
+    }
+    public void diffBoolean(List<String> diffs, String title, Function<Report,Boolean> boolFn, Report oldReport, Report newReport) {
+        boolean oldValue = boolFn.apply(oldReport);
+        boolean newValue = boolFn.apply(newReport);
+        if (oldValue != newValue) {
+            diffs.add(String.format("%s %s<>%s", title, oldValue, newValue));
+        }
+    }
+    public void diffString(List<String> diffs, String title, Function<Report,String> strFn, Report oldReport, Report newReport) {
+        String oldValue = strFn.apply(oldReport);
+        String newValue = strFn.apply(newReport);
+        if (!Objects.equals(oldValue, newValue)) {
+            diffs.add(String.format("%s '%s'<>'%s'", title, oldValue, newValue));
+        }
+    }
+    public void diffInt(List<String> diffs, String title, Function<Report,Integer> intFn, Report oldReport, Report newReport) {
+        int oldValue = intFn.apply(oldReport);
+        int newValue = intFn.apply(newReport);
+        if (oldValue != newValue) {
+            diffs.add(String.format("%s %d<>%d", title, oldValue, newValue));
+        }
+    }
+
+    public void showReportData(ReportData... data) {
         System.out.println();
         showString("Title", ReportData::getTitle, data);
         showInteger("Total Images", ReportData::getReportCount, data);
@@ -141,7 +189,13 @@ public class ScanCommand extends ReusableCommandOptions {
             for (String ext : Disk.getAllExtensions()) {
                 if (!first) globs.append(",");
                 ext = ext.substring(1); // skip the "." - lots of assumptions here!
-                globs.append(ext);
+                // Unix is case-sensitive, so we need to make the pattern case-insensitive (yuck)
+                for (char ch : ext.toCharArray()) {
+                    globs.append("[");
+                    globs.append(Character.toLowerCase(ch));
+                    globs.append(Character.toUpperCase(ch));
+                    globs.append("]");
+                }
                 first = false;
             }
             globs.append("}");
