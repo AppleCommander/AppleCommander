@@ -23,5 +23,5 @@ jobs:
         uses: viperproject/check-license-header@v2
         with:
           path: .
-          config: ./license-config.json
+          config: .github/license-check/config.json
           strict: false
