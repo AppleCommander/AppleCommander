@@ -126,7 +126,7 @@ public class Disk {
 			file.createNewFile();
 		}
 		OutputStream output = new FileOutputStream(file);
-		if (isCompressed()) {
+		if (getFilename().toLowerCase().endsWith(".gz")) {
 			output = new GZIPOutputStream(output);
 		}
 		DataBuffer data =getDiskImageManager().readAllBytes();
@@ -200,14 +200,7 @@ public class Disk {
 	public String getOrderName() {
 		return (imageOrder == null) ? textBundle.get("FormattedDisk.Unknown") : imageOrder.getName(); 
 	}
-	
-	/**
-	 * Indicate if this disk is GZIP compressed.
-	 */
-	public boolean isCompressed() {
-		return filename.toLowerCase().endsWith(".gz"); //$NON-NLS-1$
-	}
-	
+
 	/**
 	 * Indicate if this disk is a ShrinkIt-compressed disk image.
 	 */

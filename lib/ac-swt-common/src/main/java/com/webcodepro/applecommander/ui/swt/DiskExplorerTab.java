@@ -1810,7 +1810,7 @@ public class DiskExplorerTab {
 		try {
 			disks[0].changeImageOrder(newImageOrder);
 			String filename = disks[0].getFilename();
-			if (disks[0].isCompressed()) {	// extra ".gz" at end
+			if (filename.toLowerCase().endsWith(".gz")) {
 				int chop = filename.lastIndexOf(".", filename.length()-4); //$NON-NLS-1$
 				filename = filename.substring(0, chop+1) + extension + ".gz"; //$NON-NLS-1$
 			} else {
