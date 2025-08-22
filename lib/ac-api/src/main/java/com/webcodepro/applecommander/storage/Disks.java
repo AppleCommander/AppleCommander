@@ -58,4 +58,25 @@ public class Disks {
         });
         return ctx.disks;
     }
+
+    /**
+     * Find the standard sized disk that will fit the requested number of bytes.
+     * @return int size of the disk if it will satisfy the request, -1 otherwise
+     */
+    public static int sizeToFit(long bytes) {
+        if (bytes < Disk.APPLE_140KB_DISK) {
+            return Disk.APPLE_140KB_DISK;
+        } else if (bytes < Disk.APPLE_800KB_DISK) {
+            return Disk.APPLE_800KB_DISK;
+        } else if (bytes < Disk.APPLE_5MB_HARDDISK) {
+            return Disk.APPLE_5MB_HARDDISK;
+        } else if (bytes < Disk.APPLE_10MB_HARDDISK) {
+            return Disk.APPLE_10MB_HARDDISK;
+        } else if (bytes < Disk.APPLE_20MB_HARDDISK) {
+            return Disk.APPLE_20MB_HARDDISK;
+        } else if (bytes < Disk.APPLE_32MB_HARDDISK) {
+            return Disk.APPLE_32MB_HARDDISK;
+        }
+        return -1;
+    }
 }

@@ -289,25 +289,4 @@ public class Disk {
 	protected void setImageOrder(ImageOrder imageOrder) {
 		this.imageOrder = imageOrder;
 	}
-
-	/**
-	 * Find the standard sized disk that will fit the requested number of bytes.
-	 * @return int size of the disk if it will satisfy the request, -1 otherwise 
-	 */
-	public static int sizeToFit(long bytes) {
-		if (bytes < APPLE_140KB_DISK) {
-			return APPLE_140KB_DISK;
-		} else if (bytes < APPLE_800KB_DISK) {
-			return APPLE_800KB_DISK;
-		} else if (bytes < APPLE_5MB_HARDDISK) {
-			return APPLE_5MB_HARDDISK;
-		} else if (bytes < APPLE_10MB_HARDDISK) {
-			return APPLE_10MB_HARDDISK;
-		} else if (bytes < APPLE_20MB_HARDDISK) {
-			return APPLE_20MB_HARDDISK;
-		} else if (bytes < APPLE_32MB_HARDDISK) {
-			return APPLE_32MB_HARDDISK;
-		}
-		return -1;
-	}
 }
