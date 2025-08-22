@@ -24,12 +24,13 @@ jobs:
       uses: actions/checkout@v4
     - name: Look for license phrase
       run: |
-        out=$(find . -name "*.java" -not -name "Sleak.java" | xargs grep -L "GNU General Public License")
-        if [ -z "${out}" ]
+        outfile=$(mktemp)
+        find . -name "*.java" -not -name "Sleak.java" | xargs grep -L "GNU General Public License" > ${outfile}
+        if [ -s "${outfile}" ]
         then
-          echo "License headers appear to be valid!"
-        else
           echo "License headers missing on the following files:"
-          echo $out
+          cat ${outfile}
           exit 1
+        else
+          echo "License headers appear to be valid!"
         fi
