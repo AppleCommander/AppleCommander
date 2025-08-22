@@ -23,6 +23,7 @@ import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.os.dos33.DosSectorAddress;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
 
 /**
@@ -122,7 +123,12 @@ public class DosOrder extends ImageOrder {
 		return textBundle.get("DosOrder.OrderName"); //$NON-NLS-1$
 	}
 
-	public static DosSectorAddress[] blockToSectors525(int block) {
+    @Override
+    public boolean is(Hint hint) {
+        return hint == Hint.DOS_SECTOR_ORDER;
+    }
+
+    public static DosSectorAddress[] blockToSectors525(int block) {
 		int track = block / 8;
 		int sectorIndex = block % 8;
 		int[] sectorMapping1 = { 0, 13, 11, 9, 7, 5, 3, 1 };

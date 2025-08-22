@@ -20,6 +20,7 @@
 package com.webcodepro.applecommander.storage.physical;
 
 import com.webcodepro.applecommander.storage.Disk;
+import org.applecommander.hint.HintProvider;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
 
@@ -54,7 +55,7 @@ import org.applecommander.util.DataBuffer;
  * <p>
  * @author Rob Greene (RobGreene@users.sourceforge.net)
  */
-public abstract class ImageOrder {
+public abstract class ImageOrder implements HintProvider {
 	/**
 	 * This is the physical copy of the disk image which a particular
 	 * implementation of ImageOrder will interpret.

@@ -22,6 +22,7 @@ package com.webcodepro.applecommander.storage.physical;
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.os.dos33.DosSectorAddress;
 import com.webcodepro.applecommander.util.AppleUtil;
+import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
 
@@ -240,6 +241,11 @@ public class WozOrder extends ImageOrder {
     @Override
     public void writeSector(int track, int sector, byte[] bytes) throws IllegalArgumentException {
         throw new RuntimeException("WOZ Disk Image does not support writing at this time");
+    }
+
+    @Override
+    public boolean is(Hint hint) {
+        return hint == Hint.NIBBLE_SECTOR_ORDER;
     }
 
     private void readMetaChunk(byte[] data) {

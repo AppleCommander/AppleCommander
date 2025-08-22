@@ -39,6 +39,7 @@ import com.webcodepro.applecommander.util.Host;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 import io.github.applecommander.applesingle.AppleSingle;
+import org.applecommander.hint.Hint;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.eclipse.swt.SWT;
@@ -1840,14 +1841,15 @@ public class DiskExplorerTab {
 		Menu menu = new Menu(shell, SWT.NONE);
 		menu.addMenuListener(new MenuAdapter() {
 			public void menuShown(MenuEvent event) {
+                ImageOrder order = getDisk(0).getImageOrder();
 				Menu theMenu = (Menu) event.getSource();
 				MenuItem[] subItems = theMenu.getItems();
 				// Nibble Order (*.nib)
-				subItems[0].setSelection(getDisk(0).isNibbleOrder());
+				subItems[0].setSelection(order.is(Hint.NIBBLE_SECTOR_ORDER));
 				// DOS Order (*.dsk)
-				subItems[1].setSelection(getDisk(0).isDosOrder());
+				subItems[1].setSelection(order.is(Hint.DOS_SECTOR_ORDER));
 				// ProDOS Order (*.po)
-				subItems[2].setSelection(getDisk(0).isProdosOrder());
+				subItems[2].setSelection(order.is(Hint.PRODOS_BLOCK_ORDER));
 			}
 		});
 			
@@ -1855,7 +1857,7 @@ public class DiskExplorerTab {
 		item.setText(textBundle.get("ChangeToNibbleOrderMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				if (!getDisk(0).isNibbleOrder()) {
+				if (!getDisk(0).getImageOrder().is(Hint.NIBBLE_SECTOR_ORDER)) {
 					NibbleOrder nibbleOrder = new NibbleOrder(
 						DataBufferSource.create(Disk.APPLE_140KB_NIBBLE_DISK, "new-image.nib").get());
 					nibbleOrder.format();
@@ -1868,7 +1870,7 @@ public class DiskExplorerTab {
 		item.setText(textBundle.get("ChangeToDosOrderMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				if (!getDisk(0).isDosOrder()) {
+				if (!getDisk(0).getImageOrder().is(Hint.DOS_SECTOR_ORDER)) {
 					changeImageOrder("dsk", new DosOrder( //$NON-NLS-1$
 						DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-image.dsk").get()));
 				}
@@ -1879,7 +1881,7 @@ public class DiskExplorerTab {
 		item.setText(textBundle.get("ChangeToProdosOrderMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				if (!getDisk(0).isProdosOrder()) {
+				if (!getDisk(0).getImageOrder().is(Hint.PRODOS_BLOCK_ORDER)) {
 					changeImageOrder("po", new ProdosOrder( //$NON-NLS-1$
 						DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-image.po").get()));
 				}

@@ -217,46 +217,6 @@ public class Disk {
 	}
 
 	/**
-	 * Indicate if this disk is ProDOS ordered (beginning with block 0).
-	 */
-	public boolean isProdosOrder() {
-		return filename.toLowerCase().endsWith(".po") //$NON-NLS-1$
-			|| filename.toLowerCase().endsWith(".po.gz") //$NON-NLS-1$
-			|| is2ImgOrder()
-			|| filename.toLowerCase().endsWith(".hdv") //$NON-NLS-1$
-			|| getPhysicalSize() >= APPLE_800KB_2IMG_DISK;
-	}
-	
-	/**
-	 * Indicate if this disk is DOS ordered (T0,S0 - T35,S15).
-	 */
-	public boolean isDosOrder() {
-		return filename.toLowerCase().endsWith(".do") //$NON-NLS-1$
-			|| filename.toLowerCase().endsWith(".do.gz") //$NON-NLS-1$
-			|| filename.toLowerCase().endsWith(".dsk") //$NON-NLS-1$
-			|| filename.toLowerCase().endsWith(".dsk.gz"); //$NON-NLS-1$
-	}
-	
-	/**
-	 * Indicate if this disk is a 2IMG disk.
-	 * This is ProDOS ordered, but with a header on the disk.
-	 */
-	public boolean is2ImgOrder() {
-		return filename.toLowerCase().endsWith(".2img") //$NON-NLS-1$
-			|| filename.toLowerCase().endsWith(".2img.gz") //$NON-NLS-1$
-			|| filename.toLowerCase().endsWith(".2mg") //$NON-NLS-1$
-		|| filename.toLowerCase().endsWith(".2mg.gz"); //$NON-NLS-1$
-	}
-
-	/**
-	 * Indicate if this disk is a nibbilized disk..
-	 */
-	public boolean isNibbleOrder() {
-		return filename.toLowerCase().endsWith(".nib") //$NON-NLS-1$
-			|| filename.toLowerCase().endsWith(".nib.gz"); //$NON-NLS-1$
-	}
-	
-	/**
 	 * Identify the size of this disk.
 	 */
 	public int getPhysicalSize() {

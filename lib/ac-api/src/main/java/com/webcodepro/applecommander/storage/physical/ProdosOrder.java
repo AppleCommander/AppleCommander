@@ -22,6 +22,7 @@ package com.webcodepro.applecommander.storage.physical;
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
 
 /**
@@ -112,4 +113,9 @@ public class ProdosOrder extends ImageOrder {
 	public String getName() {
 		return textBundle.get("ProdosOrder.OrderName"); //$NON-NLS-1$ 
 	}
+
+    @Override
+    public boolean is(Hint hint) {
+        return hint == Hint.PRODOS_BLOCK_ORDER;
+    }
 }
