@@ -47,7 +47,7 @@ public class Disks {
      * Standardized FormattedDisk creation. Uses the ServiceLoader mechanism to identify
      * all potential FormattedDisk factories.
      */
-    static List<FormattedDisk> inspect(Source source) {
+    public static DiskFactory.Context inspect(Source source) {
         DiskFactory.Context ctx = new DiskFactory.Context(source);
         FACTORIES.forEach(factory -> {
             try {
@@ -56,7 +56,7 @@ public class Disks {
                 // ignore it
             }
         });
-        return ctx.disks;
+        return ctx;
     }
 
     /**

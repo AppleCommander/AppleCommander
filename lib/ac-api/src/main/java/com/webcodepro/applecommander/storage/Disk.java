@@ -106,13 +106,12 @@ public class Disk {
 		this.filename = filename;
 		this.diskImageManager = source;
 
-		List<FormattedDisk> foundDisks = Disks.inspect(source);
-		if (!foundDisks.isEmpty()) {
-			formattedDisks = foundDisks.toArray(new FormattedDisk[0]);
-			imageOrder = foundDisks.getFirst().getImageOrder();
+		DiskFactory.Context ctx = Disks.inspect(source);
+		if (!ctx.disks.isEmpty()) {
+			formattedDisks = ctx.disks.toArray(new FormattedDisk[0]);
+			imageOrder = ctx.disks.getFirst().getImageOrder();
 		}
 		else {
-			DiskFactory.Context ctx = new DiskFactory.Context(source);
 			imageOrder = ctx.orders.getFirst();
 		}
 	}
