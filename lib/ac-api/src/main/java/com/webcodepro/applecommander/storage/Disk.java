@@ -276,16 +276,6 @@ public class Disk {
 	}
 
 	/**
-	 * Answers true if this disk image is within the expected 140K
-	 * disk size.  Can vary if a header has been applied or if this is
-	 * a nibblized disk image.
-	 */
-	protected boolean is140KbDisk() {
-		return getPhysicalSize() >= APPLE_140KB_DISK
-			&& getPhysicalSize() <= APPLE_140KB_NIBBLE_DISK;
-	}
-
-	/**
 	 * Indicates if the disk has changed. Triggered when data is
 	 * written and cleared when data is saved.
 	 */
