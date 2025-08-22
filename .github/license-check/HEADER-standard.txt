@@ -1,6 +1,6 @@
 /*
  * AppleCommander - An Apple ][ image utility.
- * Copyright (C) %year%-%year% by Robert Greene and others
+ * Copyright (C) %regexp:\d{4}%-%regexp:\d{4}% by Robert Greene and others
  * robgreene at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it

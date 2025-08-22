@@ -1,8 +1,8 @@
 /*
  * ac - an AppleCommander command line utility
- * Copyright (C) 2002-%year% by Robert Greene
+ * Copyright (C) 2002-%regexp:\d{4}% by Robert Greene
  * robgreene at users.sourceforge.net
- * Copyright (C) 2003-%year% by John B. Matthews
+ * Copyright (C) 2003-%regexp:\d{4}% by John B. Matthews
  * matthewsj at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it
