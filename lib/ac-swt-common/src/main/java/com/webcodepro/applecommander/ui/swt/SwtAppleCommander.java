@@ -20,7 +20,7 @@
 package com.webcodepro.applecommander.ui.swt;
 
 import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.Disk.FilenameFilter;
+import com.webcodepro.applecommander.storage.FilenameFilter;
 import com.webcodepro.applecommander.storage.DiskUnrecognizedException;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.ui.AppleCommander;
@@ -185,7 +185,7 @@ public class SwtAppleCommander implements Listener {
 	 */
 	protected void openFile() {
 		FileDialog fileDialog = new FileDialog(shell, SWT.OPEN);
-		FilenameFilter[] fileFilters = Disk.getFilenameFilters();
+		FilenameFilter[] fileFilters = FilenameFilter.getFilenameFilters();
 		String[] names = new String[fileFilters.length];
 		String[] extensions = new String[fileFilters.length];
 		for (int i=0; i<fileFilters.length; i++) {

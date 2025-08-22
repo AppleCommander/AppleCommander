@@ -25,6 +25,7 @@ import com.google.gson.JsonStreamParser;
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.FileEntry;
+import com.webcodepro.applecommander.storage.FilenameFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
@@ -205,7 +206,7 @@ public class ScanCommand extends ReusableCommandOptions {
             // Build "glob:**.{do,po,dsk,...}"
             StringBuilder globs = new StringBuilder("glob:**.{");
             boolean first = true;
-            for (String ext : Disk.getAllExtensions()) {
+            for (String ext : FilenameFilter.getAllExtensions()) {
                 if (!first) globs.append(",");
                 ext = ext.substring(1); // skip the "." - lots of assumptions here!
                 // Unix is case-sensitive, so we need to make the pattern case-insensitive (yuck)

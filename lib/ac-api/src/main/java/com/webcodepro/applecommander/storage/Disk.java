@@ -28,7 +28,6 @@ import org.applecommander.util.DataBuffer;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
@@ -39,29 +38,7 @@ import java.util.zip.GZIPOutputStream;
  * @author Rob Greene
  */
 public class Disk {
-	/**
-	 * Specifies a filter to be used in determining filetypes which are supported.
-	 * This works from a file extension, so it may or may not apply to the Macintosh.
-	 */
-	public static class FilenameFilter {
-		private String names;
-		private String[] extensions;
-		public FilenameFilter(String names, String... extensions) {
-			this.names = names;
-			this.extensions = extensions;
-		}
-		public String getExtensions() {
-			return String.join(";", extensions);
-		}
-		public String[] getExtensionList() {
-			return extensions;
-		}
-		public String getNames() {
-			return names;
-		}
-	}
-
-	public static final int BLOCK_SIZE = 512;
+    public static final int BLOCK_SIZE = 512;
 	public static final int SECTOR_SIZE = 256;
 	public static final int PRODOS_BLOCKS_ON_140KB_DISK = 280;
 	public static final int DOS33_SECTORS_ON_140KB_DISK = 560;
@@ -76,44 +53,7 @@ public class Disk {
 	public static final int APPLE_20MB_HARDDISK = 20971520;
 	public static final int APPLE_32MB_HARDDISK = 33553920;	// short one block!
 
-	private static final TextBundle textBundle = StorageBundle.getInstance();
-	private static final FilenameFilter[] filenameFilters;
-	private static final List<String> allFileExtensions;
-	static {
-		// Build everything dynamically
-		List<String> templates = List.of(
-				"140kDosImages:do,dsk",
-				"140kProdosImages:po",
-				"140kNibbleImages:nib",
-				"800kProdosImages:2mg,2img",
-				"ApplePcImages:hdv",
-				"WozImages:woz",
-				"DiskCopyImages:dc");
-		List<FilenameFilter> filters = new ArrayList<>();
-		List<String> allImages = new ArrayList<>(List.of("*.shk", "*.sdk"));
-		List<String> compressedImages = new ArrayList<>(allImages);
-		for (String template : templates) {
-			String[] parts = template.split(":");
-			String bundleName = String.format("Disk.%s", parts[0]);
-			List<String> extensions = new ArrayList<>();
-			for (String extension : parts[1].split(",")) {
-				String ext1 = String.format("*.%s", extension);
-				String ext2 = String.format("*.%s.gz", extension);
-				extensions.add(ext1);
-				extensions.add(ext2);
-				compressedImages.add(ext2);
-			}
-			allImages.addAll(extensions);
-			String text = textBundle.get(bundleName);
-			filters.add(new FilenameFilter(text, extensions.toArray(new String[0])));
-		}
-		filters.addFirst(new FilenameFilter(textBundle.get("Disk.AllImages"), allImages.toArray(new String[0])));
-		filters.add(new FilenameFilter(textBundle.get("Disk.CompressedImages"), compressedImages.toArray(new String[0])));
-		filters.add(new FilenameFilter(textBundle.get("Disk.AllFiles"), "*.*"));
-		filenameFilters = filters.toArray(new FilenameFilter[0]);
-		// allFileExtensions is of the format ".dsk", ".dsk.gz", so we just strip the first character off...
-		allFileExtensions = allImages.stream().map(s -> s.substring(1)).toList();
-	}
+    private static final TextBundle textBundle = StorageBundle.getInstance();
 
 	private String filename;
 	private boolean newImage = false;
@@ -121,24 +61,7 @@ public class Disk {
 	private ImageOrder imageOrder = null;
 	private FormattedDisk[] formattedDisks;
 
-	/**
-	 * Get the supported file filters supported by the Disk interface.
-	 * This is due to the fact that FilenameFilter is an inner class of Disk -
-	 * without an instance of the class, the filters cannot be created.
-	 */
-	public static FilenameFilter[] getFilenameFilters() {
-		return filenameFilters;
-	}
-
-	/**
-	 * Get the supported file extensions supported by the Disk interface.
-	 * This is used by the Swing UI to populate the open file dialog box.
-	 */
-	public static List<String> getAllExtensions() {
-		return allFileExtensions;
-	}
-
-	/**
+    /**
 	 * Construct a Disk with the given byte array.
 	 */
 	protected Disk(String filename, ImageOrder imageOrder) {
