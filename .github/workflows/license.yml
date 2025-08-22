@@ -1,0 +1,36 @@
+# This is a crude license header check. The ones I tested were susceptible to whitespace differences
+# and I never got them to work. My primary goal is to ensure the headers exist, so this suffices.
+
+name: Verify AppleCommander has a license header
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:
+      - 1.*
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Look for license phrase
+      run: |
+        outfile=$(mktemp)
+        find . -name "*.java" -not -name "Sleak.java" | xargs grep -L "GNU General Public License" > ${outfile}
+        if [ -s "${outfile}" ]
+        then
+          echo "License headers missing on the following files:"
+          cat ${outfile}
+          exit 1
+        else
+          echo "License headers appear to be valid!"
+        fi
