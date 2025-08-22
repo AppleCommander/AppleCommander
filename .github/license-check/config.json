@@ -6,6 +6,8 @@
     ],
     "exclude": [
       "**/AntTask.java",
+      "**/AntTaskTest.java",
+      "**/ScanCommand.java",
       "**/ac.java",
       "**/Sleak.java",
       "**/*DiskFactory.java"
@@ -15,7 +17,9 @@
   {
     "include": [
       "**/org/applecommander/**/*.java",
-      "**/*DiskFactory.java"
+      "**/*DiskFactory.java",
+      "**/AntTaskTest.java",
+      "**/ScanCommand.java"
     ],
     "license": ".github/license-check/HEADER-newfiles.txt"
   },
@@ -42,7 +46,9 @@
       "**/resources/**",
       "VERSIONS",
       "LICENSE",
-      "HEADER"
+      "HEADER",
+      "**/*.s",
+      "**/Sleak.java"
     ]
   }
 ]
