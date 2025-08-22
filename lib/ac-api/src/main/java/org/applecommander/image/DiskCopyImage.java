@@ -29,6 +29,7 @@ import org.applecommander.util.Information;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 public class DiskCopyImage implements Source {
@@ -36,6 +37,7 @@ public class DiskCopyImage implements Source {
 
     private final Source source;
     private final Info info;
+    private final Set<Hint> hints = Set.of(Hint.PRODOS_BLOCK_ORDER, Hint.DISK_COPY_IMAGE);
 
     public DiskCopyImage(Source source) {
         this.source = source;
@@ -91,7 +93,7 @@ public class DiskCopyImage implements Source {
 
     @Override
     public boolean is(Hint hint) {
-        return hint == Hint.PRODOS_BLOCK_ORDER;
+        return hints.contains(hint);
     }
 
     public Info getInfo() {

@@ -316,8 +316,7 @@ public class ac {
 		if (formattedDisks == null)
 			System.out.println("Dude, formattedDisks is null!");
 		FormattedDisk formattedDisk = formattedDisks[0];
-		boolean isDC42 = disk.getDiskImageManager() instanceof DiskCopyImage;
-		if (!disk.isSDK() && !isDC42) {
+        if (!disk.getDiskImageManager().isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
 			FileEntry entry = name.createEntry(formattedDisk);
 			if (entry != null) {
 				entry.setFiletype(fileType);
@@ -412,8 +411,7 @@ public class ac {
 		throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
 		Name name = new Name(fileName);
-		boolean isDC42 = disk.getDiskImageManager() instanceof DiskCopyImage;
-		if (!disk.isSDK() && !isDC42) {
+        if (!disk.getDiskImageManager().isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 			for (int i = 0; i < formattedDisks.length; i++) {
 				FormattedDisk formattedDisk = formattedDisks[i];
@@ -582,8 +580,7 @@ public class ac {
 	static void setFileLocked(String imageName, Name name,
 		boolean lockState) throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
-		boolean isDC42 = disk.getDiskImageManager() instanceof DiskCopyImage;
-		if (!disk.isSDK() && !isDC42) {
+        if (!disk.getDiskImageManager().isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 			for (int i = 0; i < formattedDisks.length; i++) {
 				FormattedDisk formattedDisk = formattedDisks[i];
@@ -608,8 +605,7 @@ public class ac {
 	public static void setDiskName(String imageName, String volName)
 		throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
-		boolean isDC42 = disk.getDiskImageManager() instanceof DiskCopyImage;
-		if (!disk.isSDK() && !isDC42) {
+        if (!disk.getDiskImageManager().isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 			FormattedDisk formattedDisk = formattedDisks[0];
 			formattedDisk.setDiskName(volName);

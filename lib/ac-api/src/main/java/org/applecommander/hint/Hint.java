@@ -22,5 +22,8 @@ package org.applecommander.hint;
 public enum Hint {
     NIBBLE_SECTOR_ORDER,
     DOS_SECTOR_ORDER,
-    PRODOS_BLOCK_ORDER
+    PRODOS_BLOCK_ORDER,
+    ORIGIN_SHRINKIT,
+    UNIVERSAL_DISK_IMAGE,
+    DISK_COPY_IMAGE
 }

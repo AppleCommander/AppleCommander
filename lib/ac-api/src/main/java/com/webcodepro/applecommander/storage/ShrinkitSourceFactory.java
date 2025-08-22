@@ -56,7 +56,7 @@ public class ShrinkitSourceFactory implements Source.Factory {
                 try {
                     byte[] imageData = unpackSHKFile(source.getName(), source, 0);
                     Source shkSource = DataBufferSource.create(imageData, source.getName() + ".po")
-                            .hints(Hint.PRODOS_BLOCK_ORDER)
+                            .hints(Hint.PRODOS_BLOCK_ORDER, Hint.ORIGIN_SHRINKIT)
                             .information(Information.builder("Original name").value(source.getName()),
                                          Information.builder("Original type").value(bxy ? "Binary II" : "Shrinkit"))
                             .get();

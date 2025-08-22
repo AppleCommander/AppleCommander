@@ -202,14 +202,6 @@ public class Disk {
 	}
 
 	/**
-	 * Indicate if this disk is a ShrinkIt-compressed disk image.
-	 */
-	public boolean isSDK()
-	{
-		return filename.toLowerCase().endsWith(".sdk"); //$NON-NLS-1$
-	}
-
-	/**
 	 * Identify the size of this disk.
 	 */
 	public int getPhysicalSize() {
