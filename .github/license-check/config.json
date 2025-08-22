@@ -48,7 +48,8 @@
       "LICENSE",
       "HEADER",
       "**/*.s",
-      "**/Sleak.java"
+      "**/Sleak.java",
+      "**/*.txt"
     ]
   }
 ]
