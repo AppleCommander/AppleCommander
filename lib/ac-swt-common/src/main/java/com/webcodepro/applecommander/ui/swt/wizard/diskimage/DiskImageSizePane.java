@@ -86,7 +86,7 @@ public class DiskImageSizePane extends WizardPane {
 			Disk.APPLE_140KB_DISK,
 			textBundle.get("DiskImageSize140KbText")); //$NON-NLS-1$
 		createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize800Kb"),  //$NON-NLS-1$
-			Disk.APPLE_800KB_2IMG_DISK,
+			Disk.APPLE_800KB_DISK,
 			textBundle.get("DiskImageSize800KbText")); //$NON-NLS-1$
 		if (wizard.getFormat() == DiskImageWizard.FORMAT_PRODOS) {
 			createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize5Mb"),  //$NON-NLS-1$
