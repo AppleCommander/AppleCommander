@@ -1480,7 +1480,7 @@ public class DiskExplorerTab {
 				    || fileEntry.getFilename().toLowerCase().endsWith(".sdk")) {
 				try {
 					Source source = new FileEntrySource(fileEntry);
-					Disk disk = new Disk(fileEntry.getFilename(), source, 0, true);
+					Disk disk = new Disk(fileEntry.getFilename(), source);
 					FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 					DiskWindow diskWindow = new DiskWindow(shell, formattedDisks, imageManager);
 					diskWindow.open();

@@ -74,34 +74,10 @@ public class Disk {
 	 * Read in the entire contents of the file.
 	 */
 	public Disk(String filename) throws IOException {
-		this(filename, 0, false);
+        this(filename, Sources.create(Path.of(filename)).orElseThrow());
 	}
 
-	/**
-	 * Construct a Disk and load the specified file.
-	 * Read in the entire contents of the file.
-	 */
-	public Disk(String filename, boolean knownProDOSOrder) throws IOException {
-		this(filename, 0, knownProDOSOrder);
-	}
-
-	/**
-	 * Construct a Disk and load the specified file.
-	 * Read in the entire contents of the file.
-	 */
-	public Disk(String filename, int startBlocks) throws IOException {
-		this(filename, startBlocks, false);
-	}
-
-	/**
-	 * Construct a Disk and load the specified file.
-	 * Read in the entire contents of the file.
-	 */
-	public Disk(String filename, int startBlocks, boolean knownProDOSOrder) throws IOException {
-		this(filename, Sources.create(Path.of(filename)).orElseThrow(), startBlocks, knownProDOSOrder);
-	}
-
-	public Disk(String filename, Source source, int startBlocks, boolean knownProDOSOrder) throws IOException {
+	public Disk(String filename, Source source) throws IOException {
 		this.filename = filename;
 		this.source = source;
 

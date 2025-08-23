@@ -30,16 +30,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
 
-import com.webcodepro.applecommander.storage.DirectoryEntry;
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.DiskException;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FileFilter;
-import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskInformation;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
 import com.webcodepro.applecommander.storage.filters.HexDumpFileFilter;
@@ -64,6 +60,7 @@ import io.github.applecommander.bastools.api.model.Program;
 import io.github.applecommander.bastools.api.model.Token;
 import org.applecommander.hint.Hint;
 import org.applecommander.source.DataBufferSource;
+import org.applecommander.source.FileSource;
 import org.applecommander.source.Source;
 import org.applecommander.util.Information;
 
@@ -668,7 +665,15 @@ public class ac {
 	 */
 	static void convert(String shrinkName, String imageName, int imageSize)
 		throws IOException {
-		Disk disk = new Disk(shrinkName, imageSize);
+        // In order to physically size the image, we need to take control of the Disk creation process:
+        // 1. Use the FileSource to simply grab all the bytes.
+        FileSource fileSource = new FileSource(Path.of(shrinkName));
+        // 2. Use the (custom) ShrinkitSourceFactory method to create the "correct" sized disk.
+        ShrinkitSourceFactory factory = new ShrinkitSourceFactory();
+        Source source = factory.fromSource(fileSource, imageSize).orElseThrow();
+        // 3. Hand the Source generated from the file back to the inspection routines to get our FormattedDisk.
+        DiskFactory.Context ctx = Disks.inspect(source);
+        FormattedDisk disk = ctx.disks.getFirst();
 		disk.setFilename(imageName);
 		disk.save();
 	}
