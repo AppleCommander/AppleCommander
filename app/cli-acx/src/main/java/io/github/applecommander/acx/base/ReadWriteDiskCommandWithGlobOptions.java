@@ -36,12 +36,12 @@ public abstract class ReadWriteDiskCommandWithGlobOptions extends ReadWriteDiskC
 
     @Override
     public int handleCommand() throws Exception {
-        List<FileTuple> files = FileStreamer.forDisk(disk)
+        List<FileTuple> files = FileStreamer.forDisks(disk.getFormattedDisks())
 			        .ignoreErrors(true)
 			        .includeTypeOfFile(TypeOfFile.FILE)
 			        .matchGlobs(this.getGlobs())
 			        .stream()
-			        .collect(Collectors.toList());
+			        .toList();
 
         if (files.isEmpty()) {
         	LOG.warning(() -> String.format("No matches found for %s.", String.join(",", this.getGlobs())));

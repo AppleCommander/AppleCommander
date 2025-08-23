@@ -20,6 +20,7 @@
 package io.github.applecommander.acx.command;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
@@ -72,9 +73,9 @@ public class ListCommand extends ReadOnlyDiskImageCommandOptions {
         int display = fileDisplay.format();
         ListingStrategy listingStrategy = outputType.create(display);
         
-        listingStrategy.first(disk);
+        listingStrategy.first(disk.getImageOrder());
         
-        FileStreamer.forDisk(disk)
+        FileStreamer.forDisks(Arrays.asList(disk.getFormattedDisks()))
                     .ignoreErrors(true)
                     .includeDeleted(deletedFlag)
                     .recursive(recursiveFlag)
@@ -85,7 +86,7 @@ public class ListCommand extends ReadOnlyDiskImageCommandOptions {
                     .stream()
                     .forEach(listingStrategy::forEach);
         
-        listingStrategy.last(disk);
+        listingStrategy.last();
         
         return 0;
     }

@@ -187,126 +187,118 @@ public class DiskDiff {
     
     /** Compare by filename. This accounts for names only in disk A, only in disk B, or different but same-named. */
     public void compareByFileName(FormattedDisk formattedDiskA, FormattedDisk formattedDiskB) {
-        try {
-            Map<String,List<FileTuple>> filesA = FileStreamer.forDisk(formattedDiskA)
-                    .includeTypeOfFile(TypeOfFile.FILE)
-                    .recursive(true)
-                    .stream()
-                    .collect(Collectors.groupingBy(FileTuple::fullPath));
-            Map<String,List<FileTuple>> filesB = FileStreamer.forDisk(formattedDiskB)
-                    .includeTypeOfFile(TypeOfFile.FILE)
-                    .recursive(true)
-                    .stream()
-                    .collect(Collectors.groupingBy(FileTuple::fullPath));
-            
-            Set<String> pathsOnlyA = new HashSet<>(filesA.keySet());
-            pathsOnlyA.removeAll(filesB.keySet());
-            if (!pathsOnlyA.isEmpty()) {
-                results.addError("Files only in %s: %s", formattedDiskA.getFilename(), String.join(", ", pathsOnlyA));
+        Map<String,List<FileTuple>> filesA = FileStreamer.forDisks(formattedDiskA)
+                .includeTypeOfFile(TypeOfFile.FILE)
+                .recursive(true)
+                .stream()
+                .collect(Collectors.groupingBy(FileTuple::fullPath));
+        Map<String,List<FileTuple>> filesB = FileStreamer.forDisks(formattedDiskB)
+                .includeTypeOfFile(TypeOfFile.FILE)
+                .recursive(true)
+                .stream()
+                .collect(Collectors.groupingBy(FileTuple::fullPath));
+
+        Set<String> pathsOnlyA = new HashSet<>(filesA.keySet());
+        pathsOnlyA.removeAll(filesB.keySet());
+        if (!pathsOnlyA.isEmpty()) {
+            results.addError("Files only in %s: %s", formattedDiskA.getFilename(), String.join(", ", pathsOnlyA));
+        }
+
+        Set<String> pathsOnlyB = new HashSet<>(filesB.keySet());
+        pathsOnlyB.removeAll(filesA.keySet());
+        if (!pathsOnlyB.isEmpty()) {
+            results.addError("Files only in %s: %s", formattedDiskB.getFilename(), String.join(", ", pathsOnlyB));
+        }
+
+        Set<String> pathsInAB = new HashSet<>(filesA.keySet());
+        pathsInAB.retainAll(filesB.keySet());
+        for (String path : pathsInAB) {
+            List<FileTuple> tuplesA = filesA.get(path);
+            List<FileTuple> tuplesB = filesB.get(path);
+
+            // Since this is by name, we expect a single file; report oddities
+            FileTuple tupleA = tuplesA.get(0);
+            if (tuplesA.size() > 1) {
+                results.addWarning("Path %s on disk %s has %d entries.", path, formattedDiskA.getFilename(), tuplesA.size());
+            }
+            FileTuple tupleB = tuplesB.get(0);
+            if (tuplesB.size() > 1) {
+                results.addWarning("Path %s on disk %s has %d entries.", path, formattedDiskB.getFilename(), tuplesB.size());
             }
 
-            Set<String> pathsOnlyB = new HashSet<>(filesB.keySet());
-            pathsOnlyB.removeAll(filesA.keySet());
-            if (!pathsOnlyB.isEmpty()) {
-                results.addError("Files only in %s: %s", formattedDiskB.getFilename(), String.join(", ", pathsOnlyB));
+            // Do our own custom compare so we can capture a description of differences:
+            FileEntryReader readerA = FileEntryReader.get(tupleA.fileEntry);
+            FileEntryReader readerB = FileEntryReader.get(tupleB.fileEntry);
+            List<String> differences = compare(readerA, readerB);
+            if (!differences.isEmpty()) {
+                results.addWarning("Path %s differ: %s", path, String.join(", ", differences));
             }
-            
-            Set<String> pathsInAB = new HashSet<>(filesA.keySet());
-            pathsInAB.retainAll(filesB.keySet());
-            for (String path : pathsInAB) {
-                List<FileTuple> tuplesA = filesA.get(path);
-                List<FileTuple> tuplesB = filesB.get(path);
-
-                // Since this is by name, we expect a single file; report oddities
-                FileTuple tupleA = tuplesA.get(0);
-                if (tuplesA.size() > 1) {
-                    results.addWarning("Path %s on disk %s has %d entries.", path, formattedDiskA.getFilename(), tuplesA.size());
-                }
-                FileTuple tupleB = tuplesB.get(0);
-                if (tuplesB.size() > 1) {
-                    results.addWarning("Path %s on disk %s has %d entries.", path, formattedDiskB.getFilename(), tuplesB.size());
-                }
-                
-                // Do our own custom compare so we can capture a description of differences:
-                FileEntryReader readerA = FileEntryReader.get(tupleA.fileEntry);
-                FileEntryReader readerB = FileEntryReader.get(tupleB.fileEntry);
-                List<String> differences = compare(readerA, readerB);
-                if (!differences.isEmpty()) {
-                    results.addWarning("Path %s differ: %s", path, String.join(", ", differences));
-                }
-            }
-        } catch (DiskException ex) {
-            results.addError(ex);
         }
     }
 
     /** Compare by file content. Accounts for content differences that are "only" in disk A or "only" in disk B. */
     public void compareByFileContent(FormattedDisk formattedDiskA, FormattedDisk formattedDiskB) {
-        try {
-            Map<String,List<FileTuple>> contentA = FileStreamer.forDisk(formattedDiskA)
-                    .includeTypeOfFile(TypeOfFile.FILE)
-                    .recursive(true)
-                    .stream()
-                    .collect(Collectors.groupingBy(this::contentHash));
-            Map<String,List<FileTuple>> contentB = FileStreamer.forDisk(formattedDiskB)
-                    .includeTypeOfFile(TypeOfFile.FILE)
-                    .recursive(true)
-                    .stream()
-                    .collect(Collectors.groupingBy(this::contentHash));
-            
-            Set<String> contentOnlyA = new HashSet<>(contentA.keySet());
-            contentOnlyA.removeAll(contentB.keySet());
-            if (!contentOnlyA.isEmpty()) {
-                Set<String> pathNamesA = contentOnlyA.stream()
-                    .map(contentA::get)
+        Map<String,List<FileTuple>> contentA = FileStreamer.forDisks(formattedDiskA)
+                .includeTypeOfFile(TypeOfFile.FILE)
+                .recursive(true)
+                .stream()
+                .collect(Collectors.groupingBy(this::contentHash));
+        Map<String,List<FileTuple>> contentB = FileStreamer.forDisks(formattedDiskB)
+                .includeTypeOfFile(TypeOfFile.FILE)
+                .recursive(true)
+                .stream()
+                .collect(Collectors.groupingBy(this::contentHash));
+
+        Set<String> contentOnlyA = new HashSet<>(contentA.keySet());
+        contentOnlyA.removeAll(contentB.keySet());
+        if (!contentOnlyA.isEmpty()) {
+            Set<String> pathNamesA = contentOnlyA.stream()
+                .map(contentA::get)
+                .flatMap(List::stream)
+                .map(FileTuple::fullPath)
+                .collect(Collectors.toSet());
+            results.addError("Content that only exists in %s: %s",
+                    formattedDiskA.getFilename(), String.join(", ", pathNamesA));
+        }
+
+        Set<String> contentOnlyB = new HashSet<>(contentB.keySet());
+        contentOnlyB.removeAll(contentA.keySet());
+        if (!contentOnlyB.isEmpty()) {
+            Set<String> pathNamesB = contentOnlyB.stream()
+                    .map(contentB::get)
                     .flatMap(List::stream)
                     .map(FileTuple::fullPath)
                     .collect(Collectors.toSet());
-                results.addError("Content that only exists in %s: %s", 
-                        formattedDiskA.getFilename(), String.join(", ", pathNamesA));
+            results.addError("Content that only exists in %s: %s",
+                    formattedDiskB.getFilename(), String.join(", ", pathNamesB));
+        }
+
+        Set<String> contentInAB = new HashSet<>(contentA.keySet());
+        contentInAB.retainAll(contentB.keySet());
+        for (String content : contentInAB) {
+            List<FileTuple> tuplesA = contentA.get(content);
+            List<FileTuple> tuplesB = contentB.get(content);
+
+            // This is by content, but uncertain how to report multiple per disk, so pick first one
+            FileTuple tupleA = tuplesA.get(0);
+            if (tuplesA.size() > 1) {
+                results.addWarning("Hash %s on disk %s has %d entries.", content,
+                        formattedDiskA.getFilename(), tuplesA.size());
+            }
+            FileTuple tupleB = tuplesB.get(0);
+            if (tuplesB.size() > 1) {
+                results.addWarning("Hash %s on disk %s has %d entries.", content,
+                        formattedDiskB.getFilename(), tuplesB.size());
             }
 
-            Set<String> contentOnlyB = new HashSet<>(contentB.keySet());
-            contentOnlyB.removeAll(contentA.keySet());
-            if (!contentOnlyB.isEmpty()) {
-                Set<String> pathNamesB = contentOnlyB.stream()
-                        .map(contentB::get)
-                        .flatMap(List::stream)
-                        .map(FileTuple::fullPath)
-                        .collect(Collectors.toSet());
-                results.addError("Content that only exists in %s: %s", 
-                        formattedDiskB.getFilename(), String.join(", ", pathNamesB));
+            // Do our own custom compare so we can capture a description of differences:
+            FileEntryReader readerA = FileEntryReader.get(tupleA.fileEntry);
+            FileEntryReader readerB = FileEntryReader.get(tupleB.fileEntry);
+            List<String> differences = compare(readerA, readerB);
+            if (!differences.isEmpty()) {
+                results.addWarning("Files %s and %s share same content but file attributes differ: %s",
+                        tupleA.fullPath(), tupleB.fullPath(), String.join(", ", differences));
             }
-
-            Set<String> contentInAB = new HashSet<>(contentA.keySet());
-            contentInAB.retainAll(contentB.keySet());
-            for (String content : contentInAB) {
-                List<FileTuple> tuplesA = contentA.get(content);
-                List<FileTuple> tuplesB = contentB.get(content);
-
-                // This is by content, but uncertain how to report multiple per disk, so pick first one
-                FileTuple tupleA = tuplesA.get(0);
-                if (tuplesA.size() > 1) {
-                    results.addWarning("Hash %s on disk %s has %d entries.", content, 
-                            formattedDiskA.getFilename(), tuplesA.size());
-                }
-                FileTuple tupleB = tuplesB.get(0);
-                if (tuplesB.size() > 1) {
-                    results.addWarning("Hash %s on disk %s has %d entries.", content, 
-                            formattedDiskB.getFilename(), tuplesB.size());
-                }
-                
-                // Do our own custom compare so we can capture a description of differences:
-                FileEntryReader readerA = FileEntryReader.get(tupleA.fileEntry);
-                FileEntryReader readerB = FileEntryReader.get(tupleB.fileEntry);
-                List<String> differences = compare(readerA, readerB);
-                if (!differences.isEmpty()) {
-                    results.addWarning("Files %s and %s share same content but file attributes differ: %s", 
-                            tupleA.fullPath(), tupleB.fullPath(), String.join(", ", differences));
-                }
-            }
-        } catch (DiskException ex) {
-            results.addError(ex);
         }
     }
     private String contentHash(FileTuple tuple) {

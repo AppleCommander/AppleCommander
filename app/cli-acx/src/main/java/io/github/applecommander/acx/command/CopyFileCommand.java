@@ -62,13 +62,13 @@ public class CopyFileCommand extends ReadWriteDiskCommandOptions {
 
     @Override
     public int handleCommand() throws Exception {
-        List<FileTuple> files = FileStreamer.forDisk(sourceDisk)
+        List<FileTuple> files = FileStreamer.forDisks(sourceDisk.getFormattedDisks())
                 .ignoreErrors(true)
                 .includeTypeOfFile(TypeOfFile.BOTH)
                 .recursive(false)   // we handle recursion in the FileUtils
                 .matchGlobs(globs)
                 .stream()
-                .collect(Collectors.toList());
+                .toList();
 
         if (files.isEmpty()) {
             LOG.warning(() -> String.format("No matches found for %s.", String.join(",", globs)));

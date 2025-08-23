@@ -51,12 +51,12 @@ public class RenameFileCommand extends ReadWriteDiskCommandOptions {
 
     @Override
     public int handleCommand() throws Exception {
-        List<FileTuple> files = FileStreamer.forDisk(disk)
+        List<FileTuple> files = FileStreamer.forDisks(disk.getFormattedDisks())
 			        .ignoreErrors(true)
 			        .includeTypeOfFile(TypeOfFile.FILE)
 			        .matchGlobs(originalFilename)
 			        .stream()
-			        .collect(Collectors.toList());
+			        .toList();
 
         if (files.isEmpty()) {
         	LOG.warning(() -> String.format("File not found for %s.", originalFilename));
