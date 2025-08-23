@@ -63,7 +63,6 @@ import io.github.applecommander.bastools.api.Visitors;
 import io.github.applecommander.bastools.api.model.Program;
 import io.github.applecommander.bastools.api.model.Token;
 import org.applecommander.hint.Hint;
-import org.applecommander.image.DiskCopyImage;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.applecommander.util.Information;
@@ -316,7 +315,7 @@ public class ac {
 		if (formattedDisks == null)
 			System.out.println("Dude, formattedDisks is null!");
 		FormattedDisk formattedDisk = formattedDisks[0];
-        if (!disk.getDiskImageManager().isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
+        if (!disk.getSource().isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
 			FileEntry entry = name.createEntry(formattedDisk);
 			if (entry != null) {
 				entry.setFiletype(fileType);
@@ -411,7 +410,7 @@ public class ac {
 		throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
 		Name name = new Name(fileName);
-        if (!disk.getDiskImageManager().isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
+        if (!disk.getSource().isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 			for (int i = 0; i < formattedDisks.length; i++) {
 				FormattedDisk formattedDisk = formattedDisks[i];
@@ -555,7 +554,7 @@ public class ac {
 				for (DiskInformation diskinfo : formattedDisk.getDiskInformation()) {
 					System.out.println(diskinfo.getLabel() + ": " + diskinfo.getValue());
 				}
-				formattedDisk.getDiskImageManager().get(Source.class).ifPresent(source -> {
+				formattedDisk.getSource().get(Source.class).ifPresent(source -> {
 					for (Information info : source.information()) {
 						System.out.println(info.label() + ": " + info.value());
 					}
@@ -580,7 +579,7 @@ public class ac {
 	static void setFileLocked(String imageName, Name name,
 		boolean lockState) throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
-        if (!disk.getDiskImageManager().isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
+        if (!disk.getSource().isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 			for (int i = 0; i < formattedDisks.length; i++) {
 				FormattedDisk formattedDisk = formattedDisks[i];
@@ -605,7 +604,7 @@ public class ac {
 	public static void setDiskName(String imageName, String volName)
 		throws IOException, DiskException {
 		Disk disk = new Disk(imageName);
-        if (!disk.getDiskImageManager().isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
+        if (!disk.getSource().isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
 			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 			FormattedDisk formattedDisk = formattedDisks[0];
 			formattedDisk.setDiskName(volName);

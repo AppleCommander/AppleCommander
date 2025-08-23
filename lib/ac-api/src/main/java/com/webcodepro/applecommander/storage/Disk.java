@@ -28,7 +28,6 @@ import org.applecommander.util.DataBuffer;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -57,7 +56,7 @@ public class Disk {
 
 	private String filename;
 	private boolean newImage = false;
-	private Source diskImageManager;
+	private Source source;
 	private ImageOrder imageOrder = null;
 	private FormattedDisk[] formattedDisks;
 
@@ -104,7 +103,7 @@ public class Disk {
 
 	public Disk(String filename, Source source, int startBlocks, boolean knownProDOSOrder) throws IOException {
 		this.filename = filename;
-		this.diskImageManager = source;
+		this.source = source;
 
 		DiskFactory.Context ctx = Disks.inspect(source);
 		if (!ctx.disks.isEmpty()) {
@@ -128,12 +127,12 @@ public class Disk {
 		if (getFilename().toLowerCase().endsWith(".gz")) {
 			output = new GZIPOutputStream(output);
 		}
-		DataBuffer data =getDiskImageManager().readAllBytes();
+		DataBuffer data = getSource().readAllBytes();
 		byte[] fileData = new byte[data.limit()];
 		data.read(fileData);
 		output.write(fileData);
 		output.close();
-		getDiskImageManager().clearChanges();
+		getSource().clearChanges();
 		newImage = false;
 	}
 
@@ -170,11 +169,11 @@ public class Disk {
 	 * Returns the diskImageManager.
 	 * @return Source diskImageManager The disk Image Manager of this disk
 	 */
-	public Source getDiskImageManager() {
+	public Source getSource() {
 		if (imageOrder != null) {
 			return imageOrder.getDiskImageManager();
 		}
-		return diskImageManager;
+		return source;
 	}
 
 	/**
@@ -208,8 +207,8 @@ public class Disk {
 			// Total hack since WOZ is currently a special case.
 			return getImageOrder().getPhysicalSize();
 		}
-		if (getDiskImageManager() != null) {
-			return getDiskImageManager().getSize();
+		if (getSource() != null) {
+			return getSource().getSize();
 		}
 		return getImageOrder().getPhysicalSize();
 	}
@@ -264,7 +263,7 @@ public class Disk {
 	 * written and cleared when data is saved.
 	 */
 	public boolean hasChanged() {
-		return getDiskImageManager().hasChanged();
+		return getSource().hasChanged();
 	}
 	
 	/**

@@ -47,7 +47,7 @@ public abstract class ReusableCommandOptions implements Callable<Integer> {
     public void saveDisk(Disk disk) {
         try {
             // Only save if there are changes.
-            if (disk.getDiskImageManager().hasChanged()) {
+            if (disk.getSource().hasChanged()) {
                 LOG.fine(() -> String.format("Saving disk '%s'", disk.getFilename()));
                 disk.save();
             } else {

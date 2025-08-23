@@ -44,7 +44,7 @@ public class InfoCommand extends ReadOnlyDiskImageCommandOptions {
             for (DiskInformation diskinfo : formattedDisk.getDiskInformation()) {
                 System.out.printf("%s: %s\n", diskinfo.getLabel(), diskinfo.getValue());
             }
-            formattedDisk.getDiskImageManager().get(Source.class).ifPresent(source -> {
+            formattedDisk.getSource().get(Source.class).ifPresent(source -> {
                 for (Information info : source.information()) {
                     System.out.printf("%s: %s\n", info.label(), info.value());
                 }

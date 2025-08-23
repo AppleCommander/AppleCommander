@@ -127,7 +127,7 @@ public class DiskInfoTab {
 			TableItem item = new TableItem(table, SWT.NULL);
 			item.setText(new String[] { diskinfo.getLabel(), diskinfo.getValue() });
 		}
-		disk.getDiskImageManager().get(Source.class).ifPresent(source -> {
+		disk.getSource().get(Source.class).ifPresent(source -> {
 			for (Information info : source.information()) {
 				TableItem item = new TableItem(table, SWT.NULL);
 				item.setText(new String[] { info.label(), info.value() });
