@@ -22,12 +22,16 @@ package com.webcodepro.applecommander.ui.swt.wizard.comparedisks;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.webcodepro.applecommander.storage.DiskFactory;
+import com.webcodepro.applecommander.storage.Disks;
+import com.webcodepro.applecommander.storage.FormattedDisk;
+import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.compare.ComparisonResult;
 import com.webcodepro.applecommander.storage.compare.DiskDiff;
 import com.webcodepro.applecommander.ui.UiBundle;
@@ -40,11 +44,11 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author Rob Greene
  */
 public class CompareDisksResultsPane extends WizardPane {
-	private TextBundle textBundle = UiBundle.getInstance();
-	private Composite parent;
-	private Object layoutData;
+	private static final TextBundle textBundle = UiBundle.getInstance();
+	private final Composite parent;
+	private final Object layoutData;
 	private Composite control;
-	private CompareDisksWizard wizard;
+	private final CompareDisksWizard wizard;
 	/**
 	 * Constructor for ExportFileStartPane.
 	 */
@@ -99,17 +103,21 @@ public class CompareDisksResultsPane extends WizardPane {
 	
 	protected String compareDisks() {
 		List<String> errorMessages = new ArrayList<>();	
-		Disk disk1 = null;
+		List<FormattedDisk> disk1 = null;
 		try {
-			disk1 = new Disk(wizard.getDiskname1());
+            Source source = Sources.create(wizard.getDiskname1()).orElseThrow();
+            DiskFactory.Context ctx = Disks.inspect(source);
+            disk1 = ctx.disks;
 		} catch (Throwable t) {
 			errorMessages.add(textBundle.
 				format("CompareDisksResultsPane.UnableToLoadDiskN", //$NON-NLS-1$
 					1, t.getLocalizedMessage()));
 		}
-		Disk disk2 = null;
+        List<FormattedDisk> disk2 = null;
 		try {
-			disk2 = new Disk(wizard.getDiskname2());
+            Source source = Sources.create(wizard.getDiskname2()).orElseThrow();
+            DiskFactory.Context ctx = Disks.inspect(source);
+			disk2 = ctx.disks;
 		} catch (Throwable t) {
 			errorMessages.add(textBundle.
 				format("CompareDisksResultsPane.UnableToLoadDiskN", //$NON-NLS-1$

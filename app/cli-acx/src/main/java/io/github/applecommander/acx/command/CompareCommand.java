@@ -19,6 +19,7 @@
  */
 package io.github.applecommander.acx.command;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -46,7 +47,7 @@ public class CompareCommand extends ReadOnlyDiskImageCommandOptions {
 
     @Override
     public int handleCommand() throws Exception {
-        DiskDiff.Builder builder = DiskDiff.create(disk, disk2);
+        DiskDiff.Builder builder = DiskDiff.create(Arrays.asList(disk.getFormattedDisks()), Arrays.asList(disk2.getFormattedDisks()));
         strategySelection.strategy.accept(builder);
         ComparisonResult result = builder.compare();
         
