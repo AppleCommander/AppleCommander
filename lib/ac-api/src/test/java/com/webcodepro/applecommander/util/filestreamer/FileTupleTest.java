@@ -22,10 +22,9 @@ package com.webcodepro.applecommander.util.filestreamer;
 import java.io.IOException;
 import java.util.List;
 
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.DiskException;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.*;
+import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,8 +32,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class FileTupleTest {
     @Test
     public void test() throws IOException, DiskException {
-        Disk disk = new Disk("./src/test/resources/disks/MERLIN8PRO1.DSK");
-        FormattedDisk formattedDisk = disk.getFormattedDisks()[0];
+        Source source = Sources.create("./src/test/resources/disks/MERLIN8PRO1.DSK").orElseThrow();
+        DiskFactory.Context ctx = Disks.inspect(source);
+        FormattedDisk formattedDisk = ctx.disks.getFirst();
         FileTuple tuple = FileTuple.of(formattedDisk);
         FileEntry sourcerorDir = tuple.formattedDisk.getFile("SOURCEROR");
         tuple = tuple.pushd(sourcerorDir);

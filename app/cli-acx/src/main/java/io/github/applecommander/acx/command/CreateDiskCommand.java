@@ -22,7 +22,8 @@ package io.github.applecommander.acx.command;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskFactory;
+import com.webcodepro.applecommander.storage.Disks;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.storage.os.dos33.OzDosFormatDisk;
@@ -35,6 +36,8 @@ import io.github.applecommander.acx.OrderType;
 import io.github.applecommander.acx.SystemType;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
 import io.github.applecommander.acx.converter.DataSizeConverter;
+import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -100,8 +103,9 @@ public class CreateDiskCommand extends ReusableCommandOptions {
     	}
     	
     	if (formatSource != null) {
-    		Disk systemSource = new Disk(formatSource);
-    		systemType.copySystem(disks[0], systemSource.getFormattedDisks()[0]);
+            Source source = Sources.create(formatSource).orElseThrow();
+            DiskFactory.Context ctx = Disks.inspect(source);
+    		systemType.copySystem(disks[0], ctx.disks.getFirst());
     	}
     	
     	saveDisk(disks[0]);

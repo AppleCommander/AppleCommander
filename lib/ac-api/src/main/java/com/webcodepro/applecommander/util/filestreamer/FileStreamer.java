@@ -38,11 +38,9 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.DiskException;
-import com.webcodepro.applecommander.storage.DiskUnrecognizedException;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.*;
+import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 
 /**
  * FileStreamer is utility class that will (optionally) recurse through all directories and
@@ -67,7 +65,9 @@ public class FileStreamer {
         return forDisk(file.getPath());
     }
     public static FileStreamer forDisk(String fileName) throws IOException, DiskUnrecognizedException {
-        return new FileStreamer(new Disk(fileName));
+        Source source = Sources.create(fileName).orElseThrow();
+        DiskFactory.Context ctx = Disks.inspect(source);
+        return new FileStreamer(ctx.disks.toArray(new FormattedDisk[0]));
     }
     public static FileStreamer forDisk(Disk disk) throws DiskUnrecognizedException {
         return new FileStreamer(disk);

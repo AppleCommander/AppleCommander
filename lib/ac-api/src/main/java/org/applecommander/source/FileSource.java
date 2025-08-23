@@ -25,10 +25,7 @@ import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.Information;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -127,10 +124,12 @@ public class FileSource implements Source {
     public static class Factory implements Source.Factory {
         @Override
         public Optional<Source> fromObject(Object object) {
-            if (object instanceof Path path) {
-                return Optional.of(new FileSource(path));
-            }
-            return Optional.empty();
+            return switch(object) {
+                case Path path -> Optional.of(new FileSource(path));
+                case File file -> Optional.of(new FileSource(file.toPath()));
+                case String filename -> Optional.of(new FileSource(Path.of(filename)));
+                default -> Optional.empty();
+            };
         }
 
         @Override

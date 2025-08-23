@@ -22,6 +22,8 @@ package com.webcodepro.applecommander.storage;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
 import com.webcodepro.applecommander.storage.filters.*;
 import com.webcodepro.applecommander.testconfig.TestConfig;
+import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -219,10 +221,10 @@ public class DiskHelperTest {
     }
 
 	protected FormattedDisk[] showDirectory(String imageName) throws IOException, DiskException {
-		Disk disk = new Disk(imageName);
-		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-		for (int i=0; i<formattedDisks.length; i++) {
-			FormattedDisk formattedDisk = formattedDisks[i];
+        Source source = Sources.create(imageName).orElseThrow();
+        DiskFactory.Context ctx = Disks.inspect(source);
+		for (int i=0; i<ctx.disks.size(); i++) {
+			FormattedDisk formattedDisk = ctx.disks.get(i);
 			System.out.println();
 			System.out.println(formattedDisk.getDiskName());
 			List<FileEntry> files = formattedDisk.getFiles();
@@ -238,7 +240,7 @@ public class DiskHelperTest {
 			
 			showDiskUsage(formattedDisk);
 		}
-		return formattedDisks;
+		return ctx.disks.toArray(new FormattedDisk[0]);
 	}
 	
 	protected void showFiles(List<FileEntry> files, String indent) throws DiskException {

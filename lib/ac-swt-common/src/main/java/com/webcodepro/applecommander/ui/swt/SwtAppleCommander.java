@@ -19,10 +19,7 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.FilenameFilter;
-import com.webcodepro.applecommander.storage.DiskUnrecognizedException;
-import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.ui.AppleCommander;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.UserPreferences;
@@ -32,6 +29,8 @@ import com.webcodepro.applecommander.ui.swt.wizard.comparedisks.CompareDisksWiza
 import com.webcodepro.applecommander.ui.swt.wizard.diskimage.DiskImageWizard;
 import com.webcodepro.applecommander.util.Host;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -86,12 +85,16 @@ public class SwtAppleCommander implements Listener {
 	 */
 	public void open(String fullpath) {
 		try {
-			Disk disk = new Disk(fullpath);
-			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-			DiskWindow window = new DiskWindow(shell, formattedDisks, imageManager);
-			window.open();
-		} catch (DiskUnrecognizedException e) {
-			showUnrecognizedDiskFormatMessage(fullpath);
+            Source source = Sources.create(fullpath).orElseThrow();
+            DiskFactory.Context ctx = Disks.inspect(source);
+			FormattedDisk[] formattedDisks = ctx.disks.toArray(new FormattedDisk[0]);
+            if (formattedDisks.length > 0) {
+                DiskWindow window = new DiskWindow(shell, formattedDisks, imageManager);
+                window.open();
+            }
+            else {
+                showUnrecognizedDiskFormatMessage(fullpath);
+            }
 		} catch (Exception ignored) {
 			ignored.printStackTrace();
 			showUnexpectedErrorMessage(fullpath);

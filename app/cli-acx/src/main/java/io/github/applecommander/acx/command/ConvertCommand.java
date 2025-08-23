@@ -21,9 +21,12 @@ package io.github.applecommander.acx.command;
 
 import java.io.File;
 
-import com.webcodepro.applecommander.storage.Disk;
-
+import com.webcodepro.applecommander.storage.DiskFactory;
+import com.webcodepro.applecommander.storage.Disks;
+import com.webcodepro.applecommander.storage.FormattedDisk;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
+import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -48,11 +51,13 @@ public class ConvertCommand extends ReusableCommandOptions {
         if (targetFile.exists() && !overwriteFlag) {
             throw new RuntimeException("File exists and overwriting not enabled.");
         }
-        
-        Disk disk = new Disk(archiveName);
+
+        Source source = Sources.create(targetFile).orElseThrow();
+        DiskFactory.Context ctx = Disks.inspect(source);
+        FormattedDisk disk = ctx.disks.getFirst();
         disk.setFilename(diskName);
         saveDisk(disk);
-                    
+
         return 0;
     }
 }
