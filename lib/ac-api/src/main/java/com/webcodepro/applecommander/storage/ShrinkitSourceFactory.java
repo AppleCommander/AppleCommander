@@ -63,6 +63,7 @@ public class ShrinkitSourceFactory implements Source.Factory {
                             .hints(Hint.PRODOS_BLOCK_ORDER, Hint.ORIGIN_SHRINKIT)
                             .information(Information.builder("Original name").value(source.getName()),
                                          Information.builder("Original type").value(bxy ? "Binary II" : "Shrinkit"))
+                            .changed(true)
                             .get();
                     return Optional.of(shkSource);
                 } catch (IOException ex) {
