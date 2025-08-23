@@ -63,8 +63,6 @@ public class UniDosFormatDisk extends DosFormatDisk {
 		UniDosFormatDisk disk2 = new UniDosFormatDisk(filename, imageOrder, UNIDOS_DISK_2);
 		disk1.format();
 		disk2.format();
-        disk1.setFormattedDisks(disk1, disk2);
-        disk2.setFormattedDisks(disk1, disk2);
 		return new UniDosFormatDisk[] { disk1, disk2 };
 	}
 	/**

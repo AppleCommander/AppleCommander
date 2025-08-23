@@ -85,9 +85,6 @@ public class FileStreamer {
     private boolean includeDeletedFlag = false;
     private List<PathMatcher> pathMatchers = new ArrayList<>();
     
-    private FileStreamer(Disk disk) throws DiskUnrecognizedException {
-        this(disk.getFormattedDisks());
-    }
     private FileStreamer(FormattedDisk... disks) {
         this.formattedDisks = disks;
     }

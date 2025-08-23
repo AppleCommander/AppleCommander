@@ -165,7 +165,6 @@ public class ProdosFormatDisk extends FormattedDisk {
 		ProdosFormatDisk disk = new ProdosFormatDisk(filename, imageOrder);
 		disk.format();
 		disk.setDiskName(diskName);
-        disk.setFormattedDisks(disk);
 		return new ProdosFormatDisk[] { disk };
 	}
 

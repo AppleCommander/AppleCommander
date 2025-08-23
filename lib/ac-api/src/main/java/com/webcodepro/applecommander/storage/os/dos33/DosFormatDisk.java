@@ -126,7 +126,6 @@ public class DosFormatDisk extends FormattedDisk {
 	public static DosFormatDisk[] create(String filename, ImageOrder imageOrder) {
 		DosFormatDisk disk = new DosFormatDisk(filename, imageOrder);
 		disk.format();
-        disk.setFormattedDisks(disk);
 		return new DosFormatDisk[] { disk };
 	}
 

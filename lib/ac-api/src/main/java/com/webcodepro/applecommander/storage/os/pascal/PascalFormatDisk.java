@@ -127,7 +127,6 @@ public class PascalFormatDisk extends FormattedDisk {
 		PascalFormatDisk disk = new PascalFormatDisk(filename, imageOrder);
 		disk.format();
 		disk.setDiskName(volumeName);
-        disk.setFormattedDisks(disk);
 		return new PascalFormatDisk[] { disk };
 	}
 

@@ -56,7 +56,6 @@ public class Disk {
 	private boolean newImage = false;
 	private Source source;
 	private ImageOrder imageOrder = null;
-	private FormattedDisk[] formattedDisks;
 
     /**
 	 * Construct a Disk with the given byte array.
@@ -95,27 +94,6 @@ public class Disk {
 		this.filename = filename;
 		save();
 	}
-
-	/**
-	 * Determine type of disk, and return the appropriate
-	 * FormattedDisk object.  Throws an Exception if none is recognized.
-	 * @throws DiskUnrecognizedException 
-	 */
-	public FormattedDisk[] getFormattedDisks() throws DiskUnrecognizedException {
-		if (formattedDisks != null && formattedDisks.length > 0) {
-			return formattedDisks;
-		}
-		throw new DiskUnrecognizedException(filename);
-	}
-
-    /**
-     * Allows super-classes to pass in the specific FormattedDisk to support new discovery mechanism.
-     * (Discovery occurs at class construction, not every time a formatted disk is pulled.)
-     */
-    protected void setFormattedDisks(FormattedDisk... formattedDisks) {
-        assert(formattedDisks != null);
-        this.formattedDisks = formattedDisks;
-    }
 
 	/**
 	 * Returns the source.

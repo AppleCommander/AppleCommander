@@ -38,14 +38,6 @@ public class DiskRecurser {
 	
 	private DiskRecurser() {}
 	
-	public void recurse(Disk disk) throws DiskException {
-		diskHeader.accept(disk);
-		for (FormattedDisk formattedDisk : disk.getFormattedDisks()) {
-			recurse(formattedDisk);
-		}
-		diskFooter.accept(disk);
-	}
-	
 	public void recurse(FormattedDisk formattedDisk) throws DiskException {
 		formattedDiskHeader.accept(formattedDisk);
 		for (FileEntry fileEntry : formattedDisk.getFiles()) {
