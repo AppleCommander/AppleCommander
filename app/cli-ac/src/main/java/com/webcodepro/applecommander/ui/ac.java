@@ -410,8 +410,7 @@ public class ac {
         DiskFactory.Context ctx = Disks.inspect(source);
 		Name name = new Name(fileName);
         if (!source.isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
-			for (int i = 0; i < ctx.disks.size(); i++) {
-				FormattedDisk formattedDisk = ctx.disks.get(i);
+            for (FormattedDisk formattedDisk : ctx.disks) {
 				FileEntry entry = name.getEntry(formattedDisk);
 				if (entry != null) {
 					entry.delete();
@@ -437,8 +436,7 @@ public class ac {
 		Name name = new Name(fileName);
 		if (out == null)
 			out = System.out;
-		for (int i = 0; i < ctx.disks.size(); i++) {
-			FormattedDisk formattedDisk = ctx.disks.get(i);
+        for (FormattedDisk formattedDisk : ctx.disks) {
 			FileEntry entry = name.getEntry(formattedDisk);
 			if (entry != null) {
 				if (filter) {
@@ -471,8 +469,7 @@ public class ac {
 		} else {
 			directory = "."+File.separator;
 		}
-		for (int i = 0; i < ctx.disks.size(); i++) {
-			FormattedDisk formattedDisk = ctx.disks.get(i);
+        for (FormattedDisk formattedDisk : ctx.disks) {
 			writeFiles(formattedDisk.getFiles(), directory);
 		}
 	}
@@ -547,8 +544,7 @@ public class ac {
 		for (int d = 1; d < args.length; d++) {
             Source source = Sources.create(Path.of(args[d])).orElseThrow();
             DiskFactory.Context ctx = Disks.inspect(source);
-			for (int i = 0; i < ctx.disks.size(); i++) {
-				FormattedDisk formattedDisk = ctx.disks.get(i);
+            for (FormattedDisk formattedDisk : ctx.disks) {
 				for (DiskInformation diskinfo : formattedDisk.getDiskInformation()) {
 					System.out.println(diskinfo.getLabel() + ": " + diskinfo.getValue());
 				}
@@ -577,8 +573,7 @@ public class ac {
         Source source = Sources.create(Path.of(imageName)).orElseThrow();
         DiskFactory.Context ctx = Disks.inspect(source);
         if (!source.isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
-			for (int i = 0; i < ctx.disks.size(); i++) {
-				FormattedDisk formattedDisk = ctx.disks.get(i);
+            for (FormattedDisk formattedDisk : ctx.disks) {
 				FileEntry entry = name.getEntry(formattedDisk);
 				if (entry != null) {
 					entry.setLocked(lockState);

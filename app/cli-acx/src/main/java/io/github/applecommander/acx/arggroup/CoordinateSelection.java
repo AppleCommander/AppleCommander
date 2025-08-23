@@ -20,6 +20,7 @@
 package io.github.applecommander.acx.arggroup;
 
 import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 
 import io.github.applecommander.acx.converter.IntegerTypeConverter;
@@ -42,7 +43,7 @@ public class CoordinateSelection {
         return false;
     }
 
-    public byte[] read(Disk disk) {
+    public byte[] read(FormattedDisk disk) {
         if (sectorCoordinate != null) {
             return sectorCoordinate.read(disk);
         }

@@ -19,13 +19,14 @@
  */
 package io.github.applecommander.acx.base;
 
-import com.webcodepro.applecommander.storage.Disk;
-
+import com.webcodepro.applecommander.storage.FormattedDisk;
 import io.github.applecommander.acx.converter.DiskConverter;
 import picocli.CommandLine.Option;
+
+import java.util.List;
 
 public abstract class ReadOnlyDiskImageCommandOptions extends ReusableCommandOptions {
     @Option(names = { "-d", "--disk" }, description = "Image to process [$ACX_DISK_NAME].", required = true,
             converter = DiskConverter.class, defaultValue = "${ACX_DISK_NAME}")
-    protected Disk disk;
+    protected List<FormattedDisk> disks;
 }

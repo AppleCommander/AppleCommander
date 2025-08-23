@@ -73,9 +73,9 @@ public class ListCommand extends ReadOnlyDiskImageCommandOptions {
         int display = fileDisplay.format();
         ListingStrategy listingStrategy = outputType.create(display);
         
-        listingStrategy.first(disk.getImageOrder());
+        listingStrategy.first(disks.getFirst().getImageOrder());
         
-        FileStreamer.forDisks(Arrays.asList(disk.getFormattedDisks()))
+        FileStreamer.forDisks(disks)
                     .ignoreErrors(true)
                     .includeDeleted(deletedFlag)
                     .recursive(recursiveFlag)

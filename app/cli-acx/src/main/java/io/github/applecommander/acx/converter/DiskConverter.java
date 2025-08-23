@@ -21,17 +21,28 @@ package io.github.applecommander.acx.converter;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import com.webcodepro.applecommander.storage.Disk;
 
+import com.webcodepro.applecommander.storage.DiskFactory;
+import com.webcodepro.applecommander.storage.Disks;
+import com.webcodepro.applecommander.storage.FormattedDisk;
+import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.TypeConversionException;
 
-public class DiskConverter implements ITypeConverter<Disk> {
+public class DiskConverter implements ITypeConverter<List<FormattedDisk>> {
     @Override
-    public Disk convert(String filename) throws Exception {
+    public List<FormattedDisk> convert(String filename) throws Exception {
         if (Files.exists(Path.of(filename))) {
-            return new Disk(filename);
+            Source source = Sources.create(filename).orElseThrow();
+            DiskFactory.Context ctx = Disks.inspect(source);
+            if (ctx.disks.isEmpty()) {
+                throw new TypeConversionException(String.format("Disk '%s' not recognized", filename));
+            }
+            return ctx.disks;
         }
         throw new TypeConversionException(String.format("Disk '%s' not found", filename));
     }

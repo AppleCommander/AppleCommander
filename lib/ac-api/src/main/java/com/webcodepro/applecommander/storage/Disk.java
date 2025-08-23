@@ -23,11 +23,9 @@ import com.webcodepro.applecommander.storage.physical.*;
 import com.webcodepro.applecommander.util.TextBundle;
 import org.applecommander.image.UniversalDiskImage;
 import org.applecommander.source.Source;
-import org.applecommander.source.Sources;
 import org.applecommander.util.DataBuffer;
 
 import java.io.*;
-import java.nio.file.Path;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -67,14 +65,6 @@ public class Disk {
 		this.imageOrder = imageOrder;
 		this.filename = filename;
 		this.newImage = true;
-	}
-
-	/**
-	 * Construct a Disk and load the specified file.
-	 * Read in the entire contents of the file.
-	 */
-	public Disk(String filename) throws IOException {
-        this(filename, Sources.create(Path.of(filename)).orElseThrow());
 	}
 
 	public Disk(String filename, Source source) throws IOException {

@@ -233,8 +233,7 @@ public class DiskHelperTest {
         if (ctx.disks.isEmpty()) {
             throw new DiskUnrecognizedException("no disks discovered for: " + imageName);
         }
-		for (int i=0; i<ctx.disks.size(); i++) {
-			FormattedDisk formattedDisk = ctx.disks.get(i);
+        for (FormattedDisk formattedDisk : ctx.disks) {
 			System.out.println();
 			System.out.println(formattedDisk.getDiskName());
 			List<FileEntry> files = formattedDisk.getFiles();

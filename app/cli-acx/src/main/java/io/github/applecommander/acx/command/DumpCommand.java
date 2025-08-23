@@ -51,7 +51,7 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
 
     @Override
     public int handleCommand() throws Exception {
-        byte[] data = options.coordinate.read(disk);
+        byte[] data = options.coordinate.read(disks.getFirst());
         System.out.println(output.format(options, data));
         return 0;
     }

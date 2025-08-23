@@ -381,23 +381,22 @@ public class DiskWriterTest {
 		System.out.println();
 		System.out.println("************************************************"); //$NON-NLS-1$
 		System.out.println(title);
-		for (int i=0; i<formattedDisks.length; i++) {
-			FormattedDisk formattedDisk = formattedDisks[i];
-			System.out.println();
-			System.out.println(formattedDisk.getDiskName());
-			List<FileEntry> files = formattedDisk.getFiles();
-			if (files != null) {
-				showFiles(files, "", false); //$NON-NLS-1$
-			}
-			System.out.println(formattedDisk.getFreeSpace() + " bytes free."); //$NON-NLS-1$
-			System.out.println(formattedDisk.getUsedSpace() + " bytes used."); //$NON-NLS-1$
-			System.out.println("This disk " + (formattedDisk.canHaveDirectories() ? "does" : "does not") + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				" support directories."); //$NON-NLS-1$
-			System.out.println("This disk is formatted in the " + formattedDisk.getFormat() + " format."); //$NON-NLS-1$ //$NON-NLS-2$
-			System.out.println();
-			
-			showDiskUsage(formattedDisk);
-		}
+        for (FormattedDisk formattedDisk : formattedDisks) {
+            System.out.println();
+            System.out.println(formattedDisk.getDiskName());
+            List<FileEntry> files = formattedDisk.getFiles();
+            if (files != null) {
+                showFiles(files, "", false); //$NON-NLS-1$
+            }
+            System.out.println(formattedDisk.getFreeSpace() + " bytes free."); //$NON-NLS-1$
+            System.out.println(formattedDisk.getUsedSpace() + " bytes used."); //$NON-NLS-1$
+            System.out.println("This disk " + (formattedDisk.canHaveDirectories() ? "does" : "does not") + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    " support directories."); //$NON-NLS-1$
+            System.out.println("This disk is formatted in the " + formattedDisk.getFormat() + " format."); //$NON-NLS-1$ //$NON-NLS-2$
+            System.out.println();
+
+            showDiskUsage(formattedDisk);
+        }
 		System.out.println();
 		System.out.println("************************************************"); //$NON-NLS-1$
 		System.out.println();

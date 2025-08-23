@@ -33,7 +33,7 @@ import picocli.CommandLine.Command;
 public class DiskMapCommand extends ReadOnlyDiskImageCommandOptions {
     @Override
     public int handleCommand() throws Exception {
-        Arrays.asList(disk.getFormattedDisks()).forEach(this::showDiskMap);
+        disks.forEach(this::showDiskMap);
         return 0;
     }
     

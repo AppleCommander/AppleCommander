@@ -19,10 +19,8 @@
  */
 package io.github.applecommander.acx.base;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
@@ -36,7 +34,7 @@ public abstract class ReadWriteDiskCommandWithGlobOptions extends ReadWriteDiskC
 
     @Override
     public int handleCommand() throws Exception {
-        List<FileTuple> files = FileStreamer.forDisks(disk.getFormattedDisks())
+        List<FileTuple> files = FileStreamer.forDisks(disks)
 			        .ignoreErrors(true)
 			        .includeTypeOfFile(TypeOfFile.FILE)
 			        .matchGlobs(this.getGlobs())
