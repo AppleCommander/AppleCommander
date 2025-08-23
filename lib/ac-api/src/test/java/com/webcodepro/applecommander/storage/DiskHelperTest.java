@@ -220,9 +220,19 @@ public class DiskHelperTest {
         assertCanReadFiles(disks);
     }
 
+    @Test
+    public void testLoad3132Disk() throws DiskException, IOException {
+        FormattedDisk[] disks = showDirectory(config.getDiskDir() +
+                "/3132.DSK.gz");
+        assertCanReadFiles(disks);
+    }
+
 	protected FormattedDisk[] showDirectory(String imageName) throws IOException, DiskException {
         Source source = Sources.create(imageName).orElseThrow();
         DiskFactory.Context ctx = Disks.inspect(source);
+        if (ctx.disks.isEmpty()) {
+            throw new DiskUnrecognizedException("no disks discovered for: " + imageName);
+        }
 		for (int i=0; i<ctx.disks.size(); i++) {
 			FormattedDisk formattedDisk = ctx.disks.get(i);
 			System.out.println();

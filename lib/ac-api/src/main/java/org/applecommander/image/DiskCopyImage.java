@@ -102,7 +102,7 @@ public class DiskCopyImage implements Source {
 
     @Override
     public int getSize() {
-        return source.getSize() - HEADER_SIZE;
+        return info.dataSize;
     }
 
     @Override
