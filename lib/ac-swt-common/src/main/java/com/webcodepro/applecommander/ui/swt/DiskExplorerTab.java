@@ -42,6 +42,7 @@ import io.github.applecommander.applesingle.AppleSingle;
 import org.applecommander.hint.Hint;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -1478,20 +1479,18 @@ public class DiskExplorerTab {
 				window = new FileViewerWindow(shell, fileEntry, imageManager, fileFilter);
 			} else if (fileEntry.getFilename().toLowerCase().endsWith(".shk")
 				    || fileEntry.getFilename().toLowerCase().endsWith(".sdk")) {
-				try {
-					Source source = new FileEntrySource(fileEntry);
-					Disk disk = new Disk(fileEntry.getFilename(), source);
-					FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-					DiskWindow diskWindow = new DiskWindow(shell, formattedDisks, imageManager);
-					diskWindow.open();
-					return;
-				} catch (IOException e) {
-					// Fall through to the default (match the else statement)
-					window = new FileViewerWindow(shell, fileEntry, imageManager);
-				}
-			} else {
-				window = new FileViewerWindow(shell, fileEntry, imageManager);
+                Source shkSource = new FileEntrySource(fileEntry);
+                Source source = Sources.create(shkSource).orElseThrow();
+                DiskFactory.Context ctx = Disks.inspect(source);
+                if (!ctx.disks.isEmpty()) {
+                    DiskWindow diskWindow = new DiskWindow(shell, ctx.disks.toArray(new FormattedDisk[0]), imageManager);
+                    diskWindow.open();
+                    return;
+                }
 			}
+            if (window == null) {
+                window = new FileViewerWindow(shell, fileEntry, imageManager);
+            }
 			window.open();
 		}
 	}

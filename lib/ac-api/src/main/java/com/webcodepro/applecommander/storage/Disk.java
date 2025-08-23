@@ -67,20 +67,6 @@ public class Disk {
 		this.newImage = true;
 	}
 
-	public Disk(String filename, Source source) throws IOException {
-		this.filename = filename;
-		this.source = source;
-
-		DiskFactory.Context ctx = Disks.inspect(source);
-		if (!ctx.disks.isEmpty()) {
-			formattedDisks = ctx.disks.toArray(new FormattedDisk[0]);
-			imageOrder = ctx.disks.getFirst().getImageOrder();
-		}
-		else {
-			imageOrder = ctx.orders.getFirst();
-		}
-	}
-
 	/**
 	 * Save a Disk image to its file.
 	 */
