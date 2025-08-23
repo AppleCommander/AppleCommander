@@ -49,8 +49,8 @@ public class ProdosOrder extends ImageOrder {
 	/**
 	 * Construct a ProdosOrder.
 	 */
-	public ProdosOrder(Source diskImageManager) {
-		super(diskImageManager);
+	public ProdosOrder(Source source) {
+		super(source);
 	}
 	
 	/**

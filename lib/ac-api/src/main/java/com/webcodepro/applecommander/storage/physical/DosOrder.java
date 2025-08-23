@@ -36,8 +36,8 @@ public class DosOrder extends ImageOrder {
 	/**
 	 * Construct a DosOrder.
 	 */
-	public DosOrder(Source diskImageManager) {
-		super(diskImageManager);
+	public DosOrder(Source source) {
+		super(source);
 	}
 
 	/**

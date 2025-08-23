@@ -166,12 +166,11 @@ public class Disk {
     }
 
 	/**
-	 * Returns the diskImageManager.
-	 * @return Source diskImageManager The disk Image Manager of this disk
+	 * Returns the source.
 	 */
 	public Source getSource() {
 		if (imageOrder != null) {
-			return imageOrder.getDiskImageManager();
+			return imageOrder.getSource();
 		}
 		return source;
 	}
@@ -225,7 +224,7 @@ public class Disk {
 			throw new IllegalArgumentException(
 				textBundle.get("Disk.ResizeDiskError")); //$NON-NLS-1$
 		}
-		DataBuffer backingBuffer = imageOrder.getDiskImageManager().get(DataBuffer.class).orElseThrow();
+		DataBuffer backingBuffer = imageOrder.getSource().get(DataBuffer.class).orElseThrow();
 		backingBuffer.limit(newSize);
 	}
 	
