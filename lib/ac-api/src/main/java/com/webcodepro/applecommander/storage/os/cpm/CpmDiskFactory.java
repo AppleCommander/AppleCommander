@@ -19,7 +19,7 @@
  */
 package com.webcodepro.applecommander.storage.os.cpm;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFactory;
 import org.applecommander.util.DataBuffer;
 
@@ -32,7 +32,7 @@ public class CpmDiskFactory implements DiskFactory {
     @Override
     public void inspect(Context ctx) {
         ctx.orders.forEach(order -> {
-            if (order.isSizeApprox(Disk.APPLE_140KB_DISK) || order.isSizeApprox(Disk.APPLE_140KB_NIBBLE_DISK)) {
+            if (order.isSizeApprox(DiskConstants.APPLE_140KB_DISK) || order.isSizeApprox(DiskConstants.APPLE_140KB_NIBBLE_DISK)) {
                 CpmFormatDisk disk = new CpmFormatDisk(ctx.source.getName(), order);
                 if (check(disk)) {
                     ctx.disks.add(disk);

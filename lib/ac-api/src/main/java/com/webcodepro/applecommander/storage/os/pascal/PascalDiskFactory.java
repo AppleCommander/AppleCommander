@@ -19,7 +19,7 @@
  */
 package com.webcodepro.applecommander.storage.os.pascal;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFactory;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import org.applecommander.util.DataBuffer;
@@ -40,12 +40,12 @@ public class PascalDiskFactory implements DiskFactory {
     /** Check for a likely directory structure. Note that we scan all sizes, even though that is overkill. */
     public boolean check(ImageOrder order) {
         boolean good = false;
-        if (order.getPhysicalSize() >= Disk.APPLE_140KB_DISK) {
+        if (order.getPhysicalSize() >= DiskConstants.APPLE_140KB_DISK) {
             // Read entire directory for analysis
             DataBuffer dir = DataBuffer.create(2048);
             for (int block=2; block<6; block++) {
                 byte[] data = order.readBlock(block);
-                dir.put((block-2)*Disk.BLOCK_SIZE, DataBuffer.wrap(data));
+                dir.put((block-2)* DiskConstants.BLOCK_SIZE, DataBuffer.wrap(data));
             }
             // Check volume entry
             int dFirstBlock = dir.getUnsignedShort(0);

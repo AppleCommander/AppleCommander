@@ -225,7 +225,7 @@ public class AntTask extends Task
 		{
 			try
 			{
-				com.webcodepro.applecommander.ui.ac.createDosDisk(_imageName, Disk.APPLE_140KB_DISK);
+				com.webcodepro.applecommander.ui.ac.createDosDisk(_imageName, DiskConstants.APPLE_140KB_DISK);
 			}
 			catch (IOException io)
 			{
@@ -240,9 +240,9 @@ public class AntTask extends Task
 			try
 			{
 				if (_command.equals("pro800"))
-					com.webcodepro.applecommander.ui.ac.createProDisk(_imageName, _volName, Disk.APPLE_800KB_DISK);
+					com.webcodepro.applecommander.ui.ac.createProDisk(_imageName, _volName, DiskConstants.APPLE_800KB_DISK);
 				else
-					com.webcodepro.applecommander.ui.ac.createProDisk(_imageName, _volName, Disk.APPLE_140KB_DISK);
+					com.webcodepro.applecommander.ui.ac.createProDisk(_imageName, _volName, DiskConstants.APPLE_140KB_DISK);
 			}
 			catch (IOException io)
 			{
@@ -257,9 +257,9 @@ public class AntTask extends Task
 			try
 			{
 				if (_command.equals("pas800"))
-					com.webcodepro.applecommander.ui.ac.createPasDisk(_imageName, _volName, Disk.APPLE_800KB_DISK);
+					com.webcodepro.applecommander.ui.ac.createPasDisk(_imageName, _volName, DiskConstants.APPLE_800KB_DISK);
 				else
-					com.webcodepro.applecommander.ui.ac.createPasDisk(_imageName, _volName, Disk.APPLE_140KB_DISK);
+					com.webcodepro.applecommander.ui.ac.createPasDisk(_imageName, _volName, DiskConstants.APPLE_140KB_DISK);
 			}
 			catch (IOException io)
 			{

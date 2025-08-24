@@ -23,7 +23,7 @@ import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.junit.jupiter.api.Test;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class DosFormatDiskTest {
     @Test
     public void testSanitizeFilename() throws DiskFullException {
-         Source source = DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-image").get();
+         Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-image").get();
          ImageOrder order = new DosOrder(source);
          DosFormatDisk[] disks = DosFormatDisk.create("deleteme.do", order);
          DosFormatDisk disk = disks[0];

@@ -19,7 +19,7 @@
  */
 package com.webcodepro.applecommander.storage.physical;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.os.dos33.DosSectorAddress;
 import com.webcodepro.applecommander.util.AppleUtil;
 import org.applecommander.hint.Hint;
@@ -159,9 +159,9 @@ public class WozOrder extends ImageOrder {
         sectors = DosOrder.blockToSectors525(block);
         sector1 = readSector(sectors[0].track, sectors[0].sector);
         sector2 = readSector(sectors[1].track, sectors[1].sector);
-        byte[] blockData = new byte[Disk.BLOCK_SIZE];
-        System.arraycopy(sector1, 0, blockData, 0, Disk.SECTOR_SIZE);
-        System.arraycopy(sector2, 0, blockData, Disk.SECTOR_SIZE, Disk.SECTOR_SIZE);
+        byte[] blockData = new byte[DiskConstants.BLOCK_SIZE];
+        System.arraycopy(sector1, 0, blockData, 0, DiskConstants.SECTOR_SIZE);
+        System.arraycopy(sector2, 0, blockData, DiskConstants.SECTOR_SIZE, DiskConstants.SECTOR_SIZE);
         return blockData;
     }
 
@@ -232,9 +232,9 @@ public class WozOrder extends ImageOrder {
         int block = track * 8 + blockInterleave[sector];
         byte[] blockData = readBlock(block);
         int offset = blockOffsets[sector];
-        byte[] sectorData = new byte[Disk.SECTOR_SIZE];
-        System.arraycopy(blockData, offset * Disk.SECTOR_SIZE,
-                sectorData, 0, Disk.SECTOR_SIZE);
+        byte[] sectorData = new byte[DiskConstants.SECTOR_SIZE];
+        System.arraycopy(blockData, offset * DiskConstants.SECTOR_SIZE,
+                sectorData, 0, DiskConstants.SECTOR_SIZE);
         return sectorData;
     }
 

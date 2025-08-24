@@ -1279,9 +1279,9 @@ public class DiskExplorerTab {
 		ImageOrder imageOrder = disks[0].getImageOrder();
 		changeOrderToolItem.setEnabled(
 			(imageOrder.isBlockDevice() 
-				&& imageOrder.getBlocksOnDevice() == Disk.PRODOS_BLOCKS_ON_140KB_DISK)
+				&& imageOrder.getBlocksOnDevice() == DiskConstants.PRODOS_BLOCKS_ON_140KB_DISK)
 			|| (imageOrder.isTrackAndSectorDevice() 
-				&& imageOrder.getSectorsPerDisk() == Disk.DOS33_SECTORS_ON_140KB_DISK));
+				&& imageOrder.getSectorsPerDisk() == DiskConstants.DOS33_SECTORS_ON_140KB_DISK));
 		changeOrderToolItem.addSelectionListener(
 			new DropDownSelectionListener(getChangeImageOrderMenu()));
 		changeOrderToolItem.addSelectionListener(new SelectionAdapter () {
@@ -1858,7 +1858,7 @@ public class DiskExplorerTab {
 			public void widgetSelected(SelectionEvent event) {
 				if (!getDisk(0).getImageOrder().is(Hint.NIBBLE_SECTOR_ORDER)) {
 					NibbleOrder nibbleOrder = new NibbleOrder(
-						DataBufferSource.create(Disk.APPLE_140KB_NIBBLE_DISK, "new-image.nib").get());
+						DataBufferSource.create(DiskConstants.APPLE_140KB_NIBBLE_DISK, "new-image.nib").get());
 					nibbleOrder.format();
 					changeImageOrder("nib", nibbleOrder); //$NON-NLS-1$
 				}
@@ -1871,7 +1871,7 @@ public class DiskExplorerTab {
 			public void widgetSelected(SelectionEvent event) {
 				if (!getDisk(0).getImageOrder().is(Hint.DOS_SECTOR_ORDER)) {
 					changeImageOrder("dsk", new DosOrder( //$NON-NLS-1$
-						DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-image.dsk").get()));
+						DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-image.dsk").get()));
 				}
 			}
 		});
@@ -1882,7 +1882,7 @@ public class DiskExplorerTab {
 			public void widgetSelected(SelectionEvent event) {
 				if (!getDisk(0).getImageOrder().is(Hint.PRODOS_BLOCK_ORDER)) {
 					changeImageOrder("po", new ProdosOrder( //$NON-NLS-1$
-						DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-image.po").get()));
+						DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-image.po").get()));
 				}
 			}
 		});

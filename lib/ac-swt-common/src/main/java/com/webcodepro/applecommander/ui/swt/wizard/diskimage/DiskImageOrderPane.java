@@ -27,7 +27,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 import com.webcodepro.applecommander.util.TextBundle;
@@ -92,7 +92,7 @@ public class DiskImageOrderPane extends WizardPane {
 		createRadioButton(buttonSubpanel, textBundle.get("DiskImageOrderProdosLabel"),  //$NON-NLS-1$
 			DiskImageWizard.ORDER_PRODOS,
 			textBundle.get("DiskImageOrderProdosText")); //$NON-NLS-1$
-		if (wizard.getSize() == Disk.APPLE_140KB_DISK) {
+		if (wizard.getSize() == DiskConstants.APPLE_140KB_DISK) {
 			createRadioButton(buttonSubpanel, textBundle.get("DiskImageOrderNibbleLabel"), //$NON-NLS-1$
 				DiskImageWizard.ORDER_NIBBLE,
 				textBundle.get("DiskImageOrderNibbleText")); //$NON-NLS-1$

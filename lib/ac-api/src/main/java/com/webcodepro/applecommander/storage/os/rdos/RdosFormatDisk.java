@@ -23,6 +23,7 @@ import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+import static com.webcodepro.applecommander.storage.DiskConstants.*;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -353,32 +354,32 @@ public class RdosFormatDisk extends FormattedDisk {
 		List<FileColumnHeader> list = new ArrayList<>();
 		switch (displayMode) {
 			case FILE_DISPLAY_NATIVE:
-				list.add(new FileColumnHeader(textBundle.get("Type"), 1, 
-						FileColumnHeader.ALIGN_CENTER, "type"));
-				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3, 
-						FileColumnHeader.ALIGN_RIGHT, "blocks"));
-				list.add(new FileColumnHeader(textBundle.get("Name"), 24, 
-						FileColumnHeader.ALIGN_LEFT, "name"));
-				list.add(new FileColumnHeader(textBundle.get("RdosFormatDisk.Size"), 6, 
-						FileColumnHeader.ALIGN_RIGHT, "size"));
-				list.add(new FileColumnHeader(textBundle.get("RdosFormatDisk.StartingBlock"), 3, 
-						FileColumnHeader.ALIGN_RIGHT, "firstBlock"));
+				list.add(new FileColumnHeader(textBundle.get("Type"), 1,
+                        FileColumnHeader.ALIGN_CENTER, "type"));
+				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3,
+                        FileColumnHeader.ALIGN_RIGHT, "blocks"));
+				list.add(new FileColumnHeader(textBundle.get("Name"), 24,
+                        FileColumnHeader.ALIGN_LEFT, "name"));
+				list.add(new FileColumnHeader(textBundle.get("RdosFormatDisk.Size"), 6,
+                        FileColumnHeader.ALIGN_RIGHT, "size"));
+				list.add(new FileColumnHeader(textBundle.get("RdosFormatDisk.StartingBlock"), 3,
+                        FileColumnHeader.ALIGN_RIGHT, "firstBlock"));
 				break;
 			case FILE_DISPLAY_DETAIL:
 				list.add(new FileColumnHeader(textBundle.get("Type"), 1,
-						FileColumnHeader.ALIGN_CENTER, "type"));
-				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3, 
-						FileColumnHeader.ALIGN_RIGHT, "blocks"));
-				list.add(new FileColumnHeader(textBundle.get("Name"), 24, 
-						FileColumnHeader.ALIGN_LEFT, "name"));
-				list.add(new FileColumnHeader(textBundle.get("RdosFormatDisk.Size"), 6, 
-						FileColumnHeader.ALIGN_RIGHT, "size"));
-				list.add(new FileColumnHeader(textBundle.get("RdosFormatDisk.StartingBlock"), 3, 
-						FileColumnHeader.ALIGN_RIGHT, "firstBlock"));
-				list.add(new FileColumnHeader(textBundle.get("RdosFormatDisk.Address"), 5, 
-						FileColumnHeader.ALIGN_RIGHT, "address"));
-				list.add(new FileColumnHeader(textBundle.get("DeletedQ"), 7, 
-						FileColumnHeader.ALIGN_CENTER, "deleted"));
+                        FileColumnHeader.ALIGN_CENTER, "type"));
+				list.add(new FileColumnHeader(textBundle.get("Blocks"), 3,
+                        FileColumnHeader.ALIGN_RIGHT, "blocks"));
+				list.add(new FileColumnHeader(textBundle.get("Name"), 24,
+                        FileColumnHeader.ALIGN_LEFT, "name"));
+				list.add(new FileColumnHeader(textBundle.get("RdosFormatDisk.Size"), 6,
+                        FileColumnHeader.ALIGN_RIGHT, "size"));
+				list.add(new FileColumnHeader(textBundle.get("RdosFormatDisk.StartingBlock"), 3,
+                        FileColumnHeader.ALIGN_RIGHT, "firstBlock"));
+				list.add(new FileColumnHeader(textBundle.get("RdosFormatDisk.Address"), 5,
+                        FileColumnHeader.ALIGN_RIGHT, "address"));
+				list.add(new FileColumnHeader(textBundle.get("DeletedQ"), 7,
+                        FileColumnHeader.ALIGN_CENTER, "deleted"));
 				break;
 			default:	// FILE_DISPLAY_STANDARD
 				list.addAll(super.getFileColumnHeaders(displayMode));

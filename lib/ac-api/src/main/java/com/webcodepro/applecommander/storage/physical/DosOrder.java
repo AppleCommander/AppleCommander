@@ -19,7 +19,7 @@
  */
 package com.webcodepro.applecommander.storage.physical;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.os.dos33.DosSectorAddress;
 import com.webcodepro.applecommander.util.TextBundle;
@@ -58,7 +58,7 @@ public class DosOrder extends ImageOrder {
 	 * Retrieve the specified sector.
 	 */
 	public byte[] readSector(int track, int sector) throws IllegalArgumentException {
-		return readBytes(getOffset(track, sector), Disk.SECTOR_SIZE);
+		return readBytes(getOffset(track, sector), DiskConstants.SECTOR_SIZE);
 	}
 
 	/**
@@ -75,14 +75,14 @@ public class DosOrder extends ImageOrder {
 	 * with.
 	 */
 	protected int getOffset(int track, int sector) throws IllegalArgumentException {
-		if (!isSizeApprox(Disk.APPLE_140KB_DISK)
-				&& !isSizeApprox(Disk.APPLE_800KB_DISK)
-				&& !isSizeApprox(Disk.APPLE_800KB_2IMG_DISK)
+		if (!isSizeApprox(DiskConstants.APPLE_140KB_DISK)
+				&& !isSizeApprox(DiskConstants.APPLE_800KB_DISK)
+				&& !isSizeApprox(DiskConstants.APPLE_800KB_2IMG_DISK)
 				&& track != 0 && sector != 0) {		// HACK: Allows boot sector writing
 			throw new IllegalArgumentException(
 					textBundle.get("DosOrder.UnrecognizedFormatError")); //$NON-NLS-1$
 		}
-		int offset = (track * getSectorsPerTrack() + sector) * Disk.SECTOR_SIZE;
+		int offset = (track * getSectorsPerTrack() + sector) * DiskConstants.SECTOR_SIZE;
 		if (offset > getPhysicalSize()) {
 			throw new IllegalArgumentException(
 					textBundle.format("DosOrder.InvalidSizeError", //$NON-NLS-1$
@@ -97,9 +97,9 @@ public class DosOrder extends ImageOrder {
 	 */
 	public byte[] readBlock(int block) {
 		DosSectorAddress[] sectors = blockToSectors525(block);
-		byte[] blockData = new byte[Disk.BLOCK_SIZE];
-		System.arraycopy(readSector(sectors[0].track, sectors[0].sector), 0, blockData, 0, Disk.SECTOR_SIZE);
-		System.arraycopy(readSector(sectors[1].track, sectors[1].sector), 0, blockData, Disk.SECTOR_SIZE, Disk.SECTOR_SIZE);
+		byte[] blockData = new byte[DiskConstants.BLOCK_SIZE];
+		System.arraycopy(readSector(sectors[0].track, sectors[0].sector), 0, blockData, 0, DiskConstants.SECTOR_SIZE);
+		System.arraycopy(readSector(sectors[1].track, sectors[1].sector), 0, blockData, DiskConstants.SECTOR_SIZE, DiskConstants.SECTOR_SIZE);
 		return blockData;
 	}
 
@@ -109,10 +109,10 @@ public class DosOrder extends ImageOrder {
 	 */
 	public void writeBlock(int block, byte[] data) {
 		DosSectorAddress[] sectors = blockToSectors525(block);
-		byte[] sectorData = new byte[Disk.SECTOR_SIZE];
-		System.arraycopy(data, 0, sectorData, 0, Disk.SECTOR_SIZE);
+		byte[] sectorData = new byte[DiskConstants.SECTOR_SIZE];
+		System.arraycopy(data, 0, sectorData, 0, DiskConstants.SECTOR_SIZE);
 		writeSector(sectors[0].track, sectors[0].sector, sectorData);
-		System.arraycopy(data, Disk.SECTOR_SIZE, sectorData, 0, Disk.SECTOR_SIZE);
+		System.arraycopy(data, DiskConstants.SECTOR_SIZE, sectorData, 0, DiskConstants.SECTOR_SIZE);
 		writeSector(sectors[1].track, sectors[1].sector, sectorData);
 	}
 

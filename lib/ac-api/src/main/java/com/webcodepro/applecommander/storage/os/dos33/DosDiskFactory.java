@@ -23,6 +23,7 @@ import com.webcodepro.applecommander.storage.DiskFactory;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import org.applecommander.util.DataBuffer;
+import static com.webcodepro.applecommander.storage.DiskConstants.*;
 
 import java.util.*;
 
@@ -33,7 +34,7 @@ public class DosDiskFactory implements DiskFactory {
         List<FormattedDisk> tests = new ArrayList<>();
         if (ctx.orders.size() == 1) {
             ImageOrder order = ctx.orders.getFirst();
-            if (order.isSizeApprox(FormattedDisk.APPLE_800KB_DISK)) {
+            if (order.isSizeApprox(APPLE_800KB_DISK)) {
                 tests.add(new UniDosFormatDisk(ctx.source.getName(), order, UniDosFormatDisk.UNIDOS_DISK_1));
                 tests.add(new UniDosFormatDisk(ctx.source.getName(), order, UniDosFormatDisk.UNIDOS_DISK_2));
                 tests.add(new OzDosFormatDisk(ctx.source.getName(), order, OzDosFormatDisk.OZDOS_DISK_1));

@@ -23,8 +23,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import com.webcodepro.applecommander.storage.Disk;
-
 import com.webcodepro.applecommander.storage.DiskFactory;
 import com.webcodepro.applecommander.storage.Disks;
 import com.webcodepro.applecommander.storage.FormattedDisk;

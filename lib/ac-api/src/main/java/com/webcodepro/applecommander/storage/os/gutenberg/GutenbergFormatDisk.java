@@ -23,6 +23,7 @@ import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+import static com.webcodepro.applecommander.storage.DiskConstants.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -321,27 +322,27 @@ public class GutenbergFormatDisk extends FormattedDisk {
 		switch (displayMode) {
 			case FILE_DISPLAY_NATIVE:
 				list.add(new FileColumnHeader(" ", 1, FileColumnHeader.ALIGN_CENTER, "locked"));
-				list.add(new FileColumnHeader(textBundle.get("DosFormatDisk.Type"), 1, 
-						FileColumnHeader.ALIGN_CENTER, "type"));
-				list.add(new FileColumnHeader(textBundle.get("DosFormatDisk.SizeInSectors"), 3, 
-						FileColumnHeader.ALIGN_RIGHT, "sectors"));
+				list.add(new FileColumnHeader(textBundle.get("DosFormatDisk.Type"), 1,
+                        FileColumnHeader.ALIGN_CENTER, "type"));
+				list.add(new FileColumnHeader(textBundle.get("DosFormatDisk.SizeInSectors"), 3,
+                        FileColumnHeader.ALIGN_RIGHT, "sectors"));
 				list.add(new FileColumnHeader(textBundle.get("Name"), 30,
-						FileColumnHeader.ALIGN_LEFT, "name"));
+                        FileColumnHeader.ALIGN_LEFT, "name"));
 				break;
 			case FILE_DISPLAY_DETAIL:
 				list.add(new FileColumnHeader(" ", 1, FileColumnHeader.ALIGN_CENTER, "locked"));
-				list.add(new FileColumnHeader(textBundle.get("DosFormatDisk.Type"), 1, 
-						FileColumnHeader.ALIGN_CENTER, "type"));
+				list.add(new FileColumnHeader(textBundle.get("DosFormatDisk.Type"), 1,
+                        FileColumnHeader.ALIGN_CENTER, "type"));
 				list.add(new FileColumnHeader(textBundle.get("Name"), 30,
-						FileColumnHeader.ALIGN_LEFT, "name"));
+                        FileColumnHeader.ALIGN_LEFT, "name"));
 				list.add(new FileColumnHeader(textBundle.get("SizeInBytes"), 6,
-						FileColumnHeader.ALIGN_RIGHT, "size"));
-				list.add(new FileColumnHeader(textBundle.get("DosFormatDisk.SizeInSectors"), 3, 
-						FileColumnHeader.ALIGN_RIGHT, "sectors"));
+                        FileColumnHeader.ALIGN_RIGHT, "size"));
+				list.add(new FileColumnHeader(textBundle.get("DosFormatDisk.SizeInSectors"), 3,
+                        FileColumnHeader.ALIGN_RIGHT, "sectors"));
 				list.add(new FileColumnHeader(textBundle.get("DeletedQ"), 7,
-						FileColumnHeader.ALIGN_CENTER, "deleted"));
-				list.add(new FileColumnHeader(textBundle.get("DosFormatDisk.TrackAndSectorList"), 7, 
-						FileColumnHeader.ALIGN_CENTER, "trackAndSectorList"));
+                        FileColumnHeader.ALIGN_CENTER, "deleted"));
+				list.add(new FileColumnHeader(textBundle.get("DosFormatDisk.TrackAndSectorList"), 7,
+                        FileColumnHeader.ALIGN_CENTER, "trackAndSectorList"));
 				break;
 			default:	// FILE_DISPLAY_STANDARD
 				list.addAll(super.getFileColumnHeaders(displayMode));

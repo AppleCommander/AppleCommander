@@ -19,7 +19,7 @@
  */
 package com.webcodepro.applecommander.storage.physical;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import org.applecommander.hint.HintProvider;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
@@ -111,7 +111,7 @@ public abstract class ImageOrder implements HintProvider {
 	 * Answer with the number of blocks on this device.
 	 */
 	public int getBlocksOnDevice() {
-		return getPhysicalSize() / Disk.BLOCK_SIZE;
+		return getPhysicalSize() / DiskConstants.BLOCK_SIZE;
 	}
 
 	/**
@@ -143,15 +143,15 @@ public abstract class ImageOrder implements HintProvider {
 	 * Answer with the number of tracks on this device.
 	 */
 	public int getTracksPerDisk() {
-		return getPhysicalSize() / (getSectorsPerTrack() * Disk.SECTOR_SIZE);
+		return getPhysicalSize() / (getSectorsPerTrack() * DiskConstants.SECTOR_SIZE);
 	}
 	
 	/**
 	 * Answer with the number of sectors per track on this device.
 	 */
 	public int getSectorsPerTrack() {
-		if (isSizeApprox(Disk.APPLE_800KB_DISK) 
-			|| isSizeApprox(Disk.APPLE_800KB_2IMG_DISK)) {
+		if (isSizeApprox(DiskConstants.APPLE_800KB_DISK)
+			|| isSizeApprox(DiskConstants.APPLE_800KB_2IMG_DISK)) {
 			return 32;
 		}
 		return 16;

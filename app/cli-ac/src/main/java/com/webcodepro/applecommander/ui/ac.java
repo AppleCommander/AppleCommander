@@ -170,15 +170,15 @@ public class ac {
 			} else if ("-geos".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				putGEOS(args[1]);
 			} else if ("-dos140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				createDosDisk(args[1], Disk.APPLE_140KB_DISK);
+				createDosDisk(args[1], DiskConstants.APPLE_140KB_DISK);
 			} else if ("-pas140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				createPasDisk(args[1], args[2], Disk.APPLE_140KB_DISK);
+				createPasDisk(args[1], args[2], DiskConstants.APPLE_140KB_DISK);
 			} else if ("-pas800".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				createPasDisk(args[1], args[2], Disk.APPLE_800KB_DISK);
+				createPasDisk(args[1], args[2], DiskConstants.APPLE_800KB_DISK);
 			} else if ("-pro140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				createProDisk(args[1], args[2], Disk.APPLE_140KB_DISK);
+				createProDisk(args[1], args[2], DiskConstants.APPLE_140KB_DISK);
 			} else if ("-pro800".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				createProDisk(args[1], args[2], Disk.APPLE_800KB_DISK);
+				createProDisk(args[1], args[2], DiskConstants.APPLE_800KB_DISK);
 			} else if ("-convert".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				if (args.length > 3)
 					convert(args[1], args[2], Integer.parseInt(args[3]));

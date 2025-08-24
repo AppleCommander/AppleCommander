@@ -19,7 +19,7 @@
  */
 package com.webcodepro.applecommander.storage.os.gutenberg;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFactory;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import org.applecommander.util.DataBuffer;
@@ -38,7 +38,7 @@ public class GutenbergDiskFactory implements DiskFactory {
 
     public boolean check(ImageOrder order) {
         boolean good = false;
-        if (order.isSizeApprox(Disk.APPLE_140KB_DISK) || order.isSizeApprox(Disk.APPLE_140KB_NIBBLE_DISK)) {
+        if (order.isSizeApprox(DiskConstants.APPLE_140KB_DISK) || order.isSizeApprox(DiskConstants.APPLE_140KB_NIBBLE_DISK)) {
             final int tracksPerDisk = 35;
             final int sectorsPerTrack = 16;
             // Everything starts at T17,S7

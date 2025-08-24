@@ -22,6 +22,7 @@ package com.webcodepro.applecommander.storage.os.prodos;
 import com.webcodepro.applecommander.storage.DiskFactory;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import org.applecommander.util.DataBuffer;
+import static com.webcodepro.applecommander.storage.DiskConstants.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,7 @@ public class ProdosDiskFactory implements DiskFactory {
         boolean good = priorBlock == 0
                     && storageType == 0xf
                     && entryLength == 0x27
-                    && (entryLength * entriesPerBlock) < FormattedDisk.BLOCK_SIZE
+                    && (entryLength * entriesPerBlock) < BLOCK_SIZE
                     && bitmapPointer < totalBlocks;
         // Now follow the directory blocks -- but only forward; it seems some images have "bad" backward links!
         while (good) {

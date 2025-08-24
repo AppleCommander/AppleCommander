@@ -20,14 +20,17 @@
 package com.webcodepro.applecommander.storage;
 
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import com.webcodepro.applecommander.storage.physical.WozOrder;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.source.Source;
+import org.applecommander.util.DataBuffer;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Abstract representation of a formatted Apple2 disk (floppy, 800k, hard disk).
@@ -35,12 +38,12 @@ import java.util.List;
  * Date created: Oct 5, 2002 3:51:44 PM
  * @author Rob Greene
  */
-public abstract class FormattedDisk extends Disk implements DirectoryEntry {
-	private TextBundle textBundle = StorageBundle.getInstance();
+public abstract class FormattedDisk implements DirectoryEntry {
+	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Use this inner class for label/value mappings in the disk info page.
 	 */
-	public class DiskInformation {
+	public static class DiskInformation {
 		private String label;
 		private String value;
 		public DiskInformation(String label, String value) {
@@ -91,7 +94,7 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	public static final int FILE_DISPLAY_STANDARD = 1;
 	public static final int FILE_DISPLAY_NATIVE = 2;
 	public static final int FILE_DISPLAY_DETAIL = 3;
-	public class FileColumnHeader {
+	public static class FileColumnHeader {
 		public static final int ALIGN_LEFT = 1;
 		public static final int ALIGN_CENTER = 2;
 		public static final int ALIGN_RIGHT = 3;
@@ -127,12 +130,20 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 			return alignment == ALIGN_RIGHT;
 		}
 	}
-	
-	/**
+
+    private String filename;
+    private boolean newImage = false;
+    private Source source;
+    private ImageOrder imageOrder = null;
+
+    /**
 	 * Constructor for FormattedDisk.
 	 */
 	public FormattedDisk(String filename, ImageOrder imageOrder) {
-		super(filename, imageOrder);
+        this.imageOrder = imageOrder;
+        this.source = imageOrder.getSource();
+        this.filename = filename;
+        this.newImage = true;
 	}
 
 	/**
@@ -208,7 +219,7 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 		list.add(new DiskInformation(textBundle.get("FormattedDisk.PhysicalSizeInKb"), getPhysicalSize() / 1024)); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("FormattedDisk.FreeSpaceInKb"), getFreeSpace() / 1024)); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("FormattedDisk.UsedSpaceInKb"), getUsedSpace() / 1024)); //$NON-NLS-1$
-		list.add(new DiskInformation(textBundle.get("FormattedDisk.ArchiveOrder"),  getOrderName())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("FormattedDisk.ArchiveOrder"), getOrderName())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("FormattedDisk.DiskFormat"), getFormat())); //$NON-NLS-1$
 		return list;
 	}
@@ -220,13 +231,13 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	public List<FileColumnHeader> getFileColumnHeaders(int displayMode) {
 		List<FileColumnHeader> list = new ArrayList<>();
 		list.add(new FileColumnHeader(textBundle
-				.get("Name"), 30, FileColumnHeader.ALIGN_LEFT, "name"));
+                .get("Name"), 30, FileColumnHeader.ALIGN_LEFT, "name"));
 		list.add(new FileColumnHeader(textBundle
-				.get("Type"), 8, FileColumnHeader.ALIGN_CENTER, "type"));
+                .get("Type"), 8, FileColumnHeader.ALIGN_CENTER, "type"));
 		list.add(new FileColumnHeader(textBundle
-				.get("SizeInBytes"), 6, FileColumnHeader.ALIGN_RIGHT, "sizeInBytes"));
+                .get("SizeInBytes"), 6, FileColumnHeader.ALIGN_RIGHT, "sizeInBytes"));
 		list.add(new FileColumnHeader(textBundle
-				.get("LockedQ"), 6, FileColumnHeader.ALIGN_CENTER, "locked"));
+                .get("LockedQ"), 6, FileColumnHeader.ALIGN_CENTER, "locked"));
 		return list;
 	}
 	
@@ -325,7 +336,7 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 		InputStream inputStream = getClass().
 			getResourceAsStream("/com/webcodepro/applecommander/storage/AppleCommander-boot.dump"); //$NON-NLS-1$
 		if (inputStream != null) {
-			byte[] bootCode = new byte[SECTOR_SIZE];
+			byte[] bootCode = new byte[DiskConstants.SECTOR_SIZE];
 			try {
 				inputStream.read(bootCode, 0, bootCode.length);
 				writeSector(0, 0, bootCode);
@@ -392,6 +403,157 @@ public abstract class FormattedDisk extends Disk implements DirectoryEntry {
 	public boolean supportsDiskMap() {
 		return false;
 	}
+
+    /**
+     * Save a Disk image to its file.
+     */
+    public void save() throws IOException {
+        File file = new File(getFilename());
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        OutputStream output = new FileOutputStream(file);
+        if (getFilename().toLowerCase().endsWith(".gz")) {
+            output = new GZIPOutputStream(output);
+        }
+        DataBuffer data = getSource().readAllBytes();
+        byte[] fileData = new byte[data.limit()];
+        data.read(fileData);
+        output.write(fileData);
+        output.close();
+        getSource().clearChanges();
+        newImage = false;
+    }
+
+    /**
+     * Save a Disk image as a new/different file.
+     */
+    public void saveAs(String filename) throws IOException {
+        this.filename = filename;
+        save();
+    }
+
+    /**
+     * Returns the source.
+     */
+    public Source getSource() {
+        if (imageOrder != null) {
+            return imageOrder.getSource();
+        }
+        return source;
+    }
+
+    /**
+     * Returns the filename.
+     * @return String
+     */
+    public String getFilename() {
+        return filename;
+    }
+
+    /**
+     * Sets the filename.
+     */
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    /**
+     * Returns the name of the underlying image order.
+     * @return String
+     */
+    public String getOrderName() {
+        return (imageOrder == null) ? textBundle.get("FormattedDisk.Unknown") : imageOrder.getName();
+    }
+
+    /**
+     * Identify the size of this disk.
+     */
+    public int getPhysicalSize() {
+        if (getImageOrder() instanceof WozOrder) {
+            // Total hack since WOZ is currently a special case.
+            return getImageOrder().getPhysicalSize();
+        }
+        if (getSource() != null) {
+            return getSource().getSize();
+        }
+        return getImageOrder().getPhysicalSize();
+    }
+
+    /**
+     * Resize a disk image up to a larger size.  The primary intention is to
+     * "fix" disk images that have been created too small.  The primary culprit
+     * is ApplePC HDV images which dynamically grow.  Since AppleCommander
+     * works with a byte array, the image must grow to its full size.
+     * @param newSize
+     */
+    protected void resizeDiskImage(int newSize) {
+        if (newSize < getPhysicalSize()) {
+            throw new IllegalArgumentException(
+                    textBundle.get("Disk.ResizeDiskError")); //$NON-NLS-1$
+        }
+        DataBuffer backingBuffer = imageOrder.getSource().get(DataBuffer.class).orElseThrow();
+        backingBuffer.limit(newSize);
+    }
+
+    /**
+     * Read the block from the disk image.
+     */
+    public byte[] readBlock(int block) {
+        return imageOrder.readBlock(block);
+    }
+
+    /**
+     * Write the block to the disk image.
+     */
+    public void writeBlock(int block, byte[] data) {
+        imageOrder.writeBlock(block, data);
+    }
+
+    /**
+     * Retrieve the specified sector.
+     */
+    public byte[] readSector(int track, int sector) throws IllegalArgumentException {
+        return imageOrder.readSector(track, sector);
+    }
+
+    /**
+     * Write the specified sector.
+     */
+    public void writeSector(int track, int sector, byte[] bytes)
+            throws IllegalArgumentException {
+        imageOrder.writeSector(track, sector, bytes);
+    }
+
+    /**
+     * Indicates if the disk has changed. Triggered when data is
+     * written and cleared when data is saved.
+     */
+    public boolean hasChanged() {
+        return getSource().hasChanged();
+    }
+
+    /**
+     * Indicates if the disk image is new.  This can be used
+     * for Save As processing.
+     */
+    public boolean isNewImage() {
+        return newImage;
+    }
+
+    /**
+     * Answer with the physical ordering of the disk.
+     */
+    public ImageOrder getImageOrder() {
+        return imageOrder;
+    }
+
+    /**
+     * Set the physical ordering of the disk.
+     */
+    protected void setImageOrder(ImageOrder imageOrder) {
+        this.imageOrder = imageOrder;
+    }
 
 	/**
 	 * Change the physical ordering of the disk.  This must be implemented by all

@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
@@ -212,7 +212,7 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	public int getSize() {
 		int blocks = getBlocksUsed() - 1;
-		return blocks*Disk.BLOCK_SIZE + getBytesUsedInLastBlock();
+		return blocks* DiskConstants.BLOCK_SIZE + getBytesUsedInLastBlock();
 	}
 
 	/**

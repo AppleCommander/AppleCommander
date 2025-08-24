@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.ProdosOrder;
@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 public class PascalFormatDiskTest {
     @Test
     public void testSanitizeFilename() throws DiskFullException {
-        Source source = DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-disk").get();
+        Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
         ImageOrder order = new ProdosOrder(source);
         PascalFormatDisk[] disks = PascalFormatDisk.create("deleteme.po", "TEST", order); 
         PascalFormatDisk disk = disks[0];

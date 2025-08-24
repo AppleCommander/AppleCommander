@@ -19,7 +19,7 @@
  */
 package io.github.applecommander.acx;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,26 +27,26 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SystemTypeTest {
     @Test
     public void testEnforce140KbDisk() {
-        assertEquals(Disk.APPLE_140KB_DISK, SystemType.enforce140KbDisk(0));
-        assertEquals(Disk.APPLE_140KB_DISK, SystemType.enforce140KbDisk(Disk.APPLE_140KB_DISK));
-        assertEquals(Disk.APPLE_140KB_DISK, SystemType.enforce140KbDisk(Disk.APPLE_800KB_DISK));
+        assertEquals(DiskConstants.APPLE_140KB_DISK, SystemType.enforce140KbDisk(0));
+        assertEquals(DiskConstants.APPLE_140KB_DISK, SystemType.enforce140KbDisk(DiskConstants.APPLE_140KB_DISK));
+        assertEquals(DiskConstants.APPLE_140KB_DISK, SystemType.enforce140KbDisk(DiskConstants.APPLE_800KB_DISK));
     }
     
     @Test
     public void testEnforce800KbDisk() {
-        assertEquals(Disk.APPLE_800KB_DISK, SystemType.enforce800KbDisk(0));
-        assertEquals(Disk.APPLE_800KB_DISK, SystemType.enforce800KbDisk(Disk.APPLE_800KB_DISK));
-        assertEquals(Disk.APPLE_800KB_DISK, SystemType.enforce800KbDisk(Disk.APPLE_32MB_HARDDISK));
+        assertEquals(DiskConstants.APPLE_800KB_DISK, SystemType.enforce800KbDisk(0));
+        assertEquals(DiskConstants.APPLE_800KB_DISK, SystemType.enforce800KbDisk(DiskConstants.APPLE_800KB_DISK));
+        assertEquals(DiskConstants.APPLE_800KB_DISK, SystemType.enforce800KbDisk(DiskConstants.APPLE_32MB_HARDDISK));
     }
     
     @Test
     public void testEnforce140KbOr800KbUpTo32MbDisk() {
-        assertEquals(Disk.APPLE_140KB_DISK, SystemType.enforce140KbOr800KbUpTo32MbDisk(0));
-        assertEquals(Disk.APPLE_140KB_DISK, SystemType.enforce140KbOr800KbUpTo32MbDisk(Disk.APPLE_140KB_DISK));
-        assertEquals(Disk.APPLE_800KB_DISK, SystemType.enforce140KbOr800KbUpTo32MbDisk(Disk.APPLE_140KB_DISK+1));
-        assertEquals(Disk.APPLE_800KB_DISK, SystemType.enforce140KbOr800KbUpTo32MbDisk(Disk.APPLE_800KB_DISK));
-        assertEquals(Disk.APPLE_800KB_DISK+1, SystemType.enforce140KbOr800KbUpTo32MbDisk(Disk.APPLE_800KB_DISK+1));
-        assertEquals(Disk.APPLE_32MB_HARDDISK, SystemType.enforce140KbOr800KbUpTo32MbDisk(Disk.APPLE_32MB_HARDDISK));
-        assertEquals(Disk.APPLE_32MB_HARDDISK, SystemType.enforce140KbOr800KbUpTo32MbDisk(Integer.MAX_VALUE));
+        assertEquals(DiskConstants.APPLE_140KB_DISK, SystemType.enforce140KbOr800KbUpTo32MbDisk(0));
+        assertEquals(DiskConstants.APPLE_140KB_DISK, SystemType.enforce140KbOr800KbUpTo32MbDisk(DiskConstants.APPLE_140KB_DISK));
+        assertEquals(DiskConstants.APPLE_800KB_DISK, SystemType.enforce140KbOr800KbUpTo32MbDisk(DiskConstants.APPLE_140KB_DISK+1));
+        assertEquals(DiskConstants.APPLE_800KB_DISK, SystemType.enforce140KbOr800KbUpTo32MbDisk(DiskConstants.APPLE_800KB_DISK));
+        assertEquals(DiskConstants.APPLE_800KB_DISK+1, SystemType.enforce140KbOr800KbUpTo32MbDisk(DiskConstants.APPLE_800KB_DISK+1));
+        assertEquals(DiskConstants.APPLE_32MB_HARDDISK, SystemType.enforce140KbOr800KbUpTo32MbDisk(DiskConstants.APPLE_32MB_HARDDISK));
+        assertEquals(DiskConstants.APPLE_32MB_HARDDISK, SystemType.enforce140KbOr800KbUpTo32MbDisk(Integer.MAX_VALUE));
     }
 }

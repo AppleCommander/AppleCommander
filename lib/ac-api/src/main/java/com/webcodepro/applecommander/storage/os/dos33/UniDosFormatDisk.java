@@ -22,6 +22,7 @@ package com.webcodepro.applecommander.storage.os.dos33;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.TextBundle;
+import static com.webcodepro.applecommander.storage.DiskConstants.*;
 
 /**
  * Manages a disk that is in UniDOS format.

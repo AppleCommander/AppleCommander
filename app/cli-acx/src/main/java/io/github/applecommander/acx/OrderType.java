@@ -22,7 +22,7 @@ package io.github.applecommander.acx;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.storage.physical.NibbleOrder;
@@ -53,16 +53,16 @@ public enum OrderType {
      * we have to rely on the SystemType to actually evaluate the correct size.
      */
     static ImageOrder createDosImageOrder(int size) {
-        if (size < Disk.APPLE_140KB_DISK) {
+        if (size < DiskConstants.APPLE_140KB_DISK) {
             LOG.warning("Setting image size to 140KB.");
-            size = Disk.APPLE_140KB_DISK;
+            size = DiskConstants.APPLE_140KB_DISK;
         }
-        else if (size == Disk.APPLE_140KB_DISK) {
+        else if (size == DiskConstants.APPLE_140KB_DISK) {
             // Size is valid; don't warn and don't bump to 800K.
         }
-        else if (size != Disk.APPLE_800KB_DISK) {
+        else if (size != DiskConstants.APPLE_800KB_DISK) {
             LOG.warning("Setting image size to 800KB.");
-            size = Disk.APPLE_800KB_DISK;
+            size = DiskConstants.APPLE_800KB_DISK;
         }
         Source source = DataBufferSource.create(size, "new-disk").hints(Hint.DOS_SECTOR_ORDER).get();
         return new DosOrder(source);
@@ -71,10 +71,10 @@ public enum OrderType {
      * Nibblized disks are always 140K disks (or ~230K on disk). 
      */
     static ImageOrder create140kNibbleImageOrder(int size) {
-        if (size != Disk.APPLE_140KB_NIBBLE_DISK && size != Disk.APPLE_140KB_DISK) {
+        if (size != DiskConstants.APPLE_140KB_NIBBLE_DISK && size != DiskConstants.APPLE_140KB_DISK) {
             LOG.warning("Setting image size to 140KB");
         }
-        Source source = DataBufferSource.create(Disk.APPLE_140KB_NIBBLE_DISK, "new-disk").get();
+        Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_NIBBLE_DISK, "new-disk").get();
         return new NibbleOrder(source);
     }
     /** 
@@ -82,20 +82,20 @@ public enum OrderType {
      * This means you _could_ setup a 807KB disk if you wanted. 
      */
     static ImageOrder createProdosImageOrder(int size) {
-        if (size < Disk.APPLE_140KB_DISK) {
+        if (size < DiskConstants.APPLE_140KB_DISK) {
             LOG.warning("Setting image size to 140KB.");
-            size = Disk.APPLE_140KB_DISK;
+            size = DiskConstants.APPLE_140KB_DISK;
         }
-        else if (size == Disk.APPLE_140KB_DISK) {
+        else if (size == DiskConstants.APPLE_140KB_DISK) {
             // Size is valid; don't warn and don't bump to 800K.
         }
-        else if (size < Disk.APPLE_800KB_DISK) {
+        else if (size < DiskConstants.APPLE_800KB_DISK) {
             LOG.warning("Setting image size to 800KB.");
-            size = Disk.APPLE_800KB_DISK;
+            size = DiskConstants.APPLE_800KB_DISK;
         }
-        else if (size > Disk.APPLE_32MB_HARDDISK) {
+        else if (size > DiskConstants.APPLE_32MB_HARDDISK) {
             LOG.warning("Setting image size to 32MB.");
-            size = Disk.APPLE_32MB_HARDDISK;
+            size = DiskConstants.APPLE_32MB_HARDDISK;
         }
         Source source = DataBufferSource.create(size, "new-disk").hints(Hint.PRODOS_BLOCK_ORDER).get();
         return new ProdosOrder(source);

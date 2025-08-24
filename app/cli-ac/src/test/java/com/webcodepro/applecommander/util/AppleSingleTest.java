@@ -45,7 +45,7 @@ public class AppleSingleTest {
 		String tmpImageName = tmpDiskImage.getAbsolutePath();
 		
 		// Create disk
-		ac.createProDisk(tmpImageName, "DELETEME", Disk.APPLE_140KB_DISK);
+		ac.createProDisk(tmpImageName, "DELETEME", DiskConstants.APPLE_140KB_DISK);
 		
 		// Actually test the implementation!
 		ac.putAppleSingle(tmpImageName, "HELLO", getClass().getResourceAsStream(AS_HELLO_BIN));

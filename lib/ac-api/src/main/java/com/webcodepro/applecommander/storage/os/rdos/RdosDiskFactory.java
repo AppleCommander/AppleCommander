@@ -19,7 +19,7 @@
  */
 package com.webcodepro.applecommander.storage.os.rdos;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFactory;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import org.applecommander.util.DataBuffer;
@@ -46,7 +46,7 @@ public class RdosDiskFactory implements DiskFactory {
      */
     public int check(ImageOrder order) {
         boolean good = false;
-        if (order.isSizeApprox(Disk.APPLE_140KB_DISK) || order.isSizeApprox(Disk.APPLE_140KB_NIBBLE_DISK)) {
+        if (order.isSizeApprox(DiskConstants.APPLE_140KB_DISK) || order.isSizeApprox(DiskConstants.APPLE_140KB_NIBBLE_DISK)) {
             // 16-sector disks are DOS ordered...
             good = true;
             for (int s=0; s<CATALOG_SECTORS; s++) {
@@ -87,7 +87,7 @@ public class RdosDiskFactory implements DiskFactory {
     public boolean testCatalogSector(DataBuffer data, final int maxBlocks) {
         boolean good = true;
         boolean atEnd = false;
-        for (int i=0; i<Disk.SECTOR_SIZE; i+= 0x20) {
+        for (int i = 0; i< DiskConstants.SECTOR_SIZE; i+= 0x20) {
             int check = data.getUnsignedByte(i);
             // Once we reach the last file, ensure the rest of the directory is all 0's
             if (atEnd && check != 0) return false;
@@ -104,7 +104,7 @@ public class RdosDiskFactory implements DiskFactory {
             int lengthInBytes = data.getUnsignedShort(i+0x1c);
             int firstBlock = data.getUnsignedShort(i+0x1e);
             good = validFileTypes.contains(fileType)
-                    && lengthInBytes <= lengthInBlocks*Disk.SECTOR_SIZE
+                    && lengthInBytes <= lengthInBlocks* DiskConstants.SECTOR_SIZE
                     && firstBlock < maxBlocks;
             if (!good) return good;
         }
