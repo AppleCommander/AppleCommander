@@ -31,16 +31,6 @@ public class CoordinateSelection {
     @ArgGroup(exclusive = false)
     private CoordinateSelection.BlockCoordinateSelection blockCoordinate;
 
-    public boolean includesBootSector() {
-        if (sectorCoordinate != null) {
-            return sectorCoordinate.isBootSector();
-        }
-        else if (blockCoordinate != null) {
-            return blockCoordinate.isBootBlock();
-        }
-        return false;
-    }
-
     public byte[] read(FormattedDisk disk) {
         if (sectorCoordinate != null) {
             return sectorCoordinate.read(disk);
@@ -68,10 +58,6 @@ public class CoordinateSelection {
         @Option(names = { "-s", "--sector" }, required = true, description = "Sector number.",
                 converter = IntegerTypeConverter.class)
         private Integer sector;
-
-        public boolean isBootSector() {
-            return track == 0 && sector == 0;
-        }
 
         public void validateTrackAndSector(FormattedDisk disk) throws IllegalArgumentException  {
             final int tracksPerDisk = disk.getImageOrder().getTracksPerDisk();
@@ -101,10 +87,6 @@ public class CoordinateSelection {
     public static class BlockCoordinateSelection {
         @Option(names = { "-b", "--block" }, description = "Block number.", converter = IntegerTypeConverter.class)
         private Integer block;
-
-        public boolean isBootBlock() {
-            return block == 0;
-        }
 
         public void validateBlockNum(FormattedDisk disk) throws IllegalArgumentException {
             final int blocksOnDevice = disk.getImageOrder().getBlocksOnDevice();

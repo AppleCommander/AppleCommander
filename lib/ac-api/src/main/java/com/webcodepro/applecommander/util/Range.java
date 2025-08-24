@@ -22,6 +22,7 @@ package com.webcodepro.applecommander.util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  *  Represents a range of numbers with helper methods to put them together. 
@@ -49,6 +50,9 @@ public class Range {
     }
     public int size() {
         return last - first + 1;
+    }
+    public IntStream stream() {
+        return IntStream.range(first, last+1);
     }
     
     @Override
