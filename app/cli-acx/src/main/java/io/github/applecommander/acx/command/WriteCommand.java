@@ -42,7 +42,7 @@ public class WriteCommand extends ReadOnlyDiskImageCommandOptions {
     @Override
     public int handleCommand() throws Exception {
         byte[] data = input.read();
-        coordinate.write(disk, data);
+        coordinate.write(disks.getFirst(), data);
         return 0;
     }
     

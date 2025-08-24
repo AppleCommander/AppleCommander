@@ -20,7 +20,7 @@ package com.webcodepro.applecommander.util;
 
 import java.io.*;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.Disks;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
@@ -60,7 +60,7 @@ public class ShrinkItUtilities
 		InputStream is = new ByteArrayInputStream(sourceData);
 		NuFileArchive a = new NuFileArchive(is);
 		// If we need to build a disk to hold files (i.e. .shk vs. .sdk), how big would that disk need to be?
-		int newDiskSize = Disk.sizeToFit(a.getArchiveSize());
+		int newDiskSize = Disks.sizeToFit(a.getArchiveSize());
 		if (startBlocks > 0)
 			newDiskSize = startBlocks*512;
 		source = DataBufferSource.create(newDiskSize, source.getName()).get();

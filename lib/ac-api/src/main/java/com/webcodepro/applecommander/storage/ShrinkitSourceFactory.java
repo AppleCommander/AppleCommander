@@ -40,6 +40,10 @@ public class ShrinkitSourceFactory implements Source.Factory {
 
     @Override
     public Optional<Source> fromSource(Source source) {
+        return fromSource(source, 0);
+    }
+
+    public Optional<Source> fromSource(Source source, int requestedBlockSize) {
         final int sampleSize = 128;
         final int requiredBytes = IntStream.of(NUFILE_ID.length, NUFX_ID.length, BXY_ID.length).max().getAsInt();
         if (source.getSize() >= sampleSize) {
@@ -54,11 +58,12 @@ public class ShrinkitSourceFactory implements Source.Factory {
             }
             if (nufile || nufx || bxy) {
                 try {
-                    byte[] imageData = unpackSHKFile(source.getName(), source, 0);
+                    byte[] imageData = unpackSHKFile(source.getName(), source, requestedBlockSize);
                     Source shkSource = DataBufferSource.create(imageData, source.getName() + ".po")
-                            .hints(Hint.PRODOS_BLOCK_ORDER)
+                            .hints(Hint.PRODOS_BLOCK_ORDER, Hint.ORIGIN_SHRINKIT)
                             .information(Information.builder("Original name").value(source.getName()),
                                          Information.builder("Original type").value(bxy ? "Binary II" : "Shrinkit"))
+                            .changed(true)
                             .get();
                     return Optional.of(shkSource);
                 } catch (IOException ex) {

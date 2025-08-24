@@ -19,6 +19,7 @@
  */
 package com.webcodepro.applecommander.storage.physical;
 
+import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
 
@@ -47,8 +48,8 @@ public class NibbleOrder extends DosOrder {
 	/**
 	 * Construct a NibbleOrder.
 	 */
-	public NibbleOrder(Source diskImageManager) {
-		super(diskImageManager);
+	public NibbleOrder(Source source) {
+		super(source);
 		// Identify 13-sector vs 16-sector
 		byte[] trackData = readTrackData(0);
 		sectorsPerTrack = identifySectorsPerTrack(trackData);
@@ -121,7 +122,12 @@ public class NibbleOrder extends DosOrder {
 		return 280;	// Note: Only relevant to DOS 3.3 disks; irrelevant for DOS 3.2. (Right?)
 	}
 
-	/**
+    @Override
+    public boolean is(Hint hint) {
+        return hint == Hint.NIBBLE_SECTOR_ORDER;
+    }
+
+    /**
 	 * Format the media.  Formatting at the ImageOrder level deals with
 	 * low-level issues.  A typical ordering just needs to have the image
 	 * "wiped," and that is the assumed implementation.  However, specialized
@@ -135,7 +141,7 @@ public class NibbleOrder extends DosOrder {
 		// pre-fill entire disk with 0xff
 		byte[] diskImage = new byte[232960];	// 6656 bytes per track
 		Arrays.fill(diskImage, (byte)0xff);
-		getDiskImageManager().writeBytes(0, DataBuffer.wrap(diskImage));
+		getSource().writeBytes(0, DataBuffer.wrap(diskImage));
 		// create initial address and data fields
 		byte[] addressField = new byte[14];
 		byte[] dataField = new byte[349];

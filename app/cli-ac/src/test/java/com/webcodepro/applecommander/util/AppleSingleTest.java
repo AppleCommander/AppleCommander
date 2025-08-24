@@ -21,14 +21,14 @@ package com.webcodepro.applecommander.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.DiskException;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
 import com.webcodepro.applecommander.ui.ac;
+import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -45,13 +45,14 @@ public class AppleSingleTest {
 		String tmpImageName = tmpDiskImage.getAbsolutePath();
 		
 		// Create disk
-		ac.createProDisk(tmpImageName, "DELETEME", Disk.APPLE_140KB_DISK);
+		ac.createProDisk(tmpImageName, "DELETEME", DiskConstants.APPLE_140KB_DISK);
 		
 		// Actually test the implementation!
 		ac.putAppleSingle(tmpImageName, "HELLO", getClass().getResourceAsStream(AS_HELLO_BIN));
-		
-		Disk disk = new Disk(tmpImageName);
-		FormattedDisk formattedDisk = disk.getFormattedDisks()[0];
+
+        Source source = Sources.create(Path.of(tmpImageName)).orElseThrow();
+        DiskFactory.Context ctx = Disks.inspect(source);
+		FormattedDisk formattedDisk = ctx.disks.getFirst();
 		List<FileEntry> files = formattedDisk.getFiles();
 		assertNotNull(files);
 		assertEquals(1, files.size());

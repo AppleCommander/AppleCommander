@@ -19,9 +19,10 @@
  */
 package com.webcodepro.applecommander.storage.physical;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
 
 /**
@@ -48,8 +49,8 @@ public class ProdosOrder extends ImageOrder {
 	/**
 	 * Construct a ProdosOrder.
 	 */
-	public ProdosOrder(Source diskImageManager) {
-		super(diskImageManager);
+	public ProdosOrder(Source source) {
+		super(source);
 	}
 	
 	/**
@@ -71,7 +72,7 @@ public class ProdosOrder extends ImageOrder {
 	 * Note: Defined in terms of reading sectors.
 	 */
 	public byte[] readBlock(int block) {
-		return readBytes(block * Disk.BLOCK_SIZE, Disk.BLOCK_SIZE);
+		return readBytes(block * DiskConstants.BLOCK_SIZE, DiskConstants.BLOCK_SIZE);
 	}
 	
 	/**
@@ -79,7 +80,7 @@ public class ProdosOrder extends ImageOrder {
 	 * Note: Defined in terms of reading sectors.
 	 */
 	public void writeBlock(int block, byte[] data) {
-		writeBytes(block * Disk.BLOCK_SIZE, data);
+		writeBytes(block * DiskConstants.BLOCK_SIZE, data);
 	}
 
 	/**
@@ -89,9 +90,9 @@ public class ProdosOrder extends ImageOrder {
 		int block = track * 8 + blockInterleave[sector];
 		byte[] blockData = readBlock(block);
 		int offset = blockOffsets[sector];
-		byte[] sectorData = new byte[Disk.SECTOR_SIZE];
-		System.arraycopy(blockData, offset * Disk.SECTOR_SIZE, 
-			sectorData, 0, Disk.SECTOR_SIZE); 
+		byte[] sectorData = new byte[DiskConstants.SECTOR_SIZE];
+		System.arraycopy(blockData, offset * DiskConstants.SECTOR_SIZE,
+			sectorData, 0, DiskConstants.SECTOR_SIZE);
 		return sectorData;
 	}
 	
@@ -102,7 +103,7 @@ public class ProdosOrder extends ImageOrder {
 		int block = track * 8 + blockInterleave[sector];
 		byte[] blockData = readBlock(block);
 		int offset = blockOffsets[sector];
-		System.arraycopy(bytes, 0, blockData, offset * Disk.SECTOR_SIZE, bytes.length);
+		System.arraycopy(bytes, 0, blockData, offset * DiskConstants.SECTOR_SIZE, bytes.length);
 		writeBlock(block, blockData);
 	}
 
@@ -112,4 +113,9 @@ public class ProdosOrder extends ImageOrder {
 	public String getName() {
 		return textBundle.get("ProdosOrder.OrderName"); //$NON-NLS-1$ 
 	}
+
+    @Override
+    public boolean is(Hint hint) {
+        return hint == Hint.PRODOS_BLOCK_ORDER;
+    }
 }

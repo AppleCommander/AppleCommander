@@ -21,4 +21,11 @@ package org.applecommander.hint;
 
 public interface HintProvider {
     boolean is(Hint hint);
+    default boolean isAny(Hint... hints) {
+        boolean good = true;
+        for (Hint hint : hints) {
+            good &= is(hint);
+        }
+        return good;
+    }
 }

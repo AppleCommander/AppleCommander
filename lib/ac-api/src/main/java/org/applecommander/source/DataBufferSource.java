@@ -39,12 +39,13 @@ public class DataBufferSource implements Source {
     boolean changed;
 
     private DataBufferSource(DataBuffer dataBuffer, String name, Set<Capability> capabilities, Set<Hint> hints,
-                             List<Information> information) {
+                             List<Information> information, boolean changed) {
         this.dataBuffer = dataBuffer;
         this.name = name;
         this.capabilities = capabilities;
         this.hints = hints;
         this.information = information;
+        this.changed = changed;
     }
 
     @Override
@@ -119,6 +120,7 @@ public class DataBufferSource implements Source {
         private Set<Capability> capabilities = Collections.emptySet();
         private Set<Hint> hints = Collections.emptySet();
         private List<Information> information = Collections.emptyList();
+        private boolean changed = false;
 
         private Builder(DataBuffer dataBuffer, String name) {
             this.dataBuffer = dataBuffer;
@@ -136,8 +138,12 @@ public class DataBufferSource implements Source {
             this.information = List.of(information);
             return this;
         }
+        public Builder changed(boolean changed) {
+            this.changed = changed;
+            return this;
+        }
         public DataBufferSource get() {
-            return new DataBufferSource(dataBuffer, name, capabilities, hints, information);
+            return new DataBufferSource(dataBuffer, name, capabilities, hints, information, changed);
         }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * AppleCommander - An Apple ][ image utility.
- * Copyright (C) 2019-2022 by Robert Greene and others
+ * Copyright (C) 2002-2022 by Robert Greene
  * robgreene at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it 
@@ -17,16 +17,26 @@
  * with this program; if not, write to the Free Software Foundation, Inc., 
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package io.github.applecommander.acx.base;
+package com.webcodepro.applecommander.storage;
 
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import io.github.applecommander.acx.converter.DiskConverter;
-import picocli.CommandLine.Option;
+import org.applecommander.image.UniversalDiskImage;
 
-import java.util.List;
-
-public abstract class ReadOnlyDiskImageCommandOptions extends ReusableCommandOptions {
-    @Option(names = { "-d", "--disk" }, description = "Image to process [$ACX_DISK_NAME].", required = true,
-            converter = DiskConverter.class, defaultValue = "${ACX_DISK_NAME}")
-    protected List<FormattedDisk> disks;
+/**
+ * Disk related constants.
+ * @author Rob Greene
+ */
+public interface DiskConstants {
+    int BLOCK_SIZE = 512;
+	int SECTOR_SIZE = 256;
+	int PRODOS_BLOCKS_ON_140KB_DISK = 280;
+	int DOS33_SECTORS_ON_140KB_DISK = 560;
+	int APPLE_140KB_DISK = 143360;
+	int APPLE_140KB_NIBBLE_DISK = 232960;
+    int APPLE_400KB_DISK = 409600;
+	int APPLE_800KB_DISK = 819200;
+	int APPLE_800KB_2IMG_DISK = APPLE_800KB_DISK + UniversalDiskImage.HEADER_SIZE;
+	int APPLE_5MB_HARDDISK = 5242880;
+	int APPLE_10MB_HARDDISK = 10485760;
+	int APPLE_20MB_HARDDISK = 20971520;
+	int APPLE_32MB_HARDDISK = 33553920;	// short one block!
 }

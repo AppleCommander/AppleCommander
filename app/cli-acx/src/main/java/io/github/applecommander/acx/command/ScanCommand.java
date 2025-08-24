@@ -22,10 +22,8 @@ package io.github.applecommander.acx.command;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonStreamParser;
-import com.webcodepro.applecommander.storage.DirectoryEntry;
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.*;
+import com.webcodepro.applecommander.storage.FilenameFilter;
 import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk;
@@ -34,6 +32,8 @@ import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
+import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 
 import java.io.*;
 import java.nio.file.*;
@@ -205,7 +205,7 @@ public class ScanCommand extends ReusableCommandOptions {
             // Build "glob:**.{do,po,dsk,...}"
             StringBuilder globs = new StringBuilder("glob:**.{");
             boolean first = true;
-            for (String ext : Disk.getAllExtensions()) {
+            for (String ext : FilenameFilter.getAllExtensions()) {
                 if (!first) globs.append(",");
                 ext = ext.substring(1); // skip the "." - lots of assumptions here!
                 // Unix is case-sensitive, so we need to make the pattern case-insensitive (yuck)
@@ -349,8 +349,9 @@ public class ScanCommand extends ReusableCommandOptions {
         Report(Path file) {
             try {
                 imageName = file.toString();
-                Disk disk = new Disk(file.toString());
-                for (FormattedDisk fdisk : disk.getFormattedDisks()) {
+                Source source = Sources.create(imageName).orElseThrow();
+                DiskFactory.Context ctx = Disks.inspect(source);
+                for (FormattedDisk fdisk : ctx.disks) {
                     logicalDisks++;
                     imageType = fdisk.getFormat();
                     readAllFiles(fdisk);

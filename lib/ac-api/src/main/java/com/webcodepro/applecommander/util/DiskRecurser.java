@@ -22,29 +22,20 @@ package com.webcodepro.applecommander.util;
 import java.util.function.Consumer;
 
 import com.webcodepro.applecommander.storage.DirectoryEntry;
-import com.webcodepro.applecommander.storage.Disk;
 import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 
 public class DiskRecurser {
 	private boolean recursive;
-	private Consumer<Disk> diskHeader = DiskRecurser::doNothing;
-	private Consumer<Disk> diskFooter = DiskRecurser::doNothing;
+	private Consumer<FormattedDisk> diskHeader = DiskRecurser::doNothing;
+	private Consumer<FormattedDisk> diskFooter = DiskRecurser::doNothing;
 	private Consumer<FormattedDisk> formattedDiskHeader = DiskRecurser::doNothing;
 	private Consumer<FormattedDisk> formattedDiskFooter = DiskRecurser::doNothing;
 	private Consumer<FileEntry> fileEntryConsumer = DiskRecurser::doNothing;
 	private Consumer<DirectoryEntry> directoryEntryConsumer = DiskRecurser::doNothing;
 	
 	private DiskRecurser() {}
-	
-	public void recurse(Disk disk) throws DiskException {
-		diskHeader.accept(disk);
-		for (FormattedDisk formattedDisk : disk.getFormattedDisks()) {
-			recurse(formattedDisk);
-		}
-		diskFooter.accept(disk);
-	}
 	
 	public void recurse(FormattedDisk formattedDisk) throws DiskException {
 		formattedDiskHeader.accept(formattedDisk);
@@ -68,7 +59,6 @@ public class DiskRecurser {
 		}
 	}
 
-	public static void doNothing(Disk disk) {}
 	public static void doNothing(FormattedDisk formattedDisk) {}
 	public static void doNothing(FileEntry fileEntry) {}
 	public static void doNothing(DirectoryEntry directoryEntry) {}
@@ -84,11 +74,11 @@ public class DiskRecurser {
 			recurser.recursive = true;
 			return this;
 		}
-		public Builder diskHeader(Consumer<Disk> consumer) {
+		public Builder diskHeader(Consumer<FormattedDisk> consumer) {
 			recurser.diskHeader = consumer;
 			return this;
 		}
-		public Builder diskFooter(Consumer<Disk> consumer) {
+		public Builder diskFooter(Consumer<FormattedDisk> consumer) {
 			recurser.diskFooter = consumer;
 			return this;
 		}

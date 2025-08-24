@@ -39,8 +39,10 @@ import com.webcodepro.applecommander.util.Host;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 import io.github.applecommander.applesingle.AppleSingle;
+import org.applecommander.hint.Hint;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -1277,9 +1279,9 @@ public class DiskExplorerTab {
 		ImageOrder imageOrder = disks[0].getImageOrder();
 		changeOrderToolItem.setEnabled(
 			(imageOrder.isBlockDevice() 
-				&& imageOrder.getBlocksOnDevice() == Disk.PRODOS_BLOCKS_ON_140KB_DISK)
+				&& imageOrder.getBlocksOnDevice() == DiskConstants.PRODOS_BLOCKS_ON_140KB_DISK)
 			|| (imageOrder.isTrackAndSectorDevice() 
-				&& imageOrder.getSectorsPerDisk() == Disk.DOS33_SECTORS_ON_140KB_DISK));
+				&& imageOrder.getSectorsPerDisk() == DiskConstants.DOS33_SECTORS_ON_140KB_DISK));
 		changeOrderToolItem.addSelectionListener(
 			new DropDownSelectionListener(getChangeImageOrderMenu()));
 		changeOrderToolItem.addSelectionListener(new SelectionAdapter () {
@@ -1477,20 +1479,18 @@ public class DiskExplorerTab {
 				window = new FileViewerWindow(shell, fileEntry, imageManager, fileFilter);
 			} else if (fileEntry.getFilename().toLowerCase().endsWith(".shk")
 				    || fileEntry.getFilename().toLowerCase().endsWith(".sdk")) {
-				try {
-					Source source = new FileEntrySource(fileEntry);
-					Disk disk = new Disk(fileEntry.getFilename(), source, 0, true);
-					FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-					DiskWindow diskWindow = new DiskWindow(shell, formattedDisks, imageManager);
-					diskWindow.open();
-					return;
-				} catch (IOException e) {
-					// Fall through to the default (match the else statement)
-					window = new FileViewerWindow(shell, fileEntry, imageManager);
-				}
-			} else {
-				window = new FileViewerWindow(shell, fileEntry, imageManager);
+                Source shkSource = new FileEntrySource(fileEntry);
+                Source source = Sources.create(shkSource).orElseThrow();
+                DiskFactory.Context ctx = Disks.inspect(source);
+                if (!ctx.disks.isEmpty()) {
+                    DiskWindow diskWindow = new DiskWindow(shell, ctx.disks.toArray(new FormattedDisk[0]), imageManager);
+                    diskWindow.open();
+                    return;
+                }
 			}
+            if (window == null) {
+                window = new FileViewerWindow(shell, fileEntry, imageManager);
+            }
 			window.open();
 		}
 	}
@@ -1809,7 +1809,7 @@ public class DiskExplorerTab {
 		try {
 			disks[0].changeImageOrder(newImageOrder);
 			String filename = disks[0].getFilename();
-			if (disks[0].isCompressed()) {	// extra ".gz" at end
+			if (filename.toLowerCase().endsWith(".gz")) {
 				int chop = filename.lastIndexOf(".", filename.length()-4); //$NON-NLS-1$
 				filename = filename.substring(0, chop+1) + extension + ".gz"; //$NON-NLS-1$
 			} else {
@@ -1840,14 +1840,15 @@ public class DiskExplorerTab {
 		Menu menu = new Menu(shell, SWT.NONE);
 		menu.addMenuListener(new MenuAdapter() {
 			public void menuShown(MenuEvent event) {
+                ImageOrder order = getDisk(0).getImageOrder();
 				Menu theMenu = (Menu) event.getSource();
 				MenuItem[] subItems = theMenu.getItems();
 				// Nibble Order (*.nib)
-				subItems[0].setSelection(getDisk(0).isNibbleOrder());
+				subItems[0].setSelection(order.is(Hint.NIBBLE_SECTOR_ORDER));
 				// DOS Order (*.dsk)
-				subItems[1].setSelection(getDisk(0).isDosOrder());
+				subItems[1].setSelection(order.is(Hint.DOS_SECTOR_ORDER));
 				// ProDOS Order (*.po)
-				subItems[2].setSelection(getDisk(0).isProdosOrder());
+				subItems[2].setSelection(order.is(Hint.PRODOS_BLOCK_ORDER));
 			}
 		});
 			
@@ -1855,9 +1856,9 @@ public class DiskExplorerTab {
 		item.setText(textBundle.get("ChangeToNibbleOrderMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				if (!getDisk(0).isNibbleOrder()) {
+				if (!getDisk(0).getImageOrder().is(Hint.NIBBLE_SECTOR_ORDER)) {
 					NibbleOrder nibbleOrder = new NibbleOrder(
-						DataBufferSource.create(Disk.APPLE_140KB_NIBBLE_DISK, "new-image.nib").get());
+						DataBufferSource.create(DiskConstants.APPLE_140KB_NIBBLE_DISK, "new-image.nib").get());
 					nibbleOrder.format();
 					changeImageOrder("nib", nibbleOrder); //$NON-NLS-1$
 				}
@@ -1868,9 +1869,9 @@ public class DiskExplorerTab {
 		item.setText(textBundle.get("ChangeToDosOrderMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				if (!getDisk(0).isDosOrder()) {
+				if (!getDisk(0).getImageOrder().is(Hint.DOS_SECTOR_ORDER)) {
 					changeImageOrder("dsk", new DosOrder( //$NON-NLS-1$
-						DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-image.dsk").get()));
+						DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-image.dsk").get()));
 				}
 			}
 		});
@@ -1879,9 +1880,9 @@ public class DiskExplorerTab {
 		item.setText(textBundle.get("ChangeToProdosOrderMenuItem")); //$NON-NLS-1$
 		item.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				if (!getDisk(0).isProdosOrder()) {
+				if (!getDisk(0).getImageOrder().is(Hint.PRODOS_BLOCK_ORDER)) {
 					changeImageOrder("po", new ProdosOrder( //$NON-NLS-1$
-						DataBufferSource.create(Disk.APPLE_140KB_DISK, "new-image.po").get()));
+						DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-image.po").get()));
 				}
 			}
 		});

@@ -24,7 +24,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
@@ -71,27 +71,27 @@ public enum SystemType {
 	}
 	
 	static int enforce140KbDisk(int size) {
-        if (size != Disk.APPLE_140KB_DISK) {
+        if (size != DiskConstants.APPLE_140KB_DISK) {
             LOG.warning("Setting image size to 140KB");
         }
-        return Disk.APPLE_140KB_DISK;
+        return DiskConstants.APPLE_140KB_DISK;
 	}
 	static int enforce800KbDisk(int size) {
-        if (size != Disk.APPLE_800KB_DISK) {
+        if (size != DiskConstants.APPLE_800KB_DISK) {
             LOG.warning("Setting image size to 800KB.");
         }
-        return Disk.APPLE_800KB_DISK;
+        return DiskConstants.APPLE_800KB_DISK;
 	}
 	static int enforce140KbOr800KbUpTo32MbDisk(int size) {
-	    if (size <= Disk.APPLE_140KB_DISK) {
+	    if (size <= DiskConstants.APPLE_140KB_DISK) {
 	        return enforce140KbDisk(size);
 	    }
-	    if (size <= Disk.APPLE_800KB_DISK) {
+	    if (size <= DiskConstants.APPLE_800KB_DISK) {
 	        return enforce800KbDisk(size);
 	    }
-	    if (size > Disk.APPLE_32MB_HARDDISK) {
+	    if (size > DiskConstants.APPLE_32MB_HARDDISK) {
 	        LOG.warning("Setting image size to 32MB.");
-	        return Disk.APPLE_32MB_HARDDISK;
+	        return DiskConstants.APPLE_32MB_HARDDISK;
 	    }
 	    return size;
 	}

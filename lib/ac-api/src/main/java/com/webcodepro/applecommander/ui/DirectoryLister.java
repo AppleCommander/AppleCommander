@@ -24,19 +24,20 @@ import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.webcodepro.applecommander.storage.*;
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.DiskUnrecognizedException;
-import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.FormattedDisk.FileColumnHeader;
 import com.webcodepro.applecommander.util.TextBundle;
 import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
+import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 
 public class DirectoryLister {
 	private static TextBundle textBundle = UiBundle.getInstance();
@@ -58,10 +59,12 @@ public class DirectoryLister {
 	}
 	
 	public void list(String filename) throws DiskUnrecognizedException, IOException {
-		Disk disk = new Disk(filename);
-		strategy.first(disk);
+        Source source = Sources.create(filename).orElseThrow();
+        DiskFactory.Context ctx = Disks.inspect(source);
+        // Pulling ImageOrder from a FormattedDisk to ensure it's one we chose
+		strategy.first(ctx.disks.getFirst().getImageOrder());
 
-		FileStreamer.forDisk(disk)
+		FileStreamer.forDisks(ctx.disks)
 			.recursive(true)
 			.includeDeleted(false)
 			.beforeDisk(strategy::beforeDisk)
@@ -69,7 +72,7 @@ public class DirectoryLister {
 			.stream()
 			.forEach(strategy::forEach);
 
-		strategy.last(disk);
+		strategy.last();
 	}
 	
 	public static abstract class ListingStrategy {
@@ -78,11 +81,11 @@ public class DirectoryLister {
 			this.display = display;
 		}
 		
-		public void first(Disk d) {};
+		public void first(ImageOrder o) {};
 		public void beforeDisk(FormattedDisk d) {}
 		public void afterDisk(FormattedDisk d) {}
 		public void forEach(FileTuple f) {}
-		public void last(Disk d) {};
+		public void last() {};
 	}
 	
 	public static class TextListingStrategy extends ListingStrategy {
@@ -166,11 +169,11 @@ public class DirectoryLister {
 			super(display);
 		}
         @Override
-		public void first(Disk disk) {
+		public void first(ImageOrder order) {
 			root = new JsonObject();
-			root.addProperty("filename", disk.getFilename());
-			root.addProperty("order", disk.getOrderName());
-			root.addProperty("physicalSize", disk.getPhysicalSize());
+			root.addProperty("filename", order.getSource().getName());
+			root.addProperty("order", order.getName());
+			root.addProperty("physicalSize", order.getPhysicalSize());
 			this.disks = new JsonArray();
 			root.add("disks", disks);
 		}
@@ -203,7 +206,7 @@ public class DirectoryLister {
 			}
 		}
         @Override
-		public void last(Disk disk) {
+		public void last() {
 			System.out.println(gson.toJson(root));			
 		}
 	}

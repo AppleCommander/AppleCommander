@@ -28,6 +28,7 @@ import org.applecommander.util.Information;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class UniversalDiskImage implements Source {
     public static final int MAGIC = 0x32494d47;     // "2IMG" marker
@@ -36,6 +37,7 @@ public class UniversalDiskImage implements Source {
 
     private final Source source;
     private final Info info;
+    private final Set<Hint> hints;
 
     public UniversalDiskImage(Source source) {
         this.source = source;
@@ -70,6 +72,13 @@ public class UniversalDiskImage implements Source {
         }
         this.info = new Info(creator, headerSize, version, imageFormat, flags, prodosBlocks,
                 dataOffset, dataLength, comment, creatorData);
+        Hint order = switch(info.imageFormat()) {
+            case 0 -> Hint.DOS_SECTOR_ORDER;
+            case 1 -> Hint.PRODOS_BLOCK_ORDER;
+            case 2 -> Hint.NIBBLE_SECTOR_ORDER;
+            default -> throw new RuntimeException("unexpected 2IMG image format: " + info.imageFormat());
+        };
+        this.hints = Set.of(order, Hint.UNIVERSAL_DISK_IMAGE);
     }
 
     public Info getInfo() {
@@ -99,12 +108,7 @@ public class UniversalDiskImage implements Source {
 
     @Override
     public boolean is(Hint hint) {
-        return switch (hint) {
-            case DOS_SECTOR_ORDER -> info.imageFormat() == 0;
-            case PRODOS_BLOCK_ORDER -> info.imageFormat() == 1;
-            case NIBBLE_SECTOR_ORDER -> info.imageFormat() == 2;
-            default -> false;
-        };
+        return hints.contains(hint);
     }
 
     @Override

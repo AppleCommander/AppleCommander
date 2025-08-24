@@ -19,10 +19,7 @@
  */
 package io.github.applecommander.acx.command;
 
-import com.webcodepro.applecommander.storage.DirectoryEntry;
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.DiskException;
-import com.webcodepro.applecommander.storage.FileEntry;
+import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.util.Name;
 import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
@@ -36,7 +33,6 @@ import picocli.CommandLine.Parameters;
 
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @Command(name = "copy", description = "Copy files between disks.",
          aliases = { "cp" })
@@ -54,7 +50,7 @@ public class CopyFileCommand extends ReadWriteDiskCommandOptions {
     
     @Option(names = { "-s", "--from", "--source" }, description = "Source disk for files.", 
             converter = DiskConverter.class, required = true)
-    private Disk sourceDisk;
+    private List<FormattedDisk> sourceDisks;
     
     @Parameters(arity = "*", description = "File glob(s) to copy (default = '*')", 
             defaultValue = "*")
@@ -62,18 +58,18 @@ public class CopyFileCommand extends ReadWriteDiskCommandOptions {
 
     @Override
     public int handleCommand() throws Exception {
-        List<FileTuple> files = FileStreamer.forDisk(sourceDisk)
+        List<FileTuple> files = FileStreamer.forDisks(sourceDisks)
                 .ignoreErrors(true)
                 .includeTypeOfFile(TypeOfFile.BOTH)
                 .recursive(false)   // we handle recursion in the FileUtils
                 .matchGlobs(globs)
                 .stream()
-                .collect(Collectors.toList());
+                .toList();
 
         if (files.isEmpty()) {
             LOG.warning(() -> String.format("No matches found for %s.", String.join(",", globs)));
         } else {
-            DirectoryEntry targetDirectory = disk.getFormattedDisks()[0];
+            DirectoryEntry targetDirectory = disks.getFirst();
             if (targetPath != null) {
                 Name name = new Name(targetPath);
                 FileEntry found = name.getEntry(targetDirectory);

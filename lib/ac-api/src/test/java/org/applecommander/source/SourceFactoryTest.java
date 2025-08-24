@@ -43,6 +43,7 @@ public class SourceFactoryTest {
             "DOS 3.3 System Master.woz1",
             "DOS 3.3 System Master.woz2",
             "galatt.dsk",
+            "Gutenberg_side1.DSK",
             "MASTER.DSK",
             "MERLIN8PRO1.DSK",
             "original321sysmaspls.nib",
@@ -56,6 +57,7 @@ public class SourceFactoryTest {
             "Prodos.dsk",
             "RDOSboot.dsk",
             "SSIsave.dsk",
+            "Super-Mon-dev.dsk",
             "UniDOS_3.3.dsk"
         })
     public void testFileSourceRecognition(String filename) {

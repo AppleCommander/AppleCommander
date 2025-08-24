@@ -22,6 +22,7 @@ package com.webcodepro.applecommander.storage.os.dos33;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.TextBundle;
+import static com.webcodepro.applecommander.storage.DiskConstants.*;
 
 /**
  * Manages a disk that is in OzDOS format.
@@ -65,8 +66,6 @@ public class OzDosFormatDisk extends DosFormatDisk {
 		OzDosFormatDisk disk2 = new OzDosFormatDisk(filename, imageOrder, OZDOS_DISK_2);
 		disk1.format();
 		disk2.format();
-        disk1.setFormattedDisks(disk1, disk2);
-        disk2.setFormattedDisks(disk1, disk2);
 		return new OzDosFormatDisk[] { disk1, disk2 };
 	}
 	/**

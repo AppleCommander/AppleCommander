@@ -23,7 +23,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
@@ -155,7 +155,7 @@ public class GutenbergFileEntry implements FileEntry {
 	 */
 	public int getSize() {
 		// Nothing special, just compute from number of sectors
-		int size = getSectorsUsed() * Disk.SECTOR_SIZE;
+		int size = getSectorsUsed() * DiskConstants.SECTOR_SIZE;
 		return size;
 	}
 	

@@ -26,23 +26,15 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.DiskException;
-import com.webcodepro.applecommander.storage.DiskUnrecognizedException;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.*;
+import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 
 /**
  * FileStreamer is utility class that will (optionally) recurse through all directories and
@@ -63,16 +55,18 @@ import com.webcodepro.applecommander.storage.FormattedDisk;
 public class FileStreamer {
     private static final Consumer<FormattedDisk> NOOP_CONSUMER = d -> {};
 
-    public static FileStreamer forDisk(File file) throws IOException, DiskUnrecognizedException {
-        return forDisk(file.getPath());
+    public static FileStreamer forDisks(File file) throws IOException, DiskUnrecognizedException {
+        return forDisks(file.getPath());
     }
-    public static FileStreamer forDisk(String fileName) throws IOException, DiskUnrecognizedException {
-        return new FileStreamer(new Disk(fileName));
+    public static FileStreamer forDisks(String fileName) throws IOException, DiskUnrecognizedException {
+        Source source = Sources.create(fileName).orElseThrow();
+        DiskFactory.Context ctx = Disks.inspect(source);
+        return new FileStreamer(ctx.disks.toArray(new FormattedDisk[0]));
     }
-    public static FileStreamer forDisk(Disk disk) throws DiskUnrecognizedException {
-        return new FileStreamer(disk);
+    public static FileStreamer forDisks(Collection<FormattedDisk> disks) throws DiskUnrecognizedException {
+        return new FileStreamer(disks.toArray(new FormattedDisk[0]));
     }
-    public static FileStreamer forFormattedDisks(FormattedDisk... disks) {
+    public static FileStreamer forDisks(FormattedDisk... disks) {
         return new FileStreamer(disks);
     }
     
@@ -91,9 +85,6 @@ public class FileStreamer {
     private boolean includeDeletedFlag = false;
     private List<PathMatcher> pathMatchers = new ArrayList<>();
     
-    private FileStreamer(Disk disk) throws DiskUnrecognizedException {
-        this(disk.getFormattedDisks());
-    }
     private FileStreamer(FormattedDisk... disks) {
         this.formattedDisks = disks;
     }

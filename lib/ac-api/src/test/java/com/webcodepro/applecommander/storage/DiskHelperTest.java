@@ -22,6 +22,8 @@ package com.webcodepro.applecommander.storage;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
 import com.webcodepro.applecommander.storage.filters.*;
 import com.webcodepro.applecommander.testconfig.TestConfig;
+import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -218,11 +220,20 @@ public class DiskHelperTest {
         assertCanReadFiles(disks);
     }
 
+    @Test
+    public void testLoad3132Disk() throws DiskException, IOException {
+        FormattedDisk[] disks = showDirectory(config.getDiskDir() +
+                "/3132.DSK.gz");
+        assertCanReadFiles(disks);
+    }
+
 	protected FormattedDisk[] showDirectory(String imageName) throws IOException, DiskException {
-		Disk disk = new Disk(imageName);
-		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-		for (int i=0; i<formattedDisks.length; i++) {
-			FormattedDisk formattedDisk = formattedDisks[i];
+        Source source = Sources.create(imageName).orElseThrow();
+        DiskFactory.Context ctx = Disks.inspect(source);
+        if (ctx.disks.isEmpty()) {
+            throw new DiskUnrecognizedException("no disks discovered for: " + imageName);
+        }
+        for (FormattedDisk formattedDisk : ctx.disks) {
 			System.out.println();
 			System.out.println(formattedDisk.getDiskName());
 			List<FileEntry> files = formattedDisk.getFiles();
@@ -238,7 +249,7 @@ public class DiskHelperTest {
 			
 			showDiskUsage(formattedDisk);
 		}
-		return formattedDisks;
+		return ctx.disks.toArray(new FormattedDisk[0]);
 	}
 	
 	protected void showFiles(List<FileEntry> files, String indent) throws DiskException {

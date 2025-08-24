@@ -23,7 +23,7 @@ import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.eclipse.swt.widgets.Shell;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
@@ -59,7 +59,7 @@ public class DiskImageWizard extends Wizard {
 	public static final int ORDER_PRODOS = 2;
 	public static final int ORDER_NIBBLE = 3;
 	private int format = FORMAT_DOS33;
-	private int size = Disk.APPLE_140KB_DISK;
+	private int size = DiskConstants.APPLE_140KB_DISK;
 	private String fileName = new String();
 	private String volumeName = new String();
 	private int order = ORDER_PRODOS;
@@ -212,6 +212,6 @@ public class DiskImageWizard extends Wizard {
 	 * Indicates if this image is a hard disk.
 	 */
 	public boolean isHardDisk() {
-		return size > Disk.APPLE_800KB_2IMG_DISK;
+		return size > DiskConstants.APPLE_800KB_2IMG_DISK;
 	}
 }

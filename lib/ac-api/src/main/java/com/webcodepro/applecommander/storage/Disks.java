@@ -47,7 +47,7 @@ public class Disks {
      * Standardized FormattedDisk creation. Uses the ServiceLoader mechanism to identify
      * all potential FormattedDisk factories.
      */
-    static List<FormattedDisk> inspect(Source source) {
+    public static DiskFactory.Context inspect(Source source) {
         DiskFactory.Context ctx = new DiskFactory.Context(source);
         FACTORIES.forEach(factory -> {
             try {
@@ -56,6 +56,27 @@ public class Disks {
                 // ignore it
             }
         });
-        return ctx.disks;
+        return ctx;
+    }
+
+    /**
+     * Find the standard sized disk that will fit the requested number of bytes.
+     * @return int size of the disk if it will satisfy the request, -1 otherwise
+     */
+    public static int sizeToFit(long bytes) {
+        if (bytes < DiskConstants.APPLE_140KB_DISK) {
+            return DiskConstants.APPLE_140KB_DISK;
+        } else if (bytes < DiskConstants.APPLE_800KB_DISK) {
+            return DiskConstants.APPLE_800KB_DISK;
+        } else if (bytes < DiskConstants.APPLE_5MB_HARDDISK) {
+            return DiskConstants.APPLE_5MB_HARDDISK;
+        } else if (bytes < DiskConstants.APPLE_10MB_HARDDISK) {
+            return DiskConstants.APPLE_10MB_HARDDISK;
+        } else if (bytes < DiskConstants.APPLE_20MB_HARDDISK) {
+            return DiskConstants.APPLE_20MB_HARDDISK;
+        } else if (bytes < DiskConstants.APPLE_32MB_HARDDISK) {
+            return DiskConstants.APPLE_32MB_HARDDISK;
+        }
+        return -1;
     }
 }

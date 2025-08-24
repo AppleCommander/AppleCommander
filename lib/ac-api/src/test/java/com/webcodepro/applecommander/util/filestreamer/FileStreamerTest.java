@@ -55,7 +55,7 @@ public class FileStreamerTest {
     @Test
     public void testRecursiveListMerlin() throws DiskUnrecognizedException, IOException {
         List<String> actual = 
-            FileStreamer.forDisk("./src/test/resources/disks/MERLIN8PRO1.DSK")
+            FileStreamer.forDisks("./src/test/resources/disks/MERLIN8PRO1.DSK")
                         .recursive(true)
                         .stream()
                         .map(this::makeFullPath)
@@ -67,7 +67,7 @@ public class FileStreamerTest {
     @Test
     public void testNonRecursiveListMerlin() throws DiskUnrecognizedException, IOException {
         List<String> actual = 
-            FileStreamer.forDisk("./src/test/resources/disks/MERLIN8PRO1.DSK")
+            FileStreamer.forDisks("./src/test/resources/disks/MERLIN8PRO1.DSK")
                         .recursive(false)
                         .stream()
                         .map(this::makeFullPath)
@@ -83,7 +83,7 @@ public class FileStreamerTest {
     @Test
     public void testListUnidos() throws DiskUnrecognizedException, IOException {
         List<String> actual = 
-            FileStreamer.forDisk("./src/test/resources/disks/UniDOS_3.3.dsk")
+            FileStreamer.forDisks("./src/test/resources/disks/UniDOS_3.3.dsk")
                         .recursive(true)
                         .stream()
                         .map(this::makeFullPath)

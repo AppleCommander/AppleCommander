@@ -30,16 +30,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
 
-import com.webcodepro.applecommander.storage.DirectoryEntry;
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.DiskException;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FileFilter;
-import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskInformation;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
 import com.webcodepro.applecommander.storage.filters.HexDumpFileFilter;
@@ -63,9 +59,10 @@ import io.github.applecommander.bastools.api.Visitors;
 import io.github.applecommander.bastools.api.model.Program;
 import io.github.applecommander.bastools.api.model.Token;
 import org.applecommander.hint.Hint;
-import org.applecommander.image.DiskCopyImage;
 import org.applecommander.source.DataBufferSource;
+import org.applecommander.source.FileSource;
 import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 import org.applecommander.util.Information;
 
 /**
@@ -173,15 +170,15 @@ public class ac {
 			} else if ("-geos".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				putGEOS(args[1]);
 			} else if ("-dos140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				createDosDisk(args[1], Disk.APPLE_140KB_DISK);
+				createDosDisk(args[1], DiskConstants.APPLE_140KB_DISK);
 			} else if ("-pas140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				createPasDisk(args[1], args[2], Disk.APPLE_140KB_DISK);
+				createPasDisk(args[1], args[2], DiskConstants.APPLE_140KB_DISK);
 			} else if ("-pas800".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				createPasDisk(args[1], args[2], Disk.APPLE_800KB_DISK);
+				createPasDisk(args[1], args[2], DiskConstants.APPLE_800KB_DISK);
 			} else if ("-pro140".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				createProDisk(args[1], args[2], Disk.APPLE_140KB_DISK);
+				createProDisk(args[1], args[2], DiskConstants.APPLE_140KB_DISK);
 			} else if ("-pro800".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
-				createProDisk(args[1], args[2], Disk.APPLE_800KB_DISK);
+				createProDisk(args[1], args[2], DiskConstants.APPLE_800KB_DISK);
 			} else if ("-convert".equalsIgnoreCase(args[0])) { //$NON-NLS-1$
 				if (args.length > 3)
 					convert(args[1], args[2], Integer.parseInt(args[3]));
@@ -219,10 +216,10 @@ public class ac {
 		if (!file.canRead()){
 			throw new IOException("Unable to read input file named "+imageName+".");
 		}
-		
-		Disk disk = new Disk(imageName);
-		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-		FormattedDisk formattedDisk = formattedDisks[0];
+
+        Source source = Sources.create(file).orElseThrow();
+        DiskFactory.Context ctx = Disks.inspect(source);
+		FormattedDisk formattedDisk = ctx.disks.getFirst();
 		// Look through the supplied types and try to pick AppleSoft.  Otherwise, let's try "A".
 		String fileType = Arrays.asList(formattedDisk.getFiletypes()).stream()
 				.filter(ft -> "A".equalsIgnoreCase(ft) || "BAS".equalsIgnoreCase(ft))
@@ -258,9 +255,9 @@ public class ac {
 			while ((byteCount = is.read(inb)) > 0) {
 				buf.write(inb, 0, byteCount);
 			}
-			Disk disk = new Disk(imageName);
-			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-			FormattedDisk formattedDisk = formattedDisks[0];
+            Source source = Sources.create(Path.of(imageName)).orElseThrow();
+            DiskFactory.Context ctx = Disks.inspect(source);
+			FormattedDisk formattedDisk = ctx.disks.getFirst();
 			FileEntry entry = name.createEntry(formattedDisk);
 			if (entry != null) {
 				entry.setFiletype(fileType);
@@ -311,13 +308,12 @@ public class ac {
 
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
 		StreamUtil.copy(inputStream, buf);
-		Disk disk = new Disk(imageName);
-		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-		if (formattedDisks == null)
+        Source source = Sources.create(Path.of(imageName)).orElseThrow();
+        DiskFactory.Context ctx = Disks.inspect(source);
+		if (ctx.disks.isEmpty())
 			System.out.println("Dude, formattedDisks is null!");
-		FormattedDisk formattedDisk = formattedDisks[0];
-		boolean isDC42 = disk.getDiskImageManager() instanceof DiskCopyImage;
-		if (!disk.isSDK() && !isDC42) {
+		FormattedDisk formattedDisk = ctx.disks.getFirst();
+        if (!source.isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
 			FileEntry entry = name.createEntry(formattedDisk);
 			if (entry != null) {
 				entry.setFiletype(fileType);
@@ -410,17 +406,15 @@ public class ac {
 	 */
 	static void deleteFile(String imageName, String fileName)
 		throws IOException, DiskException {
-		Disk disk = new Disk(imageName);
+        Source source = Sources.create(Path.of(imageName)).orElseThrow();
+        DiskFactory.Context ctx = Disks.inspect(source);
 		Name name = new Name(fileName);
-		boolean isDC42 = disk.getDiskImageManager() instanceof DiskCopyImage;
-		if (!disk.isSDK() && !isDC42) {
-			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-			for (int i = 0; i < formattedDisks.length; i++) {
-				FormattedDisk formattedDisk = formattedDisks[i];
+        if (!source.isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
+            for (FormattedDisk formattedDisk : ctx.disks) {
 				FileEntry entry = name.getEntry(formattedDisk);
 				if (entry != null) {
 					entry.delete();
-					disk.save();
+					formattedDisk.save();
 				} else {
 					System.err.println(textBundle.format(
 							"CommandLineNoMatchMessage", name.fullName)); //$NON-NLS-1$
@@ -437,13 +431,12 @@ public class ac {
 	 */
 	static void getFile(String imageName, String fileName, boolean filter, PrintStream out)
 		throws IOException, DiskException {
-		Disk disk = new Disk(imageName);
+        Source source = Sources.create(Path.of(imageName)).orElseThrow();
+        DiskFactory.Context ctx = Disks.inspect(source);
 		Name name = new Name(fileName);
-		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
 		if (out == null)
 			out = System.out;
-		for (int i = 0; i < formattedDisks.length; i++) {
-			FormattedDisk formattedDisk = formattedDisks[i];
+        for (FormattedDisk formattedDisk : ctx.disks) {
 			FileEntry entry = name.getEntry(formattedDisk);
 			if (entry != null) {
 				if (filter) {
@@ -467,7 +460,8 @@ public class ac {
 	 * Extract all files in the image according to their respective filetype.
 	 */
 	static void getFiles(String imageName, String directory) throws IOException, DiskException {
-		Disk disk = new Disk(imageName);
+        Source source = Sources.create(Path.of(imageName)).orElseThrow();
+        DiskFactory.Context ctx = Disks.inspect(source);
 		if ((directory != null) && (directory.length() > 0)) {
 			// Add a final directory separator if the user didn't supply one
 			if (!directory.endsWith(File.separator))
@@ -475,9 +469,7 @@ public class ac {
 		} else {
 			directory = "."+File.separator;
 		}
-		FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-		for (int i = 0; i < formattedDisks.length; i++) { 
-			FormattedDisk formattedDisk = formattedDisks[i];
+        for (FormattedDisk formattedDisk : ctx.disks) {
 			writeFiles(formattedDisk.getFiles(), directory);
 		}
 	}
@@ -550,18 +542,15 @@ public class ac {
 	 */
 	static void getDiskInfo(String[] args) throws IOException, DiskException {
 		for (int d = 1; d < args.length; d++) {
-			Disk disk = new Disk(args[d]);
-			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-			for (int i = 0; i < formattedDisks.length; i++) {
-				FormattedDisk formattedDisk = formattedDisks[i];
+            Source source = Sources.create(Path.of(args[d])).orElseThrow();
+            DiskFactory.Context ctx = Disks.inspect(source);
+            for (FormattedDisk formattedDisk : ctx.disks) {
 				for (DiskInformation diskinfo : formattedDisk.getDiskInformation()) {
 					System.out.println(diskinfo.getLabel() + ": " + diskinfo.getValue());
 				}
-				formattedDisk.getDiskImageManager().get(Source.class).ifPresent(source -> {
-					for (Information info : source.information()) {
-						System.out.println(info.label() + ": " + info.value());
-					}
-				});
+                for (Information info : source.information()) {
+                    System.out.println(info.label() + ": " + info.value());
+                }
 			}
 			System.out.println();
 		}
@@ -581,16 +570,14 @@ public class ac {
 	 */
 	static void setFileLocked(String imageName, Name name,
 		boolean lockState) throws IOException, DiskException {
-		Disk disk = new Disk(imageName);
-		boolean isDC42 = disk.getDiskImageManager() instanceof DiskCopyImage;
-		if (!disk.isSDK() && !isDC42) {
-			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-			for (int i = 0; i < formattedDisks.length; i++) {
-				FormattedDisk formattedDisk = formattedDisks[i];
+        Source source = Sources.create(Path.of(imageName)).orElseThrow();
+        DiskFactory.Context ctx = Disks.inspect(source);
+        if (!source.isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
+            for (FormattedDisk formattedDisk : ctx.disks) {
 				FileEntry entry = name.getEntry(formattedDisk);
 				if (entry != null) {
 					entry.setLocked(lockState);
-					disk.save();
+					formattedDisk.save();
 				} else {
 					System.err.println(textBundle.format(
 						"CommandLineNoMatchMessage", name.fullName)); //$NON-NLS-1$
@@ -607,13 +594,12 @@ public class ac {
 	 */
 	public static void setDiskName(String imageName, String volName)
 		throws IOException, DiskException {
-		Disk disk = new Disk(imageName);
-		boolean isDC42 = disk.getDiskImageManager() instanceof DiskCopyImage;
-		if (!disk.isSDK() && !isDC42) {
-			FormattedDisk[] formattedDisks = disk.getFormattedDisks();
-			FormattedDisk formattedDisk = formattedDisks[0];
+        Source source = Sources.create(Path.of(imageName)).orElseThrow();
+        DiskFactory.Context ctx = Disks.inspect(source);
+        if (!source.isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
+			FormattedDisk formattedDisk = ctx.disks.getFirst();
 			formattedDisk.setDiskName(volName);
-			formattedDisks[0].save();
+			formattedDisk.save();
 		}
 		else
 			throw new IOException(textBundle.get("CommandLineSDKReadOnly"));
@@ -673,7 +659,15 @@ public class ac {
 	 */
 	static void convert(String shrinkName, String imageName, int imageSize)
 		throws IOException {
-		Disk disk = new Disk(shrinkName, imageSize);
+        // In order to physically size the image, we need to take control of the Disk creation process:
+        // 1. Use the FileSource to simply grab all the bytes.
+        FileSource fileSource = new FileSource(Path.of(shrinkName));
+        // 2. Use the (custom) ShrinkitSourceFactory method to create the "correct" sized disk.
+        ShrinkitSourceFactory factory = new ShrinkitSourceFactory();
+        Source source = factory.fromSource(fileSource, imageSize).orElseThrow();
+        // 3. Hand the Source generated from the file back to the inspection routines to get our FormattedDisk.
+        DiskFactory.Context ctx = Disks.inspect(source);
+        FormattedDisk disk = ctx.disks.getFirst();
 		disk.setFilename(imageName);
 		disk.save();
 	}

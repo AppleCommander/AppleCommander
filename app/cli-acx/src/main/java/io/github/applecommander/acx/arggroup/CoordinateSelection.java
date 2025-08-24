@@ -19,8 +19,7 @@
  */
 package io.github.applecommander.acx.arggroup;
 
-import com.webcodepro.applecommander.storage.Disk;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import com.webcodepro.applecommander.storage.FormattedDisk;
 
 import io.github.applecommander.acx.converter.IntegerTypeConverter;
 import picocli.CommandLine.ArgGroup;
@@ -42,7 +41,7 @@ public class CoordinateSelection {
         return false;
     }
 
-    public byte[] read(Disk disk) {
+    public byte[] read(FormattedDisk disk) {
         if (sectorCoordinate != null) {
             return sectorCoordinate.read(disk);
         }
@@ -52,7 +51,7 @@ public class CoordinateSelection {
         return disk.readSector(0, 0);
     }
 
-    public void write(Disk disk, byte[] data) {
+    public void write(FormattedDisk disk, byte[] data) {
         if (sectorCoordinate != null) {
             sectorCoordinate.write(disk, data);
         }
@@ -74,7 +73,7 @@ public class CoordinateSelection {
             return track == 0 && sector == 0;
         }
 
-        public void validateTrackAndSector(Disk disk) throws IllegalArgumentException  {
+        public void validateTrackAndSector(FormattedDisk disk) throws IllegalArgumentException  {
             final int tracksPerDisk = disk.getImageOrder().getTracksPerDisk();
             final int sectorsPerTrack = disk.getImageOrder().getSectorsPerTrack();
 
@@ -89,12 +88,12 @@ public class CoordinateSelection {
             }
         }
 
-        public byte[] read(Disk disk) {
+        public byte[] read(FormattedDisk disk) {
             validateTrackAndSector(disk);
             return disk.readSector(track, sector);
         }
 
-        public void write(Disk disk, byte[] data) {
+        public void write(FormattedDisk disk, byte[] data) {
             validateTrackAndSector(disk);
             disk.writeSector(track, sector, data);
         }
@@ -107,7 +106,7 @@ public class CoordinateSelection {
             return block == 0;
         }
 
-        public void validateBlockNum(Disk disk) throws IllegalArgumentException {
+        public void validateBlockNum(FormattedDisk disk) throws IllegalArgumentException {
             final int blocksOnDevice = disk.getImageOrder().getBlocksOnDevice();
 
             if (block < 0 || block >= blocksOnDevice) {
@@ -116,12 +115,12 @@ public class CoordinateSelection {
             }
         }
 
-        public byte[] read(Disk disk) {
+        public byte[] read(FormattedDisk disk) {
             validateBlockNum(disk);
             return disk.readBlock(block);
         }
 
-        public void write(Disk disk, byte[] data) {
+        public void write(FormattedDisk disk, byte[] data) {
             validateBlockNum(disk);
             disk.writeBlock(block, data);
         }

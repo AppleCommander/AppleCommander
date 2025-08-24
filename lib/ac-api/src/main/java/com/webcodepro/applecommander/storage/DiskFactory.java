@@ -42,9 +42,9 @@ public interface DiskFactory {
             int signature = source.readBytes(0, 4).readInt();
             if (WozImage.WOZ1_MAGIC == signature || WozImage.WOZ2_MAGIC == signature) {
                 orders.add(new WozOrder(source));
-            } else if (source.is(Hint.NIBBLE_SECTOR_ORDER) || source.isApproxEQ(Disk.APPLE_140KB_NIBBLE_DISK)) {
+            } else if (source.is(Hint.NIBBLE_SECTOR_ORDER) || source.isApproxEQ(DiskConstants.APPLE_140KB_NIBBLE_DISK)) {
                 orders.add(new NibbleOrder(source));
-            } else if (source.is(Hint.PRODOS_BLOCK_ORDER) || source.getSize() > Disk.APPLE_400KB_DISK || source.extensionLike("po")) {
+            } else if (source.is(Hint.PRODOS_BLOCK_ORDER) || source.getSize() > DiskConstants.APPLE_400KB_DISK || source.extensionLike("po")) {
                 orders.add(new ProdosOrder(source));
             } else if (source.is(Hint.DOS_SECTOR_ORDER) || source.extensionLike("do")) {
                 orders.add(new DosOrder(source));

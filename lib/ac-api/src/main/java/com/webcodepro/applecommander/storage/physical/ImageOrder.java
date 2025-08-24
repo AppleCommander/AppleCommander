@@ -19,7 +19,8 @@
  */
 package com.webcodepro.applecommander.storage.physical;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
+import org.applecommander.hint.HintProvider;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
 
@@ -54,46 +55,46 @@ import org.applecommander.util.DataBuffer;
  * <p>
  * @author Rob Greene (RobGreene@users.sourceforge.net)
  */
-public abstract class ImageOrder {
+public abstract class ImageOrder implements HintProvider {
 	/**
 	 * This is the physical copy of the disk image which a particular
 	 * implementation of ImageOrder will interpret.
 	 */
-	private Source diskImageManager;
+	private Source source;
 	
 	/**
 	 * Construct a ImageOrder.
 	 */
-	public ImageOrder(Source diskImageManager) {
-		setDiskImageManager(diskImageManager);
+	public ImageOrder(Source source) {
+		setSource(source);
 	}
 
 	/**
 	 * Get the physical disk image.
 	 */
-	public Source getDiskImageManager() {
-		return diskImageManager;
+	public Source getSource() {
+		return source;
 	}
 	
 	/**
 	 * Answer with the physical size of this disk volume.
 	 */
 	public int getPhysicalSize() {
-		return diskImageManager.getSize();
+		return source.getSize();
 	}
 	
 	/**
 	 * Set the physical disk image.
 	 */
-	public void setDiskImageManager(Source diskImageManager) {
-		this.diskImageManager = diskImageManager;
+	public void setSource(Source source) {
+		this.source = source;
 	}
 	
 	/**
 	 * Extract a portion of the disk image.
 	 */
 	public byte[] readBytes(int start, int length) {
-		DataBuffer data = diskImageManager.readBytes(start, length);
+		DataBuffer data = source.readBytes(start, length);
 		byte[] bytes = new byte[length];
 		data.get(0, bytes);
 		return bytes;
@@ -103,14 +104,14 @@ public abstract class ImageOrder {
 	 * Write data to the disk image.
 	 */
 	public void writeBytes(int start, byte[] bytes) {
-		diskImageManager.writeBytes(start, DataBuffer.wrap(bytes));
+		source.writeBytes(start, DataBuffer.wrap(bytes));
 	}
 
 	/**
 	 * Answer with the number of blocks on this device.
 	 */
 	public int getBlocksOnDevice() {
-		return getPhysicalSize() / Disk.BLOCK_SIZE;
+		return getPhysicalSize() / DiskConstants.BLOCK_SIZE;
 	}
 
 	/**
@@ -142,15 +143,15 @@ public abstract class ImageOrder {
 	 * Answer with the number of tracks on this device.
 	 */
 	public int getTracksPerDisk() {
-		return getPhysicalSize() / (getSectorsPerTrack() * Disk.SECTOR_SIZE);
+		return getPhysicalSize() / (getSectorsPerTrack() * DiskConstants.SECTOR_SIZE);
 	}
 	
 	/**
 	 * Answer with the number of sectors per track on this device.
 	 */
 	public int getSectorsPerTrack() {
-		if (isSizeApprox(Disk.APPLE_800KB_DISK) 
-			|| isSizeApprox(Disk.APPLE_800KB_2IMG_DISK)) {
+		if (isSizeApprox(DiskConstants.APPLE_800KB_DISK)
+			|| isSizeApprox(DiskConstants.APPLE_800KB_2IMG_DISK)) {
 			return 32;
 		}
 		return 16;
@@ -183,8 +184,8 @@ public abstract class ImageOrder {
 	 * sector markers. 
 	 */
 	public void format() {
-		int size = diskImageManager.getSize();
-		diskImageManager.writeBytes(0, DataBuffer.create(size));
+		int size = source.getSize();
+		source.writeBytes(0, DataBuffer.create(size));
 	}
 	
 	/**

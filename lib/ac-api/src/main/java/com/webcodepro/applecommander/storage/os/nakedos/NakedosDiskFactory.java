@@ -19,7 +19,7 @@
  */
 package com.webcodepro.applecommander.storage.os.nakedos;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFactory;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import org.applecommander.util.DataBuffer;
@@ -36,7 +36,7 @@ public class NakedosDiskFactory implements DiskFactory {
 
     public boolean check(ImageOrder image) {
         boolean good = false;
-        if (image.isSizeApprox(Disk.APPLE_140KB_DISK) || image.isSizeApprox(Disk.APPLE_140KB_NIBBLE_DISK)) {
+        if (image.isSizeApprox(DiskConstants.APPLE_140KB_DISK) || image.isSizeApprox(DiskConstants.APPLE_140KB_NIBBLE_DISK)) {
             final int catalogSize = 560;      // 35 tracks, 16 bytes per track
             // Capture entire catalog
             DataBuffer cat = DataBuffer.create(catalogSize);

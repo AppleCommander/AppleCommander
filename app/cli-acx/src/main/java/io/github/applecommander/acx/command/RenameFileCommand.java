@@ -21,7 +21,6 @@ package io.github.applecommander.acx.command;
 
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
@@ -51,12 +50,12 @@ public class RenameFileCommand extends ReadWriteDiskCommandOptions {
 
     @Override
     public int handleCommand() throws Exception {
-        List<FileTuple> files = FileStreamer.forDisk(disk)
+        List<FileTuple> files = FileStreamer.forDisks(disks)
 			        .ignoreErrors(true)
 			        .includeTypeOfFile(TypeOfFile.FILE)
 			        .matchGlobs(originalFilename)
 			        .stream()
-			        .collect(Collectors.toList());
+			        .toList();
 
         if (files.isEmpty()) {
         	LOG.warning(() -> String.format("File not found for %s.", originalFilename));

@@ -27,7 +27,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import com.webcodepro.applecommander.storage.Disk;
+import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 import com.webcodepro.applecommander.util.TextBundle;
@@ -63,17 +63,14 @@ public class DiskImageFormatPane extends WizardPane {
 			case DiskImageWizard.FORMAT_RDOS:
 			case DiskImageWizard.FORMAT_CPM:
 				wizard.setOrder(DiskImageWizard.ORDER_DOS);
-				wizard.setSize(Disk.APPLE_140KB_DISK);
+				wizard.setSize(DiskConstants.APPLE_140KB_DISK);
 				return new DiskImageNamePane(parent, wizard);
-			case DiskImageWizard.FORMAT_UNIDOS:
-				wizard.setOrder(DiskImageWizard.ORDER_DOS);
-				wizard.setSize(Disk.APPLE_800KB_2IMG_DISK);
-				return new DiskImageNamePane(parent, wizard);
-			case DiskImageWizard.FORMAT_OZDOS:
+            case DiskImageWizard.FORMAT_UNIDOS:
+            case DiskImageWizard.FORMAT_OZDOS:
 				wizard.setOrder(DiskImageWizard.ORDER_PRODOS);
-				wizard.setSize(Disk.APPLE_800KB_2IMG_DISK);
+				wizard.setSize(DiskConstants.APPLE_800KB_DISK);
 				return new DiskImageNamePane(parent, wizard);
-			case DiskImageWizard.FORMAT_PASCAL:
+            case DiskImageWizard.FORMAT_PASCAL:
 			case DiskImageWizard.FORMAT_PRODOS:
 				wizard.setOrder(DiskImageWizard.ORDER_PRODOS);
 				return new DiskImageSizePane(parent, wizard);

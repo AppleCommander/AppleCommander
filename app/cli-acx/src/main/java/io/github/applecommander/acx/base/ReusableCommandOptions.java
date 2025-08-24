@@ -23,8 +23,7 @@ import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
-import com.webcodepro.applecommander.storage.Disk;
-
+import com.webcodepro.applecommander.storage.FormattedDisk;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -44,10 +43,10 @@ public abstract class ReusableCommandOptions implements Callable<Integer> {
     
     public abstract int handleCommand() throws Exception;
 
-    public void saveDisk(Disk disk) {
+    public void saveDisk(FormattedDisk disk) {
         try {
             // Only save if there are changes.
-            if (disk.getDiskImageManager().hasChanged()) {
+            if (disk.getSource().hasChanged()) {
                 LOG.fine(() -> String.format("Saving disk '%s'", disk.getFilename()));
                 disk.save();
             } else {

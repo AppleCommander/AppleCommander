@@ -23,6 +23,7 @@ import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+import static com.webcodepro.applecommander.storage.DiskConstants.*;
 
 import java.util.*;
 
@@ -103,7 +104,6 @@ public class CpmFormatDisk extends FormattedDisk {
 	public static CpmFormatDisk[] create(String filename, ImageOrder imageOrder) {
 		CpmFormatDisk disk = new CpmFormatDisk(filename, imageOrder);
 		disk.format();
-        disk.setFormattedDisks(disk);
 		return new CpmFormatDisk[] { disk };
 	}
 
@@ -491,23 +491,23 @@ public class CpmFormatDisk extends FormattedDisk {
 		switch (displayMode) {
 			case FILE_DISPLAY_NATIVE:
 				list.add(new FileColumnHeader(textBundle.get("Name"), 8,
-						FileColumnHeader.ALIGN_LEFT, "name"));
+                        FileColumnHeader.ALIGN_LEFT, "name"));
 				list.add(new FileColumnHeader(textBundle.get("Type"), 3,
-						FileColumnHeader.ALIGN_LEFT, "type"));
+                        FileColumnHeader.ALIGN_LEFT, "type"));
 				break;
 			case FILE_DISPLAY_DETAIL:
 				list.add(new FileColumnHeader(textBundle.get("Name"), 8,
-						FileColumnHeader.ALIGN_LEFT, "name"));
+                        FileColumnHeader.ALIGN_LEFT, "name"));
 				list.add(new FileColumnHeader(textBundle.get("Type"), 3,
-						FileColumnHeader.ALIGN_LEFT, "type"));
+                        FileColumnHeader.ALIGN_LEFT, "type"));
 				list.add(new FileColumnHeader(textBundle.get("SizeInBytes"), 6,
-						FileColumnHeader.ALIGN_RIGHT, "sizeInBytes"));
-				list.add(new FileColumnHeader(textBundle.get("CpmFormatDisk.UserNumber"), 4, 
-						FileColumnHeader.ALIGN_RIGHT, "user"));
+                        FileColumnHeader.ALIGN_RIGHT, "sizeInBytes"));
+				list.add(new FileColumnHeader(textBundle.get("CpmFormatDisk.UserNumber"), 4,
+                        FileColumnHeader.ALIGN_RIGHT, "user"));
 				list.add(new FileColumnHeader(textBundle.get("DeletedQ"), 7,
-						FileColumnHeader.ALIGN_CENTER, "deleted"));
+                        FileColumnHeader.ALIGN_CENTER, "deleted"));
 				list.add(new FileColumnHeader(textBundle.get("LockedQ"), 6,
-						FileColumnHeader.ALIGN_CENTER, "locked"));
+                        FileColumnHeader.ALIGN_CENTER, "locked"));
 				break;
 			default:	// FILE_DISPLAY_STANDARD
 				list.addAll(super.getFileColumnHeaders(displayMode));
