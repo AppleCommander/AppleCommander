@@ -619,7 +619,10 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
      * Get the address that this file loads at.
      */
     public int getAddress() {
-        if (needsAddress()) {
+		if (getStorageType() == 0xff) {
+			return 0x2000;	// SYS files start at $2000 by definition
+		}
+        else if (needsAddress()) {
             return getAuxiliaryType();
         }
         return 0;
