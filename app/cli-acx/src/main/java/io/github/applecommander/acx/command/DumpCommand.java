@@ -25,11 +25,13 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.util.AppleUtil;
 
-import io.github.applecommander.acx.arggroup.CoordinateSelection;
+import com.webcodepro.applecommander.util.Range;
 import io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions;
 import io.github.applecommander.acx.converter.IntegerTypeConverter;
+import io.github.applecommander.acx.converter.RangeTypeConverter;
 import io.github.applecommander.disassembler.api.Disassembler;
 import io.github.applecommander.disassembler.api.Instruction;
 import io.github.applecommander.disassembler.api.InstructionSet;
@@ -51,11 +53,57 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
 
     @Override
     public int handleCommand() throws Exception {
-        byte[] data = options.coordinate.read(disks.getFirst());
-        System.out.println(output.format(options, data));
-        return 0;
+        FormattedDisk disk = disks.getFirst();
+        if (options.coordinate.blockRangeSelection != null) {
+            options.coordinate.blockRangeSelection.blocks.stream().forEach(block -> {
+                validateBlockNum(disk, block);
+                options.includesBootSector = block == 0;
+                byte[] data = disk.readBlock(block);
+                System.out.printf("Block #%d:\n", block);
+                System.out.println(output.format(options, data));
+            });
+            return 0;
+        }
+        else if (options.coordinate.trackSectorRangeSelection != null) {
+            options.coordinate.trackSectorRangeSelection.tracks.stream().forEach(track -> {
+                options.coordinate.trackSectorRangeSelection.sectors.stream().forEach(sector -> {
+                    validateTrackAndSector(disk, track, sector);
+                    options.includesBootSector = track == 0 && sector == 0;
+                    byte[] data = disk.readSector(track, sector);
+                    System.out.printf("Track %02d, Sector %02d:\n", track, sector);
+                    System.out.println(output.format(options, data));
+                });
+            });
+            return 0;
+        }
+        System.out.println("Please choose block(s) or track(s) and sector(s).");
+        return 1;
     }
-    
+
+    public void validateBlockNum(FormattedDisk disk, int block) throws IllegalArgumentException {
+        final int blocksOnDevice = disk.getImageOrder().getBlocksOnDevice();
+
+        if (block < 0 || block >= blocksOnDevice) {
+            String errormsg = String.format("The block number(%d) is out of range(0-%d) on this image.", block, blocksOnDevice-1);
+            throw new IllegalArgumentException(errormsg);
+        }
+    }
+
+    public void validateTrackAndSector(FormattedDisk disk, int track, int sector) throws IllegalArgumentException  {
+        final int tracksPerDisk = disk.getImageOrder().getTracksPerDisk();
+        final int sectorsPerTrack = disk.getImageOrder().getSectorsPerTrack();
+
+        if (track < 0 || track >= tracksPerDisk) {
+            String errormsg = String.format("The track number(%d) is out of range(0-%d) on this image.", track, tracksPerDisk-1);
+            throw new IllegalArgumentException(errormsg);
+        }
+
+        if (sector < 0 || sector >= sectorsPerTrack) {
+            String errormsg = String.format("The sector number(%d) is out of range(0-%d) on this image.", sector, sectorsPerTrack-1);
+            throw new IllegalArgumentException(errormsg);
+        }
+    }
+
     public static class OutputSelection {
         private BiFunction<Options,byte[],String> fn = this::formatHexDump;
         public String format(Options options, byte[] data) {
@@ -78,7 +126,7 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
         
         public String formatDisassembly(Options options, byte[] data) {
             // If the offset is given, use that. If not, use 0 except for the boot sector and then use 1.
-            int calculatedOffset = options.disassemblerOptions.offset.orElse(options.coordinate.includesBootSector() ? 1 : 0);
+            int calculatedOffset = options.disassemblerOptions.offset.orElse(options.includesBootSector ? 1 : 0);
             return Disassembler.with(data)
                     .startingAddress(options.disassemblerOptions.address)
                     .bytesToSkip(calculatedOffset)
@@ -108,8 +156,12 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
     }
     
     public static class Options {
-        @ArgGroup(multiplicity = "1", heading = "%nCoordinate Selection:%n")
-        private CoordinateSelection coordinate = new CoordinateSelection();		
+        // Somewhat of a hack; the disassembly listing should know if we are on the boot sector to set the sector offset
+        // correctly...
+        private boolean includesBootSector;
+
+        @ArgGroup(multiplicity = "1", heading = "%nCoordinate Selection: (use '0' or '0-5' for a range)%n")
+        private CoordinateRangeSelection coordinate = new CoordinateRangeSelection();
 		
         @ArgGroup(heading = "%nDisassembler Options:%n", exclusive = false)
         private DisassemblerOptions disassemblerOptions = new DisassemblerOptions();
@@ -155,5 +207,26 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
                 this.instructionSet = InstructionSet6502Switching.withSwitching();
             }		
         }	
+    }
+
+    public static class CoordinateRangeSelection {
+        @ArgGroup(exclusive = false)
+        private BlockRangeSelection blockRangeSelection;
+        @ArgGroup(exclusive = false)
+        private TrackSectorRangeSelection trackSectorRangeSelection;
+    }
+
+    public static class BlockRangeSelection {
+        @Option(names = { "-b", "--block" }, description = "Block number(s).",
+                converter = RangeTypeConverter.class)
+        private Range blocks;
+    }
+    public static class TrackSectorRangeSelection {
+        @Option(names = { "-t", "--track" }, required = true, description = "Track number(s).",
+                converter = RangeTypeConverter.class)
+        private Range tracks;
+        @Option(names = { "-s", "--sector" }, required = true, description = "Sector number(s).",
+                converter = RangeTypeConverter.class)
+        private Range sectors;
     }
 }
