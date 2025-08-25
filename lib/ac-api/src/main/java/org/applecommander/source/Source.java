@@ -33,7 +33,7 @@ import java.util.Optional;
  * <p/>
  * Typical usage:
  * {@snippet lang=java:
- *    Optional<Source> sourceOpt = Source.create(Path.of(filename));
+ *    Optional<Source> sourceOpt = Sources.create(Path.of(filename));
  *    if (sourceOpt.isPresent()) {
  *      // do something with sourceOpt.get()
  *      System.out.println(sourceOpt.get().getSize());
@@ -81,6 +81,9 @@ public interface Source extends CapabilityProvider, HintProvider, Container {
         return name.endsWith(ext1) || name.endsWith(ext2);
     }
 
+    /**
+     * This is the Source creation factory interface.
+     */
     interface Factory {
         Optional<Source> fromObject(Object object);
         Optional<Source> fromSource(Source source);

@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.zip.GZIPInputStream;
 
+/**
+ * Creates and manages a Source based upon a file in the filesystem.
+ */
 public class FileSource implements Source {
     private Path path;
     private String filename;

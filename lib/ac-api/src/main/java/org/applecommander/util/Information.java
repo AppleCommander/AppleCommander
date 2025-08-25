@@ -24,6 +24,7 @@ import java.util.Date;
 
 /**
  * This is a simple record to provide information for various user interfaces.
+ * Use the builder to assist in construction.
  */
 public record Information(String label, String value) {
     public static Builder builder(String label) {
