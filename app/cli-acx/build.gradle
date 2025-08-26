@@ -2,6 +2,7 @@ plugins {
     id 'org.springframework.boot' version "$springBoot"
     id 'java'
     id 'application'
+    id 'org.graalvm.buildtools.native' version "$graalvmBuildVersion"
 }
 
 java {
@@ -22,6 +23,8 @@ dependencies {
     implementation "net.sf.applecommander:acdasm:$acdasmVersion"
     implementation "com.google.code.gson:gson:$gsonVersion"
 
+    annotationProcessor "info.picocli:picocli-codegen:$picocliVersion"
+
     testImplementation platform("org.junit:junit-bom:$junitVersion")
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -35,6 +38,13 @@ application {
     mainClass = 'io.github.applecommander.acx.Main'
 }
 
+jar {
+    manifest {
+        attributes 'Implementation-Title': "AppleCommander 'acx'",
+                'Implementation-Version': archiveVersion
+    }
+}
+
 bootJar {
   archiveBaseName = 'AppleCommander'
   archiveAppendix = 'acx'
@@ -43,4 +53,14 @@ bootJar {
                   'Implementation-Version': archiveVersion
   }
   from('../../LICENSE')
+}
+
+graalvmNative {
+    String osName = System.getProperty('os.name').toLowerCase().split()[0]
+    String osArch = System.getProperty('os.arch').toLowerCase().split()[0]
+    binaries {
+        named("main") {
+            imageName.set("acx-${osName}-${osArch}-${project.version}")
+        }
+    }
 }

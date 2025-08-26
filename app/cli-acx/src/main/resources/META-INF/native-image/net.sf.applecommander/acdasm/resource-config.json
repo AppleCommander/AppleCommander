@@ -1,0 +1,31 @@
+{
+  "resources":{
+  "includes":[{
+    "pattern":"\\QMETA-INF/services/com.webcodepro.applecommander.storage.DiskFactory\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.lang.System$LoggerFinder\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.time.zone.ZoneRulesProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.util.spi.ResourceBundleControlProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.applecommander.source.Source$Factory\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.ini4j.spi.EscapeTool\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.ini4j.spi.IniBuilder\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.ini4j.spi.IniParser\\E"
+  }, {
+    "pattern":"\\Qaddresses.ini\\E"
+  }, {
+    "pattern":"\\Qcom/webcodepro/applecommander/storage/os/prodos/ProdosFileTypes.properties\\E"
+  }]},
+  "bundles":[{
+    "name":"com.webcodepro.applecommander.storage.StorageBundle",
+    "locales":[""]
+  }, {
+    "name":"com.webcodepro.applecommander.util.TextBundle",
+    "locales":[""]
+  }]
+}

@@ -73,8 +73,8 @@ As of 2025, the publishing in Maven Central has moved/changed. The plugin does w
 Also note that after publishing, we have to tell Maven Central we're done. That can be done with the following curl (which takes some time).
 
 ```bash
-$ curl -v -X POST https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/net.sf.applecommander --user "<user>:<password>"
-> POST /manual/upload/defaultRepository/net.sf.applecommander HTTP/2
+$ curl -v -X POST https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/org.applecommander --user "<user>:<password>"
+> POST /manual/upload/defaultRepository/org.applecommander HTTP/2
 > Host: ossrh-staging-api.central.sonatype.com
 > Authorization: Basic UndSNzlOOmxYSjJGWmlQMkxXNHNrS1NNeUoxeWhDaGFSV0tpdXJpNw==
 > User-Agent: curl/8.9.1

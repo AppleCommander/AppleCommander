@@ -21,6 +21,9 @@ package org.applecommander.source;
 
 import java.util.*;
 
+/**
+ * Sources is a hook into the Source discovery and construction logic.
+ */
 public class Sources {
     private static final List<Source.Factory> FACTORIES;
     static {

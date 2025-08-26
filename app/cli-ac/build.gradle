@@ -1,6 +1,7 @@
 plugins {
     id 'org.springframework.boot' version "$springBoot"
     id 'application'
+    id 'org.graalvm.buildtools.native' version "$graalvmBuildVersion"
 }
 
 java {
@@ -33,6 +34,13 @@ application {
     mainClass = 'com.webcodepro.applecommander.ui.ac'
 }
 
+jar {
+    manifest {
+        attributes 'Implementation-Title': "AppleCommander 'ac'",
+                'Implementation-Version': archiveVersion
+    }
+}
+
 bootJar {
     archiveBaseName = 'AppleCommander'
     archiveAppendix = 'ac'
@@ -41,4 +49,14 @@ bootJar {
                    'Implementation-Version': archiveVersion
     }
     from('../../LICENSE')
+}
+
+graalvmNative {
+    String osName = System.getProperty('os.name').toLowerCase().split()[0]
+    String osArch = System.getProperty('os.arch').toLowerCase().split()[0]
+    binaries {
+        named("main") {
+            imageName.set("ac-${osName}-${osArch}-${project.version}")
+        }
+    }
 }
