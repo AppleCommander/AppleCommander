@@ -1,0 +1,51 @@
+name: GraalVM Native Image builds
+on: [push, pull_request]
+jobs:
+  build:
+    name: ac/acx on ${{ matrix.os }}-${{ matrix.arch }}
+    runs-on: ${{ matrix.label  }}
+    strategy:
+      matrix:
+        # Note that Graal v21 builds to the current architecture, and "--target" is not functional.
+        # Therefore, we try to find runners that fit our targets.
+        # See: https://docs.github.com/en/actions/concepts/runners/about-github-hosted-runners#overview-of-github-hosted-runners
+        # ... and follow the links to the related GitHub repositories
+        include:
+          - label: ubuntu-latest
+            os: linux
+            arch: x86_64
+          - label: ubuntu-24.04-arm
+            os: linux
+            arch: aarch64
+          - label: windows-latest
+            os: windows
+            arch: x86_64
+          - label: macos-13
+            os: darwin
+            arch: x86_64
+          - label: macos-latest
+            os: darwin
+            arch: arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '21'
+          distribution: 'graalvm-community'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'true'
+
+      - name: Build ac/acx
+        run: ./gradlew nativeCompile
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: ac-${{ matrix.os }}-${{ matrix.arch }}
+          path: app/cli-ac/build/native/nativeCompile/ac-*
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: acx-${{ matrix.os }}-${{ matrix.arch }}
+          path: app/cli-acx/build/native/nativeCompile/acx-*
