@@ -1,0 +1,12 @@
+{
+  "resources":{
+  "includes":[{
+    "pattern":"\\QMETA-INF/services/java.net.spi.URLStreamHandlerProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.util.spi.ResourceBundleControlProvider\\E"
+  }]},
+  "bundles":[{
+    "name":"com.webcodepro.applecommander.ui.UiBundle",
+    "locales":[""]
+  }]
+}

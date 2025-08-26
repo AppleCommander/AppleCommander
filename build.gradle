@@ -13,6 +13,8 @@ ext {
     commonsCsvVersion = "1.14.1"
     gsonVersion = "2.13.1"
     picocliVersion = "4.7.7"
-    springBoot = "3.5.4"
+    // 3.0(?) introduced Spring AOT automatic stuff and breaks when using GraalVM native image
+    springBoot = "2.7.7"
     acdasmVersion = "0.5.0"
+    graalvmBuildVersion = "0.10.6"
 }
