@@ -331,8 +331,9 @@ public class DiskWriterTest {
 		writeFile(disk, 
 			"This is a test text file create from the DiskWriterTest".getBytes(),  //$NON-NLS-1$
 			textType, testText);
-		if (disk.getPhysicalSize() > DiskConstants.APPLE_140KB_DISK
-			&& disk.getPhysicalSize() != DiskConstants.APPLE_140KB_NIBBLE_DISK) {
+        Source source = disk.getSource();
+		if (source.getSize() > DiskConstants.APPLE_140KB_DISK
+			&& source.getSize() != DiskConstants.APPLE_140KB_NIBBLE_DISK) {
 			// create a few big files
 			writeFile(disk, 150000, binaryType, true);
 			writeFile(disk, 300000, binaryType, true);

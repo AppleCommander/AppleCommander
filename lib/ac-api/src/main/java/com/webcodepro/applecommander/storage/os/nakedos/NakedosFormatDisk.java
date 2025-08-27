@@ -34,7 +34,7 @@ import java.util.List;
  * Date created: August 5, 2010 10:23:23 AM
  * @author David Schmidt
  */
-public class NakedosFormatDisk extends FormattedDisk {
+public class NakedosFormatDisk extends FormattedDiskX {
 	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Indicates the index of the track in the location array.

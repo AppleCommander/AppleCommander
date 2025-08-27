@@ -19,9 +19,14 @@
  */
 package io.github.applecommander.acx.arggroup;
 
+import com.webcodepro.applecommander.storage.BlockDeviceAdapter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 
+import com.webcodepro.applecommander.storage.TrackSectorDeviceAdapter;
 import io.github.applecommander.acx.converter.IntegerTypeConverter;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.util.DataBuffer;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Option;
 
@@ -38,7 +43,8 @@ public class CoordinateSelection {
         else if (blockCoordinate != null) {
             return blockCoordinate.read(disk);
         }
-        return disk.readSector(0, 0);
+        TrackSectorDevice device = TrackSectorDeviceAdapter.from(disk);
+        return device.readSector(0, 0).asBytes();
     }
 
     public void write(FormattedDisk disk, byte[] data) {
@@ -48,7 +54,8 @@ public class CoordinateSelection {
         else if (blockCoordinate != null) {
             blockCoordinate.write(disk, data);
         }
-        disk.writeSector(0, 0, data);
+        TrackSectorDevice device = TrackSectorDeviceAdapter.from(disk);
+        device.writeSector(0, 0, DataBuffer.wrap(data));
     }
 
     public static class SectorCoordinateSelection {
@@ -59,9 +66,9 @@ public class CoordinateSelection {
                 converter = IntegerTypeConverter.class)
         private Integer sector;
 
-        public void validateTrackAndSector(FormattedDisk disk) throws IllegalArgumentException  {
-            final int tracksPerDisk = disk.getImageOrder().getTracksPerDisk();
-            final int sectorsPerTrack = disk.getImageOrder().getSectorsPerTrack();
+        public void validateTrackAndSector(TrackSectorDevice device) throws IllegalArgumentException  {
+            final int tracksPerDisk = device.getGeometry().tracksOnDisk();
+            final int sectorsPerTrack = device.getGeometry().sectorsPerTrack();
 
             if (track < 0 || track >= tracksPerDisk) {
                 String errormsg = String.format("The track number(%d) is out of range(0-%d) on this image.", track, tracksPerDisk-1);
@@ -75,21 +82,23 @@ public class CoordinateSelection {
         }
 
         public byte[] read(FormattedDisk disk) {
-            validateTrackAndSector(disk);
-            return disk.readSector(track, sector);
+            TrackSectorDevice device = TrackSectorDeviceAdapter.from(disk);
+            validateTrackAndSector(device);
+            return device.readSector(track, sector).asBytes();
         }
 
         public void write(FormattedDisk disk, byte[] data) {
-            validateTrackAndSector(disk);
-            disk.writeSector(track, sector, data);
+            TrackSectorDevice device = TrackSectorDeviceAdapter.from(disk);
+            validateTrackAndSector(device);
+            device.writeSector(track, sector, DataBuffer.wrap(data));
         }
     }
     public static class BlockCoordinateSelection {
         @Option(names = { "-b", "--block" }, description = "Block number.", converter = IntegerTypeConverter.class)
         private Integer block;
 
-        public void validateBlockNum(FormattedDisk disk) throws IllegalArgumentException {
-            final int blocksOnDevice = disk.getImageOrder().getBlocksOnDevice();
+        public void validateBlockNum(BlockDevice device) throws IllegalArgumentException {
+            final int blocksOnDevice = device.getGeometry().blocksOnDevice();
 
             if (block < 0 || block >= blocksOnDevice) {
                 String errormsg = String.format("The block number(%d) is out of range(0-%d) on this image.", block, blocksOnDevice-1);
@@ -98,13 +107,15 @@ public class CoordinateSelection {
         }
 
         public byte[] read(FormattedDisk disk) {
-            validateBlockNum(disk);
-            return disk.readBlock(block);
+            BlockDevice device = BlockDeviceAdapter.from(disk);
+            validateBlockNum(device);
+            return device.readBlock(block).asBytes();
         }
 
         public void write(FormattedDisk disk, byte[] data) {
-            validateBlockNum(disk);
-            disk.writeBlock(block, data);
+            BlockDevice device = BlockDeviceAdapter.from(disk);
+            validateBlockNum(device);
+            device.writeBlock(block, DataBuffer.wrap(data));
         }
     }
 }

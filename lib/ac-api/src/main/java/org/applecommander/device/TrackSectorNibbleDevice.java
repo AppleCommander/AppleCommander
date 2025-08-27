@@ -21,6 +21,7 @@ package org.applecommander.device;
 
 import org.applecommander.capability.Capability;
 import org.applecommander.codec.NibbleDiskCodec;
+import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 
 public class TrackSectorNibbleDevice implements TrackSectorDevice {
@@ -41,7 +42,12 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         this.geometry = new Geometry(trackReaderWriter.getTracksOnDevice(), sectorsPerTrack);
     }
 
-   @Override
+    @Override
+    public boolean is(Hint hint) {
+        return hint == Hint.NIBBLE_SECTOR_ORDER;
+    }
+
+    @Override
     public boolean can(Capability capability) {
         if (capability == Capability.WRITE_SECTOR) {
             return trackReaderWriter.can(Capability.WRITE_TRACK)  && dataCodec.can(Capability.ENCODE);

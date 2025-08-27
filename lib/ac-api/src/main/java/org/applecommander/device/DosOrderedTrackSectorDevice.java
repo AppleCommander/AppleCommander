@@ -20,6 +20,7 @@
 package org.applecommander.device;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
 
@@ -30,6 +31,11 @@ public class DosOrderedTrackSectorDevice implements TrackSectorDevice {
     public DosOrderedTrackSectorDevice(Source source) {
         this.source = source;
         this.geometry = new Geometry(35, 16);   // assumed for now?
+    }
+
+    @Override
+    public boolean is(Hint hint) {
+        return hint == Hint.DOS_SECTOR_ORDER;
     }
 
     @Override

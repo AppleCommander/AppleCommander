@@ -34,7 +34,7 @@ import java.util.List;
  * Date created: Dec 17, 2008 04:29:23 PM
  * @author David Schmidt
  */
-public class GutenbergFormatDisk extends FormattedDisk {
+public class GutenbergFormatDisk extends FormattedDiskX {
 	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Indicates the index of the track in the location array.

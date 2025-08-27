@@ -46,7 +46,7 @@ import java.util.Map;
  * Date created: Oct 7, 2002 2:03:58 PM
  * @author Rob Greene
  */
-public class RdosFormatDisk extends FormattedDisk {
+public class RdosFormatDisk extends FormattedDiskX {
 	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * RDOS 2.1/3.2 disks are structured in a different order than DOS 3.3.

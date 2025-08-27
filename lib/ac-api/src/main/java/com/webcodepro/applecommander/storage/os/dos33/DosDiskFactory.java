@@ -20,7 +20,7 @@
 package com.webcodepro.applecommander.storage.os.dos33;
 
 import com.webcodepro.applecommander.storage.DiskFactory;
-import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.FormattedDiskX;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import org.applecommander.util.DataBuffer;
 import static com.webcodepro.applecommander.storage.DiskConstants.*;
@@ -31,7 +31,7 @@ public class DosDiskFactory implements DiskFactory {
     @Override
     public void inspect(Context ctx) {
         // It seems easiest to gather all possibilities first...
-        List<FormattedDisk> tests = new ArrayList<>();
+        List<FormattedDiskX> tests = new ArrayList<>();
         if (ctx.orders.size() == 1) {
             ImageOrder order = ctx.orders.getFirst();
             if (order.isSizeApprox(APPLE_800KB_DISK)) {
@@ -46,8 +46,8 @@ public class DosDiskFactory implements DiskFactory {
         }
         else if (ctx.orders.size() == 2) {
             // Could be either, so count both (should be PO vs DO) and choose the longest catalog
-            FormattedDisk fdisk1 = new DosFormatDisk(ctx.source.getName(), ctx.orders.get(0));
-            FormattedDisk fdisk2 = new DosFormatDisk(ctx.source.getName(), ctx.orders.get(1));
+            FormattedDiskX fdisk1 = new DosFormatDisk(ctx.source.getName(), ctx.orders.get(0));
+            FormattedDiskX fdisk2 = new DosFormatDisk(ctx.source.getName(), ctx.orders.get(1));
             int count1 = count(fdisk1, 17);
             int count2 = count(fdisk2, 17);
             // Note this assumes DO was the first ImageOrder in the list to give it an edge
@@ -55,7 +55,7 @@ public class DosDiskFactory implements DiskFactory {
             else tests.add(fdisk2);
         }
         // ... and then test for DOS VTOC etc. Passing track number along to hopefully handle it later!
-        for (FormattedDisk fdisk : tests) {
+        for (FormattedDiskX fdisk : tests) {
             try {
                 if (check(fdisk, 17)) {
                     ctx.disks.add(fdisk);
@@ -69,7 +69,7 @@ public class DosDiskFactory implements DiskFactory {
     /**
      * Test this image order by looking for a likely DOS VTOC and set of catalog sectors.
      */
-    public boolean check(FormattedDisk disk, final int vtocTrack) {
+    public boolean check(FormattedDiskX disk, final int vtocTrack) {
         DataBuffer vtoc = DataBuffer.wrap(disk.readSector(vtocTrack, 0));
         int nextTrack = vtoc.getUnsignedByte(0x01);
         int nextSector = vtoc.getUnsignedByte(0x02);
@@ -123,7 +123,7 @@ public class DosDiskFactory implements DiskFactory {
         return good;
     }
 
-    public int count(FormattedDisk disk, final int vtocTrack) {
+    public int count(FormattedDiskX disk, final int vtocTrack) {
         DataBuffer vtoc = DataBuffer.wrap(disk.readSector(vtocTrack, 0));
         int nextTrack = vtoc.getUnsignedByte(0x01);
         int nextSector = vtoc.getUnsignedByte(0x02);

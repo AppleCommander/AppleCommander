@@ -24,13 +24,12 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
-import com.webcodepro.applecommander.storage.DiskConstants;
-import com.webcodepro.applecommander.storage.DiskException;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 
 import io.github.applecommander.acx.fileutil.FileUtils;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.TrackSectorDevice;
 
 public enum SystemType {
 	DOS(OrderType.DOS, SystemType::enforce140KbDisk, 
@@ -97,23 +96,27 @@ public enum SystemType {
 	}
 
 	static void copyDosSystemTracks(FormattedDisk targetDisk, FormattedDisk source) {
+        TrackSectorDevice sourceDevice = TrackSectorDeviceAdapter.from(source);
 		DosFormatDisk target = (DosFormatDisk)targetDisk;
 		byte[] vtoc = target.readVtoc();
 		int sectorsPerTrack = vtoc[0x35];
 		// Note that this also patches T0 S0 for BOOT0
 		for (int t=0; t<3; t++) {
 			for (int s=0; s<sectorsPerTrack; s++) {
-				target.writeSector(t, s, source.readSector(t, s));
+                byte[] data = sourceDevice.readSector(t, s).asBytes();
+				target.writeSector(t, s, data);
 				target.setSectorUsed(t, s, vtoc);
 			}
 		}
 		target.writeVtoc(vtoc);
 	}
 	static void copyProdosSystemFiles(FormattedDisk target, FormattedDisk source) {
+        BlockDevice targetDevice = BlockDeviceAdapter.from(target);
+        BlockDevice sourceDevice = BlockDeviceAdapter.from(source);
 		// We need to explicitly fix the boot block
-		target.writeBlock(0, source.readBlock(0));
-		target.writeBlock(1, source.readBlock(1));
-		
+        targetDevice.writeBlock(0, sourceDevice.readBlock(0));
+        targetDevice.writeBlock(1, sourceDevice.readBlock(1));
+
 		try {
             FileUtils copier = new FileUtils(false);
 			for (String filename : Arrays.asList("PRODOS", "BASIC.SYSTEM")) {
@@ -125,9 +128,11 @@ public enum SystemType {
 		}
 	}
 	static void copyPascalSystemFiles(FormattedDisk target, FormattedDisk source) {
+        BlockDevice targetDevice = BlockDeviceAdapter.from(target);
+        BlockDevice sourceDevice = BlockDeviceAdapter.from(source);
 		// We need to explicitly fix the boot block
-		target.writeBlock(0, source.readBlock(0));
-		target.writeBlock(1, source.readBlock(1));
+        targetDevice.writeBlock(0, sourceDevice.readBlock(0));
+        targetDevice.writeBlock(1, sourceDevice.readBlock(1));
 
 		// TODO; uncertain what files Pascal disks require for booting
 	}

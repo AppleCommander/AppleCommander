@@ -32,6 +32,8 @@ import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 
@@ -423,10 +425,11 @@ public class ScanCommand extends ReusableCommandOptions {
         }
 
         private void readAllBlocks(FormattedDisk fdisk) {
+            BlockDevice device = BlockDeviceAdapter.from(fdisk);
             dataType = "blocks";
             for (int b = 0; b < fdisk.getBitmapLength() && errors.size() < MAX_ERRORS; b++) {
                 try {
-                    fdisk.readBlock(b);
+                    device.readBlock(b);
                     dataRead++;
                 } catch (Throwable t) {
                     errors.add(String.format("Unable to read block #%d for disk #%d", b, fdisk.getLogicalDiskNumber()));
@@ -447,12 +450,13 @@ public class ScanCommand extends ReusableCommandOptions {
         }
 
         private void readAllSectors(FormattedDisk fdisk) {
+            TrackSectorDevice device = TrackSectorDeviceAdapter.from(fdisk);
             dataType = "sectors";
             int[] dims = fdisk.getBitmapDimensions();
             for (int track = 0; track < dims[0] && errors.size() < MAX_ERRORS; track++) {
                 for (int sector = 0; sector < dims[1] && errors.size() < MAX_ERRORS; sector++) {
                     try {
-                        fdisk.readSector(track, sector);
+                        device.readSector(track, sector);
                         dataRead++;
                     } catch (Throwable t) {
                         errors.add(String.format("Unable to read sector T%d,S%s for disk #%d",

@@ -17,47 +17,61 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.applecommander.device;
+package com.webcodepro.applecommander.storage;
 
+import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import org.applecommander.capability.Capability;
+import org.applecommander.device.BlockDevice;
 import org.applecommander.hint.Hint;
-import org.applecommander.source.Source;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
-public class ProdosOrderedBlockDevice implements BlockDevice {
-    private final Source source;
-    private final Geometry geometry;
+import java.util.Optional;
 
-    public ProdosOrderedBlockDevice(Source source, int blockSize, int blocksOnDevice) {
-        this.source = source;
-        this.geometry = new Geometry(blockSize, blocksOnDevice);
+/**
+ * Temporary transition layer between ImageOrder and BlockDevice.
+ */
+public class BlockDeviceAdapter implements BlockDevice {
+    public static BlockDevice from(FormattedDisk disk) {
+        if (disk instanceof Container c) {
+            Optional<BlockDevice> opt = c.get(BlockDevice.class);
+            if (opt.isPresent()) return opt.get();
+        }
+        if (disk instanceof FormattedDiskX x) {
+            return new BlockDeviceAdapter(x.getImageOrder());
+        }
+        throw new RuntimeException("No BlockDevice present: " + disk.getClass().getName());
+    }
+
+    private ImageOrder order;
+
+    private BlockDeviceAdapter(ImageOrder order) {
+        this.order = order;
     }
 
     @Override
     public boolean is(Hint hint) {
-        return hint == Hint.PRODOS_BLOCK_ORDER;
+        return order.is(hint);
     }
 
     @Override
     public boolean can(Capability capability) {
-        return capability == Capability.WRITE_BLOCK;
+        // TODO
+        return false;
     }
 
     @Override
     public Geometry getGeometry() {
-        return geometry;
+        return new Geometry(STANDARD_BLOCK_SIZE, order.getBlocksOnDevice());
     }
 
     @Override
     public DataBuffer readBlock(int block) {
-        assert(block < geometry.blocksOnDevice());
-        return source.readBytes(block* geometry.blockSize(), geometry.blockSize());
+        return DataBuffer.wrap(order.readBlock(block));
     }
 
     @Override
     public void writeBlock(int block, DataBuffer blockData) {
-        assert(block < geometry.blocksOnDevice());
-        assert(blockData.limit() == geometry.blockSize());
-        source.writeBytes(block*geometry.blockSize(), blockData);
+        order.writeBlock(block, blockData.asBytes());
     }
 }

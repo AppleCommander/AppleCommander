@@ -25,7 +25,9 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import com.webcodepro.applecommander.storage.BlockDeviceAdapter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.TrackSectorDeviceAdapter;
 import com.webcodepro.applecommander.util.AppleUtil;
 
 import com.webcodepro.applecommander.util.Range;
@@ -38,6 +40,8 @@ import io.github.applecommander.disassembler.api.InstructionSet;
 import io.github.applecommander.disassembler.api.mos6502.InstructionSet6502;
 import io.github.applecommander.disassembler.api.sweet16.InstructionSetSWEET16;
 import io.github.applecommander.disassembler.api.switching6502.InstructionSet6502Switching;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.TrackSectorDevice;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
@@ -55,10 +59,11 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
     public int handleCommand() throws Exception {
         FormattedDisk disk = disks.getFirst();
         if (options.coordinate.blockRangeSelection != null) {
+            BlockDevice device = BlockDeviceAdapter.from(disk);
             options.coordinate.blockRangeSelection.blocks.stream().forEach(block -> {
-                validateBlockNum(disk, block);
+                validateBlockNum(device, block);
                 options.includesBootSector = block == 0;
-                byte[] data = disk.readBlock(block);
+                byte[] data = device.readBlock(block).asBytes();
                 System.out.printf("Block #%d:\n", block);
                 System.out.println(output.format(options, data));
             });
@@ -66,10 +71,11 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
         }
         else if (options.coordinate.trackSectorRangeSelection != null) {
             options.coordinate.trackSectorRangeSelection.tracks.stream().forEach(track -> {
+                TrackSectorDevice device = TrackSectorDeviceAdapter.from(disk);
                 options.coordinate.trackSectorRangeSelection.sectors.stream().forEach(sector -> {
-                    validateTrackAndSector(disk, track, sector);
+                    validateTrackAndSector(device, track, sector);
                     options.includesBootSector = track == 0 && sector == 0;
-                    byte[] data = disk.readSector(track, sector);
+                    byte[] data = device.readSector(track, sector).asBytes();
                     System.out.printf("Track %02d, Sector %02d:\n", track, sector);
                     System.out.println(output.format(options, data));
                 });
@@ -80,8 +86,8 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
         return 1;
     }
 
-    public void validateBlockNum(FormattedDisk disk, int block) throws IllegalArgumentException {
-        final int blocksOnDevice = disk.getImageOrder().getBlocksOnDevice();
+    public void validateBlockNum(BlockDevice device, int block) throws IllegalArgumentException {
+        final int blocksOnDevice = device.getGeometry().blocksOnDevice();
 
         if (block < 0 || block >= blocksOnDevice) {
             String errormsg = String.format("The block number(%d) is out of range(0-%d) on this image.", block, blocksOnDevice-1);
@@ -89,9 +95,9 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
         }
     }
 
-    public void validateTrackAndSector(FormattedDisk disk, int track, int sector) throws IllegalArgumentException  {
-        final int tracksPerDisk = disk.getImageOrder().getTracksPerDisk();
-        final int sectorsPerTrack = disk.getImageOrder().getSectorsPerTrack();
+    public void validateTrackAndSector(TrackSectorDevice device, int track, int sector) throws IllegalArgumentException  {
+        final int tracksPerDisk = device.getGeometry().tracksOnDisk();
+        final int sectorsPerTrack = device.getGeometry().sectorsPerTrack();
 
         if (track < 0 || track >= tracksPerDisk) {
             String errormsg = String.format("The track number(%d) is out of range(0-%d) on this image.", track, tracksPerDisk-1);

@@ -20,6 +20,7 @@
 package org.applecommander.device;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 
 import java.util.function.BiConsumer;
@@ -30,7 +31,12 @@ public class TrackSectorToBlockAdapter implements BlockDevice {
 
     public TrackSectorToBlockAdapter(TrackSectorDevice device) {
         this.device = device;
-        this.geometry = new Geometry(BLOCK_SIZE, device.getGeometry().getSectorsPerDisk() / 2);
+        this.geometry = new Geometry(STANDARD_BLOCK_SIZE, device.getGeometry().sectorsPerDisk() / 2);
+    }
+
+    @Override
+    public boolean is(Hint hint) {
+        return device.is(hint);
     }
 
     @Override
@@ -45,7 +51,7 @@ public class TrackSectorToBlockAdapter implements BlockDevice {
 
     @Override
     public DataBuffer readBlock(int block) {
-        DataBuffer data = DataBuffer.create(BLOCK_SIZE);
+        DataBuffer data = DataBuffer.create(STANDARD_BLOCK_SIZE);
         operate(block,
                 (t,s) -> data.put(0, device.readSector(t,s)),
                 (t,s) -> data.put(256, device.readSector(t,s)));

@@ -20,7 +20,7 @@
 package com.webcodepro.applecommander.storage.os.prodos;
 
 import com.webcodepro.applecommander.storage.DiskFactory;
-import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.FormattedDiskX;
 import org.applecommander.util.DataBuffer;
 import static com.webcodepro.applecommander.storage.DiskConstants.*;
 
@@ -31,17 +31,17 @@ public class ProdosDiskFactory implements DiskFactory {
     @Override
     public void inspect(Context ctx) {
         // It seems easiest to gather all possibilities first...
-        List<FormattedDisk> tests = new ArrayList<>();
+        List<FormattedDiskX> tests = new ArrayList<>();
         ctx.orders.forEach(order -> tests.add(new ProdosFormatDisk(ctx.source.getName(), order)));
         // ... and then test for ProDOS details:
-        for (FormattedDisk fdisk : tests) {
+        for (FormattedDiskX fdisk : tests) {
             if (check(fdisk)) {
                 ctx.disks.add(fdisk);
             }
         }
     }
 
-    public boolean check(FormattedDisk fdisk) {
+    public boolean check(FormattedDiskX fdisk) {
         int nextBlock = 2;
         DataBuffer volumeDirectory = DataBuffer.wrap(fdisk.readBlock(nextBlock));
         int priorBlock = volumeDirectory.getUnsignedShort(0x00);

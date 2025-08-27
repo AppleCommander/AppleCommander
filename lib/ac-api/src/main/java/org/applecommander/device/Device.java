@@ -19,17 +19,12 @@
  */
 package org.applecommander.device;
 
-import org.applecommander.util.DataBuffer;
+import org.applecommander.capability.CapabilityProvider;
+import org.applecommander.hint.HintProvider;
 
-public interface TrackSectorDevice extends Device {
-    int SECTOR_SIZE = 256;
-
-    Geometry getGeometry();
-    DataBuffer readSector(int track, int sector);
-    void writeSector(int track, int sector, DataBuffer data);
-    record Geometry(int tracksOnDisk, int sectorsPerTrack) {
-        public int sectorsPerDisk() {
-            return tracksOnDisk*sectorsPerTrack;
-        }
-    }
+/**
+ * This is a marker interface for both the BlockDevice and TrackSectorDevice and should
+ * not be implemented directly.
+ */
+public interface Device extends HintProvider, CapabilityProvider {
 }

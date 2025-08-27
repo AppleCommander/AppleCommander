@@ -38,7 +38,7 @@ import java.util.*;
  * Changed at: Dec 1, 2017
  * @author Lisias Toledo
  */
-public class ProdosFormatDisk extends FormattedDisk {
+public class ProdosFormatDisk extends FormattedDiskX {
 	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * The location of the "next block" pointer in a directory entry.

@@ -20,7 +20,6 @@
 package io.github.applecommander.acx.command;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
@@ -73,7 +72,7 @@ public class ListCommand extends ReadOnlyDiskImageCommandOptions {
         int display = fileDisplay.format();
         ListingStrategy listingStrategy = outputType.create(display);
         
-        listingStrategy.first(disks.getFirst().getImageOrder());
+        listingStrategy.first(disks.getFirst());
         
         FileStreamer.forDisks(disks)
                     .ignoreErrors(true)

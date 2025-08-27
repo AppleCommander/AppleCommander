@@ -20,6 +20,7 @@
 package org.applecommander.device;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 
 /**
@@ -34,6 +35,11 @@ public class BlockToTrackSectorAdapter implements TrackSectorDevice {
         this.device = device;
         this.strategy = strategy;
         this.geometry = new Geometry(strategy.getTotalTracks(), strategy.getSectorsPerTrack());
+    }
+
+    @Override
+    public boolean is(Hint hint) {
+        return device.is(hint);
     }
 
     @Override

@@ -77,6 +77,21 @@ public class DataBuffer {
         get(offset, match);
         return Arrays.equals(data, match);
     }
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof DataBuffer that) {
+            return this.buffer.equals(that.buffer);
+        }
+        return false;
+    }
+    /**
+     * A utility method to pull the buffer as bytes.
+     */
+    public byte[] asBytes() {
+        byte[] data = new byte[limit()];
+        get(0, data);
+        return data;
+    }
 
     // GET/PUT RELATED FUNCTIONS
 

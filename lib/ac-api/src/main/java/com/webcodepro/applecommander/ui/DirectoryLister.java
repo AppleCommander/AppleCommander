@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.webcodepro.applecommander.storage.*;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
@@ -36,8 +35,11 @@ import com.webcodepro.applecommander.storage.FormattedDisk.FileColumnHeader;
 import com.webcodepro.applecommander.util.TextBundle;
 import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
+import org.applecommander.util.Container;
 
 public class DirectoryLister {
 	private static TextBundle textBundle = UiBundle.getInstance();
@@ -62,7 +64,7 @@ public class DirectoryLister {
         Source source = Sources.create(filename).orElseThrow();
         DiskFactory.Context ctx = Disks.inspect(source);
         // Pulling ImageOrder from a FormattedDisk to ensure it's one we chose
-		strategy.first(ctx.disks.getFirst().getImageOrder());
+		strategy.first(ctx.disks.getFirst());
 
 		FileStreamer.forDisks(ctx.disks)
 			.recursive(true)
@@ -81,7 +83,7 @@ public class DirectoryLister {
 			this.display = display;
 		}
 		
-		public void first(ImageOrder o) {};
+		public void first(FormattedDisk d) {};
 		public void beforeDisk(FormattedDisk d) {}
 		public void afterDisk(FormattedDisk d) {}
 		public void forEach(FileTuple f) {}
@@ -169,11 +171,22 @@ public class DirectoryLister {
 			super(display);
 		}
         @Override
-		public void first(ImageOrder order) {
+		public void first(FormattedDisk disk) {
 			root = new JsonObject();
-			root.addProperty("filename", order.getSource().getName());
-			root.addProperty("order", order.getName());
-			root.addProperty("physicalSize", order.getPhysicalSize());
+			root.addProperty("filename", disk.getFilename());
+            if (disk instanceof FormattedDiskX x) {
+                root.addProperty("order", x.getOrderName());
+                root.addProperty("physicalSize", x.getPhysicalSize());
+            }
+            else if (disk instanceof Container c) {
+                root.addProperty("size", disk.getSource().getSize());
+                if (c.get(BlockDevice.class).isPresent()) {
+                    root.addProperty("device", "block device");
+                }
+                else if (c.get(TrackSectorDevice.class).isPresent()) {
+                    root.addProperty("device", "track/sector device");
+                }
+            }
 			this.disks = new JsonArray();
 			root.add("disks", disks);
 		}
