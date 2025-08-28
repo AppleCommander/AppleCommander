@@ -94,10 +94,7 @@ public abstract class ImageOrder implements HintProvider {
 	 * Extract a portion of the disk image.
 	 */
 	public byte[] readBytes(int start, int length) {
-		DataBuffer data = source.readBytes(start, length);
-		byte[] bytes = new byte[length];
-		data.get(0, bytes);
-		return bytes;
+		return source.readBytes(start, length).asBytes();
 	}
 	
 	/**

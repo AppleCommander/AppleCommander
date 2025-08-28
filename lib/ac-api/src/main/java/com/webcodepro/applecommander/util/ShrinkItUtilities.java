@@ -55,9 +55,7 @@ public class ShrinkItUtilities
 	{
 		TextBundle textBundle = StorageBundle.getInstance();
 		byte dmgBuffer[] = null;
-		byte[] sourceData = new byte[source.getSize()];
-		source.readAllBytes().get(0, sourceData);
-		InputStream is = new ByteArrayInputStream(sourceData);
+		InputStream is = new ByteArrayInputStream(source.readAllBytes().asBytes());
 		NuFileArchive a = new NuFileArchive(is);
 		// If we need to build a disk to hold files (i.e. .shk vs. .sdk), how big would that disk need to be?
 		int newDiskSize = Disks.sizeToFit(a.getArchiveSize());
