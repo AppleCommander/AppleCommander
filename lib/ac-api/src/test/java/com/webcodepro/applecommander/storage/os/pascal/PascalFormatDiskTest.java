@@ -21,21 +21,21 @@ package com.webcodepro.applecommander.storage.os.pascal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.ProdosOrderedBlockDevice;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFullException;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import org.junit.jupiter.api.Test;
 
 public class PascalFormatDiskTest {
     @Test
     public void testSanitizeFilename() throws DiskFullException {
         Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-        ImageOrder order = new ProdosOrder(source);
-        PascalFormatDisk[] disks = PascalFormatDisk.create("deleteme.po", "TEST", order); 
+        BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
+        PascalFormatDisk[] disks = PascalFormatDisk.create("deleteme.po", "TEST", blockDevice);
         PascalFormatDisk disk = disks[0];
         
         assertEquals("FILENAME", disk.getSuggestedFilename("FileName"));

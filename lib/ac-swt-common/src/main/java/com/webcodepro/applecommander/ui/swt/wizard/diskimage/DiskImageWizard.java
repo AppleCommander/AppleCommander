@@ -119,7 +119,7 @@ public class DiskImageWizard extends Wizard {
 			case FORMAT_OZDOS:
 				return OzDosFormatDisk.create(name.toString(), imageOrder);
 			case FORMAT_PASCAL:
-				return PascalFormatDisk.create(name.toString(), volumeName, imageOrder);
+				return PascalFormatDisk.create(name.toString(), volumeName, blockDevice);
 			case FORMAT_PRODOS:
 				return ProdosFormatDisk.create(name.toString(), volumeName, blockDevice);
 			case FORMAT_RDOS:

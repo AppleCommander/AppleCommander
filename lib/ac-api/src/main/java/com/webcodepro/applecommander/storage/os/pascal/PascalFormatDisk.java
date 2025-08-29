@@ -22,9 +22,13 @@
 package com.webcodepro.applecommander.storage.os.pascal;
 
 import com.webcodepro.applecommander.storage.*;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.source.Source;
+import org.applecommander.util.Container;
+import org.applecommander.util.DataBuffer;
+
 import static com.webcodepro.applecommander.storage.DiskConstants.*;
 
 import java.util.*;
@@ -36,7 +40,7 @@ import java.util.*;
  * @author Rob Greene
  * @author John B. Matthews [getFiles(), get/putDirectory(), createFile()]
  */
-public class PascalFormatDisk extends FormattedDiskX {
+public class PascalFormatDisk extends FormattedDisk implements Container {
 	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * The size of the Pascal file entry.
@@ -113,22 +117,37 @@ public class PascalFormatDisk extends FormattedDiskX {
 			return !bitmap.get(location);	// false = used
 		}
 	}
+
+	private BlockDevice device;
 	
 	/**
 	 * Constructor for PascalFormatDisk.
 	 */
-	public PascalFormatDisk(String filename, ImageOrder imageOrder) {
-		super(filename, imageOrder);
+	public PascalFormatDisk(String filename, BlockDevice device) {
+		super(filename, device.get(Source.class).orElseThrow());
+		this.device = device;
 	}
 
 	/**
 	 * Create a PascalFormatDisk.
 	 */
-	public static PascalFormatDisk[] create(String filename, String volumeName, ImageOrder imageOrder) {
-		PascalFormatDisk disk = new PascalFormatDisk(filename, imageOrder);
+	public static PascalFormatDisk[] create(String filename, String volumeName, BlockDevice device) {
+		PascalFormatDisk disk = new PascalFormatDisk(filename, device);
 		disk.format();
 		disk.setDiskName(volumeName);
 		return new PascalFormatDisk[] { disk };
+	}
+
+	protected byte[] readBlock(int block) {
+		return device.readBlock(block).asBytes();
+	}
+	protected void writeBlock(int block, byte[] data) {
+		device.writeBlock(block, DataBuffer.wrap(data));
+	}
+
+	@Override
+	public <T> Optional<T> get(Class<T> iface) {
+		return Container.get(iface, device);
 	}
 
 	/**
@@ -554,15 +573,17 @@ public class PascalFormatDisk extends FormattedDiskX {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
-		getImageOrder().format();
-		writeBootCode();
+		device.format();
+		DataBuffer bootBlock = DataBuffer.create(BLOCK_SIZE);
+		bootBlock.put(0, DataBuffer.wrap(getBootCode()));
+		device.writeBlock(0, bootBlock);
 		// Create volume name
 		byte[] directory = readDirectory();
 		AppleUtil.setWordValue(directory, 0, 0);	// always 0
 		AppleUtil.setWordValue(directory, 2, 6);	// last directory block
 		AppleUtil.setWordValue(directory, 4, 0);	// entry type (0=vol header)
 			// volume name should have been set in constructor!
-		int blocks = getImageOrder().getBlocksOnDevice();
+		int blocks = device.getGeometry().blocksOnDevice();
 		AppleUtil.setWordValue(directory, 14, blocks);
 		AppleUtil.setWordValue(directory, 16, 0);	// no files
 		AppleUtil.setWordValue(directory, 18, 0);	// first block
@@ -643,16 +664,6 @@ public class PascalFormatDisk extends FormattedDiskX {
 	 */	
 	public boolean supportsDiskMap() {
 		return true;
-	}
-
-	/**
-	 * Change to a different ImageOrder.  Remains in Pascal format but
-	 * the underlying order can change.
-	 * @see ImageOrder
-	 */
-	public void changeImageOrder(ImageOrder imageOrder) {
-		AppleUtil.changeImageOrderByBlock(getImageOrder(), imageOrder);
-		setImageOrder(imageOrder);
 	}
 
 	/**

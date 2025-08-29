@@ -84,9 +84,9 @@ public class DiskWriterTest {
 	@Test
 	public void testWriteToPascal140kDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new ProdosOrder(source);
+		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = PascalFormatDisk.create(
-			"write-test-pascal-140k.po", "TEST", imageOrder); //$NON-NLS-1$ //$NON-NLS-2$
+			"write-test-pascal-140k.po", "TEST", blockDevice); //$NON-NLS-1$ //$NON-NLS-2$
 		writeFiles(disks, "code", "text", false); //$NON-NLS-1$ //$NON-NLS-2$
 		saveDisks(disks);
 	}
@@ -97,9 +97,9 @@ public class DiskWriterTest {
 	@Test
 	public void testWriteToPascal800kDisk() throws DiskFullException, IOException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_800KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new ProdosOrder(source);
+		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = PascalFormatDisk.create(
-			"write-test-pascal-800k.po", "TEST", imageOrder); //$NON-NLS-1$ //$NON-NLS-2$
+			"write-test-pascal-800k.po", "TEST", blockDevice); //$NON-NLS-1$ //$NON-NLS-2$
 		//writeFiles(disks, "code", "text", false); //$NON-NLS-1$ //$NON-NLS-2$
 		saveDisks(disks);
 	}
@@ -189,10 +189,10 @@ public class DiskWriterTest {
 	@Test
 	public void testCreateAndDeletePascal140kDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new ProdosOrder(source);
+		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = PascalFormatDisk.create(
 			"createanddelete-test-pascal-140k.po", "TEST",  //$NON-NLS-1$ //$NON-NLS-2$
-			imageOrder);
+			blockDevice);
 		createAndDeleteFiles(disks, "CODE"); //$NON-NLS-1$
 		saveDisks(disks);
 	}
@@ -203,10 +203,10 @@ public class DiskWriterTest {
 	@Test
 	public void testCreateAndDeletePascal800kDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_800KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new ProdosOrder(source);
+		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = PascalFormatDisk.create(
 			"createanddelete-test-pascal-800k.po", "TEST",  //$NON-NLS-1$ //$NON-NLS-2$
-			imageOrder);
+			blockDevice);
 		createAndDeleteFiles(disks, "CODE"); //$NON-NLS-1$
 		saveDisks(disks);
 	}
@@ -289,10 +289,10 @@ public class DiskWriterTest {
 	@Test
 	public void testCreateDeleteCreatePascalDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new ProdosOrder(source);
+		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = PascalFormatDisk.create(
 			"createdeletecreate-test-pascal-140k.po", "TEST", //$NON-NLS-1$ //$NON-NLS-2$
-			imageOrder);
+			blockDevice);
 		createDeleteCreate(disks, "CODE"); //$NON-NLS-1$
 		saveDisks(disks);
 	}

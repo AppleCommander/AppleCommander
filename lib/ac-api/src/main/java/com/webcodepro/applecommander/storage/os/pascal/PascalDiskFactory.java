@@ -21,7 +21,8 @@ package com.webcodepro.applecommander.storage.os.pascal;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFactory;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.TrackSectorToBlockAdapter;
 import org.applecommander.util.DataBuffer;
 
 /**
@@ -30,22 +31,28 @@ import org.applecommander.util.DataBuffer;
 public class PascalDiskFactory implements DiskFactory {
     @Override
     public void inspect(Context ctx) {
-        ctx.orders.forEach(order -> {
-            if (check(order)) {
-                ctx.disks.add(new PascalFormatDisk(ctx.source.getName(), order));
+        if (ctx.blockDevice != null) {
+            if (check(ctx.blockDevice)) {
+                ctx.disks.add(new PascalFormatDisk(ctx.source.getName(), ctx.blockDevice));
             }
-        });
+        }
+        if (ctx.sectorDevice != null && ctx.sectorDevice.getGeometry().sectorsPerDisk() <= 1600) {
+            BlockDevice device = new TrackSectorToBlockAdapter(ctx.sectorDevice);
+            if (check(device)) {
+                ctx.disks.add(new PascalFormatDisk(ctx.source.getName(), device));
+            }
+        }
     }
 
     /** Check for a likely directory structure. Note that we scan all sizes, even though that is overkill. */
-    public boolean check(ImageOrder order) {
+    public boolean check(BlockDevice device) {
         boolean good = false;
-        if (order.getPhysicalSize() >= DiskConstants.APPLE_140KB_DISK) {
+        if (device.getGeometry().blockSize() >= DiskConstants.PRODOS_BLOCKS_ON_140KB_DISK) {
             // Read entire directory for analysis
             DataBuffer dir = DataBuffer.create(2048);
             for (int block=2; block<6; block++) {
-                byte[] data = order.readBlock(block);
-                dir.put((block-2)* DiskConstants.BLOCK_SIZE, DataBuffer.wrap(data));
+                DataBuffer data = device.readBlock(block);
+                dir.put((block-2)*DiskConstants.BLOCK_SIZE, data);
             }
             // Check volume entry
             int dFirstBlock = dir.getUnsignedShort(0);

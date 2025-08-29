@@ -87,7 +87,7 @@ public class CreateDiskCommand extends ReusableCommandOptions {
     	
     	ImageOrder order = actualOrderType.createImageOrder(correctedSize);
         Source source = DataBufferSource.create(order.getPhysicalSize(), imageName).get();
-        BlockDevice device = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
+        BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
     	FormattedDisk[] disks = null;
     	switch (systemType) {
     	case DOS:		
@@ -100,10 +100,10 @@ public class CreateDiskCommand extends ReusableCommandOptions {
     		disks = UniDosFormatDisk.create(imageName, order);
     		break;
     	case PRODOS:
-    		disks = ProdosFormatDisk.create(imageName, diskName, device);
+    		disks = ProdosFormatDisk.create(imageName, diskName, blockDevice);
     		break;
     	case PASCAL:
-    		disks = PascalFormatDisk.create(imageName, diskName, order);
+    		disks = PascalFormatDisk.create(imageName, diskName, blockDevice);
     		break;
     	}
     	

@@ -44,7 +44,6 @@ import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
@@ -624,8 +623,8 @@ public class ac {
 	public static void createPasDisk(String fileName, String volName, int imageSize)
 		throws IOException {
 		Source source = DataBufferSource.create(imageSize, fileName).hints(Hint.PRODOS_BLOCK_ORDER).get();
-		ImageOrder imageOrder = new ProdosOrder(source);
-		FormattedDisk[] disks = PascalFormatDisk.create(fileName, volName, imageOrder);
+		BlockDevice device = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
+		FormattedDisk[] disks = PascalFormatDisk.create(fileName, volName, device);
 		disks[0].save();
 	}
 
