@@ -21,12 +21,12 @@ package org.applecommander.device;
 
 public record DiskMarker(int[] addressProlog, int[] addressEpilog, int[] dataProlog, int[] dataEpilog) {
         public static DiskMarker disk525sector16() {
-            return build().addressProlog(0xd5, 0xaa, 0x96).addressEpilog(0xde, 0xaa)
-                          .dataProlog(0xd5, 0xaa, 0xad).dataEpilog(0xde, 0xaa).get();
+            return build().addressProlog(0xd5, 0xaa, 0x96).addressEpilog(0xde, 0xaa, 0xeb)
+                          .dataProlog(0xd5, 0xaa, 0xad).dataEpilog(0xde, 0xaa, 0xeb).get();
         }
         public static DiskMarker disk525sector13() {
-            return build().addressProlog(0xd5, 0xaa, 0xb5).addressEpilog(0xde, 0xaa)
-                          .dataProlog(0xd5, 0xaa, 0xad).dataEpilog(0xde, 0xaa).get();
+            return build().addressProlog(0xd5, 0xaa, 0xb5).addressEpilog(0xde, 0xaa, 0xeb)
+                          .dataProlog(0xd5, 0xaa, 0xad).dataEpilog(0xde, 0xaa, 0xeb).get();
         }
         public static Builder build() {
             return new Builder();

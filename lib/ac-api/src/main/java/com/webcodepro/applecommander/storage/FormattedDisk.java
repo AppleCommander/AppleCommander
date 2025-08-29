@@ -443,7 +443,49 @@ public abstract class FormattedDisk implements DirectoryEntry {
 	 * Typically, the FileEntry.setFileData method should be used. 
 	 */
 	public abstract void setFileData(FileEntry fileEntry, byte[] fileData) throws DiskFullException;
-	
+
+	/**
+	 * Retrieve the AppleCommander boot code.
+	 */
+	protected byte[] getBootCode() {
+		final String bootCode = "/com/webcodepro/applecommander/storage/AppleCommander-boot.dump";
+		try (InputStream is = getClass().getResourceAsStream(bootCode)) {
+			if (is != null) {
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				is.transferTo(baos);
+				baos.close();
+				;
+				return baos.toByteArray();
+			}
+			throw new IOException("unable to locate boot code at " + bootCode);
+		} catch (IOException ex) {
+			throw new UncheckedIOException(ex);
+		}
+	}
+
+	/**
+	 * Resize the disk image to be its full size.  Only invoke this
+	 * method if a size does not match exception is thrown.
+	 */
+	public void resizeDiskImage() {
+		resizeDiskImage(getFreeSpace() + getUsedSpace());
+	}
+
+	/**
+	 * Resize a disk image up to a larger size.  The primary intention is to
+	 * "fix" disk images that have been created too small.  The primary culprit
+	 * is ApplePC HDV images which dynamically grow.  Since AppleCommander
+	 * works with a byte array, the image must grow to its full size.
+	 */
+	protected void resizeDiskImage(int newSize) {
+		if (newSize < source.getSize()) {
+			throw new IllegalArgumentException(
+				textBundle.get("Disk.ResizeDiskError")); //$NON-NLS-1$
+		}
+		DataBuffer backingBuffer = source.get(DataBuffer.class).orElseThrow();
+		backingBuffer.limit(newSize);
+	}
+
 	/**
 	 * Gives an indication on how this disk's geometry should be handled.
 	 */

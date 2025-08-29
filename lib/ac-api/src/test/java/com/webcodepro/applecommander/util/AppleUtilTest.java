@@ -28,8 +28,11 @@ import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.physical.DosOrder;
 import com.webcodepro.applecommander.storage.physical.NibbleOrder;
-import com.webcodepro.applecommander.storage.physical.ProdosOrder;
+import org.applecommander.codec.Nibble62Disk525Codec;
+import org.applecommander.device.*;
+import org.applecommander.image.NibbleImage;
 import org.applecommander.source.DataBufferSource;
+import org.applecommander.source.Source;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -99,19 +102,23 @@ public class AppleUtilTest {
 	@Test
 	public void testChangeProdosImageOrder() throws DiskFullException {
 		// Straight ProDOS disk in standard ProDOS block order
+		Source source1 = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
 		ProdosFormatDisk prodosDiskDosOrder = ProdosFormatDisk.create("prodostemp.po",  //$NON-NLS-1$
 			"prodostemp", //$NON-NLS-1$
-			new ProdosOrder(DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get()))[0];
+			new ProdosOrderedBlockDevice(source1, BlockDevice.STANDARD_BLOCK_SIZE))[0];
 		FileEntry fileEntry = prodosDiskDosOrder.createFile();
 		fileEntry.setFilename("TESTFILE"); //$NON-NLS-1$
 		fileEntry.setFiletype("TXT"); //$NON-NLS-1$
 		fileEntry.setFileData("This is a test file.".getBytes()); //$NON-NLS-1$
 		// A duplicate - then we change it to a NIB disk image...
+		Source source2 = DataBufferSource.create(DiskConstants.APPLE_140KB_NIBBLE_DISK, "new-disk").get();
+		TrackSectorDevice tsDevice = new TrackSectorNibbleDevice(new NibbleImage(source2),
+			DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), 16);
 		ProdosFormatDisk prodosDiskNibbleOrder = ProdosFormatDisk.create("prodostemp2.nib", //$NON-NLS-1$
 			"prodostemp2", //$NON-NLS-1$
-			new NibbleOrder(DataBufferSource.create(DiskConstants.APPLE_140KB_NIBBLE_DISK, "new-disk").get()))[0];
-		AppleUtil.changeImageOrderByBlock(prodosDiskDosOrder.getImageOrder(),
-			prodosDiskNibbleOrder.getImageOrder());
+			new TrackSectorToBlockAdapter(tsDevice))[0];
+		AppleUtil.changeOrderByBlock(prodosDiskDosOrder.get(BlockDevice.class).orElseThrow(),
+			prodosDiskNibbleOrder.get(BlockDevice.class).orElseThrow());
 		// Confirm that these disks are identical:
 		ComparisonResult result = DiskDiff.create(prodosDiskDosOrder, prodosDiskNibbleOrder)
 		        .selectCompareByBlockGeometry().compare();

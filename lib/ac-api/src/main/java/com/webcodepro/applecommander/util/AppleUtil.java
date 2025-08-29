@@ -27,6 +27,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.util.DataBuffer;
 
 /**
  * This class contains helper methods for dealing with Apple2 data.
@@ -628,6 +630,20 @@ public class AppleUtil {
 		}
 		for (int block = 0; block < sourceOrder.getBlocksOnDevice(); block++) {
 			byte[] blockData = sourceOrder.readBlock(block);
+			targetOrder.writeBlock(block, blockData);
+		}
+	}
+
+	/**
+	 * Change ImageOrder from source order to target order by copying block by block.
+	 */
+	public static void changeOrderByBlock(BlockDevice sourceOrder, BlockDevice targetOrder) {
+		if (sourceOrder.getGeometry().blocksOnDevice() != targetOrder.getGeometry().blocksOnDevice()) {
+			throw new IllegalArgumentException(textBundle.
+				get("AppleUtil.CannotChangeImageOrder")); //$NON-NLS-1$
+		}
+		for (int block = 0; block < sourceOrder.getGeometry().blocksOnDevice(); block++) {
+			DataBuffer blockData = sourceOrder.readBlock(block);
 			targetOrder.writeBlock(block, blockData);
 		}
 	}

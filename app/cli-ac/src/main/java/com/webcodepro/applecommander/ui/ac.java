@@ -58,6 +58,8 @@ import io.github.applecommander.bastools.api.TokenReader;
 import io.github.applecommander.bastools.api.Visitors;
 import io.github.applecommander.bastools.api.model.Program;
 import io.github.applecommander.bastools.api.model.Token;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.ProdosOrderedBlockDevice;
 import org.applecommander.hint.Hint;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.FileSource;
@@ -633,8 +635,8 @@ public class ac {
 	public static void createProDisk(String fileName, String volName, int imageSize)
 		throws IOException {
 		Source source = DataBufferSource.create(imageSize, fileName).hints(Hint.PRODOS_BLOCK_ORDER).get();
-		ImageOrder imageOrder = new ProdosOrder(source);
-		FormattedDisk[] disks = ProdosFormatDisk.create(fileName, volName, imageOrder);
+		BlockDevice device = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
+		FormattedDisk[] disks = ProdosFormatDisk.create(fileName, volName, device);
 		disks[0].save();
 	}
 

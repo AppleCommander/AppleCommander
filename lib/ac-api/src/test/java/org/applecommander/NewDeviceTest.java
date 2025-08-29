@@ -102,7 +102,7 @@ public class NewDeviceTest {
     public void readUniDOS33() {
         final String filename = "UniDOS_3.3.dsk";
         Source source = sourceDisk(filename);
-        BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, 512, 1600);
+        BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
         TrackSectorDevice disk1 = new BlockToTrackSectorAdapter(blockDevice, UnidosAdapterStrategy.UNIDOS_DISK_1);
         TrackSectorDevice disk2 = new BlockToTrackSectorAdapter(blockDevice, UnidosAdapterStrategy.UNIDOS_DISK_2);
         DataBuffer sector1 = disk1.readSector(17, 31);
@@ -124,7 +124,7 @@ public class NewDeviceTest {
             device = new DosOrderedTrackSectorDevice(image);
         }
         else if (info.isProdosOrdered()) {
-            device = new ProdosOrderedBlockDevice(image, 512, info.prodosBlocks());
+            device = new ProdosOrderedBlockDevice(image, BlockDevice.STANDARD_BLOCK_SIZE);
         }
         else if (info.isNibbleOrder()) {
             // this is just guessing, and likely never occurs from what I've found, but...
@@ -149,7 +149,7 @@ public class NewDeviceTest {
         final String filename = "Installer.dc";
         Source source = sourceDisk(filename);
         DiskCopyImage image = new DiskCopyImage(source);
-        BlockDevice device = new ProdosOrderedBlockDevice(image, 512, image.getInfo().dataSize() / 512);
+        BlockDevice device = new ProdosOrderedBlockDevice(image, BlockDevice.STANDARD_BLOCK_SIZE);
         DataBuffer block = device.readBlock(2);
         dumpAsHex(block, filename);
     }

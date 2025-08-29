@@ -22,6 +22,7 @@ package com.webcodepro.applecommander.storage;
 import java.io.IOException;
 import java.util.List;
 
+import org.applecommander.device.*;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.junit.jupiter.api.Test;
@@ -109,9 +110,10 @@ public class DiskWriterTest {
 	@Test
 	public void testWriteToProdos140kDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new ProdosOrder(source);
+		TrackSectorDevice trackSectorDevice = new DosOrderedTrackSectorDevice(source);
+		BlockDevice blockDevice = new TrackSectorToBlockAdapter(trackSectorDevice);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"write-test-prodos-140k.dsk", "TEST", imageOrder); //$NON-NLS-1$ //$NON-NLS-2$
+			"write-test-prodos-140k.dsk", "TEST", blockDevice); //$NON-NLS-1$ //$NON-NLS-2$
 		writeFiles(disks, "BIN", "TXT", true); //$NON-NLS-1$ //$NON-NLS-2$
 		saveDisks(disks);
 	}
@@ -122,9 +124,9 @@ public class DiskWriterTest {
 	@Test
 	public void testWriteToProdos800kDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_800KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new ProdosOrder(source);
+		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"write-test-prodos-800k.po", "TEST", imageOrder); //$NON-NLS-1$ //$NON-NLS-2$
+			"write-test-prodos-800k.po", "TEST", blockDevice); //$NON-NLS-1$ //$NON-NLS-2$
 		writeFiles(disks, "BIN", "TXT", true); //$NON-NLS-1$ //$NON-NLS-2$
 		saveDisks(disks);
 	}
@@ -135,9 +137,9 @@ public class DiskWriterTest {
 	@Test
 	public void testWriteToProdos5mbDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_5MB_HARDDISK, "new-disk").get();
-		ImageOrder imageOrder = new ProdosOrder(source);
+		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"write-test-prodos-5mb.hdv", "TEST", imageOrder); //$NON-NLS-1$ //$NON-NLS-2$
+			"write-test-prodos-5mb.hdv", "TEST", blockDevice); //$NON-NLS-1$ //$NON-NLS-2$
 		writeFiles(disks, "BIN", "TXT", true); //$NON-NLS-1$ //$NON-NLS-2$
 		saveDisks(disks);
 	}
@@ -215,10 +217,11 @@ public class DiskWriterTest {
 	@Test
 	public void testCreateAndDeleteProdos140kDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new DosOrder(source);
+		TrackSectorDevice trackSectorDevice = new DosOrderedTrackSectorDevice(source);
+		BlockDevice blockDevice = new TrackSectorToBlockAdapter(trackSectorDevice);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"createanddelete-test-prodos-140k.dsk", "TEST",  //$NON-NLS-1$ //$NON-NLS-2$
-			imageOrder);
+			blockDevice);
 		createAndDeleteFiles(disks, "BIN"); //$NON-NLS-1$
 		saveDisks(disks);
 	}
@@ -229,10 +232,10 @@ public class DiskWriterTest {
 	@Test
 	public void testCreateAndDeleteProdos800kDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_800KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new ProdosOrder(source);
+		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"createanddelete-test-prodos-800k.po", "TEST", //$NON-NLS-1$ //$NON-NLS-2$
-			imageOrder);
+			blockDevice);
 		createAndDeleteFiles(disks, "BIN"); //$NON-NLS-1$
 		saveDisks(disks);
 	}
@@ -301,10 +304,10 @@ public class DiskWriterTest {
 	@Test
 	public void testCreateDeleteCreateProdosDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new ProdosOrder(source);
+		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"createdeletecreate-test-prodos-140k.dsk", "TEST", //$NON-NLS-1$ //$NON-NLS-2$
-			imageOrder);
+			blockDevice);
 		createDeleteCreate(disks, "BIN"); //$NON-NLS-1$
 		saveDisks(disks);
 	}

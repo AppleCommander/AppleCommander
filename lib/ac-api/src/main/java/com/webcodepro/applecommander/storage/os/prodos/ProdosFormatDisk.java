@@ -20,9 +20,13 @@
 package com.webcodepro.applecommander.storage.os.prodos;
 
 import com.webcodepro.applecommander.storage.*;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.source.Source;
+import org.applecommander.util.Container;
+import org.applecommander.util.DataBuffer;
+
 import static com.webcodepro.applecommander.storage.DiskConstants.*;
 
 import java.io.IOException;
@@ -38,7 +42,7 @@ import java.util.*;
  * Changed at: Dec 1, 2017
  * @author Lisias Toledo
  */
-public class ProdosFormatDisk extends FormattedDiskX {
+public class ProdosFormatDisk extends FormattedDisk implements Container {
 	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * The location of the "next block" pointer in a directory entry.
@@ -70,6 +74,8 @@ public class ProdosFormatDisk extends FormattedDiskX {
 	 * Hold on to the volume directory header.
 	 */
 	private ProdosVolumeDirectoryHeader volumeHeader;
+
+	private BlockDevice device;
 
 	/**
 	 * This class holds filetype mappings.
@@ -127,14 +133,14 @@ public class ProdosFormatDisk extends FormattedDiskX {
 
 	/**
 	 * Constructor for ProdosFormatDisk.
-	 * @param filename
 	 */
-	public ProdosFormatDisk(String filename, ImageOrder imageOrder) {
-		super(filename, imageOrder);
-		volumeHeader = new ProdosVolumeDirectoryHeader(this);
+	public ProdosFormatDisk(String filename, BlockDevice device) {
+		super(filename, device.get(Source.class).orElseThrow());
+		this.device = device;
+		this.volumeHeader = new ProdosVolumeDirectoryHeader(this);
 	}
 	
-	/**
+	/*
 	 * Initialize all file types.
 	 */
 	static {
@@ -162,11 +168,16 @@ public class ProdosFormatDisk extends FormattedDiskX {
 	/**
 	 * Create a ProdosFormatDisk.
 	 */
-	public static ProdosFormatDisk[] create(String filename, String diskName, ImageOrder imageOrder) {
-		ProdosFormatDisk disk = new ProdosFormatDisk(filename, imageOrder);
+	public static ProdosFormatDisk[] create(String filename, String diskName, BlockDevice device) {
+		ProdosFormatDisk disk = new ProdosFormatDisk(filename, device);
 		disk.format();
 		disk.setDiskName(diskName);
 		return new ProdosFormatDisk[] { disk };
+	}
+
+	@Override
+	public <T> Optional<T> get(Class<T> iface) {
+		return Container.get(iface, device);
 	}
 
 	/**
@@ -182,6 +193,13 @@ public class ProdosFormatDisk extends FormattedDiskX {
 	 */
 	public ProdosFileEntry createFile() throws DiskFullException {
 		return createFile(volumeHeader);
+	}
+
+	protected byte[] readBlock(int block) {
+		return device.readBlock(block).asBytes();
+	}
+	protected void writeBlock(int block, byte[] data) {
+		device.writeBlock(block, DataBuffer.wrap(data));
 	}
 	
 	/**
@@ -1064,7 +1082,7 @@ public class ProdosFormatDisk extends FormattedDiskX {
 		int blocksOnDisk = getBitmapLength();
 		while (block < blocksOnDisk) {
 			if (isBlockFree(volumeBitmap,block)) {
-				if ((block+1) * BLOCK_SIZE <= getPhysicalSize()) {
+				if (block < device.getGeometry().blocksOnDevice()) {
 					return block;
 				}
 				throw new ProdosDiskSizeDoesNotMatchException(
@@ -1154,10 +1172,12 @@ public class ProdosFormatDisk extends FormattedDiskX {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
-		getImageOrder().format();
-		writeBootCode();
-		String volumeName = volumeHeader.getVolumeName();
-		int totalBlocks = getPhysicalSize() / BLOCK_SIZE;
+		device.format();
+		DataBuffer bootBlock = DataBuffer.create(BLOCK_SIZE);
+		bootBlock.put(0, DataBuffer.wrap(getBootCode()));
+		device.writeBlock(0, bootBlock);
+		String volumeName = "NEW.DISK";
+		int totalBlocks = device.getGeometry().blocksOnDevice();
 		int usedBlocks = (totalBlocks / 4096) + 7;
 		// setup volume directory
 		byte[] data = new byte[BLOCK_SIZE];
@@ -1318,16 +1338,6 @@ public class ProdosFormatDisk extends FormattedDiskX {
 	 */	
 	public boolean supportsDiskMap() {
 		return true;
-	}
-
-	/**
-	 * Change to a different ImageOrder.  Remains in ProDOS format but
-	 * the underlying order can change.
-	 * @see ImageOrder
-	 */
-	public void changeImageOrder(ImageOrder imageOrder) {
-		AppleUtil.changeImageOrderByBlock(getImageOrder(), imageOrder);
-		setImageOrder(imageOrder);
 	}
 
 	/**

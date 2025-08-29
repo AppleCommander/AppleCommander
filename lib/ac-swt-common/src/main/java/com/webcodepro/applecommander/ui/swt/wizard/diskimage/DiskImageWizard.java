@@ -19,6 +19,7 @@
  */
 package com.webcodepro.applecommander.ui.swt.wizard.diskimage;
 
+import org.applecommander.device.*;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.eclipse.swt.widgets.Shell;
@@ -95,15 +96,21 @@ public class DiskImageWizard extends Wizard {
 		}
 		Source source = DataBufferSource.create(getSize(), name.toString()).get();
 		ImageOrder imageOrder = null;
+		BlockDevice blockDevice = null;
+		TrackSectorDevice sectorDevice = null;
 		switch (getOrder()) {
 			case ORDER_DOS:
 				imageOrder = new DosOrder(source);
+				sectorDevice = new DosOrderedTrackSectorDevice(source);
+				blockDevice = new TrackSectorToBlockAdapter(sectorDevice);
 				break;
 			case ORDER_NIBBLE:
 				imageOrder = new NibbleOrder(source);
+				// TODO
 				break;
 			case ORDER_PRODOS:
 				imageOrder = new ProdosOrder(source);
+				blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 				break;
 		}
 		switch (format) {
@@ -114,7 +121,7 @@ public class DiskImageWizard extends Wizard {
 			case FORMAT_PASCAL:
 				return PascalFormatDisk.create(name.toString(), volumeName, imageOrder);
 			case FORMAT_PRODOS:
-				return ProdosFormatDisk.create(name.toString(), volumeName, imageOrder);
+				return ProdosFormatDisk.create(name.toString(), volumeName, blockDevice);
 			case FORMAT_RDOS:
 				return RdosFormatDisk.create(name.toString(), imageOrder);
 			case FORMAT_UNIDOS:

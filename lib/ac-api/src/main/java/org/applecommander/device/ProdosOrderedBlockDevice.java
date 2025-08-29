@@ -31,8 +31,9 @@ public class ProdosOrderedBlockDevice implements BlockDevice {
     private final Source source;
     private final Geometry geometry;
 
-    public ProdosOrderedBlockDevice(Source source, int blockSize, int blocksOnDevice) {
+    public ProdosOrderedBlockDevice(Source source, int blockSize) {
         this.source = source;
+        int blocksOnDevice = source.getSize() / blockSize;
         this.geometry = new Geometry(blockSize, blocksOnDevice);
     }
 

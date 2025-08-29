@@ -19,6 +19,8 @@
  */
 package com.webcodepro.applecommander.storage.os.prodos;
 
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.ProdosOrderedBlockDevice;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.junit.jupiter.api.Test;
@@ -34,8 +36,8 @@ public class ProdosFormatDiskTest {
     @Test
     public void testSanitizeFilename() throws DiskFullException {
         Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-        ImageOrder order = new ProdosOrder(source);
-        ProdosFormatDisk[] disks = ProdosFormatDisk.create("deleteme.po", "nothere", order);
+        BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
+        ProdosFormatDisk[] disks = ProdosFormatDisk.create("deleteme.po", "nothere", blockDevice);
         ProdosFormatDisk disk = disks[0];
         
         assertEquals("FILENAME", disk.getSuggestedFilename("FileName"));

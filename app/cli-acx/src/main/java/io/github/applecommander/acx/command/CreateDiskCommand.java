@@ -36,6 +36,9 @@ import io.github.applecommander.acx.OrderType;
 import io.github.applecommander.acx.SystemType;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
 import io.github.applecommander.acx.converter.DataSizeConverter;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.ProdosOrderedBlockDevice;
+import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 import picocli.CommandLine.ArgGroup;
@@ -83,6 +86,8 @@ public class CreateDiskCommand extends ReusableCommandOptions {
                 DataSizeConverter.format(correctedSize), systemType, actualOrderType));
     	
     	ImageOrder order = actualOrderType.createImageOrder(correctedSize);
+        Source source = DataBufferSource.create(order.getPhysicalSize(), imageName).get();
+        BlockDevice device = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
     	FormattedDisk[] disks = null;
     	switch (systemType) {
     	case DOS:		
@@ -95,7 +100,7 @@ public class CreateDiskCommand extends ReusableCommandOptions {
     		disks = UniDosFormatDisk.create(imageName, order);
     		break;
     	case PRODOS:
-    		disks = ProdosFormatDisk.create(imageName, diskName, order);
+    		disks = ProdosFormatDisk.create(imageName, diskName, device);
     		break;
     	case PASCAL:
     		disks = PascalFormatDisk.create(imageName, diskName, order);
@@ -103,8 +108,8 @@ public class CreateDiskCommand extends ReusableCommandOptions {
     	}
     	
     	if (formatSource != null) {
-            Source source = Sources.create(formatSource).orElseThrow();
-            DiskFactory.Context ctx = Disks.inspect(source);
+            Source fsource = Sources.create(formatSource).orElseThrow();
+            DiskFactory.Context ctx = Disks.inspect(fsource);
     		systemType.copySystem(disks[0], ctx.disks.getFirst());
     	}
     	

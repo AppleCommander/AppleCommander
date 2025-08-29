@@ -20,7 +20,8 @@
 package com.webcodepro.applecommander.storage.os.prodos;
 
 import com.webcodepro.applecommander.storage.DiskFactory;
-import com.webcodepro.applecommander.storage.FormattedDiskX;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.TrackSectorToBlockAdapter;
 import org.applecommander.util.DataBuffer;
 import static com.webcodepro.applecommander.storage.DiskConstants.*;
 
@@ -31,17 +32,23 @@ public class ProdosDiskFactory implements DiskFactory {
     @Override
     public void inspect(Context ctx) {
         // It seems easiest to gather all possibilities first...
-        List<FormattedDiskX> tests = new ArrayList<>();
-        ctx.orders.forEach(order -> tests.add(new ProdosFormatDisk(ctx.source.getName(), order)));
+        List<ProdosFormatDisk> tests = new ArrayList<>();
+        if (ctx.blockDevice != null) {
+            tests.add(new ProdosFormatDisk(ctx.source.getName(), ctx.blockDevice));
+        }
+        if (ctx.sectorDevice != null && ctx.sectorDevice.getGeometry().sectorsPerDisk() <= 1600) {
+            BlockDevice device = new TrackSectorToBlockAdapter(ctx.sectorDevice);
+            tests.add(new ProdosFormatDisk(ctx.source.getName(), device));
+        }
         // ... and then test for ProDOS details:
-        for (FormattedDiskX fdisk : tests) {
+        for (ProdosFormatDisk fdisk : tests) {
             if (check(fdisk)) {
                 ctx.disks.add(fdisk);
             }
         }
     }
 
-    public boolean check(FormattedDiskX fdisk) {
+    public boolean check(ProdosFormatDisk fdisk) {
         int nextBlock = 2;
         DataBuffer volumeDirectory = DataBuffer.wrap(fdisk.readBlock(nextBlock));
         int priorBlock = volumeDirectory.getUnsignedShort(0x00);
