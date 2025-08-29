@@ -92,6 +92,11 @@ public class DataBuffer {
         get(0, data);
         return data;
     }
+    public void fill(int value) {
+        for (int i=0; i<limit(); i++) {
+            this.buffer.put(i, (byte)value);
+        }
+    }
 
     // GET/PUT RELATED FUNCTIONS
 
