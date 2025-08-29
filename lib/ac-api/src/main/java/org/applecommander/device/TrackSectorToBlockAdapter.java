@@ -69,7 +69,7 @@ public class TrackSectorToBlockAdapter implements BlockDevice {
     public void writeBlock(int block, DataBuffer blockData) {
         operate(block,
                 (t,s) -> device.writeSector(t,s,blockData.slice(0,256)),
-                (t,s) -> device.writeSector(t,s,blockData.slice(256,512)));
+                (t,s) -> device.writeSector(t,s,blockData.slice(256,256)));
     }
 
     public void operate(int block, BiConsumer<Integer,Integer> operation1, BiConsumer<Integer,Integer> operation2) {
