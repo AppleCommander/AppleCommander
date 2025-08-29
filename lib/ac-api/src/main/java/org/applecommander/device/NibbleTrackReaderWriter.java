@@ -20,9 +20,10 @@
 package org.applecommander.device;
 
 import org.applecommander.capability.CapabilityProvider;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
-public interface NibbleTrackReaderWriter extends CapabilityProvider {
+public interface NibbleTrackReaderWriter extends CapabilityProvider, Container {
     /**
      * The number of physical tracks on this device.
      */
