@@ -64,6 +64,11 @@ public class TrackSectorDeviceAdapter implements TrackSectorDevice {
     }
 
     @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        return Container.get(iface, order);
+    }
+
+    @Override
     public boolean is(Hint hint) {
         return order.is(hint);
     }

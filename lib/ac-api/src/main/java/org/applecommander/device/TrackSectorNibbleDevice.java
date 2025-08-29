@@ -22,7 +22,10 @@ package org.applecommander.device;
 import org.applecommander.capability.Capability;
 import org.applecommander.codec.NibbleDiskCodec;
 import org.applecommander.hint.Hint;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+
+import java.util.Optional;
 
 public class TrackSectorNibbleDevice implements TrackSectorDevice {
     /**
@@ -40,6 +43,11 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         this.diskMarker = diskMarker;
         this.dataCodec = dataCodec;
         this.geometry = new Geometry(trackReaderWriter.getTracksOnDevice(), sectorsPerTrack);
+    }
+
+    @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        return Container.get(iface, trackReaderWriter);
     }
 
     @Override

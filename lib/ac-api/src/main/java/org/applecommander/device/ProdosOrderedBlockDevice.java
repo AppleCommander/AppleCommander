@@ -22,7 +22,10 @@ package org.applecommander.device;
 import org.applecommander.capability.Capability;
 import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+
+import java.util.Optional;
 
 public class ProdosOrderedBlockDevice implements BlockDevice {
     private final Source source;
@@ -31,6 +34,11 @@ public class ProdosOrderedBlockDevice implements BlockDevice {
     public ProdosOrderedBlockDevice(Source source, int blockSize, int blocksOnDevice) {
         this.source = source;
         this.geometry = new Geometry(blockSize, blocksOnDevice);
+    }
+
+    @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        return Container.get(iface, source);
     }
 
     @Override

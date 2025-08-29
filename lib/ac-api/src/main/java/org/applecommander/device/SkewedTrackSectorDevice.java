@@ -21,7 +21,10 @@ package org.applecommander.device;
 
 import org.applecommander.capability.Capability;
 import org.applecommander.hint.Hint;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+
+import java.util.Optional;
 
 public class SkewedTrackSectorDevice implements TrackSectorDevice {
     public static TrackSectorDevice dosToPhysicalSkew(TrackSectorDevice device) {
@@ -37,6 +40,11 @@ public class SkewedTrackSectorDevice implements TrackSectorDevice {
         assert(sectorSkew.length == 16);
         this.device = device;
         this.sectorSkew = sectorSkew;
+    }
+
+    @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        return Container.get(iface, device);
     }
 
     @Override

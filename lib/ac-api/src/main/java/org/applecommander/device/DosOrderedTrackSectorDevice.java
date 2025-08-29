@@ -22,7 +22,10 @@ package org.applecommander.device;
 import org.applecommander.capability.Capability;
 import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+
+import java.util.Optional;
 
 public class DosOrderedTrackSectorDevice implements TrackSectorDevice {
     private final Source source;
@@ -31,6 +34,11 @@ public class DosOrderedTrackSectorDevice implements TrackSectorDevice {
     public DosOrderedTrackSectorDevice(Source source) {
         this.source = source;
         this.geometry = new Geometry(35, 16);   // assumed for now?
+    }
+
+    @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        return Container.get(iface, source);
     }
 
     @Override

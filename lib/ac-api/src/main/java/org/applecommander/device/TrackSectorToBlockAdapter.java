@@ -21,8 +21,10 @@ package org.applecommander.device;
 
 import org.applecommander.capability.Capability;
 import org.applecommander.hint.Hint;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 public class TrackSectorToBlockAdapter implements BlockDevice {
@@ -32,6 +34,11 @@ public class TrackSectorToBlockAdapter implements BlockDevice {
     public TrackSectorToBlockAdapter(TrackSectorDevice device) {
         this.device = device;
         this.geometry = new Geometry(STANDARD_BLOCK_SIZE, device.getGeometry().sectorsPerDisk() / 2);
+    }
+
+    @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        return Container.get(iface, device);
     }
 
     @Override
