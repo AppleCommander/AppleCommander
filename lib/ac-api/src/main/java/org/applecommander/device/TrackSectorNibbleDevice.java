@@ -98,17 +98,15 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
      * Locate a field on the track.  These are identified by a 3 byte unique
      * signature.  Because of the way in which disk bytes are captured, we need
      * to wrap around the track to ensure all sequences of bytes are accounted for.
-     * Note that we also check the epilog but allow it to be wiggly.
      * <p>
      * This method fills fieldData as well as returning the last position referenced
      * in the track buffer.
      */
-    public static int locateField(int[] prolog, int[] epilog, DataBuffer trackData, DataBuffer fieldData, int startingOffset) {
+    public static int locateField(int[] prolog, DataBuffer trackData, DataBuffer fieldData, int startingOffset) {
         int i = startingOffset;	    // logical position in track buffer (can wrap)
         int position = 0;			// physical position in field buffer
         final int endOfProlog = prolog.length;
         final int endOfData = endOfProlog + fieldData.limit();
-        final int endOfEpilog = endOfData + epilog.length;
         while (i < trackData.limit() + fieldData.limit()) {
             int offset = i % trackData.limit();	// physical position in track buffer
             int b = trackData.getUnsignedByte(offset);
@@ -117,10 +115,7 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
             } else if (position >= endOfProlog && position < endOfData) {
                 fieldData.putByte(position - endOfProlog, b);
                 position++;
-            } else if (position >= endOfData && position < endOfEpilog) {
-                assert (b == epilog[position - endOfData]);
-                position++;
-            } else if (position == endOfEpilog) {
+            } else if (position == endOfData) {
                 return i % trackData.limit();  // done reading!
             } else {
                 position = 0;
@@ -136,7 +131,7 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         boolean found = false;
         int attempts = 16;  // TODO do we need to be more specific?
         while (!found && attempts >= 0) {
-            int nextOffset = locateField(diskMarker.addressProlog(), diskMarker.addressEpilog(), trackData, addressField, offset);
+            int nextOffset = locateField(diskMarker.addressProlog(), trackData, addressField, offset);
             if (nextOffset == -1) break;
             attempts--;
             offset = nextOffset;
@@ -159,7 +154,7 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         // Read data field that immediately follows the address field and the checksum byte
         if (offset != -1) {
             DataBuffer dataField = DataBuffer.create(dataCodec.encodedSize() + 1);
-            offset = locateField(diskMarker.dataProlog(), diskMarker.dataEpilog(), trackData, dataField, offset);
+            offset = locateField(diskMarker.dataProlog(), trackData, dataField, offset);
             if (offset != -1) {
                 return dataCodec.decode(dataField);
             }
@@ -171,6 +166,65 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
 
     @Override
     public void writeSector(int track, int sector, DataBuffer data) {
-        // TODO
+        DataBuffer trackData = trackReaderWriter.readTrackData(track);
+        // Locate address field for this track and sector
+        int offset = findSector(trackData, track, sector);
+        // Locate data field that immediately follows the address field and the checksum byte
+        if (offset != -1) {
+            DataBuffer tmpField = DataBuffer.create(0);
+            offset = locateField(diskMarker.dataProlog(), trackData, tmpField, offset);
+            if (offset != -1) {
+                // TODO we likely need to handle wrapping conditions here somewhere.
+                trackData.put(offset, dataCodec.encode(data));
+                trackReaderWriter.writeTrackData(track, trackData);
+                return;
+            }
+        }
+        // We found the sector but couldn't write the sector, fail horribly
+        var msg = String.format("unable to write T%02d,S%02d", track, sector);
+        throw new RuntimeException(msg);
+    }
+
+    @Override
+    public void format() {
+        if (getGeometry().sectorsPerTrack() == 13) {
+            throw new RuntimeException("formatting 13-sector disks not supported");
+        }
+        // create initial address and data fields
+        DataBuffer addressField = DataBuffer.create(14);
+        DataBuffer dataField = DataBuffer.create(349);
+        dataField.fill(0x96);
+        DataBuffer addressProlog = DataBuffer.wrap(diskMarker.addressProlog());
+        DataBuffer addressEpilog = DataBuffer.wrap(diskMarker.addressEpilog());
+        DataBuffer dataProlog = DataBuffer.wrap(diskMarker.dataProlog());
+        DataBuffer dataEpilog = DataBuffer.wrap(diskMarker.dataEpilog());
+        addressField.put(0, addressProlog);
+        addressField.put(11, addressEpilog);
+        dataField.put(0, dataProlog);
+        dataField.put(346, dataEpilog);
+        // lay out track with address and data fields
+        int addressSync = 43;	// number of sync bytes before address field
+        int dataSync = 10;		// number of sync bytes before data field
+        int volume = 254;		// disk volume# is always 254
+        for (int track=0; track < geometry.tracksOnDisk(); track++) {
+            DataBuffer trackData = trackReaderWriter.readTrackData(track);
+            trackData.fill(0xff);
+            int offset = 0;
+            for (int sector=0; sector < geometry.sectorsPerTrack(); sector++) {
+                // fill in address field:
+                encodeOddEven(addressField, 3, volume);
+                encodeOddEven(addressField, 5, track);
+                encodeOddEven(addressField, 7, sector);
+                encodeOddEven(addressField, 9, volume ^ track ^ sector);
+                // write out sector data:
+                offset+= addressSync;
+                trackData.put(offset, addressField);
+                offset+= addressField.limit();
+                offset+= dataSync;
+                trackData.put(offset, dataField);
+                offset+= dataField.limit();
+            }
+            trackReaderWriter.writeTrackData(track, trackData);
+        }
     }
 }

@@ -21,12 +21,29 @@ package org.applecommander.device;
 
 import org.applecommander.util.DataBuffer;
 
+/**
+ * Represents block devices in the Apple II world. These devices should be
+ * capable of supporting ProDOS and Pascal 512 byte blocks, as well as RDOS
+ * 256 byte blocks, and even CP/M 1024 byte blocks.  Those statistics should
+ * be supported by the given Geometry.
+ */
 public interface BlockDevice extends Device {
     int STANDARD_BLOCK_SIZE = 512;
 
     Geometry getGeometry();
     DataBuffer readBlock(int block);
     void writeBlock(int block, DataBuffer blockData);
+    /**
+     * Format a disk. For most disks, this is simply a wipe to all zeros. If this
+     * disk has extended format (such as nibble formats), this is the opportunity
+     * to write out that format.
+     */
+    default void format() {
+        DataBuffer blockData = DataBuffer.create(getGeometry().blockSize());
+        for (int block = 0; block < getGeometry().blocksOnDevice(); block++) {
+            writeBlock(block, blockData);
+        }
+    }
 
     record Geometry(int blockSize, int blocksOnDevice) {}
 }

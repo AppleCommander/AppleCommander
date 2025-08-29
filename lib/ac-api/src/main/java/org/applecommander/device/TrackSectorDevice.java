@@ -27,6 +27,20 @@ public interface TrackSectorDevice extends Device {
     Geometry getGeometry();
     DataBuffer readSector(int track, int sector);
     void writeSector(int track, int sector, DataBuffer data);
+    /**
+     * Format a disk. For most disks, this is simply a wipe to all zeros. If this
+     * disk has extended format (such as nibble formats), this is the opportunity
+     * to write out that format.
+     */
+    default void format() {
+        DataBuffer sectorData = DataBuffer.create(SECTOR_SIZE);
+        for (int track = 0; track < getGeometry().tracksOnDisk(); track++) {
+            for (int sector = 0; sector < getGeometry().sectorsPerTrack(); sector++) {
+                writeSector(track, sector, sectorData);
+            }
+        }
+    }
+
     record Geometry(int tracksOnDisk, int sectorsPerTrack) {
         public int sectorsPerDisk() {
             return tracksOnDisk*sectorsPerTrack;

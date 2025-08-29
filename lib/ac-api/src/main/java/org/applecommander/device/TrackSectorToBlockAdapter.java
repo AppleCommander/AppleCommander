@@ -82,4 +82,9 @@ public class TrackSectorToBlockAdapter implements BlockDevice {
         operation1.accept(track, sector1);
         operation2.accept(track, sector2);
     }
+
+    @Override
+    public void format() {
+        device.format();
+    }
 }

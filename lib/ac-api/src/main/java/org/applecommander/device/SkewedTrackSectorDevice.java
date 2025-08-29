@@ -76,4 +76,9 @@ public class SkewedTrackSectorDevice implements TrackSectorDevice {
         assert(sector >= 0 && sector < sectorSkew.length);
         device.writeSector(track, sectorSkew[sector], data);
     }
+
+    @Override
+    public void format() {
+        device.format();
+    }
 }

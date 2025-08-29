@@ -77,4 +77,9 @@ public class BlockToTrackSectorAdapter implements TrackSectorDevice {
         blockData.put(offset, data);
         device.writeBlock(block, blockData);
     }
+
+    @Override
+    public void format() {
+        device.format();
+    }
 }
