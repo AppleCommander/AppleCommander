@@ -20,10 +20,14 @@
 package com.webcodepro.applecommander.storage;
 
 import com.webcodepro.applecommander.storage.physical.*;
+import org.applecommander.codec.Nibble53Disk525Codec;
+import org.applecommander.codec.Nibble62Disk525Codec;
 import org.applecommander.device.*;
 import org.applecommander.hint.Hint;
+import org.applecommander.image.NibbleImage;
 import org.applecommander.image.WozImage;
 import org.applecommander.source.Source;
+import org.applecommander.util.DataBuffer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,11 +52,11 @@ public interface DiskFactory {
             if (WozImage.WOZ1_MAGIC == signature || WozImage.WOZ2_MAGIC == signature) {
                 orders.add(new WozOrder(source));
                 blockDevice = null;
-                sectorDevice = null;    // FIXME
+                sectorDevice = identifySectorsPerTrack(new WozImage(source));
             } else if (source.is(Hint.NIBBLE_SECTOR_ORDER) || source.isApproxEQ(DiskConstants.APPLE_140KB_NIBBLE_DISK)) {
                 orders.add(new NibbleOrder(source));
                 blockDevice = null;
-                sectorDevice = null;    // FIXME
+                sectorDevice = identifySectorsPerTrack(new NibbleImage(source));
             } else if (source.is(Hint.PRODOS_BLOCK_ORDER) || source.getSize() > DiskConstants.APPLE_400KB_DISK || source.extensionLike("po")) {
                 orders.add(new ProdosOrder(source));
                 blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
@@ -68,6 +72,45 @@ public interface DiskFactory {
                 blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
                 sectorDevice = new DosOrderedTrackSectorDevice(source);
             }
+        }
+
+        /**
+         * Brute force attempt to identify 13 or 16 sector tracks. Note we only test track 0.
+         * Also note, we can do much better -- but all the nibble stuff will need to be reconfigured
+         * to allow different prologs/epilogs per track*. This likely can enable reading early software
+         * protection schemes that just fiddled with those bytes. DOS likely got moved around, so that
+         * would be coupled with more flexibility in DOS. See the "experimenting/identifying-nibble-prolog-bytes"
+         * for some experimental work.
+         * <p/>
+         * Note: the variance in prolog/epilog can be super detailed, but it is unlikely a DOS clone
+         * has different prolog/epilog bytes per sector. Per track may be a bit over-the-top. Except, that
+         * it appears Ultima I may have used it. :-)
+         */
+        private TrackSectorDevice identifySectorsPerTrack(NibbleTrackReaderWriter trackReaderWriter) {
+            try {
+                // Try 16-sector disks first:
+                TrackSectorDevice device = new TrackSectorNibbleDevice(trackReaderWriter,
+                        DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), 16);
+                DataBuffer sectorData = device.readSector(0, 0);
+                if (sectorData.limit() == TrackSectorDevice.SECTOR_SIZE) {
+                    return device;
+                }
+            } catch (Throwable t) {
+                // ignored
+            }
+            try {
+                // Next try 13-sector disks:
+                TrackSectorDevice device = new TrackSectorNibbleDevice(trackReaderWriter,
+                        DiskMarker.disk525sector13(), new Nibble53Disk525Codec(), 13);
+                DataBuffer sectorData = device.readSector(0, 0);
+                if (sectorData.limit() == TrackSectorDevice.SECTOR_SIZE) {
+                    return device;
+                }
+            } catch (Throwable t) {
+                // ignored
+            }
+            // Failure
+            return null;
         }
     }
 }
