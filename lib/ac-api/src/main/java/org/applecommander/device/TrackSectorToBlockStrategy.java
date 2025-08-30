@@ -30,19 +30,19 @@ package org.applecommander.device;
  */
 public interface TrackSectorToBlockStrategy {
 	/** Translate a track and sector reference into the proper block number. */
-	public int computeBlock(int track, int sector);
+    int computeBlock(int track, int sector);
 	/** 
 	 * Translate a given track and sector into the proper offset into the block. 
 	 * This is needed due to the fact that a ProDOS block is 512 bytes but a DOS
 	 * sector is 256 bytes -- meaning two sectors fit into a block.
 	 */
-	public int computeOffset(int track, int sector);
+    int computeOffset(int track, int sector);
 	/**
 	 * Indicates the total number of tracks in this device.  The default is
 	 * 50 tracks, which is the maximum number of tracks DOS will support;
 	 * this method will have to be overridden for DOS.MASTER type products.
 	 */
-	default public int getTotalTracks() {
+	default int getTotalTracks() {
 		return 50;
 	}
 	/**
@@ -51,9 +51,9 @@ public interface TrackSectorToBlockStrategy {
 	 * that DOS supports.  Note that we do make the assumption that the disk
 	 * geometry is fixed and sectors do not vary.
 	 */
-	default public int getSectorsPerTrack() {
+	default int getSectorsPerTrack() {
 		return 32;
 	}
 	/** The name is information used in various toString methods.  This ensures it is populated. */
-	public String getName();
+    String getName();
 }

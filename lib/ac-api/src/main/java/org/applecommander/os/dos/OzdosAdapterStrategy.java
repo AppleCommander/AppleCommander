@@ -34,7 +34,7 @@ public enum OzdosAdapterStrategy implements TrackSectorToBlockStrategy {
 	
 	private final int offset;
 	
-	private OzdosAdapterStrategy(int offset) {
+	OzdosAdapterStrategy(int offset) {
 		this.offset = offset;
 	}
 	/** {@inheritDoc} */
