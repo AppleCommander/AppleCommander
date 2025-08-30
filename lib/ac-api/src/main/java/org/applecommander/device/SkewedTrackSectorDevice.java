@@ -66,6 +66,11 @@ public class SkewedTrackSectorDevice implements TrackSectorDevice {
                 0x0, 0x2, 0x4, 0x6, 0x8, 0xa, 0xc, 0xe,
                 0x1, 0x3, 0x5, 0x7, 0x9, 0xb, 0xd, 0xf);
     }
+    public static TrackSectorDevice pascalToPhysicalSkew(TrackSectorDevice device) {
+        return new SkewedTrackSectorDevice(device,
+                0x0, 0x8, 0x1, 0x9, 0x2, 0xa, 0x3, 0xb,
+                0x4, 0xc, 0x5, 0xd, 0x6, 0xe, 0x7, 0xf);
+    }
     public static TrackSectorDevice dosToPhysicalSkew(TrackSectorDevice device) {
         return new SkewedTrackSectorDevice(device,
                 0x0, 0x7, 0xe, 0x6, 0xd, 0x5, 0xc, 0x4,
@@ -82,14 +87,21 @@ public class SkewedTrackSectorDevice implements TrackSectorDevice {
                 0x0, 0x6, 0xc, 0x3, 0x9, 0xf, 0xe, 0x5,
                 0xb, 0x2, 0x8, 0x7, 0xd, 0x4, 0xa, 0x1);
     }
+    // Special RDOS "skew" for truncation (from 16 sector to 13 sector)
+    public static TrackSectorDevice truncate16sectorTo13(TrackSectorDevice device) {
+        return new SkewedTrackSectorDevice(device,
+                0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+    }
 
     private final TrackSectorDevice device;
     private final int[] sectorSkew;
+    private final Geometry geometry;
 
     private SkewedTrackSectorDevice(TrackSectorDevice device, int... sectorSkew) {
-        assert(sectorSkew.length == 16);
+        assert(sectorSkew.length == 16 || sectorSkew.length == 13);
         this.device = device;
         this.sectorSkew = sectorSkew;
+        this.geometry = new Geometry(device.getGeometry().tracksOnDisk(), sectorSkew.length);
     }
 
     @Override
@@ -112,7 +124,7 @@ public class SkewedTrackSectorDevice implements TrackSectorDevice {
 
     @Override
     public Geometry getGeometry() {
-        return device.getGeometry();
+        return geometry;
     }
 
     @Override

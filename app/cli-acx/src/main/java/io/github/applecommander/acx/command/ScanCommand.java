@@ -457,9 +457,10 @@ public class ScanCommand extends ReusableCommandOptions {
 
         private void readAllRDOSBlocks(RdosFormatDisk rdos) {
             dataType = "RDOS blocks";
+            BlockDevice device = rdos.get(BlockDevice.class).orElseThrow();
             for (int b = 0; b < rdos.getBitmapLength() && errors.size() < MAX_ERRORS; b++) {
                 try {
-                    rdos.readRdosBlock(b);
+                    device.readBlock(b);
                     dataRead++;
                 } catch (Throwable t) {
                     errors.add(String.format("Unable to read RDOS block #%d for disk #%d", b, rdos.getLogicalDiskNumber()));

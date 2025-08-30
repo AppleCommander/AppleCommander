@@ -121,6 +121,7 @@ public class DiskImageWizard extends Wizard {
 			case ORDER_PRODOS:
 				imageOrder = new ProdosOrder(source);
 				blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
+                sectorDevice = new BlockToTrackSectorAdapter(blockDevice, new ProdosBlockToTrackSectorAdapterStrategy());
 				break;
 		}
 		switch (format) {
@@ -133,7 +134,8 @@ public class DiskImageWizard extends Wizard {
 			case FORMAT_PRODOS:
 				return ProdosFormatDisk.create(name.toString(), volumeName, blockDevice);
 			case FORMAT_RDOS:
-				return RdosFormatDisk.create(name.toString(), imageOrder);
+                BlockDevice rdosDevice = new TrackSectorToBlockAdapter(sectorDevice, TrackSectorToBlockAdapter.BlockStyle.RDOS);
+				return RdosFormatDisk.create(name.toString(), rdosDevice);
 			case FORMAT_UNIDOS:
 				return UniDosFormatDisk.create(name.toString(), imageOrder);
 			case FORMAT_CPM:
