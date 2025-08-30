@@ -56,6 +56,7 @@ public class WozImage implements NibbleTrackReaderWriter {
 
         DataBuffer bb = source.readAllBytes();
 
+        bb.position(0);
         int sig = bb.readInt();
         int test = bb.readInt();
         final int testExpected = 0xa0d0aff;
