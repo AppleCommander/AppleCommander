@@ -112,11 +112,12 @@ public class AppleUtilTest {
 		fileEntry.setFileData("This is a test file.".getBytes()); //$NON-NLS-1$
 		// A duplicate - then we change it to a NIB disk image...
 		Source source2 = DataBufferSource.create(DiskConstants.APPLE_140KB_NIBBLE_DISK, "new-disk").get();
-		TrackSectorDevice tsDevice = new TrackSectorNibbleDevice(new NibbleImage(source2),
+		TrackSectorDevice nibbleDevice = new TrackSectorNibbleDevice(new NibbleImage(source2),
 			DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), 16);
+        TrackSectorDevice skewedDevice = SkewedTrackSectorDevice.physicalToPascalSkew(nibbleDevice);
 		ProdosFormatDisk prodosDiskNibbleOrder = ProdosFormatDisk.create("prodostemp2.nib", //$NON-NLS-1$
 			"prodostemp2", //$NON-NLS-1$
-			new TrackSectorToBlockAdapter(tsDevice))[0];
+			new TrackSectorToBlockAdapter(skewedDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS))[0];
 		AppleUtil.changeOrderByBlock(prodosDiskDosOrder.get(BlockDevice.class).orElseThrow(),
 			prodosDiskNibbleOrder.get(BlockDevice.class).orElseThrow());
 		// Confirm that these disks are identical:

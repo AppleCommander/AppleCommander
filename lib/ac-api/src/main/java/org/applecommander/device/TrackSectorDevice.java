@@ -45,5 +45,8 @@ public interface TrackSectorDevice extends Device {
         public int sectorsPerDisk() {
             return tracksOnDisk*sectorsPerTrack;
         }
+        public int deviceSize() {
+            return sectorsPerDisk() * SECTOR_SIZE;
+        }
     }
 }

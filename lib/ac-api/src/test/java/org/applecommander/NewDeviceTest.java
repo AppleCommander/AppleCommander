@@ -83,8 +83,9 @@ public class NewDeviceTest {
     public void readBlockGalatt() {
         final String filename = "galatt.dsk";
         Source source = sourceDisk(filename);
-        DosOrderedTrackSectorDevice tsDevice = new DosOrderedTrackSectorDevice(source);
-        TrackSectorToBlockAdapter blockDevice = new TrackSectorToBlockAdapter(tsDevice);
+        DosOrderedTrackSectorDevice doDevice = new DosOrderedTrackSectorDevice(source);
+        TrackSectorDevice skewedDevice = SkewedTrackSectorDevice.dosToPascalSkew(doDevice);
+        TrackSectorToBlockAdapter blockDevice = new TrackSectorToBlockAdapter(skewedDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS);
         DataBuffer blockData = blockDevice.readBlock(2);
         dumpAsHex(blockData, filename);
     }

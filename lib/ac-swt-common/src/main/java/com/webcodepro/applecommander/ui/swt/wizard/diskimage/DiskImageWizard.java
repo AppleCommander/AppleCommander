@@ -19,7 +19,10 @@
  */
 package com.webcodepro.applecommander.ui.swt.wizard.diskimage;
 
+import org.applecommander.codec.Nibble62Disk525Codec;
+import org.applecommander.codec.NibbleDiskCodec;
 import org.applecommander.device.*;
+import org.applecommander.image.NibbleImage;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.eclipse.swt.widgets.Shell;
@@ -101,12 +104,19 @@ public class DiskImageWizard extends Wizard {
 		switch (getOrder()) {
 			case ORDER_DOS:
 				imageOrder = new DosOrder(source);
-				sectorDevice = new DosOrderedTrackSectorDevice(source);
-				blockDevice = new TrackSectorToBlockAdapter(sectorDevice);
+                sectorDevice = new DosOrderedTrackSectorDevice(source);
+                TrackSectorDevice skewedDevice  = SkewedTrackSectorDevice.dosToPascalSkew(sectorDevice);
+				blockDevice = new TrackSectorToBlockAdapter(skewedDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS);
 				break;
 			case ORDER_NIBBLE:
 				imageOrder = new NibbleOrder(source);
-				// TODO
+                NibbleTrackReaderWriter readerWriter = new NibbleImage(source);
+                DiskMarker diskMarker = DiskMarker.disk525sector16();
+                NibbleDiskCodec nibbleCodec = new Nibble62Disk525Codec();
+                TrackSectorDevice physicalDevice  = new TrackSectorNibbleDevice(readerWriter, diskMarker, nibbleCodec, 16);
+                sectorDevice = SkewedTrackSectorDevice.physicalToDosSkew(physicalDevice);
+                blockDevice = new TrackSectorToBlockAdapter(SkewedTrackSectorDevice.physicalToPascalSkew(physicalDevice),
+                        TrackSectorToBlockAdapter.BlockStyle.PRODOS);
 				break;
 			case ORDER_PRODOS:
 				imageOrder = new ProdosOrder(source);

@@ -45,5 +45,9 @@ public interface BlockDevice extends Device {
         }
     }
 
-    record Geometry(int blockSize, int blocksOnDevice) {}
+    record Geometry(int blockSize, int blocksOnDevice) {
+        public int deviceSize() {
+            return blocksOnDevice * blockSize;
+        }
+    }
 }

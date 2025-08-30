@@ -25,15 +25,22 @@ import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
 import java.util.Optional;
-import java.util.function.BiConsumer;
 
+/**
+ * Provides a _very simple_ mapping from Track/Sectors to blocks. All sector skewing is expected
+ * to be handled in the TrackSectorDevice. As such, this device expects to map sectors in the given
+ * ("natural") order. (That is, ProDOS blocks are sectors 0,1 and 2,3 and 3,4 etc. RDOS is in physical
+ * order. CP/M is in CP/M's expected order.)
+ */
 public class TrackSectorToBlockAdapter implements BlockDevice {
     private final TrackSectorDevice device;
+    private final BlockStyle style;
     private final Geometry geometry;
 
-    public TrackSectorToBlockAdapter(TrackSectorDevice device) {
+    public TrackSectorToBlockAdapter(TrackSectorDevice device, BlockStyle style) {
         this.device = device;
-        this.geometry = new Geometry(STANDARD_BLOCK_SIZE, device.getGeometry().sectorsPerDisk() / 2);
+        this.style = style;
+        this.geometry = new Geometry(style.blockSize, device.getGeometry().deviceSize() / style.blockSize);
     }
 
     @Override
@@ -43,7 +50,7 @@ public class TrackSectorToBlockAdapter implements BlockDevice {
 
     @Override
     public boolean is(Hint hint) {
-        return device.is(hint);
+        return hint == Hint.PRODOS_BLOCK_ORDER;
     }
 
     @Override
@@ -58,33 +65,52 @@ public class TrackSectorToBlockAdapter implements BlockDevice {
 
     @Override
     public DataBuffer readBlock(int block) {
-        DataBuffer data = DataBuffer.create(STANDARD_BLOCK_SIZE);
-        operate(block,
-                (t,s) -> data.put(0, device.readSector(t,s)),
-                (t,s) -> data.put(256, device.readSector(t,s)));
+        DataBuffer data = DataBuffer.create(style.blockSize);
+        operate(block, (t,s,o) -> data.put(o, device.readSector(t,s)));
         return data;
     }
 
     @Override
     public void writeBlock(int block, DataBuffer blockData) {
-        operate(block,
-                (t,s) -> device.writeSector(t,s,blockData.slice(0,256)),
-                (t,s) -> device.writeSector(t,s,blockData.slice(256,256)));
+        assert blockData.limit() == style.blockSize;
+        operate(block, (t,s,o) -> device.writeSector(t, s, blockData.slice(o, TrackSectorDevice.SECTOR_SIZE)));
     }
 
-    public void operate(int block, BiConsumer<Integer,Integer> operation1, BiConsumer<Integer,Integer> operation2) {
-        int track = block / 8;
-        int sectorIndex = block % 8;
-        int[] sectorMapping1 = { 0, 13, 11, 9, 7, 5, 3, 1 };
-        int[] sectorMapping2 = { 14, 12, 10, 8, 6, 4, 2, 15 };
-        int sector1 = sectorMapping1[sectorIndex];
-        int sector2 = sectorMapping2[sectorIndex];
-        operation1.accept(track, sector1);
-        operation2.accept(track, sector2);
+    private void operate(int block, Operation operation) {
+        assert block < geometry.blocksOnDevice();
+        int offset = 0;
+        int physicalSector = block * style.sectorsPerBlock;
+        int track = physicalSector / device.getGeometry().sectorsPerTrack();
+        int sector = physicalSector % device.getGeometry().sectorsPerTrack();
+        while (offset < style.blockSize) {
+            assert sector < device.getGeometry().sectorsPerTrack();
+            operation.perform(track, sector, offset);
+            sector++;   // note that we assume we never wrap to next track
+            offset += TrackSectorDevice.SECTOR_SIZE;
+        }
+    }
+    private interface Operation {
+        void perform(int track, int sector, int offset);
     }
 
     @Override
     public void format() {
         device.format();
+    }
+
+    public enum BlockStyle {
+        RDOS(256),
+        PASCAL(512),
+        PRODOS(512),
+        CPM(1024);
+
+        final int blockSize;
+        final int sectorsPerBlock;
+
+        BlockStyle(int blockSize) {
+            assert blockSize % TrackSectorDevice.SECTOR_SIZE == 0;
+            this.blockSize = blockSize;
+            this.sectorsPerBlock = blockSize / TrackSectorDevice.SECTOR_SIZE;
+        }
     }
 }

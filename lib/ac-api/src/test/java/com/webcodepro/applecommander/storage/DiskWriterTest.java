@@ -111,7 +111,8 @@ public class DiskWriterTest {
 	public void testWriteToProdos140kDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
 		TrackSectorDevice trackSectorDevice = new DosOrderedTrackSectorDevice(source);
-		BlockDevice blockDevice = new TrackSectorToBlockAdapter(trackSectorDevice);
+        TrackSectorDevice skewedDevice = SkewedTrackSectorDevice.dosToPascalSkew(trackSectorDevice);
+		BlockDevice blockDevice = new TrackSectorToBlockAdapter(skewedDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"write-test-prodos-140k.dsk", "TEST", blockDevice); //$NON-NLS-1$ //$NON-NLS-2$
 		writeFiles(disks, "BIN", "TXT", true); //$NON-NLS-1$ //$NON-NLS-2$
@@ -218,7 +219,8 @@ public class DiskWriterTest {
 	public void testCreateAndDeleteProdos140kDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
 		TrackSectorDevice trackSectorDevice = new DosOrderedTrackSectorDevice(source);
-		BlockDevice blockDevice = new TrackSectorToBlockAdapter(trackSectorDevice);
+        TrackSectorDevice skewedDevice = SkewedTrackSectorDevice.dosToPascalSkew(trackSectorDevice);
+		BlockDevice blockDevice = new TrackSectorToBlockAdapter(skewedDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
 			"createanddelete-test-prodos-140k.dsk", "TEST",  //$NON-NLS-1$ //$NON-NLS-2$
 			blockDevice);

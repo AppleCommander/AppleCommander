@@ -26,11 +26,61 @@ import org.applecommander.util.DataBuffer;
 
 import java.util.Optional;
 
+/**
+ * This is an overlay on a TrackSectorDevice to give the proper sector skew to the device.
+ * <p/>
+ * <pre>
+ * From Beneath Apple DOS (2020).
+ * -------- SECTOR ORDERING --------
+ * Physical*  DOS 3.3  Pascal*  CP/M
+ *     0         0        0       0
+ *     1         D        2       3
+ *     2         B        4       6
+ *     3         9        6       9
+ *     4         7        8       C
+ *     5         5        A       F
+ *     6         3        C       2
+ *     7         1        E       5
+ *     8         E        1       8
+ *     9         C        3       B
+ *     A         A        5       E
+ *     B         8        7       1
+ *     C         6        9       4
+ *     D         4        B       7
+ *     E         2        D       A
+ *     F         F        F       D
+ * </pre>
+ * <ul>Notes:
+ * <li>Physical = RDOS and DOS 3.2 sector ordering</li>
+ * <li>Pascal = ProDOS sector ordering</li>
+ * </ul>
+ */
 public class SkewedTrackSectorDevice implements TrackSectorDevice {
-    public static TrackSectorDevice dosToPhysicalSkew(TrackSectorDevice device) {
+    public static TrackSectorDevice physicalToDosSkew(TrackSectorDevice device) {
         return new SkewedTrackSectorDevice(device,
                 0x0, 0xd, 0xb, 0x9, 0x7, 0x5, 0x3, 0x1,
                 0xe, 0xc, 0xa, 0x8, 0x6, 0x4, 0x2, 0xf);
+    }
+    public static TrackSectorDevice physicalToPascalSkew(TrackSectorDevice device) {
+        return new SkewedTrackSectorDevice(device,
+                0x0, 0x2, 0x4, 0x6, 0x8, 0xa, 0xc, 0xe,
+                0x1, 0x3, 0x5, 0x7, 0x9, 0xb, 0xd, 0xf);
+    }
+    public static TrackSectorDevice dosToPhysicalSkew(TrackSectorDevice device) {
+        return new SkewedTrackSectorDevice(device,
+                0x0, 0x7, 0xe, 0x6, 0xd, 0x5, 0xc, 0x4,
+                0xb, 0x3, 0xa, 0x2, 0x9, 0x1, 0x8, 0xf);
+    }
+    public static TrackSectorDevice dosToPascalSkew(TrackSectorDevice device) {
+        return new SkewedTrackSectorDevice(device,
+                0x0, 0xe, 0xd, 0xc, 0xb, 0xa, 0x9, 0x8,
+                0x7, 0x6, 0x5, 0x4, 0x3, 0x2, 0x1, 0xf);
+    }
+    // CP/M skews are from 'cpmtools'
+    public static TrackSectorDevice dosToCpmSkew(TrackSectorDevice device) {
+        return new SkewedTrackSectorDevice(device,
+                0x0, 0x6, 0xc, 0x3, 0x9, 0xf, 0xe, 0x5,
+                0xb, 0x2, 0x8, 0x7, 0xd, 0x4, 0xa, 0x1);
     }
 
     private final TrackSectorDevice device;

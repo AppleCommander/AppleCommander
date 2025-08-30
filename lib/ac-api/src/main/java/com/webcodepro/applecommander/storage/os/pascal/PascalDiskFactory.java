@@ -22,7 +22,10 @@ package com.webcodepro.applecommander.storage.os.pascal;
 import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFactory;
 import org.applecommander.device.BlockDevice;
+import org.applecommander.device.SkewedTrackSectorDevice;
+import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.device.TrackSectorToBlockAdapter;
+import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 
 /**
@@ -37,9 +40,18 @@ public class PascalDiskFactory implements DiskFactory {
             }
         }
         if (ctx.sectorDevice != null && ctx.sectorDevice.getGeometry().sectorsPerDisk() <= 1600) {
-            BlockDevice device = new TrackSectorToBlockAdapter(ctx.sectorDevice);
-            if (check(device)) {
-                ctx.disks.add(new PascalFormatDisk(ctx.source.getName(), device));
+            TrackSectorDevice skewed = null;
+            if (ctx.sectorDevice.is(Hint.NIBBLE_SECTOR_ORDER)) {
+                skewed = SkewedTrackSectorDevice.physicalToPascalSkew(ctx.sectorDevice);
+            }
+            else if (ctx.sectorDevice.is(Hint.DOS_SECTOR_ORDER)) {
+                skewed = SkewedTrackSectorDevice.dosToPascalSkew(ctx.sectorDevice);
+            }
+            if (skewed != null) {
+                BlockDevice device = new TrackSectorToBlockAdapter(skewed, TrackSectorToBlockAdapter.BlockStyle.PASCAL);
+                if (check(device)) {
+                    ctx.disks.add(new PascalFormatDisk(ctx.source.getName(), device));
+                }
             }
         }
     }

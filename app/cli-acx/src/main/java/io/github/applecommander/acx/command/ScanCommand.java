@@ -41,6 +41,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
@@ -62,6 +63,12 @@ public class ScanCommand extends ReusableCommandOptions {
     @Option(names = { "--progress" }, description = "Show progress be listing each image as it is processed",
             defaultValue = "false")
     private boolean progress;
+
+    private BiPredicate<Report,Report> degradationFn = this::degradationBySuccessFlag;
+    @Option(names = { "--numbers" }, description = "Compare reports by numbers instead of success flag")
+    private void detectDegradationByNumbers(boolean flag) {
+        degradationFn = this::degradationByNumbers;
+    }
 
     @Override
     public int handleCommand() throws Exception {
@@ -98,7 +105,7 @@ public class ScanCommand extends ReusableCommandOptions {
                 Report newReport = visitor.scanFile(Path.of(oldReport.imageName));
                 oldData.tallyData(oldReport);
                 newData.tallyData(newReport);
-                if (oldReport.success && !newReport.success) {
+                if (degradationFn.test(oldReport,newReport)) {
                     degradationCount++;
                     List<String> diffs = diffReport(oldReport, newReport);
                     if (!diffs.isEmpty()) {
@@ -116,6 +123,17 @@ public class ScanCommand extends ReusableCommandOptions {
         } catch (IOException e) {
             LOG.severe(e.getMessage());
         }
+    }
+    public boolean degradationBySuccessFlag(Report oldReport, Report newReport) {
+        return oldReport.success && !newReport.success;
+    }
+    public boolean degradationByNumbers(Report oldReport, Report newReport) {
+        return (oldReport.logicalDisks > newReport.logicalDisks)
+            || (oldReport.deletedFiles > newReport.deletedFiles)
+            || (oldReport.directoriesVisited > newReport.directoriesVisited)
+            || (oldReport.filesVisited > newReport.filesVisited)
+            || (oldReport.filesRead > newReport.filesRead)
+            || (oldReport.dataType.equals(newReport.dataType) && oldReport.dataRead > newReport.dataRead);
     }
 
     public List<String> diffReport(Report oldReport, Report newReport) {
