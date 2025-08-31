@@ -429,12 +429,12 @@ public class ScanCommand extends ReusableCommandOptions {
 
         private void readAllCPMBlocks(CpmFormatDisk cpm) {
             dataType = "CPM blocks";
-            // This adjusts for the start. The CPM filesystem ignores the first 3 tracks on disk.
-            int blocksToRead = cpm.getBitmapLength() -
-                    (CpmFormatDisk.PHYSICAL_BLOCK_TRACK_START * CpmFormatDisk.CPM_BLOCKS_PER_TRACK);
-            for (int b=0; b<blocksToRead && errors.size() < MAX_ERRORS; b++) {
+            // Note that the "raw" device can read the entire CP/M disk and that the CP/M filesystem handles the
+            // "logical" block 0 starting on track 3.
+            BlockDevice device = cpm.get(BlockDevice.class).orElseThrow();
+            for (int b = 0; b < device.getGeometry().blocksOnDevice(); b++) {
                 try {
-                    cpm.readCpmBlock(b);
+                    device.readBlock(b);
                     dataRead++;
                 } catch (Throwable t) {
                     errors.add(String.format("Unable to read CPM block #%d for disk #%d", b, cpm.getLogicalDiskNumber()));

@@ -24,6 +24,7 @@ import org.applecommander.hint.Hint;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
+import javax.sound.midi.Track;
 import java.util.Optional;
 
 /**
@@ -83,9 +84,10 @@ public class SkewedTrackSectorDevice implements TrackSectorDevice {
     }
     // CP/M skews are from 'cpmtools'
     public static TrackSectorDevice dosToCpmSkew(TrackSectorDevice device) {
-        return new SkewedTrackSectorDevice(device,
-                0x0, 0x6, 0xc, 0x3, 0x9, 0xf, 0xe, 0x5,
-                0xb, 0x2, 0x8, 0x7, 0xd, 0x4, 0xa, 0x1);
+        return new SkewedTrackSectorDevice(device, 0,6,12,3,9,15,14,5,11,2,8,7,13,4,10,1);
+    }
+    public static TrackSectorDevice pascalToCpmSkew(TrackSectorDevice device) {
+        return new SkewedTrackSectorDevice(device, 0,9,3,12,6,15,1,10,4,13,7,8,2,11,5,14);
     }
     // Special RDOS "skew" for truncation (from 16 sector to 13 sector)
     public static TrackSectorDevice truncate16sectorTo13(TrackSectorDevice device) {

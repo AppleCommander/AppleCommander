@@ -502,6 +502,10 @@ public class CpmFileEntry implements FileEntry {
 	 * Answer with a list of blocks allocated to this file.
 	 */
 	public int[] getAllocations() {
+        // It appears that a user number of 0x1f ("cp/m.sys", "DOS 3.3.") marks system tracks!
+        // Presumably an unmatched user number (0x00 likely being the default) hides the "file".
+        boolean adjust = getUserNumber(0) == 0x1f;
+
 		int blocks = getBlocksUsed();
 		int[] allocations = new int[blocks];
 		int block = 0;
@@ -509,9 +513,11 @@ public class CpmFileEntry implements FileEntry {
 			byte[] data = readFileEntry(i);
 			int offset = ALLOCATION_OFFSET;
 			while (block < blocks && offset < ENTRY_LENGTH) {
-				allocations[block++] = AppleUtil.getUnsignedByte(data[offset++]);
+                int allocation = AppleUtil.getUnsignedByte(data[offset++]);
+                if (adjust && allocation >= 0x80 && allocation <= 0x8b) allocation &= 0x7f;
+				allocations[block++] = allocation;
 			}
 		}
-		return allocations;
+        return allocations;
 	}
 }

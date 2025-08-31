@@ -21,7 +21,12 @@ package com.webcodepro.applecommander.storage.os.cpm;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFactory;
+import org.applecommander.device.*;
+import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test this disk for a likely CP/M filesystem.
@@ -31,9 +36,37 @@ import org.applecommander.util.DataBuffer;
 public class CpmDiskFactory implements DiskFactory {
     @Override
     public void inspect(Context ctx) {
-        ctx.orders.forEach(order -> {
-            if (order.isSizeApprox(DiskConstants.APPLE_140KB_DISK) || order.isSizeApprox(DiskConstants.APPLE_140KB_NIBBLE_DISK)) {
-                CpmFormatDisk disk = new CpmFormatDisk(ctx.source.getName(), order);
+        List<TrackSectorDevice> devices = new ArrayList<>();
+        if (ctx.sectorDevice != null) {
+            if (ctx.sectorDevice.is(Hint.NIBBLE_SECTOR_ORDER)) {
+                // cheating so I don't need to figure out physical to CP/M skew!
+                TrackSectorDevice dosSkew = SkewedTrackSectorDevice.physicalToDosSkew(ctx.sectorDevice);
+                devices.add(SkewedTrackSectorDevice.dosToCpmSkew(dosSkew));
+            }
+            else if (ctx.sectorDevice.is(Hint.DOS_SECTOR_ORDER)) {
+                devices.add(SkewedTrackSectorDevice.dosToCpmSkew(ctx.sectorDevice));
+            }
+            else if (ctx.sectorDevice.is(Hint.PRODOS_BLOCK_ORDER)) {
+                devices.add(SkewedTrackSectorDevice.pascalToCpmSkew(ctx.sectorDevice));
+            }
+            else {
+                // Presumably a DSK image, so DO and PO are possibilities
+                devices.add(SkewedTrackSectorDevice.dosToCpmSkew(ctx.sectorDevice));
+                devices.add(SkewedTrackSectorDevice.pascalToCpmSkew(ctx.sectorDevice));
+            }
+        }
+        else if (ctx.blockDevice != null) {
+            if (ctx.blockDevice.getGeometry().blocksOnDevice() == 280) {
+                TrackSectorDevice device = new BlockToTrackSectorAdapter(ctx.blockDevice,
+                        new ProdosBlockToTrackSectorAdapterStrategy());
+                devices.add(SkewedTrackSectorDevice.pascalToCpmSkew(device));
+            }
+        }
+        // Any devices in the list are expected to be in CP/M block order
+        devices.forEach(device -> {
+            if (device.getGeometry().sectorsPerDisk() == 560) {
+                BlockDevice blockDevice = new TrackSectorToBlockAdapter(device, TrackSectorToBlockAdapter.BlockStyle.CPM);
+                CpmFormatDisk disk = new CpmFormatDisk(ctx.source.getName(), blockDevice);
                 if (check(disk)) {
                     ctx.disks.add(disk);
                 }
@@ -53,7 +86,7 @@ public class CpmDiskFactory implements DiskFactory {
             if (e5count != CpmFileEntry.ENTRY_LENGTH) {	// Not all bytes were 0xE5
                 // Check user number. Should be 0-15 or 0xE5
                 int userNumber = entries.getUnsignedByte(offset);
-                if (userNumber > 15 && userNumber != 0xe5) return false;
+                if (userNumber > 0x1f && userNumber != 0xe5) return false;
                 // Validate filename has highbit off and is a character
                 for (int i=0; i<8; i++) {
                     int ch = entries.getUnsignedByte(offset+1+i);

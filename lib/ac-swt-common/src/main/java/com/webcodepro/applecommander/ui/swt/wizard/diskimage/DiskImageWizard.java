@@ -19,6 +19,7 @@
  */
 package com.webcodepro.applecommander.ui.swt.wizard.diskimage;
 
+import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 import org.applecommander.codec.Nibble62Disk525Codec;
 import org.applecommander.codec.NibbleDiskCodec;
 import org.applecommander.device.*;
@@ -123,6 +124,9 @@ public class DiskImageWizard extends Wizard {
 				blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
                 sectorDevice = new BlockToTrackSectorAdapter(blockDevice, new ProdosBlockToTrackSectorAdapterStrategy());
 				break;
+            default:
+                SwtUtil.showErrorDialog(getDialog(), "Bug!", "Unexpected order value: " + getOrder());
+                return null;
 		}
 		switch (format) {
 			case FORMAT_DOS33:
@@ -139,7 +143,16 @@ public class DiskImageWizard extends Wizard {
 			case FORMAT_UNIDOS:
 				return UniDosFormatDisk.create(name.toString(), imageOrder);
 			case FORMAT_CPM:
-				return CpmFormatDisk.create(name.toString(), imageOrder);
+                TrackSectorDevice cpmDevice = switch (getOrder()) {
+                    case ORDER_DOS -> SkewedTrackSectorDevice.dosToCpmSkew(sectorDevice);
+                    case ORDER_NIBBLE -> SkewedTrackSectorDevice.dosToCpmSkew(SkewedTrackSectorDevice.physicalToDosSkew(sectorDevice));
+                    case ORDER_PRODOS -> SkewedTrackSectorDevice.pascalToCpmSkew(sectorDevice);
+                    default -> null;
+                };
+                if (cpmDevice != null) {
+                    BlockDevice cpmBlock = new TrackSectorToBlockAdapter(cpmDevice, TrackSectorToBlockAdapter.BlockStyle.CPM);
+                    return CpmFormatDisk.create(name.toString(), cpmBlock);
+                }
 		}
 		return null;
 	}
