@@ -57,7 +57,7 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
 
     @Override
     public int handleCommand() throws Exception {
-        FormattedDisk disk = disks.getFirst();
+        FormattedDisk disk = selectedDisks().getFirst();
         if (options.coordinate.blockRangeSelection != null) {
             BlockDevice device = BlockDeviceAdapter.from(disk);
             options.coordinate.blockRangeSelection.blocks.stream().forEach(block -> {

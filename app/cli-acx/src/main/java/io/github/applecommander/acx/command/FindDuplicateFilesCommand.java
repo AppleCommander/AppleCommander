@@ -48,7 +48,7 @@ public class FindDuplicateFilesCommand extends ReadOnlyDiskImageCommandOptions {
         Supplier<Map<String,List<FileTuple>>> supplier = () -> content;
         int dupsFound = 0;
         
-        for (FormattedDisk formattedDisk : disks) {
+        for (FormattedDisk formattedDisk : selectedDisks()) {
             FileStreamer.forDisks(formattedDisk)
                     .includeTypeOfFile(TypeOfFile.FILE)
                     .recursive(true)

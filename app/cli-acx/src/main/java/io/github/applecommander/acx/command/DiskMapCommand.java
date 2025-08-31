@@ -19,7 +19,6 @@
  */
 package io.github.applecommander.acx.command;
 
-import java.util.Arrays;
 import java.util.function.Function;
 
 import com.webcodepro.applecommander.storage.FormattedDisk;
@@ -33,7 +32,7 @@ import picocli.CommandLine.Command;
 public class DiskMapCommand extends ReadOnlyDiskImageCommandOptions {
     @Override
     public int handleCommand() throws Exception {
-        disks.forEach(this::showDiskMap);
+        selectedDisks().forEach(this::showDiskMap);
         return 0;
     }
     

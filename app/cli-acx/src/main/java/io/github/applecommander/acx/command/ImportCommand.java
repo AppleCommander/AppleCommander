@@ -95,7 +95,7 @@ public class ImportCommand extends ReadWriteDiskCommandOptions {
             }
         }
 
-        DirectoryEntry directory = disks.getFirst();
+        DirectoryEntry directory = selectedDisks().getFirst();
         if (directoryName.isPresent()) {
             String[] dirs = directoryName.get().split("/");
             for (String dir : dirs) {

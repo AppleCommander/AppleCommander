@@ -34,7 +34,7 @@ public abstract class ReadWriteDiskCommandWithGlobOptions extends ReadWriteDiskC
 
     @Override
     public int handleCommand() throws Exception {
-        List<FileTuple> files = FileStreamer.forDisks(disks)
+        List<FileTuple> files = FileStreamer.forDisks(selectedDisks())
 			        .ignoreErrors(true)
 			        .includeTypeOfFile(TypeOfFile.FILE)
 			        .matchGlobs(this.getGlobs())

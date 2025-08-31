@@ -69,7 +69,7 @@ public class CopyFileCommand extends ReadWriteDiskCommandOptions {
         if (files.isEmpty()) {
             LOG.warning(() -> String.format("No matches found for %s.", String.join(",", globs)));
         } else {
-            DirectoryEntry targetDirectory = disks.getFirst();
+            DirectoryEntry targetDirectory = selectedDisks().getFirst();
             if (targetPath != null) {
                 Name name = new Name(targetPath);
                 FileEntry found = name.getEntry(targetDirectory);

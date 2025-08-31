@@ -36,8 +36,8 @@ public class InfoCommand extends ReadOnlyDiskImageCommandOptions {
     
     @Override
     public int handleCommand() throws Exception {
-        LOG.info(() -> "Path: " + disks.getFirst().getFilename());
-        for (FormattedDisk formattedDisk : disks) {
+        LOG.info(() -> "Path: " + selectedDisks().getFirst().getFilename());
+        for (FormattedDisk formattedDisk : selectedDisks()) {
             LOG.info(() -> String.format("Disk: %s (%s)", formattedDisk.getDiskName(), formattedDisk.getFormat()));
             for (DiskInformation diskinfo : formattedDisk.getDiskInformation()) {
                 System.out.printf("%s: %s\n", diskinfo.getLabel(), diskinfo.getValue());

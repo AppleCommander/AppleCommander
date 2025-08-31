@@ -50,7 +50,7 @@ public class RenameFileCommand extends ReadWriteDiskCommandOptions {
 
     @Override
     public int handleCommand() throws Exception {
-        List<FileTuple> files = FileStreamer.forDisks(disks)
+        List<FileTuple> files = FileStreamer.forDisks(selectedDisks())
 			        .ignoreErrors(true)
 			        .includeTypeOfFile(TypeOfFile.FILE)
 			        .matchGlobs(originalFilename)

@@ -25,7 +25,7 @@ public abstract class ReadWriteDiskCommandOptions extends ReadOnlyDiskImageComma
         int returnCode = handleCommand();
         
         if (returnCode == 0) {
-            saveDisk(disks.getFirst());
+            saveDisk(selectedDisks().getFirst());
         }
         
         return returnCode;
