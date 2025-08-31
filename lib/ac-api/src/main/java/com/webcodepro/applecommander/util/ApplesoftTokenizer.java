@@ -127,6 +127,7 @@ public class ApplesoftTokenizer {
 					} else {
 						string.append(ch);
 					}
+                    if (offset >= fileData.length) break;   // likely due to bad data
 					byt = fileData[offset];
 					// FIXME: This is a hack to break on ":", ",", ";" but will fail on strings
 					if ((byt & 0x80) != 0 || byt == 0
