@@ -20,13 +20,17 @@
 package com.webcodepro.applecommander.storage.os.nakedos;
 
 import com.webcodepro.applecommander.storage.*;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.source.Source;
+import org.applecommander.util.Container;
+
 import static com.webcodepro.applecommander.storage.DiskConstants.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Manages a disk that is in NakedOS format.
@@ -34,7 +38,7 @@ import java.util.List;
  * Date created: August 5, 2010 10:23:23 AM
  * @author David Schmidt
  */
-public class NakedosFormatDisk extends FormattedDiskX {
+public class NakedosFormatDisk extends FormattedDisk implements Container {
 	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Indicates the index of the track in the location array.
@@ -50,12 +54,9 @@ public class NakedosFormatDisk extends FormattedDiskX {
 	public static final int CATALOG_TRACK = 0;
 	/**
 	 * The VTOC sector.
+     * NOTE: Documented as sectors A..C but is really 9..B (https://bitbucket.org/martin.haye/super-mon/src/master/)
 	 */
-	public static final int VTOC_SECTOR = 3; // Logically 9, 10, 11; physically, 3, 10, 2
-	/**
-	 * The standard track/sector pairs in a track/sector list.
-	 */
-	public static final int TRACK_SECTOR_PAIRS = 122;
+	public static final int VTOC_SECTOR = 9;
 	/**
 	 * The list of filetypes available.
 	 */
@@ -67,7 +68,6 @@ public class NakedosFormatDisk extends FormattedDiskX {
 	 */
 	private int usedSectors = 0;
 
-	public static final int[] sectorTranslate = {0, 7, 14, 6, 13, 5, 12, 4, 11, 3, 10, 2, 9, 1, 8, 15};
 	/**
 	 * Use this inner interface for managing the disk usage data.
 	 * This off-loads format-specific implementation to the implementing class.
@@ -106,24 +106,32 @@ public class NakedosFormatDisk extends FormattedDiskX {
 		}
 	}
 
+    private TrackSectorDevice device;
+
 	/**)
 	 * Constructor for NakedosFormatDisk.
 	 */
-	public NakedosFormatDisk(String filename, ImageOrder imageOrder) {
-		super(filename, imageOrder);
+	public NakedosFormatDisk(String filename, TrackSectorDevice device) {
+		super(filename, device.get(Source.class).orElseThrow());
+        this.device = device;
 	}
 
 	/**
 	 * Create a NakedosFormatDisk.  All DOS disk images are expected to
 	 * be 140K in size.
 	 */
-	public static NakedosFormatDisk[] create(String filename, ImageOrder imageOrder) {
-		NakedosFormatDisk disk = new NakedosFormatDisk(filename, imageOrder);
+	public static NakedosFormatDisk[] create(String filename, TrackSectorDevice device) {
+		NakedosFormatDisk disk = new NakedosFormatDisk(filename, device);
 		disk.format();
 		return new NakedosFormatDisk[] { disk };
 	}
 
-	/**
+    @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        return Container.get(iface, device);
+    }
+
+    /**
 	 * Identify the operating system format of this disk as Nakedos.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFormat()
 	 */
@@ -140,9 +148,9 @@ public class NakedosFormatDisk extends FormattedDiskX {
 		int totalUsed = 0;
 		int i;
 		int[] fileSizes = new int[256];
-		byte[] catalogSector1 = readSector(CATALOG_TRACK, 3);
-		byte[] catalogSector2 = readSector(CATALOG_TRACK, 10);
-		byte[] catalogSector3 = readSector(CATALOG_TRACK, 2);
+		byte[] catalogSector1 = device.readSector(CATALOG_TRACK, VTOC_SECTOR).asBytes();
+		byte[] catalogSector2 = device.readSector(CATALOG_TRACK, VTOC_SECTOR+1).asBytes();
+		byte[] catalogSector3 = device.readSector(CATALOG_TRACK, VTOC_SECTOR+2).asBytes();
 		for (i = 0;i<48;i++) {
 			if ((catalogSector1[i+0xd0] != -2) && (catalogSector1[i+0xd0] != -1))
 				fileSizes[AppleUtil.getUnsignedByte(catalogSector1[i+0xd0])]+=1;
@@ -242,20 +250,6 @@ public class NakedosFormatDisk extends FormattedDiskX {
 	public String getDiskName() {
 	    // Pull the disk name out...
 		return "";
-	}
-
-	/**
-	 * Return the VTOC (Volume Table Of Contents).
-	 */
-	protected byte[] readVtoc() {
-		return readSector(CATALOG_TRACK, VTOC_SECTOR);
-	}
-	
-	/**
-	 * Save the VTOC (Volume Table Of Contents) to disk.
-	 */
-	protected void writeVtoc(byte[] vtoc) {
-		writeSector(CATALOG_TRACK, VTOC_SECTOR, vtoc);
 	}
 
 	/**
@@ -395,28 +389,28 @@ public class NakedosFormatDisk extends FormattedDiskX {
 			throw new IllegalArgumentException(textBundle.get("DosFormatDisk.InvalidFileEntryError")); //$NON-NLS-1$
 		}
 		int offset = 0;
-		byte[] catalogSector1 = readSector(CATALOG_TRACK, 3);
-		byte[] catalogSector2 = readSector(CATALOG_TRACK, 10);
-		byte[] catalogSector3 = readSector(CATALOG_TRACK, 2);
+		byte[] catalogSector1 = device.readSector(CATALOG_TRACK, VTOC_SECTOR).asBytes();
+		byte[] catalogSector2 = device.readSector(CATALOG_TRACK, VTOC_SECTOR+1).asBytes();
+		byte[] catalogSector3 = device.readSector(CATALOG_TRACK, VTOC_SECTOR+2).asBytes();
 		NakedosFileEntry entry = (NakedosFileEntry) fileEntry;
 		byte[] fileData = new byte[entry.getSize()];
 		for (int i = 0;i<48;i++) {
 			if (AppleUtil.getUnsignedByte(catalogSector1[i+0xd0]) == entry.getFileNumber()) {
-				byte[] fileData1 = readSector(i/16,sectorTranslate[i%16]);
+				byte[] fileData1 = device.readSector(i/16,i%16).asBytes();
 				System.arraycopy(fileData1, 0, fileData, offset, fileData1.length);
 				offset+=fileData1.length;
 			}
 		}
 		for (int i = 0;i<256;i++) {
 			if (AppleUtil.getUnsignedByte(catalogSector2[i]) == entry.getFileNumber()) {
-				byte[] fileData1 = readSector((i+48)/16,sectorTranslate[(i+48)%16]);
+				byte[] fileData1 = device.readSector((i+48)/16,(i+48)%16).asBytes();
 				System.arraycopy(fileData1, 0, fileData, offset, fileData1.length);
 				offset+=fileData1.length;
 			}
 		}
 		for (int i = 0;i<256;i++) {
 			if (AppleUtil.getUnsignedByte(catalogSector3[i]) == entry.getFileNumber()) {
-				byte[] fileData1 = readSector((i+48+256)/16,sectorTranslate[(i+48+256)%16]);
+				byte[] fileData1 = device.readSector((i+48+256)/16,(i+48+256)%16).asBytes();
 				System.arraycopy(fileData1, 0, fileData, offset, fileData1.length);
 				offset+=fileData1.length;
 			}
@@ -446,8 +440,7 @@ public class NakedosFormatDisk extends FormattedDiskX {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
-		getImageOrder().format();
-		format();
+        // TODO
 	}
 
 	/**
@@ -455,18 +448,6 @@ public class NakedosFormatDisk extends FormattedDiskX {
 	 */
 	protected void format(int tracksPerDisk, int sectorsPerTrack) {
 		// TODO: get an image of a "blank" NakedOS disk and capture the boot code
-	}
-	
-	/**
-	 * Validate track/sector range.  This just validates the
-	 * maximum values allowable for track and sector. 
-	 */
-	protected void checkRange(int track, int sector) {
-		if (track > 50 || sector > 32) {
-			throw new IllegalArgumentException(
-				textBundle.format("DosFormatDisk.InvalidTrackAndSectorCombinationError", //$NON-NLS-1$
-				track, sector));
-		}
 	}
 
 	/**
@@ -515,16 +496,6 @@ public class NakedosFormatDisk extends FormattedDiskX {
 	 */	
 	public boolean supportsDiskMap() {
 		return true;
-	}
-
-	/**
-	 * Change to a different ImageOrder.  Remains in DOS 3.3 format but
-	 * the underlying order can change.
-	 * @see ImageOrder
-	 */
-	public void changeImageOrder(ImageOrder imageOrder) {
-		AppleUtil.changeImageOrderByTrackAndSector(getImageOrder(), imageOrder);
-		setImageOrder(imageOrder);
 	}
 
 	/**

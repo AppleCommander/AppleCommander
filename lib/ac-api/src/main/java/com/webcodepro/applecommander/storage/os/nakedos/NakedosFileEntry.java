@@ -250,7 +250,10 @@ public class NakedosFileEntry implements FileEntry {
      * Get the address that this file loads at.
      */
     public int getAddress() {
-        return 0;   // Does not apply.
+        if (fileNumber == 0x01) {
+            return 0x1800;  // DF01 is special and runs at boot from 0x1800
+        }
+        return 0x6000;      // default program area 0x06000..0xbfff
     }
 
 	public boolean equals (Object o) {
