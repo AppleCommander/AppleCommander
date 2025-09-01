@@ -21,28 +21,55 @@ package com.webcodepro.applecommander.storage.os.gutenberg;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFactory;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import org.applecommander.device.BlockToTrackSectorAdapter;
+import org.applecommander.device.ProdosBlockToTrackSectorAdapterStrategy;
+import org.applecommander.device.SkewedTrackSectorDevice;
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk.*;
 
 public class GutenbergDiskFactory implements DiskFactory {
     @Override
     public void inspect(Context ctx) {
-        ctx.orders.forEach(order -> {
-            if (check(order)) {
-                ctx.disks.add(new GutenbergFormatDisk(ctx.source.getName(), order));
+        List<TrackSectorDevice> devices = new ArrayList<>();
+        // We need DOS ordered...
+        if (ctx.sectorDevice != null) {
+            if (ctx.sectorDevice.is(Hint.NIBBLE_SECTOR_ORDER)) {
+                devices.add(SkewedTrackSectorDevice.physicalToDosSkew(ctx.sectorDevice));
+            }
+            else if (ctx.sectorDevice.is(Hint.DOS_SECTOR_ORDER)) {
+                devices.add(ctx.sectorDevice);
+            }
+            else if (ctx.sectorDevice.is(Hint.PRODOS_BLOCK_ORDER)) {
+                // Cheating a bit...
+                TrackSectorDevice tmp = SkewedTrackSectorDevice.pascalToPhysicalSkew(ctx.sectorDevice);
+                devices.add(SkewedTrackSectorDevice.physicalToDosSkew(tmp));
+            }
+        }
+        else if (ctx.blockDevice != null) {
+            TrackSectorDevice po = new BlockToTrackSectorAdapter(ctx.blockDevice, new ProdosBlockToTrackSectorAdapterStrategy());
+            TrackSectorDevice tmp = SkewedTrackSectorDevice.pascalToPhysicalSkew(po);
+            devices.add(SkewedTrackSectorDevice.physicalToDosSkew(tmp));
+        }
+        devices.forEach(device -> {
+            if (check(device)) {
+                ctx.disks.add(new GutenbergFormatDisk(ctx.source.getName(), device));
             }
         });
     }
 
-    public boolean check(ImageOrder order) {
+    public boolean check(TrackSectorDevice order) {
         boolean good = false;
-        if (order.isSizeApprox(DiskConstants.APPLE_140KB_DISK) || order.isSizeApprox(DiskConstants.APPLE_140KB_NIBBLE_DISK)) {
+        if (order.getGeometry().sectorsPerDisk() == DiskConstants.DOS33_SECTORS_ON_140KB_DISK) {
             final int tracksPerDisk = 35;
             final int sectorsPerTrack = 16;
             // Everything starts at T17,S7
-            DataBuffer data = DataBuffer.wrap(order.readSector(CATALOG_TRACK, VTOC_SECTOR));
+            DataBuffer data = order.readSector(CATALOG_TRACK, VTOC_SECTOR);
             for (int i=0x0f; i<data.limit(); i+= 0x10) {
                 // Check for the CR at every 16th byte.
                 if (data.getUnsignedByte(i) != 0x8d) return false;
