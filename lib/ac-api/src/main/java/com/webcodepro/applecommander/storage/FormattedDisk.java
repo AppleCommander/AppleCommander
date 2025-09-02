@@ -20,6 +20,7 @@
 package com.webcodepro.applecommander.storage;
 
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
 
@@ -384,7 +385,7 @@ public abstract class FormattedDisk implements DirectoryEntry {
         }
         DataBuffer data = getSource().readAllBytes();
         byte[] fileData = new byte[data.limit()];
-        data.read(fileData);
+        data.get(0, fileData);
         output.write(fileData);
         output.close();
         getSource().clearChanges();
@@ -453,8 +454,11 @@ public abstract class FormattedDisk implements DirectoryEntry {
 			if (is != null) {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				is.transferTo(baos);
+                // Ensure we're at 256 bytes
+                while (baos.size() < TrackSectorDevice.SECTOR_SIZE) {
+                    baos.write(0);
+                }
 				baos.close();
-				;
 				return baos.toByteArray();
 			}
 			throw new IOException("unable to locate boot code at " + bootCode);

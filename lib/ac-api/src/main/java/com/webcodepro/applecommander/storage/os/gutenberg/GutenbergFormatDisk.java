@@ -546,8 +546,7 @@ public class GutenbergFormatDisk extends FormattedDisk implements Container {
 	 * (Used for UniDOS and OzDOS.)
 	 */
 	protected void format(int firstCatalogSector, int tracksPerDisk, int sectorsPerTrack) {
-		byte[] bootCode = getBootCode();
-        writeSector(0, 0, bootCode);
+        writeSector(0, 0, getBootCode());
 		// create catalog sectors
 		byte[] data = new byte[SECTOR_SIZE];
 		for (int sector=firstCatalogSector; sector > 0; sector--) {

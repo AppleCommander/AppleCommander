@@ -408,9 +408,7 @@ public class RdosFormatDisk extends FormattedDisk implements Container {
 	 */
 	public void format() {
 		device.format();
-        DataBuffer bootBlock = DataBuffer.create(device.getGeometry().blockSize());
-        bootBlock.put(0, DataBuffer.wrap(getBootCode()));
-        device.writeBlock(0, bootBlock);
+        device.writeBlock(0, DataBuffer.wrap(getBootCode()));
 		// minor hack - ensure that AppleCommander itself recognizes the
 		// RDOS disk!
 		byte[] block = device.readBlock(0x0d).asBytes();
