@@ -37,6 +37,14 @@ public interface BlockDevice extends Device {
      * Format a disk. For most disks, this is simply a wipe to all zeros. If this
      * disk has extended format (such as nibble formats), this is the opportunity
      * to write out that format.
+     * <p/>
+     * NOTE: Adapter type devices have to be cautious about what device is responsible
+     * about formatting. For example, a UniDOS disk is 2x400K volumes on an 800K
+     * block device -- if they defer formatting to the 800K block device, a format on
+     * one volume also wipes out the other (in this case, do not defer to the "parent").
+     * However, if the block adapter contains a nibble-based TrackSectorDevice, the
+     * actual formatting needs to get to the nibble device so it can lay down sector
+     * markers and the rest of the track structure.
      */
     default void format() {
         DataBuffer blockData = DataBuffer.create(getGeometry().blockSize());
