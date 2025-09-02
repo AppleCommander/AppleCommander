@@ -50,6 +50,13 @@ public class GutenbergDiskFactory implements DiskFactory {
                 TrackSectorDevice tmp = SkewedTrackSectorDevice.pascalToPhysicalSkew(ctx.sectorDevice);
                 devices.add(SkewedTrackSectorDevice.physicalToDosSkew(tmp));
             }
+            else {
+                // Likely a DSK image
+                devices.add(ctx.sectorDevice);
+                // Cheating a bit...
+                TrackSectorDevice tmp = SkewedTrackSectorDevice.pascalToPhysicalSkew(ctx.sectorDevice);
+                devices.add(SkewedTrackSectorDevice.physicalToDosSkew(tmp));
+            }
         }
         else if (ctx.blockDevice != null) {
             TrackSectorDevice po = new BlockToTrackSectorAdapter(ctx.blockDevice, new ProdosBlockToTrackSectorAdapterStrategy());
