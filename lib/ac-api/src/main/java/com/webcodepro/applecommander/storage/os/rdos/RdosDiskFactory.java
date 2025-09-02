@@ -25,6 +25,8 @@ import org.applecommander.device.*;
 import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
+
+import static com.webcodepro.applecommander.storage.DiskConstants.DOS32_SECTORS_ON_115KB_DISK;
 import static com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk.*;
 
 import java.util.ArrayList;
@@ -106,7 +108,7 @@ public class RdosDiskFactory implements DiskFactory {
                 device = SkewedTrackSectorDevice.dosToPhysicalSkew(device);
                 for (int s=0; s<CATALOG_SECTORS; s++) {
                     DataBuffer data = device.readSector(1,s);
-                    good = testCatalogSector(data, 455);
+                    good = testCatalogSector(data, DOS32_SECTORS_ON_115KB_DISK);
                     if (!good) break;
                 }
                 if (good && testForCatalogCode(device, 1, 12)) {

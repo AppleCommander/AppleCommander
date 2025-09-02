@@ -148,8 +148,8 @@ public class RdosFormatDisk extends FormattedDisk implements Container {
 
     public int getSectorsPerTrack() {
         return switch(device.getGeometry().blocksOnDevice()) {
-            case 455 -> 13;
-            case 560 -> 16;
+            case DOS32_SECTORS_ON_115KB_DISK -> 13;
+            case DOS33_SECTORS_ON_140KB_DISK -> 16;
             default -> throw new RuntimeException("Unexpected RDOS block count: " + device.getGeometry().blocksOnDevice());
         };
     }
