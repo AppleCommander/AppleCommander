@@ -19,6 +19,7 @@
  */
 package org.applecommander.source;
 
+import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.testconfig.TestConfig;
 import org.applecommander.image.DiskCopyImage;
 import org.applecommander.image.UniversalDiskImage;
@@ -78,7 +79,7 @@ public class SourceFactoryTest {
         assertTrue(source.isPresent());
         assertInstanceOf(DiskCopyImage.class, source.get());
         // We are assuming that these DiskCopy images are well-formed to validate the checksum algorithm
-        DiskCopyImage dcImage = source.get().get(DiskCopyImage.class).orElseThrow();
+        DiskCopyImage dcImage = (DiskCopyImage) source.get();
         assertEquals(dcImage.getInfo().dataChecksum(), dcImage.getInfo().calculatedDataChecksum());
         assertEquals(dcImage.getInfo().tagChecksum(), dcImage.getInfo().calculatedTagChecksum());
     }

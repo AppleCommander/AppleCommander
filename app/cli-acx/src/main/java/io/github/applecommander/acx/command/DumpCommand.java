@@ -96,6 +96,7 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
                 System.out.printf("Track %02d\n", track);
                 System.out.println(output.format(options, data));
             });
+            return 0;
         }
         System.out.println("Please choose block(s) or track(s) and sector(s).");
         return 1;
