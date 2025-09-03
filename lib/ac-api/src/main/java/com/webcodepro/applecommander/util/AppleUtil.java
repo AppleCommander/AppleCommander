@@ -26,9 +26,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import org.applecommander.device.BlockDevice;
-import org.applecommander.util.DataBuffer;
+import org.applecommander.device.TrackSectorDevice;
 
 /**
  * This class contains helper methods for dealing with Apple2 data.
@@ -596,62 +595,30 @@ public class AppleUtil {
 		printer.close();
 		return output.toString();
 	}
-	
-	/**
-	 * Change ImageOrder from source order to target order by copying sector by sector.
-	 */
-	public static void changeImageOrderByTrackAndSector(ImageOrder sourceOrder, ImageOrder targetOrder) {
-		if (!sameSectorsPerDisk(sourceOrder, targetOrder)) {
-			throw new IllegalArgumentException(textBundle.
-					get("AppleUtil.CannotChangeImageOrder")); //$NON-NLS-1$
-		}
-		for (int track = 0; track < sourceOrder.getTracksPerDisk(); track++) {
-			for (int sector = 0; sector < sourceOrder.getSectorsPerTrack(); sector++) {
-				byte[] data = sourceOrder.readSector(track, sector);
-				targetOrder.writeSector(track, sector, data);
-			}
-		}
-	}
-	
-	/**
-	 * Answers true if the two disks have the same sectors per disk.
-	 */
-	protected static boolean sameSectorsPerDisk(ImageOrder sourceOrder, ImageOrder targetOrder) {
-		return sourceOrder.getSectorsPerDisk() == targetOrder.getSectorsPerDisk();
-	}
 
 	/**
-	 * Change ImageOrder from source order to target order by copying block by block.
-	 */
-	public static void changeImageOrderByBlock(ImageOrder sourceOrder, ImageOrder targetOrder) {
-		if (!sameBlocksPerDisk(sourceOrder, targetOrder)) {
-			throw new IllegalArgumentException(textBundle.
-					get("AppleUtil.CannotChangeImageOrder")); //$NON-NLS-1$
-		}
-		for (int block = 0; block < sourceOrder.getBlocksOnDevice(); block++) {
-			byte[] blockData = sourceOrder.readBlock(block);
-			targetOrder.writeBlock(block, blockData);
-		}
-	}
-
-	/**
-	 * Change ImageOrder from source order to target order by copying block by block.
+	 * Change block order from source order to target order by copying block by block.
 	 */
 	public static void changeOrderByBlock(BlockDevice sourceOrder, BlockDevice targetOrder) {
-		if (sourceOrder.getGeometry().blocksOnDevice() != targetOrder.getGeometry().blocksOnDevice()) {
-			throw new IllegalArgumentException(textBundle.
-				get("AppleUtil.CannotChangeImageOrder")); //$NON-NLS-1$
+		if (!sourceOrder.getGeometry().equals(targetOrder.getGeometry())) {
+			throw new IllegalArgumentException(textBundle.get("AppleUtil.CannotChangeImageOrder"));
 		}
 		for (int block = 0; block < sourceOrder.getGeometry().blocksOnDevice(); block++) {
-			DataBuffer blockData = sourceOrder.readBlock(block);
-			targetOrder.writeBlock(block, blockData);
+			targetOrder.writeBlock(block, sourceOrder.readBlock(block));
 		}
 	}
 
-	/**
-	 * Answers true if the two disks have the same number of blocks per disk.
-	 */
-	protected static boolean sameBlocksPerDisk(ImageOrder sourceOrder, ImageOrder targetOrder) {
-		return sourceOrder.getBlocksOnDevice() == targetOrder.getBlocksOnDevice();
-	}
+    /**
+     * Change sector order from source order to target order by copying tracks and sectors between devices.
+     */
+    public static void changeOrderBySector(TrackSectorDevice sourceDevice, TrackSectorDevice targetDevice) {
+        if (!sourceDevice.getGeometry().equals(targetDevice.getGeometry())) {
+            throw new IllegalArgumentException(textBundle.get("AppleUtil.CannotChangeImageOrder"));
+        }
+        for (int track = 0; track < sourceDevice.getGeometry().tracksOnDisk(); track++) {
+            for (int sector = 0; sector < sourceDevice.getGeometry().sectorsPerTrack(); sector++) {
+                targetDevice.writeSector(track, sector, sourceDevice.readSector(track, sector));
+            }
+        }
+    }
 }

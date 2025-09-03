@@ -214,7 +214,7 @@ public class NibbleCodec {
         }
         // 3. read data field that immediately follows the address field (D5 AA AD ...410 data bytes... CKSUM DE AA EB
         byte[] dataField = new byte[417];
-        locateField(DOS33_DATA_PROLOGUE, trackData, dataField, offset);
+        locateField(DOS32_DATA_PROLOGUE, trackData, dataField, offset);
         // 4. translate data field
         byte[] buffer = new byte[410];
         int checksum = 0;

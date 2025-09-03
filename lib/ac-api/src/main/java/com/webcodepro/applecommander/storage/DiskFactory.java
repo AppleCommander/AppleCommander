@@ -64,7 +64,7 @@ public interface DiskFactory {
             } else if (source.is(Hint.DOS_SECTOR_ORDER) || source.extensionLike("do")) {
                 orders.add(new DosOrder(source));
                 blockDevice = null;
-                sectorDevice = new DosOrderedTrackSectorDevice(source);
+                sectorDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
             } else {
                 // Could be either - most likely the nebulous "dsk" extension
                 orders.add(new DosOrder(source));

@@ -19,29 +19,30 @@
  */
 package com.webcodepro.applecommander.storage.os.dos33;
 
+import org.applecommander.device.DosOrderedTrackSectorDevice;
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.hint.Hint;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.junit.jupiter.api.Test;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFullException;
-import com.webcodepro.applecommander.storage.physical.DosOrder;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DosFormatDiskTest {
     @Test
     public void testSanitizeFilename() throws DiskFullException {
-         Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-image").get();
-         ImageOrder order = new DosOrder(source);
-         DosFormatDisk[] disks = DosFormatDisk.create("deleteme.do", order);
-         DosFormatDisk disk = disks[0];
+        Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-image").get();
+        TrackSectorDevice device = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+        DosFormatDisk[] disks = DosFormatDisk.create("deleteme.do", device);
+        DosFormatDisk disk = disks[0];
          
-         assertEquals("FILENAME", disk.getSuggestedFilename("FileName"));
-         assertEquals("A2021", disk.getSuggestedFilename("2021"));
-         assertEquals("A..", disk.getSuggestedFilename(".."));
-         assertEquals("THE FILE NAME", disk.getSuggestedFilename("The File Name"));
-         assertEquals("A\t HIDDEN TAB", disk.getSuggestedFilename("\t hidden tab"));
+        assertEquals("FILENAME", disk.getSuggestedFilename("FileName"));
+        assertEquals("A2021", disk.getSuggestedFilename("2021"));
+        assertEquals("A..", disk.getSuggestedFilename(".."));
+        assertEquals("THE FILE NAME", disk.getSuggestedFilename("The File Name"));
+        assertEquals("A\t HIDDEN TAB", disk.getSuggestedFilename("\t hidden tab"));
     }
 }

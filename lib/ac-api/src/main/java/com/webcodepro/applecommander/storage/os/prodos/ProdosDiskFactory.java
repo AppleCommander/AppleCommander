@@ -43,13 +43,24 @@ public class ProdosDiskFactory implements DiskFactory {
             TrackSectorDevice skewed = null;
             if (ctx.sectorDevice.is(Hint.NIBBLE_SECTOR_ORDER)) {
                 skewed = SkewedTrackSectorDevice.physicalToPascalSkew(ctx.sectorDevice);
+                BlockDevice device = new TrackSectorToBlockAdapter(skewed, TrackSectorToBlockAdapter.BlockStyle.PRODOS);
+                tests.add(new ProdosFormatDisk(ctx.source.getName(), device));
             }
             else if (ctx.sectorDevice.is(Hint.DOS_SECTOR_ORDER)) {
                 skewed = SkewedTrackSectorDevice.dosToPascalSkew(ctx.sectorDevice);
-            }
-            if (skewed != null) {
                 BlockDevice device = new TrackSectorToBlockAdapter(skewed, TrackSectorToBlockAdapter.BlockStyle.PRODOS);
                 tests.add(new ProdosFormatDisk(ctx.source.getName(), device));
+            }
+            else {
+                // Likely a DSK image, need to pick between DO and PO...
+                // Try DO
+                TrackSectorDevice device1 = SkewedTrackSectorDevice.dosToPascalSkew(ctx.sectorDevice);
+                tests.add(new ProdosFormatDisk(ctx.source.getName(), new TrackSectorToBlockAdapter(device1,
+                        TrackSectorToBlockAdapter.BlockStyle.PRODOS)));
+                // Try PO
+                TrackSectorDevice device2 = ctx.sectorDevice;
+                tests.add(new ProdosFormatDisk(ctx.source.getName(), new TrackSectorToBlockAdapter(device2,
+                        TrackSectorToBlockAdapter.BlockStyle.PRODOS)));
             }
         }
         // ... and then test for ProDOS details:

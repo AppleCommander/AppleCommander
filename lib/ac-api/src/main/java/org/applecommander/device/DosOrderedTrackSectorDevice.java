@@ -30,10 +30,17 @@ import java.util.Optional;
 public class DosOrderedTrackSectorDevice implements TrackSectorDevice {
     private final Source source;
     private final Geometry geometry;
+    private final Hint orderHint;
 
     public DosOrderedTrackSectorDevice(Source source) {
         this.source = source;
         this.geometry = new Geometry(35, 16);   // assumed for now?
+        this.orderHint = null;
+    }
+    public DosOrderedTrackSectorDevice(Source source, Hint orderHint) {
+        this.source = source;
+        this.geometry = new Geometry(35, 16);   // assumed for now?
+        this.orderHint = orderHint;
     }
 
     @Override
@@ -43,7 +50,7 @@ public class DosOrderedTrackSectorDevice implements TrackSectorDevice {
 
     @Override
     public boolean is(Hint hint) {
-        return hint == Hint.DOS_SECTOR_ORDER;
+        return hint == orderHint;
     }
 
     @Override

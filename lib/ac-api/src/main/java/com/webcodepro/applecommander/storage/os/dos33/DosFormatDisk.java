@@ -20,9 +20,16 @@
 package com.webcodepro.applecommander.storage.os.dos33;
 
 import com.webcodepro.applecommander.storage.*;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.BlockToTrackSectorAdapter;
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.device.TrackSectorToBlockStrategy;
+import org.applecommander.source.Source;
+import org.applecommander.util.Container;
+import org.applecommander.util.DataBuffer;
+
 import static com.webcodepro.applecommander.storage.DiskConstants.*;
 
 import java.util.*;
@@ -36,7 +43,7 @@ import java.util.*;
  * Changed at: Dec 1, 2017
  * @author Lisias Toledo
  */
-public class DosFormatDisk extends FormattedDiskX {
+public class DosFormatDisk extends FormattedDisk implements Container {
 	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Indicates the index of the track in the location array.
@@ -113,24 +120,46 @@ public class DosFormatDisk extends FormattedDiskX {
 		}
 	}
 
+    private TrackSectorDevice device;
+
 	/**
 	 * Constructor for DosFormatDisk.
 	 */
-	public DosFormatDisk(String filename, ImageOrder imageOrder) {
-		super(filename, imageOrder);
+	public DosFormatDisk(String filename, TrackSectorDevice device) {
+		super(filename, device.get(Source.class).orElseThrow());
+        this.device = device;
 	}
 
-	/**
+    @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        return Container.get(iface, device);
+    }
+
+    /**
 	 * Create a DosFormatDisk.  All DOS disk images are expected to
 	 * be 140K in size.
 	 */
-	public static DosFormatDisk[] create(String filename, ImageOrder imageOrder) {
-		DosFormatDisk disk = new DosFormatDisk(filename, imageOrder);
+	public static DosFormatDisk[] create(String filename, TrackSectorDevice device) {
+		DosFormatDisk disk = new DosFormatDisk(filename, device);
 		disk.format();
 		return new DosFormatDisk[] { disk };
 	}
 
-	/**
+    /**
+     * Create a DosFormatDisk on 800K image.
+     * Note that we allow the BlockDevice to be passed in order to support 2IMG, DC, and PO images.
+     */
+    public static DosFormatDisk[] create(String filename, BlockDevice device, TrackSectorToBlockStrategy... strategies) {
+        assert strategies.length == 2;
+        assert device.getGeometry().blocksOnDevice() == 1600;
+        DosFormatDisk disk1 = new DosFormatDisk(filename, new BlockToTrackSectorAdapter(device, strategies[0]));
+        disk1.format();
+        DosFormatDisk disk2 = new DosFormatDisk(filename, new BlockToTrackSectorAdapter(device, strategies[1]));
+        disk2.format();
+        return new DosFormatDisk[] { disk1, disk2 };
+    }
+
+    /**
 	 * Identify the operating system format of this disk as DOS 3.x.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFormat()
 	 */
@@ -312,7 +341,7 @@ public class DosFormatDisk extends FormattedDiskX {
 	 * Get the number of tracks on this disk.
 	 */
 	public int getTracks() {
-		int physicalTracks = getImageOrder().getTracksPerDisk();
+		int physicalTracks = device.getGeometry().tracksOnDisk();
 		byte[] vtoc = readVtoc();
 		int dosTracks = AppleUtil.getUnsignedByte(vtoc[0x34]);
 		// Attempting to be sensible in sizing. There are DOS disk images saying they have 40
@@ -607,19 +636,12 @@ public class DosFormatDisk extends FormattedDiskX {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
-		getImageOrder().format();
-		format(15, 35, 16);
-	}
-	
-	/**
-	 * Format the disk as DOS 3.3 given the dynamic parameters.
-	 * (Used for UniDOS and OzDOS.)
-	 */
-	protected void format(int firstCatalogSector, int tracksPerDisk,
-		int sectorsPerTrack) {
-			
-		writeBootCode();
+		device.format();
+		writeSector(0, 0, getBootCode());
 		// create catalog sectors
+        final int tracksPerDisk = device.getGeometry().tracksOnDisk();
+        final int sectorsPerTrack = device.getGeometry().sectorsPerTrack();
+        final int firstCatalogSector = sectorsPerTrack-1;
 		byte[] data = new byte[SECTOR_SIZE];
 		for (int sector=firstCatalogSector; sector > 0; sector--) {
 			if (sector > 1) {
@@ -632,16 +654,16 @@ public class DosFormatDisk extends FormattedDiskX {
 			writeSector(CATALOG_TRACK, sector, data);
 		}
 		// create VTOC
-		data[0x01] = CATALOG_TRACK;	// track# of first catalog sector
-		data[0x02] = (byte)firstCatalogSector;	// sector# of first catalog sector
-		data[0x03] = 3;				// DOS 3.3 formatted
-		data[0x06] = (byte)254;	// DISK VOLUME#
-		data[0x27] = TRACK_SECTOR_PAIRS;// maximum # of T/S pairs in a sector
-		data[0x30] = CATALOG_TRACK+1;	// last track where sectors allocated
-		data[0x31] = 1;				// direction of allocation
-		data[0x34] = (byte)tracksPerDisk;	// tracks per disk
-		data[0x35] = (byte)sectorsPerTrack;// sectors per track
-		data[0x37] = 1;				// 36/37 are # of bytes per sector
+		data[0x01] = CATALOG_TRACK;	            // track# of first catalog sector
+		data[0x02] = (byte)firstCatalogSector;  // sector# of first catalog sector
+		data[0x03] = 3;				            // DOS 3.3 formatted
+		data[0x06] = (byte)254;	                // DISK VOLUME#
+		data[0x27] = TRACK_SECTOR_PAIRS;        // maximum # of T/S pairs in a sector
+		data[0x30] = CATALOG_TRACK+1;	        // last track where sectors allocated
+		data[0x31] = 1;				            // direction of allocation
+		data[0x34] = (byte)tracksPerDisk;	    // tracks per disk
+		data[0x35] = (byte)sectorsPerTrack;     // sectors per track
+		data[0x37] = 1;				            // 36/37 are # of bytes per sector
 		for (int track=0; track<tracksPerDisk; track++) {
 			for (int sector=0; sector<sectorsPerTrack; sector++) {
 				if (track == 0 || track == CATALOG_TRACK) {
@@ -783,16 +805,6 @@ public class DosFormatDisk extends FormattedDiskX {
 	}
 
 	/**
-	 * Change to a different ImageOrder.  Remains in DOS 3.3 format but
-	 * the underlying order can change.
-	 * @see ImageOrder
-	 */
-	public void changeImageOrder(ImageOrder imageOrder) {
-		AppleUtil.changeImageOrderByTrackAndSector(getImageOrder(), imageOrder);
-		setImageOrder(imageOrder);
-	}
-
-	/**
 	 * Create a new DirectoryEntry.
 	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory(String)
 	 */
@@ -805,6 +817,13 @@ public class DosFormatDisk extends FormattedDiskX {
      */
     public DiskGeometry getDiskGeometry() {
         return DiskGeometry.TRACK_SECTOR;
+    }
+
+    byte[] readSector(int track, int sector) {
+        return device.readSector(track, sector).asBytes();
+    }
+    void writeSector(int track, int sector, byte[] data) {
+        device.writeSector(track, sector, DataBuffer.wrap(data));
     }
 
 	/**

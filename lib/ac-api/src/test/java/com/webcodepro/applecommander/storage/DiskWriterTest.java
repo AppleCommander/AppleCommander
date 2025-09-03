@@ -22,21 +22,20 @@ package com.webcodepro.applecommander.storage;
 import java.io.IOException;
 import java.util.List;
 
+import org.applecommander.codec.Nibble62Disk525Codec;
 import org.applecommander.device.*;
+import org.applecommander.hint.Hint;
+import org.applecommander.image.NibbleImage;
+import org.applecommander.os.dos.OzdosAdapterStrategy;
+import org.applecommander.os.dos.UnidosAdapterStrategy;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.junit.jupiter.api.Test;
 
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
-import com.webcodepro.applecommander.storage.os.dos33.OzDosFormatDisk;
-import com.webcodepro.applecommander.storage.os.dos33.UniDosFormatDisk;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
-import com.webcodepro.applecommander.storage.physical.DosOrder;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import com.webcodepro.applecommander.storage.physical.NibbleOrder;
-import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -52,7 +51,7 @@ public class DiskWriterTest {
 	 * Determine if the created disk images should be saved for later
 	 * perusal.
 	 */
-	private boolean saveImage = false;
+	private final boolean saveImage = System.getenv("SAVE_IMAGE") != null;
 
 	/**
 	 * Test writing and reading random files to a DOS 3.3 140K disk.
@@ -60,9 +59,9 @@ public class DiskWriterTest {
 	@Test
 	public void testWriteToDos33() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new DosOrder(source);
-		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.dsk", imageOrder); //$NON-NLS-1$
-		writeFiles(disks, "B", "T", false); //$NON-NLS-1$ //$NON-NLS-2$
+        TrackSectorDevice sectorDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.dsk", sectorDevice);
+		writeFiles(disks, "B", "T", false);
 		saveDisks(disks);
 	}
 
@@ -72,9 +71,10 @@ public class DiskWriterTest {
 	@Test
 	public void testWriteToDos33Nibble() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_NIBBLE_DISK, "new-disk").get();
-		ImageOrder imageOrder = new NibbleOrder(source);
-		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.nib", imageOrder); //$NON-NLS-1$
-		writeFiles(disks, "B", "T", false); //$NON-NLS-1$ //$NON-NLS-2$
+        TrackSectorDevice sectorDevice = new TrackSectorNibbleDevice(new NibbleImage(source), DiskMarker.disk525sector16(),
+                new Nibble62Disk525Codec(), 16);
+		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.nib", sectorDevice);
+		writeFiles(disks, "B", "T", false);  
 		saveDisks(disks);
 	}
 
@@ -86,8 +86,8 @@ public class DiskWriterTest {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
 		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = PascalFormatDisk.create(
-			"write-test-pascal-140k.po", "TEST", blockDevice); //$NON-NLS-1$ //$NON-NLS-2$
-		writeFiles(disks, "code", "text", false); //$NON-NLS-1$ //$NON-NLS-2$
+			"write-test-pascal-140k.po", "TEST", blockDevice);  
+		writeFiles(disks, "code", "text", false);  
 		saveDisks(disks);
 	}
 
@@ -99,8 +99,8 @@ public class DiskWriterTest {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_800KB_DISK, "new-disk").get();
 		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = PascalFormatDisk.create(
-			"write-test-pascal-800k.po", "TEST", blockDevice); //$NON-NLS-1$ //$NON-NLS-2$
-		//writeFiles(disks, "code", "text", false); //$NON-NLS-1$ //$NON-NLS-2$
+			"write-test-pascal-800k.po", "TEST", blockDevice);  
+		//writeFiles(disks, "code", "text", false);  
 		saveDisks(disks);
 	}
 
@@ -110,12 +110,12 @@ public class DiskWriterTest {
 	@Test
 	public void testWriteToProdos140kDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-		TrackSectorDevice trackSectorDevice = new DosOrderedTrackSectorDevice(source);
+		TrackSectorDevice trackSectorDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
         TrackSectorDevice skewedDevice = SkewedTrackSectorDevice.dosToPascalSkew(trackSectorDevice);
 		BlockDevice blockDevice = new TrackSectorToBlockAdapter(skewedDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"write-test-prodos-140k.dsk", "TEST", blockDevice); //$NON-NLS-1$ //$NON-NLS-2$
-		writeFiles(disks, "BIN", "TXT", true); //$NON-NLS-1$ //$NON-NLS-2$
+			"write-test-prodos-140k.dsk", "TEST", blockDevice);  
+		writeFiles(disks, "BIN", "TXT", true);  
 		saveDisks(disks);
 	}
 
@@ -127,8 +127,8 @@ public class DiskWriterTest {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_800KB_DISK, "new-disk").get();
 		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"write-test-prodos-800k.po", "TEST", blockDevice); //$NON-NLS-1$ //$NON-NLS-2$
-		writeFiles(disks, "BIN", "TXT", true); //$NON-NLS-1$ //$NON-NLS-2$
+			"write-test-prodos-800k.po", "TEST", blockDevice);  
+		writeFiles(disks, "BIN", "TXT", true);  
 		saveDisks(disks);
 	}
 
@@ -140,8 +140,8 @@ public class DiskWriterTest {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_5MB_HARDDISK, "new-disk").get();
 		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"write-test-prodos-5mb.hdv", "TEST", blockDevice); //$NON-NLS-1$ //$NON-NLS-2$
-		writeFiles(disks, "BIN", "TXT", true); //$NON-NLS-1$ //$NON-NLS-2$
+			"write-test-prodos-5mb.hdv", "TEST", blockDevice);  
+		writeFiles(disks, "BIN", "TXT", true);  
 		saveDisks(disks);
 	}
 	
@@ -151,10 +151,9 @@ public class DiskWriterTest {
 	@Test
 	public void testCreateAndDeleteDos33() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new DosOrder(source);
-		FormattedDisk[] disks = DosFormatDisk.create(
-			"createanddelete-test-dos33.dsk", imageOrder); //$NON-NLS-1$
-		createAndDeleteFiles(disks, "B"); //$NON-NLS-1$
+        TrackSectorDevice sectorDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+		FormattedDisk[] disks = DosFormatDisk.create("createanddelete-test-dos33.dsk", sectorDevice);
+		createAndDeleteFiles(disks, "B"); 
 		saveDisks(disks);
 	}
 
@@ -164,10 +163,10 @@ public class DiskWriterTest {
 	@Test
 	public void testCreateAndDeleteOzDos() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_800KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new ProdosOrder(source);
-		FormattedDisk[] disks = OzDosFormatDisk.create(
-			"createanddelete-test-ozdos.po", imageOrder); //$NON-NLS-1$
-		createAndDeleteFiles(disks, "B"); //$NON-NLS-1$
+        BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
+		FormattedDisk[] disks = DosFormatDisk.create("createanddelete-test-ozdos.po", blockDevice,
+            OzdosAdapterStrategy.values());
+		createAndDeleteFiles(disks, "B"); 
 		saveDisks(disks);
 	}
 
@@ -177,10 +176,10 @@ public class DiskWriterTest {
 	@Test
 	public void testCreateAndDeleteUniDos() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_800KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new ProdosOrder(source);
-		FormattedDisk[] disks = UniDosFormatDisk.create(
-			"createanddelete-test-unidos.dsk", imageOrder); //$NON-NLS-1$
-		createAndDeleteFiles(disks, "B"); //$NON-NLS-1$
+        BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
+		FormattedDisk[] disks = DosFormatDisk.create("createanddelete-test-unidos.dsk", blockDevice,
+            UnidosAdapterStrategy.values());
+		createAndDeleteFiles(disks, "B"); 
 		saveDisks(disks);
 	}
 
@@ -192,9 +191,9 @@ public class DiskWriterTest {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
 		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = PascalFormatDisk.create(
-			"createanddelete-test-pascal-140k.po", "TEST",  //$NON-NLS-1$ //$NON-NLS-2$
+			"createanddelete-test-pascal-140k.po", "TEST",   
 			blockDevice);
-		createAndDeleteFiles(disks, "CODE"); //$NON-NLS-1$
+		createAndDeleteFiles(disks, "CODE"); 
 		saveDisks(disks);
 	}
 
@@ -206,9 +205,9 @@ public class DiskWriterTest {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_800KB_DISK, "new-disk").get();
 		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = PascalFormatDisk.create(
-			"createanddelete-test-pascal-800k.po", "TEST",  //$NON-NLS-1$ //$NON-NLS-2$
+			"createanddelete-test-pascal-800k.po", "TEST",   
 			blockDevice);
-		createAndDeleteFiles(disks, "CODE"); //$NON-NLS-1$
+		createAndDeleteFiles(disks, "CODE"); 
 		saveDisks(disks);
 	}
 
@@ -218,13 +217,13 @@ public class DiskWriterTest {
 	@Test
 	public void testCreateAndDeleteProdos140kDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-		TrackSectorDevice trackSectorDevice = new DosOrderedTrackSectorDevice(source);
+		TrackSectorDevice trackSectorDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
         TrackSectorDevice skewedDevice = SkewedTrackSectorDevice.dosToPascalSkew(trackSectorDevice);
 		BlockDevice blockDevice = new TrackSectorToBlockAdapter(skewedDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"createanddelete-test-prodos-140k.dsk", "TEST",  //$NON-NLS-1$ //$NON-NLS-2$
+			"createanddelete-test-prodos-140k.dsk", "TEST",   
 			blockDevice);
-		createAndDeleteFiles(disks, "BIN"); //$NON-NLS-1$
+		createAndDeleteFiles(disks, "BIN"); 
 		saveDisks(disks);
 	}
 
@@ -236,9 +235,9 @@ public class DiskWriterTest {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_800KB_DISK, "new-disk").get();
 		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"createanddelete-test-prodos-800k.po", "TEST", //$NON-NLS-1$ //$NON-NLS-2$
+			"createanddelete-test-prodos-800k.po", "TEST",  
 			blockDevice);
-		createAndDeleteFiles(disks, "BIN"); //$NON-NLS-1$
+		createAndDeleteFiles(disks, "BIN"); 
 		saveDisks(disks);
 	}
 	
@@ -249,10 +248,9 @@ public class DiskWriterTest {
 	@Test
 	public void testCreateDeleteCreateDosDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new DosOrder(source);
-		FormattedDisk[] disks = DosFormatDisk.create(
-			"createdeletecreate-test-dos-140k.dsk", imageOrder); //$NON-NLS-1$
-		createDeleteCreate(disks, "B"); //$NON-NLS-1$
+        TrackSectorDevice sectorDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+		FormattedDisk[] disks = DosFormatDisk.create("createdeletecreate-test-dos-140k.dsk", sectorDevice);
+		createDeleteCreate(disks, "B"); 
 		saveDisks(disks);
 	}
 
@@ -263,10 +261,11 @@ public class DiskWriterTest {
 	@Test
 	public void testCreateDeleteCreateOzdosDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_800KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new ProdosOrder(source);
-		FormattedDisk[] disks = OzDosFormatDisk.create(
-			"createdeletecreate-test-ozdos-800k.po", imageOrder); //$NON-NLS-1$
-		createDeleteCreate(disks, "B"); //$NON-NLS-1$
+        BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
+		FormattedDisk[] disks = DosFormatDisk.create("createdeletecreate-test-ozdos-800k.po", blockDevice,
+                OzdosAdapterStrategy.values());
+        saveDisks(disks);
+		createDeleteCreate(disks, "B");
 		saveDisks(disks);
 	}
 
@@ -277,10 +276,11 @@ public class DiskWriterTest {
 	@Test
 	public void testCreateDeleteCreateUnidosDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_800KB_DISK, "new-disk").get();
-		ImageOrder imageOrder = new ProdosOrder(source);
-		FormattedDisk[] disks = UniDosFormatDisk.create(
-			"createdeletecreate-test-unidos-800k.dsk", imageOrder); //$NON-NLS-1$
-		createDeleteCreate(disks, "B"); //$NON-NLS-1$
+        BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
+		FormattedDisk[] disks = DosFormatDisk.create("createdeletecreate-test-unidos-800k.dsk", blockDevice,
+                UnidosAdapterStrategy.values());
+        saveDisks(disks);
+		createDeleteCreate(disks, "B");
 		saveDisks(disks);
 	}
 
@@ -293,9 +293,9 @@ public class DiskWriterTest {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
 		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = PascalFormatDisk.create(
-			"createdeletecreate-test-pascal-140k.po", "TEST", //$NON-NLS-1$ //$NON-NLS-2$
+			"createdeletecreate-test-pascal-140k.po", "TEST",  
 			blockDevice);
-		createDeleteCreate(disks, "CODE"); //$NON-NLS-1$
+		createDeleteCreate(disks, "CODE"); 
 		saveDisks(disks);
 	}
 	
@@ -308,9 +308,9 @@ public class DiskWriterTest {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
 		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
-			"createdeletecreate-test-prodos-140k.dsk", "TEST", //$NON-NLS-1$ //$NON-NLS-2$
+			"createdeletecreate-test-prodos-140k.dsk", "TEST",  
 			blockDevice);
-		createDeleteCreate(disks, "BIN"); //$NON-NLS-1$
+		createDeleteCreate(disks, "BIN"); 
 		saveDisks(disks);
 	}
 	
@@ -323,7 +323,7 @@ public class DiskWriterTest {
 	protected void writeFiles(FormattedDisk[] disks, String binaryType, 
 		String textType, boolean testText) throws DiskException {
 		FormattedDisk disk = disks[0];
-		showDirectory(disks, "BEFORE FILE CREATION"); //$NON-NLS-1$
+		showDirectory(disks, "BEFORE FILE CREATION"); 
 		writeFile(disk, 1, binaryType, true);
 		writeFile(disk, 2, binaryType, true);
 		writeFile(disk, 4, binaryType, true);
@@ -334,7 +334,7 @@ public class DiskWriterTest {
 		writeFile(disk, 1234, binaryType, true);
 		writeFile(disk, 54321, binaryType, true);
 		writeFile(disk, 
-			"This is a test text file create from the DiskWriterTest".getBytes(),  //$NON-NLS-1$
+			"This is a test text file create from the DiskWriterTest".getBytes(),  
 			textType, testText);
         Source source = disk.getSource();
 		if (source.getSize() > DiskConstants.APPLE_140KB_DISK
@@ -343,7 +343,7 @@ public class DiskWriterTest {
 			writeFile(disk, 150000, binaryType, true);
 			writeFile(disk, 300000, binaryType, true);
 		}
-		showDirectory(disks, "AFTER FILE CREATION"); //$NON-NLS-1$
+		showDirectory(disks, "AFTER FILE CREATION"); 
 	}
 	
 	/**
@@ -367,7 +367,7 @@ public class DiskWriterTest {
 	protected void writeFile(FormattedDisk disk, byte[] data, String fileType,
 		boolean test) throws DiskException {
 		FileEntry entry = disk.createFile();
-		entry.setFilename("file-" + data.length); //$NON-NLS-1$
+		entry.setFilename("file-" + data.length); 
 		entry.setFiletype(fileType);
 		entry.setFileData(data);
 		byte[] data2 = entry.getFileData();
@@ -385,26 +385,26 @@ public class DiskWriterTest {
 	 */
 	protected void showDirectory(FormattedDisk[] formattedDisks, String title) throws DiskException {
 		System.out.println();
-		System.out.println("************************************************"); //$NON-NLS-1$
+		System.out.println("************************************************"); 
 		System.out.println(title);
         for (FormattedDisk formattedDisk : formattedDisks) {
             System.out.println();
             System.out.println(formattedDisk.getDiskName());
             List<FileEntry> files = formattedDisk.getFiles();
             if (files != null) {
-                showFiles(files, "", false); //$NON-NLS-1$
+                showFiles(files, "", false); 
             }
-            System.out.println(formattedDisk.getFreeSpace() + " bytes free."); //$NON-NLS-1$
-            System.out.println(formattedDisk.getUsedSpace() + " bytes used."); //$NON-NLS-1$
-            System.out.println("This disk " + (formattedDisk.canHaveDirectories() ? "does" : "does not") + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    " support directories."); //$NON-NLS-1$
-            System.out.println("This disk is formatted in the " + formattedDisk.getFormat() + " format."); //$NON-NLS-1$ //$NON-NLS-2$
+            System.out.println(formattedDisk.getFreeSpace() + " bytes free."); 
+            System.out.println(formattedDisk.getUsedSpace() + " bytes used."); 
+            System.out.println("This disk " + (formattedDisk.canHaveDirectories() ? "does" : "does not") +   
+                    " support directories."); 
+            System.out.println("This disk is formatted in the " + formattedDisk.getFormat() + " format.");  
             System.out.println();
 
             showDiskUsage(formattedDisk);
         }
 		System.out.println();
-		System.out.println("************************************************"); //$NON-NLS-1$
+		System.out.println("************************************************"); 
 		System.out.println();
 	}
 	
@@ -419,13 +419,13 @@ public class DiskWriterTest {
 				System.out.print(indent);
 				for (int d=0; d<data.size(); d++) {
 					System.out.print(data.get(d));
-					System.out.print(" "); //$NON-NLS-1$
+					System.out.print(" "); 
 				}
 				System.out.println();
 			}
 			if (entry.isDirectory()) {
 				showFiles(((DirectoryEntry)entry).getFiles(), 
-					indent + "  ", showDeleted); //$NON-NLS-1$
+					indent + "  ", showDeleted); 
 			}
 		}
 	}
@@ -437,7 +437,7 @@ public class DiskWriterTest {
 		int[] dimensions = disk.getBitmapDimensions();
 		DiskUsage usage = disk.getDiskUsage();
 		if (usage == null) {
-			System.out.println("A bitmap is not available."); //$NON-NLS-1$
+			System.out.println("A bitmap is not available."); 
 			return;
 		}
 		if (dimensions == null) {
@@ -445,7 +445,7 @@ public class DiskWriterTest {
 			while (usage.hasNext()) {
 				if (i > 0 && i % 80 == 0) System.out.println();
 				usage.next();
-				System.out.print(usage.isFree() ? "." : "U"); //$NON-NLS-1$ //$NON-NLS-2$
+				System.out.print(usage.isFree() ? "." : "U");  
 				i++;
 			}
 			System.out.println();
@@ -453,12 +453,12 @@ public class DiskWriterTest {
 			for (int y=dimensions[0]-1; y>=0; y--) {
 				for (int x=0; x<dimensions[1]; x++) {
 					usage.next();
-					System.out.print(usage.isFree() ? "." : "U"); //$NON-NLS-1$ //$NON-NLS-2$
+					System.out.print(usage.isFree() ? "." : "U");  
 				}
 				System.out.println();
 			}
 		}
-		System.out.println("U = used, . = free"); //$NON-NLS-1$
+		System.out.println("U = used, . = free"); 
 	}
 	
 	/**
@@ -473,9 +473,9 @@ public class DiskWriterTest {
 		}
 		for (int d=0; d<disks.length; d++) {
 			FormattedDisk disk = disks[d];
-			System.out.println("Excercising create and delete on disk "  //$NON-NLS-1$
-				+ disk.getDiskName() + " in the " + disk.getFormat()  //$NON-NLS-1$
-				+ " format."); //$NON-NLS-1$
+			System.out.println("Exercising create and delete on disk "
+				+ disk.getDiskName() + " in the " + disk.getFormat()  
+				+ " format."); 
 			int originalUsed = disk.getUsedSpace();
 			int originalFree = disk.getFreeSpace();
 			for (int count=0; count<5; count++) {
@@ -507,8 +507,8 @@ public class DiskWriterTest {
 	protected void createDeleteCreate(FormattedDisk[] disks, String filetype) throws DiskException {
 		for (int d=0; d<disks.length; d++) {
 			FormattedDisk disk = disks[d];
-			System.out.println("Exercising create, delete, create sequence " //$NON-NLS-1$
-				+ "on disk " + disk.getDiskName() + "."); //$NON-NLS-1$ //$NON-NLS-2$
+			System.out.println("Exercising create, delete, create sequence " 
+				+ "on disk " + disk.getDiskName() + ".");  
 			writeFile(disk, 5432, filetype, false);
 			List<FileEntry> files = disk.getFiles();
 			for (int i=0; i<files.size(); i++) {
@@ -520,8 +520,8 @@ public class DiskWriterTest {
 			for (int i=0; i<files.size(); i++) {
 				FileEntry entry = (FileEntry) files.get(i);
 				if (entry.isDeleted()) {
-					showFiles(files, "", true); //$NON-NLS-1$
-					fail("There should be no deleted files"); //$NON-NLS-1$
+					showFiles(files, "", true); 
+					fail("There should be no deleted files"); 
 				}
 			}
 		}

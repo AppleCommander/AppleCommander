@@ -30,15 +30,14 @@ import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import io.github.applecommander.acx.fileutil.FileUtils;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.util.DataBuffer;
 
 public enum SystemType {
 	DOS(OrderType.DOS, SystemType::enforce140KbDisk, 
 	        SystemType::copyDosSystemTracks),
-	// OzdosFormatDisk is structured on top of ProDOS blocks in the implementation.
-	OZDOS(OrderType.PRODOS, SystemType::enforce800KbDisk, 
+	OZDOS(OrderType.PRODOS, SystemType::enforce800KbDisk,
 	        SystemType::copyDosSystemTracks),
-	// UnidosFormatDisk is structured on top of DOS track/sectors in the implementation.
-	UNIDOS(OrderType.DOS, SystemType::enforce800KbDisk, 
+	UNIDOS(OrderType.PRODOS, SystemType::enforce800KbDisk,
 	        SystemType::copyDosSystemTracks),
 	PRODOS(OrderType.PRODOS, SystemType::enforce140KbOr800KbUpTo32MbDisk, 
 	        SystemType::copyProdosSystemFiles),
@@ -47,13 +46,13 @@ public enum SystemType {
 	
     static Logger LOG = Logger.getLogger(SystemType.class.getName());
 
-    private OrderType defaultOrderType;
-    private Function<Integer,Integer> enforceDiskSizeFn;
-	private BiConsumer<FormattedDisk,FormattedDisk> copySystemFn;
+    private final OrderType defaultOrderType;
+    private final Function<Integer,Integer> enforceDiskSizeFn;
+	private final BiConsumer<FormattedDisk,FormattedDisk> copySystemFn;
 	
-	private SystemType(OrderType defaultOrderType,
-	        Function<Integer,Integer> enforceDiskSizeFn,
-	        BiConsumer<FormattedDisk,FormattedDisk> copySystemFn) {
+	SystemType(OrderType defaultOrderType,
+               Function<Integer, Integer> enforceDiskSizeFn,
+               BiConsumer<FormattedDisk, FormattedDisk> copySystemFn) {
 	    this.defaultOrderType = defaultOrderType;
 	    this.enforceDiskSizeFn = enforceDiskSizeFn;
 		this.copySystemFn = copySystemFn;
@@ -97,14 +96,15 @@ public enum SystemType {
 
 	static void copyDosSystemTracks(FormattedDisk targetDisk, FormattedDisk source) {
         TrackSectorDevice sourceDevice = TrackSectorDeviceAdapter.from(source);
+        TrackSectorDevice targetDevice = TrackSectorDeviceAdapter.from(targetDisk);
 		DosFormatDisk target = (DosFormatDisk)targetDisk;
 		byte[] vtoc = target.readVtoc();
 		int sectorsPerTrack = vtoc[0x35];
 		// Note that this also patches T0 S0 for BOOT0
 		for (int t=0; t<3; t++) {
 			for (int s=0; s<sectorsPerTrack; s++) {
-                byte[] data = sourceDevice.readSector(t, s).asBytes();
-				target.writeSector(t, s, data);
+                DataBuffer data = sourceDevice.readSector(t, s);
+				targetDevice.writeSector(t, s, data);
 				target.setSectorUsed(t, s, vtoc);
 			}
 		}

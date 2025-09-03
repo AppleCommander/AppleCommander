@@ -26,18 +26,19 @@ import com.webcodepro.applecommander.storage.DiskFactory;
 import com.webcodepro.applecommander.storage.Disks;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
-import com.webcodepro.applecommander.storage.os.dos33.OzDosFormatDisk;
-import com.webcodepro.applecommander.storage.os.dos33.UniDosFormatDisk;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
 
 import io.github.applecommander.acx.OrderType;
 import io.github.applecommander.acx.SystemType;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
 import io.github.applecommander.acx.converter.DataSizeConverter;
-import org.applecommander.device.BlockDevice;
-import org.applecommander.device.ProdosOrderedBlockDevice;
+import org.applecommander.codec.Nibble62Disk525Codec;
+import org.applecommander.device.*;
+import org.applecommander.hint.Hint;
+import org.applecommander.image.NibbleImage;
+import org.applecommander.os.dos.OzdosAdapterStrategy;
+import org.applecommander.os.dos.UnidosAdapterStrategy;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
@@ -85,27 +86,23 @@ public class CreateDiskCommand extends ReusableCommandOptions {
         LOG.info(() -> String.format("Creating %s image of type %s (%s).", 
                 DataSizeConverter.format(correctedSize), systemType, actualOrderType));
     	
-    	ImageOrder order = actualOrderType.createImageOrder(correctedSize);
-        Source source = DataBufferSource.create(order.getPhysicalSize(), imageName).get();
+        Source source = DataBufferSource.create(correctedSize, imageName).get();
         BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
-    	FormattedDisk[] disks = null;
-    	switch (systemType) {
-    	case DOS:		
-    		disks = DosFormatDisk.create(imageName, order);
-    		break;
-    	case OZDOS:		
-    		disks = OzDosFormatDisk.create(imageName, order);
-    		break;
-    	case UNIDOS:
-    		disks = UniDosFormatDisk.create(imageName, order);
-    		break;
-    	case PRODOS:
-    		disks = ProdosFormatDisk.create(imageName, diskName, blockDevice);
-    		break;
-    	case PASCAL:
-    		disks = PascalFormatDisk.create(imageName, diskName, blockDevice);
-    		break;
-    	}
+    	FormattedDisk[] disks = switch (systemType) {
+            case DOS -> {
+                TrackSectorDevice sectorDevice = switch (actualOrderType) {
+                    case DOS -> new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+                    case NIBBLE -> new TrackSectorNibbleDevice(new NibbleImage(source), DiskMarker.disk525sector16(),
+                            new Nibble62Disk525Codec(), 16);
+                    case PRODOS -> new BlockToTrackSectorAdapter(blockDevice, new ProdosBlockToTrackSectorAdapterStrategy());
+                };
+                yield DosFormatDisk.create(imageName, sectorDevice);
+            }
+            case OZDOS -> DosFormatDisk.create(imageName, blockDevice, OzdosAdapterStrategy.values());
+            case UNIDOS -> DosFormatDisk.create(imageName, blockDevice, UnidosAdapterStrategy.values());
+            case PRODOS -> ProdosFormatDisk.create(imageName, diskName, blockDevice);
+            case PASCAL -> PascalFormatDisk.create(imageName, diskName, blockDevice);
+        };
     	
     	if (formatSource != null) {
             Source fsource = Sources.create(formatSource).orElseThrow();

@@ -19,16 +19,10 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import com.webcodepro.applecommander.storage.os.dos33.OzDosFormatDisk;
-import com.webcodepro.applecommander.storage.os.dos33.UniDosFormatDisk;
 import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import org.applecommander.capability.Capability;
-import org.applecommander.device.BlockDevice;
-import org.applecommander.device.BlockToTrackSectorAdapter;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.hint.Hint;
-import org.applecommander.os.dos.OzdosAdapterStrategy;
-import org.applecommander.os.dos.UnidosAdapterStrategy;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
@@ -40,21 +34,7 @@ public class TrackSectorDeviceAdapter implements TrackSectorDevice {
             Optional<TrackSectorDevice> opt = c.get(TrackSectorDevice.class);
             if (opt.isPresent()) return opt.get();
         }
-        // 800K DOS disks cause some issues, so they are pulled out...
-        return switch (disk) {
-            case UniDosFormatDisk unidos -> {
-                BlockDevice device = BlockDeviceAdapter.from(unidos);
-                yield new BlockToTrackSectorAdapter(device, unidos.getLogicalDiskNumber() == 1
-                    ? UnidosAdapterStrategy.UNIDOS_DISK_1 : UnidosAdapterStrategy.UNIDOS_DISK_2);
-            }
-            case OzDosFormatDisk ozdos -> {
-                BlockDevice device = BlockDeviceAdapter.from(ozdos);
-                yield new BlockToTrackSectorAdapter(device, ozdos.getLogicalDiskNumber() == 1
-                    ? OzdosAdapterStrategy.OZDOS_DISK_1 : OzdosAdapterStrategy.OZDOS_DISK_2);
-            }
-            case FormattedDiskX x -> new TrackSectorDeviceAdapter(x.getImageOrder());
-            default -> throw new RuntimeException("No BlockDevice present: " + disk.getClass().getName());
-        };
+        throw new RuntimeException("No track/sector device present: " + disk.getClass().getName());
     }
 
     private ImageOrder order;

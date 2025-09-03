@@ -26,10 +26,9 @@ import com.webcodepro.applecommander.storage.compare.ComparisonResult;
 import com.webcodepro.applecommander.storage.compare.DiskDiff;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
-import com.webcodepro.applecommander.storage.physical.DosOrder;
-import com.webcodepro.applecommander.storage.physical.NibbleOrder;
 import org.applecommander.codec.Nibble62Disk525Codec;
 import org.applecommander.device.*;
+import org.applecommander.hint.Hint;
 import org.applecommander.image.NibbleImage;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
@@ -82,17 +81,19 @@ public class AppleUtilTest {
 	@Test
 	public void testChangeDosImageOrder() throws DiskFullException {
 		// Straight DOS disk in standard DOS order
-		DosFormatDisk dosDiskDosOrder = DosFormatDisk.create("dostemp.dsk",  //$NON-NLS-1$
-			new DosOrder(DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get()))[0];
+        Source source1 = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
+        TrackSectorDevice device1 = new DosOrderedTrackSectorDevice(source1, Hint.DOS_SECTOR_ORDER);
+		DosFormatDisk dosDiskDosOrder = DosFormatDisk.create("dostemp.dsk", device1)[0];
 		FileEntry fileEntry = dosDiskDosOrder.createFile();
 		fileEntry.setFilename("TESTFILE"); //$NON-NLS-1$
 		fileEntry.setFiletype("T"); //$NON-NLS-1$
 		fileEntry.setFileData("This is a test file.".getBytes()); //$NON-NLS-1$
 		// A duplicate - then we change it to a NIB disk image...
-		DosFormatDisk dosDiskNibbleOrder = DosFormatDisk.create("dostemp2.nib", //$NON-NLS-1$
-			new NibbleOrder(DataBufferSource.create(DiskConstants.APPLE_140KB_NIBBLE_DISK, "new-disk").get()))[0];
-		AppleUtil.changeImageOrderByTrackAndSector(dosDiskDosOrder.getImageOrder(),
-			dosDiskNibbleOrder.getImageOrder());
+        Source source2 = DataBufferSource.create(DiskConstants.APPLE_140KB_NIBBLE_DISK, "new-disk").get();
+        TrackSectorDevice device2 = new TrackSectorNibbleDevice(new NibbleImage(source2), DiskMarker.disk525sector16(),
+                new Nibble62Disk525Codec(), 16);
+		DosFormatDisk dosDiskNibbleOrder = DosFormatDisk.create("dostemp2.nib", device2)[0];
+        AppleUtil.changeOrderBySector(device1, device2);
 		// Confirm that these disks are identical:
         ComparisonResult result = DiskDiff.create(dosDiskDosOrder, dosDiskDosOrder)
                 .selectCompareByTrackSectorGeometry().compare();
