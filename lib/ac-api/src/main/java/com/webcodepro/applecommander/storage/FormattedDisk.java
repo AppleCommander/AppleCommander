@@ -22,6 +22,7 @@ package com.webcodepro.applecommander.storage;
 import com.webcodepro.applecommander.util.TextBundle;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.source.Source;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
 import java.io.*;
@@ -37,7 +38,7 @@ import java.util.zip.GZIPOutputStream;
  * Date created: Oct 5, 2002 3:51:44 PM
  * @author Rob Greene
  */
-public abstract class FormattedDisk implements DirectoryEntry {
+public abstract class FormattedDisk implements DirectoryEntry, Container{
 	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Use this inner class for label/value mappings in the disk info page.

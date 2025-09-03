@@ -174,20 +174,14 @@ public class DirectoryLister {
 		public void first(FormattedDisk disk) {
 			root = new JsonObject();
 			root.addProperty("filename", disk.getFilename());
-            if (disk instanceof FormattedDiskX x) {
-                root.addProperty("order", x.getOrderName());
-                root.addProperty("physicalSize", x.getPhysicalSize());
+            root.addProperty("size", disk.getSource().getSize());
+            if (disk.get(BlockDevice.class).isPresent()) {
+                root.addProperty("device", "block device");
             }
-            else if (disk instanceof Container c) {
-                root.addProperty("size", disk.getSource().getSize());
-                if (c.get(BlockDevice.class).isPresent()) {
-                    root.addProperty("device", "block device");
-                }
-                else if (c.get(TrackSectorDevice.class).isPresent()) {
-                    root.addProperty("device", "track/sector device");
-                }
+            else if (disk.get(TrackSectorDevice.class).isPresent()) {
+                root.addProperty("device", "track/sector device");
             }
-			this.disks = new JsonArray();
+            this.disks = new JsonArray();
 			root.add("disks", disks);
 		}
         @Override

@@ -19,64 +19,14 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import org.applecommander.capability.Capability;
 import org.applecommander.device.BlockDevice;
-import org.applecommander.hint.Hint;
-import org.applecommander.util.Container;
-import org.applecommander.util.DataBuffer;
-
-import java.util.Optional;
 
 /**
  * Temporary transition layer between ImageOrder and BlockDevice.
  */
-public class BlockDeviceAdapter implements BlockDevice {
+public class BlockDeviceAdapter {
     public static BlockDevice from(FormattedDisk disk) {
-        if (disk instanceof Container c) {
-            Optional<BlockDevice> opt = c.get(BlockDevice.class);
-            if (opt.isPresent()) return opt.get();
-        }
-        if (disk instanceof FormattedDiskX x) {
-            return new BlockDeviceAdapter(x.getImageOrder());
-        }
-        throw new RuntimeException("No BlockDevice present: " + disk.getClass().getName());
-    }
-
-    private ImageOrder order;
-
-    private BlockDeviceAdapter(ImageOrder order) {
-        this.order = order;
-    }
-
-    @Override
-    public <T> Optional<T> get(Class<T> iface) {
-        return Container.get(iface, order);
-    }
-
-    @Override
-    public boolean is(Hint hint) {
-        return order.is(hint);
-    }
-
-    @Override
-    public boolean can(Capability capability) {
-        // TODO
-        return false;
-    }
-
-    @Override
-    public Geometry getGeometry() {
-        return new Geometry(STANDARD_BLOCK_SIZE, order.getBlocksOnDevice());
-    }
-
-    @Override
-    public DataBuffer readBlock(int block) {
-        return DataBuffer.wrap(order.readBlock(block));
-    }
-
-    @Override
-    public void writeBlock(int block, DataBuffer blockData) {
-        order.writeBlock(block, blockData.asBytes());
+        return disk.get(BlockDevice.class).orElseThrow(() ->
+                new RuntimeException("No BlockDevice present: " + disk.getClass().getName()));
     }
 }

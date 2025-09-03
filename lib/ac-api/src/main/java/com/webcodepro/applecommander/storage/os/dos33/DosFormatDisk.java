@@ -43,7 +43,7 @@ import java.util.*;
  * Changed at: Dec 1, 2017
  * @author Lisias Toledo
  */
-public class DosFormatDisk extends FormattedDisk implements Container {
+public class DosFormatDisk extends FormattedDisk {
 	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Indicates the index of the track in the location array.

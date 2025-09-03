@@ -23,9 +23,14 @@ import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.FormattedDisk.FileColumnHeader;
 import com.webcodepro.applecommander.storage.filters.*;
+import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
+import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
+import com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk;
+import com.webcodepro.applecommander.storage.os.nakedos.NakedosFormatDisk;
+import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosDiskSizeDoesNotMatchException;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
-import com.webcodepro.applecommander.storage.physical.*;
+import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import com.webcodepro.applecommander.ui.ImportSpecification;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.UserPreferences;
@@ -39,8 +44,10 @@ import com.webcodepro.applecommander.util.Host;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 import io.github.applecommander.applesingle.AppleSingle;
-import org.applecommander.device.Device;
+import org.applecommander.codec.Nibble62Disk525Codec;
+import org.applecommander.device.*;
 import org.applecommander.hint.Hint;
+import org.applecommander.image.NibbleImage;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
@@ -1801,19 +1808,43 @@ public class DiskExplorerTab {
 	 * Change the disk to a new image order.  It is assumed that the order is
 	 * appropriate - that should be handled by the menuing.
 	 */
-	protected void changeImageOrder(String extension, ImageOrder newImageOrder) {
+	protected void changeImageOrder(String extension, TrackSectorDevice targetDevice) {
 		try {
-            FormattedDiskX diskx = (FormattedDiskX) disks[0];
-			diskx.changeImageOrder(newImageOrder);
+            FormattedDisk disk = disks[0];
+            TrackSectorDevice sourceDevice = TrackSectorDeviceAdapter.from(disk);
+            AppleUtil.changeOrderBySector(sourceDevice, targetDevice);
 			String filename = disks[0].getFilename();
 			if (filename.toLowerCase().endsWith(".gz")) {
-				int chop = filename.lastIndexOf(".", filename.length()-4); //$NON-NLS-1$
-				filename = filename.substring(0, chop+1) + extension + ".gz"; //$NON-NLS-1$
+				int chop = filename.lastIndexOf(".", filename.length()-4);
+				filename = filename.substring(0, chop+1) + extension + ".gz";
 			} else {
-				int chop = filename.lastIndexOf("."); //$NON-NLS-1$
+				int chop = filename.lastIndexOf(".");
 				filename = filename.substring(0, chop+1) + extension;
 			}
-			disks[0].setFilename(filename);
+            // Since this is so specialized, doing this swap as a one-off...
+            disks[0] = switch(disks[0]) {
+                case CpmFormatDisk ignored -> {
+                    BlockDevice blockDevice = new TrackSectorToBlockAdapter(targetDevice, TrackSectorToBlockAdapter.BlockStyle.CPM);
+                    yield new CpmFormatDisk(filename, blockDevice);
+                }
+                case DosFormatDisk ignored -> new DosFormatDisk(filename, targetDevice);
+                case GutenbergFormatDisk ignored -> new GutenbergFormatDisk(filename, targetDevice);
+                case NakedosFormatDisk ignored -> new NakedosFormatDisk(filename, targetDevice);
+                case PascalFormatDisk ignored -> {
+                    BlockDevice blockDevice = new TrackSectorToBlockAdapter(targetDevice, TrackSectorToBlockAdapter.BlockStyle.PASCAL);
+                    yield new PascalFormatDisk(filename, blockDevice);
+                }
+                case ProdosFormatDisk ignored -> {
+                    BlockDevice blockDevice = new TrackSectorToBlockAdapter(targetDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS);
+                    yield new ProdosFormatDisk(filename, blockDevice);
+                }
+                case RdosFormatDisk ignored -> {
+                    BlockDevice blockDevice = new TrackSectorToBlockAdapter(targetDevice, TrackSectorToBlockAdapter.BlockStyle.RDOS);
+                    yield new RdosFormatDisk(filename, blockDevice);
+                }
+                default -> throw new IllegalStateException("Unexpected value: " + disks[0]);
+            };
+            this.formatChanged = true;
 			diskWindow.setStandardWindowTitle();
 		} catch (Throwable t) {
 			Shell finalShell = shell;
@@ -1855,10 +1886,12 @@ public class DiskExplorerTab {
 			public void widgetSelected(SelectionEvent event) {
                 Device device = DeviceAdapter.from(getDisk(0));
 				if (!device.is(Hint.NIBBLE_SECTOR_ORDER)) {
-					NibbleOrder nibbleOrder = new NibbleOrder(
-						DataBufferSource.create(DiskConstants.APPLE_140KB_NIBBLE_DISK, "new-image.nib").get());
-					nibbleOrder.format();
-					changeImageOrder("nib", nibbleOrder); //$NON-NLS-1$
+                    Source nibbleSource = DataBufferSource.create(DiskConstants.APPLE_140KB_NIBBLE_DISK, "new-image.nib").get();
+                    TrackSectorDevice nibbleDevice = new TrackSectorNibbleDevice(new NibbleImage(nibbleSource),
+                            DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), 16);
+					nibbleDevice.format();
+					changeImageOrder("nib",
+                            SkewedTrackSectorDevice.physicalToDosSkew(nibbleDevice));
 				}
 			}
 		});
@@ -1869,8 +1902,9 @@ public class DiskExplorerTab {
 			public void widgetSelected(SelectionEvent event) {
                 Device device = DeviceAdapter.from(getDisk(0));
 				if (!device.is(Hint.DOS_SECTOR_ORDER)) {
-					changeImageOrder("dsk", new DosOrder( //$NON-NLS-1$
-						DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-image.dsk").get()));
+                    Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-image.do").get();
+					changeImageOrder("dsk",
+                            new DosOrderedTrackSectorDevice(source));
 				}
 			}
 		});
@@ -1881,8 +1915,9 @@ public class DiskExplorerTab {
 			public void widgetSelected(SelectionEvent event) {
                 Device device = DeviceAdapter.from(getDisk(0));
 				if (!device.is(Hint.PRODOS_BLOCK_ORDER)) {
-					changeImageOrder("po", new ProdosOrder( //$NON-NLS-1$
-						DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-image.po").get()));
+                    Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-image.po").get();
+					changeImageOrder("po",
+                            SkewedTrackSectorDevice.dosToPascalSkew(new DosOrderedTrackSectorDevice(source)));
 				}
 			}
 		});

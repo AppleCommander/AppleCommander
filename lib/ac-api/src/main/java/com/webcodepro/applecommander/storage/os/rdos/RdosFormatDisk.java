@@ -47,7 +47,7 @@ import java.util.*;
  * Date created: Oct 7, 2002 2:03:58 PM
  * @author Rob Greene
  */
-public class RdosFormatDisk extends FormattedDisk implements Container {
+public class RdosFormatDisk extends FormattedDisk {
 	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Specifies the length of a file entry.

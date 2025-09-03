@@ -19,8 +19,6 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
-import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import org.applecommander.device.Device;
 import org.applecommander.util.Container;
 
@@ -28,15 +26,6 @@ import java.util.Optional;
 
 public class DeviceAdapter {
     public static Device from(FormattedDisk disk) {
-        if (disk instanceof FormattedDiskX) {
-            // old school, translate...
-            if (disk instanceof ProdosFormatDisk || disk instanceof PascalFormatDisk) {
-                return BlockDeviceAdapter.from(disk);
-            }
-            else {
-                return TrackSectorDeviceAdapter.from(disk);
-            }
-        }
         if (disk instanceof Container c) {
             Optional<Device> opt = c.get(Device.class);
             if (opt.isPresent()) {

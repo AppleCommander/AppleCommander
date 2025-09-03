@@ -39,7 +39,7 @@ import java.util.Optional;
  * Date created: Dec 17, 2008 04:29:23 PM
  * @author David Schmidt
  */
-public class GutenbergFormatDisk extends FormattedDisk implements Container {
+public class GutenbergFormatDisk extends FormattedDisk {
 	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Indicates the index of the track in the location array.

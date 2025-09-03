@@ -21,7 +21,6 @@ package com.webcodepro.applecommander.storage.os.pascal;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFactory;
-import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.device.SkewedTrackSectorDevice;
 import org.applecommander.device.TrackSectorDevice;

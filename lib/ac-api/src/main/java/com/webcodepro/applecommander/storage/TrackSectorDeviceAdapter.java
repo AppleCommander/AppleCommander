@@ -19,58 +19,11 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import org.applecommander.capability.Capability;
 import org.applecommander.device.TrackSectorDevice;
-import org.applecommander.hint.Hint;
-import org.applecommander.util.Container;
-import org.applecommander.util.DataBuffer;
 
-import java.util.Optional;
-
-public class TrackSectorDeviceAdapter implements TrackSectorDevice {
+public class TrackSectorDeviceAdapter {
     public static TrackSectorDevice from(FormattedDisk disk) {
-        if (disk instanceof Container c) {
-            Optional<TrackSectorDevice> opt = c.get(TrackSectorDevice.class);
-            if (opt.isPresent()) return opt.get();
-        }
-        throw new RuntimeException("No track/sector device present: " + disk.getClass().getName());
-    }
-
-    private ImageOrder order;
-
-    private TrackSectorDeviceAdapter(ImageOrder order) {
-        this.order = order;
-    }
-
-    @Override
-    public <T> Optional<T> get(Class<T> iface) {
-        return Container.get(iface, order);
-    }
-
-    @Override
-    public boolean is(Hint hint) {
-        return order.is(hint);
-    }
-
-    @Override
-    public boolean can(Capability capability) {
-        // TODO
-        return false;
-    }
-
-    @Override
-    public Geometry getGeometry() {
-        return new Geometry(order.getTracksPerDisk(), order.getSectorsPerTrack());
-    }
-
-    @Override
-    public DataBuffer readSector(int track, int sector) {
-        return DataBuffer.wrap(order.readSector(track, sector));
-    }
-
-    @Override
-    public void writeSector(int track, int sector, DataBuffer sectorData) {
-        order.writeSector(track, sector, sectorData.asBytes());
+        return disk.get(TrackSectorDevice.class).orElseThrow(() ->
+                new RuntimeException("No track/sector device present: " + disk.getClass().getName()));
     }
 }

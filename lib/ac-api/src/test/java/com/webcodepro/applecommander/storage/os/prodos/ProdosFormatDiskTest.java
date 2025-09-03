@@ -27,8 +27,6 @@ import org.junit.jupiter.api.Test;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFullException;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

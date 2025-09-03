@@ -33,7 +33,7 @@ import java.util.*;
  * <p>
  * @author Rob Greene
  */
-public class CpmFormatDisk extends FormattedDisk implements Container {
+public class CpmFormatDisk extends FormattedDisk {
 	private TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * The size of the CP/M sector.  Assumed to be 128.
