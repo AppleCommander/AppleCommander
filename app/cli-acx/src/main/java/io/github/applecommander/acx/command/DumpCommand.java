@@ -41,6 +41,7 @@ import io.github.applecommander.disassembler.api.mos6502.InstructionSet6502;
 import io.github.applecommander.disassembler.api.sweet16.InstructionSetSWEET16;
 import io.github.applecommander.disassembler.api.switching6502.InstructionSet6502Switching;
 import org.applecommander.device.BlockDevice;
+import org.applecommander.device.NibbleTrackReaderWriter;
 import org.applecommander.device.TrackSectorDevice;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -81,6 +82,20 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
                 });
             });
             return 0;
+        }
+        else if (options.coordinate.nibbleTrackRangeSelection != null) {
+            NibbleTrackReaderWriter trackReaderWriter = disk.get(NibbleTrackReaderWriter.class)
+                    .orElseThrow(() -> new RuntimeException("This is not a nibble device."));
+            options.coordinate.nibbleTrackRangeSelection.tracks.stream().forEach(track -> {
+                final int tracksPerDisk = trackReaderWriter.getTracksOnDevice();
+                if (track < 0 || track >= tracksPerDisk) {
+                    String errormsg = String.format("The track number(%d) is out of range(0-%d) on this image.", track, tracksPerDisk-1);
+                    throw new IllegalArgumentException(errormsg);
+                }
+                byte[] data = trackReaderWriter.readTrackData(track).asBytes();
+                System.out.printf("Track %02d\n", track);
+                System.out.println(output.format(options, data));
+            });
         }
         System.out.println("Please choose block(s) or track(s) and sector(s).");
         return 1;
@@ -166,7 +181,7 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
         // correctly...
         private boolean includesBootSector;
 
-        @ArgGroup(multiplicity = "1", heading = "%nCoordinate Selection: (use '0' or '0-5' for a range)%n")
+        @ArgGroup(multiplicity = "1")
         private CoordinateRangeSelection coordinate = new CoordinateRangeSelection();
 		
         @ArgGroup(heading = "%nDisassembler Options:%n", exclusive = false)
@@ -216,10 +231,12 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
     }
 
     public static class CoordinateRangeSelection {
-        @ArgGroup(exclusive = false)
+        @ArgGroup(exclusive = false, heading = "%nBlock devices: (use '0' or '0-5' for a range)%n")
         private BlockRangeSelection blockRangeSelection;
-        @ArgGroup(exclusive = false)
+        @ArgGroup(exclusive = false, heading = "%nTrack/Sector devices: (use '0' or '0-5' for a range)%n")
         private TrackSectorRangeSelection trackSectorRangeSelection;
+        @ArgGroup(exclusive = false, heading = "%nNibble track/sector devices: (use '0' or '0-5' for a range)%n")
+        private NibbleTrackRangeSelection nibbleTrackRangeSelection;
     }
 
     public static class BlockRangeSelection {
@@ -234,5 +251,10 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
         @Option(names = { "-s", "--sector" }, required = true, description = "Sector number(s).",
                 converter = RangeTypeConverter.class)
         private Range sectors;
+    }
+    public static class NibbleTrackRangeSelection {
+        @Option(names = "-n", description = "Track number(s).",
+                converter = RangeTypeConverter.class)
+        private Range tracks;
     }
 }

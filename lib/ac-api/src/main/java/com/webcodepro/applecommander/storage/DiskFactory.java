@@ -36,6 +36,7 @@ public interface DiskFactory {
 
     class Context {
         public final Source source;
+        public final NibbleTrackReaderWriter nibbleTrackReaderWriter;
         public final List<FormattedDisk> disks = new ArrayList<>();
         // Note: These are only set if we *KNOW* what they are. Except DSK images, where both will be set.
         public final BlockDevice blockDevice;
@@ -48,17 +49,22 @@ public interface DiskFactory {
             int signature = source.readBytes(0, 4).readInt();
             if (WozImage.WOZ1_MAGIC == signature || WozImage.WOZ2_MAGIC == signature) {
                 blockDevice = null;
-                sectorDevice = identifySectorsPerTrack(new WozImage(source));
+                nibbleTrackReaderWriter = new WozImage(source);
+                sectorDevice = identifySectorsPerTrack(nibbleTrackReaderWriter);
             } else if (source.is(Hint.NIBBLE_SECTOR_ORDER) || source.isApproxEQ(DiskConstants.APPLE_140KB_NIBBLE_DISK)) {
                 blockDevice = null;
-                sectorDevice = identifySectorsPerTrack(new NibbleImage(source));
+                nibbleTrackReaderWriter = new NibbleImage(source);
+                sectorDevice = identifySectorsPerTrack(nibbleTrackReaderWriter);
             } else if (source.is(Hint.PRODOS_BLOCK_ORDER) || source.getSize() > DiskConstants.APPLE_400KB_DISK || source.extensionLike("po")) {
+                nibbleTrackReaderWriter = null;
                 blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
                 sectorDevice = null;
             } else if (source.is(Hint.DOS_SECTOR_ORDER) || source.extensionLike("do")) {
+                nibbleTrackReaderWriter = null;
                 blockDevice = null;
                 sectorDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
             } else {
+                nibbleTrackReaderWriter = null;
                 // Could be either - most likely the nebulous "dsk" extension
                 blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
                 sectorDevice = new DosOrderedTrackSectorDevice(source);
