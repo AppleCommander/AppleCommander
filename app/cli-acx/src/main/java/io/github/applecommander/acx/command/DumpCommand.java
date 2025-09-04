@@ -41,7 +41,7 @@ import io.github.applecommander.disassembler.api.mos6502.InstructionSet6502;
 import io.github.applecommander.disassembler.api.sweet16.InstructionSetSWEET16;
 import io.github.applecommander.disassembler.api.switching6502.InstructionSet6502Switching;
 import org.applecommander.device.BlockDevice;
-import org.applecommander.device.NibbleTrackReaderWriter;
+import org.applecommander.device.nibble.NibbleTrackReaderWriter;
 import org.applecommander.device.TrackSectorDevice;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;

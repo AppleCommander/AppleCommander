@@ -17,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.applecommander.codec;
+package org.applecommander.device.nibble;
 
 import org.applecommander.capability.Capability;
 import org.applecommander.util.DataBuffer;

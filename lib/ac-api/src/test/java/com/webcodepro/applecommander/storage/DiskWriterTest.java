@@ -22,8 +22,9 @@ package com.webcodepro.applecommander.storage;
 import java.io.IOException;
 import java.util.List;
 
-import org.applecommander.codec.Nibble62Disk525Codec;
+import org.applecommander.device.nibble.Nibble62Disk525Codec;
 import org.applecommander.device.*;
+import org.applecommander.device.nibble.DiskMarker;
 import org.applecommander.hint.Hint;
 import org.applecommander.image.NibbleImage;
 import org.applecommander.os.dos.OzdosAdapterStrategy;

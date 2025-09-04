@@ -20,7 +20,9 @@
 package org.applecommander.device;
 
 import org.applecommander.capability.Capability;
-import org.applecommander.codec.NibbleDiskCodec;
+import org.applecommander.device.nibble.NibbleDiskCodec;
+import org.applecommander.device.nibble.DiskMarker;
+import org.applecommander.device.nibble.NibbleTrackReaderWriter;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;

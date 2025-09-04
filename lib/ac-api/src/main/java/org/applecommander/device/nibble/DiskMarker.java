@@ -17,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.applecommander.device;
+package org.applecommander.device.nibble;
 
 public record DiskMarker(int[] addressProlog, int[] addressEpilog, int[] dataProlog, int[] dataEpilog) {
         public static DiskMarker disk525sector16() {

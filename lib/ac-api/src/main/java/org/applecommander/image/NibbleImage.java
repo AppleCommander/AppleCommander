@@ -20,7 +20,7 @@
 package org.applecommander.image;
 
 import org.applecommander.capability.Capability;
-import org.applecommander.device.NibbleTrackReaderWriter;
+import org.applecommander.device.nibble.NibbleTrackReaderWriter;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;

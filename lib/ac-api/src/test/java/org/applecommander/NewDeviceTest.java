@@ -20,9 +20,11 @@
 package org.applecommander;
 
 import com.webcodepro.applecommander.testconfig.TestConfig;
-import org.applecommander.codec.Nibble53Disk525Codec;
-import org.applecommander.codec.Nibble62Disk525Codec;
+import org.applecommander.device.nibble.Nibble53Disk525Codec;
+import org.applecommander.device.nibble.Nibble62Disk525Codec;
 import org.applecommander.device.*;
+import org.applecommander.device.nibble.DiskMarker;
+import org.applecommander.device.nibble.NibbleTrackReaderWriter;
 import org.applecommander.hint.Hint;
 import org.applecommander.image.DiskCopyImage;
 import org.applecommander.image.NibbleImage;

@@ -20,9 +20,11 @@
 package com.webcodepro.applecommander.ui.swt.wizard.diskimage;
 
 import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
-import org.applecommander.codec.Nibble62Disk525Codec;
-import org.applecommander.codec.NibbleDiskCodec;
+import org.applecommander.device.nibble.Nibble62Disk525Codec;
+import org.applecommander.device.nibble.NibbleDiskCodec;
 import org.applecommander.device.*;
+import org.applecommander.device.nibble.DiskMarker;
+import org.applecommander.device.nibble.NibbleTrackReaderWriter;
 import org.applecommander.hint.Hint;
 import org.applecommander.image.NibbleImage;
 import org.applecommander.os.dos.OzdosAdapterStrategy;
