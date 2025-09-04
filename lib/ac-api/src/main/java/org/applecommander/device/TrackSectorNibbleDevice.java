@@ -107,7 +107,9 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         int position = 0;			// physical position in field buffer
         final int endOfProlog = prolog.length;
         final int endOfData = endOfProlog + fieldData.limit();
-        while (i < trackData.limit() + fieldData.limit()) {
+        final int syncBytePadding = 40;
+        final int endOfLoop = trackData.limit() + endOfData + syncBytePadding;
+        while (i < endOfLoop) {
             int offset = i % trackData.limit();	// physical position in track buffer
             int b = trackData.getUnsignedByte(offset);
             if (position < endOfProlog && b == prolog[position]) {
