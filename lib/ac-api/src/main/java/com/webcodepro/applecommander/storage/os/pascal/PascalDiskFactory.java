@@ -22,14 +22,8 @@ package com.webcodepro.applecommander.storage.os.pascal;
 import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFactory;
 import org.applecommander.device.BlockDevice;
-import org.applecommander.device.SkewedTrackSectorDevice;
-import org.applecommander.device.TrackSectorDevice;
-import org.applecommander.device.TrackSectorToBlockAdapter;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Automatic discovery of Pascal volumes.
@@ -37,35 +31,15 @@ import java.util.List;
 public class PascalDiskFactory implements DiskFactory {
     @Override
     public void inspect(Context ctx) {
-        List<BlockDevice> devices = new ArrayList<>();
-        if (ctx.blockDevice != null) {
-            devices.add(ctx.blockDevice);
-        }
-        if (ctx.sectorDevice != null && ctx.sectorDevice.getGeometry().sectorsPerDisk() <= 1600) {
-            if (ctx.sectorDevice.is(Hint.NIBBLE_SECTOR_ORDER)) {
-                TrackSectorDevice skewed = SkewedTrackSectorDevice.physicalToPascalSkew(ctx.sectorDevice);
-                devices.add(new TrackSectorToBlockAdapter(skewed, TrackSectorToBlockAdapter.BlockStyle.PASCAL));
-            }
-            else if (ctx.sectorDevice.is(Hint.DOS_SECTOR_ORDER)) {
-                TrackSectorDevice skewed = SkewedTrackSectorDevice.dosToPascalSkew(ctx.sectorDevice);
-                devices.add(new TrackSectorToBlockAdapter(skewed, TrackSectorToBlockAdapter.BlockStyle.PASCAL));
-            }
-            else {
-                // Likely a DSK image, need to pick between DO and PO...
-                // Try DO
-                TrackSectorDevice device1 = SkewedTrackSectorDevice.dosToPascalSkew(ctx.sectorDevice);
-                devices.add(new TrackSectorToBlockAdapter(device1, TrackSectorToBlockAdapter.BlockStyle.PRODOS));
-                // Try PO
-                TrackSectorDevice device2 = ctx.sectorDevice;
-                devices.add(new TrackSectorToBlockAdapter(device2, TrackSectorToBlockAdapter.BlockStyle.PRODOS));
-            }
-        }
-
-        devices.forEach(device -> {
-            if (check(device)) {
-                ctx.disks.add(new PascalFormatDisk(ctx.source.getName(), device));
-            }
-        });
+        ctx.blockDevice()
+                .include16Sector(Hint.PRODOS_BLOCK_ORDER)
+                .include800K()
+                .get()
+                .forEach(device -> {
+                    if (check(device)) {
+                        ctx.disks.add(new PascalFormatDisk(ctx.source.getName(), device));
+                    }
+                });
     }
 
     /** Check for a likely directory structure. Note that we scan all sizes, even though that is overkill. */

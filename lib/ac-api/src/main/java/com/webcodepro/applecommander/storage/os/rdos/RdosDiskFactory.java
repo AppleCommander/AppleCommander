@@ -29,8 +29,6 @@ import org.applecommander.util.DataBuffer;
 import static com.webcodepro.applecommander.storage.DiskConstants.DOS32_SECTORS_ON_115KB_DISK;
 import static com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 public class RdosDiskFactory implements DiskFactory {
@@ -38,50 +36,24 @@ public class RdosDiskFactory implements DiskFactory {
 
     @Override
     public void inspect(Context ctx) {
-        List<TrackSectorDevice> devices = new ArrayList<>();
-        if (ctx.sectorDevice != null) {
-            if (ctx.sectorDevice.is(Hint.NIBBLE_SECTOR_ORDER)) {
-                if (ctx.sectorDevice.getGeometry().sectorsPerTrack() == 13) {
-                    devices.add(ctx.sectorDevice);
-                }
-                else {
-                    devices.add(SkewedTrackSectorDevice.physicalToDosSkew(ctx.sectorDevice));
-                }
-            }
-            else if (ctx.sectorDevice.is(Hint.DOS_SECTOR_ORDER)) {
-                devices.add(ctx.sectorDevice);
-            }
-            else if (ctx.sectorDevice.is(Hint.PRODOS_BLOCK_ORDER)) {
-                // cheating a bit here
-                TrackSectorDevice physicalSkew = SkewedTrackSectorDevice.pascalToPhysicalSkew(ctx.sectorDevice);
-                devices.add(SkewedTrackSectorDevice.physicalToDosSkew(physicalSkew));
-            }
-            else {
-                // DSK image. Could be DO or PO.
-                devices.add(ctx.sectorDevice);
-                // cheating a bit here for PO
-                TrackSectorDevice physicalSkew = SkewedTrackSectorDevice.pascalToPhysicalSkew(ctx.sectorDevice);
-                devices.add(SkewedTrackSectorDevice.physicalToDosSkew(physicalSkew));
-            }
-        }
-        if (ctx.blockDevice != null) {
-            devices.add(new BlockToTrackSectorAdapter(ctx.blockDevice, new ProdosBlockToTrackSectorAdapterStrategy()));
-        }
-
-        devices.forEach(device -> {
-            int sectorsPerTrack = check(device);
-            if (sectorsPerTrack > 0) {
-                // Detect if we're a 16 sector disk but RDOS expects only 13 sectors:
-                if (sectorsPerTrack != device.getGeometry().sectorsPerTrack()) {
-                    // 13-sector disks are in physical order, so fix it:
-                    device = SkewedTrackSectorDevice.dosToPhysicalSkew(device);
-                    // And make the 16-sector disk a fake 13-sector disk:
-                    device = SkewedTrackSectorDevice.truncate16sectorTo13(device);
-                }
-                BlockDevice blockDevice = new TrackSectorToBlockAdapter(device, TrackSectorToBlockAdapter.BlockStyle.RDOS);
-                ctx.disks.add(new RdosFormatDisk(ctx.source.getName(), blockDevice));
-            }
-        });
+        ctx.trackSectorDevice()
+                .include13Sector()
+                .include16Sector(Hint.DOS_SECTOR_ORDER)
+                .get()
+                .forEach(device -> {
+                    int sectorsPerTrack = check(device);
+                    if (sectorsPerTrack > 0) {
+                        // Detect if we're a 16 sector disk but RDOS expects only 13 sectors:
+                        if (sectorsPerTrack != device.getGeometry().sectorsPerTrack()) {
+                            // 13-sector disks are in physical order, so fix it:
+                            device = SkewedTrackSectorDevice.dosToPhysicalSkew(device);
+                            // And make the 16-sector disk a fake 13-sector disk:
+                            device = SkewedTrackSectorDevice.truncate16sectorTo13(device);
+                        }
+                        BlockDevice blockDevice = new TrackSectorToBlockAdapter(device, TrackSectorToBlockAdapter.BlockStyle.RDOS);
+                        ctx.disks.add(new RdosFormatDisk(ctx.source.getName(), blockDevice));
+                    }
+                });
     }
 
     /**

@@ -33,6 +33,33 @@ import org.applecommander.util.DataBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The DiskFactory inspects a given Source inspect it to see if it matches filesystem structure(s).
+ * Invoke via {@link Disks#inspect(Source)} which will return a Context. The Context _can be empty_.
+ * If this is the case, devices can be created via the {@link Context#blockDevice()} and
+ * {@link Context#trackSectorDevice()} builders.
+ * <br/>
+ * The builders follow the observation about what each filesystem currently uses:
+ * <pre>
+ * OS         13-sector  16-sector   800K    HDV
+ * =========  =========  ==========  ======  ========
+ * CP/M       -          CP/M        -       -
+ * DOS        Physical   DOS         Pascal  -
+ * Gutenberg  -          DOS         -       -
+ * NakeDOS    -          Physical    -       -
+ * Pascal     -          Pascal      Pascal  -
+ * ProDOS     -          Pascal      Pascal  Pascal
+ * RDOS       Physical   DOS         -       -
+ * </pre>
+ * <ul>
+ * <li>13-sector disks are only track/sector devices. (And RDOS has a unique mapping to 256 byte blocks).</li>
+ * <li>16-sector disks have a variety of sector mappings. It can also double as a "standard" 512 byte block,
+ *     as well as a unique CP/M 1024 block device.</li>
+ * <li>800K disks are only standard 512 byte block (Prodos or Pascal). OzDOS and UniDOS do have unique
+ *     mappings to track and sector, but logically, they are block devices.</li>
+ * <li>Anything else (larger than 800K) are "hard-disk" images and only blocks.</li>
+ * </ul>
+ */
 public interface DiskFactory {
     void inspect(Context ctx);
 
@@ -40,9 +67,6 @@ public interface DiskFactory {
         public final Source source;
         public final NibbleTrackReaderWriter nibbleTrackReaderWriter;
         public final List<FormattedDisk> disks = new ArrayList<>();
-        // Note: These are only set if we *KNOW* what they are. Except DSK images, where both will be set.
-        public final BlockDevice blockDevice;
-        public final TrackSectorDevice sectorDevice;
 
         public Context(Source source) {
             this.source = source;
@@ -50,26 +74,11 @@ public interface DiskFactory {
             /* Does it have the WOZ1 or WOZ2 header? */
             int signature = source.readBytes(0, 4).readInt();
             if (WozImage.WOZ1_MAGIC == signature || WozImage.WOZ2_MAGIC == signature) {
-                blockDevice = null;
                 nibbleTrackReaderWriter = new WozImage(source);
-                sectorDevice = identifySectorsPerTrack(nibbleTrackReaderWriter);
             } else if (source.is(Hint.NIBBLE_SECTOR_ORDER) || source.isApproxEQ(DiskConstants.APPLE_140KB_NIBBLE_DISK)) {
-                blockDevice = null;
                 nibbleTrackReaderWriter = new NibbleImage(source);
-                sectorDevice = identifySectorsPerTrack(nibbleTrackReaderWriter);
-            } else if (source.is(Hint.PRODOS_BLOCK_ORDER) || source.getSize() > DiskConstants.APPLE_400KB_DISK || source.extensionLike("po")) {
-                nibbleTrackReaderWriter = null;
-                blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
-                sectorDevice = null;
-            } else if (source.is(Hint.DOS_SECTOR_ORDER) || source.extensionLike("do")) {
-                nibbleTrackReaderWriter = null;
-                blockDevice = null;
-                sectorDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
             } else {
                 nibbleTrackReaderWriter = null;
-                // Could be either - most likely the nebulous "dsk" extension
-                blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
-                sectorDevice = new DosOrderedTrackSectorDevice(source);
             }
         }
 
@@ -110,6 +119,142 @@ public interface DiskFactory {
             }
             // Failure
             return null;
+        }
+
+        public BlockDeviceBuilder blockDevice() {
+            return new BlockDeviceBuilder(this);
+        }
+        public static class BlockDeviceBuilder {
+            private Context ctx;
+            private List<BlockDevice> devices = new ArrayList<>();
+            private BlockDeviceBuilder(Context ctx) {
+                this.ctx = ctx;
+            }
+            public BlockDeviceBuilder include16Sector(Hint hint) {
+                if (ctx.nibbleTrackReaderWriter != null) {
+                    TrackSectorDevice nibble = ctx.identifySectorsPerTrack(ctx.nibbleTrackReaderWriter);
+                    if (nibble != null) {
+                        TrackSectorDevice converted = switch (hint) {
+                            case DOS_SECTOR_ORDER -> SkewedTrackSectorDevice.physicalToDosSkew(nibble);
+                            case PRODOS_BLOCK_ORDER -> SkewedTrackSectorDevice.physicalToPascalSkew(nibble);
+                            case NIBBLE_SECTOR_ORDER -> nibble;
+                            default -> throw new RuntimeException("wrong hint type: " + hint);
+                        };
+                        devices.add(new TrackSectorToBlockAdapter(converted, TrackSectorToBlockAdapter.BlockStyle.PRODOS));
+                    }
+                }
+                else if (ctx.source.isApproxEQ(DiskConstants.APPLE_140KB_DISK)) {
+                    if (ctx.source.is(Hint.DOS_SECTOR_ORDER) || ctx.source.extensionLike("do")) {
+                        TrackSectorDevice doDevice = new DosOrderedTrackSectorDevice(ctx.source, Hint.DOS_SECTOR_ORDER);
+                        TrackSectorDevice poDevice = SkewedTrackSectorDevice.dosToPascalSkew(doDevice);
+                        devices.add(new TrackSectorToBlockAdapter(poDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS));
+                    }
+                    else if (ctx.source.is(Hint.PRODOS_BLOCK_ORDER) || ctx.source.extensionLike("po")) {
+                        devices.add(new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE));
+                    }
+                    else {
+                        devices.add(new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE));
+                        TrackSectorDevice doDevice = new DosOrderedTrackSectorDevice(ctx.source, Hint.DOS_SECTOR_ORDER);
+                        TrackSectorDevice poDevice = SkewedTrackSectorDevice.dosToPascalSkew(doDevice);
+                        devices.add(new TrackSectorToBlockAdapter(poDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS));
+                    }
+                }
+                return this;
+            }
+            public BlockDeviceBuilder include800K() {
+                if (ctx.source.isApproxEQ(DiskConstants.APPLE_800KB_DISK)) {
+                    devices.add(new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE));
+                }
+                return this;
+            }
+            public BlockDeviceBuilder includeHDV() {
+                if (ctx.source.getSize() > DiskConstants.APPLE_800KB_DISK) {
+                    devices.add(new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE));
+                }
+                return this;
+            }
+            public List<BlockDevice> get() {
+                return devices;
+            }
+        }
+
+        public TrackSectorDeviceBuilder trackSectorDevice() {
+            return new TrackSectorDeviceBuilder(this);
+        }
+        public static class TrackSectorDeviceBuilder {
+            private Context ctx;
+            private List<TrackSectorDevice> devices = new ArrayList<>();
+            private TrackSectorDeviceBuilder(Context ctx) {
+                this.ctx = ctx;
+            }
+            public TrackSectorDeviceBuilder include13Sector() {
+                if (ctx.nibbleTrackReaderWriter != null) {
+                    TrackSectorDevice nibble = ctx.identifySectorsPerTrack(ctx.nibbleTrackReaderWriter);
+                    if (nibble != null && nibble.getGeometry().sectorsPerTrack() == 13) {
+                        devices.add(nibble);
+                    }
+                }
+                return this;
+            }
+            public TrackSectorDeviceBuilder include16Sector(Hint hint) {
+                if (ctx.nibbleTrackReaderWriter != null) {
+                    TrackSectorDevice nibble = ctx.identifySectorsPerTrack(ctx.nibbleTrackReaderWriter);
+                    if (nibble != null && nibble.getGeometry().sectorsPerTrack() == 16) {
+                        TrackSectorDevice converted = switch (hint) {
+                            case DOS_SECTOR_ORDER -> SkewedTrackSectorDevice.physicalToDosSkew(nibble);
+                            case PRODOS_BLOCK_ORDER -> SkewedTrackSectorDevice.physicalToPascalSkew(nibble);
+                            case NIBBLE_SECTOR_ORDER -> nibble;
+                            default -> throw new RuntimeException("wrong hint type: " + hint);
+                        };
+                        devices.add(converted);
+                    }
+                } else if (ctx.source.isApproxEQ(DiskConstants.APPLE_140KB_DISK)) {
+                    TrackSectorDevice doDevice = null;
+                    TrackSectorDevice poDevice = null;
+                    if (ctx.source.is(Hint.DOS_SECTOR_ORDER) || ctx.source.extensionLike("do")) {
+                        doDevice = new DosOrderedTrackSectorDevice(ctx.source, Hint.DOS_SECTOR_ORDER);
+                    }
+                    else if (ctx.source.is(Hint.PRODOS_BLOCK_ORDER) || ctx.source.extensionLike("po")) {
+                        poDevice = new DosOrderedTrackSectorDevice(ctx.source, Hint.PRODOS_BLOCK_ORDER);
+                    }
+                    else {
+                        doDevice = new DosOrderedTrackSectorDevice(ctx.source, Hint.DOS_SECTOR_ORDER);
+                        poDevice = new DosOrderedTrackSectorDevice(ctx.source, Hint.PRODOS_BLOCK_ORDER);
+                    }
+                    switch (hint) {
+                        case DOS_SECTOR_ORDER -> {
+                            if (doDevice != null) {
+                                devices.add(doDevice);
+                            }
+                            if (poDevice != null) {
+                                TrackSectorDevice tmp = SkewedTrackSectorDevice.pascalToPhysicalSkew(poDevice);
+                                devices.add(SkewedTrackSectorDevice.physicalToDosSkew(tmp));
+                            }
+                        }
+                        case PRODOS_BLOCK_ORDER -> {
+                            if (doDevice != null) {
+                                TrackSectorDevice tmp = SkewedTrackSectorDevice.dosToPhysicalSkew(doDevice);
+                                devices.add(SkewedTrackSectorDevice.physicalToPascalSkew(tmp));
+                            }
+                            if (poDevice != null) {
+                                devices.add(poDevice);
+                            }
+                        }
+                        case NIBBLE_SECTOR_ORDER -> {
+                            if (doDevice != null) {
+                                devices.add(SkewedTrackSectorDevice.dosToPhysicalSkew(doDevice));
+                            }
+                            if (poDevice != null) {
+                                devices.add(SkewedTrackSectorDevice.pascalToPhysicalSkew(poDevice));
+                            }
+                        }
+                    }
+                }
+                return this;
+            }
+            public List<TrackSectorDevice> get() {
+                return devices;
+            }
         }
     }
 }

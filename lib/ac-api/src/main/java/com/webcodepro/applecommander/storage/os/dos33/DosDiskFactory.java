@@ -21,14 +21,11 @@ package com.webcodepro.applecommander.storage.os.dos33;
 
 import com.webcodepro.applecommander.storage.DiskFactory;
 import org.applecommander.device.BlockToTrackSectorAdapter;
-import org.applecommander.device.ProdosBlockToTrackSectorAdapterStrategy;
-import org.applecommander.device.SkewedTrackSectorDevice;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.hint.Hint;
 import org.applecommander.os.dos.OzdosAdapterStrategy;
 import org.applecommander.os.dos.UnidosAdapterStrategy;
 import org.applecommander.util.DataBuffer;
-import static com.webcodepro.applecommander.storage.DiskConstants.*;
 import static com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk.*;
 
 import java.util.*;
@@ -37,52 +34,44 @@ public class DosDiskFactory implements DiskFactory {
     @Override
     public void inspect(Context ctx) {
         // It seems easiest to gather all possibilities first...
-        List<TrackSectorDevice> devices = new ArrayList<>();
-        // We need DOS ordered...
-        if (ctx.sectorDevice != null) {
-            if (ctx.sectorDevice.is(Hint.NIBBLE_SECTOR_ORDER)) {
-                if (ctx.sectorDevice.getGeometry().sectorsPerTrack() == 13) {
-                    // 13-sector = DOS 3.2 = physical sector order
-                    devices.add(ctx.sectorDevice);
-                }
-                else {
-                    // 16-sector = DOS 3.3 = DOS sector order
-                    devices.add(SkewedTrackSectorDevice.physicalToDosSkew(ctx.sectorDevice));
-                }
-            }
-            else if (ctx.sectorDevice.is(Hint.DOS_SECTOR_ORDER)) {
-                devices.add(ctx.sectorDevice);
-            }
-            else if (ctx.sectorDevice.is(Hint.PRODOS_BLOCK_ORDER)) {
-                // Cheating a bit...
-                TrackSectorDevice tmp = SkewedTrackSectorDevice.pascalToPhysicalSkew(ctx.sectorDevice);
-                devices.add(SkewedTrackSectorDevice.physicalToDosSkew(tmp));
-            }
-            else {
-                // Likely a DSK image, need to pick between DO and PO...
-                TrackSectorDevice device1 = ctx.sectorDevice;
-                // Cheating a bit...
-                TrackSectorDevice tmp = SkewedTrackSectorDevice.pascalToPhysicalSkew(ctx.sectorDevice);
-                TrackSectorDevice device2 = SkewedTrackSectorDevice.physicalToDosSkew(tmp);
+        final List<TrackSectorDevice> devices = new ArrayList<>();
 
-                int count1 = count(device1);
-                int count2 = count(device2);
-                // Note this assumes DO was the first device in the list to give it an edge
-                if (count1 >= count2) devices.add(device1);
-                else devices.add(device2);
+        // Look for DOS on 13-sector and 16-sector devices:
+        devices.addAll(ctx.trackSectorDevice()
+                .include13Sector()
+                .include16Sector(Hint.DOS_SECTOR_ORDER)
+                .get());
+        if (devices.size() == 2) {
+            // Likely a DSK image, need to pick between DO and PO...
+            TrackSectorDevice doDevice = null;
+            TrackSectorDevice poDevice = null;
+            for (TrackSectorDevice device : devices) {
+                if (device.is(Hint.DOS_SECTOR_ORDER) && doDevice == null) {
+                    doDevice = device;
+                }
+                else if (device.is(Hint.PRODOS_BLOCK_ORDER) && poDevice == null) {
+                    poDevice = device;
+                }
             }
+            if (doDevice == null || poDevice == null) {
+                throw new RuntimeException("unexpected situation: device is neither PO or DO -or- we have more than 1");
+            }
+            int doCount = count(doDevice);
+            int poCount = count(poDevice);
+            // Keep the one with the most catalog sectors (slight edge to DO)
+            devices.remove(doCount >= poCount ? poDevice : doDevice);
         }
-        else if (ctx.blockDevice != null) {
-            if (ctx.blockDevice.getGeometry().blocksOnDevice() == PRODOS_BLOCKS_ON_140KB_DISK) {
-                devices.add(new BlockToTrackSectorAdapter(ctx.blockDevice, new ProdosBlockToTrackSectorAdapterStrategy()));
-            }
-            else if (ctx.blockDevice.getGeometry().blocksOnDevice() == PRODOS_BLOCKS_ON_800KB_DISK) {
-                devices.add(new BlockToTrackSectorAdapter(ctx.blockDevice, UnidosAdapterStrategy.UNIDOS_DISK_1));
-                devices.add(new BlockToTrackSectorAdapter(ctx.blockDevice, UnidosAdapterStrategy.UNIDOS_DISK_2));
-                devices.add(new BlockToTrackSectorAdapter(ctx.blockDevice, OzdosAdapterStrategy.OZDOS_DISK_1));
-                devices.add(new BlockToTrackSectorAdapter(ctx.blockDevice, OzdosAdapterStrategy.OZDOS_DISK_2));
-            }
-        }
+
+        // Look for 800K block devices to find UniDOS or OzDOS:
+        ctx.blockDevice()
+                .include800K()
+                .get()
+                .forEach(blockDevice -> {
+                    devices.add(new BlockToTrackSectorAdapter(blockDevice, UnidosAdapterStrategy.UNIDOS_DISK_1));
+                    devices.add(new BlockToTrackSectorAdapter(blockDevice, UnidosAdapterStrategy.UNIDOS_DISK_2));
+                    devices.add(new BlockToTrackSectorAdapter(blockDevice, OzdosAdapterStrategy.OZDOS_DISK_1));
+                    devices.add(new BlockToTrackSectorAdapter(blockDevice, OzdosAdapterStrategy.OZDOS_DISK_2));
+                });
 
         // ... and then test for DOS VTOC etc. Passing track number along to hopefully handle it later!
         for (TrackSectorDevice device : devices) {

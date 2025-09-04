@@ -21,59 +21,28 @@ package com.webcodepro.applecommander.storage.os.prodos;
 
 import com.webcodepro.applecommander.storage.DiskFactory;
 import org.applecommander.device.BlockDevice;
-import org.applecommander.device.SkewedTrackSectorDevice;
-import org.applecommander.device.TrackSectorDevice;
-import org.applecommander.device.TrackSectorToBlockAdapter;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 import static com.webcodepro.applecommander.storage.DiskConstants.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class ProdosDiskFactory implements DiskFactory {
     @Override
     public void inspect(Context ctx) {
-        // It seems easiest to gather all possibilities first...
-        List<ProdosFormatDisk> tests = new ArrayList<>();
-        if (ctx.blockDevice != null) {
-            tests.add(new ProdosFormatDisk(ctx.source.getName(), ctx.blockDevice));
-        }
-        if (ctx.sectorDevice != null && ctx.sectorDevice.getGeometry().sectorsPerDisk() <= 1600) {
-            TrackSectorDevice skewed = null;
-            if (ctx.sectorDevice.is(Hint.NIBBLE_SECTOR_ORDER)) {
-                skewed = SkewedTrackSectorDevice.physicalToPascalSkew(ctx.sectorDevice);
-                BlockDevice device = new TrackSectorToBlockAdapter(skewed, TrackSectorToBlockAdapter.BlockStyle.PRODOS);
-                tests.add(new ProdosFormatDisk(ctx.source.getName(), device));
-            }
-            else if (ctx.sectorDevice.is(Hint.DOS_SECTOR_ORDER)) {
-                skewed = SkewedTrackSectorDevice.dosToPascalSkew(ctx.sectorDevice);
-                BlockDevice device = new TrackSectorToBlockAdapter(skewed, TrackSectorToBlockAdapter.BlockStyle.PRODOS);
-                tests.add(new ProdosFormatDisk(ctx.source.getName(), device));
-            }
-            else {
-                // Likely a DSK image, need to pick between DO and PO...
-                // Try DO
-                TrackSectorDevice device1 = SkewedTrackSectorDevice.dosToPascalSkew(ctx.sectorDevice);
-                tests.add(new ProdosFormatDisk(ctx.source.getName(), new TrackSectorToBlockAdapter(device1,
-                        TrackSectorToBlockAdapter.BlockStyle.PRODOS)));
-                // Try PO
-                TrackSectorDevice device2 = ctx.sectorDevice;
-                tests.add(new ProdosFormatDisk(ctx.source.getName(), new TrackSectorToBlockAdapter(device2,
-                        TrackSectorToBlockAdapter.BlockStyle.PRODOS)));
-            }
-        }
-        // ... and then test for ProDOS details:
-        for (ProdosFormatDisk fdisk : tests) {
-            if (check(fdisk)) {
-                ctx.disks.add(fdisk);
-            }
-        }
+        ctx.blockDevice()
+                .include16Sector(Hint.PRODOS_BLOCK_ORDER)
+                .include800K()
+                .includeHDV()
+                .get()
+                .forEach(device -> {
+                    if (check(device)) {
+                        ctx.disks.add(new ProdosFormatDisk(ctx.source.getName(), device));
+                    }
+                });
     }
 
-    public boolean check(ProdosFormatDisk fdisk) {
+    public boolean check(BlockDevice device) {
         int nextBlock = 2;
-        DataBuffer volumeDirectory = DataBuffer.wrap(fdisk.readBlock(nextBlock));
+        DataBuffer volumeDirectory = device.readBlock(nextBlock);
         int priorBlock = volumeDirectory.getUnsignedShort(0x00);
         int storageType = volumeDirectory.getUnsignedByte(0x04) >> 4;
         int entryLength = volumeDirectory.getUnsignedByte(0x23);
@@ -109,7 +78,7 @@ public class ProdosDiskFactory implements DiskFactory {
             nextBlock = volumeDirectory.getUnsignedShort(0x02);
             if (nextBlock == 0) break;
             if (nextBlock >= totalBlocks) return false;
-            volumeDirectory = DataBuffer.wrap(fdisk.readBlock(nextBlock));
+            volumeDirectory = device.readBlock(nextBlock);
         }
         return good;
     }

@@ -21,53 +21,23 @@ package com.webcodepro.applecommander.storage.os.gutenberg;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFactory;
-import org.applecommander.device.BlockToTrackSectorAdapter;
-import org.applecommander.device.ProdosBlockToTrackSectorAdapterStrategy;
-import org.applecommander.device.SkewedTrackSectorDevice;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk.*;
 
 public class GutenbergDiskFactory implements DiskFactory {
     @Override
     public void inspect(Context ctx) {
-        List<TrackSectorDevice> devices = new ArrayList<>();
-        // We need DOS ordered...
-        if (ctx.sectorDevice != null) {
-            if (ctx.sectorDevice.is(Hint.NIBBLE_SECTOR_ORDER)) {
-                devices.add(SkewedTrackSectorDevice.physicalToDosSkew(ctx.sectorDevice));
-            }
-            else if (ctx.sectorDevice.is(Hint.DOS_SECTOR_ORDER)) {
-                devices.add(ctx.sectorDevice);
-            }
-            else if (ctx.sectorDevice.is(Hint.PRODOS_BLOCK_ORDER)) {
-                // Cheating a bit...
-                TrackSectorDevice tmp = SkewedTrackSectorDevice.pascalToPhysicalSkew(ctx.sectorDevice);
-                devices.add(SkewedTrackSectorDevice.physicalToDosSkew(tmp));
-            }
-            else {
-                // Likely a DSK image
-                devices.add(ctx.sectorDevice);
-                // Cheating a bit...
-                TrackSectorDevice tmp = SkewedTrackSectorDevice.pascalToPhysicalSkew(ctx.sectorDevice);
-                devices.add(SkewedTrackSectorDevice.physicalToDosSkew(tmp));
-            }
-        }
-        else if (ctx.blockDevice != null) {
-            TrackSectorDevice po = new BlockToTrackSectorAdapter(ctx.blockDevice, new ProdosBlockToTrackSectorAdapterStrategy());
-            TrackSectorDevice tmp = SkewedTrackSectorDevice.pascalToPhysicalSkew(po);
-            devices.add(SkewedTrackSectorDevice.physicalToDosSkew(tmp));
-        }
-        devices.forEach(device -> {
-            if (check(device)) {
-                ctx.disks.add(new GutenbergFormatDisk(ctx.source.getName(), device));
-            }
-        });
+        ctx.trackSectorDevice()
+                .include16Sector(Hint.DOS_SECTOR_ORDER)
+                .get()
+                .forEach(device -> {
+                    if (check(device)) {
+                        ctx.disks.add(new GutenbergFormatDisk(ctx.source.getName(), device));
+                    }
+                });
     }
 
     public boolean check(TrackSectorDevice order) {
