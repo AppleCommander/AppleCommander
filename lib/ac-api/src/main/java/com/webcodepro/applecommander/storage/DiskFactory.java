@@ -194,6 +194,9 @@ public interface DiskFactory {
                         devices.add(nibble);
                     }
                 }
+                else if (ctx.source.isApproxEQ(DiskConstants.APPLE_13SECTOR_DISK)) {
+                    devices.add(new DosOrderedTrackSectorDevice(ctx.source));
+                }
                 return this;
             }
             public TrackSectorDeviceBuilder include16Sector(Hint hint) {
