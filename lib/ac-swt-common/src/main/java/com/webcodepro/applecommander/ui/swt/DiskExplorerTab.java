@@ -44,9 +44,7 @@ import com.webcodepro.applecommander.util.Host;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 import io.github.applecommander.applesingle.AppleSingle;
-import org.applecommander.device.nibble.Nibble62Disk525Codec;
 import org.applecommander.device.*;
-import org.applecommander.device.nibble.DiskMarker;
 import org.applecommander.hint.Hint;
 import org.applecommander.image.NibbleImage;
 import org.applecommander.source.DataBufferSource;
@@ -1888,8 +1886,7 @@ public class DiskExplorerTab {
                 Device device = DeviceAdapter.from(getDisk(0));
 				if (!device.is(Hint.NIBBLE_SECTOR_ORDER)) {
                     Source nibbleSource = DataBufferSource.create(DiskConstants.APPLE_140KB_NIBBLE_DISK, "new-image.nib").get();
-                    TrackSectorDevice nibbleDevice = new TrackSectorNibbleDevice(new NibbleImage(nibbleSource),
-                            DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), 16);
+                    TrackSectorDevice nibbleDevice = TrackSectorNibbleDevice.create(new NibbleImage(nibbleSource), 16);
 					nibbleDevice.format();
 					changeImageOrder("nib",
                             SkewedTrackSectorDevice.physicalToDosSkew(nibbleDevice));

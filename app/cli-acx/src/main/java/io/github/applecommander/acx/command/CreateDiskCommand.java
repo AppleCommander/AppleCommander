@@ -33,9 +33,7 @@ import io.github.applecommander.acx.OrderType;
 import io.github.applecommander.acx.SystemType;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
 import io.github.applecommander.acx.converter.DataSizeConverter;
-import org.applecommander.device.nibble.Nibble62Disk525Codec;
 import org.applecommander.device.*;
-import org.applecommander.device.nibble.DiskMarker;
 import org.applecommander.hint.Hint;
 import org.applecommander.image.NibbleImage;
 import org.applecommander.os.dos.OzdosAdapterStrategy;
@@ -93,8 +91,7 @@ public class CreateDiskCommand extends ReusableCommandOptions {
             case DOS -> {
                 TrackSectorDevice sectorDevice = switch (actualOrderType) {
                     case DOS -> new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
-                    case NIBBLE -> new TrackSectorNibbleDevice(new NibbleImage(source), DiskMarker.disk525sector16(),
-                            new Nibble62Disk525Codec(), 16);
+                    case NIBBLE -> TrackSectorNibbleDevice.create(new NibbleImage(source), 16);
                     case PRODOS -> new BlockToTrackSectorAdapter(blockDevice, new ProdosBlockToTrackSectorAdapterStrategy());
                 };
                 yield DosFormatDisk.create(imageName, sectorDevice);

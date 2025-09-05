@@ -20,9 +20,7 @@
 package org.applecommander.device;
 
 import org.applecommander.capability.Capability;
-import org.applecommander.device.nibble.NibbleDiskCodec;
-import org.applecommander.device.nibble.DiskMarker;
-import org.applecommander.device.nibble.NibbleTrackReaderWriter;
+import org.applecommander.device.nibble.*;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
@@ -30,6 +28,69 @@ import org.applecommander.util.DataBuffer;
 import java.util.Optional;
 
 public class TrackSectorNibbleDevice implements TrackSectorDevice {
+    /**
+     * Create a TrackSectorNibbleDevice. Device is not formatted but does not need to
+     * go through an identification routine (which would fail with a blank image).
+     */
+    public static TrackSectorDevice create(NibbleTrackReaderWriter trackReaderWriter, int sectorsPerTrack) {
+        assert trackReaderWriter != null;
+        assert sectorsPerTrack == 13 || sectorsPerTrack == 16;
+        return switch (sectorsPerTrack) {
+            case 13 -> new TrackSectorNibbleDevice(trackReaderWriter,
+                DiskMarker.disk525sector13(), new Nibble53Disk525Codec(), sectorsPerTrack);
+            case 16 -> new TrackSectorNibbleDevice(trackReaderWriter,
+                DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), sectorsPerTrack);
+            default -> throw new RuntimeException("unexpected sectors per track: " + sectorsPerTrack);
+        };
+    }
+
+    /**
+     * Brute force attempt to identify 13 or 16 sector tracks. Note we only test track 0.
+     * Also note, we can do much better -- but all the nibble stuff will need to be reconfigured
+     * to allow different prologs/epilogs per track*. This likely can enable reading early software
+     * protection schemes that just fiddled with those bytes. DOS likely got moved around, so that
+     * would be coupled with more flexibility in DOS. See the "experimenting/identifying-nibble-prolog-bytes"
+     * for some experimental work.
+     * <p/>
+     * Note: the variance in prolog/epilog can be super detailed, but it is unlikely a DOS clone
+     * has different prolog/epilog bytes per sector. Per track may be a bit over-the-top. Except, that
+     * it appears Ultima I may have used it. :-)
+     */
+    public static Optional<TrackSectorDevice> identify(NibbleTrackReaderWriter trackReaderWriter) {
+        try {
+            // Try 16-sector disks first:
+            final int sectorsPerTrack = 16;
+            TrackSectorDevice device = new TrackSectorNibbleDevice(trackReaderWriter,
+                DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), sectorsPerTrack);
+            for (int sector = 0; sector < sectorsPerTrack; sector++) {
+                DataBuffer sectorData = device.readSector(0, sector);
+                if (sectorData.limit() != TrackSectorDevice.SECTOR_SIZE) {
+                    return Optional.empty();
+                }
+            }
+            return Optional.of(device);
+        } catch (Throwable t) {
+            // ignored
+        }
+        try {
+            // Next try 13-sector disks:
+            final int sectorsPerTrack = 13;
+            TrackSectorDevice device = new TrackSectorNibbleDevice(trackReaderWriter,
+                DiskMarker.disk525sector13(), new Nibble53Disk525Codec(), sectorsPerTrack);
+            for (int sector = 0; sector < sectorsPerTrack; sector++) {
+                DataBuffer sectorData = device.readSector(0, sector);
+                if (sectorData.limit() != TrackSectorDevice.SECTOR_SIZE) {
+                    return Optional.empty();
+                }
+            }
+            return Optional.of(device);
+        } catch (Throwable t) {
+            // ignored
+        }
+        // Failure
+        return Optional.empty();
+    }
+
     /**
      * This is the "data" component of the address field: 2 x (Volume, Track, Sector, Checksum).
      */
@@ -39,7 +100,7 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
     private final NibbleDiskCodec dataCodec;
     private final Geometry geometry;
 
-    public TrackSectorNibbleDevice(NibbleTrackReaderWriter trackReaderWriter, DiskMarker diskMarker,
+    private TrackSectorNibbleDevice(NibbleTrackReaderWriter trackReaderWriter, DiskMarker diskMarker,
                                    NibbleDiskCodec dataCodec, int sectorsPerTrack) {
         this.trackReaderWriter = trackReaderWriter;
         this.diskMarker = diskMarker;

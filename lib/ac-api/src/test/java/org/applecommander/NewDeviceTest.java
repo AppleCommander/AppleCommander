@@ -20,10 +20,7 @@
 package org.applecommander;
 
 import com.webcodepro.applecommander.testconfig.TestConfig;
-import org.applecommander.device.nibble.Nibble53Disk525Codec;
-import org.applecommander.device.nibble.Nibble62Disk525Codec;
 import org.applecommander.device.*;
-import org.applecommander.device.nibble.DiskMarker;
 import org.applecommander.device.nibble.NibbleTrackReaderWriter;
 import org.applecommander.hint.Hint;
 import org.applecommander.image.DiskCopyImage;
@@ -47,7 +44,7 @@ public class NewDeviceTest {
         final String filename = "original321sysmaspls.nib";
         Source source = sourceDisk(filename);
         NibbleTrackReaderWriter trackReaderWriter = new NibbleImage(source);
-        TrackSectorDevice tsDevice = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector13(), new Nibble53Disk525Codec(), 13);
+        TrackSectorDevice tsDevice = TrackSectorNibbleDevice.identify(trackReaderWriter).orElseThrow();
         DataBuffer sectorData = tsDevice.readSector(17,12);
         dumpAsHex(sectorData, filename);
     }
@@ -57,7 +54,7 @@ public class NewDeviceTest {
         final String filename = "DOS 3.2 System Master.woz";
         Source source = sourceDisk(filename);
         NibbleTrackReaderWriter trackReaderWriter = new WozImage(source);
-        TrackSectorDevice tsDevice = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector13(), new Nibble53Disk525Codec(), 13);
+        TrackSectorDevice tsDevice = TrackSectorNibbleDevice.identify(trackReaderWriter).orElseThrow();
         DataBuffer sectorData = tsDevice.readSector(17, 12);
         dumpAsHex(sectorData, filename);
     }
@@ -67,7 +64,7 @@ public class NewDeviceTest {
         final String filename = "DOS 3.3 System Master.woz1";
         Source source = sourceDisk(filename);
         NibbleTrackReaderWriter trackReaderWriter = new WozImage(source);
-        TrackSectorDevice tsDevice = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), 16);
+        TrackSectorDevice tsDevice = TrackSectorNibbleDevice.identify(trackReaderWriter).orElseThrow();
         DataBuffer sectorData = tsDevice.readSector(17, 15);
         dumpAsHex(sectorData, filename);
     }
@@ -77,7 +74,7 @@ public class NewDeviceTest {
         final String filename = "DOS 3.3 System Master.woz2";
         Source source = sourceDisk(filename);
         NibbleTrackReaderWriter trackReaderWriter = new WozImage(source);
-        TrackSectorDevice tsDevice = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), 16);
+        TrackSectorDevice tsDevice = TrackSectorNibbleDevice.identify(trackReaderWriter).orElseThrow();
         DataBuffer sectorData = tsDevice.readSector(17, 15);
         dumpAsHex(sectorData, filename);
     }
@@ -133,7 +130,7 @@ public class NewDeviceTest {
         else if (info.isNibbleOrder()) {
             // this is just guessing, and likely never occurs from what I've found, but...
             NibbleTrackReaderWriter trackReaderWriter = new NibbleImage(image);
-            device = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), 16);
+            device = TrackSectorNibbleDevice.identify(trackReaderWriter).orElseThrow();
         }
         assert(device != null);
         // Report out... making grand assumption that TS=DOS and block=ProDOS

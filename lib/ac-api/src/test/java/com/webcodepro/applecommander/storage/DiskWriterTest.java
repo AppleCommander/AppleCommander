@@ -22,9 +22,7 @@ package com.webcodepro.applecommander.storage;
 import java.io.IOException;
 import java.util.List;
 
-import org.applecommander.device.nibble.Nibble62Disk525Codec;
 import org.applecommander.device.*;
-import org.applecommander.device.nibble.DiskMarker;
 import org.applecommander.hint.Hint;
 import org.applecommander.image.NibbleImage;
 import org.applecommander.os.dos.OzdosAdapterStrategy;
@@ -72,8 +70,7 @@ public class DiskWriterTest {
 	@Test
 	public void testWriteToDos33Nibble() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_NIBBLE_DISK, "new-disk").get();
-        TrackSectorDevice sectorDevice = new TrackSectorNibbleDevice(new NibbleImage(source), DiskMarker.disk525sector16(),
-                new Nibble62Disk525Codec(), 16);
+        TrackSectorDevice sectorDevice = TrackSectorNibbleDevice.create(new NibbleImage(source), 16);
 		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.nib", sectorDevice);
 		writeFiles(disks, "B", "T", false);  
 		saveDisks(disks);

@@ -19,19 +19,16 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import org.applecommander.device.nibble.Nibble53Disk525Codec;
-import org.applecommander.device.nibble.Nibble62Disk525Codec;
 import org.applecommander.device.*;
-import org.applecommander.device.nibble.DiskMarker;
 import org.applecommander.device.nibble.NibbleTrackReaderWriter;
 import org.applecommander.hint.Hint;
 import org.applecommander.image.NibbleImage;
 import org.applecommander.image.WozImage;
 import org.applecommander.source.Source;
-import org.applecommander.util.DataBuffer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The DiskFactory inspects a given Source inspect it to see if it matches filesystem structure(s).
@@ -82,45 +79,6 @@ public interface DiskFactory {
             }
         }
 
-        /**
-         * Brute force attempt to identify 13 or 16 sector tracks. Note we only test track 0.
-         * Also note, we can do much better -- but all the nibble stuff will need to be reconfigured
-         * to allow different prologs/epilogs per track*. This likely can enable reading early software
-         * protection schemes that just fiddled with those bytes. DOS likely got moved around, so that
-         * would be coupled with more flexibility in DOS. See the "experimenting/identifying-nibble-prolog-bytes"
-         * for some experimental work.
-         * <p/>
-         * Note: the variance in prolog/epilog can be super detailed, but it is unlikely a DOS clone
-         * has different prolog/epilog bytes per sector. Per track may be a bit over-the-top. Except, that
-         * it appears Ultima I may have used it. :-)
-         */
-        private TrackSectorDevice identifySectorsPerTrack(NibbleTrackReaderWriter trackReaderWriter) {
-            try {
-                // Try 16-sector disks first:
-                TrackSectorDevice device = new TrackSectorNibbleDevice(trackReaderWriter,
-                        DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), 16);
-                DataBuffer sectorData = device.readSector(0, 0);
-                if (sectorData.limit() == TrackSectorDevice.SECTOR_SIZE) {
-                    return device;
-                }
-            } catch (Throwable t) {
-                // ignored
-            }
-            try {
-                // Next try 13-sector disks:
-                TrackSectorDevice device = new TrackSectorNibbleDevice(trackReaderWriter,
-                        DiskMarker.disk525sector13(), new Nibble53Disk525Codec(), 13);
-                DataBuffer sectorData = device.readSector(0, 0);
-                if (sectorData.limit() == TrackSectorDevice.SECTOR_SIZE) {
-                    return device;
-                }
-            } catch (Throwable t) {
-                // ignored
-            }
-            // Failure
-            return null;
-        }
-
         public BlockDeviceBuilder blockDevice() {
             return new BlockDeviceBuilder(this);
         }
@@ -132,12 +90,12 @@ public interface DiskFactory {
             }
             public BlockDeviceBuilder include16Sector(Hint hint) {
                 if (ctx.nibbleTrackReaderWriter != null) {
-                    TrackSectorDevice nibble = ctx.identifySectorsPerTrack(ctx.nibbleTrackReaderWriter);
-                    if (nibble != null) {
+                    Optional<TrackSectorDevice> nibble = TrackSectorNibbleDevice.identify(ctx.nibbleTrackReaderWriter);
+                    if (nibble.isPresent()) {
                         TrackSectorDevice converted = switch (hint) {
-                            case DOS_SECTOR_ORDER -> SkewedTrackSectorDevice.physicalToDosSkew(nibble);
-                            case PRODOS_BLOCK_ORDER -> SkewedTrackSectorDevice.physicalToPascalSkew(nibble);
-                            case NIBBLE_SECTOR_ORDER -> nibble;
+                            case DOS_SECTOR_ORDER -> SkewedTrackSectorDevice.physicalToDosSkew(nibble.get());
+                            case PRODOS_BLOCK_ORDER -> SkewedTrackSectorDevice.physicalToPascalSkew(nibble.get());
+                            case NIBBLE_SECTOR_ORDER -> nibble.get();
                             default -> throw new RuntimeException("wrong hint type: " + hint);
                         };
                         devices.add(new TrackSectorToBlockAdapter(converted, TrackSectorToBlockAdapter.BlockStyle.PRODOS));
@@ -189,10 +147,12 @@ public interface DiskFactory {
             }
             public TrackSectorDeviceBuilder include13Sector() {
                 if (ctx.nibbleTrackReaderWriter != null) {
-                    TrackSectorDevice nibble = ctx.identifySectorsPerTrack(ctx.nibbleTrackReaderWriter);
-                    if (nibble != null && nibble.getGeometry().sectorsPerTrack() == 13) {
-                        devices.add(nibble);
-                    }
+                    Optional<TrackSectorDevice> nibble = TrackSectorNibbleDevice.identify(ctx.nibbleTrackReaderWriter);
+                    nibble.ifPresent(device -> {
+                        if (device.getGeometry().sectorsPerTrack() == 13) {
+                            devices.add(device);
+                        }
+                    });
                 }
                 else if (ctx.source.isApproxEQ(DiskConstants.APPLE_13SECTOR_DISK)) {
                     devices.add(new DosOrderedTrackSectorDevice(ctx.source));
@@ -201,16 +161,18 @@ public interface DiskFactory {
             }
             public TrackSectorDeviceBuilder include16Sector(Hint hint) {
                 if (ctx.nibbleTrackReaderWriter != null) {
-                    TrackSectorDevice nibble = ctx.identifySectorsPerTrack(ctx.nibbleTrackReaderWriter);
-                    if (nibble != null && nibble.getGeometry().sectorsPerTrack() == 16) {
-                        TrackSectorDevice converted = switch (hint) {
-                            case DOS_SECTOR_ORDER -> SkewedTrackSectorDevice.physicalToDosSkew(nibble);
-                            case PRODOS_BLOCK_ORDER -> SkewedTrackSectorDevice.physicalToPascalSkew(nibble);
-                            case NIBBLE_SECTOR_ORDER -> nibble;
-                            default -> throw new RuntimeException("wrong hint type: " + hint);
-                        };
-                        devices.add(converted);
-                    }
+                    Optional<TrackSectorDevice> nibble = TrackSectorNibbleDevice.identify(ctx.nibbleTrackReaderWriter);
+                    nibble.ifPresent(device -> {
+                        if (device.getGeometry().sectorsPerTrack() == 16) {
+                            TrackSectorDevice converted = switch (hint) {
+                                case DOS_SECTOR_ORDER -> SkewedTrackSectorDevice.physicalToDosSkew(nibble.get());
+                                case PRODOS_BLOCK_ORDER -> SkewedTrackSectorDevice.physicalToPascalSkew(nibble.get());
+                                case NIBBLE_SECTOR_ORDER -> nibble.get();
+                                default -> throw new RuntimeException("wrong hint type: " + hint);
+                            };
+                            devices.add(converted);
+                        }
+                    });
                 } else if (ctx.source.isApproxEQ(DiskConstants.APPLE_140KB_DISK)) {
                     TrackSectorDevice doDevice = null;
                     TrackSectorDevice poDevice = null;

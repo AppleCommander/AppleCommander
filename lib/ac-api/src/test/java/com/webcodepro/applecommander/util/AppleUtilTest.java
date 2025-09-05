@@ -26,9 +26,7 @@ import com.webcodepro.applecommander.storage.compare.ComparisonResult;
 import com.webcodepro.applecommander.storage.compare.DiskDiff;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
-import org.applecommander.device.nibble.Nibble62Disk525Codec;
 import org.applecommander.device.*;
-import org.applecommander.device.nibble.DiskMarker;
 import org.applecommander.hint.Hint;
 import org.applecommander.image.NibbleImage;
 import org.applecommander.source.DataBufferSource;
@@ -91,8 +89,7 @@ public class AppleUtilTest {
 		fileEntry.setFileData("This is a test file.".getBytes()); //$NON-NLS-1$
 		// A duplicate - then we change it to a NIB disk image...
         Source source2 = DataBufferSource.create(DiskConstants.APPLE_140KB_NIBBLE_DISK, "new-disk").get();
-        TrackSectorDevice device2 = new TrackSectorNibbleDevice(new NibbleImage(source2), DiskMarker.disk525sector16(),
-                new Nibble62Disk525Codec(), 16);
+        TrackSectorDevice device2 = TrackSectorNibbleDevice.create(new NibbleImage(source2), 16);
 		DosFormatDisk dosDiskNibbleOrder = DosFormatDisk.create("dostemp2.nib", device2)[0];
         AppleUtil.changeOrderBySector(device1, device2);
 		// Confirm that these disks are identical:
@@ -114,8 +111,7 @@ public class AppleUtilTest {
 		fileEntry.setFileData("This is a test file.".getBytes()); //$NON-NLS-1$
 		// A duplicate - then we change it to a NIB disk image...
 		Source source2 = DataBufferSource.create(DiskConstants.APPLE_140KB_NIBBLE_DISK, "new-disk").get();
-		TrackSectorDevice nibbleDevice = new TrackSectorNibbleDevice(new NibbleImage(source2),
-			DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), 16);
+		TrackSectorDevice nibbleDevice = TrackSectorNibbleDevice.create(new NibbleImage(source2), 16);
         TrackSectorDevice skewedDevice = SkewedTrackSectorDevice.physicalToPascalSkew(nibbleDevice);
 		ProdosFormatDisk prodosDiskNibbleOrder = ProdosFormatDisk.create("prodostemp2.nib", //$NON-NLS-1$
 			"prodostemp2", //$NON-NLS-1$

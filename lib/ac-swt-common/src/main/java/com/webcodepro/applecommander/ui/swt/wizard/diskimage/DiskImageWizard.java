@@ -20,10 +20,7 @@
 package com.webcodepro.applecommander.ui.swt.wizard.diskimage;
 
 import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
-import org.applecommander.device.nibble.Nibble62Disk525Codec;
-import org.applecommander.device.nibble.NibbleDiskCodec;
 import org.applecommander.device.*;
-import org.applecommander.device.nibble.DiskMarker;
 import org.applecommander.device.nibble.NibbleTrackReaderWriter;
 import org.applecommander.hint.Hint;
 import org.applecommander.image.NibbleImage;
@@ -108,9 +105,7 @@ public class DiskImageWizard extends Wizard {
 				break;
 			case ORDER_NIBBLE:
                 NibbleTrackReaderWriter readerWriter = new NibbleImage(source);
-                DiskMarker diskMarker = DiskMarker.disk525sector16();
-                NibbleDiskCodec nibbleCodec = new Nibble62Disk525Codec();
-                TrackSectorDevice physicalDevice  = new TrackSectorNibbleDevice(readerWriter, diskMarker, nibbleCodec, 16);
+                TrackSectorDevice physicalDevice  = TrackSectorNibbleDevice.create(readerWriter, 16);
                 sectorDevice = SkewedTrackSectorDevice.physicalToDosSkew(physicalDevice);
                 blockDevice = new TrackSectorToBlockAdapter(SkewedTrackSectorDevice.physicalToPascalSkew(physicalDevice),
                         TrackSectorToBlockAdapter.BlockStyle.PRODOS);
