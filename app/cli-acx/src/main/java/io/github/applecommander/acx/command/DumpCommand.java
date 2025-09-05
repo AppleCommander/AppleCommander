@@ -31,7 +31,7 @@ import com.webcodepro.applecommander.storage.TrackSectorDeviceAdapter;
 import com.webcodepro.applecommander.util.AppleUtil;
 
 import com.webcodepro.applecommander.util.Range;
-import io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions;
+import io.github.applecommander.acx.base.ReadOnlyDiskContextCommandOptions;
 import io.github.applecommander.acx.converter.IntegerTypeConverter;
 import io.github.applecommander.acx.converter.RangeTypeConverter;
 import io.github.applecommander.disassembler.api.Disassembler;
@@ -49,7 +49,7 @@ import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 
 @Command(name = "dump", description = "Dump a block or sector.", sortOptions = false)
-public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
+public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
     @ArgGroup(heading = "%nOutput Selection:%n")
     private OutputSelection output = new OutputSelection();
 
@@ -58,34 +58,37 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
 
     @Override
     public int handleCommand() throws Exception {
-        FormattedDisk disk = selectedDisks().getFirst();
-        if (options.coordinate.blockRangeSelection != null) {
-            BlockDevice device = BlockDeviceAdapter.from(disk);
-            options.coordinate.blockRangeSelection.blocks.stream().forEach(block -> {
-                validateBlockNum(device, block);
-                options.includesBootSector = block == 0;
-                byte[] data = device.readBlock(block).asBytes();
-                System.out.printf("Block #%d:\n", block);
-                System.out.println(output.format(options, data));
-            });
-            return 0;
-        }
-        else if (options.coordinate.trackSectorRangeSelection != null) {
-            options.coordinate.trackSectorRangeSelection.tracks.stream().forEach(track -> {
-                TrackSectorDevice device = TrackSectorDeviceAdapter.from(disk);
-                options.coordinate.trackSectorRangeSelection.sectors.stream().forEach(sector -> {
-                    validateTrackAndSector(device, track, sector);
-                    options.includesBootSector = track == 0 && sector == 0;
-                    byte[] data = device.readSector(track, sector).asBytes();
-                    System.out.printf("Track %02d, Sector %02d:\n", track, sector);
+        if (!selectedDisks().isEmpty()) {
+            FormattedDisk disk = selectedDisks().getFirst();
+            if (options.coordinate.blockRangeSelection != null) {
+                BlockDevice device = BlockDeviceAdapter.from(disk);
+                options.coordinate.blockRangeSelection.blocks.stream().forEach(block -> {
+                    validateBlockNum(device, block);
+                    options.includesBootSector = block == 0;
+                    byte[] data = device.readBlock(block).asBytes();
+                    System.out.printf("Block #%d:\n", block);
                     System.out.println(output.format(options, data));
                 });
-            });
-            return 0;
+                return 0;
+            } else if (options.coordinate.trackSectorRangeSelection != null) {
+                options.coordinate.trackSectorRangeSelection.tracks.stream().forEach(track -> {
+                    TrackSectorDevice device = TrackSectorDeviceAdapter.from(disk);
+                    options.coordinate.trackSectorRangeSelection.sectors.stream().forEach(sector -> {
+                        validateTrackAndSector(device, track, sector);
+                        options.includesBootSector = track == 0 && sector == 0;
+                        byte[] data = device.readSector(track, sector).asBytes();
+                        System.out.printf("Track %02d, Sector %02d:\n", track, sector);
+                        System.out.println(output.format(options, data));
+                    });
+                });
+                return 0;
+            }
         }
         else if (options.coordinate.nibbleTrackRangeSelection != null) {
-            NibbleTrackReaderWriter trackReaderWriter = disk.get(NibbleTrackReaderWriter.class)
-                    .orElseThrow(() -> new RuntimeException("This is not a nibble device."));
+            if (context().nibbleTrackReaderWriter == null) {
+                throw new RuntimeException("This is not a nibble device.");
+            }
+            NibbleTrackReaderWriter trackReaderWriter = context().nibbleTrackReaderWriter;
             options.coordinate.nibbleTrackRangeSelection.tracks.stream().forEach(track -> {
                 final int tracksPerDisk = trackReaderWriter.getTracksOnDevice();
                 if (track < 0 || track >= tracksPerDisk) {
@@ -98,7 +101,13 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
             });
             return 0;
         }
-        System.out.println("Please choose block(s) or track(s) and sector(s).");
+        // detect errors since we might get here with an unrecognized disk
+        if (options.coordinate.blockRangeSelection != null || options.coordinate.trackSectorRangeSelection != null) {
+            System.out.println("Disk was not recognized.");
+        }
+        else {
+            System.out.println("Please choose block(s) or track(s) and sector(s).");
+        }
         return 1;
     }
 
