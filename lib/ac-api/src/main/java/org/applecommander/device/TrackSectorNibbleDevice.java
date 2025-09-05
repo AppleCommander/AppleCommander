@@ -57,38 +57,43 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
      * it appears Ultima I may have used it. :-)
      */
     public static Optional<TrackSectorDevice> identify(NibbleTrackReaderWriter trackReaderWriter) {
-        try {
-            // Try 16-sector disks first:
-            final int sectorsPerTrack = 16;
-            TrackSectorDevice device = new TrackSectorNibbleDevice(trackReaderWriter,
-                DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), sectorsPerTrack);
-            for (int sector = 0; sector < sectorsPerTrack; sector++) {
+        // Try 16-sector disks first:
+        int sectorsPerTrack = 16;
+        TrackSectorDevice device = new TrackSectorNibbleDevice(trackReaderWriter,
+            DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), sectorsPerTrack);
+        int count = 0;
+        for (int sector = 0; sector < sectorsPerTrack; sector++) {
+            try {
                 DataBuffer sectorData = device.readSector(0, sector);
-                if (sectorData.limit() != TrackSectorDevice.SECTOR_SIZE) {
-                    return Optional.empty();
+                if (sectorData.limit() == TrackSectorDevice.SECTOR_SIZE) {
+                    count++;
                 }
+            } catch (Throwable t) {
+                // ignored
             }
-            return Optional.of(device);
-        } catch (Throwable t) {
-            // ignored
         }
-        try {
-            // Next try 13-sector disks:
-            final int sectorsPerTrack = 13;
-            TrackSectorDevice device = new TrackSectorNibbleDevice(trackReaderWriter,
-                DiskMarker.disk525sector13(), new Nibble53Disk525Codec(), sectorsPerTrack);
-            for (int sector = 0; sector < sectorsPerTrack; sector++) {
+        if (count > 0) {
+            // Just making certain we read more than sector 0
+            return (count > 1) ? Optional.of(device) : Optional.empty();
+        }
+
+        // Next try 13-sector disks:
+        sectorsPerTrack = 13;
+        device = new TrackSectorNibbleDevice(trackReaderWriter,
+            DiskMarker.disk525sector13(), new Nibble53Disk525Codec(), sectorsPerTrack);
+        count = 0;
+        for (int sector = 0; sector < sectorsPerTrack; sector++) {
+            try {
                 DataBuffer sectorData = device.readSector(0, sector);
-                if (sectorData.limit() != TrackSectorDevice.SECTOR_SIZE) {
-                    return Optional.empty();
+                if (sectorData.limit() == TrackSectorDevice.SECTOR_SIZE) {
+                    count++;
                 }
+            } catch (Throwable t) {
+                // ignored
             }
-            return Optional.of(device);
-        } catch (Throwable t) {
-            // ignored
         }
-        // Failure
-        return Optional.empty();
+        // Just making certain we read more than sector 0
+        return (count > 1) ? Optional.of(device) : Optional.empty();
     }
 
     /**
