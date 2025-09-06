@@ -39,6 +39,7 @@ import java.util.zip.GZIPInputStream;
 public class FileSource implements Source {
     private Path path;
     private String filename;
+    private int compressedSize = -1;
     private DataBuffer buffer;
     private boolean changed;
 
@@ -54,6 +55,7 @@ public class FileSource implements Source {
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 ) {
                     inputStream.transferTo(outputStream);
+                    this.compressedSize = this.buffer.limit();  // before we rewrite it
                     this.buffer = DataBuffer.wrap(outputStream.toByteArray());
                 } catch (Throwable ignored) {
                     // assuming that we somehow mis-interpreted the magic bytes
@@ -121,6 +123,10 @@ public class FileSource implements Source {
     public List<Information> information() {
         List<Information> list = new ArrayList<>();
         list.add(Information.builder("File Path").value(path.toString()));
+        if (compressedSize != -1) {
+            list.add(Information.builder("Size (*.gz)").value(compressedSize));
+        }
+        list.add(Information.builder("Size").value(buffer.limit()));
         return list;
     }
 
