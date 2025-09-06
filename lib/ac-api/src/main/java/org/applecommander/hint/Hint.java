@@ -19,11 +19,29 @@
  */
 package org.applecommander.hint;
 
+/**
+ * Helpful hints that indicate something "interesting" (to code at least) about this <em>thing</em>.
+ * @see HintProvider
+ */
 public enum Hint {
+    /** "Nibble" sector order is really physical sector order. */
     NIBBLE_SECTOR_ORDER,
+    /** Sectors are in DOS 3.3 sector order. */
     DOS_SECTOR_ORDER,
+    /**
+     * Sectors are organized in ProDOS sector order. Typically, this is initially read as a ProDOS block
+     * and (if needed), mapped back to DOS tracks and sectors.
+     */
     PRODOS_BLOCK_ORDER,
+    /** Temporary flag to indicate this image was automagically extracted from a SHK or SDK image. */
     ORIGIN_SHRINKIT,
+    /** Origin for this image was a 2IMG image. */
     UNIVERSAL_DISK_IMAGE,
-    DISK_COPY_IMAGE
+    /** Origin for this image was a DiskCopy image. */
+    DISK_COPY_IMAGE,
+    /**
+     * This flag is used to indicate a protected disk. Meaning factories may need to search a bit more
+     * for disk markers.
+     */
+    NONSTANDARD_NIBBLE_IMAGE
 }

@@ -75,8 +75,21 @@ public class DosDiskFactory implements DiskFactory {
 
         // ... and then test for DOS VTOC etc. Passing track number along to hopefully handle it later!
         for (TrackSectorDevice device : devices) {
-            if (check(device)) {
-                ctx.disks.add(new DosFormatDisk(ctx.source.getName(), device));
+            if (device.is(Hint.NONSTANDARD_NIBBLE_IMAGE)) {
+                // The assumption is that we need to scan (and keep scanning) for possible DOS catalogs...
+                for (int catalogTrack = 3; catalogTrack < device.getGeometry().tracksOnDisk(); catalogTrack++) {
+                    try {
+                        if (check(device, catalogTrack)) {
+                            ctx.disks.add(new DosFormatDisk(ctx.source.getName(), device, catalogTrack));
+                        }
+                    } catch (Throwable t) {
+                        // ignored. Sort of expected.
+                    }
+                }
+            }
+            // ... otherwise, just do the assumed track 17 check!
+            else if (check(device, CATALOG_TRACK)) {
+                ctx.disks.add(new DosFormatDisk(ctx.source.getName(), device, CATALOG_TRACK));
             }
         }
     }
@@ -84,8 +97,8 @@ public class DosDiskFactory implements DiskFactory {
     /**
      * Test this image order by looking for a likely DOS VTOC and set of catalog sectors.
      */
-    public boolean check(TrackSectorDevice device) {
-        DataBuffer vtoc = device.readSector(CATALOG_TRACK, VTOC_SECTOR);
+    public boolean check(TrackSectorDevice device, final int catalogTrack) {
+        DataBuffer vtoc = device.readSector(catalogTrack, VTOC_SECTOR);
         int nextTrack = vtoc.getUnsignedByte(0x01);
         int nextSector = vtoc.getUnsignedByte(0x02);
         int tracksPerDisk = vtoc.getUnsignedByte(0x34);
@@ -96,13 +109,13 @@ public class DosDiskFactory implements DiskFactory {
         }
         if (nextSector != 0 && nextTrack == 0) {
             // Some folks zeroed out the next track field, so try the same as VTOC (T17)
-            nextTrack = DosFormatDisk.CATALOG_TRACK;
+            nextTrack = catalogTrack;
         }
         // Start with VTOC test
         boolean good = nextTrack <= tracksPerDisk       // expect catalog to be sensible
                     && nextSector > 0                   // expect catalog to be...
                     && nextSector < sectorsPerTrack     // ... a legitimate sector
-                    && tracksPerDisk >= CATALOG_TRACK   // expect sensible...
+                    && tracksPerDisk >= catalogTrack   // expect sensible...
                     && tracksPerDisk <= 50              // ... tracks per disk
                     && sectorsPerTrack > 10             // expect sensible...
                     && sectorsPerTrack <= 32;           // ... sectors per disk

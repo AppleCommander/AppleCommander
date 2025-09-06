@@ -1826,7 +1826,7 @@ public class DiskExplorerTab {
                     BlockDevice blockDevice = new TrackSectorToBlockAdapter(targetDevice, TrackSectorToBlockAdapter.BlockStyle.CPM);
                     yield new CpmFormatDisk(filename, blockDevice);
                 }
-                case DosFormatDisk ignored -> new DosFormatDisk(filename, targetDevice);
+                case DosFormatDisk ignored -> new DosFormatDisk(filename, targetDevice, DosFormatDisk.CATALOG_TRACK);
                 case GutenbergFormatDisk ignored -> new GutenbergFormatDisk(filename, targetDevice);
                 case NakedosFormatDisk ignored -> new NakedosFormatDisk(filename, targetDevice);
                 case PascalFormatDisk ignored -> {

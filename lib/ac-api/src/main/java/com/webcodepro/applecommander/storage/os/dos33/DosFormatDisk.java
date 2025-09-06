@@ -120,14 +120,16 @@ public class DosFormatDisk extends FormattedDisk {
 		}
 	}
 
-    private TrackSectorDevice device;
+    private final TrackSectorDevice device;
+    private final int catalogTrack;
 
 	/**
 	 * Constructor for DosFormatDisk.
 	 */
-	public DosFormatDisk(String filename, TrackSectorDevice device) {
+	public DosFormatDisk(String filename, TrackSectorDevice device, int catalogTrack) {
 		super(filename, device.get(Source.class).orElseThrow());
         this.device = device;
+        this.catalogTrack = catalogTrack;
 	}
 
     @Override
@@ -140,7 +142,7 @@ public class DosFormatDisk extends FormattedDisk {
 	 * be 140K in size.
 	 */
 	public static DosFormatDisk[] create(String filename, TrackSectorDevice device) {
-		DosFormatDisk disk = new DosFormatDisk(filename, device);
+		DosFormatDisk disk = new DosFormatDisk(filename, device, CATALOG_TRACK);
 		disk.format();
 		return new DosFormatDisk[] { disk };
 	}
@@ -152,9 +154,9 @@ public class DosFormatDisk extends FormattedDisk {
     public static DosFormatDisk[] create(String filename, BlockDevice device, TrackSectorToBlockStrategy... strategies) {
         assert strategies.length == 2;
         assert device.getGeometry().blocksOnDevice() == 1600;
-        DosFormatDisk disk1 = new DosFormatDisk(filename, new BlockToTrackSectorAdapter(device, strategies[0]));
+        DosFormatDisk disk1 = new DosFormatDisk(filename, new BlockToTrackSectorAdapter(device, strategies[0]), CATALOG_TRACK);
         disk1.format();
-        DosFormatDisk disk2 = new DosFormatDisk(filename, new BlockToTrackSectorAdapter(device, strategies[1]));
+        DosFormatDisk disk2 = new DosFormatDisk(filename, new BlockToTrackSectorAdapter(device, strategies[1]), CATALOG_TRACK);
         disk2.format();
         return new DosFormatDisk[] { disk1, disk2 };
     }
@@ -186,7 +188,7 @@ public class DosFormatDisk extends FormattedDisk {
         }
         if (sector != 0 && track == 0) {
             // Some folks zeroed out the next track field, so try the same as VTOC (T17)
-            track = CATALOG_TRACK;
+            track = catalogTrack;
         }
 		final Set<DosSectorAddress> visits = new HashSet<>();
 		while (sector != 0) { // bug fix: iterate through all catalog _sectors_
@@ -320,14 +322,14 @@ public class DosFormatDisk extends FormattedDisk {
 	 * Return the VTOC (Volume Table Of Contents).
 	 */
 	public byte[] readVtoc() {
-		return readSector(CATALOG_TRACK, VTOC_SECTOR);
+		return readSector(catalogTrack, VTOC_SECTOR);
 	}
 	
 	/**
 	 * Save the VTOC (Volume Table Of Contents) to disk.
 	 */
 	public void writeVtoc(byte[] vtoc) {
-		writeSector(CATALOG_TRACK, VTOC_SECTOR, vtoc);
+		writeSector(catalogTrack, VTOC_SECTOR, vtoc);
 	}
 
 	/**
@@ -392,6 +394,9 @@ public class DosFormatDisk extends FormattedDisk {
 		list.add(new DiskInformation(textBundle.get("DosFormatDisk.UsedSectors"), getUsedSectors())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("DosFormatDisk.TracksOnDisk"), getTracks())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("DosFormatDisk.SectorsOnDisk"), getSectors())); //$NON-NLS-1$
+        if (catalogTrack != CATALOG_TRACK) {
+            list.add(new DiskInformation("Catalog Track (non-standard)", catalogTrack));
+        }
 		return list;
 	}
 
@@ -645,28 +650,28 @@ public class DosFormatDisk extends FormattedDisk {
 		byte[] data = new byte[SECTOR_SIZE];
 		for (int sector=firstCatalogSector; sector > 0; sector--) {
 			if (sector > 1) {
-				data[0x01] = CATALOG_TRACK;
+				data[0x01] = (byte)catalogTrack;
 				data[0x02] = (byte)(sector-1);
 			} else {
 				data[0x01] = 0;
 				data[0x02] = 0;
 			}
-			writeSector(CATALOG_TRACK, sector, data);
+			writeSector(catalogTrack, sector, data);
 		}
 		// create VTOC
-		data[0x01] = CATALOG_TRACK;	            // track# of first catalog sector
+		data[0x01] = (byte)catalogTrack;        // track# of first catalog sector
 		data[0x02] = (byte)firstCatalogSector;  // sector# of first catalog sector
 		data[0x03] = 3;				            // DOS 3.3 formatted
 		data[0x06] = (byte)254;	                // DISK VOLUME#
 		data[0x27] = TRACK_SECTOR_PAIRS;        // maximum # of T/S pairs in a sector
-		data[0x30] = CATALOG_TRACK+1;	        // last track where sectors allocated
+		data[0x30] = (byte)(catalogTrack+1);    // last track where sectors allocated
 		data[0x31] = 1;				            // direction of allocation
 		data[0x34] = (byte)tracksPerDisk;	    // tracks per disk
 		data[0x35] = (byte)sectorsPerTrack;     // sectors per track
 		data[0x37] = 1;				            // 36/37 are # of bytes per sector
 		for (int track=0; track<tracksPerDisk; track++) {
 			for (int sector=0; sector<sectorsPerTrack; sector++) {
-				if (track == 0 || track == CATALOG_TRACK) {
+				if (track == 0 || track == catalogTrack) {
 					setSectorUsed(track, sector, data);
 				} else {
 					setSectorFree(track, sector, data);

@@ -31,6 +31,7 @@ import static org.applecommander.device.nibble.NibbleUtil.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class TrackSectorNibbleDevice implements TrackSectorDevice {
     /**
@@ -121,6 +122,7 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
     private final DiskMarker[] diskMarkers;
     private final NibbleDiskCodec dataCodec;
     private final Geometry geometry;
+    private final Set<Hint> hints;
 
     private TrackSectorNibbleDevice(NibbleTrackReaderWriter trackReaderWriter, NibbleDiskCodec dataCodec,
                                     int sectorsPerTrack, DiskMarker... diskMarkers) {
@@ -128,6 +130,9 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         this.diskMarkers = diskMarkers;
         this.dataCodec = dataCodec;
         this.geometry = new Geometry(trackReaderWriter.getTracksOnDevice(), sectorsPerTrack);
+        this.hints = diskMarkers.length == 1
+                ? Set.of(Hint.NIBBLE_SECTOR_ORDER)
+                : Set.of(Hint.NIBBLE_SECTOR_ORDER, Hint.NONSTANDARD_NIBBLE_IMAGE);
     }
 
     @Override
@@ -137,7 +142,7 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
 
     @Override
     public boolean is(Hint hint) {
-        return hint == Hint.NIBBLE_SECTOR_ORDER;
+        return hints.contains(hint);
     }
 
     @Override
