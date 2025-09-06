@@ -70,6 +70,16 @@ public class Nibble62Disk525Codec implements NibbleDiskCodec {
     }
 
     @Override
+    public int[] readTranslateTable() {
+        return readTranslateTable62;
+    }
+
+    @Override
+    public int[] writeTranslateTable() {
+        return writeTranslateTable62;
+    }
+
+    @Override
     public DataBuffer decode(DataBuffer rawData) {
         assert(rawData.limit() == RAW_BUFFER_SIZE+1);   // includes checksum
         // Translate data field and check the checksum

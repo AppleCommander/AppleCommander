@@ -72,7 +72,8 @@ public class NibbleScanner {
                     .map(Map.Entry::getKey)
                     .findFirst().orElseThrow();
             // Scan from an address prolog, look for (self?) sync bytes, and then assume next 3 are data prolog
-            int dataProlog = findDataProlog(addressProlog, trackData);
+            NibbleDiskCodec nibbleDiskCodec = foundSectors == 13 ? new Nibble53Disk525Codec() : new Nibble62Disk525Codec();
+            int dataProlog = findDataProlog(addressProlog, trackData, nibbleDiskCodec);
             // Save (always, prevent easy NPE's in other code)
             final int addr1 = (addressProlog >> 16) & 0xff;
             final int addr2 = (addressProlog >> 8) & 0xff;
@@ -132,17 +133,18 @@ public class NibbleScanner {
      * Scan from an address prolog, look for sync bytes, and then assume next 3 are data prolog.
      * Note that this makes a bunch of assumptions!
      */
-    public static int findDataProlog(int addressProlog, DataBuffer trackData) {
+    public static int findDataProlog(int addressProlog, DataBuffer trackData, NibbleDiskCodec nibbleDiskCodec) {
         final int trackLength = trackData.limit();
         final int addr1 = (addressProlog >> 16) & 0xff;
         final int addr2 = (addressProlog >> 8) & 0xff;
         final int addr3 = addressProlog & 0xff;
         int pos = 0;
+        int[] readTranslateTable = nibbleDiskCodec.readTranslateTable();
         while (pos < trackLength+40) {
             if (trackData.getUnsignedByte(pos % trackLength) == addr1
                     && trackData.getUnsignedByte((pos+1) % trackLength) == addr2
                     && trackData.getUnsignedByte((pos+2) % trackLength) == addr3) {
-                pos = pos + 8;
+                pos = pos + 3 + 8 + 2;  // prolog(3) + address field(8) + epilog(2)
                 int syncByte = 0;       // the sync byte is not always 0xff... trying to be somewhat lenient
                 int syncCount = 0;
                 for (int i=pos; i<pos+40; i++) {
@@ -151,10 +153,25 @@ public class NibbleScanner {
                         syncCount++;
                     }
                     else if (syncCount >= 4) {
-                        int data1 = trackData.getUnsignedByte(i % trackLength);
-                        int data2 = trackData.getUnsignedByte((i+1) % trackLength);
-                        int data3 = trackData.getUnsignedByte((i+2) % trackLength);
-                        return data1 << 16 | data2 << 8 | data3;
+                        // Run the checksum algorithm; since we're not really decoding, we just include the
+                        // checksum byte as well:
+                        int checksum = 0;
+                        for (int j=0; j<nibbleDiskCodec.encodedSize()+1; j++) {
+                            // we need to look past the 3 data prolog bytes
+                            int b2 = trackData.getUnsignedByte((i+3+j) % trackLength);
+                            checksum ^= readTranslateTable[b2];     // XOR
+                        }
+                        if (checksum == 0) {
+                            // Only keep it if the checksum matched
+                            int data1 = trackData.getUnsignedByte(i % trackLength);
+                            int data2 = trackData.getUnsignedByte((i + 1) % trackLength);
+                            int data3 = trackData.getUnsignedByte((i + 2) % trackLength);
+                            return data1 << 16 | data2 << 8 | data3;
+                        }
+                        else {
+                            syncByte = b;
+                            syncCount = 1;
+                        }
                     }
                     else {
                         syncByte = b;

@@ -27,4 +27,6 @@ public interface NibbleDiskCodec extends CapabilityProvider {
     int decodedSize();
     DataBuffer decode(DataBuffer rawData);
     DataBuffer encode(DataBuffer data);
+    int[] readTranslateTable();
+    int[] writeTranslateTable();
 }
