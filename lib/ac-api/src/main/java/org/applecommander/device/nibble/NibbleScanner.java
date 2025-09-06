@@ -46,22 +46,23 @@ public class NibbleScanner {
         int successCount = 0;
         for (int track=0; track<tracksOnDevice; track++) {
             DataBuffer trackData = trackReaderWriter.readTrackData(track);
-            final int trackLength = trackData.limit();
             // Generate a list of likely address prologs (that meet the expected 4&4 encodings and structure)
             Map<Integer, Set<Integer>> addressPrologs = findAddressPrologs(track, trackData);
             final int foundSectors = addressPrologs.values().stream().map(Collection::size).max(Integer::compareTo).orElseThrow();
             // Assumption: Track is "mostly" normal, so 5&3 or 6&2 along with expected 13- and 16-sector sizing:
-            // (with the exception of track 0)
+            // (except for track 0 since it's possibly a mix of "expected" prolog and protected prolog bytes)
             if (track != 0) {
                 if (foundSectors != 13 && foundSectors != 16) {
-                    // Expecting 13 or 16 sector (just not track zero)
+                    // Expecting 13 or 16 sector (just not track zero) -- fill in a fake DiskMarker just for sanity
+                    diskMarkers[track] = foundSectors <= 13 ? DiskMarker.disk525sector13() : DiskMarker.disk525sector16();
                     break;
                 }
                 if (sectorsOnTrack == 0 || sectorsOnTrack == foundSectors) {
                     sectorsOnTrack = foundSectors;
                 } else {
-                    // Expecting same sector count
+                    // Expecting same sector count -- fill in DiskMarker just for sanity
                     successCount = 0;
+                    diskMarkers[track] = foundSectors == 13 ? DiskMarker.disk525sector13() : DiskMarker.disk525sector16();
                     break;
                 }
             }
@@ -72,19 +73,19 @@ public class NibbleScanner {
                     .findFirst().orElseThrow();
             // Scan from an address prolog, look for (self?) sync bytes, and then assume next 3 are data prolog
             int dataProlog = findDataProlog(addressProlog, trackData);
-            // Save
+            // Save (always, prevent easy NPE's in other code)
+            final int addr1 = (addressProlog >> 16) & 0xff;
+            final int addr2 = (addressProlog >> 8) & 0xff;
+            final int addr3 = addressProlog & 0xff;
+            final int data1 = (dataProlog >> 16) & 0xff;
+            final int data2 = (dataProlog >> 8) & 0xff;
+            final int data3 = dataProlog & 0xff;
+            diskMarkers[track] = DiskMarker.build()
+                    .addressProlog(addr1, addr2, addr3).addressEpilog()
+                    .dataProlog(data1, data2, data3).dataEpilog()
+                    .get();
+            // Only tally good ones
             if (dataProlog != 0) {
-                final int addr1 = (addressProlog >> 16) & 0xff;
-                final int addr2 = (addressProlog >> 8) & 0xff;
-                final int addr3 = addressProlog & 0xff;
-                final int data1 = (dataProlog >> 16) & 0xff;
-                final int data2 = (dataProlog >> 8) & 0xff;
-                final int data3 = dataProlog & 0xff;
-
-                diskMarkers[track] = DiskMarker.build()
-                        .addressProlog(addr1, addr2, addr3).addressEpilog()
-                        .dataProlog(data1, data2, data3).dataEpilog()
-                        .get();
                 successCount++;
             }
         }
@@ -106,7 +107,7 @@ public class NibbleScanner {
         Map<Integer, Set<Integer>> addressPrologs = new HashMap<>();
         final int headerLength = 14;
         final int trackLength = trackData.limit();
-        for (int i = 0; i < trackLength + headerLength; i++) {
+        for (int i = 5; i < trackLength + headerLength; i++) {
             int trk = decodeOddEven(trackData, i % trackLength);
             if (trk == track) {
                 int sct = decodeOddEven(trackData, (i + 2) % trackLength);

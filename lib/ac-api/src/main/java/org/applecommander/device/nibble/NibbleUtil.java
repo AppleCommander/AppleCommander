@@ -32,8 +32,9 @@ public class NibbleUtil {
      * See page 3-12 in Beneath Apple DOS for more information.
      */
     public static int decodeOddEven(DataBuffer rawData, int offset) {
-        int b1 = rawData.getUnsignedByte(offset);
-        int b2 = rawData.getUnsignedByte(offset+1);
+        final int limit = rawData.limit();
+        int b1 = rawData.getUnsignedByte(offset % limit);
+        int b2 = rawData.getUnsignedByte((offset+1) % limit);
         return (b1 << 1 | 0x01) & b2;
     }
 
@@ -45,6 +46,8 @@ public class NibbleUtil {
     public static void encodeOddEven(DataBuffer data, int offset, int value) {
         int b1 = (value >> 1) | 0xaa;
         int b2 = value | 0xaa;
-        data.putBytes(offset, b1, b2);
+        final int limit = data.limit();
+        data.putByte(offset % limit, b1);
+        data.putByte((offset + 1) % limit, b2);
     }
 }

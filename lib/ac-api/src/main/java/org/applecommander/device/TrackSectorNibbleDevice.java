@@ -67,9 +67,9 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         TrackSectorDevice device = new TrackSectorNibbleDevice(trackReaderWriter,
             new Nibble62Disk525Codec(), sectorsPerTrack, DiskMarker.disk525sector16());
         int count = 0;
-        for (int sector = 0; sector < sectorsPerTrack; sector++) {
+        for (int track = 0; track < trackReaderWriter.getTracksOnDevice(); track++) {
             try {
-                DataBuffer sectorData = device.readSector(0, sector);
+                DataBuffer sectorData = device.readSector(track, sectorsPerTrack-1);
                 if (sectorData.limit() == TrackSectorDevice.SECTOR_SIZE) {
                     count++;
                 }
@@ -78,7 +78,7 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
             }
         }
         if (count > 3) {
-            // Just making certain we read more than sector 0
+            // Just making certain we read more than track 0
             return Optional.of(device);
         }
 
@@ -87,9 +87,9 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         device = new TrackSectorNibbleDevice(trackReaderWriter,
             new Nibble53Disk525Codec(), sectorsPerTrack, DiskMarker.disk525sector13());
         count = 0;
-        for (int sector = 0; sector < sectorsPerTrack; sector++) {
+        for (int track = 0; track < trackReaderWriter.getTracksOnDevice(); track++) {
             try {
-                DataBuffer sectorData = device.readSector(0, sector);
+                DataBuffer sectorData = device.readSector(track, sectorsPerTrack-1);
                 if (sectorData.limit() == TrackSectorDevice.SECTOR_SIZE) {
                     count++;
                 }
