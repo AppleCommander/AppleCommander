@@ -33,6 +33,7 @@ public class DosOrderedTrackSectorDevice implements TrackSectorDevice {
     private final Geometry geometry;
     private final Hint orderHint;
 
+    // TODO FIXME do we still need an "unknown" ordered disk? If so, name kinda suchs. :-)
     public DosOrderedTrackSectorDevice(Source source) {
         this.source = source;
         this.geometry = calculateGeometry(source);
