@@ -43,6 +43,9 @@ public class InfoCommand extends ReadOnlyDiskContextCommandOptions {
     public int handleCommand() throws Exception {
         LOG.info(() -> "Path: " + context().source.getName());
         if (selectedDisks().isEmpty()) {
+            for (Information info : context().source.information()) {
+                System.out.printf("%s: %s\n", info.label(), info.value());
+            }
             List<TrackSectorDevice> devices = context().trackSectorDevice()
                     .include13Sector()
                     .include16Sector(Hint.DOS_SECTOR_ORDER)
