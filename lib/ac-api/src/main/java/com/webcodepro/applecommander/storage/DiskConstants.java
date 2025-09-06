@@ -32,7 +32,8 @@ public interface DiskConstants {
     int PRODOS_BLOCKS_ON_800KB_DISK = 1600;
     int DOS32_SECTORS_ON_115KB_DISK = 455;
 	int DOS33_SECTORS_ON_140KB_DISK = 560;
-	int APPLE_140KB_DISK = 143360;
+	int APPLE_140KB_DISK = 143360;  // standard 35 track x 16 sector disk
+    int APPLE_160KB_DISK = 163840;  // largest(?) 5.25" disk of 40 tracks x 16 sectors
     int APPLE_13SECTOR_DISK = 116480;
 	int APPLE_140KB_NIBBLE_DISK = 232960;
     int APPLE_400KB_DISK = 409600;
