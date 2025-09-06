@@ -61,9 +61,13 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
             options.coordinate.blockRangeSelection.blocks.stream().forEach(block -> {
                 validateBlockNum(device, block);
                 options.includesBootSector = block == 0;
-                byte[] data = device.readBlock(block).asBytes();
-                System.out.printf("Block #%d:\n", block);
-                System.out.println(output.format(options, data));
+                try {
+                    byte[] data = device.readBlock(block).asBytes();
+                    System.out.printf("Block #%d:\n", block);
+                    System.out.println(output.format(options, data));
+                } catch (Throwable t) {
+                    System.err.println(t.getMessage());
+                }
             });
             return 0;
         }
@@ -74,9 +78,13 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
                 options.coordinate.trackSectorRangeSelection.sectors.stream().forEach(sector -> {
                     validateTrackAndSector(device, track, sector);
                     options.includesBootSector = track == 0 && sector == 0;
-                    byte[] data = device.readSector(track, sector).asBytes();
-                    System.out.printf("Track %02d, Sector %02d:\n", track, sector);
-                    System.out.println(output.format(options, data));
+                    try {
+                        byte[] data = device.readSector(track, sector).asBytes();
+                        System.out.printf("Track %02d, Sector %02d:\n", track, sector);
+                        System.out.println(output.format(options, data));
+                    } catch (Throwable t) {
+                        System.err.println(t.getMessage());
+                    }
                 });
             });
             return 0;
@@ -92,9 +100,13 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
                     String errormsg = String.format("The track number(%d) is out of range(0-%d) on this image.", track, tracksPerDisk-1);
                     throw new IllegalArgumentException(errormsg);
                 }
-                byte[] data = trackReaderWriter.readTrackData(track).asBytes();
-                System.out.printf("Track %02d\n", track);
-                System.out.println(output.format(options, data));
+                try {
+                    byte[] data = trackReaderWriter.readTrackData(track).asBytes();
+                    System.out.printf("Track %02d\n", track);
+                    System.out.println(output.format(options, data));
+                } catch (Throwable t) {
+                    System.err.println(t.getMessage());
+                }
             });
             return 0;
         }
