@@ -22,9 +22,13 @@ package io.github.applecommander.acx.base;
 import com.webcodepro.applecommander.storage.DiskFactory;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import io.github.applecommander.acx.converter.DiskFactoryContextConverter;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.hint.Hint;
 import picocli.CommandLine.Option;
 
 import java.util.List;
+import java.util.Optional;
 
 public abstract class ReadOnlyDiskContextCommandOptions extends ReusableCommandOptions {
     @Option(names = { "-d", "--disk" }, description = "Image to process [$ACX_DISK_NAME].", required = true,
@@ -44,5 +48,40 @@ public abstract class ReadOnlyDiskContextCommandOptions extends ReusableCommandO
 
     protected DiskFactory.Context context() {
         return ctx;
+    }
+
+    protected Optional<BlockDevice> blockDevice() {
+        if (!selectedDisks().isEmpty()) {
+            Optional<BlockDevice> deviceOpt = selectedDisks().getFirst().get(BlockDevice.class);
+            if (deviceOpt.isPresent()) {
+                return deviceOpt;
+            }
+        }
+        List<BlockDevice> devices = context().blockDevice()
+                .include16Sector(Hint.PRODOS_BLOCK_ORDER)
+                .include800K()
+                .includeHDV()
+                .get();
+        if (!devices.isEmpty()) {
+            return Optional.of(devices.getFirst());
+        }
+        return Optional.empty();
+    }
+
+    protected Optional<TrackSectorDevice> trackSectorDevice() {
+        if (!selectedDisks().isEmpty()) {
+            Optional<TrackSectorDevice> deviceOpt = selectedDisks().getFirst().get(TrackSectorDevice.class);
+            if (deviceOpt.isPresent()) {
+                return deviceOpt;
+            }
+        }
+        List<TrackSectorDevice> devices = context().trackSectorDevice()
+                .include13Sector()
+                .include16Sector(Hint.DOS_SECTOR_ORDER)
+                .get();
+        if (!devices.isEmpty()) {
+            return Optional.of(devices.getFirst());
+        }
+        return Optional.empty();
     }
 }

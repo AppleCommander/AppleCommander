@@ -25,9 +25,6 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import com.webcodepro.applecommander.storage.BlockDeviceAdapter;
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.TrackSectorDeviceAdapter;
 import com.webcodepro.applecommander.util.AppleUtil;
 
 import com.webcodepro.applecommander.util.Range;
@@ -58,31 +55,31 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
 
     @Override
     public int handleCommand() throws Exception {
-        if (!selectedDisks().isEmpty()) {
-            FormattedDisk disk = selectedDisks().getFirst();
-            if (options.coordinate.blockRangeSelection != null) {
-                BlockDevice device = BlockDeviceAdapter.from(disk);
-                options.coordinate.blockRangeSelection.blocks.stream().forEach(block -> {
-                    validateBlockNum(device, block);
-                    options.includesBootSector = block == 0;
-                    byte[] data = device.readBlock(block).asBytes();
-                    System.out.printf("Block #%d:\n", block);
+        if (options.coordinate.blockRangeSelection != null) {
+            BlockDevice device = blockDevice()
+                    .orElseThrow(() -> new RuntimeException("there is no block device available"));
+            options.coordinate.blockRangeSelection.blocks.stream().forEach(block -> {
+                validateBlockNum(device, block);
+                options.includesBootSector = block == 0;
+                byte[] data = device.readBlock(block).asBytes();
+                System.out.printf("Block #%d:\n", block);
+                System.out.println(output.format(options, data));
+            });
+            return 0;
+        }
+        else if (options.coordinate.trackSectorRangeSelection != null) {
+            TrackSectorDevice device = trackSectorDevice()
+                    .orElseThrow(() -> new RuntimeException("there is no track/sector device available"));
+            options.coordinate.trackSectorRangeSelection.tracks.stream().forEach(track -> {
+                options.coordinate.trackSectorRangeSelection.sectors.stream().forEach(sector -> {
+                    validateTrackAndSector(device, track, sector);
+                    options.includesBootSector = track == 0 && sector == 0;
+                    byte[] data = device.readSector(track, sector).asBytes();
+                    System.out.printf("Track %02d, Sector %02d:\n", track, sector);
                     System.out.println(output.format(options, data));
                 });
-                return 0;
-            } else if (options.coordinate.trackSectorRangeSelection != null) {
-                options.coordinate.trackSectorRangeSelection.tracks.stream().forEach(track -> {
-                    TrackSectorDevice device = TrackSectorDeviceAdapter.from(disk);
-                    options.coordinate.trackSectorRangeSelection.sectors.stream().forEach(sector -> {
-                        validateTrackAndSector(device, track, sector);
-                        options.includesBootSector = track == 0 && sector == 0;
-                        byte[] data = device.readSector(track, sector).asBytes();
-                        System.out.printf("Track %02d, Sector %02d:\n", track, sector);
-                        System.out.println(output.format(options, data));
-                    });
-                });
-                return 0;
-            }
+            });
+            return 0;
         }
         else if (options.coordinate.nibbleTrackRangeSelection != null) {
             if (context().nibbleTrackReaderWriter == null) {
@@ -101,13 +98,7 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
             });
             return 0;
         }
-        // detect errors since we might get here with an unrecognized disk
-        if (options.coordinate.blockRangeSelection != null || options.coordinate.trackSectorRangeSelection != null) {
-            System.out.println("Disk was not recognized.");
-        }
-        else {
-            System.out.println("Please choose block(s) or track(s) and sector(s).");
-        }
+        System.out.println("Please choose block(s) or track(s) and sector(s).");
         return 1;
     }
 

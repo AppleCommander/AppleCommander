@@ -24,6 +24,7 @@ import org.applecommander.device.nibble.*;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+import static org.applecommander.device.nibble.NibbleUtil.*;
 
 import java.util.Optional;
 
@@ -37,9 +38,9 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         assert sectorsPerTrack == 13 || sectorsPerTrack == 16;
         return switch (sectorsPerTrack) {
             case 13 -> new TrackSectorNibbleDevice(trackReaderWriter,
-                DiskMarker.disk525sector13(), new Nibble53Disk525Codec(), sectorsPerTrack);
+                new Nibble53Disk525Codec(), sectorsPerTrack, DiskMarker.disk525sector13());
             case 16 -> new TrackSectorNibbleDevice(trackReaderWriter,
-                DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), sectorsPerTrack);
+                new Nibble62Disk525Codec(), sectorsPerTrack, DiskMarker.disk525sector16());
             default -> throw new RuntimeException("unexpected sectors per track: " + sectorsPerTrack);
         };
     }
@@ -60,7 +61,7 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         // Try 16-sector disks first:
         int sectorsPerTrack = 16;
         TrackSectorDevice device = new TrackSectorNibbleDevice(trackReaderWriter,
-            DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), sectorsPerTrack);
+            new Nibble62Disk525Codec(), sectorsPerTrack, DiskMarker.disk525sector16());
         int count = 0;
         for (int sector = 0; sector < sectorsPerTrack; sector++) {
             try {
@@ -72,15 +73,15 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
                 // ignored
             }
         }
-        if (count > 0) {
+        if (count > 1) {
             // Just making certain we read more than sector 0
-            return (count > 1) ? Optional.of(device) : Optional.empty();
+            return Optional.of(device);
         }
 
         // Next try 13-sector disks:
         sectorsPerTrack = 13;
         device = new TrackSectorNibbleDevice(trackReaderWriter,
-            DiskMarker.disk525sector13(), new Nibble53Disk525Codec(), sectorsPerTrack);
+            new Nibble53Disk525Codec(), sectorsPerTrack, DiskMarker.disk525sector13());
         count = 0;
         for (int sector = 0; sector < sectorsPerTrack; sector++) {
             try {
@@ -92,6 +93,29 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
                 // ignored
             }
         }
+        if (count > 1) {
+            // Just making certain we read more than sector 0
+            return Optional.of(device);
+        }
+
+        // Now try scanning for it...
+        Optional<NibbleScanner.Result> optResult = NibbleScanner.identify(trackReaderWriter);
+        count = 0;
+        if (optResult.isPresent()) {
+            NibbleScanner.Result result = optResult.get();
+            device = new TrackSectorNibbleDevice(trackReaderWriter,
+                    result.nibbleDiskCodec(), result.sectorsOnTrack(), result.diskMarkers());
+            for (int sector = 0; sector < sectorsPerTrack; sector++) {
+                try {
+                    DataBuffer sectorData = device.readSector(0, sector);
+                    if (sectorData.limit() == TrackSectorDevice.SECTOR_SIZE) {
+                        count++;
+                    }
+                } catch (Throwable t) {
+                    // ignored
+                }
+            }
+        }
         // Just making certain we read more than sector 0
         return (count > 1) ? Optional.of(device) : Optional.empty();
     }
@@ -101,14 +125,14 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
      */
     private final static int ADDRESS_FIELD_SIZE = 8;
     private final NibbleTrackReaderWriter trackReaderWriter;
-    private final DiskMarker diskMarker;
+    private final DiskMarker[] diskMarkers;
     private final NibbleDiskCodec dataCodec;
     private final Geometry geometry;
 
-    private TrackSectorNibbleDevice(NibbleTrackReaderWriter trackReaderWriter, DiskMarker diskMarker,
-                                   NibbleDiskCodec dataCodec, int sectorsPerTrack) {
+    private TrackSectorNibbleDevice(NibbleTrackReaderWriter trackReaderWriter, NibbleDiskCodec dataCodec,
+                                    int sectorsPerTrack, DiskMarker... diskMarkers) {
         this.trackReaderWriter = trackReaderWriter;
-        this.diskMarker = diskMarker;
+        this.diskMarkers = diskMarkers;
         this.dataCodec = dataCodec;
         this.geometry = new Geometry(trackReaderWriter.getTracksOnDevice(), sectorsPerTrack);
     }
@@ -134,32 +158,6 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
     @Override
     public Geometry getGeometry() {
         return geometry;
-    }
-
-    /**
-     * Decode odd-even bytes as stored on disk.  The format will be
-     * in two bytes.  They are stored as such:<pre>
-     *     XX = 1d1d1d1d (odd data bits)
-     *     YY = 1d1d1d1d (even data bits)
-     * </pre>
-     * XX is then shifted by a bit and ANDed with YY to get the data byte.
-     * See page 3-12 in Beneath Apple DOS for more information.
-     */
-    public int decodeOddEven(DataBuffer rawData, int offset) {
-        int b1 = rawData.getUnsignedByte(offset);
-        int b2 = rawData.getUnsignedByte(offset+1);
-        return (b1 << 1 | 0x01) & b2;
-    }
-
-    /**
-     * Encode odd-even bytes to be stored on disk.  See decodeOddEven
-     * for the format.
-     * @see #decodeOddEven(DataBuffer, int)
-     */
-    public void encodeOddEven(DataBuffer data, int offset, int value) {
-        int b1 = (value >> 1) | 0xaa;
-        int b2 = value | 0xaa;
-        data.putBytes(offset, b1, b2);
     }
 
     /**
@@ -200,6 +198,7 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         DataBuffer addressField = DataBuffer.create(ADDRESS_FIELD_SIZE);
         boolean found = false;
         int attempts = 16;  // TODO do we need to be more specific?
+        DiskMarker diskMarker = diskMarkers[track % diskMarkers.length];
         while (!found && attempts >= 0) {
             int nextOffset = locateField(diskMarker.addressProlog(), trackData, addressField, offset);
             if (nextOffset == -1) break;
@@ -223,6 +222,7 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         int offset = findSector(trackData, track, sector);
         // Read data field that immediately follows the address field and the checksum byte
         if (offset != -1) {
+            DiskMarker diskMarker = diskMarkers[track % diskMarkers.length];
             DataBuffer dataField = DataBuffer.create(dataCodec.encodedSize() + 1);
             offset = locateField(diskMarker.dataProlog(), trackData, dataField, offset);
             if (offset != -1) {
@@ -241,6 +241,7 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         int offset = findSector(trackData, track, sector);
         // Locate data field that immediately follows the address field and the checksum byte
         if (offset != -1) {
+            DiskMarker diskMarker = diskMarkers[track % diskMarkers.length];
             DataBuffer tmpField = DataBuffer.create(0);
             offset = locateField(diskMarker.dataProlog(), trackData, tmpField, offset);
             if (offset != -1) {
@@ -261,6 +262,7 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
             throw new RuntimeException("formatting 13-sector disks not supported");
         }
         // create initial address and data fields
+        DiskMarker diskMarker = diskMarkers[0];
         DataBuffer addressField = DataBuffer.create(14);
         DataBuffer dataField = DataBuffer.create(349);
         dataField.fill(0x96);
