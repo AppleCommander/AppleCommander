@@ -47,7 +47,7 @@ public class BlockToTrackSectorAdapter implements TrackSectorDevice {
 
     @Override
     public boolean is(Hint hint) {
-        return device.is(hint);
+        return hint == Hint.PRODOS_BLOCK_ORDER;
     }
 
     @Override
