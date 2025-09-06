@@ -64,7 +64,7 @@ public class ScanCommand extends ReusableCommandOptions {
             defaultValue = "false")
     private boolean progress;
 
-    private BiPredicate<Report,Report> degradationFn = this::degradationBySuccessFlag;
+    private BiPredicate<ImageReport, ImageReport> degradationFn = this::degradationBySuccessFlag;
     @Option(names = { "--numbers" }, description = "Compare reports by numbers instead of success flag")
     private void detectDegradationByNumbers(boolean flag) {
         degradationFn = this::degradationByNumbers;
@@ -86,7 +86,7 @@ public class ScanCommand extends ReusableCommandOptions {
             for (Path dir : directories) {
                 Files.walkFileTree(dir, visitor);
             }
-            showReportData(visitor.reportData);
+            showReportData(visitor.reportSummary);
             System.out.printf("Scanned %d disk images.\n", visitor.getCounter());
         }
         return 0;
@@ -96,23 +96,23 @@ public class ScanCommand extends ReusableCommandOptions {
         try (Reader reader = new FileReader(priorReportPath.toFile())) {
             Gson gson = new GsonBuilder().create();
             JsonStreamParser parser = new JsonStreamParser(reader);
-            ReportData oldData = new ReportData("Old");
-            ReportData newData = new ReportData("New");
+            ReportSummary oldData = new ReportSummary("Old");
+            ReportSummary newData = new ReportSummary("New");
             int degradationCount = 0;
             int improvementCount = 0;
             while (parser.hasNext()) {
-                Report oldReport = gson.fromJson(parser.next(), Report.class);
-                Report newReport = visitor.scanFile(Path.of(oldReport.imageName));
-                oldData.tallyData(oldReport);
-                newData.tallyData(newReport);
-                if (degradationFn.test(oldReport,newReport)) {
+                ImageReport oldImageReport = gson.fromJson(parser.next(), ImageReport.class);
+                ImageReport newImageReport = visitor.scanFile(Path.of(oldImageReport.imageName));
+                oldData.tallyData(oldImageReport);
+                newData.tallyData(newImageReport);
+                if (degradationFn.test(oldImageReport, newImageReport)) {
                     degradationCount++;
-                    List<String> diffs = diffReport(oldReport, newReport);
+                    List<String> diffs = diffReport(oldImageReport, newImageReport);
                     if (!diffs.isEmpty()) {
-                        System.out.printf("Degradation with: %s (%s)\n", oldReport.imageName, String.join(",", diffs));
+                        System.out.printf("Degradation with: %s (%s)\n", oldImageReport.imageName, String.join(",", diffs));
                     }
                 }
-                else if (!oldReport.success && newReport.success) {
+                else if (!oldImageReport.success && newImageReport.success) {
                     improvementCount++;
                 }
             }
@@ -124,93 +124,93 @@ public class ScanCommand extends ReusableCommandOptions {
             LOG.severe(e.getMessage());
         }
     }
-    public boolean degradationBySuccessFlag(Report oldReport, Report newReport) {
-        return oldReport.success && !newReport.success;
+    public boolean degradationBySuccessFlag(ImageReport oldImageReport, ImageReport newImageReport) {
+        return oldImageReport.success && !newImageReport.success;
     }
-    public boolean degradationByNumbers(Report oldReport, Report newReport) {
-        return (oldReport.logicalDisks > newReport.logicalDisks)
-            || (oldReport.deletedFiles > newReport.deletedFiles)
-            || (oldReport.directoriesVisited > newReport.directoriesVisited)
-            || (oldReport.filesVisited > newReport.filesVisited)
-            || (oldReport.filesRead > newReport.filesRead)
-            || (oldReport.dataType.equals(newReport.dataType) && oldReport.dataRead > newReport.dataRead);
+    public boolean degradationByNumbers(ImageReport oldImageReport, ImageReport newImageReport) {
+        return (oldImageReport.logicalDisks > newImageReport.logicalDisks)
+            || (oldImageReport.deletedFiles > newImageReport.deletedFiles)
+            || (oldImageReport.directoriesVisited > newImageReport.directoriesVisited)
+            || (oldImageReport.filesVisited > newImageReport.filesVisited)
+            || (oldImageReport.filesRead > newImageReport.filesRead)
+            || (oldImageReport.dataType.equals(newImageReport.dataType) && oldImageReport.dataRead > newImageReport.dataRead);
     }
 
-    public List<String> diffReport(Report oldReport, Report newReport) {
+    public List<String> diffReport(ImageReport oldImageReport, ImageReport newImageReport) {
         List<String> diffs = new ArrayList<>();
-        diffBoolean(diffs, "success", r->r.success, oldReport, newReport);
-        diffString(diffs, "type", r->r.imageType, oldReport, newReport);
-        diffInt(diffs, "disks", r->r.logicalDisks, oldReport, newReport);
-        diffInt(diffs, "deleted", r->r.deletedFiles, oldReport, newReport);
-        diffInt(diffs, "dirs", r->r.directoriesVisited, oldReport, newReport);
-        diffInt(diffs, "visited", r->r.filesVisited, oldReport, newReport);
-        diffInt(diffs, "read", r->r.filesRead, oldReport, newReport);
-        diffString(diffs, "geometry", r->r.dataType, oldReport, newReport);
-        diffInt(diffs, "georead", r->r.dataRead, oldReport, newReport);
-        diffInt(diffs, "errors", r->r.errors.size(), oldReport, newReport);
+        diffBoolean(diffs, "success", r->r.success, oldImageReport, newImageReport);
+        diffString(diffs, "type", r->r.imageType, oldImageReport, newImageReport);
+        diffInt(diffs, "disks", r->r.logicalDisks, oldImageReport, newImageReport);
+        diffInt(diffs, "deleted", r->r.deletedFiles, oldImageReport, newImageReport);
+        diffInt(diffs, "dirs", r->r.directoriesVisited, oldImageReport, newImageReport);
+        diffInt(diffs, "visited", r->r.filesVisited, oldImageReport, newImageReport);
+        diffInt(diffs, "read", r->r.filesRead, oldImageReport, newImageReport);
+        diffString(diffs, "geometry", r->r.dataType, oldImageReport, newImageReport);
+        diffInt(diffs, "georead", r->r.dataRead, oldImageReport, newImageReport);
+        diffInt(diffs, "errors", r->r.errors.size(), oldImageReport, newImageReport);
         return diffs;
     }
-    public void diffBoolean(List<String> diffs, String title, Function<Report,Boolean> boolFn, Report oldReport, Report newReport) {
-        boolean oldValue = boolFn.apply(oldReport);
-        boolean newValue = boolFn.apply(newReport);
+    public void diffBoolean(List<String> diffs, String title, Function<ImageReport,Boolean> boolFn, ImageReport oldImageReport, ImageReport newImageReport) {
+        boolean oldValue = boolFn.apply(oldImageReport);
+        boolean newValue = boolFn.apply(newImageReport);
         if (oldValue != newValue) {
             diffs.add(String.format("%s %s<>%s", title, oldValue, newValue));
         }
     }
-    public void diffString(List<String> diffs, String title, Function<Report,String> strFn, Report oldReport, Report newReport) {
-        String oldValue = strFn.apply(oldReport);
-        String newValue = strFn.apply(newReport);
+    public void diffString(List<String> diffs, String title, Function<ImageReport,String> strFn, ImageReport oldImageReport, ImageReport newImageReport) {
+        String oldValue = strFn.apply(oldImageReport);
+        String newValue = strFn.apply(newImageReport);
         if (!Objects.equals(oldValue, newValue)) {
             diffs.add(String.format("%s '%s'<>'%s'", title, oldValue, newValue));
         }
     }
-    public void diffInt(List<String> diffs, String title, Function<Report,Integer> intFn, Report oldReport, Report newReport) {
-        int oldValue = intFn.apply(oldReport);
-        int newValue = intFn.apply(newReport);
+    public void diffInt(List<String> diffs, String title, Function<ImageReport,Integer> intFn, ImageReport oldImageReport, ImageReport newImageReport) {
+        int oldValue = intFn.apply(oldImageReport);
+        int newValue = intFn.apply(newImageReport);
         if (oldValue != newValue) {
             diffs.add(String.format("%s %d<>%d", title, oldValue, newValue));
         }
     }
 
-    public void showReportData(ReportData... data) {
+    public void showReportData(ReportSummary... data) {
         System.out.println();
-        showString("Title", ReportData::getTitle, data);
-        showInteger("Total Images", ReportData::getReportCount, data);
-        showInteger("Successes", ReportData::getSuccesses, data);
-        showCounts("Image Types", ReportData::getImageTypes, data);
-        showInteger("Logical Disks", ReportData::getLogicalDisks, data);
-        showInteger("Deleted Files", ReportData::getDeletedFiles, data);
-        showInteger("Directories Visited", ReportData::getDirectoriesVisited, data);
-        showInteger("Files Visited", ReportData::getFilesVisited, data);
-        showInteger("Files Read", ReportData::getFilesRead, data);
-        showCounts("Data Types Read", ReportData::getDataTypesRead, data);
-        showInteger("Error Count", ReportData::getErrorCount, data);
+        showString("Title", ReportSummary::getTitle, data);
+        showInteger("Total Images", ReportSummary::getReportCount, data);
+        showInteger("Successes", ReportSummary::getSuccesses, data);
+        showCounts("Image Types", ReportSummary::getImageTypes, data);
+        showInteger("Logical Disks", ReportSummary::getLogicalDisks, data);
+        showInteger("Deleted Files", ReportSummary::getDeletedFiles, data);
+        showInteger("Directories Visited", ReportSummary::getDirectoriesVisited, data);
+        showInteger("Files Visited", ReportSummary::getFilesVisited, data);
+        showInteger("Files Read", ReportSummary::getFilesRead, data);
+        showCounts("Data Types Read", ReportSummary::getDataTypesRead, data);
+        showInteger("Error Count", ReportSummary::getErrorCount, data);
         System.out.println();
     }
-    private void showString(String heading, Function<ReportData,String> stringFn, ReportData... data) {
+    private void showString(String heading, Function<ReportSummary,String> stringFn, ReportSummary... data) {
         System.out.printf("%-20s ", heading);
-        for (ReportData r : data) {
+        for (ReportSummary r : data) {
             System.out.printf("%10s ", stringFn.apply(r));
         }
         System.out.println();
     }
-    private void showInteger(String heading, Function<ReportData,Integer> intFn, ReportData... data) {
+    private void showInteger(String heading, Function<ReportSummary,Integer> intFn, ReportSummary... data) {
         System.out.printf("%-20s ", heading);
-        for (ReportData r : data) {
+        for (ReportSummary r : data) {
             System.out.printf("%10d ", intFn.apply(r));
         }
         System.out.println();
     }
-    private void showCounts(String heading, Function<ReportData,Map<String,Integer>> mapFn, ReportData... data) {
+    private void showCounts(String heading, Function<ReportSummary,Map<String,Integer>> mapFn, ReportSummary... data) {
         System.out.println(heading);
         Set<String> keys = new TreeSet<>();
-        for (ReportData r : data) {
+        for (ReportSummary r : data) {
             Map<String,Integer> map = mapFn.apply(r);
             keys.addAll(map.keySet());
         }
         for (String key : keys) {
             System.out.printf("* %-18s ", key);
-            for (ReportData r : data) {
+            for (ReportSummary r : data) {
                 Map<String,Integer> map = mapFn.apply(r);
                 System.out.printf("%10d ", map.getOrDefault(key, 0));
             }
@@ -246,7 +246,7 @@ public class ScanCommand extends ReusableCommandOptions {
         private int counter;
         private final PrintStream output;
         private final boolean progress;
-        private ReportData reportData = new ReportData("Scan");
+        private ReportSummary reportSummary = new ReportSummary("Scan");
 
         public FileVisitor(PrintStream output, boolean progress) {
             this.output = output;
@@ -264,23 +264,23 @@ public class ScanCommand extends ReusableCommandOptions {
                 if (progress) {
                     System.out.printf("#%05d: %s\n", counter, file.toString());
                 }
-                Report report = scanFile(file);
-                reportData.tallyData(report);
-                output.println(gson.toJson(report));
+                ImageReport imageReport = scanFile(file);
+                reportSummary.tallyData(imageReport);
+                output.println(gson.toJson(imageReport));
             }
             return FileVisitResult.CONTINUE;
         }
 
-        public Report scanFile(Path file) {
+        public ImageReport scanFile(Path file) {
             try {
-                return new Report(file);
+                return new ImageReport(file);
             } catch (Throwable t) {
-                return new Report(file, t);
+                return new ImageReport(file, t);
             }
         }
     }
 
-    public static class ReportData {
+    public static class ReportSummary {
         final String title;
         int reportCount = 0;
         int successes = 0;
@@ -293,21 +293,24 @@ public class ScanCommand extends ReusableCommandOptions {
         Map<String,Integer> dataTypesRead = new HashMap<>();
         int errorCount = 0;
 
-        ReportData(String title) {
+        ReportSummary(String title) {
             this.title = title;
         }
 
-        void tallyData(Report report) {
+        void tallyData(ImageReport imageReport) {
+            // Patch data where we were counting unrecognized disks as successful because there were no errors...
+            if ("unknown".equals(imageReport.imageType)) imageReport.success = false;
+
             reportCount++;
-            if (report.success) successes++;
-            imageTypes.merge(report.imageType, 1, Integer::sum);
-            logicalDisks += report.logicalDisks;
-            deletedFiles += report.deletedFiles;
-            directoriesVisited += report.directoriesVisited;
-            filesVisited += report.filesVisited;
-            filesRead += report.filesRead;
-            dataTypesRead.merge(report.dataType, report.dataRead, Integer::sum);
-            errorCount += report.errors.size();
+            if (imageReport.success) successes++;
+            imageTypes.merge(imageReport.imageType, 1, Integer::sum);
+            logicalDisks += imageReport.logicalDisks;
+            deletedFiles += imageReport.deletedFiles;
+            directoriesVisited += imageReport.directoriesVisited;
+            filesVisited += imageReport.filesVisited;
+            filesRead += imageReport.filesRead;
+            dataTypesRead.merge(imageReport.dataType, imageReport.dataRead, Integer::sum);
+            errorCount += imageReport.errors.size();
         }
 
         public String getTitle() {
@@ -345,7 +348,7 @@ public class ScanCommand extends ReusableCommandOptions {
         }
     }
 
-    public static class Report {
+    public static class ImageReport {
         static final int MAX_ERRORS = 20;
 
         String imageName;
@@ -361,12 +364,12 @@ public class ScanCommand extends ReusableCommandOptions {
         List<String> errors = new ArrayList<>();
 
         /** A failure report. */
-        Report(Path file, Throwable t) {
+        ImageReport(Path file, Throwable t) {
             this.imageName = file.toString();
             this.errors.add(t.getMessage());
         }
 
-        Report(Path file) {
+        ImageReport(Path file) {
             try {
                 imageName = file.toString();
                 Source source = Sources.create(imageName).orElseThrow();
@@ -387,7 +390,8 @@ public class ScanCommand extends ReusableCommandOptions {
                         default -> throw new RuntimeException("Unexpected disk type: " + fdisk.getFormat());
                     }
                 }
-                success = errors.isEmpty();
+                // No errors found -AND- we identified at least one disk
+                success = errors.isEmpty() && !ctx.disks.isEmpty();
             } catch (Throwable t) {
                 success = false;
                 String msg = t.getMessage();
