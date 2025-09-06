@@ -24,8 +24,12 @@ import org.applecommander.device.nibble.*;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+import org.applecommander.util.Information;
+
 import static org.applecommander.device.nibble.NibbleUtil.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class TrackSectorNibbleDevice implements TrackSectorDevice {
@@ -73,7 +77,7 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
                 // ignored
             }
         }
-        if (count > 1) {
+        if (count > 3) {
             // Just making certain we read more than sector 0
             return Optional.of(device);
         }
@@ -93,31 +97,20 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
                 // ignored
             }
         }
-        if (count > 1) {
+        if (count > 3) {
             // Just making certain we read more than sector 0
             return Optional.of(device);
         }
 
         // Now try scanning for it...
         Optional<NibbleScanner.Result> optResult = NibbleScanner.identify(trackReaderWriter);
-        count = 0;
         if (optResult.isPresent()) {
             NibbleScanner.Result result = optResult.get();
             device = new TrackSectorNibbleDevice(trackReaderWriter,
                     result.nibbleDiskCodec(), result.sectorsOnTrack(), result.diskMarkers());
-            for (int sector = 0; sector < sectorsPerTrack; sector++) {
-                try {
-                    DataBuffer sectorData = device.readSector(0, sector);
-                    if (sectorData.limit() == TrackSectorDevice.SECTOR_SIZE) {
-                        count++;
-                    }
-                } catch (Throwable t) {
-                    // ignored
-                }
-            }
+            return Optional.of(device);
         }
-        // Just making certain we read more than sector 0
-        return (count > 1) ? Optional.of(device) : Optional.empty();
+        return Optional.empty();
     }
 
     /**
@@ -159,6 +152,34 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
     public Geometry getGeometry() {
         return geometry;
     }
+
+    // Temporary shim. This likely should be added into all devices.
+    public List<Information> information() {
+        List<Information> list = new ArrayList<>();
+        list.add(Information.builder("Device").value("Nibble Device"));
+        list.add(Information.builder("Geometry").value("%d tracks, %d sectors", geometry.tracksOnDisk(),
+                geometry.sectorsPerTrack()));
+        list.add(Information.builder("Total Sectors").value(geometry.sectorsPerDisk()));
+        if (diskMarkers.length == 1) {
+            list.add(Information.builder("Prolog/Epilog Bytes").value("%s/%s",
+                    formatBytes(diskMarkers[0].addressProlog()), formatBytes(diskMarkers[0].dataProlog())));
+        }
+        else {
+            for (int t=0; t<geometry.tracksOnDisk(); t++) {
+                list.add(Information.builder("Prolog/Epilog Bytes (T%02d)", t).value("%s/%s",
+                        formatBytes(diskMarkers[t].addressProlog()), formatBytes(diskMarkers[t].dataProlog())));
+            }
+        }
+        return list;
+    }
+    private String formatBytes(int... bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (int b : bytes) {
+            sb.append(String.format("%02X",b));
+        }
+        return sb.toString();
+    }
+
 
     /**
      * Locate a field on the track.  These are identified by a 3 byte unique
