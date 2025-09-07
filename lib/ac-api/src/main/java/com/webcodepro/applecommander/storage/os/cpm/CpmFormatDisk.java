@@ -261,14 +261,16 @@ public class CpmFormatDisk extends FormattedDisk {
 	public byte[] getFileData(FileEntry fileEntry) {
 		CpmFileEntry cpmEntry = (CpmFileEntry) fileEntry;
 		int[] allocations = cpmEntry.getAllocations();
-		byte[] data = new byte[allocations.length * CPM_BLOCKSIZE];
+		byte[] data = new byte[fileEntry.getSize()];
+		int bytesLeft = data.length;
 		for (int i=0; i<allocations.length; i++) {
 			int blockNumber = allocations[i];
 			if (blockNumber > 0) {
 				byte[] block = device.readBlock(FIRST_DATA_BLOCK+blockNumber).asBytes();
-				System.arraycopy(block, 0, 
-					data, i * CPM_BLOCKSIZE, CPM_BLOCKSIZE);
+				System.arraycopy(block, 0,
+					data, i * CPM_BLOCKSIZE, Math.min(bytesLeft,CPM_BLOCKSIZE));
 			}
+			bytesLeft -= CPM_BLOCKSIZE;
 		}
 		return data;
 	}
