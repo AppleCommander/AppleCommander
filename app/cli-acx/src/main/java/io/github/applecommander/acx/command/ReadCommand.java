@@ -50,7 +50,7 @@ public class ReadCommand extends ReadOnlyDiskImageCommandOptions {
     
     @Override
     public int handleCommand() throws Exception {
-        byte[] data = coordinate.read(disks.getFirst());
+        byte[] data = coordinate.read(selectedDisks().getFirst());
         output.write(data);
         return 0;
     }

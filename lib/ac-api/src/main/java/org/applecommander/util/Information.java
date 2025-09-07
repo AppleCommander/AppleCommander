@@ -27,12 +27,12 @@ import java.util.Date;
  * Use the builder to assist in construction.
  */
 public record Information(String label, String value) {
-    public static Builder builder(String label) {
-        return new Builder(label);
+    public static Builder builder(String fmt, Object... args) {
+        return new Builder(String.format(fmt, args));
     }
 
     public static class Builder {
-        private static final SimpleDateFormat dateFormatter = new SimpleDateFormat();
+        private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
         private final String label;
 
         private Builder(String label) {
@@ -48,7 +48,6 @@ public record Information(String label, String value) {
             return new Information(label, String.format(fmt, args));
         }
         public Information value(Date date) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
             return new Information(label, date != null ? dateFormat.format(date) : "-None-");
         }
     }

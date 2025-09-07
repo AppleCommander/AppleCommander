@@ -25,12 +25,12 @@ import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import com.webcodepro.shrinkit.HeaderBlock;
 import com.webcodepro.shrinkit.NuFileArchive;
 import com.webcodepro.shrinkit.ThreadRecord;
 import com.webcodepro.shrinkit.io.LittleEndianByteInputStream;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.ProdosOrderedBlockDevice;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 
@@ -55,18 +55,16 @@ public class ShrinkItUtilities
 	{
 		TextBundle textBundle = StorageBundle.getInstance();
 		byte dmgBuffer[] = null;
-		byte[] sourceData = new byte[source.getSize()];
-		source.readAllBytes().get(0, sourceData);
-		InputStream is = new ByteArrayInputStream(sourceData);
+		InputStream is = new ByteArrayInputStream(source.readAllBytes().asBytes());
 		NuFileArchive a = new NuFileArchive(is);
 		// If we need to build a disk to hold files (i.e. .shk vs. .sdk), how big would that disk need to be?
 		int newDiskSize = Disks.sizeToFit(a.getArchiveSize());
 		if (startBlocks > 0)
 			newDiskSize = startBlocks*512;
 		source = DataBufferSource.create(newDiskSize, source.getName()).get();
-		ImageOrder imageOrder = new ProdosOrder(source);
+		BlockDevice device = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		// Create a new disk in anticipation of unpacking files - we don't actually know if we'll need it yet, though.
-		FormattedDisk[] disks = ProdosFormatDisk.create(fileName, "APPLECOMMANDER", imageOrder); //$NON-NLS-1$
+		FormattedDisk[] disks = ProdosFormatDisk.create(fileName, "APPLECOMMANDER", device); //$NON-NLS-1$
 		// Make some typing easier... get a handle to the disk we created, with ProdosFormatDisk extensions. 
 		ProdosFormatDisk pdDisk = (ProdosFormatDisk) disks[0];
 		ThreadRecord dataFork, resourceFork;
@@ -153,7 +151,7 @@ public class ShrinkItUtilities
 			return dmgBuffer;
 		}
 		else
-			return imageOrder.readBytes(0, newDiskSize);
+			return source.readAllBytes().asBytes();
 	}
 
 	/**

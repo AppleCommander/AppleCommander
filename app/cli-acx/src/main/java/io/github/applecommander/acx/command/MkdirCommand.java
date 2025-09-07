@@ -41,7 +41,7 @@ public class MkdirCommand extends ReadWriteDiskCommandOptions {
 
     @Override
     public int handleCommand() throws Exception {
-        FormattedDisk formattedDisk = disks.getFirst();
+        FormattedDisk formattedDisk = selectedDisks().getFirst();
         DirectoryEntry directory = formattedDisk;
         
         String[] paths = fullPath.split("/");

@@ -21,7 +21,8 @@ package com.webcodepro.applecommander.storage.os.gutenberg;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFactory;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 
 import static com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk.*;
@@ -29,20 +30,23 @@ import static com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormat
 public class GutenbergDiskFactory implements DiskFactory {
     @Override
     public void inspect(Context ctx) {
-        ctx.orders.forEach(order -> {
-            if (check(order)) {
-                ctx.disks.add(new GutenbergFormatDisk(ctx.source.getName(), order));
-            }
-        });
+        ctx.trackSectorDevice()
+                .include16Sector(Hint.DOS_SECTOR_ORDER)
+                .get()
+                .forEach(device -> {
+                    if (check(device)) {
+                        ctx.disks.add(new GutenbergFormatDisk(ctx.source.getName(), device));
+                    }
+                });
     }
 
-    public boolean check(ImageOrder order) {
+    public boolean check(TrackSectorDevice order) {
         boolean good = false;
-        if (order.isSizeApprox(DiskConstants.APPLE_140KB_DISK) || order.isSizeApprox(DiskConstants.APPLE_140KB_NIBBLE_DISK)) {
+        if (order.getGeometry().sectorsPerDisk() == DiskConstants.DOS33_SECTORS_ON_140KB_DISK) {
             final int tracksPerDisk = 35;
             final int sectorsPerTrack = 16;
             // Everything starts at T17,S7
-            DataBuffer data = DataBuffer.wrap(order.readSector(CATALOG_TRACK, VTOC_SECTOR));
+            DataBuffer data = order.readSector(CATALOG_TRACK, VTOC_SECTOR);
             for (int i=0x0f; i<data.limit(); i+= 0x10) {
                 // Check for the CR at every 16th byte.
                 if (data.getUnsignedByte(i) != 0x8d) return false;

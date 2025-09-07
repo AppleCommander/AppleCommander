@@ -101,7 +101,7 @@ public class DataBufferSource implements Source {
 
     @Override
     public <T> Optional<T> get(Class<T> iface) {
-        return Container.get(iface, this, dataBuffer);
+        return Container.get(iface, dataBuffer);
     }
 
     public static Builder create(DataBuffer dataBuffer, String name) {

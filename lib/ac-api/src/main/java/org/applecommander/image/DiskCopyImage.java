@@ -88,7 +88,7 @@ public class DiskCopyImage implements Source {
 
     @Override
     public <T> Optional<T> get(Class<T> iface) {
-        return Container.get(iface, this, source, info);
+        return Container.get(iface, source, info);
     }
 
     @Override

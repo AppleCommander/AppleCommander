@@ -20,16 +20,31 @@
 package org.applecommander.device;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+
+import java.util.Optional;
 
 public class ProdosOrderedBlockDevice implements BlockDevice {
     private final Source source;
     private final Geometry geometry;
 
-    public ProdosOrderedBlockDevice(Source source, int blockSize, int blocksOnDevice) {
+    public ProdosOrderedBlockDevice(Source source, int blockSize) {
         this.source = source;
+        int blocksOnDevice = source.getSize() / blockSize;
         this.geometry = new Geometry(blockSize, blocksOnDevice);
+    }
+
+    @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        return Container.get(iface, source);
+    }
+
+    @Override
+    public boolean is(Hint hint) {
+        return hint == Hint.PRODOS_BLOCK_ORDER;
     }
 
     @Override

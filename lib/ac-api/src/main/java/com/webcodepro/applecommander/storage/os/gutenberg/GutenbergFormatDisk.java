@@ -20,13 +20,18 @@
 package com.webcodepro.applecommander.storage.os.gutenberg;
 
 import com.webcodepro.applecommander.storage.*;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.source.Source;
+import org.applecommander.util.Container;
+import org.applecommander.util.DataBuffer;
+
 import static com.webcodepro.applecommander.storage.DiskConstants.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Manages a disk that is in Gutenberg Word Processor format.
@@ -101,24 +106,39 @@ public class GutenbergFormatDisk extends FormattedDisk {
 		}
 	}
 
+    private TrackSectorDevice device;
+
 	/**
 	 * Constructor for GutenbergFormatDisk.
 	 */
-	public GutenbergFormatDisk(String filename, ImageOrder imageOrder) {
-		super(filename, imageOrder);
+	public GutenbergFormatDisk(String filename, TrackSectorDevice device) {
+		super(filename, device.get(Source.class).orElseThrow());
+        this.device = device;
 	}
 
 	/**
 	 * Create a GutenbergFormatDisk.  All DOS disk images are expected to
 	 * be 140K in size.
 	 */
-	public static GutenbergFormatDisk[] create(String filename, ImageOrder imageOrder) {
-		GutenbergFormatDisk disk = new GutenbergFormatDisk(filename, imageOrder);
+	public static GutenbergFormatDisk[] create(String filename, TrackSectorDevice device) {
+		GutenbergFormatDisk disk = new GutenbergFormatDisk(filename, device);
 		disk.format();
 		return new GutenbergFormatDisk[] { disk };
 	}
 
-	/**
+    @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        return Container.get(iface, device);
+    }
+
+    byte[] readSector(int track, int sector) {
+        return device.readSector(track, sector).asBytes();
+    }
+    void writeSector(int track, int sector, byte[] data) {
+        device.writeSector(track, sector, DataBuffer.wrap(data));
+    }
+
+    /**
 	 * Identify the operating system format of this disk as Gutenberg.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFormat()
 	 */
@@ -517,7 +537,7 @@ public class GutenbergFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
-		getImageOrder().format();
+		device.format();
 		format(15, 35, 16);
 	}
 	
@@ -525,10 +545,8 @@ public class GutenbergFormatDisk extends FormattedDisk {
 	 * Format the disk as DOS 3.3 given the dymanic parameters.
 	 * (Used for UniDOS and OzDOS.)
 	 */
-	protected void format(int firstCatalogSector, int tracksPerDisk,
-		int sectorsPerTrack) {
-			
-		writeBootCode();
+	protected void format(int firstCatalogSector, int tracksPerDisk, int sectorsPerTrack) {
+        writeSector(0, 0, getBootCode());
 		// create catalog sectors
 		byte[] data = new byte[SECTOR_SIZE];
 		for (int sector=firstCatalogSector; sector > 0; sector--) {
@@ -677,16 +695,6 @@ public class GutenbergFormatDisk extends FormattedDisk {
 	 */	
 	public boolean supportsDiskMap() {
 		return true;
-	}
-
-	/**
-	 * Change to a different ImageOrder.  Remains in DOS 3.3 format but
-	 * the underlying order can change.
-	 * @see ImageOrder
-	 */
-	public void changeImageOrder(ImageOrder imageOrder) {
-		AppleUtil.changeImageOrderByTrackAndSector(getImageOrder(), imageOrder);
-		setImageOrder(imageOrder);
 	}
 
 	/**

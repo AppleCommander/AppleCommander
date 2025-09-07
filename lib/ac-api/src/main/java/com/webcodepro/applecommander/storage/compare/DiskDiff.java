@@ -22,24 +22,19 @@ package com.webcodepro.applecommander.storage.compare;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-import com.webcodepro.applecommander.storage.DiskGeometry;
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.util.Range;
 import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
 import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
 import com.webcodepro.applecommander.util.readerwriter.FileEntryReader;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.util.DataBuffer;
 
 /**
  * Perform a disk comparison based on selected strategy.
@@ -118,20 +113,22 @@ public class DiskDiff {
 
     /** Compare disks by 512-byte ProDOS/Pascal blocks. */
     public void compareByBlockGeometry(FormattedDisk formattedDiskA, FormattedDisk formattedDiskB) {
-        ImageOrder orderA = formattedDiskA.getImageOrder();
-        ImageOrder orderB = formattedDiskB.getImageOrder();
-        
-        if (orderA.getBlocksOnDevice() != orderB.getBlocksOnDevice()) {
-            results.addError("Different sized disks do not equal. (Blocks: %d <> %d)", 
-                    orderA.getBlocksOnDevice(), orderB.getBlocksOnDevice());
+        BlockDevice deviceA = BlockDeviceAdapter.from(formattedDiskA);
+        BlockDevice deviceB = BlockDeviceAdapter.from(formattedDiskB);
+
+        int blocksOnDeviceA = deviceA.getGeometry().blocksOnDevice();
+        int blocksOnDeviceB = deviceB.getGeometry().blocksOnDevice();
+        if (blocksOnDeviceA != blocksOnDeviceB) {
+            results.addError("Different sized disks do not equal. (Blocks: %d <> %d)",
+                    blocksOnDeviceA, blocksOnDeviceB);
             return;
         }
 
         List<Integer> unequalBlocks = new ArrayList<>();
-        for (int block=0; block<orderA.getBlocksOnDevice(); block++) {
-            byte[] blockA = orderA.readBlock(block);
-            byte[] blockB = orderB.readBlock(block);
-            if (!Arrays.equals(blockA, blockB)) {
+        for (int block=0; block<blocksOnDeviceA; block++) {
+            DataBuffer blockA = deviceA.readBlock(block);
+            DataBuffer blockB = deviceB.readBlock(block);
+            if (!blockA.equals(blockB)) {
                 unequalBlocks.add(block);
             }
         }
@@ -144,24 +141,26 @@ public class DiskDiff {
             }
         }
     }
-    
+
     /** Compare disks by 256-byte DOS sectors. */
     public void compareByTrackSectorGeometry(FormattedDisk formattedDiskA, FormattedDisk formattedDiskB) {
-        ImageOrder orderA = formattedDiskA.getImageOrder();
-        ImageOrder orderB = formattedDiskB.getImageOrder();
+        TrackSectorDevice deviceA = TrackSectorDeviceAdapter.from(formattedDiskA);
+        TrackSectorDevice deviceB = TrackSectorDeviceAdapter.from(formattedDiskB);
 
-        if (orderA.getSectorsPerDisk() != orderB.getSectorsPerDisk()) {
+        int sectorsPerDiskA = deviceA.getGeometry().sectorsPerDisk();
+        int sectorsPerDiskB = deviceB.getGeometry().sectorsPerDisk();
+        if (sectorsPerDiskA != sectorsPerDiskB) {
             results.addError("Different sized disks do not equal. (Sectors: %d <> %d)",
-                    orderA.getSectorsPerDisk(), orderB.getSectorsPerDisk());
+                    sectorsPerDiskA, sectorsPerDiskB);
             return;
         }
         
-        for (int track=0; track<orderA.getTracksPerDisk(); track++) {
+        for (int track=0; track<deviceA.getGeometry().tracksOnDisk(); track++) {
             List<Integer> unequalSectors = new ArrayList<>();
-            for (int sector=0; sector<orderA.getSectorsPerTrack(); sector++) {
-                byte[] sectorA = orderA.readSector(track, sector);
-                byte[] sectorB = orderB.readSector(track, sector);
-                if (!Arrays.equals(sectorA, sectorB)) {
+            for (int sector=0; sector<deviceA.getGeometry().sectorsPerTrack(); sector++) {
+                DataBuffer sectorA = deviceA.readSector(track, sector);
+                DataBuffer sectorB = deviceB.readSector(track, sector);
+                if (!sectorA.equals(sectorB)) {
                     unequalSectors.add(sector);
                 }
             }

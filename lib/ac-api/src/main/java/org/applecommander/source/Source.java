@@ -55,20 +55,20 @@ public interface Source extends CapabilityProvider, HintProvider, Container {
     /**
      * Indicates if the source image is approximately equal to this size
      * (less any image over-read).
-     * Currently, hardcoded to allow up to 10 extra bytes at the end of a
+     * Currently, hardcoded to allow up to 255 extra bytes at the end of a
      * disk image.  Must be at least the requested size!
      */
     default boolean isApproxEQ(int value) {
-        return getSize() >= value && getSize() <= value + 10;
+        return getSize() >= value && getSize() <= value + 255;
     }
     /**
-     * Indicates if the source image is approximately less than this
-     * size (less any image over-read).
-     * Currently, hardcoded to allow up to 10 extra bytes at the end of a
+     * Indicates if the source image is "approximately" between
+     * these two values (less any image over-read).
+     * Currently, hardcoded to allow up to 255 extra bytes at the end of a
      * disk image.  Must be at least the requested size!
      */
-    default boolean isApproxLE(int value) {
-        return getSize() <= value + 10;
+    default boolean isApproxBetween(int value1, int value2) {
+        return getSize() >= value1 && getSize() <= value2 + 255;
     }
 
     /**

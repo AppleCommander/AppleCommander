@@ -55,7 +55,8 @@ public class FilenameFilter {
     static {
         // Build everything dynamically
         List<String> templates = List.of(
-                "140kDosImages:do,dsk",
+                "16SectorDosImages:do,d16,dsk",
+                "13SectorDosImages:d13",
                 "140kProdosImages:po",
                 "140kNibbleImages:nib",
                 "800kProdosImages:2mg,2img",

@@ -42,9 +42,6 @@ import com.webcodepro.applecommander.storage.filters.HexDumpFileFilter;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
-import com.webcodepro.applecommander.storage.physical.DosOrder;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
@@ -58,6 +55,10 @@ import io.github.applecommander.bastools.api.TokenReader;
 import io.github.applecommander.bastools.api.Visitors;
 import io.github.applecommander.bastools.api.model.Program;
 import io.github.applecommander.bastools.api.model.Token;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.DosOrderedTrackSectorDevice;
+import org.applecommander.device.ProdosOrderedBlockDevice;
+import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.hint.Hint;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.FileSource;
@@ -611,8 +612,8 @@ public class ac {
 	public static void createDosDisk(String fileName, int imageSize)
 		throws IOException {
 		Source source = DataBufferSource.create(imageSize, fileName).hints(Hint.DOS_SECTOR_ORDER).get();
-		ImageOrder imageOrder = new DosOrder(source);
-		FormattedDisk[] disks = DosFormatDisk.create(fileName, imageOrder);
+        TrackSectorDevice device = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+		FormattedDisk[] disks = DosFormatDisk.create(fileName, device);
 		disks[0].save();
 	}
 
@@ -622,8 +623,8 @@ public class ac {
 	public static void createPasDisk(String fileName, String volName, int imageSize)
 		throws IOException {
 		Source source = DataBufferSource.create(imageSize, fileName).hints(Hint.PRODOS_BLOCK_ORDER).get();
-		ImageOrder imageOrder = new ProdosOrder(source);
-		FormattedDisk[] disks = PascalFormatDisk.create(fileName, volName, imageOrder);
+		BlockDevice device = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
+		FormattedDisk[] disks = PascalFormatDisk.create(fileName, volName, device);
 		disks[0].save();
 	}
 
@@ -633,8 +634,8 @@ public class ac {
 	public static void createProDisk(String fileName, String volName, int imageSize)
 		throws IOException {
 		Source source = DataBufferSource.create(imageSize, fileName).hints(Hint.PRODOS_BLOCK_ORDER).get();
-		ImageOrder imageOrder = new ProdosOrder(source);
-		FormattedDisk[] disks = ProdosFormatDisk.create(fileName, volName, imageOrder);
+		BlockDevice device = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
+		FormattedDisk[] disks = ProdosFormatDisk.create(fileName, volName, device);
 		disks[0].save();
 	}
 

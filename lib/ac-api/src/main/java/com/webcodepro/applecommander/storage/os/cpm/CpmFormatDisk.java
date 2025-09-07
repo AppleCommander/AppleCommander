@@ -20,10 +20,11 @@
 package com.webcodepro.applecommander.storage.os.cpm;
 
 import com.webcodepro.applecommander.storage.*;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
-import static com.webcodepro.applecommander.storage.DiskConstants.*;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.source.Source;
+import org.applecommander.util.Container;
+import org.applecommander.util.DataBuffer;
 
 import java.util.*;
 
@@ -60,12 +61,10 @@ public class CpmFormatDisk extends FormattedDisk {
 	 * (The other tracks are boot-related and not available.)
 	 */
 	public static final int PHYSICAL_BLOCK_TRACK_START = 3;
-	/**
-	 * The sector skew of the CP/M disk image.
-	 */
-	public static final int[] sectorSkew = {
-						 0x0, 0x6, 0xc, 0x3, 0x9, 0xf, 0xe, 0x5, 
-						 0xb, 0x2, 0x8, 0x7, 0xd, 0x4, 0xa, 0x1 };
+    /**
+     * The underlying block number which CP/M data block #0 resides.
+     */
+    public static final int FIRST_DATA_BLOCK = PHYSICAL_BLOCK_TRACK_START * PHYSICAL_SECTORS_PER_BLOCK;
 
 	/**
 	 * Manage CP/M disk usage.
@@ -90,24 +89,32 @@ public class CpmFormatDisk extends FormattedDisk {
 		}
 	}
 
+    private BlockDevice device;
+
 	/**
 	 * Construct a CP/M formatted disk.
 	 */
-	public CpmFormatDisk(String filename, ImageOrder imageOrder) {
-		super(filename, imageOrder);
+	public CpmFormatDisk(String filename, BlockDevice device) {
+		super(filename, device.get(Source.class).orElseThrow());
+        this.device = device;
 	}
 
 	/**
 	 * Create a CpmFormatDisk.  All CP/M disk images are expected to
 	 * be 140K in size.
 	 */
-	public static CpmFormatDisk[] create(String filename, ImageOrder imageOrder) {
-		CpmFormatDisk disk = new CpmFormatDisk(filename, imageOrder);
+	public static CpmFormatDisk[] create(String filename, BlockDevice device) {
+		CpmFormatDisk disk = new CpmFormatDisk(filename, device);
 		disk.format();
 		return new CpmFormatDisk[] { disk };
 	}
 
-	/**
+    @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        return Container.get(iface, device);
+    }
+
+    /**
 	 * There apparently is no corresponding CP/M disk name.
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getDiskName()
 	 */
@@ -128,7 +135,7 @@ public class CpmFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getFreeSpace()
 	 */
 	public int getFreeSpace() {
-		return getPhysicalSize() - getUsedSpace();
+        return device.getGeometry().deviceSize() - getUsedSpace();
 	}
 
 	/**
@@ -170,7 +177,7 @@ public class CpmFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#getBitmapLength()
 	 */
 	public int getBitmapLength() {
-		return getPhysicalSize() / CPM_BLOCKSIZE;
+		return device.getGeometry().deviceSize() / CPM_BLOCKSIZE;
 	}
 
 	/**
@@ -258,7 +265,7 @@ public class CpmFormatDisk extends FormattedDisk {
 		for (int i=0; i<allocations.length; i++) {
 			int blockNumber = allocations[i];
 			if (blockNumber > 0) {
-				byte[] block = readCpmBlock(blockNumber);
+				byte[] block = device.readBlock(FIRST_DATA_BLOCK+blockNumber).asBytes();
 				System.arraycopy(block, 0, 
 					data, i * CPM_BLOCKSIZE, CPM_BLOCKSIZE);
 			}
@@ -275,16 +282,12 @@ public class CpmFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
-		getImageOrder().format();
-		byte[] sectorData = new byte[SECTOR_SIZE];
-		for (int i=0; i<SECTOR_SIZE; i++) {
-			sectorData[i] = (byte) 0xe5;
-		}
-		for (int track=0; track<35; track++) {
-			for (int sector=0; sector<16; sector++) {
-				writeSector(track, sector, sectorData);
-			}
-		}
+		device.format();
+        DataBuffer blockData = DataBuffer.create(CPM_BLOCKSIZE);
+        blockData.fill(0xe5);
+        for (int block=0; block<device.getGeometry().blocksOnDevice(); block++) {
+            device.writeBlock(block, blockData);
+        }
 	}
 
 	/**
@@ -421,65 +424,18 @@ public class CpmFormatDisk extends FormattedDisk {
 	public boolean canCreateFile() {
 		return false;
 	}
-	
-	/**
-	 * Read a CP/M block (1K in size).
-	 */
-	public byte[] readCpmBlock(int block) {
-		byte[] data = new byte[CPM_BLOCKSIZE];
-		int track = computeTrack(block);
-		int sector = computeSector(block);
-		for (int i=0; i<PHYSICAL_SECTORS_PER_BLOCK; i++) {
-			System.arraycopy(readSector(track, sectorSkew[sector+i]), 
-				0, data, i*SECTOR_SIZE, SECTOR_SIZE);
-		}
-		return data;
-	}
-	
+
 	public byte[] readCpmFileEntries() {
-        byte[] data = new byte[2 * CpmFormatDisk.CPM_BLOCKSIZE];
-        System.arraycopy(readCpmBlock(0), 0, data, 
-            0, CpmFormatDisk.CPM_BLOCKSIZE);
-        System.arraycopy(readCpmBlock(1), 0, data, 
-            CpmFormatDisk.CPM_BLOCKSIZE, CpmFormatDisk.CPM_BLOCKSIZE);
-        return data;
+        DataBuffer directory = DataBuffer.create(2 * CPM_BLOCKSIZE);
+        directory.put(0, device.readBlock(FIRST_DATA_BLOCK));
+        directory.put(CPM_BLOCKSIZE, device.readBlock(FIRST_DATA_BLOCK+1));
+        return directory.asBytes();
 	}
 	public void writeCpmFileEntries(byte[] data) {
-        byte[] block = new byte[CPM_BLOCKSIZE];
-        System.arraycopy(data, 0, block, 
-            0, CpmFormatDisk.CPM_BLOCKSIZE);
-        writeCpmBlock(0, block);
-        System.arraycopy(data, CpmFormatDisk.CPM_BLOCKSIZE, block, 
-            0, CpmFormatDisk.CPM_BLOCKSIZE);
-        writeCpmBlock(1, block);	           
-	}
-	
-	/**
-	 * Compute the physical track number.
-	 */
-	protected int computeTrack(int block) {
-		return PHYSICAL_BLOCK_TRACK_START + (block / CPM_BLOCKS_PER_TRACK);
-	}
-	
-	/**
-	 * Compute the physical sector number.  The rest of the block
-	 * follows in sequential order.
-	 */
-	protected int computeSector(int block) {
-		return (block % CPM_BLOCKS_PER_TRACK) * PHYSICAL_SECTORS_PER_BLOCK;
-	}
-	
-	/**
-	 * Write a CP/M block.
-	 */
-	public void writeCpmBlock(int block, byte[] data) {
-		int track = computeTrack(block);
-		int sector = computeSector(block);
-		byte[] sectorData = new byte[SECTOR_SIZE];
-		for (int i=0; i<PHYSICAL_SECTORS_PER_BLOCK; i++) {
-			System.arraycopy(data, i*SECTOR_SIZE, sectorData, 0, SECTOR_SIZE);
-			writeSector(track, sectorSkew[sector+i], sectorData);
-		}
+        assert data.length == 2*CPM_BLOCKSIZE;
+        DataBuffer directory = DataBuffer.wrap(data);
+        device.writeBlock(FIRST_DATA_BLOCK, directory.slice(0, CPM_BLOCKSIZE));
+        device.writeBlock(FIRST_DATA_BLOCK+1, directory.slice(CPM_BLOCKSIZE, CPM_BLOCKSIZE));
 	}
 
 	/**
@@ -521,17 +477,6 @@ public class CpmFormatDisk extends FormattedDisk {
 	 */	
 	public boolean supportsDiskMap() {
 		return true;
-	}
-
-
-	/**
-	 * Change to a different ImageOrder.  Remains in CP/M format but
-	 * the underlying order can change.
-	 * @see ImageOrder
-	 */
-	public void changeImageOrder(ImageOrder imageOrder) {
-		AppleUtil.changeImageOrderByTrackAndSector(getImageOrder(), imageOrder);
-		setImageOrder(imageOrder);
 	}
 
 	/**

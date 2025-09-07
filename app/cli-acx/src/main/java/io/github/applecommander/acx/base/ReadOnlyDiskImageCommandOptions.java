@@ -28,5 +28,16 @@ import java.util.List;
 public abstract class ReadOnlyDiskImageCommandOptions extends ReusableCommandOptions {
     @Option(names = { "-d", "--disk" }, description = "Image to process [$ACX_DISK_NAME].", required = true,
             converter = DiskConverter.class, defaultValue = "${ACX_DISK_NAME}")
-    protected List<FormattedDisk> disks;
+    private List<FormattedDisk> disks;
+
+    @Option(names = { "-k", "--number" }, description = "Select disk number to access [$ACX_DISK_NUMBER].",
+            defaultValue = "${ACX_DISK_NUMBER}")
+    private Integer diskNumber;
+
+    protected List<FormattedDisk> selectedDisks() {
+        if (diskNumber != null) {
+            return List.of(disks.get(diskNumber));
+        }
+        return disks;
+    }
 }

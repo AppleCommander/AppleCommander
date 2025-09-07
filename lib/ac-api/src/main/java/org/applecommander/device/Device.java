@@ -17,14 +17,15 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.applecommander.codec;
+package org.applecommander.device;
 
 import org.applecommander.capability.CapabilityProvider;
-import org.applecommander.util.DataBuffer;
+import org.applecommander.hint.HintProvider;
+import org.applecommander.util.Container;
 
-public interface NibbleDiskCodec extends CapabilityProvider {
-    int encodedSize();
-    int decodedSize();
-    DataBuffer decode(DataBuffer rawData);
-    DataBuffer encode(DataBuffer data);
+/**
+ * This is a marker interface for both the BlockDevice and TrackSectorDevice and should
+ * not be implemented directly.
+ */
+public interface Device extends HintProvider, CapabilityProvider, Container {
 }

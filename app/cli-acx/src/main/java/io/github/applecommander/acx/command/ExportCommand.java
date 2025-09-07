@@ -93,7 +93,7 @@ public class ExportCommand extends ReadOnlyDiskImageCommandOptions {
         Consumer<FileTuple> fileHandler = 
                 (outputFile == null) ? this::writeToStdout : this::writeToOutput;
         
-        FileStreamer.forDisks(disks)
+        FileStreamer.forDisks(selectedDisks())
                     .ignoreErrors(true)
                     .includeDeleted(deletedFlag)
                     .includeTypeOfFile(TypeOfFile.FILE)

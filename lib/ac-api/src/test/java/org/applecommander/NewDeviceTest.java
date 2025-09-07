@@ -20,9 +20,9 @@
 package org.applecommander;
 
 import com.webcodepro.applecommander.testconfig.TestConfig;
-import org.applecommander.codec.Nibble53Disk525Codec;
-import org.applecommander.codec.Nibble62Disk525Codec;
 import org.applecommander.device.*;
+import org.applecommander.device.nibble.NibbleTrackReaderWriter;
+import org.applecommander.hint.Hint;
 import org.applecommander.image.DiskCopyImage;
 import org.applecommander.image.NibbleImage;
 import org.applecommander.image.UniversalDiskImage;
@@ -44,7 +44,7 @@ public class NewDeviceTest {
         final String filename = "original321sysmaspls.nib";
         Source source = sourceDisk(filename);
         NibbleTrackReaderWriter trackReaderWriter = new NibbleImage(source);
-        TrackSectorDevice tsDevice = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector13(), new Nibble53Disk525Codec(), 13);
+        TrackSectorDevice tsDevice = TrackSectorNibbleDevice.identify(trackReaderWriter).orElseThrow();
         DataBuffer sectorData = tsDevice.readSector(17,12);
         dumpAsHex(sectorData, filename);
     }
@@ -54,7 +54,7 @@ public class NewDeviceTest {
         final String filename = "DOS 3.2 System Master.woz";
         Source source = sourceDisk(filename);
         NibbleTrackReaderWriter trackReaderWriter = new WozImage(source);
-        TrackSectorDevice tsDevice = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector13(), new Nibble53Disk525Codec(), 13);
+        TrackSectorDevice tsDevice = TrackSectorNibbleDevice.identify(trackReaderWriter).orElseThrow();
         DataBuffer sectorData = tsDevice.readSector(17, 12);
         dumpAsHex(sectorData, filename);
     }
@@ -64,7 +64,7 @@ public class NewDeviceTest {
         final String filename = "DOS 3.3 System Master.woz1";
         Source source = sourceDisk(filename);
         NibbleTrackReaderWriter trackReaderWriter = new WozImage(source);
-        TrackSectorDevice tsDevice = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), 16);
+        TrackSectorDevice tsDevice = TrackSectorNibbleDevice.identify(trackReaderWriter).orElseThrow();
         DataBuffer sectorData = tsDevice.readSector(17, 15);
         dumpAsHex(sectorData, filename);
     }
@@ -74,7 +74,7 @@ public class NewDeviceTest {
         final String filename = "DOS 3.3 System Master.woz2";
         Source source = sourceDisk(filename);
         NibbleTrackReaderWriter trackReaderWriter = new WozImage(source);
-        TrackSectorDevice tsDevice = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), 16);
+        TrackSectorDevice tsDevice = TrackSectorNibbleDevice.identify(trackReaderWriter).orElseThrow();
         DataBuffer sectorData = tsDevice.readSector(17, 15);
         dumpAsHex(sectorData, filename);
     }
@@ -83,8 +83,9 @@ public class NewDeviceTest {
     public void readBlockGalatt() {
         final String filename = "galatt.dsk";
         Source source = sourceDisk(filename);
-        DosOrderedTrackSectorDevice tsDevice = new DosOrderedTrackSectorDevice(source);
-        TrackSectorToBlockAdapter blockDevice = new TrackSectorToBlockAdapter(tsDevice);
+        DosOrderedTrackSectorDevice doDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+        TrackSectorDevice skewedDevice = SkewedTrackSectorDevice.dosToPascalSkew(doDevice);
+        TrackSectorToBlockAdapter blockDevice = new TrackSectorToBlockAdapter(skewedDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS);
         DataBuffer blockData = blockDevice.readBlock(2);
         dumpAsHex(blockData, filename);
     }
@@ -93,7 +94,7 @@ public class NewDeviceTest {
     public void readDOCavernsOfFreitag() {
         final String filename = "CavernsOfFreitag.dsk";
         Source source = sourceDisk(filename);
-        DosOrderedTrackSectorDevice tsDevice = new DosOrderedTrackSectorDevice(source);
+        DosOrderedTrackSectorDevice tsDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
         DataBuffer sectorData = tsDevice.readSector(17, 15);
         dumpAsHex(sectorData, filename);
     }
@@ -102,7 +103,7 @@ public class NewDeviceTest {
     public void readUniDOS33() {
         final String filename = "UniDOS_3.3.dsk";
         Source source = sourceDisk(filename);
-        BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, 512, 1600);
+        BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
         TrackSectorDevice disk1 = new BlockToTrackSectorAdapter(blockDevice, UnidosAdapterStrategy.UNIDOS_DISK_1);
         TrackSectorDevice disk2 = new BlockToTrackSectorAdapter(blockDevice, UnidosAdapterStrategy.UNIDOS_DISK_2);
         DataBuffer sector1 = disk1.readSector(17, 31);
@@ -121,15 +122,15 @@ public class NewDeviceTest {
         // An attempt at discovery
         Object device = null;
         if (info.isDOSOrdered() && info.dataLength() == 143360) {
-            device = new DosOrderedTrackSectorDevice(image);
+            device = new DosOrderedTrackSectorDevice(image, Hint.DOS_SECTOR_ORDER);
         }
         else if (info.isProdosOrdered()) {
-            device = new ProdosOrderedBlockDevice(image, 512, info.prodosBlocks());
+            device = new ProdosOrderedBlockDevice(image, BlockDevice.STANDARD_BLOCK_SIZE);
         }
         else if (info.isNibbleOrder()) {
             // this is just guessing, and likely never occurs from what I've found, but...
             NibbleTrackReaderWriter trackReaderWriter = new NibbleImage(image);
-            device = new TrackSectorNibbleDevice(trackReaderWriter, DiskMarker.disk525sector16(), new Nibble62Disk525Codec(), 16);
+            device = TrackSectorNibbleDevice.identify(trackReaderWriter).orElseThrow();
         }
         assert(device != null);
         // Report out... making grand assumption that TS=DOS and block=ProDOS
@@ -149,7 +150,7 @@ public class NewDeviceTest {
         final String filename = "Installer.dc";
         Source source = sourceDisk(filename);
         DiskCopyImage image = new DiskCopyImage(source);
-        BlockDevice device = new ProdosOrderedBlockDevice(image, 512, image.getInfo().dataSize() / 512);
+        BlockDevice device = new ProdosOrderedBlockDevice(image, BlockDevice.STANDARD_BLOCK_SIZE);
         DataBuffer block = device.readBlock(2);
         dumpAsHex(block, filename);
     }

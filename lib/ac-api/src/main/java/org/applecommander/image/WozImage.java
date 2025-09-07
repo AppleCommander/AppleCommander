@@ -20,15 +20,13 @@
 package org.applecommander.image;
 
 import org.applecommander.capability.Capability;
-import org.applecommander.device.NibbleTrackReaderWriter;
+import org.applecommander.device.nibble.NibbleTrackReaderWriter;
 import org.applecommander.source.Source;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -58,6 +56,7 @@ public class WozImage implements NibbleTrackReaderWriter {
 
         DataBuffer bb = source.readAllBytes();
 
+        bb.position(0);
         int sig = bb.readInt();
         int test = bb.readInt();
         final int testExpected = 0xa0d0aff;
@@ -103,6 +102,11 @@ public class WozImage implements NibbleTrackReaderWriter {
                     break;
             }
         }
+    }
+
+    @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        return Container.get(iface, source);
     }
 
     @Override

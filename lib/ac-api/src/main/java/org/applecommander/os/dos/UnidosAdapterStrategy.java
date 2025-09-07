@@ -36,7 +36,7 @@ public enum UnidosAdapterStrategy implements TrackSectorToBlockStrategy {
 	
 	private final int trackOffset;
 	
-	private UnidosAdapterStrategy(int trackOffset) {
+	UnidosAdapterStrategy(int trackOffset) {
 		this.trackOffset = trackOffset;
 	}
 	/** {@inheritDoc} */

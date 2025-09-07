@@ -19,10 +19,10 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import com.webcodepro.applecommander.storage.physical.WozOrder;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.source.Source;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
 import java.io.*;
@@ -38,7 +38,7 @@ import java.util.zip.GZIPOutputStream;
  * Date created: Oct 5, 2002 3:51:44 PM
  * @author Rob Greene
  */
-public abstract class FormattedDisk implements DirectoryEntry {
+public abstract class FormattedDisk implements DirectoryEntry, Container{
 	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Use this inner class for label/value mappings in the disk info page.
@@ -133,15 +133,13 @@ public abstract class FormattedDisk implements DirectoryEntry {
 
     private String filename;
     private boolean newImage = false;
-    private Source source;
-    private ImageOrder imageOrder = null;
+    private final Source source;
 
     /**
 	 * Constructor for FormattedDisk.
 	 */
-	public FormattedDisk(String filename, ImageOrder imageOrder) {
-        this.imageOrder = imageOrder;
-        this.source = imageOrder.getSource();
+	public FormattedDisk(String filename, Source source) {
+        this.source = source;
         this.filename = filename;
         this.newImage = true;
 	}
@@ -213,13 +211,10 @@ public abstract class FormattedDisk implements DirectoryEntry {
 		List<DiskInformation> list = new ArrayList<>();
 		list.add(new DiskInformation(textBundle.get("FormattedDisk.FileName"), getFilename())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("FormattedDisk.DiskName"), getDiskName())); //$NON-NLS-1$
-		list.add(new DiskInformation(textBundle.get("FormattedDisk.PhysicalSizeInBytes"), getPhysicalSize())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("FormattedDisk.FreeSpaceInBytes"), getFreeSpace())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("FormattedDisk.UsedSpaceInBytes"), getUsedSpace())); //$NON-NLS-1$
-		list.add(new DiskInformation(textBundle.get("FormattedDisk.PhysicalSizeInKb"), getPhysicalSize() / 1024)); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("FormattedDisk.FreeSpaceInKb"), getFreeSpace() / 1024)); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("FormattedDisk.UsedSpaceInKb"), getUsedSpace() / 1024)); //$NON-NLS-1$
-		list.add(new DiskInformation(textBundle.get("FormattedDisk.ArchiveOrder"), getOrderName())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("FormattedDisk.DiskFormat"), getFormat())); //$NON-NLS-1$
 		return list;
 	}
@@ -326,26 +321,7 @@ public abstract class FormattedDisk implements DirectoryEntry {
 	 * there is no backing out!
 	 */
 	public abstract void format();
-	
-	/**
-	 * Write the AppleCommander boot code to track 0 sector 0 of
-	 * the disk.  This will work for a floppy, but may cause problems
-	 * for other devices.
-	 */
-	protected void writeBootCode() {
-		InputStream inputStream = getClass().
-			getResourceAsStream("/com/webcodepro/applecommander/storage/AppleCommander-boot.dump"); //$NON-NLS-1$
-		if (inputStream != null) {
-			byte[] bootCode = new byte[DiskConstants.SECTOR_SIZE];
-			try {
-				inputStream.read(bootCode, 0, bootCode.length);
-				writeSector(0, 0, bootCode);
-			} catch (IOException ignored) {
-				// Ignored
-			}
-		}
-	}
-	
+
 	/**
 	 * Returns the logical disk number.  This can be used to identify
 	 * between disks when a format supports multiple logical volumes.
@@ -388,14 +364,6 @@ public abstract class FormattedDisk implements DirectoryEntry {
 	public FormattedDisk getFormattedDisk() {
 		return this;
 	}
-	
-	/**
-	 * Resize the disk image to be its full size.  Only invoke this
-	 * method if a size does not match exception is thrown.
-	 */
-	public void resizeDiskImage() {
-		resizeDiskImage(getFreeSpace() + getUsedSpace());
-	}
 
 	/**
 	 * Indicates if this FormattedDisk supports a disk map.
@@ -418,7 +386,7 @@ public abstract class FormattedDisk implements DirectoryEntry {
         }
         DataBuffer data = getSource().readAllBytes();
         byte[] fileData = new byte[data.limit()];
-        data.read(fileData);
+        data.get(0, fileData);
         output.write(fileData);
         output.close();
         getSource().clearChanges();
@@ -437,9 +405,6 @@ public abstract class FormattedDisk implements DirectoryEntry {
      * Returns the source.
      */
     public Source getSource() {
-        if (imageOrder != null) {
-            return imageOrder.getSource();
-        }
         return source;
     }
 
@@ -459,73 +424,6 @@ public abstract class FormattedDisk implements DirectoryEntry {
     }
 
     /**
-     * Returns the name of the underlying image order.
-     * @return String
-     */
-    public String getOrderName() {
-        return (imageOrder == null) ? textBundle.get("FormattedDisk.Unknown") : imageOrder.getName();
-    }
-
-    /**
-     * Identify the size of this disk.
-     */
-    public int getPhysicalSize() {
-        if (getImageOrder() instanceof WozOrder) {
-            // Total hack since WOZ is currently a special case.
-            return getImageOrder().getPhysicalSize();
-        }
-        if (getSource() != null) {
-            return getSource().getSize();
-        }
-        return getImageOrder().getPhysicalSize();
-    }
-
-    /**
-     * Resize a disk image up to a larger size.  The primary intention is to
-     * "fix" disk images that have been created too small.  The primary culprit
-     * is ApplePC HDV images which dynamically grow.  Since AppleCommander
-     * works with a byte array, the image must grow to its full size.
-     * @param newSize
-     */
-    protected void resizeDiskImage(int newSize) {
-        if (newSize < getPhysicalSize()) {
-            throw new IllegalArgumentException(
-                    textBundle.get("Disk.ResizeDiskError")); //$NON-NLS-1$
-        }
-        DataBuffer backingBuffer = imageOrder.getSource().get(DataBuffer.class).orElseThrow();
-        backingBuffer.limit(newSize);
-    }
-
-    /**
-     * Read the block from the disk image.
-     */
-    public byte[] readBlock(int block) {
-        return imageOrder.readBlock(block);
-    }
-
-    /**
-     * Write the block to the disk image.
-     */
-    public void writeBlock(int block, byte[] data) {
-        imageOrder.writeBlock(block, data);
-    }
-
-    /**
-     * Retrieve the specified sector.
-     */
-    public byte[] readSector(int track, int sector) throws IllegalArgumentException {
-        return imageOrder.readSector(track, sector);
-    }
-
-    /**
-     * Write the specified sector.
-     */
-    public void writeSector(int track, int sector, byte[] bytes)
-            throws IllegalArgumentException {
-        imageOrder.writeSector(track, sector, bytes);
-    }
-
-    /**
      * Indicates if the disk has changed. Triggered when data is
      * written and cleared when data is saved.
      */
@@ -541,35 +439,58 @@ public abstract class FormattedDisk implements DirectoryEntry {
         return newImage;
     }
 
-    /**
-     * Answer with the physical ordering of the disk.
-     */
-    public ImageOrder getImageOrder() {
-        return imageOrder;
-    }
-
-    /**
-     * Set the physical ordering of the disk.
-     */
-    protected void setImageOrder(ImageOrder imageOrder) {
-        this.imageOrder = imageOrder;
-    }
-
-	/**
-	 * Change the physical ordering of the disk.  This must be implemented by all
-	 * subclasses.  See AppleUtil for common utility methods.  (It is assumed that a
-	 * disk needs to be copied in the appropriate order - i.e., by track and sector for
-	 * a DOS type disk or by blocks in a ProDOS type disk.)
-	 */
-	public abstract void changeImageOrder(ImageOrder imageOrder);
-	
 	/**
 	 * Writes the raw bytes into the file.  This bypasses any special formatting
 	 * of the data (such as prepending the data with a length and/or an address).
 	 * Typically, the FileEntry.setFileData method should be used. 
 	 */
 	public abstract void setFileData(FileEntry fileEntry, byte[] fileData) throws DiskFullException;
-	
+
+	/**
+	 * Retrieve the AppleCommander boot code.
+	 */
+	protected byte[] getBootCode() {
+		final String bootCode = "/com/webcodepro/applecommander/storage/AppleCommander-boot.dump";
+		try (InputStream is = getClass().getResourceAsStream(bootCode)) {
+			if (is != null) {
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				is.transferTo(baos);
+                // Ensure we're at 256 bytes
+                while (baos.size() < TrackSectorDevice.SECTOR_SIZE) {
+                    baos.write(0);
+                }
+				baos.close();
+				return baos.toByteArray();
+			}
+			throw new IOException("unable to locate boot code at " + bootCode);
+		} catch (IOException ex) {
+			throw new UncheckedIOException(ex);
+		}
+	}
+
+	/**
+	 * Resize the disk image to be its full size.  Only invoke this
+	 * method if a size does not match exception is thrown.
+	 */
+	public void resizeDiskImage() {
+		resizeDiskImage(getFreeSpace() + getUsedSpace());
+	}
+
+	/**
+	 * Resize a disk image up to a larger size.  The primary intention is to
+	 * "fix" disk images that have been created too small.  The primary culprit
+	 * is ApplePC HDV images which dynamically grow.  Since AppleCommander
+	 * works with a byte array, the image must grow to its full size.
+	 */
+	protected void resizeDiskImage(int newSize) {
+		if (newSize < source.getSize()) {
+			throw new IllegalArgumentException(
+				textBundle.get("Disk.ResizeDiskError")); //$NON-NLS-1$
+		}
+		DataBuffer backingBuffer = source.get(DataBuffer.class).orElseThrow();
+		backingBuffer.limit(newSize);
+	}
+
 	/**
 	 * Gives an indication on how this disk's geometry should be handled.
 	 */

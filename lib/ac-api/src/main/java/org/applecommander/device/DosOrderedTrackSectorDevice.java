@@ -19,17 +19,50 @@
  */
 package org.applecommander.device;
 
+import com.webcodepro.applecommander.storage.DiskConstants;
 import org.applecommander.capability.Capability;
+import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+
+import java.util.Optional;
 
 public class DosOrderedTrackSectorDevice implements TrackSectorDevice {
     private final Source source;
     private final Geometry geometry;
+    private final Hint orderHint;
 
+    // TODO FIXME do we still need an "unknown" ordered disk? If so, name kinda suchs. :-)
     public DosOrderedTrackSectorDevice(Source source) {
         this.source = source;
-        this.geometry = new Geometry(35, 16);   // assumed for now?
+        this.geometry = calculateGeometry(source);
+        this.orderHint = null;
+    }
+    public DosOrderedTrackSectorDevice(Source source, Hint orderHint) {
+        this.source = source;
+        this.geometry = calculateGeometry(source);
+        this.orderHint = orderHint;
+    }
+    private static Geometry calculateGeometry(Source source) {
+        if (source.isApproxEQ(DiskConstants.APPLE_13SECTOR_DISK)) {
+            int tracksOnDisk = source.getSize() / (13 * SECTOR_SIZE);
+            return new Geometry(tracksOnDisk, 13);
+        }
+        else {
+            int tracksOnDisk = source.getSize() / (16 * SECTOR_SIZE);
+            return new Geometry(tracksOnDisk, 16);
+        }
+    }
+
+    @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        return Container.get(iface, source);
+    }
+
+    @Override
+    public boolean is(Hint hint) {
+        return hint == orderHint;
     }
 
     @Override
@@ -44,16 +77,18 @@ public class DosOrderedTrackSectorDevice implements TrackSectorDevice {
 
     @Override
     public DataBuffer readSector(int track, int sector) {
-        assert(track < geometry.tracksOnDisk());
-        assert(sector < geometry.sectorsPerTrack());
-        return source.readBytes((track*16+sector)*SECTOR_SIZE, SECTOR_SIZE);
+        return source.readBytes(calculateOffset(track,sector), SECTOR_SIZE);
     }
 
     @Override
     public void writeSector(int track, int sector, DataBuffer data) {
+        assert(data.limit() == SECTOR_SIZE);
+        source.writeBytes(calculateOffset(track,sector), data);
+    }
+
+    public int calculateOffset(int track, int sector) {
         assert(track < geometry.tracksOnDisk());
         assert(sector < geometry.sectorsPerTrack());
-        assert(data.limit() == SECTOR_SIZE);
-        source.writeBytes((track*16+sector)*SECTOR_SIZE, data);
+        return (track * geometry.sectorsPerTrack() + sector) * SECTOR_SIZE;
     }
 }

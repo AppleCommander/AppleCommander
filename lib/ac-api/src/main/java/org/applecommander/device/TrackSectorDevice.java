@@ -19,18 +19,42 @@
  */
 package org.applecommander.device;
 
-import org.applecommander.capability.CapabilityProvider;
 import org.applecommander.util.DataBuffer;
 
-public interface TrackSectorDevice extends CapabilityProvider {
+public interface TrackSectorDevice extends Device {
     int SECTOR_SIZE = 256;
 
     Geometry getGeometry();
     DataBuffer readSector(int track, int sector);
     void writeSector(int track, int sector, DataBuffer data);
+    /**
+     * Format a disk. For most disks, this is simply a wipe to all zeros. If this
+     * disk has extended format (such as nibble formats), this is the opportunity
+     * to write out that format.
+     * <p/>
+     * NOTE: Adapter type devices have to be cautious about what device is responsible
+     * about formatting. For example, a UniDOS disk is 2x400K volumes on an 800K
+     * block device -- if they defer formatting to the 800K block device, a format on
+     * one volume also wipes out the other (in this case, do not defer to the "parent").
+     * However, if the block adapter contains a nibble-based TrackSectorDevice, the
+     * actual formatting needs to get to the nibble device so it can lay down sector
+     * markers and the rest of the track structure.
+     */
+    default void format() {
+        DataBuffer sectorData = DataBuffer.create(SECTOR_SIZE);
+        for (int track = 0; track < getGeometry().tracksOnDisk(); track++) {
+            for (int sector = 0; sector < getGeometry().sectorsPerTrack(); sector++) {
+                writeSector(track, sector, sectorData);
+            }
+        }
+    }
+
     record Geometry(int tracksOnDisk, int sectorsPerTrack) {
-        int getSectorsPerDisk() {
+        public int sectorsPerDisk() {
             return tracksOnDisk*sectorsPerTrack;
+        }
+        public int deviceSize() {
+            return sectorsPerDisk() * SECTOR_SIZE;
         }
     }
 }

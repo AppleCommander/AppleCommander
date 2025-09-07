@@ -20,10 +20,13 @@
 package com.webcodepro.applecommander.storage.os.dos33;
 
 import com.webcodepro.applecommander.storage.DiskFactory;
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import org.applecommander.device.BlockToTrackSectorAdapter;
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.hint.Hint;
+import org.applecommander.os.dos.OzdosAdapterStrategy;
+import org.applecommander.os.dos.UnidosAdapterStrategy;
 import org.applecommander.util.DataBuffer;
-import static com.webcodepro.applecommander.storage.DiskConstants.*;
+import static com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk.*;
 
 import java.util.*;
 
@@ -31,37 +34,62 @@ public class DosDiskFactory implements DiskFactory {
     @Override
     public void inspect(Context ctx) {
         // It seems easiest to gather all possibilities first...
-        List<FormattedDisk> tests = new ArrayList<>();
-        if (ctx.orders.size() == 1) {
-            ImageOrder order = ctx.orders.getFirst();
-            if (order.isSizeApprox(APPLE_800KB_DISK)) {
-                tests.add(new UniDosFormatDisk(ctx.source.getName(), order, UniDosFormatDisk.UNIDOS_DISK_1));
-                tests.add(new UniDosFormatDisk(ctx.source.getName(), order, UniDosFormatDisk.UNIDOS_DISK_2));
-                tests.add(new OzDosFormatDisk(ctx.source.getName(), order, OzDosFormatDisk.OZDOS_DISK_1));
-                tests.add(new OzDosFormatDisk(ctx.source.getName(), order, OzDosFormatDisk.OZDOS_DISK_2));
-            }
-            else {
-                tests.add(new DosFormatDisk(ctx.source.getName(), ctx.orders.getFirst()));
-            }
-        }
-        else if (ctx.orders.size() == 2) {
-            // Could be either, so count both (should be PO vs DO) and choose the longest catalog
-            FormattedDisk fdisk1 = new DosFormatDisk(ctx.source.getName(), ctx.orders.get(0));
-            FormattedDisk fdisk2 = new DosFormatDisk(ctx.source.getName(), ctx.orders.get(1));
-            int count1 = count(fdisk1, 17);
-            int count2 = count(fdisk2, 17);
-            // Note this assumes DO was the first ImageOrder in the list to give it an edge
-            if (count1 >= count2) tests.add(fdisk1);
-            else tests.add(fdisk2);
-        }
-        // ... and then test for DOS VTOC etc. Passing track number along to hopefully handle it later!
-        for (FormattedDisk fdisk : tests) {
-            try {
-                if (check(fdisk, 17)) {
-                    ctx.disks.add(fdisk);
+        final List<TrackSectorDevice> devices = new ArrayList<>();
+
+        // Look for DOS on 13-sector and 16-sector devices:
+        devices.addAll(ctx.trackSectorDevice()
+                .include13Sector()
+                .include16Sector(Hint.DOS_SECTOR_ORDER)
+                .get());
+        if (devices.size() == 2) {
+            // Likely a DSK image, need to pick between DO and PO...
+            TrackSectorDevice doDevice = null;
+            TrackSectorDevice poDevice = null;
+            for (TrackSectorDevice device : devices) {
+                if (device.is(Hint.DOS_SECTOR_ORDER) && doDevice == null) {
+                    doDevice = device;
                 }
-            } catch (Throwable t) {
-                // obviously wrong configuration
+                else if (device.is(Hint.PRODOS_BLOCK_ORDER) && poDevice == null) {
+                    poDevice = device;
+                }
+            }
+            if (doDevice == null || poDevice == null) {
+                throw new RuntimeException("unexpected situation: device is neither PO or DO -or- we have more than 1");
+            }
+            int doCount = count(doDevice);
+            int poCount = count(poDevice);
+            // Keep the one with the most catalog sectors (slight edge to DO)
+            devices.remove(doCount >= poCount ? poDevice : doDevice);
+        }
+
+        // Look for 800K block devices to find UniDOS or OzDOS:
+        ctx.blockDevice()
+                .include800K()
+                .get()
+                .forEach(blockDevice -> {
+                    devices.add(new BlockToTrackSectorAdapter(blockDevice, UnidosAdapterStrategy.UNIDOS_DISK_1));
+                    devices.add(new BlockToTrackSectorAdapter(blockDevice, UnidosAdapterStrategy.UNIDOS_DISK_2));
+                    devices.add(new BlockToTrackSectorAdapter(blockDevice, OzdosAdapterStrategy.OZDOS_DISK_1));
+                    devices.add(new BlockToTrackSectorAdapter(blockDevice, OzdosAdapterStrategy.OZDOS_DISK_2));
+                });
+
+        // ... and then test for DOS VTOC etc. Passing track number along to hopefully handle it later!
+        for (TrackSectorDevice device : devices) {
+            if (device.is(Hint.NONSTANDARD_NIBBLE_IMAGE)) {
+                // The assumption is that we need to scan (and keep scanning) for possible DOS catalogs...
+                for (int catalogTrack = 3; catalogTrack < device.getGeometry().tracksOnDisk(); catalogTrack++) {
+                    try {
+                        if (check(device, catalogTrack)) {
+                            ctx.disks.add(new DosFormatDisk(ctx.source.getName(), device, catalogTrack));
+                        }
+                    } catch (Throwable t) {
+                        // ignored. Sort of expected.
+                    }
+                }
+            }
+            // ... otherwise, just do the assumed track 17 check!
+            else if (check(device, CATALOG_TRACK)) {
+                ctx.disks.add(new DosFormatDisk(ctx.source.getName(), device, CATALOG_TRACK));
             }
         }
     }
@@ -69,8 +97,8 @@ public class DosDiskFactory implements DiskFactory {
     /**
      * Test this image order by looking for a likely DOS VTOC and set of catalog sectors.
      */
-    public boolean check(FormattedDisk disk, final int vtocTrack) {
-        DataBuffer vtoc = DataBuffer.wrap(disk.readSector(vtocTrack, 0));
+    public boolean check(TrackSectorDevice device, final int catalogTrack) {
+        DataBuffer vtoc = device.readSector(catalogTrack, VTOC_SECTOR);
         int nextTrack = vtoc.getUnsignedByte(0x01);
         int nextSector = vtoc.getUnsignedByte(0x02);
         int tracksPerDisk = vtoc.getUnsignedByte(0x34);
@@ -81,13 +109,13 @@ public class DosDiskFactory implements DiskFactory {
         }
         if (nextSector != 0 && nextTrack == 0) {
             // Some folks zeroed out the next track field, so try the same as VTOC (T17)
-            nextTrack = vtocTrack;
+            nextTrack = catalogTrack;
         }
         // Start with VTOC test
         boolean good = nextTrack <= tracksPerDisk       // expect catalog to be sensible
                     && nextSector > 0                   // expect catalog to be...
                     && nextSector < sectorsPerTrack     // ... a legitimate sector
-                    && tracksPerDisk >= vtocTrack       // expect sensible...
+                    && tracksPerDisk >= catalogTrack   // expect sensible...
                     && tracksPerDisk <= 50              // ... tracks per disk
                     && sectorsPerTrack > 10             // expect sensible...
                     && sectorsPerTrack <= 32;           // ... sectors per disk
@@ -114,7 +142,7 @@ public class DosDiskFactory implements DiskFactory {
             int mark = nextTrack * 100 + nextSector;
             if (visited.contains(mark)) break;
             visited.add(mark);
-            DataBuffer cat = DataBuffer.wrap(disk.readSector(nextTrack,nextSector));
+            DataBuffer cat = device.readSector(nextTrack,nextSector);
             nextTrack = cat.getUnsignedByte(0x01);
             nextSector = cat.getUnsignedByte(0x02);
             if (nextTrack == 0) break;  // at end
@@ -123,8 +151,8 @@ public class DosDiskFactory implements DiskFactory {
         return good;
     }
 
-    public int count(FormattedDisk disk, final int vtocTrack) {
-        DataBuffer vtoc = DataBuffer.wrap(disk.readSector(vtocTrack, 0));
+    public int count(TrackSectorDevice disk) {
+        DataBuffer vtoc = disk.readSector(CATALOG_TRACK, VTOC_SECTOR);
         int nextTrack = vtoc.getUnsignedByte(0x01);
         int nextSector = vtoc.getUnsignedByte(0x02);
         int tracksPerDisk = vtoc.getUnsignedByte(0x34);
@@ -143,7 +171,7 @@ public class DosDiskFactory implements DiskFactory {
             if (visited.contains(mark)) break;
             visited.add(mark);
             count++;
-            DataBuffer data = DataBuffer.wrap(disk.readSector(nextTrack, nextSector));
+            DataBuffer data = disk.readSector(nextTrack, nextSector);
             if (!checkCatalogValidity(data, tracksPerDisk, sectorsPerTrack)) break;
             nextTrack = data.getUnsignedByte(0x01);
             nextSector = data.getUnsignedByte(0x02);
@@ -153,8 +181,8 @@ public class DosDiskFactory implements DiskFactory {
 
     // Notes (all of this makes it more difficult to test!):
     // 1. File type isn't always as designated by Apple DOS.
-    // 2. Sector size is frequently bunk (as in > 560).
-    // 3. T/S pair can be bunk - trying to do the test but exclude "bad" components
+    // 2. Sector size in the file entry is frequently bunk (as in > 560).
+    // 3. T/S pair can be bunk - trying to do the test and yet exclude "bad" components
     public boolean checkCatalogValidity(DataBuffer data, int tracksPerDisk, int sectorsPerTrack) {
         int nextTrack = data.getUnsignedByte(0x01);
         int nextSector = data.getUnsignedByte(0x02);

@@ -19,31 +19,32 @@
  */
 package com.webcodepro.applecommander.storage.os.nakedos;
 
-import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFactory;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 
 public class NakedosDiskFactory implements DiskFactory {
     @Override
     public void inspect(Context ctx) {
-        ctx.orders.forEach(order -> {
-            if (check(order)) {
-                ctx.disks.add(new NakedosFormatDisk(ctx.source.getName(), order));
-            }
-        });
+        ctx.trackSectorDevice()
+                .include16Sector(Hint.NIBBLE_SECTOR_ORDER)
+                .get()
+                .forEach(device -> {
+                    if (check(device)) {
+                        ctx.disks.add(new NakedosFormatDisk(ctx.source.getName(), device));
+                    }
+                });
     }
 
-    public boolean check(ImageOrder image) {
+    public boolean check(TrackSectorDevice device) {
         boolean good = false;
-        if (image.isSizeApprox(DiskConstants.APPLE_140KB_DISK) || image.isSizeApprox(DiskConstants.APPLE_140KB_NIBBLE_DISK)) {
+        if (device.getGeometry().sectorsPerDisk() == 560) {
             final int catalogSize = 560;      // 35 tracks, 16 bytes per track
             // Capture entire catalog
             DataBuffer cat = DataBuffer.create(catalogSize);
             for (int i=0; i<3; i++) {
-                // NOTE: Documented as sectors A..C but is really 9..B (https://bitbucket.org/martin.haye/super-mon/src/master/)
-                int sector = NakedosFormatDisk.sectorTranslate[9+i];
-                DataBuffer data = DataBuffer.wrap(image.readSector(0, sector));
+                DataBuffer data = device.readSector(0, NakedosFormatDisk.VTOC_SECTOR+i);
                 if (i == 0) {
                     cat.put(0, data.slice(0xd0, 0x30));
                 }

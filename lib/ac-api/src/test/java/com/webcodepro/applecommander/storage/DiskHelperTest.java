@@ -227,6 +227,27 @@ public class DiskHelperTest {
         assertCanReadFiles(disks);
     }
 
+    @Test
+    public void testCPMV233Disk() throws DiskException, IOException {
+        FormattedDisk[] disks = showDirectory(config.getDiskDir() +
+                "/CPMV233.DSK");
+        assertCanReadFiles(disks);
+    }
+
+    @Test
+    public void testCPAM51BDisk() throws DiskException, IOException {
+        FormattedDisk[] disks = showDirectory(config.getDiskDir() +
+                "/CPAM51B.dsk");
+        assertCanReadFiles(disks);
+    }
+
+    @Test
+    public void testOriginal32SystemMasterStd() throws DiskException, IOException {
+        FormattedDisk[] disks = showDirectory(config.getDiskDir() +
+                "/original32sysmasstd.d13");
+        assertCanReadFiles(disks);
+    }
+
 	protected FormattedDisk[] showDirectory(String imageName) throws IOException, DiskException {
         Source source = Sources.create(imageName).orElseThrow();
         DiskFactory.Context ctx = Disks.inspect(source);

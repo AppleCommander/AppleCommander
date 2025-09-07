@@ -41,7 +41,7 @@ public interface Container {
      * {@snippet lang=java :
      *     @Override
      *     public <T> Optional<T> get(Class<T> iface) {
-     *         return Container.get(iface, this, object1, object2);
+     *         return Container.get(iface, object1, object2);
      *     }
      * }
      */

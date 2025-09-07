@@ -25,11 +25,10 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.util.AppleUtil;
 
 import com.webcodepro.applecommander.util.Range;
-import io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions;
+import io.github.applecommander.acx.base.ReadOnlyDiskContextCommandOptions;
 import io.github.applecommander.acx.converter.IntegerTypeConverter;
 import io.github.applecommander.acx.converter.RangeTypeConverter;
 import io.github.applecommander.disassembler.api.Disassembler;
@@ -38,13 +37,16 @@ import io.github.applecommander.disassembler.api.InstructionSet;
 import io.github.applecommander.disassembler.api.mos6502.InstructionSet6502;
 import io.github.applecommander.disassembler.api.sweet16.InstructionSetSWEET16;
 import io.github.applecommander.disassembler.api.switching6502.InstructionSet6502Switching;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.nibble.NibbleTrackReaderWriter;
+import org.applecommander.device.TrackSectorDevice;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 
 @Command(name = "dump", description = "Dump a block or sector.", sortOptions = false)
-public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
+public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
     @ArgGroup(heading = "%nOutput Selection:%n")
     private OutputSelection output = new OutputSelection();
 
@@ -53,26 +55,58 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
 
     @Override
     public int handleCommand() throws Exception {
-        FormattedDisk disk = disks.getFirst();
         if (options.coordinate.blockRangeSelection != null) {
+            BlockDevice device = blockDevice()
+                    .orElseThrow(() -> new RuntimeException("there is no block device available"));
             options.coordinate.blockRangeSelection.blocks.stream().forEach(block -> {
-                validateBlockNum(disk, block);
+                validateBlockNum(device, block);
                 options.includesBootSector = block == 0;
-                byte[] data = disk.readBlock(block);
-                System.out.printf("Block #%d:\n", block);
-                System.out.println(output.format(options, data));
+                try {
+                    byte[] data = device.readBlock(block).asBytes();
+                    System.out.printf("Block #%d:\n", block);
+                    System.out.println(output.format(options, data));
+                } catch (Throwable t) {
+                    System.err.println(t.getMessage());
+                }
             });
             return 0;
         }
         else if (options.coordinate.trackSectorRangeSelection != null) {
+            TrackSectorDevice device = trackSectorDevice()
+                    .orElseThrow(() -> new RuntimeException("there is no track/sector device available"));
             options.coordinate.trackSectorRangeSelection.tracks.stream().forEach(track -> {
                 options.coordinate.trackSectorRangeSelection.sectors.stream().forEach(sector -> {
-                    validateTrackAndSector(disk, track, sector);
+                    validateTrackAndSector(device, track, sector);
                     options.includesBootSector = track == 0 && sector == 0;
-                    byte[] data = disk.readSector(track, sector);
-                    System.out.printf("Track %02d, Sector %02d:\n", track, sector);
-                    System.out.println(output.format(options, data));
+                    try {
+                        byte[] data = device.readSector(track, sector).asBytes();
+                        System.out.printf("Track %02d, Sector %02d:\n", track, sector);
+                        System.out.println(output.format(options, data));
+                    } catch (Throwable t) {
+                        System.err.println(t.getMessage());
+                    }
                 });
+            });
+            return 0;
+        }
+        else if (options.coordinate.nibbleTrackRangeSelection != null) {
+            if (context().nibbleTrackReaderWriter == null) {
+                throw new RuntimeException("This is not a nibble device.");
+            }
+            NibbleTrackReaderWriter trackReaderWriter = context().nibbleTrackReaderWriter;
+            options.coordinate.nibbleTrackRangeSelection.tracks.stream().forEach(track -> {
+                final int tracksPerDisk = trackReaderWriter.getTracksOnDevice();
+                if (track < 0 || track >= tracksPerDisk) {
+                    String errormsg = String.format("The track number(%d) is out of range(0-%d) on this image.", track, tracksPerDisk-1);
+                    throw new IllegalArgumentException(errormsg);
+                }
+                try {
+                    byte[] data = trackReaderWriter.readTrackData(track).asBytes();
+                    System.out.printf("Track %02d\n", track);
+                    System.out.println(output.format(options, data));
+                } catch (Throwable t) {
+                    System.err.println(t.getMessage());
+                }
             });
             return 0;
         }
@@ -80,8 +114,8 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
         return 1;
     }
 
-    public void validateBlockNum(FormattedDisk disk, int block) throws IllegalArgumentException {
-        final int blocksOnDevice = disk.getImageOrder().getBlocksOnDevice();
+    public void validateBlockNum(BlockDevice device, int block) throws IllegalArgumentException {
+        final int blocksOnDevice = device.getGeometry().blocksOnDevice();
 
         if (block < 0 || block >= blocksOnDevice) {
             String errormsg = String.format("The block number(%d) is out of range(0-%d) on this image.", block, blocksOnDevice-1);
@@ -89,9 +123,9 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
         }
     }
 
-    public void validateTrackAndSector(FormattedDisk disk, int track, int sector) throws IllegalArgumentException  {
-        final int tracksPerDisk = disk.getImageOrder().getTracksPerDisk();
-        final int sectorsPerTrack = disk.getImageOrder().getSectorsPerTrack();
+    public void validateTrackAndSector(TrackSectorDevice device, int track, int sector) throws IllegalArgumentException  {
+        final int tracksPerDisk = device.getGeometry().tracksOnDisk();
+        final int sectorsPerTrack = device.getGeometry().sectorsPerTrack();
 
         if (track < 0 || track >= tracksPerDisk) {
             String errormsg = String.format("The track number(%d) is out of range(0-%d) on this image.", track, tracksPerDisk-1);
@@ -160,7 +194,7 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
         // correctly...
         private boolean includesBootSector;
 
-        @ArgGroup(multiplicity = "1", heading = "%nCoordinate Selection: (use '0' or '0-5' for a range)%n")
+        @ArgGroup(multiplicity = "1")
         private CoordinateRangeSelection coordinate = new CoordinateRangeSelection();
 		
         @ArgGroup(heading = "%nDisassembler Options:%n", exclusive = false)
@@ -210,10 +244,12 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
     }
 
     public static class CoordinateRangeSelection {
-        @ArgGroup(exclusive = false)
+        @ArgGroup(exclusive = false, heading = "%nBlock devices: (use '0' or '0-5' for a range)%n")
         private BlockRangeSelection blockRangeSelection;
-        @ArgGroup(exclusive = false)
+        @ArgGroup(exclusive = false, heading = "%nTrack/Sector devices: (use '0' or '0-5' for a range)%n")
         private TrackSectorRangeSelection trackSectorRangeSelection;
+        @ArgGroup(exclusive = false, heading = "%nNibble track/sector devices: (use '0' or '0-5' for a range)%n")
+        private NibbleTrackRangeSelection nibbleTrackRangeSelection;
     }
 
     public static class BlockRangeSelection {
@@ -228,5 +264,10 @@ public class DumpCommand extends ReadOnlyDiskImageCommandOptions {
         @Option(names = { "-s", "--sector" }, required = true, description = "Sector number(s).",
                 converter = RangeTypeConverter.class)
         private Range sectors;
+    }
+    public static class NibbleTrackRangeSelection {
+        @Option(names = "-n", description = "Track number(s).",
+                converter = RangeTypeConverter.class)
+        private Range tracks;
     }
 }

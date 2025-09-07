@@ -20,15 +20,16 @@
 package com.webcodepro.applecommander.storage.os.rdos;
 
 import com.webcodepro.applecommander.storage.*;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.source.Source;
+import org.applecommander.util.Container;
+import org.applecommander.util.DataBuffer;
+
 import static com.webcodepro.applecommander.storage.DiskConstants.*;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Manages a disk that is in the RDOS format.
@@ -48,16 +49,6 @@ import java.util.Map;
  */
 public class RdosFormatDisk extends FormattedDisk {
 	private TextBundle textBundle = StorageBundle.getInstance();
-	/**
-	 * RDOS 2.1/3.2 disks are structured in a different order than DOS 3.3.
-	 * This table interpolates between the RDOS ordering and the DOS
-	 * ordering.  It appears that RDOS may use the physical sector number
-	 * instead of the logical sector.
-	 */
-	public static final int[] sectorSkew = {
-		0, 7, 0x0e, 6, 0x0d, 5, 0x0c, 4,
-		0x0b, 3, 0x0a, 2, 9, 1, 8, 0x0f 
-		};
 	/**
 	 * Specifies the length of a file entry.
 	 */
@@ -82,22 +73,6 @@ public class RdosFormatDisk extends FormattedDisk {
 			"B", "BIN"
 		);
 
-    private final int sectorsPerTrack;
-
-	/**
-	 * 13 sectors for RDOS 2.1/3.2, native sectoring (16) for RDOS 3.3
-	 */
-	private int SectorsPerTrack() {
-        return sectorsPerTrack;
-	}
-
-	/**
-	 * 455 blocks for RDOS 2.1/3.2, 560 for RDOS 3.3
-	 */
-	private int BlocksOnDisk() {
-		return TRACKS_ON_DISK * SectorsPerTrack();
-	}
-
 	/**
 	 * Use this inner interface for managing the disk usage data.
 	 * This off-loads format-specific implementation to the implementing class.
@@ -116,13 +91,13 @@ public class RdosFormatDisk extends FormattedDisk {
 		private int location = -1;
 		private BitSet bitmap = null;
 		public boolean hasNext() {
-			return location == -1 || location < BlocksOnDisk() - 1;
+			return location == -1 || location < device.getGeometry().blocksOnDevice() - 1;
 		}
 		public void next() {
 			if (bitmap == null) {
-				bitmap = new BitSet(BlocksOnDisk());
+				bitmap = new BitSet(device.getGeometry().blocksOnDevice());
 				// mark all blocks as unused
-				for (int b=0; b<BlocksOnDisk(); b++) {
+				for (int b=0; b<device.getGeometry().blocksOnDevice(); b++) {
 					bitmap.set(b);
 				}
 				// for each file, mark the blocks used
@@ -146,73 +121,50 @@ public class RdosFormatDisk extends FormattedDisk {
 			return !bitmap.get(location);	// false = used
 		}
 	}
-	
+
+    private BlockDevice device;
+
 	/**
 	 * Constructor for RdosFormatDisk.
 	 */
-	public RdosFormatDisk(String filename, ImageOrder imageOrder, int sectorsPerTrack) {
-		super(filename, imageOrder);
-        this.sectorsPerTrack = sectorsPerTrack;
+	public RdosFormatDisk(String filename, BlockDevice device) {
+		super(filename, device.get(Source.class).orElseThrow());
+        this.device = device;
 	}
 	
 	/**
 	 * Create a RdosFormatDisk.
 	 */
-	public static RdosFormatDisk[] create(String filename, ImageOrder imageOrder) {
-		RdosFormatDisk disk = new RdosFormatDisk(filename, imageOrder, 16);
+	public static RdosFormatDisk[] create(String filename, BlockDevice device) {
+		RdosFormatDisk disk = new RdosFormatDisk(filename, device);
 		disk.format();
 		return new RdosFormatDisk[] { disk };
 	}
 
-	/**
-	 * Read an RDOS block.  The sector skewing for RDOS 2.1/3.2 is different.
-	 * This routine will convert the block number to a DOS track and sector,
-	 * handling the sector change-over.  The readSector method then should
-	 * take care of various image formats.
-	 * <p>
-	 * Note that sectorSkew has the full 16 sectors, even though RDOS 2.1/3.2
-	 * itself is a 13 sector format.
-	 */
-	public byte[] readRdosBlock(int block) {
-		int s = SectorsPerTrack();
-		int track = block / s;
-		int sector = block % s;
-		if (s == 13) {
-			sector = sectorSkew[sector];
-		}
-		return readSector(track, sector);
-	}
-	
-	/**
-	 * Write an RDOS block.  The sector skewing for RDOS2.1/3/2 is different.
-	 * This routine will convert the block number to a DOS track and sector,
-	 * handling the sector change-over.  The writeSector method then should
-	 * take care of various image formats.
-	 * <p>
-	 * Note that sectorSkew has the full 16 sectors, even though RDOS
-	 * itself is a 13 sector format.
-	 */
-	public void writeRdosBlock(int block, byte[] data) {
-		int s = SectorsPerTrack();
-		int track = block / s;
-		int sector = block % s;
-		if (s == 13) {
-			sector = sectorSkew[sector];
-		}
-		writeSector(track, sector, data);
-	}
+    @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        return Container.get(iface, device);
+    }
+
+    public int getSectorsPerTrack() {
+        return switch(device.getGeometry().blocksOnDevice()) {
+            case DOS32_SECTORS_ON_115KB_DISK -> 13;
+            case DOS33_SECTORS_ON_140KB_DISK -> 16;
+            default -> throw new RuntimeException("Unexpected RDOS block count: " + device.getGeometry().blocksOnDevice());
+        };
+    }
 
 	/**
 	 * RDOS really does not have a disk name.  Fake one.
 	 */
 	public String getDiskName() {
-		if (SectorsPerTrack() == 13) {
+		if (getSectorsPerTrack() == 13) {
 			/* Use the comment/tag added in the 13->16 sector conversion */
-			byte[] block = readRdosBlock(4);
+			byte[] block = device.readBlock(4).asBytes();
 			return AppleUtil.getString(block, 0xe0, 0x20);
 		} else {
 			/* Use the name of the OS (catalog entry zero) */
-			byte[] block = readSector(1, 0x0);
+			byte[] block = device.readBlock(16).asBytes();
 			return AppleUtil.getString(block, 0x0, 0x18);
 		}
 	}
@@ -222,8 +174,9 @@ public class RdosFormatDisk extends FormattedDisk {
 	 */
 	public List<FileEntry> getFiles() {
 		List<FileEntry> files = new ArrayList<>();
+        final int catalog = getSectorsPerTrack();
 		for (int b=0; b<CATALOG_SECTORS; b++) {
-			byte[] data = readRdosBlock(b + SectorsPerTrack());
+			byte[] data = device.readBlock(b + catalog).asBytes();
 			for (int i=0; i<data.length; i+= ENTRY_LENGTH) {
 				byte[] entry = new byte[ENTRY_LENGTH];
 				System.arraycopy(data, i, entry, 0, entry.length);
@@ -266,7 +219,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * Identify the operating system format of this disk.
 	 */
 	public String getFormat() {
-		if (SectorsPerTrack() == 13) {
+		if (getSectorsPerTrack() == 13) {
 			return textBundle.get("RdosFormatDisk.Rdos21"); //$NON-NLS-1$
 		} else {
 			return textBundle.get("RdosFormatDisk.Rdos33"); //$NON-NLS-1$
@@ -277,7 +230,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * Return the number of free blocks.
 	 */
 	public int getFreeBlocks() {
-		return BlocksOnDisk() - getUsedBlocks();
+		return device.getGeometry().blocksOnDevice() - getUsedBlocks();
 	}
 	
 	/**
@@ -318,7 +271,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * Get the length of the bitmap.
 	 */
 	public int getBitmapLength() {
-		return BlocksOnDisk();
+		return device.getGeometry().blocksOnDevice();
 	}
 	
 	/**
@@ -340,7 +293,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 */
 	public List<DiskInformation> getDiskInformation() {
 		List<DiskInformation> list = super.getDiskInformation();
-		list.add(new DiskInformation(textBundle.get("TotalBlocks"), BlocksOnDisk())); //$NON-NLS-1$
+		list.add(new DiskInformation(textBundle.get("TotalBlocks"), device.getGeometry().blocksOnDevice())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("FreeBlocks"), getFreeBlocks())); //$NON-NLS-1$
 		list.add(new DiskInformation(textBundle.get("UsedBlocks"), getUsedBlocks())); //$NON-NLS-1$
 		return list;
@@ -435,7 +388,7 @@ public class RdosFormatDisk extends FormattedDisk {
 		byte[] fileData = new byte[rdosEntry.getSizeInBlocks() * SECTOR_SIZE];
 		int offset = 0;
 		for (int blockOffset = 0; blockOffset < rdosEntry.getSizeInBlocks(); blockOffset++) {
-			byte[] blockData = readRdosBlock(startingBlock + blockOffset);
+			byte[] blockData = device.readBlock(startingBlock + blockOffset).asBytes();
 			System.arraycopy(blockData, 0, fileData, offset, blockData.length);
 			offset+= blockData.length;
 		}
@@ -454,27 +407,27 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * @see com.webcodepro.applecommander.storage.FormattedDisk#format()
 	 */
 	public void format() {
-		getImageOrder().format();
-		writeBootCode();
+		device.format();
+        device.writeBlock(0, DataBuffer.wrap(getBootCode()));
 		// minor hack - ensure that AppleCommander itself recognizes the
 		// RDOS disk!
-		byte[] block = readSector(0, 0x0d);
+		byte[] block = device.readBlock(0x0d).asBytes();
 		AppleUtil.setString(block, 0xe0, textBundle.get("RdosFormatDisk.IdentifierText"), 0x20); //$NON-NLS-1$
-		writeSector(0, 0x0d, block);
+		device.writeBlock(0x0d, DataBuffer.wrap(block));
 		// a hack - until real code goes here.
 		block = new byte[256];
 		block[0] = 0x60;
-		writeSector(1, 9, block);
+        device.writeBlock(25, DataBuffer.wrap(block));
 		// write the first directory entry
 		// FIXME - this should use FileEntry!
-		byte[] data = readRdosBlock(13);
+		byte[] data = device.readBlock(13).asBytes();
 		AppleUtil.setString(data, 0x00, textBundle.get("RdosFormatDisk.InitialSystemFile"), 0x18); //$NON-NLS-1$
 		AppleUtil.setString(data, 0x18, "B", 0x01); //$NON-NLS-1$
 		data[0x19] = 26;
 		AppleUtil.setWordValue(data, 0x1a, 0x1000);
 		AppleUtil.setWordValue(data, 0x1c, 6656);
 		AppleUtil.setWordValue(data, 0x1e, 0);
-		writeRdosBlock(13, data);
+		device.writeBlock(13, DataBuffer.wrap(data));
 	}
 
 	/**
@@ -534,17 +487,6 @@ public class RdosFormatDisk extends FormattedDisk {
 	 */	
 	public boolean supportsDiskMap() {
 		return true;
-	}
-
-
-	/**
-	 * Change to a different ImageOrder.  Remains in RDOS format but
-	 * the underlying order can change.
-	 * @see ImageOrder
-	 */
-	public void changeImageOrder(ImageOrder imageOrder) {
-		AppleUtil.changeImageOrderByTrackAndSector(getImageOrder(), imageOrder);
-		setImageOrder(imageOrder);
 	}
 
 	/**

@@ -19,8 +19,9 @@
  */
 package com.webcodepro.applecommander.storage.os.cpm;
 
-import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFactory;
+import org.applecommander.device.*;
+import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 
 /**
@@ -31,14 +32,18 @@ import org.applecommander.util.DataBuffer;
 public class CpmDiskFactory implements DiskFactory {
     @Override
     public void inspect(Context ctx) {
-        ctx.orders.forEach(order -> {
-            if (order.isSizeApprox(DiskConstants.APPLE_140KB_DISK) || order.isSizeApprox(DiskConstants.APPLE_140KB_NIBBLE_DISK)) {
-                CpmFormatDisk disk = new CpmFormatDisk(ctx.source.getName(), order);
-                if (check(disk)) {
-                    ctx.disks.add(disk);
-                }
-            }
-        });
+        ctx.trackSectorDevice()
+                .include16Sector(Hint.DOS_SECTOR_ORDER)
+                .get()
+                .forEach(device -> {
+                    BlockDevice blockDevice = new TrackSectorToBlockAdapter(
+                            SkewedTrackSectorDevice.dosToCpmSkew(device),
+                            TrackSectorToBlockAdapter.BlockStyle.CPM);
+                    CpmFormatDisk disk = new CpmFormatDisk(ctx.source.getName(), blockDevice);
+                    if (check(disk)) {
+                        ctx.disks.add(disk);
+                    }
+                });
     }
 
     public boolean check(CpmFormatDisk disk) {
@@ -53,7 +58,7 @@ public class CpmDiskFactory implements DiskFactory {
             if (e5count != CpmFileEntry.ENTRY_LENGTH) {	// Not all bytes were 0xE5
                 // Check user number. Should be 0-15 or 0xE5
                 int userNumber = entries.getUnsignedByte(offset);
-                if (userNumber > 15 && userNumber != 0xe5) return false;
+                if (userNumber > 0x1f && userNumber != 0xe5) return false;
                 // Validate filename has highbit off and is a character
                 for (int i=0; i<8; i++) {
                     int ch = entries.getUnsignedByte(offset+1+i);

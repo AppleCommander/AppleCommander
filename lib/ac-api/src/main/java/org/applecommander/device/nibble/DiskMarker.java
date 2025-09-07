@@ -17,25 +17,35 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.applecommander.device;
+package org.applecommander.device.nibble;
 
-public record DiskMarker(int[] addressProlog, int[] addressEpilog, int[] dataProlog, int[] dataEpilog) {
+/**
+ * A disk marker is just the prolog and epilog bytes for the address field and data field.
+ * It also serves as the keeper of expected sectors and codec.
+ */
+public record DiskMarker(int sectorsOnTrack, NibbleDiskCodec codec, int[] addressProlog, int[] addressEpilog, int[] dataProlog, int[] dataEpilog) {
         public static DiskMarker disk525sector16() {
-            return build().addressProlog(0xd5, 0xaa, 0x96).addressEpilog(0xde, 0xaa)
-                          .dataProlog(0xd5, 0xaa, 0xad).dataEpilog(0xde, 0xaa).get();
+            return build(16).addressProlog(0xd5, 0xaa, 0x96).addressEpilog(0xde, 0xaa, 0xeb)
+                    .dataProlog(0xd5, 0xaa, 0xad).dataEpilog(0xde, 0xaa, 0xeb).get();
         }
         public static DiskMarker disk525sector13() {
-            return build().addressProlog(0xd5, 0xaa, 0xb5).addressEpilog(0xde, 0xaa)
-                          .dataProlog(0xd5, 0xaa, 0xad).dataEpilog(0xde, 0xaa).get();
+            return build(13).addressProlog(0xd5, 0xaa, 0xb5).addressEpilog(0xde, 0xaa, 0xeb)
+                    .dataProlog(0xd5, 0xaa, 0xad).dataEpilog(0xde, 0xaa, 0xeb).get();
         }
-        public static Builder build() {
-            return new Builder();
+        public static Builder build(int sectorsOnTrack) {
+            return new Builder(sectorsOnTrack);
         }
         public static class Builder {
+            private final int sectorsOnTrack;
+            private final NibbleDiskCodec codec;
             private int[] addressProlog;
             private int[] addressEpilog;
             private int[] dataProlog;
             private int[] dataEpilog;
+            private Builder(int sectorsOnTrack) {
+                this.sectorsOnTrack = sectorsOnTrack;
+                this.codec = (sectorsOnTrack == 13) ? new Nibble53Disk525Codec() : new Nibble62Disk525Codec();
+            }
             public Builder addressProlog(int... addressProlog) {
                 this.addressProlog = addressProlog;
                 return this;
@@ -53,7 +63,7 @@ public record DiskMarker(int[] addressProlog, int[] addressEpilog, int[] dataPro
                 return this;
             }
             public DiskMarker get() {
-                return new DiskMarker(addressProlog, addressEpilog, dataProlog, dataEpilog);
+                return new DiskMarker(sectorsOnTrack, codec, addressProlog, addressEpilog, dataProlog, dataEpilog);
             }
         }
     }

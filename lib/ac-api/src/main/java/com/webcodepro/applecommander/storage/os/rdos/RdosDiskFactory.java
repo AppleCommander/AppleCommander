@@ -21,8 +21,12 @@ package com.webcodepro.applecommander.storage.os.rdos;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFactory;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
+import org.applecommander.device.*;
+import org.applecommander.hint.Hint;
+import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
+
+import static com.webcodepro.applecommander.storage.DiskConstants.DOS32_SECTORS_ON_115KB_DISK;
 import static com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk.*;
 
 import java.util.Set;
@@ -32,39 +36,54 @@ public class RdosDiskFactory implements DiskFactory {
 
     @Override
     public void inspect(Context ctx) {
-        ctx.orders.forEach(order -> {
-            int sectorsPerTrack = check(order);
-            if (sectorsPerTrack > 0) {
-                ctx.disks.add(new RdosFormatDisk(ctx.source.getName(), order, sectorsPerTrack));
-            }
-        });
+        ctx.trackSectorDevice()
+                .include13Sector()
+                .include16Sector(Hint.DOS_SECTOR_ORDER)
+                .get()
+                .forEach(device -> {
+                    int sectorsPerTrack = check(device);
+                    if (sectorsPerTrack > 0) {
+                        // Detect if we're a 16 sector disk but RDOS expects only 13 sectors:
+                        if (sectorsPerTrack != device.getGeometry().sectorsPerTrack()) {
+                            // 13-sector disks are in physical order, so fix it:
+                            device = SkewedTrackSectorDevice.dosToPhysicalSkew(device);
+                            // And make the 16-sector disk a fake 13-sector disk:
+                            device = SkewedTrackSectorDevice.truncate16sectorTo13(device);
+                        }
+                        BlockDevice blockDevice = new TrackSectorToBlockAdapter(device, TrackSectorToBlockAdapter.BlockStyle.RDOS);
+                        ctx.disks.add(new RdosFormatDisk(ctx.source.getName(), blockDevice));
+                    }
+                });
     }
 
     /**
      * Check for RDOS catalog. Note that it might be DOS ordered -or- physical sector (13-sector disks).
+     * The {@code testForCatalogCode()} method essentially validates sector ordering is correct.
      * Returns sectors per track (13 or 16).
      */
-    public int check(ImageOrder order) {
+    public int check(TrackSectorDevice device) {
         boolean good = false;
-        if (order.isSizeApprox(DiskConstants.APPLE_140KB_DISK) || order.isSizeApprox(DiskConstants.APPLE_140KB_NIBBLE_DISK)) {
+        Source source = device.get(Source.class).orElseThrow();
+        if (source.isApproxEQ(DiskConstants.APPLE_140KB_DISK) || source.isApproxEQ(DiskConstants.APPLE_140KB_NIBBLE_DISK)) {
             // 16-sector disks are DOS ordered...
             good = true;
             for (int s=0; s<CATALOG_SECTORS; s++) {
-                DataBuffer data = DataBuffer.wrap(order.readSector(1, s));
+                DataBuffer data = device.readSector(1, s);
                 good = testCatalogSector(data, 560);
                 if (!good) break;
             }
-            if (good && testForCatalogCode(order, 0, 1)) {            //testForStartupFile(order, 0x60, 15)) {
+            if (good && testForCatalogCode(device, 0, 1)) {
                 return 16;
             }
             else {
                 // 13-sector disks are "physical" ordered...
+                device = SkewedTrackSectorDevice.dosToPhysicalSkew(device);
                 for (int s=0; s<CATALOG_SECTORS; s++) {
-                    DataBuffer data = DataBuffer.wrap(order.readSector(1,sectorSkew[s]));
-                    good = testCatalogSector(data, 455);
+                    DataBuffer data = device.readSector(1,s);
+                    good = testCatalogSector(data, DOS32_SECTORS_ON_115KB_DISK);
                     if (!good) break;
                 }
-                if (good && testForCatalogCode(order, 1, 9)) {    // testForStartupFile(order, 0xfa, 4, 5)) {
+                if (good && testForCatalogCode(device, 1, 12)) {
                     return 13;
                 }
             }
@@ -115,8 +134,8 @@ public class RdosDiskFactory implements DiskFactory {
      * This is (hopefully) the determinant of correct sector ordering. Sector 1 (16-sector image) and
      * 9 (13-sector image) get mapped differently between DO and PO disks.
      */
-    public boolean testForCatalogCode(ImageOrder order, int track, int sector) {
-        DataBuffer data = DataBuffer.wrap(order.readSector(track,sector));
+    public boolean testForCatalogCode(TrackSectorDevice device, int track, int sector) {
+        DataBuffer data = device.readSector(track,sector);
         final String header = "  LEN         -<NAME>-       LENGTH BLK";
         final String notInUse = "<NOT IN USE>";
         return locate(data,header) && locate(data,notInUse);

@@ -19,6 +19,13 @@
  */
 package com.webcodepro.applecommander.ui.swt.wizard.diskimage;
 
+import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
+import org.applecommander.device.*;
+import org.applecommander.device.nibble.NibbleTrackReaderWriter;
+import org.applecommander.hint.Hint;
+import org.applecommander.image.NibbleImage;
+import org.applecommander.os.dos.OzdosAdapterStrategy;
+import org.applecommander.os.dos.UnidosAdapterStrategy;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.eclipse.swt.widgets.Shell;
@@ -27,15 +34,9 @@ import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
-import com.webcodepro.applecommander.storage.os.dos33.OzDosFormatDisk;
-import com.webcodepro.applecommander.storage.os.dos33.UniDosFormatDisk;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
-import com.webcodepro.applecommander.storage.physical.DosOrder;
-import com.webcodepro.applecommander.storage.physical.ImageOrder;
-import com.webcodepro.applecommander.storage.physical.NibbleOrder;
-import com.webcodepro.applecommander.storage.physical.ProdosOrder;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 import com.webcodepro.applecommander.ui.swt.wizard.Wizard;
@@ -82,7 +83,7 @@ public class DiskImageWizard extends Wizard {
 	 * Get the FormattedDisk as specified.
 	 */
 	public FormattedDisk[] getFormattedDisks() {
-		StringBuffer name = new StringBuffer(fileName);
+		StringBuilder name = new StringBuilder(fileName);
 		if (isHardDisk()) {
 			name.append(".hdv"); //$NON-NLS-1$
 		} else if (order == ORDER_DOS) {
@@ -94,33 +95,54 @@ public class DiskImageWizard extends Wizard {
 			name.append(".gz"); //$NON-NLS-1$
 		}
 		Source source = DataBufferSource.create(getSize(), name.toString()).get();
-		ImageOrder imageOrder = null;
+		BlockDevice blockDevice = null;
+		TrackSectorDevice sectorDevice = null;
 		switch (getOrder()) {
 			case ORDER_DOS:
-				imageOrder = new DosOrder(source);
+                sectorDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+                TrackSectorDevice skewedDevice  = SkewedTrackSectorDevice.dosToPascalSkew(sectorDevice);
+				blockDevice = new TrackSectorToBlockAdapter(skewedDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS);
 				break;
 			case ORDER_NIBBLE:
-				imageOrder = new NibbleOrder(source);
+                NibbleTrackReaderWriter readerWriter = new NibbleImage(source);
+                TrackSectorDevice physicalDevice  = TrackSectorNibbleDevice.create(readerWriter, 16);
+                sectorDevice = SkewedTrackSectorDevice.physicalToDosSkew(physicalDevice);
+                blockDevice = new TrackSectorToBlockAdapter(SkewedTrackSectorDevice.physicalToPascalSkew(physicalDevice),
+                        TrackSectorToBlockAdapter.BlockStyle.PRODOS);
 				break;
 			case ORDER_PRODOS:
-				imageOrder = new ProdosOrder(source);
+				blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
+                sectorDevice = new BlockToTrackSectorAdapter(blockDevice, new ProdosBlockToTrackSectorAdapterStrategy());
 				break;
+            default:
+                SwtUtil.showErrorDialog(getDialog(), "Bug!", "Unexpected order value: " + getOrder());
+                return null;
 		}
 		switch (format) {
 			case FORMAT_DOS33:
-				return DosFormatDisk.create(name.toString(), imageOrder);
+				return DosFormatDisk.create(name.toString(), sectorDevice);
 			case FORMAT_OZDOS:
-				return OzDosFormatDisk.create(name.toString(), imageOrder);
+				return DosFormatDisk.create(name.toString(), blockDevice, OzdosAdapterStrategy.values());
 			case FORMAT_PASCAL:
-				return PascalFormatDisk.create(name.toString(), volumeName, imageOrder);
+				return PascalFormatDisk.create(name.toString(), volumeName, blockDevice);
 			case FORMAT_PRODOS:
-				return ProdosFormatDisk.create(name.toString(), volumeName, imageOrder);
+				return ProdosFormatDisk.create(name.toString(), volumeName, blockDevice);
 			case FORMAT_RDOS:
-				return RdosFormatDisk.create(name.toString(), imageOrder);
+                BlockDevice rdosDevice = new TrackSectorToBlockAdapter(sectorDevice, TrackSectorToBlockAdapter.BlockStyle.RDOS);
+				return RdosFormatDisk.create(name.toString(), rdosDevice);
 			case FORMAT_UNIDOS:
-				return UniDosFormatDisk.create(name.toString(), imageOrder);
+				return DosFormatDisk.create(name.toString(), blockDevice, UnidosAdapterStrategy.values());
 			case FORMAT_CPM:
-				return CpmFormatDisk.create(name.toString(), imageOrder);
+                TrackSectorDevice cpmDevice = switch (getOrder()) {
+                    case ORDER_DOS -> SkewedTrackSectorDevice.dosToCpmSkew(sectorDevice);
+                    case ORDER_NIBBLE -> SkewedTrackSectorDevice.dosToCpmSkew(SkewedTrackSectorDevice.physicalToDosSkew(sectorDevice));
+                    case ORDER_PRODOS -> SkewedTrackSectorDevice.pascalToCpmSkew(sectorDevice);
+                    default -> null;
+                };
+                if (cpmDevice != null) {
+                    BlockDevice cpmBlock = new TrackSectorToBlockAdapter(cpmDevice, TrackSectorToBlockAdapter.BlockStyle.CPM);
+                    return CpmFormatDisk.create(name.toString(), cpmBlock);
+                }
 		}
 		return null;
 	}

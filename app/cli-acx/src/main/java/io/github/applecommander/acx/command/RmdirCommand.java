@@ -45,7 +45,7 @@ public class RmdirCommand extends ReadWriteDiskCommandOptions {
     
     @Override
     public int handleCommand() throws Exception {
-        FormattedDisk formattedDisk = disks.getFirst();
+        FormattedDisk formattedDisk = selectedDisks().getFirst();
         
         // Locate directory
         DirectoryEntry directory = formattedDisk;

@@ -20,30 +20,29 @@
 package com.webcodepro.applecommander.storage.os.prodos;
 
 import com.webcodepro.applecommander.storage.DiskFactory;
-import com.webcodepro.applecommander.storage.FormattedDisk;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 import static com.webcodepro.applecommander.storage.DiskConstants.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ProdosDiskFactory implements DiskFactory {
     @Override
     public void inspect(Context ctx) {
-        // It seems easiest to gather all possibilities first...
-        List<FormattedDisk> tests = new ArrayList<>();
-        ctx.orders.forEach(order -> tests.add(new ProdosFormatDisk(ctx.source.getName(), order)));
-        // ... and then test for ProDOS details:
-        for (FormattedDisk fdisk : tests) {
-            if (check(fdisk)) {
-                ctx.disks.add(fdisk);
-            }
-        }
+        ctx.blockDevice()
+                .include16Sector(Hint.PRODOS_BLOCK_ORDER)
+                .include800K()
+                .includeHDV()
+                .get()
+                .forEach(device -> {
+                    if (check(device)) {
+                        ctx.disks.add(new ProdosFormatDisk(ctx.source.getName(), device));
+                    }
+                });
     }
 
-    public boolean check(FormattedDisk fdisk) {
+    public boolean check(BlockDevice device) {
         int nextBlock = 2;
-        DataBuffer volumeDirectory = DataBuffer.wrap(fdisk.readBlock(nextBlock));
+        DataBuffer volumeDirectory = device.readBlock(nextBlock);
         int priorBlock = volumeDirectory.getUnsignedShort(0x00);
         int storageType = volumeDirectory.getUnsignedByte(0x04) >> 4;
         int entryLength = volumeDirectory.getUnsignedByte(0x23);
@@ -79,7 +78,7 @@ public class ProdosDiskFactory implements DiskFactory {
             nextBlock = volumeDirectory.getUnsignedShort(0x02);
             if (nextBlock == 0) break;
             if (nextBlock >= totalBlocks) return false;
-            volumeDirectory = DataBuffer.wrap(fdisk.readBlock(nextBlock));
+            volumeDirectory = device.readBlock(nextBlock);
         }
         return good;
     }

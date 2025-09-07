@@ -20,7 +20,11 @@
 package org.applecommander.device;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.hint.Hint;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+
+import java.util.Optional;
 
 /**
  * Adapts a <code>BlockDevice</code> to a <code>TrackSectorDevice</code>.
@@ -34,6 +38,16 @@ public class BlockToTrackSectorAdapter implements TrackSectorDevice {
         this.device = device;
         this.strategy = strategy;
         this.geometry = new Geometry(strategy.getTotalTracks(), strategy.getSectorsPerTrack());
+    }
+
+    @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        return Container.get(iface, device);
+    }
+
+    @Override
+    public boolean is(Hint hint) {
+        return hint == Hint.PRODOS_BLOCK_ORDER;
     }
 
     @Override

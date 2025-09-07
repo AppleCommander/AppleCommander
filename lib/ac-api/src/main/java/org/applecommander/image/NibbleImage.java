@@ -20,9 +20,12 @@
 package org.applecommander.image;
 
 import org.applecommander.capability.Capability;
-import org.applecommander.device.NibbleTrackReaderWriter;
+import org.applecommander.device.nibble.NibbleTrackReaderWriter;
 import org.applecommander.source.Source;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+
+import java.util.Optional;
 
 public class NibbleImage implements NibbleTrackReaderWriter {
     public static final int DISK_SIZE = 232960;
@@ -33,6 +36,11 @@ public class NibbleImage implements NibbleTrackReaderWriter {
 
     public NibbleImage(Source source) {
         this.source = source;
+    }
+
+    @Override
+    public <T> Optional<T> get(Class<T> iface) {
+        return Container.get(iface, source);
     }
 
     @Override
