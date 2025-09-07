@@ -156,12 +156,15 @@ public class CpmFileEntry implements FileEntry {
 	}
 
 	/**
-	 * Answer with the name of the file.
+	 * Answer with the name of the file. Note that CP/M doesn't really support
+	 * filetype, so the extension portion of the name is also the filetype.
 	 * @see com.webcodepro.applecommander.storage.FileEntry#getFilename()
 	 */
 	public String getFilename() {
-		return AppleUtil.getString(readFileEntry(0), 
+		String filename = AppleUtil.getString(readFileEntry(0),
 			FILENAME_OFFSET, FILENAME_LENGTH).trim();
+		String extension = getFiletype();
+		return String.format("%s.%s", filename, extension);
 	}
 
 	/**

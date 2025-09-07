@@ -448,13 +448,13 @@ public class CpmFormatDisk extends FormattedDisk {
 		List<FileColumnHeader> list = new ArrayList<>();
 		switch (displayMode) {
 			case FILE_DISPLAY_NATIVE:
-				list.add(new FileColumnHeader(textBundle.get("Name"), 8,
+				list.add(new FileColumnHeader(textBundle.get("Name"), 12,
                         FileColumnHeader.ALIGN_LEFT, "name"));
 				list.add(new FileColumnHeader(textBundle.get("Type"), 3,
                         FileColumnHeader.ALIGN_LEFT, "type"));
 				break;
 			case FILE_DISPLAY_DETAIL:
-				list.add(new FileColumnHeader(textBundle.get("Name"), 8,
+				list.add(new FileColumnHeader(textBundle.get("Name"), 12,
                         FileColumnHeader.ALIGN_LEFT, "name"));
 				list.add(new FileColumnHeader(textBundle.get("Type"), 3,
                         FileColumnHeader.ALIGN_LEFT, "type"));
