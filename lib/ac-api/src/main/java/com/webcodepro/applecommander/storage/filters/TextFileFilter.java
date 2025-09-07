@@ -50,15 +50,19 @@ public class TextFileFilter implements FileFilter {
 		ByteArrayOutputStream byteArray = new
 			ByteArrayOutputStream(fileData.length);
 		PrintWriter printWriter = new PrintWriter(byteArray, true);
+		char prior = 0;
 		while (offset < fileData.length) {
 			char c = (char)(fileData[offset] & 0x7f);
 			if (c != 0) {
 				if (c == 0x0d) { //Apple line end
 					printWriter.println();
+				} else if (prior == 0x0d && c == 0x0a) {
+					// skipping (0x0d 0x0a is CP/M line ending)
 				} else {
 					printWriter.print(c);
 				}
 			}
+			prior = c;
 			offset++;
 		}
 		printWriter.flush();
