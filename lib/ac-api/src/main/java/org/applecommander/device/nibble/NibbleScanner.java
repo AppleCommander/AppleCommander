@@ -38,11 +38,10 @@ import java.util.*;
  * </ol>
  */
 public class NibbleScanner {
-    public static Optional<Result> identify(NibbleTrackReaderWriter trackReaderWriter) {
+    public static Optional<DiskMarker[]> identify(NibbleTrackReaderWriter trackReaderWriter) {
         final int tracksOnDevice = trackReaderWriter.getTracksOnDevice();
 
         DiskMarker[] diskMarkers = new DiskMarker[tracksOnDevice];
-        int sectorsOnTrack = 0;
         int successCount = 0;
         for (int track=0; track<tracksOnDevice; track++) {
             DataBuffer trackData = trackReaderWriter.readTrackData(track);
@@ -51,20 +50,17 @@ public class NibbleScanner {
             final int foundSectors = addressPrologs.values().stream().map(Collection::size).max(Integer::compareTo).orElseThrow();
             // Assumption: Track is "mostly" normal, so 5&3 or 6&2 along with expected 13- and 16-sector sizing:
             // (except for track 0 since it's possibly a mix of "expected" prolog and protected prolog bytes)
-            if (track != 0) {
-                if (foundSectors != 13 && foundSectors != 16) {
-                    // Expecting 13 or 16 sector (just not track zero) -- fill in a fake DiskMarker just for sanity
-                    diskMarkers[track] = foundSectors <= 13 ? DiskMarker.disk525sector13() : DiskMarker.disk525sector16();
-                    break;
-                }
-                if (sectorsOnTrack == 0 || sectorsOnTrack == foundSectors) {
-                    sectorsOnTrack = foundSectors;
-                } else {
-                    // Expecting same sector count -- fill in DiskMarker just for sanity
-                    successCount = 0;
-                    diskMarkers[track] = foundSectors == 13 ? DiskMarker.disk525sector13() : DiskMarker.disk525sector16();
-                    break;
-                }
+            final int sectorsOnTrack;
+            if (foundSectors >= 10 && foundSectors <= 13) {
+                sectorsOnTrack = 13;
+            }
+            else if (foundSectors > 13 && foundSectors <= 16) {
+                sectorsOnTrack = 16;
+            }
+            else {
+                // Expecting same sector count -- fill in DiskMarker just for sanity
+                diskMarkers[track] = DiskMarker.disk525sector13();
+                break;
             }
             // Find the one that matches our expected sectors per track and then capture possible address prolog bytes:
             final int addressProlog = addressPrologs.entrySet().stream()
@@ -81,7 +77,7 @@ public class NibbleScanner {
             final int data1 = (dataProlog >> 16) & 0xff;
             final int data2 = (dataProlog >> 8) & 0xff;
             final int data3 = dataProlog & 0xff;
-            diskMarkers[track] = DiskMarker.build()
+            diskMarkers[track] = DiskMarker.build(sectorsOnTrack)
                     .addressProlog(addr1, addr2, addr3).addressEpilog()
                     .dataProlog(data1, data2, data3).dataEpilog()
                     .get();
@@ -91,9 +87,7 @@ public class NibbleScanner {
             }
         }
         // Somewhat arbitrary on number of tracks we think where successful...
-        NibbleDiskCodec nibbleDiskCodec = sectorsOnTrack == 13 ? new Nibble53Disk525Codec() : new Nibble62Disk525Codec();
-        Result result = new Result(diskMarkers, nibbleDiskCodec, sectorsOnTrack);
-        return successCount > 5 ? Optional.of(result) : Optional.empty();
+        return successCount > 5 ? Optional.of(diskMarkers) : Optional.empty();
     }
 
     /**
@@ -183,6 +177,4 @@ public class NibbleScanner {
         }
         return 0;
     }
-
-    public record Result(DiskMarker[] diskMarkers, NibbleDiskCodec nibbleDiskCodec, int sectorsOnTrack) {}
 }
