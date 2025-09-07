@@ -522,11 +522,12 @@ public class CpmFormatDisk extends FormattedDisk {
 	 */
 	@Override
 	public String toProdosFiletype(String nativeFiletype) {
-		for (String textFiletype : CpmFileEntry.TEXT_FILETYPES) {
-			if (textFiletype.equalsIgnoreCase(nativeFiletype)) {
-				return "TXT";
-			}
-		}
+        if (CpmFileEntry.TEXT_FILETYPES.contains(nativeFiletype.toUpperCase())) {
+            return "TXT";
+        }
+        else if (CpmFileEntry.BASIC_FILETYPES.contains(nativeFiletype.toUpperCase())) {
+            return "BAS";
+        }
 		return "BIN";
 	}
 }

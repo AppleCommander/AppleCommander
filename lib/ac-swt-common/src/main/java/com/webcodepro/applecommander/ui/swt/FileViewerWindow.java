@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.webcodepro.applecommander.storage.filters.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.DisposeEvent;
@@ -37,19 +38,6 @@ import org.eclipse.swt.widgets.*;
 
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
-import com.webcodepro.applecommander.storage.filters.AppleWorksDataBaseFileFilter;
-import com.webcodepro.applecommander.storage.filters.AppleWorksSpreadSheetFileFilter;
-import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFileFilter;
-import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
-import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
-import com.webcodepro.applecommander.storage.filters.BusinessBASICFileFilter;
-import com.webcodepro.applecommander.storage.filters.DisassemblyFileFilter;
-import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
-import com.webcodepro.applecommander.storage.filters.GutenbergFileFilter;
-import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
-import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
-import com.webcodepro.applecommander.storage.filters.ShapeTableFileFilter;
-import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.filteradapter.ApplesoftFilterAdapter;
 import com.webcodepro.applecommander.ui.swt.filteradapter.BusinessBASICFilterAdapter;
@@ -229,6 +217,11 @@ public class FileViewerWindow {
             new ShapeTableFilterAdapter(this, textBundle.get("FileViewerWindow.ShapeTableButton"),
                 textBundle.get("FileViewerWindow.ShapeTableTooltip"),
                 imageManager.get(ImageManager.ICON_SHAPE_TABLE)
+            ));
+        nativeFilterAdapterMap.put(MBASICFileFilter.class,
+            new TextFilterAdapter(this, textBundle.get("FileViewerWindow.MBASICButton"),
+                    textBundle.get("FileViewerWindow.MBASICTooltip"),
+                    imageManager.get(ImageManager.ICON_VIEW_AS_BASIC_PROGRAM)
             ));
 	}
 	
