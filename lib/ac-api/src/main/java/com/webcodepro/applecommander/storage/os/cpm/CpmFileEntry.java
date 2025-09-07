@@ -22,6 +22,7 @@ package com.webcodepro.applecommander.storage.os.cpm;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.FileEntry;
@@ -29,6 +30,7 @@ import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
+import com.webcodepro.applecommander.storage.filters.MBASICFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
@@ -105,11 +107,14 @@ public class CpmFileEntry implements FileEntry {
 	/**
 	 * A short collection of known text-type files.
 	 */
-	public static final String[] TEXT_FILETYPES = {
-		"TXT", "ASM", "MAC", "DOC", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-		"PRN", "PAS", "ME",  "INC", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-		"HLP" //$NON-NLS-1$
-	};
+	public static final Set<String> TEXT_FILETYPES = Set.of(
+		"TXT", "ASM", "MAC", "DOC",
+		"PRN", "PAS", "ME",  "INC",
+		"HLP");
+    /**
+     * List of known MBASIC/GBASIC/BASIC-80 filetypes.
+     */
+    public static final Set<String> BASIC_FILETYPES = Set.of("BAS");
 	/**
 	 * Reference to the disk this FileEntry is attached to.
 	 */
@@ -156,12 +161,15 @@ public class CpmFileEntry implements FileEntry {
 	}
 
 	/**
-	 * Answer with the name of the file.
+	 * Answer with the name of the file. Note that CP/M doesn't really support
+	 * filetype, so the extension portion of the name is also the filetype.
 	 * @see com.webcodepro.applecommander.storage.FileEntry#getFilename()
 	 */
 	public String getFilename() {
-		return AppleUtil.getString(readFileEntry(0), 
+		String filename = AppleUtil.getString(readFileEntry(0),
 			FILENAME_OFFSET, FILENAME_LENGTH).trim();
+		String extension = getFiletype();
+		return String.format("%s.%s", filename, extension);
 	}
 
 	/**
@@ -436,12 +444,13 @@ public class CpmFileEntry implements FileEntry {
 	 * @see com.webcodepro.applecommander.storage.FileEntry#getSuggestedFilter()
 	 */
 	public FileFilter getSuggestedFilter() {
-		String filetype = getFiletype();
-		for (int i=0; i<TEXT_FILETYPES.length; i++) {
-			if (TEXT_FILETYPES[i].equals(filetype)) {
-				return new TextFileFilter();
-			}
-		}
+		String filetype = getFiletype().toUpperCase();
+        if (TEXT_FILETYPES.contains(filetype)) {
+            return new TextFileFilter();
+        }
+        else if (BASIC_FILETYPES.contains(filetype)) {
+            return new MBASICFileFilter();
+        }
 		return new BinaryFileFilter();
 	}
 

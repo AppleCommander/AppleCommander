@@ -261,14 +261,16 @@ public class CpmFormatDisk extends FormattedDisk {
 	public byte[] getFileData(FileEntry fileEntry) {
 		CpmFileEntry cpmEntry = (CpmFileEntry) fileEntry;
 		int[] allocations = cpmEntry.getAllocations();
-		byte[] data = new byte[allocations.length * CPM_BLOCKSIZE];
+		byte[] data = new byte[fileEntry.getSize()];
+		int bytesLeft = data.length;
 		for (int i=0; i<allocations.length; i++) {
 			int blockNumber = allocations[i];
 			if (blockNumber > 0) {
 				byte[] block = device.readBlock(FIRST_DATA_BLOCK+blockNumber).asBytes();
-				System.arraycopy(block, 0, 
-					data, i * CPM_BLOCKSIZE, CPM_BLOCKSIZE);
+				System.arraycopy(block, 0,
+					data, i * CPM_BLOCKSIZE, Math.min(bytesLeft,CPM_BLOCKSIZE));
 			}
+			bytesLeft -= CPM_BLOCKSIZE;
 		}
 		return data;
 	}
@@ -446,13 +448,13 @@ public class CpmFormatDisk extends FormattedDisk {
 		List<FileColumnHeader> list = new ArrayList<>();
 		switch (displayMode) {
 			case FILE_DISPLAY_NATIVE:
-				list.add(new FileColumnHeader(textBundle.get("Name"), 8,
+				list.add(new FileColumnHeader(textBundle.get("Name"), 12,
                         FileColumnHeader.ALIGN_LEFT, "name"));
 				list.add(new FileColumnHeader(textBundle.get("Type"), 3,
                         FileColumnHeader.ALIGN_LEFT, "type"));
 				break;
 			case FILE_DISPLAY_DETAIL:
-				list.add(new FileColumnHeader(textBundle.get("Name"), 8,
+				list.add(new FileColumnHeader(textBundle.get("Name"), 12,
                         FileColumnHeader.ALIGN_LEFT, "name"));
 				list.add(new FileColumnHeader(textBundle.get("Type"), 3,
                         FileColumnHeader.ALIGN_LEFT, "type"));
@@ -520,11 +522,12 @@ public class CpmFormatDisk extends FormattedDisk {
 	 */
 	@Override
 	public String toProdosFiletype(String nativeFiletype) {
-		for (String textFiletype : CpmFileEntry.TEXT_FILETYPES) {
-			if (textFiletype.equalsIgnoreCase(nativeFiletype)) {
-				return "TXT";
-			}
-		}
+        if (CpmFileEntry.TEXT_FILETYPES.contains(nativeFiletype.toUpperCase())) {
+            return "TXT";
+        }
+        else if (CpmFileEntry.BASIC_FILETYPES.contains(nativeFiletype.toUpperCase())) {
+            return "BAS";
+        }
 		return "BIN";
 	}
 }
