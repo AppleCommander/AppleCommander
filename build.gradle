@@ -16,5 +16,5 @@ ext {
     // 3.0(?) introduced Spring AOT automatic stuff and breaks when using GraalVM native image
     springBoot = "2.7.7"
     acdasmVersion = "0.5.0"
-    graalvmBuildVersion = "0.10.6"
+    graalvmBuildVersion = "0.11.1"
 }
