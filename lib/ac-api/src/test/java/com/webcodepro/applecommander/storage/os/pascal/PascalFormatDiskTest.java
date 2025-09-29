@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 
 public class PascalFormatDiskTest {
     @Test
-    public void testSanitizeFilename() throws DiskFullException {
+    public void testSanitizeFilename() {
         Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
         BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
         PascalFormatDisk[] disks = PascalFormatDisk.create("deleteme.po", "TEST", blockDevice);

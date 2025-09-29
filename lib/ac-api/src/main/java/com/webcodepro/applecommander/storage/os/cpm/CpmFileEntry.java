@@ -439,7 +439,7 @@ public class CpmFileEntry implements FileEntry {
 	 * file entry.
 	 * @see com.webcodepro.applecommander.storage.FileEntry#setFileData(byte[])
 	 */
-	public void setFileData(byte[] data) throws DiskFullException {
+	public void setFileData(byte[] data) {
 		// TODO CP/M format disks don't save data...
 	}
 

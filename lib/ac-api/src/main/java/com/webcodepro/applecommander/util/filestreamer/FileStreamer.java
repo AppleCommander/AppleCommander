@@ -58,12 +58,12 @@ public class FileStreamer {
     public static FileStreamer forDisks(File file) throws IOException, DiskUnrecognizedException {
         return forDisks(file.getPath());
     }
-    public static FileStreamer forDisks(String fileName) throws IOException, DiskUnrecognizedException {
+    public static FileStreamer forDisks(String fileName) {
         Source source = Sources.create(fileName).orElseThrow();
         DiskFactory.Context ctx = Disks.inspect(source);
         return new FileStreamer(ctx.disks.toArray(new FormattedDisk[0]));
     }
-    public static FileStreamer forDisks(Collection<FormattedDisk> disks) throws DiskUnrecognizedException {
+    public static FileStreamer forDisks(Collection<FormattedDisk> disks) {
         return new FileStreamer(disks.toArray(new FormattedDisk[0]));
     }
     public static FileStreamer forDisks(FormattedDisk... disks) {

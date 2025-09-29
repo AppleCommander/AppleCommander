@@ -196,7 +196,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 	/**
 	 * Set all filenames to be imported.
 	 */
-	protected void setFilenames(String path, String[] filenames) throws FileNotFoundException, IOException {
+	protected void setFilenames(String path, String[] filenames) throws IOException {
 		for (int i=0; i<filenames.length; i++) {
 			String filename = path + File.separatorChar + filenames[i];
 			

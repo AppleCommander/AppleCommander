@@ -30,7 +30,7 @@ public class DataSizeConverter implements ITypeConverter<Integer> {
 	public static final int MB = KB * 1024;
 
 	@Override
-	public Integer convert(String value) throws Exception {
+	public Integer convert(String value) {
 		Pattern pattern = Pattern.compile("([0-9]+)([km]b?)?", Pattern.CASE_INSENSITIVE);
 		Matcher matcher = pattern.matcher(value);
 		if (matcher.matches()) {

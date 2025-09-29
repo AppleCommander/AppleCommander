@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DosFormatDiskTest {
     @Test
-    public void testSanitizeFilename() throws DiskFullException {
+    public void testSanitizeFilename() {
         Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-image").get();
         TrackSectorDevice device = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
         DosFormatDisk[] disks = DosFormatDisk.create("deleteme.do", device);

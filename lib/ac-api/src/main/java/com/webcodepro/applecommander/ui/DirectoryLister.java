@@ -59,7 +59,7 @@ public class DirectoryLister {
 		this.strategy = strategy;
 	}
 	
-	public void list(String filename) throws DiskUnrecognizedException, IOException {
+	public void list(String filename) throws DiskUnrecognizedException {
         Source source = Sources.create(filename).orElseThrow();
         DiskFactory.Context ctx = Disks.inspect(source);
         // Pulling ImageOrder from a FormattedDisk to ensure it's one we chose

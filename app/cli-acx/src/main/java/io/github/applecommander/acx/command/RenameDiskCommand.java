@@ -37,7 +37,7 @@ public class RenameDiskCommand extends ReadWriteDiskCommandOptions {
     private String diskName;
 
     @Override
-    public int handleCommand() throws Exception {
+    public int handleCommand() {
 		FormattedDisk formattedDisk = selectedDisks().getFirst();
     	if (formattedDisk instanceof ProdosFormatDisk || formattedDisk instanceof PascalFormatDisk) {
 			formattedDisk.setDiskName(diskName);

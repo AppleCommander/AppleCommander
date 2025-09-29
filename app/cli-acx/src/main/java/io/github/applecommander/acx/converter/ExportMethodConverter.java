@@ -39,7 +39,7 @@ public class ExportMethodConverter implements ITypeConverter<ExportMethod> {
     }
     
     @Override
-    public ExportMethod convert(String value) throws Exception {
+    public ExportMethod convert(String value) {
         if (EXPORTS.containsKey(value)) {
             return EXPORTS.get(value);
         }

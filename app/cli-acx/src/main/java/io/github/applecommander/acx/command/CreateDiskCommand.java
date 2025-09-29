@@ -73,7 +73,7 @@ public class CreateDiskCommand extends ReusableCommandOptions {
     private String diskName;
 
     @Override
-    public int handleCommand() throws Exception {
+    public int handleCommand() {
         SystemType systemType = systemSelection.get();
 
         // This allows a defaulted OrderType to be adjusted based on SystemType.

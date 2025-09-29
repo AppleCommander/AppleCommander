@@ -258,7 +258,7 @@ public class ScanCommand extends ReusableCommandOptions {
         }
 
         @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
             if (globMatcher.matches(file)) {
                 counter++;
                 if (progress) {

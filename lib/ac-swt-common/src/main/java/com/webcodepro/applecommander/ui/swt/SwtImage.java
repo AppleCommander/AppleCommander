@@ -67,7 +67,7 @@ public class SwtImage extends AppleImage {
 	/**
 	 * Save the image.
 	 */
-	public void save(OutputStream outputStream) throws IOException {
+	public void save(OutputStream outputStream) {
 		ImageLoader imageLoader = new ImageLoader();
 		imageLoader.data = new ImageData[] { imageData };
 		int format = SWT.IMAGE_PNG;

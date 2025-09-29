@@ -232,7 +232,7 @@ public class RdosFileEntry implements FileEntry {
 	 * Set file data.  This, essentially, is saving data to disk using this
 	 * file entry.
 	 */
-	public void setFileData(byte[] data) throws DiskFullException {
+	public void setFileData(byte[] data) {
 		// FIXME: Implement!
 	}
 

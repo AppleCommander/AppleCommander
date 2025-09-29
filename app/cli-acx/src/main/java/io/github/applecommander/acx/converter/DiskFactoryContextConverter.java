@@ -31,7 +31,7 @@ import java.nio.file.Path;
 
 public class DiskFactoryContextConverter implements ITypeConverter<DiskFactory.Context> {
     @Override
-    public DiskFactory.Context convert(String filename) throws Exception {
+    public DiskFactory.Context convert(String filename) {
         if (Files.exists(Path.of(filename))) {
             Source source = Sources.create(filename).orElseThrow();
             return Disks.inspect(source);

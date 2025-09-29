@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FileTupleTest {
     @Test
-    public void test() throws IOException, DiskException {
+    public void test() throws DiskException {
         Source source = Sources.create("./src/test/resources/disks/MERLIN8PRO1.DSK").orElseThrow();
         DiskFactory.Context ctx = Disks.inspect(source);
         FormattedDisk formattedDisk = ctx.disks.getFirst();

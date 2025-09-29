@@ -494,7 +494,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * of the data (such as prepending the data with a length and/or an address).
 	 * Typically, the FileEntry.setFileData method should be used. 
 	 */
-	public void setFileData(FileEntry fileEntry, byte[] fileData) throws DiskFullException {
+	public void setFileData(FileEntry fileEntry, byte[] fileData) {
 		// TODO implement  setFileData
 	}
 
@@ -502,7 +502,7 @@ public class RdosFormatDisk extends FormattedDisk {
 	 * Create a new DirectoryEntry.
 	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory(String)
 	 */
-	public DirectoryEntry createDirectory(String name) throws DiskFullException	{
+	public DirectoryEntry createDirectory(String name) {
 		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$
 	}
 

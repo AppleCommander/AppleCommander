@@ -56,7 +56,7 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
     private Options options = new Options();
 
     @Override
-    public int handleCommand() throws Exception {
+    public int handleCommand() {
         if (options.coordinate.blockRangeSelection != null) {
             BlockDevice device = blockDevice()
                     .orElseThrow(() -> new RuntimeException("there is no block device available"));

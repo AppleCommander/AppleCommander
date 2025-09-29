@@ -248,7 +248,7 @@ public class DiskHelperTest {
         assertCanReadFiles(disks);
     }
 
-	protected FormattedDisk[] showDirectory(String imageName) throws IOException, DiskException {
+	protected FormattedDisk[] showDirectory(String imageName) throws DiskException {
         Source source = Sources.create(imageName).orElseThrow();
         DiskFactory.Context ctx = Disks.inspect(source);
         if (ctx.disks.isEmpty()) {

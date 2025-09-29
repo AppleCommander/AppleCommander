@@ -26,7 +26,7 @@ import static picocli.CommandLine.*;
 public class RangeTypeConverter implements ITypeConverter<Range> {
     private static final IntegerTypeConverter helper = new IntegerTypeConverter();
     @Override
-    public Range convert(String text) throws Exception {
+    public Range convert(String text) {
         if (text.contains("-")) {
             String[] parts = text.split("-");
             int a = helper.convert(parts[0]);

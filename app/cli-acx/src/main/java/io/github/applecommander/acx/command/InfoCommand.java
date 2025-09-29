@@ -40,7 +40,7 @@ public class InfoCommand extends ReadOnlyDiskContextCommandOptions {
     private static final Logger LOG = Logger.getLogger(InfoCommand.class.getName());
     
     @Override
-    public int handleCommand() throws Exception {
+    public int handleCommand() {
         LOG.info(() -> "Path: " + context().source.getName());
         if (selectedDisks().isEmpty()) {
             for (Information info : context().source.information()) {

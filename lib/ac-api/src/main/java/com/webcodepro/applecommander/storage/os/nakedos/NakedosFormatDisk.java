@@ -179,7 +179,7 @@ public class NakedosFormatDisk extends FormattedDisk {
 	/**
 	 * Create a FileEntry.
 	 */
-	public FileEntry createFile() throws DiskFullException {
+	public FileEntry createFile() {
 		return new NakedosFileEntry(this, -2, 0);
 	}
 
@@ -431,7 +431,7 @@ public class NakedosFormatDisk extends FormattedDisk {
 	 * Set the data associated with the specified NakedosFileEntry into sectors
 	 * on the disk.
 	 */
-	protected void setFileData(NakedosFileEntry fileEntry, byte[] data) throws DiskFullException {
+	protected void setFileData(NakedosFileEntry fileEntry, byte[] data) {
 		// compute free space and see if the data will fit!
 	}
 	
@@ -502,7 +502,7 @@ public class NakedosFormatDisk extends FormattedDisk {
 	 * Create a new DirectoryEntry.
 	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory(String)
 	 */
-	public DirectoryEntry createDirectory(String name) throws DiskFullException	{
+	public DirectoryEntry createDirectory(String name) {
 		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$
 	}
 
