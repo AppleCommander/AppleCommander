@@ -43,6 +43,7 @@ import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.disassembler.api.mos6502.InstructionSet6502;
 
 /**
  * Represents a ProDOS file entry on disk.
@@ -591,7 +592,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 				return filter;
 			}
 		case 0xff:
-		    return new DisassemblyFileFilter();
+		    return new DisassemblyFileFilter(this);
 		}
 		return new BinaryFileFilter();
 	}

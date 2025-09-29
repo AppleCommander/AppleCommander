@@ -25,7 +25,7 @@ import com.webcodepro.applecommander.storage.filters.DisassemblyFileFilter;
 import com.webcodepro.applecommander.ui.swt.FileViewerWindow;
 
 /**
- * Provides a view of the dissasembly of a program as seen when loaded from the disk.
+ * Provides a view of the disassembly of a program as seen when loaded from the disk.
  * 
  * @author Rob Greene
  */
@@ -35,6 +35,6 @@ public class DisassemblyFilterAdapter extends TextFilterAdapter {
 	}
 
 	protected String createTextContent() {
-		return new String(new DisassemblyFileFilter().filter(getFileEntry()));
+        return new String(new DisassemblyFileFilter(getFileEntry()).filter(getFileEntry()));
 	}
 }

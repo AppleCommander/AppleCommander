@@ -148,7 +148,7 @@ public class ExportCommand extends ReadOnlyDiskImageCommandOptions {
                 completionCandidates = ExportMethodCandidates.class,
                 description = "Select a specific export method type (${COMPLETION-CANDIDATES}).")
         public void selectExportMethod(final ExportMethod exportMethod) {
-            this.extractFunction = fileFilter -> exportMethod.create();
+            this.extractFunction = exportMethod::create;
         }
 
         // Short-cuts to some of the more common, non-suggested, filters
