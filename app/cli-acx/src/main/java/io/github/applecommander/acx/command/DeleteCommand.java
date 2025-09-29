@@ -33,7 +33,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "delete", description = "Delete file(s) from a disk image.",
         aliases = { "del", "rm" })
 public class DeleteCommand extends ReadWriteDiskCommandWithGlobOptions {
-    private static Logger LOG = Logger.getLogger(DeleteCommand.class.getName());
+    private static final Logger LOG = Logger.getLogger(DeleteCommand.class.getName());
     
 	@Parameters(arity = "1..*", description = "File glob(s) to delete (default = '*') - be cautious of quoting!")
     private List<String> globs = Arrays.asList("*");

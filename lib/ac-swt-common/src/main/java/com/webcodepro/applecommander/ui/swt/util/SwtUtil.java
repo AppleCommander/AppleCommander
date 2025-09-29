@@ -41,7 +41,7 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author Rob Greene
  */
 public class SwtUtil {
-	private static TextBundle textBundle = UiBundle.getInstance();
+	private static final TextBundle textBundle = UiBundle.getInstance();
 	
 	/**
 	 * Center the child shell within the parent shell window.

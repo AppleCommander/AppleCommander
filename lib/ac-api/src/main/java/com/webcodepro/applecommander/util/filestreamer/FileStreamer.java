@@ -83,7 +83,7 @@ public class FileStreamer {
     // Filters
     private Predicate<FileTuple> filters = this::deletedFileFilter;
     private boolean includeDeletedFlag = false;
-    private List<PathMatcher> pathMatchers = new ArrayList<>();
+    private final List<PathMatcher> pathMatchers = new ArrayList<>();
     
     private FileStreamer(FormattedDisk... disks) {
         this.formattedDisks = disks;
@@ -159,7 +159,7 @@ public class FileStreamer {
     }
     
     private class FileTupleIterator implements Iterator<FileTuple> {
-        private LinkedList<FileTuple> files = new LinkedList<>();
+        private final LinkedList<FileTuple> files = new LinkedList<>();
         private FormattedDisk currentDisk;
         
         private FileTupleIterator() {

@@ -91,10 +91,10 @@ public class DiskExplorerTab {
 	private static final char CTRL_V = 'V' - '@';
 
 	// These are given to us from DiskWindow	
-	private Shell shell;
-	private ImageManager imageManager;
-	private DiskWindow diskWindow;
-	private FormattedDisk[] disks;
+	private final Shell shell;
+	private final ImageManager imageManager;
+	private final DiskWindow diskWindow;
+	private final FormattedDisk[] disks;
 	
 	private SashForm sashForm;
 	private Tree directoryTree;
@@ -114,17 +114,17 @@ public class DiskExplorerTab {
 	private ToolItem changeOrderToolItem;
 	private Menu changeImageOrderMenu;
 
-	private UserPreferences userPreferences = UserPreferences.getInstance();
-	private TextBundle textBundle = UiBundle.getInstance();
+	private final UserPreferences userPreferences = UserPreferences.getInstance();
+	private final TextBundle textBundle = UiBundle.getInstance();
 	private FileFilter fileFilter;
-	private GraphicsFileFilter graphicsFilter = new GraphicsFileFilter();
-	private AppleWorksWordProcessorFileFilter awpFilter = new AppleWorksWordProcessorFileFilter();
-	private GutenbergFileFilter gutenbergFilter = new GutenbergFileFilter();
+	private final GraphicsFileFilter graphicsFilter = new GraphicsFileFilter();
+	private final AppleWorksWordProcessorFileFilter awpFilter = new AppleWorksWordProcessorFileFilter();
+	private final GutenbergFileFilter gutenbergFilter = new GutenbergFileFilter();
 
 	private int currentFormat = FormattedDisk.FILE_DISPLAY_STANDARD;
 	private boolean formatChanged;
 	private List<FileEntry> currentFileList;
-	private Map<Integer,int[]> columnWidths = new HashMap<>();
+	private final Map<Integer,int[]> columnWidths = new HashMap<>();
 	private boolean showDeletedFiles;
 
 	/**
@@ -1626,7 +1626,7 @@ public class DiskExplorerTab {
 	 * Internal class that controls printing of a file listing.
 	 */
 	private class Printing implements Runnable {
-		private Printer printer;
+		private final Printer printer;
 		private int y;
 		private int x;
 		private Rectangle clientArea;

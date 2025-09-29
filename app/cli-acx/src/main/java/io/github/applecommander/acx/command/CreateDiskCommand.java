@@ -48,7 +48,7 @@ import picocli.CommandLine.Option;
 @Command(name = "create", description = "Create a disk image.",
 		 aliases = { "mkdisk" })
 public class CreateDiskCommand extends ReusableCommandOptions {
-    private static Logger LOG = Logger.getLogger(CreateDiskCommand.class.getName());
+    private static final Logger LOG = Logger.getLogger(CreateDiskCommand.class.getName());
 
     @Option(names = { "-d", "--disk" }, description = "Image to create [$ACX_DISK_NAME].", required = true,
             defaultValue = "${ACX_DISK_NAME}")

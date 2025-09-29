@@ -48,10 +48,10 @@ import java.util.Optional;
  * @author Rob Greene
  */
 public class ImportSelectFilesWizardPane extends WizardPane {
-	private TextBundle textBundle = UiBundle.getInstance();
-	private ImportWizard wizard;
+	private final TextBundle textBundle = UiBundle.getInstance();
+	private final ImportWizard wizard;
 	private Composite control;
-	private Composite parent;
+	private final Composite parent;
 	private Button removeButton;
 	private Button editButton;
 	private Table fileTable;

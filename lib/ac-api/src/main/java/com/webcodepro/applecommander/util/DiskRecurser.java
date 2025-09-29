@@ -68,7 +68,7 @@ public class DiskRecurser {
 	}
 	
 	public static class Builder {
-		private DiskRecurser recurser = new DiskRecurser();
+		private final DiskRecurser recurser = new DiskRecurser();
 		
 		public Builder recursive() {
 			recurser.recursive = true;

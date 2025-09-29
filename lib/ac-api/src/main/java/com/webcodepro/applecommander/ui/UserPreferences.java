@@ -39,7 +39,7 @@ public class UserPreferences {
 	private static final String SAVE_DIRECTORY = "saveDirectory"; //$NON-NLS-1$
 	private static final String IMPORT_DIRECTORY = "importDirectory"; //$NON-NLS-1$
 	private static UserPreferences instance;
-	private Properties properties = new Properties();
+	private final Properties properties = new Properties();
 	/**
 	 * Hide constructor from other classes.
 	 */

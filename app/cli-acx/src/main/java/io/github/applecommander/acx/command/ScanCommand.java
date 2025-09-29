@@ -49,7 +49,7 @@ import static picocli.CommandLine.*;
 
 @Command(name = "scan", description = "Scan directory and report on disks found and understood.")
 public class ScanCommand extends ReusableCommandOptions {
-    private static Logger LOG = Logger.getLogger(ScanCommand.class.getName());
+    private static final Logger LOG = Logger.getLogger(ScanCommand.class.getName());
 
     @Parameters(arity = "*", description = "directories to scan")
     private List<Path> directories;
@@ -246,7 +246,7 @@ public class ScanCommand extends ReusableCommandOptions {
         private int counter;
         private final PrintStream output;
         private final boolean progress;
-        private ReportSummary reportSummary = new ReportSummary("Scan");
+        private final ReportSummary reportSummary = new ReportSummary("Scan");
 
         public FileVisitor(PrintStream output, boolean progress) {
             this.output = output;

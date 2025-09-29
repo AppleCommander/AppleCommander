@@ -43,7 +43,6 @@ import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
-import org.applecommander.disassembler.api.mos6502.InstructionSet6502;
 
 /**
  * Represents a ProDOS file entry on disk.
@@ -52,7 +51,7 @@ import org.applecommander.disassembler.api.mos6502.InstructionSet6502;
  * @author Rob Greene
  */
 public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
-	private TextBundle textBundle = StorageBundle.getInstance();
+	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Constructor for ProdosFileEntry.
 	 */

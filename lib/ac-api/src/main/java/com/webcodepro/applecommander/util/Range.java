@@ -28,8 +28,8 @@ import java.util.stream.IntStream;
  *  Represents a range of numbers with helper methods to put them together. 
  */
 public class Range {
-    private int first;
-    private int last;
+    private final int first;
+    private final int last;
     
     public Range(int first, int last) {
         if (first < last) {

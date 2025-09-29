@@ -24,7 +24,7 @@ import java.util.Optional;
 import com.webcodepro.applecommander.storage.os.nakedos.NakedosFileEntry;
 
 public class NakedosFileEntryReader implements FileEntryReader {
-    private NakedosFileEntry fileEntry;
+    private final NakedosFileEntry fileEntry;
     
     public NakedosFileEntryReader(NakedosFileEntry fileEntry) {
         this.fileEntry = fileEntry;

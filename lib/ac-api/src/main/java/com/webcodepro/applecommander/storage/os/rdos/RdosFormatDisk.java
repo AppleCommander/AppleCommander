@@ -48,7 +48,7 @@ import java.util.*;
  * @author Rob Greene
  */
 public class RdosFormatDisk extends FormattedDisk {
-	private TextBundle textBundle = StorageBundle.getInstance();
+	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Specifies the length of a file entry.
 	 */
@@ -122,7 +122,7 @@ public class RdosFormatDisk extends FormattedDisk {
 		}
 	}
 
-    private BlockDevice device;
+    private final BlockDevice device;
 
 	/**
 	 * Constructor for RdosFormatDisk.

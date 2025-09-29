@@ -35,7 +35,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
  * @author Rob Greene
  */
 public class ExportWizard extends Wizard {
-	private FormattedDisk disk;
+	private final FormattedDisk disk;
 	private FileFilter fileFilter;
 	private String directory;
 	/**

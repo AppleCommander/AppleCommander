@@ -34,7 +34,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "rename", description = "Rename file on a disk image.",
         aliases = { "ren" })
 public class RenameFileCommand extends ReadWriteDiskCommandOptions {
-    private static Logger LOG = Logger.getLogger(RenameFileCommand.class.getName());
+    private static final Logger LOG = Logger.getLogger(RenameFileCommand.class.getName());
     
     @Option(names = { "-m", "--multiple" }, description = "Force rename when multiple files found.")
     private boolean multipleOverride;

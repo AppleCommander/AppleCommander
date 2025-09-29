@@ -112,7 +112,7 @@ import org.applecommander.util.Information;
  * @author Lisias Toledo
  */
 public class ac {
-	private static TextBundle textBundle = UiBundle.getInstance();
+	private static final TextBundle textBundle = UiBundle.getInstance();
 
 	public static void main(String[] args) {
 		try {
@@ -697,8 +697,8 @@ public class ac {
 
 	public static class Name {
 		private String fullName;
-		private String name;
-		private String[] path;
+		private final String name;
+		private final String[] path;
 		
 		public Name(String s) {
 			this.fullName = s;

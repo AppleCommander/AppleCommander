@@ -24,7 +24,6 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
@@ -45,11 +44,11 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author Rob Greene
  */
 public class ExportFileDestinationPane extends WizardPane {
-	private TextBundle textBundle = UiBundle.getInstance();
-	private Composite parent;
-	private Object layoutData;
+	private final TextBundle textBundle = UiBundle.getInstance();
+	private final Composite parent;
+	private final Object layoutData;
 	private Composite control;
-	private ExportWizard wizard;
+	private final ExportWizard wizard;
 	private Text directoryText;
 	/**
 	 * Constructor for ExportFileDestinationPane.

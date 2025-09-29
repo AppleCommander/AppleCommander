@@ -43,7 +43,7 @@ import java.util.*;
  * @author Lisias Toledo
  */
 public class ProdosFormatDisk extends FormattedDisk {
-	private TextBundle textBundle = StorageBundle.getInstance();
+	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * The location of the "next block" pointer in a directory entry.
 	 * This is a 2-byte word (lo/hi) format.  $0000 is end of directory.
@@ -64,7 +64,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 * identifier in some cases - differentiated by AUXTYPE.  This is
 	 * loaded via the static initializer.
 	 */
-	private static ProdosFileType[] fileTypes;
+	private static final ProdosFileType[] fileTypes;
 	/**
 	 * This array of strings contains all filetypes.  This is lazy 
 	 * initialized by getFiletypes.
@@ -73,17 +73,17 @@ public class ProdosFormatDisk extends FormattedDisk {
 	/**
 	 * Hold on to the volume directory header.
 	 */
-	private ProdosVolumeDirectoryHeader volumeHeader;
+	private final ProdosVolumeDirectoryHeader volumeHeader;
 
-	private BlockDevice device;
+	private final BlockDevice device;
 
 	/**
 	 * This class holds filetype mappings.
 	 */
 	private static class ProdosFileType {
-		private byte type;
-		private String string;
-		private boolean addressRequired;
+		private final byte type;
+		private final String string;
+		private final boolean addressRequired;
 		public ProdosFileType(byte type, String string, boolean addressRequired) {
 			this.type = type;
 			this.string = string;

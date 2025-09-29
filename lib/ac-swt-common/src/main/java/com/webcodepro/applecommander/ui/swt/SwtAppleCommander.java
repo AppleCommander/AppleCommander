@@ -52,8 +52,8 @@ import static org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter;
 public class SwtAppleCommander implements Listener {
 	private Shell shell;
 	private ToolBar toolBar;
-	private UserPreferences userPreferences = UserPreferences.getInstance();
-	private TextBundle textBundle = UiBundle.getInstance();
+	private final UserPreferences userPreferences = UserPreferences.getInstance();
+	private final TextBundle textBundle = UiBundle.getInstance();
 	private ImageCanvas imageCanvas;
 	private static ImageManager imageManager;
 
@@ -95,8 +95,8 @@ public class SwtAppleCommander implements Listener {
             else {
                 showUnrecognizedDiskFormatMessage(fullpath);
             }
-		} catch (Exception ignored) {
-			ignored.printStackTrace();
+		} catch (Exception ex) {
+			ex.printStackTrace();
 			showUnexpectedErrorMessage(fullpath);
 		}			
 

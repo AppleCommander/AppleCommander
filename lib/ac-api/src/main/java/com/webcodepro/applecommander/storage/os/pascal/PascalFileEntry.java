@@ -52,9 +52,9 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author John B. Matthews
  */
 public class PascalFileEntry implements FileEntry {
-	private TextBundle textBundle = StorageBundle.getInstance();
-	private byte[] fileEntry;
-	private PascalFormatDisk disk;
+	private final TextBundle textBundle = StorageBundle.getInstance();
+	private final byte[] fileEntry;
+	private final PascalFormatDisk disk;
 	private int index = 0;
 	private boolean deleted = false;
 

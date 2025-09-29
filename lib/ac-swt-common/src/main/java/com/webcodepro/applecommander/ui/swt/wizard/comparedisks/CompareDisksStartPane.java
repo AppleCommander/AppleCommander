@@ -43,11 +43,11 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author Rob Greene
  */
 public class CompareDisksStartPane extends WizardPane {
-	private TextBundle textBundle = UiBundle.getInstance();
-	private Composite parent;
-	private Object layoutData;
+	private final TextBundle textBundle = UiBundle.getInstance();
+	private final Composite parent;
+	private final Object layoutData;
 	private Composite control;
-	private CompareDisksWizard wizard;
+	private final CompareDisksWizard wizard;
 	private Text diskname1Text;
 	private Text diskname2Text;
 	private Combo comparisonStrategyCombo;

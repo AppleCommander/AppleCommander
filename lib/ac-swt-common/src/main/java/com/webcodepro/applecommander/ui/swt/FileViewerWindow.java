@@ -64,14 +64,14 @@ public class FileViewerWindow {
 	private static final char CTRL_P = 'P' - '@';
 	private static final char CTRL_C = 'C' - '@';
 	
-	private TextBundle textBundle = UiBundle.getInstance();
+	private final TextBundle textBundle = UiBundle.getInstance();
 
-	private Shell parentShell;
-	private ImageManager imageManager;
+	private final Shell parentShell;
+	private final ImageManager imageManager;
 	
 	private Shell shell;
-	private FileEntry fileEntry;
-	private FileFilter nativeFilter;
+	private final FileEntry fileEntry;
+	private final FileFilter nativeFilter;
 	
 	private ScrolledComposite content;
 	private ToolBar toolBar;
@@ -245,7 +245,7 @@ public class FileViewerWindow {
 		if (layoutData != null) toolBar.setLayoutData(layoutData);
 		
 		if (nativeFilter != null) {
-			nativeFilterAdapter = (FilterAdapter) nativeFilterAdapterMap.get(nativeFilter.getClass());
+			nativeFilterAdapter = nativeFilterAdapterMap.get(nativeFilter.getClass());
 			if (nativeFilterAdapter != null) {
 				nativeToolItem = nativeFilterAdapter.create(toolBar);
 				nativeToolItem.setSelection(true);

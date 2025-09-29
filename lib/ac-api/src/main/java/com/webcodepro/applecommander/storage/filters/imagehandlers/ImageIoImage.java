@@ -34,7 +34,7 @@ import javax.imageio.ImageIO;
  * @author Rob Greene
  */
 public class ImageIoImage extends AppleImage {
-	private BufferedImage image;
+	private final BufferedImage image;
 	/**
 	 * Create ImageIoImage.  Verifies all (known) required classes are available
 	 * as well as sets up the class.

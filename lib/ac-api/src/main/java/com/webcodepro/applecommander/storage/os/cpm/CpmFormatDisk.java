@@ -34,7 +34,7 @@ import java.util.*;
  * @author Rob Greene
  */
 public class CpmFormatDisk extends FormattedDisk {
-	private TextBundle textBundle = StorageBundle.getInstance();
+	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * The size of the CP/M sector.  Assumed to be 128.
 	 */
@@ -69,7 +69,7 @@ public class CpmFormatDisk extends FormattedDisk {
 	/**
 	 * Manage CP/M disk usage.
 	 */
-	public class CpmDiskUsage implements DiskUsage {
+	public static class CpmDiskUsage implements DiskUsage {
 		int block = -1;
 		boolean[] usage = null;
 		public CpmDiskUsage(boolean[] usage) {
@@ -89,7 +89,7 @@ public class CpmFormatDisk extends FormattedDisk {
 		}
 	}
 
-    private BlockDevice device;
+    private final BlockDevice device;
 
 	/**
 	 * Construct a CP/M formatted disk.

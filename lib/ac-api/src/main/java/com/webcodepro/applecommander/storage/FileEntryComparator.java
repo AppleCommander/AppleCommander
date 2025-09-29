@@ -30,8 +30,8 @@ import java.util.Comparator;
  * @author Rob Greene
  */
 public class FileEntryComparator implements Comparator<FileEntry> {
-	private int columnIndex;
-	private int displayMode;
+	private final int columnIndex;
+	private final int displayMode;
 	
 	/**
 	 * Construct a FileEntryComparator for the given columnIndex.

@@ -57,7 +57,7 @@ import java.util.logging.Logger;
 @Command(name = "import", description = "Import file onto disk.",
          aliases = { "put" })
 public class ImportCommand extends ReadWriteDiskCommandOptions {
-    private static Logger LOG = Logger.getLogger(ImportCommand.class.getName());
+    private static final Logger LOG = Logger.getLogger(ImportCommand.class.getName());
 
     @ArgGroup(heading = "%nInput source:%n", multiplicity = "1")
     private InputData inputData;

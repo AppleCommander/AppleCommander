@@ -23,7 +23,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Listener;
@@ -43,9 +42,9 @@ import com.webcodepro.applecommander.ui.swt.util.contentadapter.ContentTypeAdapt
  */
 public abstract class FilterAdapter {
 	private final FileViewerWindow window;
-	private Image image;
-	private String text;
-	private String toolTipText;
+	private final Image image;
+	private final String text;
+	private final String toolTipText;
 	private ToolItem toolItem;
 	private boolean nativeSelected = true;
 	private boolean hexSelected = false;

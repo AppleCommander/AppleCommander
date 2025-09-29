@@ -30,9 +30,9 @@ import java.util.Optional;
 import java.util.logging.Logger;
 
 public class FileUtils {
-    private static Logger LOG = Logger.getLogger(CopyFileCommand.class.getName());
+    private static final Logger LOG = Logger.getLogger(CopyFileCommand.class.getName());
     
-    private boolean overwrite;
+    private final boolean overwrite;
     
     public FileUtils(boolean overwrite) {
         this.overwrite = overwrite;

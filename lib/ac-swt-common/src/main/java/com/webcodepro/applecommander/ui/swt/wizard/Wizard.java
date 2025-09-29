@@ -44,12 +44,12 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author Rob Greene
  */
 public abstract class Wizard {
-	private TextBundle textBundle = UiBundle.getInstance();
-	private Shell parent;
+	private final TextBundle textBundle = UiBundle.getInstance();
+	private final Shell parent;
 	private Shell dialog;
-	private Image logo;
-	private String title;
-	private Stack<WizardPane> wizardPanes = new Stack<>();
+	private final Image logo;
+	private final String title;
+	private final Stack<WizardPane> wizardPanes = new Stack<>();
 	private boolean wizardCompleted;
 	private Button backButton;
 	private Button nextButton;

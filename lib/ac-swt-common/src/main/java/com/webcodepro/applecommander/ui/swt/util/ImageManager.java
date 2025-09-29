@@ -75,8 +75,8 @@ public class ImageManager {
 	public static final String LOGO_IMPORT_WIZARD        = "ImportWizardLogo.jpg"; //$NON-NLS-1$
 	public static final String LOGO_COMPARE_IMAGE_WIZARD = "CompareImageWizardLogo.jpg"; //$NON-NLS-1$
 	
-	private Map<String,Image> images = new HashMap<>();
-	private String[] imageNames = {
+	private final Map<String,Image> images = new HashMap<>();
+	private final String[] imageNames = {
 		// Icons:
 		ICON_DISK,					ICON_STANDARD_FILE_VIEW,
 		ICON_NATIVE_FILE_VIEW,		ICON_DETAIL_FILE_VIEW,

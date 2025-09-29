@@ -41,7 +41,7 @@ public class DiskHelperTest {
 	private static final String DOS33_FORMAT = "DOS 3.3";
 	private static final String DOS32_FORMAT = "DOS 3.2";
 
-	private TestConfig config = TestConfig.getInstance();
+	private final TestConfig config = TestConfig.getInstance();
 
 	@Test
 	public void testLoadDos33() throws IOException, DiskException {

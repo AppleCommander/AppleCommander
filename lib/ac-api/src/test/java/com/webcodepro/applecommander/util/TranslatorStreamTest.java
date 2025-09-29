@@ -59,9 +59,9 @@ public class TranslatorStreamTest {
     }
     
     public static class TestData {
-        private String name;
-        private byte[] expected;
-        private InputStream sourceStream;
+        private final String name;
+        private final byte[] expected;
+        private final InputStream sourceStream;
         
         public TestData(String name, byte[] expected, InputStream sourceStream) {
             this.name = name;

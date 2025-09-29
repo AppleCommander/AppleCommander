@@ -48,7 +48,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
  * @author John B. Matthews
  */
 public class IntegerBasicFileFilter implements FileFilter {
-	private static String[] tokens = {
+	private static final String[] tokens = {
 		null,	 	null, 		null,	":",		"LOAD ",	"SAVE ",	null, 		"RUN ",	// $00-$07
 		null,		"DEL ",		", ",	"NEW ",		"CLR ",		"AUTO ",	null,		"MAN ",	// $08-$0F
 		"HIMEM:",	"LOMEM:",	"+",	"-",		"*",		"/",		"=",		"#",	// $10-$17

@@ -31,7 +31,7 @@ import picocli.CommandLine.Parameters;
 
 @Command(name = "rename-disk", description = "Rename volume of a disk image.")
 public class RenameDiskCommand extends ReadWriteDiskCommandOptions {
-    private static Logger LOG = Logger.getLogger(RenameDiskCommand.class.getName());
+    private static final Logger LOG = Logger.getLogger(RenameDiskCommand.class.getName());
     
     @Parameters(description = "Disk name.")
     private String diskName;

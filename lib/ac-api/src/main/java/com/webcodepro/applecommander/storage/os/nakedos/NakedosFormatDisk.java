@@ -39,7 +39,7 @@ import java.util.Optional;
  * @author David Schmidt
  */
 public class NakedosFormatDisk extends FormattedDisk {
-	private TextBundle textBundle = StorageBundle.getInstance();
+	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Indicates the index of the track in the location array.
 	 */	
@@ -106,7 +106,7 @@ public class NakedosFormatDisk extends FormattedDisk {
 		}
 	}
 
-    private TrackSectorDevice device;
+    private final TrackSectorDevice device;
 
 	/**)
 	 * Constructor for NakedosFormatDisk.

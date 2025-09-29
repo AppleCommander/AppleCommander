@@ -43,7 +43,7 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author Rob Greene
  */
 public class CpmFileEntry implements FileEntry {
-	private TextBundle textBundle = StorageBundle.getInstance();
+	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * The standard CP/M file entry length.
 	 */
@@ -123,11 +123,11 @@ public class CpmFileEntry implements FileEntry {
 	/**
 	 * Reference to the disk this FileEntry is attached to.
 	 */
-	private CpmFormatDisk disk;
+	private final CpmFormatDisk disk;
 	/**
 	 * The offset(s) into the block that the FileEntry is at.
 	 */
-	private List<Integer> offsets = new ArrayList<>();
+	private final List<Integer> offsets = new ArrayList<>();
 	
 	/**
 	 * Construct a CP/M file entry.

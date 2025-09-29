@@ -37,7 +37,7 @@ import org.eclipse.swt.graphics.ImageLoader;
  * @author Rob Greene
  */
 public class SwtImage extends AppleImage {
-	private ImageData imageData;
+	private final ImageData imageData;
 	/**
 	 * Create SwtImage.  Verifies all (known) required classes are available
 	 * as well as sets up the class.

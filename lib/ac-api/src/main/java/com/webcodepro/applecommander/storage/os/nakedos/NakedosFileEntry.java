@@ -40,19 +40,19 @@ import com.webcodepro.applecommander.util.TextBundle;
  */
 public class NakedosFileEntry implements FileEntry {
 
-	private TextBundle textBundle = StorageBundle.getInstance();
+	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Holds the disk the FileEntry is attached to.
 	 */
-	private NakedosFormatDisk disk;
+	private final NakedosFormatDisk disk;
 	/**
 	 * The file number/name of this file
 	 */
-	private int fileNumber;
+	private final int fileNumber;
 	/**
 	 * The number of sectors used by this file
 	 */
-	private int size;
+	private final int size;
 
 	/**
 	 * Constructor for NakedosFileEntry.

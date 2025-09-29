@@ -26,15 +26,14 @@ import java.util.List;
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.ui.UiBundle;
 
 public class Name {
-    private static TextBundle textBundle = UiBundle.getInstance();
+    private static final TextBundle textBundle = UiBundle.getInstance();
 
     private String fullName;
-    private String name;
-    private String[] path;
+    private final String name;
+    private final String[] path;
     
     public Name(String s) {
         this.fullName = s;

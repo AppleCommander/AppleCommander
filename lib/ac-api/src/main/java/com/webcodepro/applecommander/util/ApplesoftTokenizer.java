@@ -39,7 +39,7 @@ import com.webcodepro.applecommander.storage.FileEntry;
  * @author Rob Greene
  */
 public class ApplesoftTokenizer {
-	private static String tokens[] = {	// starts at $80
+	private static final String[] tokens = {	// starts at $80
 		" END ",		" FOR ",	" NEXT ",	" DATA ",	" INPUT ",		" DEL ",
 		" DIM ",		" READ ",	" GR ",		" TEXT ",	" PR# ",		" IN# ",
 		" CALL ",		" PLOT ",	" HLIN ",	" VLIN ",	" HGR2 ",		" HGR ",
@@ -60,7 +60,7 @@ public class ApplesoftTokenizer {
 		" ASC",			" CHR$",	" LEFT$",	" RIGHT$",	" MID$ "
 	};
 		
-	private byte[] fileData;
+	private final byte[] fileData;
 	private int offset;
 	private int nextAddress = -1;
 

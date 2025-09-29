@@ -37,8 +37,8 @@ import java.util.zip.GZIPInputStream;
  * Creates and manages a Source based upon a file in the filesystem.
  */
 public class FileSource implements Source {
-    private Path path;
-    private String filename;
+    private final Path path;
+    private final String filename;
     private int compressedSize = -1;
     private DataBuffer buffer;
     private boolean changed;

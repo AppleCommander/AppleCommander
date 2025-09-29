@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class FileEntrySource implements Source {
-    private FileEntry fileEntry;
-    private DataBuffer buffer;
+    private final FileEntry fileEntry;
+    private final DataBuffer buffer;
     private boolean changed;
 
     public FileEntrySource(FileEntry fileEntry) {

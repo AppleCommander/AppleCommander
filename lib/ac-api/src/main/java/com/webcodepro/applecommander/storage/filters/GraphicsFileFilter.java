@@ -65,7 +65,7 @@ public class GraphicsFileFilter implements FileFilter {
 	
 	private int mode = MODE_HGR_COLOR;
 	
-	private static AppleImage referenceImage = AppleImage.create(1,1);
+	private static final AppleImage referenceImage = AppleImage.create(1,1);
 	
 	/**
 	 * Constructor for GraphicsFileFilter.

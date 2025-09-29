@@ -32,7 +32,7 @@ public class NibbleImage implements NibbleTrackReaderWriter {
     public static final int TRACK_SIZE = 6656;
     public static final int TRACKS_ON_DEVICE = DISK_SIZE / TRACK_SIZE;
 
-    private Source source;
+    private final Source source;
 
     public NibbleImage(Source source) {
         this.source = source;

@@ -39,11 +39,11 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author Rob Greene
  */
 public class AppleWorksWordProcessorPane extends WizardPane {
-	private TextBundle textBundle = UiBundle.getInstance();
-	private Composite parent;
-	private Object layoutData;
+	private final TextBundle textBundle = UiBundle.getInstance();
+	private final Composite parent;
+	private final Object layoutData;
 	private Composite control;
-	private ExportWizard wizard;
+	private final ExportWizard wizard;
 	/**
 	 * Constructor for AppleWorksWordProcessorPane.
 	 */

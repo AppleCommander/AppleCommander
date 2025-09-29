@@ -63,8 +63,8 @@ import java.util.logging.Logger;
             WriteCommand.class
     })
 public class Main {
-    private static Logger LOG = Logger.getLogger(Main.class.getName());
-    private static final Level LOG_LEVELS[] = { Level.OFF, Level.SEVERE, Level.WARNING, Level.INFO, 
+    private static final Logger LOG = Logger.getLogger(Main.class.getName());
+    private static final Level[] LOG_LEVELS = { Level.OFF, Level.SEVERE, Level.WARNING, Level.INFO,
             Level.CONFIG, Level.FINE, Level.FINER, Level.FINEST };
     
     static {

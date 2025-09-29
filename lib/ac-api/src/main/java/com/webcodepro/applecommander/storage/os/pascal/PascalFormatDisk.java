@@ -41,7 +41,7 @@ import java.util.*;
  * @author John B. Matthews [getFiles(), get/putDirectory(), createFile()]
  */
 public class PascalFormatDisk extends FormattedDisk {
-	private TextBundle textBundle = StorageBundle.getInstance();
+	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * The size of the Pascal file entry.
 	 */
@@ -118,7 +118,7 @@ public class PascalFormatDisk extends FormattedDisk {
 		}
 	}
 
-	private BlockDevice device;
+	private final BlockDevice device;
 	
 	/**
 	 * Constructor for PascalFormatDisk.

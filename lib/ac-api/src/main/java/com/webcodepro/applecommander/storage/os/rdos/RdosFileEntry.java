@@ -56,9 +56,9 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author Rob Greene
  */
 public class RdosFileEntry implements FileEntry {
-	private TextBundle textBundle = StorageBundle.getInstance();
-	private byte[] fileEntry;
-	private RdosFormatDisk disk;
+	private final TextBundle textBundle = StorageBundle.getInstance();
+	private final byte[] fileEntry;
+	private final RdosFormatDisk disk;
 
 	/**
 	 * Constructor for RdosFileEntry.

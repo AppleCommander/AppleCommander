@@ -29,7 +29,7 @@ import java.util.Optional;
 public class PascalFileEntryReaderWriter implements FileEntryReader, FileEntryWriter {
     private static final PascalTextFileFilter TEXT_FILTER = new PascalTextFileFilter();
 
-    private PascalFileEntry fileEntry;
+    private final PascalFileEntry fileEntry;
     
     public PascalFileEntryReaderWriter(PascalFileEntry fileEntry) {
         this.fileEntry = fileEntry;

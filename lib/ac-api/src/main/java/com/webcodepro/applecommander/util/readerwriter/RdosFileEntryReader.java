@@ -24,7 +24,7 @@ import com.webcodepro.applecommander.storage.os.rdos.RdosFileEntry;
 import java.util.Optional;
 
 public class RdosFileEntryReader implements FileEntryReader {
-    private RdosFileEntry fileEntry;
+    private final RdosFileEntry fileEntry;
     
     public RdosFileEntryReader(RdosFileEntry fileEntry) {
         this.fileEntry = fileEntry;

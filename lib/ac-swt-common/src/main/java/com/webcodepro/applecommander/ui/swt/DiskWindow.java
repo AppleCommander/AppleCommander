@@ -42,8 +42,8 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author Rob Greene
  */
 public class DiskWindow {
-	private Shell parentShell;
-	private ImageManager imageManager;
+	private final Shell parentShell;
+	private final ImageManager imageManager;
 	
 	private Shell shell;
 	private FormattedDisk[] disks;
@@ -51,7 +51,7 @@ public class DiskWindow {
 	private DiskInfoTab diskInfoTab;
 	private DiskMapTab[] diskMapTabs;
 
-	private TextBundle textBundle = UiBundle.getInstance();
+	private final TextBundle textBundle = UiBundle.getInstance();
 
 	/**
 	 * Construct the disk window.

@@ -31,7 +31,7 @@ import picocli.CommandLine.Option;
          optionListHeading = "%nOptions:%n",
          parameterListHeading = "%nParameters:%n")
 public abstract class ReusableCommandOptions implements Callable<Integer> {
-    private static Logger LOG = Logger.getLogger(ReusableCommandOptions.class.getName());
+    private static final Logger LOG = Logger.getLogger(ReusableCommandOptions.class.getName());
 
     @Option(names = { "-h", "--help" }, description = "Show help for subcommand.", usageHelp = true)
     private boolean helpFlag;

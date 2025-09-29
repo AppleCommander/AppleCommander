@@ -37,7 +37,7 @@ import java.util.logging.Logger;
 @Command(name = "copy", description = "Copy files between disks.",
          aliases = { "cp" })
 public class CopyFileCommand extends ReadWriteDiskCommandOptions {
-    private static Logger LOG = Logger.getLogger(CopyFileCommand.class.getName());
+    private static final Logger LOG = Logger.getLogger(CopyFileCommand.class.getName());
 
     @Option(names = { "-r", "--recursive" }, description = "Copy files recursively.")
     private boolean recursiveFlag;

@@ -61,8 +61,8 @@ public enum ExportMethod {
     RAW(ignored -> new RawFileFilter(), "raw"),
     TEXT(ignored -> new TextFileFilter(), "text");
     
-    private Function<FileEntry,FileFilter> fileFilterFn;
-    private List<String> codes;
+    private final Function<FileEntry,FileFilter> fileFilterFn;
+    private final List<String> codes;
     
     private ExportMethod(Function<FileEntry,FileFilter> fileFilterFn, String... codes) {
         this.fileFilterFn = fileFilterFn;
