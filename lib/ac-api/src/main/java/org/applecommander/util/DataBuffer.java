@@ -37,8 +37,11 @@ public class DataBuffer {
     private ByteBuffer buffer;
 
     public static DataBuffer wrap(byte[] data) {
+        return wrap(data, 0, data.length);
+    }
+    public static DataBuffer wrap(byte[] data, int offset, int length) {
         DataBuffer dbuf = new DataBuffer();
-        dbuf.buffer = ByteBuffer.wrap(data);
+        dbuf.buffer = ByteBuffer.wrap(data, offset, length);
         dbuf.buffer.order(ByteOrder.LITTLE_ENDIAN);
         return dbuf;
     }
