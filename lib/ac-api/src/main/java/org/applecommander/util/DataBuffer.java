@@ -149,6 +149,9 @@ public class DataBuffer {
             putByte(offset++, value);
         }
     }
+    public void putUnsignedShort(int offset, int value) {
+        this.buffer.putShort(offset, (short)(value & 0xffff));
+    }
     public void putShort(int offset, short value) {
         this.buffer.putShort(offset, value);
     }

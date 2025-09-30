@@ -125,7 +125,7 @@ public class PascalSupport {
         var db = DataBuffer.wrap(asm.codeBytes());
         for (int addr : asm.procRelativeReloc()) {
             int offset = addr - asm.enterIC();
-            db.putShort(offset, (short) (db.getSignedShort(offset) + asm.endIC()));
+            db.putUnsignedShort(offset, db.getUnsignedShort(offset) + asm.enterIC());
         }
 
         // We want to indent the resulting assembly, so a temporary new PrintWriter so indentation can be applied
