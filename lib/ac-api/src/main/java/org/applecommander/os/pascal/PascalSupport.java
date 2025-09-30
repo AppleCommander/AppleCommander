@@ -87,15 +87,11 @@ public class PascalSupport {
                 pw.println(">  Invalid procedure header.");
                 continue;
             }
-            // We want to indent the resulting assembly, so a temporary new PrintWriter so indentation can be applied
-            StringWriter stringWriter = new StringWriter();
-            PrintWriter printWriter = new PrintWriter(stringWriter, true);
             switch (proc) {
-                case PCodeProcedure pcode -> disassemble(printWriter, pcode);
-                case AssemblyProcedure asm -> disassemble(printWriter, asm);
+                case PCodeProcedure pcode -> disassemble(pw, pcode);
+                case AssemblyProcedure asm -> disassemble(pw, asm);
                 default -> throw new RuntimeException("Unexpected procedure type: " + proc.getClass().getName());
             }
-            pw.println(stringWriter.toString().indent(5));
         }
     }
 
@@ -103,12 +99,17 @@ public class PascalSupport {
         pw.printf(">  Proc#%d, Lex Lvl %d, Enter $%04x, Exit $%04x, Param %d, Data %d, JTAB=$%04x\n",
                 pcode.procNum(), pcode.lexLevel(), pcode.enterIC(), pcode.exitIC(),
                 pcode.paramsSize(), pcode.dataSize(), pcode.jumpTable());
-        disassemble(pw, InstructionSetPCode.forApplePascal(), pcode.enterIC(), pcode.codeBytes());
+
+        // We want to indent the resulting assembly, so a temporary new PrintWriter so indentation can be applied
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter, true);
+        disassemble(printWriter, InstructionSetPCode.forApplePascal(), pcode.enterIC(), pcode.codeBytes());
+        pw.println(stringWriter.toString().indent(5));
     }
 
     public static void disassemble(PrintWriter pw, AssemblyProcedure asm) {
-        pw.printf(">  ASM Proc, Relocation Segment #%d, Enter $%04x\n",
-                asm.relocSegNum(), asm.enterIC());
+        pw.printf(">  ASM Proc#%d, Relocation Segment #%d, Enter $%04x\n",
+                asm.procNum(), asm.relocSegNum(), asm.enterIC());
 
         BiConsumer<int[], String> formatter = (table, name) -> {
             if (table.length > 0) {
@@ -129,7 +130,11 @@ public class PascalSupport {
             bb.putShort(offset, (short) (bb.getShort(offset) + asm.endIC()));
         }
 
-        disassemble(pw, InstructionSet6502.for6502(), asm.enterIC(), bb.array());
+        // We want to indent the resulting assembly, so a temporary new PrintWriter so indentation can be applied
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter, true);
+        disassemble(printWriter, InstructionSet6502.for6502(), asm.enterIC(), bb.array());
+        pw.println(stringWriter.toString().indent(5));
     }
 
     public static void disassemble(PrintWriter pw, InstructionSet instructionSet, int startAddress, byte[] procedureCode) {
