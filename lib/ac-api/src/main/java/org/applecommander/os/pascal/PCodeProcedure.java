@@ -25,7 +25,11 @@ public record PCodeProcedure(int procNum, int lexLevel, int enterIC, int exitIC,
                              int dataSize, int jumpTable, ByteBuffer data) {
 
     public byte[] codeBytes() {
-        byte[] bytes = new byte[jumpTable()-enterIC()];
+        // Sometimes we get a negative value; bypass it...
+        int size = jumpTable()-enterIC();
+        if (size <= 0 || jumpTable() < 0 || enterIC() < 0) return new byte[0];
+
+        byte[] bytes = new byte[size];
         data.get(enterIC(), bytes);
         return bytes;
     }
