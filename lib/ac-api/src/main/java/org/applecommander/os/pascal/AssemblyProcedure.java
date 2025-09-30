@@ -31,10 +31,11 @@ public record AssemblyProcedure(ByteBuffer data, int procNum, int relocSegNum, i
         return bytes;
     }
 
-    public static AssemblyProcedure load(ByteBuffer data, int attrs) {
+    public static AssemblyProcedure load(ByteBuffer data, int attrs, int givenProcNum) {
         int relocSegNum = data.get(attrs);
         int procNum = data.get(attrs-1);
-        assert procNum == 0;
+        assert procNum == 0;    // Expected
+        procNum = givenProcNum; // Just over-ride whatever we got
         int enterIC = attrs - data.getShort(attrs-3) - 3;
         // SELF RELATIVE POINTERS contains the _distance_ between low-order byte of pointer
         // A little bit stinky because Java doesn't allow multiple returns.

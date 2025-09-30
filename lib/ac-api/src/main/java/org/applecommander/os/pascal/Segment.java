@@ -55,7 +55,7 @@ public record Segment(String name, String textInterface, ByteBuffer data, Kind k
                             yield PCodeProcedure.load(data, attrs);
                         }
                         else {
-                            yield AssemblyProcedure.load(data, attrs);
+                            yield AssemblyProcedure.load(data, attrs, i+1);
                         }
                     }
                     default -> {
