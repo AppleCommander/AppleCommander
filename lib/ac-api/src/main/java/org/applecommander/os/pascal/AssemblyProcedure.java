@@ -19,9 +19,9 @@
  */
 package org.applecommander.os.pascal;
 
-import java.nio.ByteBuffer;
+import org.applecommander.util.DataBuffer;
 
-public record AssemblyProcedure(ByteBuffer data, int procNum, int relocSegNum, int enterIC, int attrs, int endIC,
+public record AssemblyProcedure(DataBuffer data, int procNum, int relocSegNum, int enterIC, int attrs, int endIC,
                                 int[] baseRelativeReloc, int[] segRelativeReloc, int[] procRelativeReloc,
                                 int[] interpRelativeReloc) {
 
@@ -31,12 +31,12 @@ public record AssemblyProcedure(ByteBuffer data, int procNum, int relocSegNum, i
         return bytes;
     }
 
-    public static AssemblyProcedure load(ByteBuffer data, int attrs, int givenProcNum) {
-        int relocSegNum = data.get(attrs);
-        int procNum = data.get(attrs-1);
+    public static AssemblyProcedure load(DataBuffer data, int attrs, int givenProcNum) {
+        int relocSegNum = data.getUnsignedByte(attrs);
+        int procNum = data.getUnsignedByte(attrs-1);
         assert procNum == 0;    // Expected
         procNum = givenProcNum; // Just over-ride whatever we got
-        int enterIC = attrs - data.getShort(attrs-3) - 3;
+        int enterIC = attrs - data.getUnsignedShort(attrs-3) - 3;
         // SELF RELATIVE POINTERS contains the _distance_ between low-order byte of pointer
         // A little bit stinky because Java doesn't allow multiple returns.
         // which would allow '(attrs,baseRelativeReloc) = selfRelativeTable(attrs)'
@@ -53,13 +53,13 @@ public record AssemblyProcedure(ByteBuffer data, int procNum, int relocSegNum, i
                 baseRelativeReloc, segRelativeReloc, procRelativeReloc, interpRelativeReloc);
     }
 
-    private static Result<Integer,int[]> loadSelfRelativeTable(ByteBuffer data, int base) {
+    private static Result<Integer,int[]> loadSelfRelativeTable(DataBuffer data, int base) {
         base -= 2;
-        int n = data.getShort(base);
+        int n = data.getUnsignedShort(base);
         int[] table = new int[n];
         for (int i=0; i<n; i++) {
             base -= 2;
-            table[i] = base - data.getShort(base);
+            table[i] = base - data.getUnsignedShort(base);
         }
         return new Result<>(base, table);
     }

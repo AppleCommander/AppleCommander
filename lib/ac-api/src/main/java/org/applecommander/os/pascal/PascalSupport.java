@@ -24,11 +24,10 @@ import org.applecommander.disassembler.api.Instruction;
 import org.applecommander.disassembler.api.InstructionSet;
 import org.applecommander.disassembler.api.mos6502.InstructionSet6502;
 import org.applecommander.disassembler.api.pcode.InstructionSetPCode;
+import org.applecommander.util.DataBuffer;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,17 +39,17 @@ public class PascalSupport {
         // prevent construction
     }
 
-    public static String textFile(ByteBuffer textAddrBuf) {
+    public static String textFile(DataBuffer textAddrBuf) {
         StringBuilder sb = new StringBuilder();
         while (textAddrBuf.hasRemaining()) {
-            var ch = Byte.toUnsignedInt(textAddrBuf.get());
+            var ch = textAddrBuf.readUnsignedByte();
             if (ch == 0) {
                 // 0's seem to be the end?
                 break;
             }
             else if (ch == 16) {
                 // DLE
-                var n = Byte.toUnsignedInt(textAddrBuf.get()) - 32;
+                var n = textAddrBuf.readUnsignedByte() - 32;
                 while (n-- > 0) sb.append(" ");
             }
             else if (ch == 13) {
@@ -123,17 +122,16 @@ public class PascalSupport {
         formatter.accept(asm.procRelativeReloc(), "procedure");
         formatter.accept(asm.interpRelativeReloc(), "interpreter");
 
-        var bb = ByteBuffer.wrap(asm.codeBytes());
-        bb.order(ByteOrder.LITTLE_ENDIAN);
+        var db = DataBuffer.wrap(asm.codeBytes());
         for (int addr : asm.procRelativeReloc()) {
             int offset = addr - asm.enterIC();
-            bb.putShort(offset, (short) (bb.getShort(offset) + asm.endIC()));
+            db.putShort(offset, (short) (db.getSignedShort(offset) + asm.endIC()));
         }
 
         // We want to indent the resulting assembly, so a temporary new PrintWriter so indentation can be applied
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter, true);
-        disassemble(printWriter, InstructionSet6502.for6502(), asm.enterIC(), bb.array());
+        disassemble(printWriter, InstructionSet6502.for6502(), asm.enterIC(), db.asBytes());
         pw.println(stringWriter.toString().indent(5));
     }
 

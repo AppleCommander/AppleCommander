@@ -19,10 +19,10 @@
  */
 package org.applecommander.os.pascal;
 
-import java.nio.ByteBuffer;
+import org.applecommander.util.DataBuffer;
 
 public record PCodeProcedure(int procNum, int lexLevel, int enterIC, int exitIC, int paramsSize,
-                             int dataSize, int jumpTable, ByteBuffer data) {
+                             int dataSize, int jumpTable, DataBuffer data) {
 
     public byte[] codeBytes() {
         // Sometimes we get a negative value; bypass it...
@@ -33,14 +33,14 @@ public record PCodeProcedure(int procNum, int lexLevel, int enterIC, int exitIC,
         data.get(enterIC(), bytes);
         return bytes;
     }
-    public static PCodeProcedure load(ByteBuffer data, int attrs) {
-        int lexLevel = data.get(attrs);
-        int procNum = data.get(attrs-1);
+    public static PCodeProcedure load(DataBuffer data, int attrs) {
+        int lexLevel = data.getUnsignedByte(attrs);
+        int procNum = data.getUnsignedByte(attrs-1);
         // SELF RELATIVE POINTERS contains the _distance_ between low-order byte of pointer
-        int enterIC = attrs - data.getShort(attrs-3) - 3;
-        int exitIC = attrs - data.getShort(attrs-5) - 5;
-        int paramsSize = data.getShort(attrs-7);
-        int dataSize = data.getShort(attrs-9);
+        int enterIC = attrs - data.getUnsignedShort(attrs-3) - 3;
+        int exitIC = attrs - data.getUnsignedShort(attrs-5) - 5;
+        int paramsSize = data.getUnsignedShort(attrs-7);
+        int dataSize = data.getUnsignedShort(attrs-9);
         int jumpTable = attrs - 9;
         return new PCodeProcedure(procNum, lexLevel, enterIC, exitIC, paramsSize, dataSize, jumpTable, data);
     }

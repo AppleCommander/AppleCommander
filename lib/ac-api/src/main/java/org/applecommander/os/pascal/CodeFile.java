@@ -22,8 +22,6 @@ package org.applecommander.os.pascal;
 import org.applecommander.util.DataBuffer;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -39,39 +37,35 @@ public record CodeFile(Segment[] segments, String comment) {
         return load(Files.readAllBytes(path));
     }
     public static CodeFile load(byte[] data) {
-        var diskInfoBuf = ByteBuffer.wrap(data, 0, 16*DISKINFO_LENGTH);
-        diskInfoBuf.order(ByteOrder.LITTLE_ENDIAN);
-        var segNameBuf = ByteBuffer.wrap(data, diskInfoBuf.limit(), 16*SEGNAME_LENGTH);
-        var segKindBuf = ByteBuffer.wrap(data, segNameBuf.limit(), 16*SEGKIND_LENGTH);
-        segKindBuf.order(ByteOrder.LITTLE_ENDIAN);
-        var textAddrBuf = ByteBuffer.wrap(data, segKindBuf.limit(), 16*TEXTADDR_LENGTH);
-        textAddrBuf.order(ByteOrder.LITTLE_ENDIAN);
-        var segInfoBuf = ByteBuffer.wrap(data, textAddrBuf.limit(), 16*SEGINFO_LENGTH);
-        segInfoBuf.order(ByteOrder.LITTLE_ENDIAN);
-        var intrinsSegsBuf = ByteBuffer.wrap(data, segInfoBuf.limit(), 32*INTRINS_SEGS_LENGTH);   // libraries
-        var commentBuf = ByteBuffer.wrap(data, intrinsSegsBuf.limit(), 0x50);
+        var diskInfoBuf = DataBuffer.wrap(data, 0, 16*DISKINFO_LENGTH);
+        var segNameBuf = DataBuffer.wrap(data, diskInfoBuf.limit(), 16*SEGNAME_LENGTH);
+        var segKindBuf = DataBuffer.wrap(data, segNameBuf.limit(), 16*SEGKIND_LENGTH);
+        var textAddrBuf = DataBuffer.wrap(data, segKindBuf.limit(), 16*TEXTADDR_LENGTH);
+        var segInfoBuf = DataBuffer.wrap(data, textAddrBuf.limit(), 16*SEGINFO_LENGTH);
+        var intrinsSegsBuf = DataBuffer.wrap(data, segInfoBuf.limit(), 32*INTRINS_SEGS_LENGTH);   // libraries
+        var commentBuf = DataBuffer.wrap(data, intrinsSegsBuf.limit(), 0x50);
 
-        int commentLength = Byte.toUnsignedInt(commentBuf.get());
+        int commentLength = commentBuf.readUnsignedByte();
         var commentData = new byte[commentLength];
-        commentBuf.get(commentData);
+        commentBuf.read(commentData);
         String comment = new String(commentData);
 
         Segment[] segments = new Segment[16];
         for (var i=0; i<16; i++) {
-            var blockAddress = diskInfoBuf.getShort();
-            var lengthInBytes = diskInfoBuf.getShort();
+            var blockAddress = diskInfoBuf.readUnsignedShort();
+            var lengthInBytes = diskInfoBuf.readUnsignedShort();
             if (blockAddress == 0 && lengthInBytes == 0) continue;  // unused slot
             var name = new byte[8];
-            segNameBuf.get(name);
+            segNameBuf.read(name);
             var start = blockAddress * 512;
-            var textAddr = textAddrBuf.getShort() * 512;
-            ByteBuffer textInterfaceBuf = ByteBuffer.wrap(new byte[0]);
+            var textAddr = textAddrBuf.readUnsignedShort() * 512;
+            DataBuffer textInterfaceBuf = DataBuffer.wrap(new byte[0]);
             if (textAddr > 0) {
-                textInterfaceBuf = ByteBuffer.wrap(data, textAddr, start-textAddr);
+                textInterfaceBuf = DataBuffer.wrap(data, textAddr, start-textAddr);
             }
             if (lengthInBytes > 0) {
-                segments[i] = Segment.load(new String(name), segKindBuf.getShort(), segInfoBuf.getShort(),
-                    ByteBuffer.wrap(data, start, lengthInBytes), textInterfaceBuf);
+                segments[i] = Segment.load(new String(name), segKindBuf.readUnsignedShort(), segInfoBuf.readUnsignedShort(),
+                    DataBuffer.wrap(data, start, lengthInBytes), textInterfaceBuf);
             }
         }
         return new CodeFile(segments, comment);

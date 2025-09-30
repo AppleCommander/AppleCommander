@@ -106,6 +106,7 @@ public class DataBuffer {
     public int getUnsignedByte(int index) {
         return Byte.toUnsignedInt(this.buffer.get(index));
     }
+    public int getSignedShort(int index) { return this.buffer.getShort(); }
     public int getUnsignedShort(int index) {
         return Short.toUnsignedInt(this.buffer.getShort(index));
     }
@@ -147,6 +148,9 @@ public class DataBuffer {
         for (int value : values) {
             putByte(offset++, value);
         }
+    }
+    public void putShort(int offset, short value) {
+        this.buffer.putShort(offset, value);
     }
     /**
      * Determine if a specific bit is set.

@@ -19,14 +19,12 @@
  */
 package org.applecommander.os.pascal;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import org.applecommander.util.DataBuffer;
 
-public record Segment(String name, String textInterface, ByteBuffer data, Kind kind, int textAddr,
+public record Segment(String name, String textInterface, DataBuffer data, Kind kind, int textAddr,
                       int segNum, MachineType machineType, int version, Object[] dictionary) {
 
-    public static Segment load(String name, int kind, int segInfo, ByteBuffer data, ByteBuffer textAddrBuf) {
-        data.order(ByteOrder.LITTLE_ENDIAN);
+    public static Segment load(String name, int kind, int segInfo, DataBuffer data, DataBuffer textAddrBuf) {
         var segKind = Kind.values()[kind];
         var textAddr = textAddrBuf.limit();
         var segNum = segInfo & 0x00ff;
@@ -34,8 +32,8 @@ public record Segment(String name, String textInterface, ByteBuffer data, Kind k
         var version = (segInfo >> 13) & 0x07;
 
         var pos = data.limit();
-        int numProc = data.get(--pos);
-        int segNo = data.get(--pos);
+        int numProc = data.getUnsignedByte(--pos);
+        int segNo = data.getUnsignedByte(--pos);
         Object[] dictionary = new Object[numProc];
 
         var textInterface = PascalSupport.textFile(textAddrBuf);
@@ -46,7 +44,7 @@ public record Segment(String name, String textInterface, ByteBuffer data, Kind k
 
         for (var i=0; i<numProc; i++) {
             pos -= 2;
-            var offset = data.getShort(pos);
+            var offset = data.getUnsignedShort(pos);
             var attrs = pos - offset + 1;
             // Note that SYSTEM.PASCAL procedure #30 has offset of $4D76 from position $E16 (table begins at $E56)
             // ... which results to an invalid reference. Unable to find anything in manuals yet.
@@ -55,7 +53,7 @@ public record Segment(String name, String textInterface, ByteBuffer data, Kind k
                     case P_CODE_LSB -> PCodeProcedure.load(data, attrs);
                     case MOS6502 -> {
                         // Not everything in an assembly segment is actually assembly
-                        if (data.get(attrs-1) > 0) {
+                        if (data.getUnsignedByte(attrs-1) > 0) {
                             yield PCodeProcedure.load(data, attrs);
                         }
                         else {
