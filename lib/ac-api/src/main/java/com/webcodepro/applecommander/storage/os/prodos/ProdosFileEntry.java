@@ -30,17 +30,7 @@ import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.StorageBundle;
-import com.webcodepro.applecommander.storage.filters.AppleWorksDataBaseFileFilter;
-import com.webcodepro.applecommander.storage.filters.AppleWorksSpreadSheetFileFilter;
-import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFileFilter;
-import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
-import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
-import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
-import com.webcodepro.applecommander.storage.filters.BusinessBASICFileFilter;
-import com.webcodepro.applecommander.storage.filters.DisassemblyFileFilter;
-import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
-import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
-import com.webcodepro.applecommander.storage.filters.TextFileFilter;
+import com.webcodepro.applecommander.storage.filters.*;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 
@@ -530,6 +520,10 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 		int filesize = getSize();
 		
 		switch (filetype) {
+        case 0x02:      // PCD
+            return new PascalCodeFileFilter();
+        case 0x03:      // PTX
+            return new PascalTextFileFilter();
 		case 0x04:		// TXT
 			if (getFilename().endsWith(".S")) { //$NON-NLS-1$
 				return new AssemblySourceFileFilter();			

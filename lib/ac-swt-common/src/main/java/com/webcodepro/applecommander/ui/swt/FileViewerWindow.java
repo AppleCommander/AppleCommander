@@ -203,6 +203,11 @@ public class FileViewerWindow {
 				textBundle.get("FileViewerWindow.PascalTextTooltip"),  //$NON-NLS-1$
 				imageManager.get(ImageManager.ICON_VIEW_AS_TEXTFILE)
 			));
+        nativeFilterAdapterMap.put(PascalCodeFileFilter.class,
+                new TextFilterAdapter(this, textBundle.get("FileViewerWindow.PascalCodeButton"),
+                        textBundle.get("FileViewerWindow.PascalCodeTooltip"),
+                        imageManager.get(ImageManager.ICON_VIEW_AS_TEXTFILE)
+                ));
 		nativeFilterAdapterMap.put(TextFileFilter.class,
 			new TextFilterAdapter(this, textBundle.get("FileViewerWindow.TextButton"), //$NON-NLS-1$
 				textBundle.get("FileViewerWindow.TextTooltip"), //$NON-NLS-1$
