@@ -33,6 +33,7 @@ import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.filters.*;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.os.pascal.CodeFile;
 
 /**
  * Represents a ProDOS file entry on disk.
@@ -529,6 +530,11 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 				return new AssemblySourceFileFilter();			
 			}
 			return new TextFileFilter();
+        case 0x05:      // PDA
+            if (CodeFile.test(getFileData())) {
+                return new PascalCodeFileFilter();
+            }
+            break;
 		case 0x09:		// BA3
 			return new BusinessBASICFileFilter();
 		case 0xb0:		// SRC

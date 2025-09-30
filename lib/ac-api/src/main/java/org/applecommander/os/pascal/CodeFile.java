@@ -19,6 +19,8 @@
  */
 package org.applecommander.os.pascal;
 
+import org.applecommander.util.DataBuffer;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -73,5 +75,28 @@ public record CodeFile(Segment[] segments, String comment) {
             }
         }
         return new CodeFile(segments, comment);
+    }
+
+    /** Perform a light test of these bytes to verify they "look" like an Apple Pascal CodeFile. */
+    public static boolean test(byte[] data) {
+        var diskInfoBuf = DataBuffer.wrap(data, 0, 16*DISKINFO_LENGTH);
+        var segNameBuf = DataBuffer.wrap(data, diskInfoBuf.limit(), 16*SEGNAME_LENGTH);
+
+        for (int i=0; i<16; i++) {
+            // Check DISKINFO for validity
+            var blockAddress = diskInfoBuf.readUnsignedShort();
+            var lengthInBytes = diskInfoBuf.readUnsignedShort();
+            if (blockAddress > 0 && lengthInBytes > 0) {
+                // Only check valid slots
+                var start = blockAddress * 512;
+                if (start + lengthInBytes >= data.length) return false;
+            }
+            // Check SEGNAME for legal Pascal identifier
+            for (int j=0; j<8; j++) {
+                int ch = segNameBuf.readUnsignedByte();
+                if (ch != '_' && ch != ' ' && !Character.isUpperCase(ch) && !Character.isDigit(ch)) return false;
+            }
+        }
+        return true;
     }
 }
