@@ -39,6 +39,10 @@ public record Segment(String name, String textInterface, ByteBuffer data, Kind k
         Object[] dictionary = new Object[numProc];
 
         var textInterface = PascalSupport.textFile(textAddrBuf);
+        final var interfaceKW = "IMPLEMENTATION";
+        if (textInterface.contains(interfaceKW)) {
+            textInterface = textInterface.substring(0, textInterface.indexOf(interfaceKW)+interfaceKW.length());
+        }
 
         for (var i=0; i<numProc; i++) {
             pos -= 2;
