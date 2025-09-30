@@ -27,7 +27,7 @@ import com.webcodepro.applecommander.util.filestreamer.FileTuple;
 import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
 
 public abstract class ReadWriteDiskCommandWithGlobOptions extends ReadWriteDiskCommandOptions {
-    private static Logger LOG = Logger.getLogger(ReadWriteDiskCommandWithGlobOptions.class.getName());
+    private static final Logger LOG = Logger.getLogger(ReadWriteDiskCommandWithGlobOptions.class.getName());
 
 	//Subclasses must declare globs data member and implement getGlobs() method
 	protected abstract List<String> getGlobs();

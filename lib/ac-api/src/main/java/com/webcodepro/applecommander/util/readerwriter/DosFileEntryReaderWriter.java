@@ -27,7 +27,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
 import java.util.Optional;
 
 public class DosFileEntryReaderWriter implements FileEntryReader, FileEntryWriter {
-    private DosFileEntry fileEntry;
+    private final DosFileEntry fileEntry;
     
     public DosFileEntryReaderWriter(DosFileEntry fileEntry) {
         if (fileEntry.isDeleted()) {

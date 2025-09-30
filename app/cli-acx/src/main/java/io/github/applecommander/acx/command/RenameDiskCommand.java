@@ -31,13 +31,13 @@ import picocli.CommandLine.Parameters;
 
 @Command(name = "rename-disk", description = "Rename volume of a disk image.")
 public class RenameDiskCommand extends ReadWriteDiskCommandOptions {
-    private static Logger LOG = Logger.getLogger(RenameDiskCommand.class.getName());
+    private static final Logger LOG = Logger.getLogger(RenameDiskCommand.class.getName());
     
     @Parameters(description = "Disk name.")
     private String diskName;
 
     @Override
-    public int handleCommand() throws Exception {
+    public int handleCommand() {
 		FormattedDisk formattedDisk = selectedDisks().getFirst();
     	if (formattedDisk instanceof ProdosFormatDisk || formattedDisk instanceof PascalFormatDisk) {
 			formattedDisk.setDiskName(diskName);

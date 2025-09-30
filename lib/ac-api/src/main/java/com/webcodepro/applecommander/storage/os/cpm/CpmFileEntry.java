@@ -30,6 +30,7 @@ import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
+import com.webcodepro.applecommander.storage.filters.DisassemblyFileFilter;
 import com.webcodepro.applecommander.storage.filters.MBASICFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 import com.webcodepro.applecommander.util.AppleUtil;
@@ -42,7 +43,7 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author Rob Greene
  */
 public class CpmFileEntry implements FileEntry {
-	private TextBundle textBundle = StorageBundle.getInstance();
+	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * The standard CP/M file entry length.
 	 */
@@ -115,14 +116,18 @@ public class CpmFileEntry implements FileEntry {
      * List of known MBASIC/GBASIC/BASIC-80 filetypes.
      */
     public static final Set<String> BASIC_FILETYPES = Set.of("BAS");
+    /**
+     * List of known filetypes that can be disassembled.
+     */
+    public static final Set<String> DISASSEMBLY_FILETYPES = Set.of("COM");
 	/**
 	 * Reference to the disk this FileEntry is attached to.
 	 */
-	private CpmFormatDisk disk;
+	private final CpmFormatDisk disk;
 	/**
 	 * The offset(s) into the block that the FileEntry is at.
 	 */
-	private List<Integer> offsets = new ArrayList<>();
+	private final List<Integer> offsets = new ArrayList<>();
 	
 	/**
 	 * Construct a CP/M file entry.
@@ -434,7 +439,7 @@ public class CpmFileEntry implements FileEntry {
 	 * file entry.
 	 * @see com.webcodepro.applecommander.storage.FileEntry#setFileData(byte[])
 	 */
-	public void setFileData(byte[] data) throws DiskFullException {
+	public void setFileData(byte[] data) {
 		// TODO CP/M format disks don't save data...
 	}
 
@@ -450,6 +455,9 @@ public class CpmFileEntry implements FileEntry {
         }
         else if (BASIC_FILETYPES.contains(filetype)) {
             return new MBASICFileFilter();
+        }
+        else if (DISASSEMBLY_FILETYPES.contains(filetype)) {
+            return new DisassemblyFileFilter(this);
         }
 		return new BinaryFileFilter();
 	}
@@ -490,6 +498,9 @@ public class CpmFileEntry implements FileEntry {
      * Get the address that this file loads at.
      */
     public int getAddress() {
+        if (DISASSEMBLY_FILETYPES.contains(getFiletype())) {
+            return 0x100;
+        }
         return 0;   // Not applicable
     }
 

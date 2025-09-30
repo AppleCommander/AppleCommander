@@ -56,9 +56,9 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author Rob Greene
  */
 public class RdosFileEntry implements FileEntry {
-	private TextBundle textBundle = StorageBundle.getInstance();
-	private byte[] fileEntry;
-	private RdosFormatDisk disk;
+	private final TextBundle textBundle = StorageBundle.getInstance();
+	private final byte[] fileEntry;
+	private final RdosFormatDisk disk;
 
 	/**
 	 * Constructor for RdosFileEntry.
@@ -232,7 +232,7 @@ public class RdosFileEntry implements FileEntry {
 	 * Set file data.  This, essentially, is saving data to disk using this
 	 * file entry.
 	 */
-	public void setFileData(byte[] data) throws DiskFullException {
+	public void setFileData(byte[] data) {
 		// FIXME: Implement!
 	}
 

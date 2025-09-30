@@ -49,7 +49,7 @@ public class ReadCommand extends ReadOnlyDiskImageCommandOptions {
     private static OpenOption[] openOptions = { StandardOpenOption.CREATE_NEW };
     
     @Override
-    public int handleCommand() throws Exception {
+    public int handleCommand() {
         byte[] data = coordinate.read(selectedDisks().getFirst());
         output.write(data);
         return 0;

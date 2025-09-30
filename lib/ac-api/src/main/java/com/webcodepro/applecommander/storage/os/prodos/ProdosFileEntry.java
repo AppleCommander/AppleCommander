@@ -30,19 +30,10 @@ import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.StorageBundle;
-import com.webcodepro.applecommander.storage.filters.AppleWorksDataBaseFileFilter;
-import com.webcodepro.applecommander.storage.filters.AppleWorksSpreadSheetFileFilter;
-import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFileFilter;
-import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
-import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
-import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
-import com.webcodepro.applecommander.storage.filters.BusinessBASICFileFilter;
-import com.webcodepro.applecommander.storage.filters.DisassemblyFileFilter;
-import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
-import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
-import com.webcodepro.applecommander.storage.filters.TextFileFilter;
+import com.webcodepro.applecommander.storage.filters.*;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.os.pascal.CodeFile;
 
 /**
  * Represents a ProDOS file entry on disk.
@@ -51,7 +42,7 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author Rob Greene
  */
 public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
-	private TextBundle textBundle = StorageBundle.getInstance();
+	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Constructor for ProdosFileEntry.
 	 */
@@ -530,11 +521,20 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 		int filesize = getSize();
 		
 		switch (filetype) {
+        case 0x02:      // PCD
+            return new PascalCodeFileFilter();
+        case 0x03:      // PTX
+            return new PascalTextFileFilter();
 		case 0x04:		// TXT
 			if (getFilename().endsWith(".S")) { //$NON-NLS-1$
 				return new AssemblySourceFileFilter();			
 			}
 			return new TextFileFilter();
+        case 0x05:      // PDA
+            if (CodeFile.test(getFileData())) {
+                return new PascalCodeFileFilter();
+            }
+            break;
 		case 0x09:		// BA3
 			return new BusinessBASICFileFilter();
 		case 0xb0:		// SRC
@@ -591,7 +591,7 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 				return filter;
 			}
 		case 0xff:
-		    return new DisassemblyFileFilter();
+		    return new DisassemblyFileFilter(this);
 		}
 		return new BinaryFileFilter();
 	}

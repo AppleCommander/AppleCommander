@@ -58,12 +58,12 @@ public class FileStreamer {
     public static FileStreamer forDisks(File file) throws IOException, DiskUnrecognizedException {
         return forDisks(file.getPath());
     }
-    public static FileStreamer forDisks(String fileName) throws IOException, DiskUnrecognizedException {
+    public static FileStreamer forDisks(String fileName) {
         Source source = Sources.create(fileName).orElseThrow();
         DiskFactory.Context ctx = Disks.inspect(source);
         return new FileStreamer(ctx.disks.toArray(new FormattedDisk[0]));
     }
-    public static FileStreamer forDisks(Collection<FormattedDisk> disks) throws DiskUnrecognizedException {
+    public static FileStreamer forDisks(Collection<FormattedDisk> disks) {
         return new FileStreamer(disks.toArray(new FormattedDisk[0]));
     }
     public static FileStreamer forDisks(FormattedDisk... disks) {
@@ -83,7 +83,7 @@ public class FileStreamer {
     // Filters
     private Predicate<FileTuple> filters = this::deletedFileFilter;
     private boolean includeDeletedFlag = false;
-    private List<PathMatcher> pathMatchers = new ArrayList<>();
+    private final List<PathMatcher> pathMatchers = new ArrayList<>();
     
     private FileStreamer(FormattedDisk... disks) {
         this.formattedDisks = disks;
@@ -159,7 +159,7 @@ public class FileStreamer {
     }
     
     private class FileTupleIterator implements Iterator<FileTuple> {
-        private LinkedList<FileTuple> files = new LinkedList<>();
+        private final LinkedList<FileTuple> files = new LinkedList<>();
         private FormattedDisk currentDisk;
         
         private FileTupleIterator() {

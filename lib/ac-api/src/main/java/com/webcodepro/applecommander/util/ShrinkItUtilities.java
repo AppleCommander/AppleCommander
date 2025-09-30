@@ -54,7 +54,7 @@ public class ShrinkItUtilities
 	public static byte[] unpackSHKFile(String fileName, Source source, int startBlocks) throws IOException
 	{
 		TextBundle textBundle = StorageBundle.getInstance();
-		byte dmgBuffer[] = null;
+		byte[] dmgBuffer = null;
 		InputStream is = new ByteArrayInputStream(source.readAllBytes().asBytes());
 		NuFileArchive a = new NuFileArchive(is);
 		// If we need to build a disk to hold files (i.e. .shk vs. .sdk), how big would that disk need to be?

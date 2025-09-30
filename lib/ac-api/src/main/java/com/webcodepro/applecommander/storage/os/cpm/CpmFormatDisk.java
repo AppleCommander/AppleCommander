@@ -34,7 +34,7 @@ import java.util.*;
  * @author Rob Greene
  */
 public class CpmFormatDisk extends FormattedDisk {
-	private TextBundle textBundle = StorageBundle.getInstance();
+	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * The size of the CP/M sector.  Assumed to be 128.
 	 */
@@ -69,7 +69,7 @@ public class CpmFormatDisk extends FormattedDisk {
 	/**
 	 * Manage CP/M disk usage.
 	 */
-	public class CpmDiskUsage implements DiskUsage {
+	public static class CpmDiskUsage implements DiskUsage {
 		int block = -1;
 		boolean[] usage = null;
 		public CpmDiskUsage(boolean[] usage) {
@@ -89,7 +89,7 @@ public class CpmFormatDisk extends FormattedDisk {
 		}
 	}
 
-    private BlockDevice device;
+    private final BlockDevice device;
 
 	/**
 	 * Construct a CP/M formatted disk.
@@ -486,7 +486,7 @@ public class CpmFormatDisk extends FormattedDisk {
 	 * of the data (such as prepending the data with a length and/or an address).
 	 * Typically, the FileEntry.setFileData method should be used. 
 	 */
-	public void setFileData(FileEntry fileEntry, byte[] fileData) throws DiskFullException {
+	public void setFileData(FileEntry fileEntry, byte[] fileData) {
 		// TODO implement setFileData
 	}
 
@@ -494,7 +494,7 @@ public class CpmFormatDisk extends FormattedDisk {
 	 * Create a new DirectoryEntry.
 	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory(String)
 	 */
-	public DirectoryEntry createDirectory(String name) throws DiskFullException	{
+	public DirectoryEntry createDirectory(String name) {
 		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$
 	}
 	

@@ -26,7 +26,7 @@ import java.io.UncheckedIOException;
 import java.util.function.Function;
 
 public class TranslatorStream extends InputStream {
-    private PushbackInputStream sourceStream;
+    private final PushbackInputStream sourceStream;
     // Defaults to a no-op transformation
     private Function<Integer,Integer> fn = i -> i;
     
@@ -71,7 +71,7 @@ public class TranslatorStream extends InputStream {
     }
     
     public static class Builder {
-        private TranslatorStream stream;
+        private final TranslatorStream stream;
         
         private Builder(InputStream sourceStream) {
             stream = new TranslatorStream(sourceStream);

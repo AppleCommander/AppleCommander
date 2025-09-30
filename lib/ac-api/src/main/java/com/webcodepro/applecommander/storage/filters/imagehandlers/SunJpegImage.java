@@ -34,7 +34,7 @@ import javax.imageio.*;
  * @author Rob Greene
  */
 public class SunJpegImage extends AppleImage {
-	private BufferedImage image;
+	private final BufferedImage image;
 	/**
 	 * Create SunJpegImage.  Verifies all (known) required classes are available
 	 * as well as sets up the class.

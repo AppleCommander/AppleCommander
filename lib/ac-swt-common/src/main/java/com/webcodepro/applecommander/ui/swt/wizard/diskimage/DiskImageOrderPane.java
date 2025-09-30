@@ -40,10 +40,10 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author Rob Greene
  */
 public class DiskImageOrderPane extends WizardPane {
-	private TextBundle textBundle = UiBundle.getInstance();
-	private DiskImageWizard wizard;
+	private final TextBundle textBundle = UiBundle.getInstance();
+	private final DiskImageWizard wizard;
 	private Composite control;
-	private Composite parent;
+	private final Composite parent;
 	/**
 	 * Constructor for DiskImageNamePane.
 	 */

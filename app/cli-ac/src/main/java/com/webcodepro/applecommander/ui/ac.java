@@ -112,7 +112,7 @@ import org.applecommander.util.Information;
  * @author Lisias Toledo
  */
 public class ac {
-	private static TextBundle textBundle = UiBundle.getInstance();
+	private static final TextBundle textBundle = UiBundle.getInstance();
 
 	public static void main(String[] args) {
 		try {
@@ -431,7 +431,7 @@ public class ac {
 	 * filtered according to its type and sent to &lt;stdout>.
 	 */
 	static void getFile(String imageName, String fileName, boolean filter, PrintStream out)
-		throws IOException, DiskException {
+		throws DiskException {
         Source source = Sources.create(Path.of(imageName)).orElseThrow();
         DiskFactory.Context ctx = Disks.inspect(source);
 		Name name = new Name(fileName);
@@ -529,9 +529,7 @@ public class ac {
 		for (String filename : Arrays.copyOfRange(args, 1, args.length)) {
 			try {
 				dl.list(filename);
-			} catch (DiskException e) {
-				throw new IOException(e);
-			} catch (RuntimeException e) {
+			} catch (DiskUnrecognizedException|RuntimeException e) {
 				System.out.println(filename + ": " + e.getMessage()); //$NON-NLS-1$
 				System.out.println();
 			}
@@ -541,7 +539,7 @@ public class ac {
 	/**
 	 * Display information about each disk in args.
 	 */
-	static void getDiskInfo(String[] args) throws IOException, DiskException {
+	static void getDiskInfo(String[] args) {
 		for (int d = 1; d < args.length; d++) {
             Source source = Sources.create(Path.of(args[d])).orElseThrow();
             DiskFactory.Context ctx = Disks.inspect(source);
@@ -594,7 +592,7 @@ public class ac {
 	 * Pascal disks; others ignored. Proposed by David Schmidt.
 	 */
 	public static void setDiskName(String imageName, String volName)
-		throws IOException, DiskException {
+		throws IOException {
         Source source = Sources.create(Path.of(imageName)).orElseThrow();
         DiskFactory.Context ctx = Disks.inspect(source);
         if (!source.isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
@@ -697,8 +695,8 @@ public class ac {
 
 	public static class Name {
 		private String fullName;
-		private String name;
-		private String[] path;
+		private final String name;
+		private final String[] path;
 		
 		public Name(String s) {
 			this.fullName = s;

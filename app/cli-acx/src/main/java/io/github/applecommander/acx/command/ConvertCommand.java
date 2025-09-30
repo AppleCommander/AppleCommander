@@ -46,7 +46,7 @@ public class ConvertCommand extends ReusableCommandOptions {
     private String archiveName;
 
     @Override
-    public int handleCommand() throws Exception {
+    public int handleCommand() {
         File targetFile = new File(diskName);
         if (targetFile.exists() && !overwriteFlag) {
             throw new RuntimeException("File exists and overwriting not enabled.");

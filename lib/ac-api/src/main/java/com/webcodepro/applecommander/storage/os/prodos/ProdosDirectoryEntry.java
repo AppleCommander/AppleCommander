@@ -36,7 +36,7 @@ import java.util.List;
  * @author Lisias Toledo
  */
 public class ProdosDirectoryEntry extends ProdosFileEntry implements DirectoryEntry {
-	private ProdosSubdirectoryHeader subdirectoryHeader;
+	private final ProdosSubdirectoryHeader subdirectoryHeader;
 
 	/**
 	 * Constructor for ProdosDirectoryEntry.

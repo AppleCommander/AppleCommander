@@ -33,8 +33,8 @@ import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
  * @author Rob Greene
  */
 public class ImageCanvasAdapter implements ContentTypeAdapter {
-	private ImageCanvas imageCanvas;
-	private String printJobName;
+	private final ImageCanvas imageCanvas;
+	private final String printJobName;
 	
 	public ImageCanvasAdapter(ImageCanvas imageCanvas, String printJobName) {
 		this.imageCanvas = imageCanvas;

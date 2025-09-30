@@ -47,7 +47,7 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author Rob Greene
  */
 public class AppleWorksDataBaseFileFilter implements FileFilter {
-	private TextBundle textBundle = StorageBundle.getInstance();
+	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * The number of bytes in the remainder of the header record.
 	 */

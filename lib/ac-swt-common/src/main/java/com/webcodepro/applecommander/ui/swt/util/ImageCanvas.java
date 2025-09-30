@@ -35,7 +35,7 @@ import org.eclipse.swt.widgets.Composite;
  * @author Rob Greene
  */
 public class ImageCanvas extends Canvas implements PaintListener {
-	private Image image;
+	private final Image image;
 	/**
 	 * Constructor for ImageCanvas.
 	 */

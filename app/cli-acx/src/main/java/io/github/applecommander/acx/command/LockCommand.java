@@ -31,7 +31,7 @@ import picocli.CommandLine.Parameters;
 
 @Command(name = "lock", description = "Lock file(s) on a disk image.")
 public class LockCommand extends ReadWriteDiskCommandWithGlobOptions {
-    private static Logger LOG = Logger.getLogger(LockCommand.class.getName());
+    private static final Logger LOG = Logger.getLogger(LockCommand.class.getName());
 
 	@Parameters(arity = "1..*", description = "File glob(s) to lock (default = '*') - be cautious of quoting!")
     private List<String> globs = Arrays.asList("*");

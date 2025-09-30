@@ -39,10 +39,9 @@ import org.applecommander.device.BlockDevice;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
-import org.applecommander.util.Container;
 
 public class DirectoryLister {
-	private static TextBundle textBundle = UiBundle.getInstance();
+	private static final TextBundle textBundle = UiBundle.getInstance();
 
 	public static DirectoryLister text(int display) {
 		return new DirectoryLister(new TextListingStrategy(display));
@@ -54,13 +53,13 @@ public class DirectoryLister {
 		return new DirectoryLister(new JsonListingStrategy(display));
 	}
 
-	private ListingStrategy strategy;
+	private final ListingStrategy strategy;
 	
 	private DirectoryLister(ListingStrategy strategy) {
 		this.strategy = strategy;
 	}
 	
-	public void list(String filename) throws DiskUnrecognizedException, IOException {
+	public void list(String filename) throws DiskUnrecognizedException {
         Source source = Sources.create(filename).orElseThrow();
         DiskFactory.Context ctx = Disks.inspect(source);
         // Pulling ImageOrder from a FormattedDisk to ensure it's one we chose
@@ -120,7 +119,7 @@ public class DirectoryLister {
 	}
 	
 	public static class CsvListingStrategy extends ListingStrategy {
-		private CSVPrinter printer;
+		private final CSVPrinter printer;
 		public CsvListingStrategy(int display) {
 			super(display);
 			try {
@@ -166,7 +165,7 @@ public class DirectoryLister {
 		private JsonArray disks;
 		private JsonObject currentDisk;
 		private JsonArray files;
-		private Gson gson = new Gson();
+		private final Gson gson = new Gson();
 		public JsonListingStrategy(int display) {
 			super(display);
 		}

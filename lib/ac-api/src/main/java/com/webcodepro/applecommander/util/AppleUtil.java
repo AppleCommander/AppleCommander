@@ -36,7 +36,7 @@ import org.applecommander.device.TrackSectorDevice;
  * @author Rob Greene
  */
 public class AppleUtil {
-	private static TextBundle textBundle = TextBundle.getInstance();
+	private static final TextBundle textBundle = TextBundle.getInstance();
 	/**
 	 * This is the number of bytes to display per line.
 	 */
@@ -45,13 +45,13 @@ public class AppleUtil {
 	/**
 	 * Bit masks used for the bit shifting or testing operations.
 	 */
-	private static byte[] masks = { 
+	private static final byte[] masks = {
 			(byte)0x01, (byte)0x02, (byte)0x04, (byte)0x08, 
 			(byte)0x10, (byte)0x20, (byte)0x40, (byte)0x80 };
 	/**
 	 * Valid hex digits used when encoding or decoding hex.
 	 */
-	private static char[] hexDigits = { 
+	private static final char[] hexDigits = {
 			'0', '1', '2', '3', '4', '5', '6', '7',
 			'8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
@@ -102,21 +102,7 @@ public class AppleUtil {
 			+ getUnsignedByte(buffer[offset+1])*256
 			+ getUnsignedByte(buffer[offset+2])*65536;
 	}
-	
-	/**
-	 * Compute the value of a 4 byte value. This is specific to DC42 processing.
-	 * Pulls value from buffer given the offset, MSB first. 
-	 */
-	public static long getLongValue(byte[] buffer, int offset) {
-		if (offset+3 > buffer.length) {
-			return 0;
-		}
-		return getUnsignedByte(buffer[offset+3]) 
-			+ getUnsignedByte(buffer[offset+2])*256
-			+ getUnsignedByte(buffer[offset+1])*65536
-			+ getUnsignedByte(buffer[offset])*16777216;
-	}
-	
+
 	/**
 	 * Set the value of a 3 byte value.
 	 */

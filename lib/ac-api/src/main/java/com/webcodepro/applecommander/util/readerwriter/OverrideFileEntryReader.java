@@ -90,7 +90,7 @@ public class OverrideFileEntryReader implements FileEntryReader {
     }
     
     public static class Builder {
-        private OverrideFileEntryReader fileEntryReader = new OverrideFileEntryReader();
+        private final OverrideFileEntryReader fileEntryReader = new OverrideFileEntryReader();
         
         public FileEntryReader build(FileEntryReader parent) {
             Objects.requireNonNull(parent);

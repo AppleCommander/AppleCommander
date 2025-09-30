@@ -33,7 +33,7 @@ import picocli.CommandLine.TypeConversionException;
 
 public class DiskConverter implements ITypeConverter<List<FormattedDisk>> {
     @Override
-    public List<FormattedDisk> convert(String filename) throws Exception {
+    public List<FormattedDisk> convert(String filename) {
         if (Files.exists(Path.of(filename))) {
             Source source = Sources.create(filename).orElseThrow();
             DiskFactory.Context ctx = Disks.inspect(source);

@@ -46,7 +46,7 @@ public class CompareCommand extends ReadOnlyDiskImageCommandOptions {
     private Optional<Integer> limit = Optional.empty();
 
     @Override
-    public int handleCommand() throws Exception {
+    public int handleCommand() {
         DiskDiff.Builder builder = DiskDiff.create(selectedDisks(), disk2);
         strategySelection.strategy.accept(builder);
         ComparisonResult result = builder.compare();

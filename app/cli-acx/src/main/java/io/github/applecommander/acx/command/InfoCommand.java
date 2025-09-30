@@ -37,10 +37,10 @@ import picocli.CommandLine.Command;
 @Command(name = "info", description = "Show information on a disk image(s).",
         aliases = "i")
 public class InfoCommand extends ReadOnlyDiskContextCommandOptions {
-    private static Logger LOG = Logger.getLogger(InfoCommand.class.getName());
+    private static final Logger LOG = Logger.getLogger(InfoCommand.class.getName());
     
     @Override
-    public int handleCommand() throws Exception {
+    public int handleCommand() {
         LOG.info(() -> "Path: " + context().source.getName());
         if (selectedDisks().isEmpty()) {
             for (Information info : context().source.information()) {

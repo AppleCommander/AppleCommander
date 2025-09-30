@@ -39,7 +39,7 @@ import com.webcodepro.applecommander.storage.FileEntry;
  * @author David Schmidt
  */
 public class BusinessBASICTokenizer {
-	private static String tokens[] = {	// starts at $80
+	private static final String[] tokens = {	// starts at $80
 		"END",      "FOR",      "NEXT",     "INPUT",    "OUTPUT",   "DIM",      "READ",     "WRITE",   //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
 		"OPEN",     "CLOSE",    "*error*",  "TEXT",     "*error*",  "BYE",      "*error*",  "*error*", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
 		"*error*",  "*error*",  "*error*",  "WINDOW",   "INVOKE",   "PERFORM",  "*error*",  "*error*", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
@@ -68,7 +68,7 @@ public class BusinessBASICTokenizer {
 		"ASC(",     "TEN(",     "*error*",  "*error*",  "CONV(",    "CONV&(",   "CONV$(",   "CONV%(",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
 		"LEFT$(",   "RIGHT$(",  "MID$(",    "INSTR(",  "*error*",  "*error*",  "*error*",  "*error*"};//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
 
-	private byte[] fileData;
+	private final byte[] fileData;
 	private int offset = 2;
 	private int nextAddress = -1;
 

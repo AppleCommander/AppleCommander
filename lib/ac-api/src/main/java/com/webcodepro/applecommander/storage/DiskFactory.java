@@ -83,8 +83,8 @@ public interface DiskFactory {
             return new BlockDeviceBuilder(this);
         }
         public static class BlockDeviceBuilder {
-            private Context ctx;
-            private List<BlockDevice> devices = new ArrayList<>();
+            private final Context ctx;
+            private final List<BlockDevice> devices = new ArrayList<>();
             private BlockDeviceBuilder(Context ctx) {
                 this.ctx = ctx;
             }
@@ -141,8 +141,8 @@ public interface DiskFactory {
             return new TrackSectorDeviceBuilder(this);
         }
         public static class TrackSectorDeviceBuilder {
-            private Context ctx;
-            private List<TrackSectorDevice> devices = new ArrayList<>();
+            private final Context ctx;
+            private final List<TrackSectorDevice> devices = new ArrayList<>();
             private TrackSectorDeviceBuilder(Context ctx) {
                 this.ctx = ctx;
             }

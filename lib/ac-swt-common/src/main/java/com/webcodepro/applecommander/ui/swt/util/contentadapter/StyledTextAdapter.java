@@ -32,8 +32,8 @@ import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
  * @author Rob Greene
  */
 public class StyledTextAdapter implements ContentTypeAdapter {
-	private StyledText styledText;
-	private String printJobName;
+	private final StyledText styledText;
+	private final String printJobName;
 	
 	public StyledTextAdapter(StyledText styledText, String printJobName) {
 		this.styledText = styledText;

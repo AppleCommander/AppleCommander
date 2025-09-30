@@ -44,8 +44,8 @@ public abstract class FormattedDisk implements DirectoryEntry, Container{
 	 * Use this inner class for label/value mappings in the disk info page.
 	 */
 	public static class DiskInformation {
-		private String label;
-		private String value;
+		private final String label;
+		private final String value;
 		public DiskInformation(String label, String value) {
 			this.label = label;
 			this.value = value;
@@ -98,10 +98,10 @@ public abstract class FormattedDisk implements DirectoryEntry, Container{
 		public static final int ALIGN_LEFT = 1;
 		public static final int ALIGN_CENTER = 2;
 		public static final int ALIGN_RIGHT = 3;
-		private String title;
-		private int maximumWidth;
-		private int alignment;
-		private String key;
+		private final String title;
+		private final int maximumWidth;
+		private final int alignment;
+		private final String key;
 		public FileColumnHeader(String title, int maximumWidth, int alignment, String key) {
 			this.title = title;
 			this.maximumWidth = maximumWidth;

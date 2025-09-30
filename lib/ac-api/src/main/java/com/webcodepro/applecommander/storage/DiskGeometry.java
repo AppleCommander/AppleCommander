@@ -29,8 +29,8 @@ public enum DiskGeometry {
     TRACK_SECTOR(256, "Track/Sector"),
     BLOCK(512, "Block");
     
-    public int size;
-    public String text;
+    public final int size;
+    public final String text;
     
     private DiskGeometry(int size, String text) {
         this.size = size;

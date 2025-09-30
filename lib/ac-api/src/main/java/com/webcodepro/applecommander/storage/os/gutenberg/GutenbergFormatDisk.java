@@ -40,7 +40,7 @@ import java.util.Optional;
  * @author David Schmidt
  */
 public class GutenbergFormatDisk extends FormattedDisk {
-	private TextBundle textBundle = StorageBundle.getInstance();
+	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Indicates the index of the track in the location array.
 	 */	
@@ -106,7 +106,7 @@ public class GutenbergFormatDisk extends FormattedDisk {
 		}
 	}
 
-    private TrackSectorDevice device;
+    private final TrackSectorDevice device;
 
 	/**
 	 * Constructor for GutenbergFormatDisk.
@@ -701,7 +701,7 @@ public class GutenbergFormatDisk extends FormattedDisk {
 	 * Create a new DirectoryEntry.
 	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory(String)
 	 */
-	public DirectoryEntry createDirectory(String name) throws DiskFullException	{
+	public DirectoryEntry createDirectory(String name) {
 		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$
 	}
 

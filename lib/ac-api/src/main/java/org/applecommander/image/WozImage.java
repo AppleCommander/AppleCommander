@@ -44,9 +44,9 @@ public class WozImage implements NibbleTrackReaderWriter {
 
     // WOZ image representation
     private InfoChunk info;
-    private Map<String,String> meta = new HashMap<>();
-    private List<TmapChunk> tmap = new ArrayList<>();
-    private List<TrkInfo> trks = new ArrayList<>();
+    private final Map<String,String> meta = new HashMap<>();
+    private final List<TmapChunk> tmap = new ArrayList<>();
+    private final List<TrkInfo> trks = new ArrayList<>();
 
     // Internal configuration settings
     private Function<Integer,DataBuffer> trackReader = null;
@@ -211,12 +211,12 @@ public class WozImage implements NibbleTrackReaderWriter {
     }
 
     public static class InfoChunk {
-        private int version;
-        private int diskType;
-        private int writeProtected;
-        private int synchrinized;
-        private int cleaned;
-        private String creator;
+        private final int version;
+        private final int diskType;
+        private final int writeProtected;
+        private final int synchrinized;
+        private final int cleaned;
+        private final String creator;
         private int diskSides;
         private int bootSectorFormat;
         private int optimalBitTiming;
@@ -292,7 +292,7 @@ public class WozImage implements NibbleTrackReaderWriter {
     }
 
     public static class TmapChunk {
-        private int[] tmap;
+        private final int[] tmap;
 
         /**
          * Create TMAP entry. If length is 1, this is a 3.5" TMAP entry of just one
@@ -318,9 +318,9 @@ public class WozImage implements NibbleTrackReaderWriter {
     }
 
     public static class TrkInfo {
-        private int startingBlock;
-        private int blockCount;
-        private int bitCount;
+        private final int startingBlock;
+        private final int blockCount;
+        private final int bitCount;
 
         public TrkInfo(DataBuffer data) {
             this.startingBlock = data.readUnsignedShort();

@@ -93,7 +93,7 @@ public class DiskWriterTest {
 	 * Test writing and reading random files to a ProDOS 140K disk.
 	 */	
 	@Test
-	public void testWriteToPascal800kDisk() throws DiskFullException, IOException {
+	public void testWriteToPascal800kDisk() throws IOException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_800KB_DISK, "new-disk").get();
 		BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = PascalFormatDisk.create(

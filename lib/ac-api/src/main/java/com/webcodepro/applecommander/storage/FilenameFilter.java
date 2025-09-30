@@ -29,8 +29,8 @@ import java.util.List;
  * This works from a file extension, so it may or may not apply to the Macintosh.
  */
 public class FilenameFilter {
-    private String names;
-    private String[] extensions;
+    private final String names;
+    private final String[] extensions;
 
     public FilenameFilter(String names, String... extensions) {
         this.names = names;

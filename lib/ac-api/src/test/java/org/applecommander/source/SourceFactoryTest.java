@@ -19,7 +19,6 @@
  */
 package org.applecommander.source;
 
-import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.testconfig.TestConfig;
 import org.applecommander.image.DiskCopyImage;
 import org.applecommander.image.UniversalDiskImage;

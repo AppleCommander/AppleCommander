@@ -40,7 +40,7 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author David Schmidt
  */
 public class GutenbergFileEntry implements FileEntry {
-	private TextBundle textBundle = StorageBundle.getInstance();
+	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Indicates the length in bytes of the DOS file entry field.
 	 */
@@ -48,19 +48,19 @@ public class GutenbergFileEntry implements FileEntry {
 	/**
 	 * Holds the disk the FileEntry is attached to.
 	 */
-	private GutenbergFormatDisk disk;
+	private final GutenbergFormatDisk disk;
 	/**
 	 * Track of the FileEntry location.
 	 */
-	private int track;
+	private final int track;
 	/**
 	 * Sector of the FileEntry location.
 	 */
-	private int sector;
+	private final int sector;
 	/**
 	 * Offset into sector of FileEntry location.
 	 */
-	private int offset;
+	private final int offset;
 
 	/**
 	 * Constructor for GutenbergFileEntry.

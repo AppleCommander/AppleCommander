@@ -21,8 +21,9 @@ package io.github.applecommander.acx;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
+import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.filters.AppleWorksDataBaseFileFilter;
 import com.webcodepro.applecommander.storage.filters.AppleWorksSpreadSheetFileFilter;
@@ -43,33 +44,33 @@ import io.github.applecommander.filters.AppleSingleFileFilter;
 import io.github.applecommander.filters.RawFileFilter;
 
 public enum ExportMethod {
-    APPLESINGLE(AppleSingleFileFilter::new, "as", "applesingle"),
-    APPLESOFT(ApplesoftFileFilter::new, "bas", "applesoft"),
-    APPLEWORKS_DATABASE(AppleWorksDataBaseFileFilter::new, "adb"),
-    APPLEWORKS_SPREADSHEET(AppleWorksSpreadSheetFileFilter::new, "asp"),
-    APPLEWORKS_WORDPROCESSOR(AppleWorksWordProcessorFileFilter::new, "awp"),
-    ASSEMBLY_SOURCE(AssemblySourceFileFilter::new, "asm", "assembly"),
-    BINARY(BinaryFileFilter::new, "bin", "binary"),
-    BUSINESS_BASIC(BusinessBASICFileFilter::new, "bbas", "business-basic"),
-    DISASSEMBLY(DisassemblyFileFilter::new, "disasm", "disassembly"),
-    GRAPHICS(GraphicsFileFilter::new, "gr", "graphics"),
-    GUTENBERG_FILE(GutenbergFileFilter::new, "gutenberg"),
-    HEX_DUMP(HexDumpFileFilter::new, "hex"),
-    INTEGER_BASIC(IntegerBasicFileFilter::new, "int", "integer"),
-    PASCAL_TEXT(PascalTextFileFilter::new, "ptext", "pascal-text"),
-    RAW(RawFileFilter::new, "raw"),
-    TEXT(TextFileFilter::new, "text");
+    APPLESINGLE(ignored -> new AppleSingleFileFilter(), "as", "applesingle"),
+    APPLESOFT(ignored -> new ApplesoftFileFilter(), "bas", "applesoft"),
+    APPLEWORKS_DATABASE(ignored -> new AppleWorksDataBaseFileFilter(), "adb"),
+    APPLEWORKS_SPREADSHEET(ignored -> new AppleWorksSpreadSheetFileFilter(), "asp"),
+    APPLEWORKS_WORDPROCESSOR(ignored -> new AppleWorksWordProcessorFileFilter(), "awp"),
+    ASSEMBLY_SOURCE(ignored -> new AssemblySourceFileFilter(), "asm", "assembly"),
+    BINARY(ignored -> new BinaryFileFilter(), "bin", "binary"),
+    BUSINESS_BASIC(ignored -> new BusinessBASICFileFilter(), "bbas", "business-basic"),
+    DISASSEMBLY(fileEntry -> new DisassemblyFileFilter(fileEntry), "disasm", "disassembly"),
+    GRAPHICS(ignored -> new GraphicsFileFilter(), "gr", "graphics"),
+    GUTENBERG_FILE(ignored -> new GutenbergFileFilter(), "gutenberg"),
+    HEX_DUMP(ignored -> new HexDumpFileFilter(), "hex"),
+    INTEGER_BASIC(ignored -> new IntegerBasicFileFilter(), "int", "integer"),
+    PASCAL_TEXT(ignored -> new PascalTextFileFilter(), "ptext", "pascal-text"),
+    RAW(ignored -> new RawFileFilter(), "raw"),
+    TEXT(ignored -> new TextFileFilter(), "text");
     
-    private Supplier<FileFilter> constructor;
-    private List<String> codes;
+    private final Function<FileEntry,FileFilter> fileFilterFn;
+    private final List<String> codes;
     
-    private ExportMethod(Supplier<FileFilter> constructor, String... codes) {
-        this.constructor = constructor;
+    private ExportMethod(Function<FileEntry,FileFilter> fileFilterFn, String... codes) {
+        this.fileFilterFn = fileFilterFn;
         this.codes = Arrays.asList(codes);
     }
     
-    public FileFilter create() {
-        return constructor.get();
+    public FileFilter create(FileEntry fileEntry) {
+        return fileFilterFn.apply(fileEntry);
     }
     public List<String> getCodes() {
         return codes;

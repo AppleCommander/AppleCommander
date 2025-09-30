@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ProdosFormatDiskTest {
     @Test
-    public void testSanitizeFilename() throws DiskFullException {
+    public void testSanitizeFilename() {
         Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
         BlockDevice blockDevice = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
         ProdosFormatDisk[] disks = ProdosFormatDisk.create("deleteme.po", "nothere", blockDevice);

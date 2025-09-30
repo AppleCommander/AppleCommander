@@ -26,7 +26,7 @@ import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
 
 public class ProdosFileEntryReaderWriter implements FileEntryReader, FileEntryWriter {
-    private ProdosFileEntry fileEntry;
+    private final ProdosFileEntry fileEntry;
     
     public ProdosFileEntryReaderWriter(ProdosFileEntry fileEntry) {
         this.fileEntry = fileEntry;

@@ -21,6 +21,8 @@ package io.github.applecommander.acx.command;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -31,12 +33,12 @@ import com.webcodepro.applecommander.util.Range;
 import io.github.applecommander.acx.base.ReadOnlyDiskContextCommandOptions;
 import io.github.applecommander.acx.converter.IntegerTypeConverter;
 import io.github.applecommander.acx.converter.RangeTypeConverter;
-import io.github.applecommander.disassembler.api.Disassembler;
-import io.github.applecommander.disassembler.api.Instruction;
-import io.github.applecommander.disassembler.api.InstructionSet;
-import io.github.applecommander.disassembler.api.mos6502.InstructionSet6502;
-import io.github.applecommander.disassembler.api.sweet16.InstructionSetSWEET16;
-import io.github.applecommander.disassembler.api.switching6502.InstructionSet6502Switching;
+import org.applecommander.disassembler.api.Disassembler;
+import org.applecommander.disassembler.api.Instruction;
+import org.applecommander.disassembler.api.InstructionSet;
+import org.applecommander.disassembler.api.mos6502.InstructionSet6502;
+import org.applecommander.disassembler.api.sweet16.InstructionSetSWEET16;
+import org.applecommander.disassembler.api.switching6502.InstructionSet6502Switching;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.device.nibble.NibbleTrackReaderWriter;
 import org.applecommander.device.TrackSectorDevice;
@@ -54,7 +56,7 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
     private Options options = new Options();
 
     @Override
-    public int handleCommand() throws Exception {
+    public int handleCommand() {
         if (options.coordinate.blockRangeSelection != null) {
             BlockDevice device = blockDevice()
                     .orElseThrow(() -> new RuntimeException("there is no block device available"));
@@ -161,30 +163,61 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
         public String formatDisassembly(Options options, byte[] data) {
             // If the offset is given, use that. If not, use 0 except for the boot sector and then use 1.
             int calculatedOffset = options.disassemblerOptions.offset.orElse(options.includesBootSector ? 1 : 0);
+            final InstructionSet instructionSet = options.disassemblerOptions.instructionSet.get();
+            final Map<Integer,String> labels = new HashMap<>();
             return Disassembler.with(data)
                     .startingAddress(options.disassemblerOptions.address)
                     .bytesToSkip(calculatedOffset)
-                    .use(options.disassemblerOptions.instructionSet.get())
-                    .decode()
+                    .use(instructionSet)
+                    .decode(labels)
                     .stream()
-                    .map(this::formatInstruction)
+                    .map(instruction -> formatInstruction(instruction,labels,instructionSet.defaults()))
                     .collect(Collectors.joining());
         }
 
-        private String formatInstruction(Instruction instruction) {
+        private String formatInstruction(Instruction instruction, Map<Integer,String> labels, InstructionSet.Defaults defaults) {
+            final int bytesPerLine = defaults.bytesPerInstruction();
+
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
-            pw.printf("%04X- ", instruction.getAddress());
-            
-            byte[] code = instruction.getBytes();
-            for (int i=0; i<3; i++) {
+            pw.printf("%04X- ", instruction.address());
+
+            byte[] code = instruction.code();
+            for (int i=0; i<bytesPerLine; i++) {
                 if (i >= code.length) {
-                    pw.printf("   ");
+                    pw.print("   ");
                 } else {
                     pw.printf("%02X ", code[i]);
                 }
             }
-            pw.printf(" %s\n", instruction.formatOperandWithValue());
+            pw.printf(" %-10.10s ", labels.getOrDefault(instruction.address(), ""));
+            pw.printf("%-5s ", instruction.mnemonic());
+            pw.printf("%-30s ", instruction.operands().stream().map(operand -> {
+                        if (operand.address().isPresent() && labels.containsKey(operand.address().get())) {
+                            return operand.format(labels.get(operand.address().get()));
+                        }
+                        else {
+                            return operand.format();
+                        }
+                    })
+                    .collect(Collectors.joining(",")));
+            if (defaults.includeDescription()) {
+                instruction.description().ifPresent(description -> {
+                    pw.printf("; %s", description);
+                });
+            }
+            pw.println();
+
+            if (code.length > bytesPerLine) {
+                for (int i=bytesPerLine; i<code.length; i++) {
+                    if (i % bytesPerLine == 0) {
+                        if (i > bytesPerLine) pw.println();
+                        pw.printf("%04X- ", instruction.address()+i);
+                    }
+                    pw.printf("%02X ", code[i]);
+                }
+                pw.println();
+            }
             return sw.toString();
         }
     }

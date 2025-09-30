@@ -31,7 +31,7 @@ import picocli.CommandLine.Command;
          aliases = { "map" })
 public class DiskMapCommand extends ReadOnlyDiskImageCommandOptions {
     @Override
-    public int handleCommand() throws Exception {
+    public int handleCommand() {
         selectedDisks().forEach(this::showDiskMap);
         return 0;
     }

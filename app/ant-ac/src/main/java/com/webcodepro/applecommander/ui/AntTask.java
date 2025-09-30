@@ -176,7 +176,7 @@ public class AntTask extends Task
 			{
 				com.webcodepro.applecommander.ui.ac.setDiskName(_imageName, _volName);
 			}
-			catch (IOException|DiskException io)
+			catch (IOException io)
 			{
 				if (_failonerror)
 					throw new BuildException(io);

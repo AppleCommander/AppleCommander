@@ -43,7 +43,7 @@ public class FindDuplicateFilesCommand extends ReadOnlyDiskImageCommandOptions {
     private boolean compareAcrossVolumes;
     
     @Override
-    public int handleCommand() throws Exception {
+    public int handleCommand() {
         Map<String,List<FileTuple>> content = new HashMap<>();
         Supplier<Map<String,List<FileTuple>>> supplier = () -> content;
         int dupsFound = 0;

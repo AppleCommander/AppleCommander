@@ -37,8 +37,11 @@ public class DataBuffer {
     private ByteBuffer buffer;
 
     public static DataBuffer wrap(byte[] data) {
+        return wrap(data, 0, data.length);
+    }
+    public static DataBuffer wrap(byte[] data, int offset, int length) {
         DataBuffer dbuf = new DataBuffer();
-        dbuf.buffer = ByteBuffer.wrap(data);
+        dbuf.buffer = ByteBuffer.wrap(data, offset, length);
         dbuf.buffer.order(ByteOrder.LITTLE_ENDIAN);
         return dbuf;
     }
@@ -103,6 +106,7 @@ public class DataBuffer {
     public int getUnsignedByte(int index) {
         return Byte.toUnsignedInt(this.buffer.get(index));
     }
+    public int getSignedShort(int index) { return this.buffer.getShort(); }
     public int getUnsignedShort(int index) {
         return Short.toUnsignedInt(this.buffer.getShort(index));
     }
@@ -144,6 +148,12 @@ public class DataBuffer {
         for (int value : values) {
             putByte(offset++, value);
         }
+    }
+    public void putUnsignedShort(int offset, int value) {
+        this.buffer.putShort(offset, (short)(value & 0xffff));
+    }
+    public void putShort(int offset, short value) {
+        this.buffer.putShort(offset, value);
     }
     /**
      * Determine if a specific bit is set.

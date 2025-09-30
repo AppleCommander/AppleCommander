@@ -50,10 +50,10 @@ import java.util.List;
  * @author Rob Greene
  */
 public class DiskInfoTab {
-	private TextBundle textBundle = UiBundle.getInstance();
-	private List<Table> infoTables = new ArrayList<>();
-	private Composite composite;
-	private FormattedDisk[] formattedDisks;
+	private final TextBundle textBundle = UiBundle.getInstance();
+	private final List<Table> infoTables = new ArrayList<>();
+	private final Composite composite;
+	private final FormattedDisk[] formattedDisks;
 	/**
 	 * Create the DISK INFO tab.
 	 */

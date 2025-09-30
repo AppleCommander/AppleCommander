@@ -41,7 +41,7 @@ import java.util.*;
  * @author John B. Matthews [getFiles(), get/putDirectory(), createFile()]
  */
 public class PascalFormatDisk extends FormattedDisk {
-	private TextBundle textBundle = StorageBundle.getInstance();
+	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * The size of the Pascal file entry.
 	 */
@@ -118,7 +118,7 @@ public class PascalFormatDisk extends FormattedDisk {
 		}
 	}
 
-	private BlockDevice device;
+	private final BlockDevice device;
 	
 	/**
 	 * Constructor for PascalFormatDisk.
@@ -671,7 +671,7 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * of the data (such as prepending the data with a length and/or an address).
 	 * Typically, the FileEntry.setFileData method should be used. 
 	 */
-	public void setFileData(FileEntry fileEntry, byte[] fileData) throws DiskFullException {
+	public void setFileData(FileEntry fileEntry, byte[] fileData) {
 		// TODO implement setFileData
 	}
 
@@ -679,7 +679,7 @@ public class PascalFormatDisk extends FormattedDisk {
 	 * Create a new DirectoryEntry.
 	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory(String)
 	 */
-	public DirectoryEntry createDirectory(String name) throws DiskFullException	{
+	public DirectoryEntry createDirectory(String name) {
 		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$
 	}
 

@@ -38,15 +38,15 @@ public class ProdosCommonEntry {
 	/**
 	 * Reference to the disk this FileEntry is attached to.
 	 */
-	private ProdosFormatDisk disk;
+	private final ProdosFormatDisk disk;
 	/**
 	 * The block number this FileEntry is stored in.
 	 */
-	private int block;
+	private final int block;
 	/**
 	 * The offset into the block that the FileEntry is at.
 	 */
-	private int offset;
+	private final int offset;
 	
 	/**
 	 * Constructor for ProdosCommonEntry.

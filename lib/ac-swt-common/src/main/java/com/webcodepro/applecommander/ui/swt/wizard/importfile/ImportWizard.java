@@ -50,8 +50,8 @@ import java.util.Set;
  * @author Rob Greene
  */
 public class ImportWizard extends Wizard {
-	private static Set<String> APPLESOFT_FILETYPES = Set.of("B", "BAS");
-	private FormattedDisk disk;
+	private static final Set<String> APPLESOFT_FILETYPES = Set.of("B", "BAS");
+	private final FormattedDisk disk;
 	private List<ImportSpecification> importSpecifications;
 	/**
 	 * Constructor for ImportWizard.

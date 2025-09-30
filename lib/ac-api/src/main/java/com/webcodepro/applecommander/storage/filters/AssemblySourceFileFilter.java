@@ -31,11 +31,11 @@ import com.webcodepro.applecommander.storage.FileFilter;
  * @author Rob Greene
  */
 public class AssemblySourceFileFilter implements FileFilter {
-	private int[] tabStops = new int[] { 10, 15 };
-	private int commentTabStop = 25;
-	private String tabChars = "\t "; //$NON-NLS-1$
-	private String commentTabChars = ";"; //$NON-NLS-1$
-	private String commentNoTabChars = "*"; //$NON-NLS-1$
+	private final int[] tabStops = new int[] { 10, 15 };
+	private final int commentTabStop = 25;
+	private final String tabChars = "\t "; //$NON-NLS-1$
+	private final String commentTabChars = ";"; //$NON-NLS-1$
+	private final String commentNoTabChars = "*"; //$NON-NLS-1$
 
 	/**
 	 * Process the given FileEntry and return a byte array 
@@ -74,7 +74,7 @@ public class AssemblySourceFileFilter implements FileFilter {
 						}
 					}
 				// EOL comment
-				} else if (!noMoreTabs && commentTabChars.indexOf(c) > -1) { 
+				} else if (!noMoreTabs && commentTabChars.indexOf(c) > -1) {
 					while (charPosition < commentTabStop) {
 						printWriter.print(' ');
 						charPosition++;

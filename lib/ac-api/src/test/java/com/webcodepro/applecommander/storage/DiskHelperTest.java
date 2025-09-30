@@ -41,7 +41,7 @@ public class DiskHelperTest {
 	private static final String DOS33_FORMAT = "DOS 3.3";
 	private static final String DOS32_FORMAT = "DOS 3.2";
 
-	private TestConfig config = TestConfig.getInstance();
+	private final TestConfig config = TestConfig.getInstance();
 
 	@Test
 	public void testLoadDos33() throws IOException, DiskException {
@@ -248,7 +248,7 @@ public class DiskHelperTest {
         assertCanReadFiles(disks);
     }
 
-	protected FormattedDisk[] showDirectory(String imageName) throws IOException, DiskException {
+	protected FormattedDisk[] showDirectory(String imageName) throws DiskException {
         Source source = Sources.create(imageName).orElseThrow();
         DiskFactory.Context ctx = Disks.inspect(source);
         if (ctx.disks.isEmpty()) {

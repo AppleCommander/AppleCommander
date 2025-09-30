@@ -44,7 +44,7 @@ import java.util.*;
  * @author Lisias Toledo
  */
 public class DosFormatDisk extends FormattedDisk {
-	private TextBundle textBundle = StorageBundle.getInstance();
+	private final TextBundle textBundle = StorageBundle.getInstance();
 	/**
 	 * Indicates the index of the track in the location array.
 	 */	
@@ -813,7 +813,7 @@ public class DosFormatDisk extends FormattedDisk {
 	 * Create a new DirectoryEntry.
 	 * @see com.webcodepro.applecommander.storage.DirectoryEntry#createDirectory(String)
 	 */
-	public DirectoryEntry createDirectory(String name) throws DiskFullException	{
+	public DirectoryEntry createDirectory(String name) {
 		throw new UnsupportedOperationException(textBundle.get("DirectoryCreationNotSupported")); //$NON-NLS-1$
 	}
 

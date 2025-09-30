@@ -37,12 +37,10 @@ import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.StorageBundle;
-import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
-import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
-import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
-import com.webcodepro.applecommander.storage.filters.TextFileFilter;
+import com.webcodepro.applecommander.storage.filters.*;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.os.pascal.CodeFile;
 
 /**
  * Represents a Pascal file entry on disk.
@@ -52,9 +50,9 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author John B. Matthews
  */
 public class PascalFileEntry implements FileEntry {
-	private TextBundle textBundle = StorageBundle.getInstance();
-	private byte[] fileEntry;
-	private PascalFormatDisk disk;
+	private final TextBundle textBundle = StorageBundle.getInstance();
+	private final byte[] fileEntry;
+	private final PascalFormatDisk disk;
 	private int index = 0;
 	private boolean deleted = false;
 
@@ -481,15 +479,20 @@ public class PascalFileEntry implements FileEntry {
 	 */
 	public FileFilter getSuggestedFilter() {
 		if ("TEXT".equals(getFiletype())) { //$NON-NLS-1$
-			if (getFilename().toLowerCase().endsWith(".text")) { //$NON-NLS-1$
-				return new PascalTextFileFilter();
-			}
-			return new TextFileFilter();
+            if (getFilename().toLowerCase().endsWith(".text")) { //$NON-NLS-1$
+                return new PascalTextFileFilter();
+            }
+            return new TextFileFilter();
+        } else if ("DATA".equals(getFiletype()) && CodeFile.test(getFileData())) {
+            // These seem to be library files or sometimes the startup files
+            return new PascalCodeFileFilter();
 		} else if ("DATA".equals(getFiletype()) && getSize() >= 8184 && getSize() <= 8192) { //$NON-NLS-1$
 			GraphicsFileFilter filter = new GraphicsFileFilter();
 			filter.setMode(GraphicsFileFilter.MODE_HGR_COLOR);
 			return filter;
-		}
+		} else if ("CODE".equals(getFiletype())) {
+            return new PascalCodeFileFilter();
+        }
 		return new BinaryFileFilter();
 	}
 

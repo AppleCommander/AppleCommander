@@ -28,7 +28,7 @@ package com.webcodepro.applecommander.ui;
  * @author Rob Greene
  */
 public class ImportSpecification {
-	private String sourceFilename;
+	private final String sourceFilename;
 	private String targetFilename;
 	private String filetype;
 	private int address;

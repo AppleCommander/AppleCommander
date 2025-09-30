@@ -47,9 +47,9 @@ public class DiskDiff {
         return new Builder(diskA, diskB);
     }
     
-    private List<FormattedDisk> diskA;
-    private List<FormattedDisk> diskB;
-    private ComparisonResult results = new ComparisonResult();
+    private final List<FormattedDisk> diskA;
+    private final List<FormattedDisk> diskB;
+    private final ComparisonResult results = new ComparisonResult();
     
     private BiConsumer<FormattedDisk,FormattedDisk> diskComparisonStrategy = this::compareByNativeGeometry;
     

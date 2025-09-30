@@ -47,14 +47,14 @@ import com.webcodepro.applecommander.util.TextBundle;
  * @author Rob Greene
  */
 public class DiskMapTab {
-	private FormattedDisk disk;
-	private TextBundle textBundle = UiBundle.getInstance();
+	private final FormattedDisk disk;
+	private final TextBundle textBundle = UiBundle.getInstance();
 	// used locally - not shared between windows; hopefully will
 	// not be a resource drain!
-	private Color freeFill;
-	private Color usedFill;
-	private Color black;
-	private Color gray;
+	private final Color freeFill;
+	private final Color usedFill;
+	private final Color black;
+	private final Color gray;
 	/**
 	 * Construct the DiskMapTab.
 	 */
