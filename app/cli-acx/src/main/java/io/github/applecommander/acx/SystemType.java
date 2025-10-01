@@ -44,7 +44,7 @@ public enum SystemType {
 	PASCAL(OrderType.PRODOS, SystemType::enforce140KbDisk, 
 	        SystemType::copyPascalSystemFiles);
 	
-    static Logger LOG = Logger.getLogger(SystemType.class.getName());
+    static final Logger LOG = Logger.getLogger(SystemType.class.getName());
 
     private final OrderType defaultOrderType;
     private final Function<Integer,Integer> enforceDiskSizeFn;

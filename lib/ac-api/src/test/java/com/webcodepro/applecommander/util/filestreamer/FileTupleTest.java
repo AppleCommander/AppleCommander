@@ -19,7 +19,6 @@
  */
 package com.webcodepro.applecommander.util.filestreamer;
 
-import java.io.IOException;
 import java.util.List;
 
 import com.webcodepro.applecommander.storage.*;

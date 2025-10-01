@@ -28,7 +28,7 @@ public enum TypeOfFile {
     
     public final Predicate<FileTuple> predicate;
     
-    private TypeOfFile(Predicate<FileTuple> predicate) {
+    TypeOfFile(Predicate<FileTuple> predicate) {
         this.predicate = predicate;
     }
 }

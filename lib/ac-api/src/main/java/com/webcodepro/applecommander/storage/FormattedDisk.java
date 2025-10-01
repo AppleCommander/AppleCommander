@@ -80,10 +80,10 @@ public abstract class FormattedDisk implements DirectoryEntry, Container{
 	 * set the value and isFree/isUsed are available for that location.
 	 */
 	public interface DiskUsage {
-		public boolean hasNext();
-		public void next();
-		public boolean isFree();
-		public boolean isUsed();
+		boolean hasNext();
+		void next();
+		boolean isFree();
+		boolean isUsed();
 	}
 	
 	/**

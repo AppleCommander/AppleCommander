@@ -34,8 +34,8 @@ public class DiskCorruptException extends DiskException {
 		RECURSIVE_DIRECTORY_STRUCTURE {
 			public String toString() {
 				return "DiskCorruptException.RecursiveDirectoryStructure"; //$NON-NLS-1$
-			};
-		}
+			}
+        }
 	}
 	
 	public final Kind kind;

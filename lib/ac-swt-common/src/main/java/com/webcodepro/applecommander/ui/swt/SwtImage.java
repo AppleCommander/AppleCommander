@@ -21,7 +21,6 @@ package com.webcodepro.applecommander.ui.swt;
 
 import com.webcodepro.applecommander.storage.filters.imagehandlers.AppleImage;
 
-import java.io.IOException;
 import java.io.OutputStream;
 
 import org.eclipse.swt.SWT;

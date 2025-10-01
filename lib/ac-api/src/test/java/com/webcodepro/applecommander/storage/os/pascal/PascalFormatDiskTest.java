@@ -27,7 +27,6 @@ import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
-import com.webcodepro.applecommander.storage.DiskFullException;
 import org.junit.jupiter.api.Test;
 
 public class PascalFormatDiskTest {

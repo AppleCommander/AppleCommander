@@ -32,28 +32,28 @@ import com.webcodepro.applecommander.storage.os.rdos.RdosFileEntry;
 
 public interface FileEntryReader {
     //  FileEntry common
-    public default Optional<String> getFilename()                   { return Optional.empty(); }
-    public default Optional<String> getProdosFiletype()             { return Optional.empty(); }
-    public default Optional<Boolean> isLocked()                     { return Optional.empty(); }
-    public default Optional<byte[]> getFileData()                   { return Optional.empty(); }
-    public default Optional<byte[]> getResourceData()               { return Optional.empty(); }
+    default Optional<String> getFilename()                   { return Optional.empty(); }
+    default Optional<String> getProdosFiletype()             { return Optional.empty(); }
+    default Optional<Boolean> isLocked()                     { return Optional.empty(); }
+    default Optional<byte[]> getFileData()                   { return Optional.empty(); }
+    default Optional<byte[]> getResourceData()               { return Optional.empty(); }
     /** 
      * The address embedded in binary objects. 
      * This varies by DOS's so is split apart. 
      */
-    public default Optional<Integer> getBinaryAddress()             { return Optional.empty(); }
+    default Optional<Integer> getBinaryAddress()             { return Optional.empty(); }
     /** 
      * The length embedded in binary, Applesoft, Integer BASIC objects. 
      * This varies by DOS's so is split apart. 
      */
-    public default Optional<Integer> getBinaryLength()              { return Optional.empty(); }
+    default Optional<Integer> getBinaryLength()              { return Optional.empty(); }
     // ProdosFileEntry specific
-    public default Optional<Integer> getAuxiliaryType()             { return Optional.empty(); }
-    public default Optional<Date> getCreationDate()                 { return Optional.empty(); }
+    default Optional<Integer> getAuxiliaryType()             { return Optional.empty(); }
+    default Optional<Date> getCreationDate()                 { return Optional.empty(); }
     // ProdosFileEntry / PascalFileEntry specific
-    public default Optional<Date> getLastModificationDate()         { return Optional.empty(); }
+    default Optional<Date> getLastModificationDate()         { return Optional.empty(); }
     
-    public default boolean equals(FileEntryReader reader) {
+    default boolean equals(FileEntryReader reader) {
         return getFilename().equals(reader.getFilename())
             && getProdosFiletype().equals(reader.getProdosFiletype())
             && isLocked().equals(reader.isLocked())
@@ -66,7 +66,7 @@ public interface FileEntryReader {
             && getLastModificationDate().equals(reader.getLastModificationDate());
     }
     
-    public static FileEntryReader get(FileEntry fileEntry) {
+    static FileEntryReader get(FileEntry fileEntry) {
         if (fileEntry instanceof DosFileEntry) {
             return new DosFileEntryReaderWriter((DosFileEntry)fileEntry);
         }
