@@ -31,92 +31,92 @@ public interface FileEntry {
 	/**
 	 * Return the name of this file.
 	 */
-	public String getFilename();
+    String getFilename();
 	
 	/**
 	 * Set the name of this file.
 	 */
-	public void setFilename(String filename);
+    void setFilename(String filename);
 	
 	/**
 	 * Return the filetype of this file.
 	 * This will be OS specific.
 	 */
-	public String getFiletype();
+    String getFiletype();
 	
 	/**
 	 * Set the filetype.
 	 */
-	public void setFiletype(String filetype);
+    void setFiletype(String filetype);
 	
 	/**
 	 * Identify if this file is locked.
 	 */
-	public boolean isLocked();
+    boolean isLocked();
 	
 	/**
 	 * Set the lock indicator.
 	 */
-	public void setLocked(boolean lock);
+    void setLocked(boolean lock);
 	
 	/**
 	 * Compute the size of this file (in bytes).
 	 */
-	public int getSize();
+    int getSize();
 	
 	/**
 	 * Identify if this is a directory file.
 	 */
-	public boolean isDirectory();
+    boolean isDirectory();
 	
 	/**
 	 * Identify if this file has been deleted.
 	 */
-	public boolean isDeleted();
+    boolean isDeleted();
 	
 	/**
 	 * Delete the file.
 	 */
-	public void delete();
+    void delete();
 
 	/**
 	 * Get the standard file column header information.
 	 * This default implementation is intended only for standard mode.
 	 * displayMode is specified in FormattedDisk.
 	 */
-	public List<String> getFileColumnData(int displayMode);
+    List<String> getFileColumnData(int displayMode);
 	
 	/**
 	 * Get file data.  This handles any operating-system specific issues.
 	 * Specifically, DOS 3.3 places address and length into binary files
 	 * and length into Applesoft files.
 	 */
-	public byte[] getFileData();
+    byte[] getFileData();
 	
 	/**
 	 * Set file data.  This, essentially, is saving data to disk using this
 	 * file entry.
 	 */
-	public void setFileData(byte[] data) throws DiskFullException;
+    void setFileData(byte[] data) throws DiskFullException;
 	
 	/**
 	 * Get the suggested FileFilter.  This appears to be operating system
 	 * specific, so each operating system needs to implement some manner
 	 * of guessing the appropriate filter.
 	 */
-	public FileFilter getSuggestedFilter();
+    FileFilter getSuggestedFilter();
 	
 	/**
 	 * Get the FormattedDisk associated with this FileEntry.
 	 * This is useful to interfaces that need to retrieve the associated
 	 * disk.
 	 */
-	public FormattedDisk getFormattedDisk();
+    FormattedDisk getFormattedDisk();
 	
 	/**
 	 * Return the maximum filename length.
 	 */
-	public int getMaximumFilenameLength();
+    int getMaximumFilenameLength();
 	
 	/**
 	 * Indicates if this filetype requires an address component.
@@ -124,15 +124,15 @@ public interface FileEntry {
 	 * this will defer to the method on FormattedDisk, as it will be
 	 * more generic.
 	 */
-	public abstract boolean needsAddress();
+    boolean needsAddress();
 	
 	/**
 	 * Set the address that this file loads at.
 	 */
-	public abstract void setAddress(int address);
+    void setAddress(int address);
 	
 	/**
 	 * Get the address that this file loads at.
 	 */
-	public abstract int getAddress();
+    int getAddress();
 }

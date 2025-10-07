@@ -25,7 +25,7 @@ package com.webcodepro.applecommander.ui.swt.util.contentadapter;
  * @author Rob Greene
  */
 public interface ContentTypeAdapter {
-	public void print();
-	public void selectAll();
-	public void copy();
+	void print();
+	void selectAll();
+	void copy();
 }

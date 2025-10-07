@@ -32,7 +32,7 @@ public enum DiskGeometry {
     public final int size;
     public final String text;
     
-    private DiskGeometry(int size, String text) {
+    DiskGeometry(int size, String text) {
         this.size = size;
         this.text = text;
     }

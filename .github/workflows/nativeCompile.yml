@@ -47,6 +47,11 @@ jobs:
       - name: Build ac/acx
         run: ./gradlew nativeCompile
 
+      - name: Run CLTH tests
+        if: ${{ matrix.os != 'windows' }}
+        shell: bash
+        run: ./scripts/run-clth-tests.sh
+
       - name: Upload binary
         uses: actions/upload-artifact@v4
         with:

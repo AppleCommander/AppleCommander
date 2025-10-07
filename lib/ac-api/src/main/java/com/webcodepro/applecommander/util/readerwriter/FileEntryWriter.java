@@ -28,29 +28,29 @@ import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
 
 public interface FileEntryWriter {
     //  FileEntry common
-    public default void setFilename(String filename)                { }
-    public default void setProdosFiletype(String filetype)          { }
-    public default void setLocked(boolean flag)                     { }
-    public default void setFileData(byte[] data)                    { }
+    default void setFilename(String filename)                { }
+    default void setProdosFiletype(String filetype)          { }
+    default void setLocked(boolean flag)                     { }
+    default void setFileData(byte[] data)                    { }
     // Special case for GS/OS files (uglifies API; sets 0x05)
-    public default void setFileData(byte[] data, byte[] resource)   { }
+    default void setFileData(byte[] data, byte[] resource)   { }
     /** 
      * The address embedded in binary objects. 
      * This varies by DOS's so is split apart. 
      */
-    public default void setBinaryAddress(int address)               { }
+    default void setBinaryAddress(int address)               { }
     /** 
      * The length embedded in binary, Applesoft, Integer BASIC objects. 
      * This varies by DOS's so is split apart. 
      */
-    public default void setBinaryLength(int length)                 { }
+    default void setBinaryLength(int length)                 { }
     // ProdosFileEntry specific
-    public default void setAuxiliaryType(int auxType)               { }
-    public default void setCreationDate(Date date)                  { }
+    default void setAuxiliaryType(int auxType)               { }
+    default void setCreationDate(Date date)                  { }
     // ProdosFileEntry / PascalFileEntry specific
-    public default void setLastModificationDate(Date date)          { }
+    default void setLastModificationDate(Date date)          { }
     
-    public static FileEntryWriter get(FileEntry fileEntry) {
+    static FileEntryWriter get(FileEntry fileEntry) {
         if (fileEntry instanceof DosFileEntry) {
             return new DosFileEntryReaderWriter((DosFileEntry)fileEntry);
         } 

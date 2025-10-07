@@ -33,9 +33,9 @@ public interface FileFilter {
 	/**
 	 * Process the given FileEntry and return a byte array with filtered data.
 	 */
-	public byte[] filter(FileEntry fileEntry);
+    byte[] filter(FileEntry fileEntry);
 	/**
 	 * Give suggested file name.
 	 */
-	public String getSuggestedFileName(FileEntry fileEntry);
+    String getSuggestedFileName(FileEntry fileEntry);
 }

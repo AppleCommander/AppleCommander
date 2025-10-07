@@ -82,12 +82,13 @@ public class DirectoryLister {
 			this.display = display;
 		}
 		
-		public void first(FormattedDisk d) {};
-		public void beforeDisk(FormattedDisk d) {}
+		public void first(FormattedDisk d) {}
+
+        public void beforeDisk(FormattedDisk d) {}
 		public void afterDisk(FormattedDisk d) {}
 		public void forEach(FileTuple f) {}
-		public void last() {};
-	}
+		public void last() {}
+    }
 	
 	public static class TextListingStrategy extends ListingStrategy {
 		protected TextListingStrategy(int display) {

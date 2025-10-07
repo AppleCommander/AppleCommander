@@ -22,7 +22,7 @@ package com.webcodepro.applecommander.storage.filters;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import org.applecommander.os.pascal.CodeFile;
-import org.applecommander.os.pascal.PascalSupport;
+import org.applecommander.os.pascal.CodeFileLister;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -37,10 +37,10 @@ public class PascalCodeFileFilter implements FileFilter {
 
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw, true);
-        PascalSupport.disassemble(pw, codeFile);
+        CodeFileLister lister = new CodeFileLister();
+        lister.list(pw, codeFile);
         return sw.toString().getBytes();
 	}
-
 
 	/**
 	 * Give suggested file name.

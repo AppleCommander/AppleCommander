@@ -1458,13 +1458,14 @@ public class ProdosFormatDisk extends FormattedDisk {
 	@Override
 	public String toNativeFiletype(String prodosFiletype) {
 		return prodosFiletype;
-	};
-	/**
+	}
+
+    /**
 	 * Provides conversation to a given ProDOS file type since as it is common across
 	 * many archiving tools.
 	 */
 	@Override
 	public String toProdosFiletype(String nativeFiletype) {
 		return nativeFiletype;
-	};
+	}
 }

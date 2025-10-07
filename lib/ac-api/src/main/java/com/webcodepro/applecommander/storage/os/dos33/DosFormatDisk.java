@@ -229,7 +229,11 @@ public class DosFormatDisk extends FormattedDisk {
 			while (offset < 0xff) {	// iterate through all entries
 				int value = AppleUtil.getUnsignedByte(catalogSector[offset]);
 				if (value == 0 || value == 0xff) {
-					return new DosFileEntry(this, track, sector, offset);
+					DosFileEntry fileEntry = new DosFileEntry(this, track, sector, offset);
+					byte[] entry = fileEntry.readFileEntry();
+					Arrays.fill(entry, (byte)0);
+					fileEntry.writeFileEntry(entry);
+					return fileEntry;
 				}
 				offset+= DosFileEntry.FILE_DESCRIPTIVE_ENTRY_LENGTH;
 			}

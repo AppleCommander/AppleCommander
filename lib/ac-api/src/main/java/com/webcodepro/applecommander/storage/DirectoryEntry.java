@@ -36,7 +36,7 @@ public interface DirectoryEntry {
 	/**
 	 * Return a name for this directory.
 	 */
-	public String getDirname();
+    String getDirname();
 
 	/**
 	 * Retrieve the list of files in this directory.
@@ -45,17 +45,17 @@ public interface DirectoryEntry {
 	 * return value should always be a list - a directory
 	 * with 0 entries returns an empty list.
 	 */
-	public List<FileEntry> getFiles() throws DiskException;
+    List<FileEntry> getFiles() throws DiskException;
 
 	/**
 	 * Create a new FileEntry.
 	 */
-	public FileEntry createFile() throws DiskException;
+    FileEntry createFile() throws DiskException;
 
 	/**
 	 * Create a new DirectoryEntry.
 	 */
-	public DirectoryEntry createDirectory(String name) throws DiskException;
+    DirectoryEntry createDirectory(String name) throws DiskException;
 
 	/**
 	 * Identify if additional directories can be created.  This
@@ -63,19 +63,19 @@ public interface DirectoryEntry {
 	 * operating system or simply that the disk image is "locked"
 	 * to writing.
 	 */
-	public boolean canCreateDirectories();
+    boolean canCreateDirectories();
 
 	/**
 	 * Indicates if this disk image can create a file.
 	 * If not, the reason may be as simple as it has not beem implemented
 	 * to something specific about the disk.
 	 */
-	public boolean canCreateFile();
+    boolean canCreateFile();
 
 	/**
 	 * Get the FormattedDisk associated with this DirectoryEntry.
 	 * This is useful to interfaces that need to retrieve the associated
 	 * disk.
 	 */
-	public FormattedDisk getFormattedDisk();
+    FormattedDisk getFormattedDisk();
 }

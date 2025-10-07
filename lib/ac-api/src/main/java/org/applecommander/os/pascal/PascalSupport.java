@@ -19,21 +19,11 @@
  */
 package org.applecommander.os.pascal;
 
-import org.applecommander.disassembler.api.Disassembler;
-import org.applecommander.disassembler.api.Instruction;
-import org.applecommander.disassembler.api.InstructionSet;
-import org.applecommander.disassembler.api.mos6502.InstructionSet6502;
-import org.applecommander.disassembler.api.pcode.InstructionSetPCode;
 import org.applecommander.util.DataBuffer;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
-
+/**
+ * Provides common Pascal support code.
+ */
 public class PascalSupport {
     private PascalSupport() {
         // prevent construction
@@ -61,127 +51,5 @@ public class PascalSupport {
             }
         }
         return sb.toString();
-    }
-
-    public static void disassemble(PrintWriter pw, CodeFile codeFile) {
-        // Reset components that are implied in the CodeFile itself:
-        if (codeFile.comment() != null && !codeFile.comment().isEmpty()) {
-            pw.printf("Comment:  %s\n", codeFile.comment());
-        }
-        for (Segment segment : codeFile.segments()) {
-            if (segment != null) disassemble(pw, segment);
-        }
-    }
-
-    public static void disassemble(PrintWriter pw, Segment segment) {
-        pw.printf(">> Seg #%02d: FROM=$%04x, TO=$%04x, N='%s', %-10s, T=$%04x, M=%-10s, Ver=%d\n",
-                segment.segNum(), segment.data().position(), segment.data().limit(), segment.name(),
-                segment.kind(), segment.textAddr(), segment.machineType(), segment.version());
-        if (segment.textInterface() != null && !segment.textInterface().isEmpty()) {
-            pw.println(">  Interface text:");
-            pw.println(segment.textInterface().indent(5));
-        }
-        for (var proc : segment.dictionary()) {
-            if (proc == null) {
-                pw.println(">  Invalid procedure header.");
-                continue;
-            }
-            switch (proc) {
-                case PCodeProcedure pcode -> disassemble(pw, pcode);
-                case AssemblyProcedure asm -> disassemble(pw, asm);
-                default -> throw new RuntimeException("Unexpected procedure type: " + proc.getClass().getName());
-            }
-        }
-    }
-
-    public static void disassemble(PrintWriter pw, PCodeProcedure pcode) {
-        pw.printf(">  Proc#%d, Lex Lvl %d, Enter $%04x, Exit $%04x, Param %d, Data %d, JTAB=$%04x\n",
-                pcode.procNum(), pcode.lexLevel(), pcode.enterIC(), pcode.exitIC(),
-                pcode.paramsSize(), pcode.dataSize(), pcode.jumpTable());
-
-        // We want to indent the resulting assembly, so a temporary new PrintWriter so indentation can be applied
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter printWriter = new PrintWriter(stringWriter, true);
-        disassemble(printWriter, InstructionSetPCode.forApplePascal(), pcode.enterIC(), pcode.codeBytes());
-        pw.println(stringWriter.toString().indent(5));
-    }
-
-    public static void disassemble(PrintWriter pw, AssemblyProcedure asm) {
-        pw.printf(">  ASM Proc#%d, Relocation Segment #%d, Enter $%04x\n",
-                asm.procNum(), asm.relocSegNum(), asm.enterIC());
-
-        BiConsumer<int[], String> formatter = (table, name) -> {
-            if (table.length > 0) {
-                pw.printf("\t%s-relative relocation table: ", name);
-                for (int addr : table) pw.printf("$%04X ", addr);
-                pw.println();
-            }
-        };
-        formatter.accept(asm.baseRelativeReloc(), "base");
-        formatter.accept(asm.segRelativeReloc(), "segment");
-        formatter.accept(asm.procRelativeReloc(), "procedure");
-        formatter.accept(asm.interpRelativeReloc(), "interpreter");
-
-        var db = DataBuffer.wrap(asm.codeBytes());
-        for (int addr : asm.procRelativeReloc()) {
-            int offset = addr - asm.enterIC();
-            db.putUnsignedShort(offset, db.getUnsignedShort(offset) + asm.enterIC());
-        }
-
-        // We want to indent the resulting assembly, so a temporary new PrintWriter so indentation can be applied
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter printWriter = new PrintWriter(stringWriter, true);
-        disassemble(printWriter, InstructionSet6502.for6502(), asm.enterIC(), db.asBytes());
-        pw.println(stringWriter.toString().indent(5));
-    }
-
-    public static void disassemble(PrintWriter pw, InstructionSet instructionSet, int startAddress, byte[] procedureCode) {
-        Map<Integer,String> labels = new HashMap<>();
-        List<Instruction> assembly = Disassembler.with(procedureCode)
-                .startingAddress(startAddress)
-                .use(instructionSet)
-                .decode(labels);
-
-        final int bytesPerLine = instructionSet.defaults().bytesPerInstruction();
-        assembly.forEach(instruction -> {
-            pw.printf("%04X- ", instruction.address());
-
-            byte[] instructionCode = instruction.code();
-            for (int i=0; i<bytesPerLine; i++) {
-                if (i >= instructionCode.length) {
-                    pw.print("   ");
-                } else {
-                    pw.printf("%02X ", instructionCode[i]);
-                }
-            }
-            pw.printf(" %-10.10s ", labels.getOrDefault(instruction.address(), ""));
-            pw.printf("%-5s ", instruction.mnemonic());
-            pw.printf("%-30s ", instruction.operands().stream().map(operand -> {
-                        if (operand.address().isPresent() && labels.containsKey(operand.address().get())) {
-                            return operand.format(labels.get(operand.address().get()));
-                        }
-                        else {
-                            return operand.format();
-                        }
-                    })
-                    .collect(Collectors.joining(",")));
-            if (instructionSet.defaults().includeDescription()) {
-                instruction.description().ifPresent(description -> {
-                    pw.printf("; %s", description);
-                });
-            }
-            pw.println();
-
-            if (instructionCode.length > bytesPerLine) {
-                for (int i=bytesPerLine; i<instructionCode.length; i++) {
-                    if (i % bytesPerLine == 0) {
-                        if (i > bytesPerLine) pw.println();
-                        pw.printf("%04X- ", instruction.address()+i);
-                    }
-                    pw.printf("%02X ", instructionCode[i]);
-                }
-                pw.println();
-            }
-        });
     }
 }

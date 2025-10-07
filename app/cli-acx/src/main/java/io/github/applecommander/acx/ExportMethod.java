@@ -64,7 +64,7 @@ public enum ExportMethod {
     private final Function<FileEntry,FileFilter> fileFilterFn;
     private final List<String> codes;
     
-    private ExportMethod(Function<FileEntry,FileFilter> fileFilterFn, String... codes) {
+    ExportMethod(Function<FileEntry, FileFilter> fileFilterFn, String... codes) {
         this.fileFilterFn = fileFilterFn;
         this.codes = Arrays.asList(codes);
     }

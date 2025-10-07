@@ -122,9 +122,9 @@ public class ListCommand extends ReadOnlyDiskImageCommandOptions {
             CSV(CsvListingStrategy::new),
             JSON(JsonListingStrategy::new);
             
-            private Function<Integer,ListingStrategy> constructorFn;
+            private final Function<Integer,ListingStrategy> constructorFn;
             
-            private OutputStrategy(Function<Integer,ListingStrategy> constructorFn) {
+            OutputStrategy(Function<Integer, ListingStrategy> constructorFn) {
                 this.constructorFn = constructorFn;
             }
             
@@ -132,8 +132,8 @@ public class ListCommand extends ReadOnlyDiskImageCommandOptions {
                 return constructorFn.apply(display);
             }
 
-        };
-        
+        }
+
         @Option(names = "--text", description = "Formatted text (default).")
         public void selectTextOutput(boolean flag) {
             this.outputStrategy = OutputStrategy.TEXT;
