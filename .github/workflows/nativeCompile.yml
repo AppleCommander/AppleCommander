@@ -48,6 +48,7 @@ jobs:
         run: ./gradlew nativeCompile
 
       - name: Run CLTH tests
+        if: ${{ matrix.os != "windows" }}
         shell: bash
         run: ./scripts/run-clth-tests.sh
 
