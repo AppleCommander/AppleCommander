@@ -1,0 +1,47 @@
+commands:
+  acx:
+    main-class: io.github.applecommander.acx.Main
+    system-exit: yes
+    executable: app/cli-acx/build/native/nativeCompile/acx-*
+
+files:
+  txtfile:
+    type: text
+    # See: https://www.lipsum.com/
+    content: |
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+      aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+      Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+      occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+  basfile:
+    type: text
+    content: |
+      10 TEXT : HOME
+      20 PRINT "HELLO, WORLD"
+      30 END
+  binfile:
+    type: binary
+    # Address $300
+    content: |
+      20 2f fb 20 58 fc a0 0b b9 14 03 20 ed fd 88 d0
+      f7 20 8e fd 60 c4 cc d2 cf d7 a0 cf cc cc c5 c8
+  testdisk.dsk:
+    type: temporary
+    prefix: testdisk
+    suffix: .dsk
+  testdisk.po:
+    type: temporary
+    prefix: testdisk
+    suffix: .po
+
+tests:
+  - name: ticket192-acx
+    variables:
+      # All arrays must be same length -- only iterated over, not matrixed
+      flag: ["--dos", "--prodos", "--pascal"]
+      disk: ["$testdisk.dsk", "$testdisk.po", "$testdisk.po"]
+    steps:
+      - command: acx mkdisk -d $disk $flag
+      - command: acx import -d $disk $txtfile --name TESTFILE
+      - command: acx rm -d $disk TESTFILE
+      - command: acx import -d $disk $txtfile --name TESTFILE

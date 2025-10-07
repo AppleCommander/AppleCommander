@@ -5,19 +5,19 @@
         "pattern": "META-INF/MANIFEST.MF"
       },
       {
-        "pattern": "META-INF/services/*"
+        "pattern": "META-INF/services/.*"
       },
       {
-        "pattern": "com/webcodepro/applecommander/storage/os/prodos/*"
+        "pattern": "com/webcodepro/applecommander/storage/os/prodos/.*"
       },
       {
-        "pattern": "com/webcodepro/applecommander/storage/*"
+        "pattern": "com/webcodepro/applecommander/storage/.*"
       },
       {
-        "pattern": "com/webcodepro/applecommander/ui/*"
+        "pattern": "com/webcodepro/applecommander/ui/.*"
       },
       {
-        "pattern": "com/webcodepro/applecommander/util/*"
+        "pattern": "com/webcodepro/applecommander/util/.*"
       }
     ]
   },
