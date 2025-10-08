@@ -9,7 +9,7 @@ fi
 CLTH="${DIR}/clth.jar"
 if [ ! -f ${CLTH} ]
 then
-  curl -o ${CLTH} -L https://github.com/a2geek/command-line-test-harness/releases/download/1.1/clth-1.1.jar
+  curl -o ${CLTH} -L https://github.com/a2geek/command-line-test-harness/releases/download/1.2/clth-1.2.jar
 fi
 
 java -jar ${CLTH} app/cli-tests/src/test/resources/{ac,acx}-config.yml

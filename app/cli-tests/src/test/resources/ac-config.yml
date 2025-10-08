@@ -48,3 +48,42 @@ tests:
       - command: ac -d $disk TESTFILE
       - command: ac -pt $disk TESTFILE
         stdin: $txtfile
+  - name: big exercise
+    variables:
+      flag: ["-dos140", "-pro140"]
+      volname: ["", "TEST"]
+      disk: ["$testdisk.dsk", "$testdisk.po"]
+      format: ["Disk Format: DOS 3.3", "Disk Format: ProDOS"]
+    steps:
+      # Create our image
+      - command: ac $flag $disk $volname
+      - command: ac -pt $disk TEXTFILE
+        stdin: $txtfile
+      - command: ac -bas $disk BASFILE
+        stdin: $basfile
+      - command: ac -p $disk BINFILE BIN 0x300
+        stdin: $binfile
+      # List image
+#      - command: ac -i $disk
+#        match: contains
+#        stdout: $format
+      - command: ac -l $disk
+        match: contains
+        stdout: TEXTFILE
+      # Verify contents of files
+#      - command: ac -e $disk TEXTFILE
+#        stdout: $txtfile
+      - command: ac -e $disk BASFILE
+        match: trim
+        stdout: |
+          10  TEXT : HOME 
+          20  PRINT "HELLO, WORLD"
+          30  END
+      # 'ac' doesn't disassemble
+      - command: ac -e $disk BINFILE
+        stdout: |
+          Offset   Hex Data                                          Characters
+          =======  ================================================  =================
+          $000300  20 2F FB 20 58 FC A0 0B  B9 14 03 20 ED FD 88 D0   /{ X| . 9.. m}.P
+          $000310  F7 20 8E FD 60 C4 CC D2  CF D7 A0 CF CC CC C5 C8  w .}`DLR OW OLLEH
+          ** END **
