@@ -64,15 +64,15 @@ tests:
       - command: ac -p $disk BINFILE BIN 0x300
         stdin: $binfile
       # List image
-#      - command: ac -i $disk
-#        match: contains
-#        stdout: $format
+      - command: ac -i $disk
+        match: contains
+        stdout: $format
       - command: ac -l $disk
         match: contains
         stdout: TEXTFILE
       # Verify contents of files
-#      - command: ac -e $disk TEXTFILE
-#        stdout: $txtfile
+      - command: ac -e $disk TEXTFILE
+        stdout: $txtfile
       - command: ac -e $disk BASFILE
         match: trim
         stdout: |

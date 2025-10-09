@@ -25,6 +25,40 @@ files:
     content: |
       20 2f fb 20 58 fc a0 0b b9 14 03 20 ed fd 88 d0
       f7 20 8e fd 60 c4 cc d2 cf d7 a0 cf cc cc c5 c8
+  disassemblyDOS:     # 6502
+    type: text
+    content: |
+      0300- 20 2F FB             JSR   INIT                           
+      0303- 20 58 FC             JSR   HOME                           
+      0306- A0 0B                LDY   #$0B                           
+      0308- B9 14 03  L0308      LDA   L0314,Y                        
+      030B- 20 ED FD             JSR   COUT                           
+      030E- 88                   DEY                                  
+      030F- D0 F7                BNE   L0308                          
+      0311- 20 8E FD             JSR   CROUT                          
+      0314- 60        L0314      RTS                                  
+      0315- C4 CC                CPY   $CC                            
+      0317- D2                   ???                                  
+      0318- CF D7 A0             ???   $A0D7                          
+      031B- CF CC CC             ???   $CCCC                          
+      031E- C5 C8                CMP   $C8
+  disassemblyPRODOS:  # 65C02
+    type: text
+    content: |
+      0300- 20 2F FB             JSR   INIT
+      0303- 20 58 FC             JSR   HOME
+      0306- A0 0B                LDY   #$0B                           
+      0308- B9 14 03  L0308      LDA   L0314,Y
+      030B- 20 ED FD             JSR   COUT
+      030E- 88                   DEY
+      030F- D0 F7                BNE   L0308
+      0311- 20 8E FD             JSR   CROUT
+      0314- 60        L0314      RTS
+      0315- C4 CC                CPY   $CC
+      0317- D2 CF                CMP   ($CF)
+      0319- D7 A0                ???   $A0
+      031B- CF CC                ???   $02E9
+      031D- CC C5 C8             CPY   $C8C5
   testdisk.dsk:
     type: temporary
     prefix: testdisk
@@ -45,3 +79,36 @@ tests:
       - command: acx import -d $disk $txtfile --name TESTFILE
       - command: acx rm -d $disk TESTFILE
       - command: acx import -d $disk $txtfile --name TESTFILE
+  - name: big exercise
+    variables:
+      flag: ["--dos", "--prodos"]
+      volname: ["", "TEST"]
+      disk: ["$testdisk.dsk", "$testdisk.po"]
+      format: ["Disk Format: DOS 3.3", "Disk Format: ProDOS"]
+      # Note that DOS assumes 6502 while ProDOS assumes 65C02...
+      disassembly: ["$disassemblyDOS", "$disassemblyPRODOS"]
+    steps:
+      # Create our image
+      - command: acx mkdisk -d $disk $flag
+      - command: acx import -d $disk --name TEXTFILE --text-high $txtfile
+      - command: acx import -d $disk --name BASFILE --basic $basfile
+      - command: acx import -d $disk --name BINFILE --binary --addr=0x300 $binfile
+      # List image
+      - command: acx info -d $disk
+        match: contains
+        stdout: $format
+      - command: acx list -d $disk
+        match: contains
+        stdout: TEXTFILE
+      # Verify contents of files
+      - command: acx get -d $disk TEXTFILE
+        stdout: $txtfile
+      - command: acx get -d $disk BASFILE
+        match: trim
+        stdout: |
+          10  TEXT : HOME 
+          20  PRINT "HELLO, WORLD"
+          30  END
+      - command: acx get -d $disk BINFILE --assembly
+        match: trim
+        stdout: $disassembly
