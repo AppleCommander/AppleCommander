@@ -26,7 +26,7 @@ Extract secret key for the Gradle signing plugin:
 $ gpg --export-secret-keys > secring.gpg
 ```
 
-## Grande config file
+## Gradle config file
 
 ```bash
 $ cat ~/.gradle/gradle.properties 
@@ -70,23 +70,18 @@ BUILD SUCCESSFUL in 16s
 ```
 
 As of 2025, the publishing in Maven Central has moved/changed. The plugin does work, but a special id needs to be generated.
-Also note that after publishing, we have to tell Maven Central we're done. That can be done with the following curl (which takes some time).
+Also note that after publishing, we have to tell Maven Central we're done.
+
+The secrets are stored in the `.netrc` file:
+
+```
+machine ossrh-staging-api.central.sonatype.com login <generated user> password <generated password>
+```
+
+And this script will do the appropriate HTTP POST:
 
 ```bash
-$ curl -v -X POST https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/org.applecommander --user "<user>:<password>"
-> POST /manual/upload/defaultRepository/org.applecommander HTTP/2
-> Host: ossrh-staging-api.central.sonatype.com
-> Authorization: Basic UndSNzlOOmxYSjJGWmlQMkxXNHNrS1NNeUoxeWhDaGFSV0tpdXJpNw==
-> User-Agent: curl/8.9.1
-> Accept: */*
-> 
-* Request completely sent off
-* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
-< HTTP/2 200 
-< date: Thu, 31 Jul 2025 18:27:21 GMT
-< content-length: 0
-<
-* Connection #0 to host ossrh-staging-api.central.sonatype.com left intact
+$ scripts/finish-publishing.sh
 ```
 
 ## Tag and publish on GitHub
