@@ -168,7 +168,7 @@ public class ExportCommand extends ReadOnlyDiskImageCommandOptions {
 		public void setAppleSingleExtraction(boolean flag) {
 		    selectExportMethod(ExportMethod.APPLESINGLE);
 		}
-		@Option(names = { "--disassembly" }, description = "Dissassembly file.")
+		@Option(names = { "--disassemble", "--assembly", "--disassembly" }, description = "Disassemble file.")
 		public void setDisassemblyExtraction(boolean flag) {
 		    selectExportMethod(ExportMethod.DISASSEMBLY);
 		}
