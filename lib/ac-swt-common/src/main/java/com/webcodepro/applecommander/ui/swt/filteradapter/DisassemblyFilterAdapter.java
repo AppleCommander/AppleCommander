@@ -24,6 +24,9 @@ import org.eclipse.swt.graphics.Image;
 import com.webcodepro.applecommander.storage.filters.DisassemblyFileFilter;
 import com.webcodepro.applecommander.ui.swt.FileViewerWindow;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 /**
  * Provides a view of the disassembly of a program as seen when loaded from the disk.
  * 
@@ -35,6 +38,15 @@ public class DisassemblyFilterAdapter extends TextFilterAdapter {
 	}
 
 	protected String createTextContent() {
-        return new String(new DisassemblyFileFilter(getFileEntry()).filter(getFileEntry()));
+        try {
+            return new String(new DisassemblyFileFilter(getFileEntry()).filter(getFileEntry()));
+        } catch (Throwable t) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            pw.println("An unexpected error occured in disassembly:");
+            t.printStackTrace(pw);
+            pw.flush();
+            return sw.toString();
+        }
 	}
 }

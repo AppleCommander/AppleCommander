@@ -49,7 +49,6 @@ public class DisassemblyFileFilter implements FileFilter {
         this.instructionSet = switch (fileEntry) {
             case CpmFileEntry ignored -> InstructionSetZ80.forZ80();
             case NakedosFileEntry ignored -> InstructionSet6502.for65C02();
-            // TODO likely should detect codefile and do that if applicable
             case PascalFileEntry ignored -> InstructionSet6502.for6502();
             case ProdosFileEntry ignored -> InstructionSet6502.for65C02();
             default -> InstructionSet6502.for6502();
