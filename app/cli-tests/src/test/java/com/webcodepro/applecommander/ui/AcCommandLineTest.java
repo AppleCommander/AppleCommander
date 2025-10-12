@@ -29,6 +29,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.nio.file.Path;
 import java.util.stream.Stream;
 
 import io.github.a2geek.clth.TestSuite;
@@ -37,7 +38,12 @@ public class AcCommandLineTest {
     @ParameterizedTest(name = "{1}: {2}")
     @MethodSource("testCases")
     public void test(TestSuite testSuite, String name, String parameters) {
-        TestHarness.run(testSuite, JUnitHelper::execute, TestHarness.FilePreservation.DELETE);
+        TestHarness.Settings settings = TestHarness.settings()
+                .deleteFiles()
+                .baseDirectory(Path.of("cli-tests/src/test/resources"))
+                .enableAlwaysShowOutput()
+                .get();
+        TestHarness.run(testSuite, JUnitHelper::execute, settings);
     }
 
     public static Stream<Arguments> testCases() {
