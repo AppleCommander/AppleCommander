@@ -35,7 +35,7 @@ files:
     suffix: .po
 
 tests:
-  - name: ticket192-ac
+  - name: ticket192
     variables:
       # All arrays must be same length -- only iterated over, not matrixed
       flag: ["-dos140", "-pro140", "-pas140"]
@@ -54,6 +54,15 @@ tests:
       volname: ["", "TEST"]
       disk: ["$testdisk.dsk", "$testdisk.po"]
       format: ["Disk Format: DOS 3.3", "Disk Format: ProDOS"]
+      directory:
+        - |
+          .*T 003 TEXTFILE.*
+          .*A 002 BASFILE.*
+          .*B 002 BINFILE.*
+        - |
+          .*TEXTFILE TXT 001.*
+          .*BASFILE BAS 001.*
+          .*BINFILE BIN 001.*
     steps:
       # Create our image
       - command: ac $flag $disk $volname
@@ -65,16 +74,20 @@ tests:
         stdin: $binfile
       # List image
       - command: ac -i $disk
-        match: contains
+        criteria:
+          match: contains
         stdout: $format
       - command: ac -l $disk
-        match: contains
-        stdout: TEXTFILE
+        criteria:
+          match: regex
+          whitespace: ignore
+        stdout: $directory
       # Verify contents of files
       - command: ac -e $disk TEXTFILE
         stdout: $txtfile
       - command: ac -e $disk BASFILE
-        match: trim
+        criteria:
+          whitespace: trim
         stdout: |
           10  TEXT : HOME 
           20  PRINT "HELLO, WORLD"
