@@ -4,7 +4,7 @@ ext {
     // Dependency versions
     shkVersion = "1.2.2"
     asVersion = "1.2.2"
-    btVersion = "0.4.0"
+    btVersion = "0.4.1"
     swtVersion = "3.131.0"
     piSwtVersion = "3.8.2"
     junitVersion = "6.0.0"
