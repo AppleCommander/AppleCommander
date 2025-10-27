@@ -17,5 +17,5 @@ ext {
     springBoot = "2.7.18"
     acdasmVersion = "6.1"
     graalvmBuildVersion = "0.10.6"
-    clthVersion = "2.0"
+    clthVersion = "2.1"
 }
