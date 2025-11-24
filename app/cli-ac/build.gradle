@@ -41,6 +41,14 @@ jar {
     }
 }
 
+// Disable all Spring AOT processing
+processAot.configure {
+    enabled = false;
+}
+processTestAot.configure {
+    enabled = false;
+}
+
 bootJar {
     archiveBaseName = 'AppleCommander'
     archiveAppendix = 'ac'
