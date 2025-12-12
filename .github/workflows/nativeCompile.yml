@@ -28,10 +28,10 @@ jobs:
           - label: windows-latest
             os: windows
             arch: x86_64
-          - label: macos-13
+          - label: macos-15-intel
             os: darwin
             arch: x86_64
-          - label: macos-latest
+          - label: macos-15
             os: darwin
             arch: arm64
     steps:
