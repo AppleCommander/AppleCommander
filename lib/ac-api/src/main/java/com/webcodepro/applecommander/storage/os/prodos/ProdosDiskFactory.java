@@ -69,6 +69,9 @@ public class ProdosDiskFactory implements DiskFactory {
                 int keyPointer = volumeDirectory.getUnsignedShort(i+0x11);
                 int blocksUsed = volumeDirectory.getUnsignedShort(i+0x13);
                 int headerPointer = volumeDirectory.getUnsignedShort(i+0x25);
+                // Skip empty files (ala Beagle Bros)
+                if (keyPointer == 0 && blocksUsed == 0) continue;
+                // Test file
                 good = keyPointer != 0
                         && keyPointer < totalBlocks
                         && blocksUsed < totalBlocks
