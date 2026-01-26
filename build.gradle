@@ -14,7 +14,7 @@ ext {
     gsonVersion = "2.13.2"
     picocliVersion = "4.7.7"
     // 3.0(?) introduced Spring AOT automatic stuff and breaks when using GraalVM native image
-    springBoot = "4.0.1"
+    springBoot = "4.0.2"
     acdasmVersion = "6.1"
     graalvmBuildVersion = "0.11.3"
     clthVersion = "2.1"
