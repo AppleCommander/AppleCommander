@@ -60,7 +60,7 @@ public class ScanCommand extends ReusableCommandOptions {
     @Option(names = { "-o", "--output" }, description = "Name of report file")
     private Path reportPath;
 
-    @Option(names = { "--progress" }, description = "Show progress be listing each image as it is processed",
+    @Option(names = { "--progress" }, description = "Show progress by listing each image as it is processed",
             defaultValue = "false")
     private boolean progress;
 

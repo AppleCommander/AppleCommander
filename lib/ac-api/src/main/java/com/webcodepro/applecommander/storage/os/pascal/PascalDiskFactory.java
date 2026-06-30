@@ -74,7 +74,8 @@ public class PascalDiskFactory implements DiskFactory {
                 int fNameLength = dir.getUnsignedByte(offset+6);
                 int fBytesLastBlock = dir.getUnsignedShort(offset+22);
                 if (fNameLength == 0) break;    // last entry?
-                good = fFirstBlock < fLastBlock
+                // There appear to be some zero block entries that have the same first and last block
+                good = fFirstBlock <= fLastBlock
                     && fLastBlock <= dBlocksOnDisk
                     && (fEntryType & 0x7fff) < 9
                     && fNameLength < 16
