@@ -129,6 +129,9 @@ public class DiskImageOrderPane extends WizardPane {
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				getWizard().setOrder(order);
+				if (order == DiskImageWizard.ORDER_NIBBLE) {
+					getWizard().setSize(DiskConstants.APPLE_140KB_NIBBLE_DISK);
+				}
 			}
 		});
 	}

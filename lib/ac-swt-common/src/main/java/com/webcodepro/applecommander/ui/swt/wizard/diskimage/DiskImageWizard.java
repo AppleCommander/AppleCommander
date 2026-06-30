@@ -86,6 +86,8 @@ public class DiskImageWizard extends Wizard {
 		StringBuilder name = new StringBuilder(fileName);
 		if (isHardDisk()) {
 			name.append(".hdv"); //$NON-NLS-1$
+		} else if (order == ORDER_NIBBLE) {
+			name.append(".nib");
 		} else if (order == ORDER_DOS) {
 			name.append(".dsk"); //$NON-NLS-1$
 		} else {
