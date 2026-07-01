@@ -22,27 +22,34 @@ jobs:
           - label: ubuntu-latest
             os: linux
             arch: x86_64
+            musl: true
           - label: ubuntu-24.04-arm
             os: linux
             arch: aarch64
+            musl: true
           - label: windows-latest
             os: windows
             arch: x86_64
+            musl: false
           - label: macos-15-intel
             os: darwin
             arch: x86_64
+            musl: false
           - label: macos-15
             os: darwin
             arch: arm64
+            musl: false
     steps:
       - uses: actions/checkout@v4
 
       - uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '21'
+          version: 'latest'
+          java-version: '25'
           distribution: 'graalvm-community'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
+          native-image-musl: ${{ matrix.musl }}
 
       - name: Build ac/acx
         run: ./gradlew nativeCompile
