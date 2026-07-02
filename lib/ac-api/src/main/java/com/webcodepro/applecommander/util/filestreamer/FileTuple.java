@@ -66,10 +66,12 @@ public class FileTuple {
         return new FileTuple(formattedDisk, paths, directoryEntry, fileEntry);
     }
     public String fullPath() {
-        return String.join(SEPARATOR, String.join(SEPARATOR, paths), fileEntry.getFilename());
+        var allNames = new ArrayList<>(paths);
+        allNames.add(fileEntry.getFilename());
+        return String.join(SEPARATOR, allNames);
     }
     
     public static FileTuple of(FormattedDisk disk) {
-        return new FileTuple(disk, new ArrayList<String>(), (DirectoryEntry)disk, null);
+        return new FileTuple(disk, new ArrayList<>(), disk, null);
     }
 }

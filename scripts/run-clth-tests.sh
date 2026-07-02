@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIR=".bin"
+DIR="${PWD}/.bin"
 if [ ! -d ${DIR} ]
 then
   mkdir ${DIR}
@@ -20,4 +20,6 @@ then
   curl -o ${CLTH} -L ${URL}
 fi
 
-java -jar ${CLTH} app/cli-tests/src/test/resources/{ac,acx}-config.yml
+# Note that CLTH ends up in the cli-tests directory when run in IntelliJ. For now, we're adjusting to make it work in both cases.
+cd app/cli-tests
+java -jar ${CLTH} src/test/resources/{ac,acx}-config.yml

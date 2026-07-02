@@ -2,7 +2,7 @@ commands:
   acx:
     main-class: io.github.applecommander.acx.Main
     system-exit: yes
-    executable: app/cli-acx/build/native/nativeCompile/acx-*
+    executable: ../cli-acx/build/native/nativeCompile/acx-*
 
 files:
   txtfile:
@@ -126,3 +126,15 @@ tests:
         criteria:
           whitespace: trim
         stdout: $disassembly
+  - name: ticket207
+    steps:
+      # Note: Since we are not actually at the shell, the quotes around the wildcard patterns are not needed.
+      #       They are in fact problematic because we will be searching for pattern including those quotes!
+      - command: acx list -d ../../lib/ac-api/src/test/resources/disks/3132.DSK.gz --globs */*
+        criteria:
+          match: contains
+        stdout: |
+          Name: DISK VOLUME #254
+            A 057 SUPER QUEST/INTRO              
+            B 002 PACK/UNPACK                    
+          DOS 3.3 format; 1,536 bytes free; 408,064 bytes used.

@@ -2,7 +2,7 @@ commands:
   ac:
     main-class: com.webcodepro.applecommander.ui.ac
     system-exit: no
-    executable: app/cli-ac/build/native/nativeCompile/ac-*
+    executable: ../cli-ac/build/native/nativeCompile/ac-*
 
 files:
   txtfile:
