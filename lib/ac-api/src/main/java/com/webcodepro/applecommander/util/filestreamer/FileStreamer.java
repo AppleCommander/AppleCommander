@@ -139,7 +139,7 @@ public class FileStreamer {
         // Note that we don't pre-process the glob-to-regex since there is the possibility that
         // the filesystems differ (as in those mixed DOS and ProDOS 140K disks).
         String filePath = tuple.fileEntry.getFilename();
-        String fullPath = String.join("/", tuple.paths) + "/" + tuple.fileEntry.getFilename();
+        String fullPath = tuple.fullPath();
         for (String glob : this.globs) {
             String regex = GlobGenerator.globToRegex(glob, tuple.formattedDisk);
             if (filePath.matches(regex) || fullPath.matches(regex)) return true;

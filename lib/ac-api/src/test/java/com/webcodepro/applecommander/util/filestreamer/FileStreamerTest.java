@@ -58,7 +58,7 @@ public class FileStreamerTest {
             FileStreamer.forDisks("./src/test/resources/disks/MERLIN8PRO1.DSK")
                         .recursive(true)
                         .stream()
-                        .map(this::makeFullPath)
+                        .map(FileTuple::fullPath)
                         .collect(Collectors.toList());
         
         assertEquals(EXPECTED_MERLIN, actual);
@@ -70,7 +70,7 @@ public class FileStreamerTest {
             FileStreamer.forDisks("./src/test/resources/disks/MERLIN8PRO1.DSK")
                         .recursive(false)
                         .stream()
-                        .map(this::makeFullPath)
+                        .map(FileTuple::fullPath)
                         .collect(Collectors.toList());
         
         List<String> expected = EXPECTED_MERLIN.stream()
@@ -86,18 +86,9 @@ public class FileStreamerTest {
             FileStreamer.forDisks("./src/test/resources/disks/UniDOS_3.3.dsk")
                         .recursive(true)
                         .stream()
-                        .map(this::makeFullPath)
+                        .map(FileTuple::fullPath)
                         .collect(Collectors.toList());
         
         assertEquals(EXPECTED_UNIDOS, actual);
-    }
-
-
-    private String makeFullPath(FileTuple tuple) {
-        if (tuple.paths == null || tuple.paths.isEmpty()) {
-            return tuple.fileEntry.getFilename();
-        } else {
-            return String.join("/", String.join("/", tuple.paths), tuple.fileEntry.getFilename());
-        }
     }
 }
