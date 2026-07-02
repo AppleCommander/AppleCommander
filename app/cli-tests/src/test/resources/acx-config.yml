@@ -2,7 +2,7 @@ commands:
   acx:
     main-class: io.github.applecommander.acx.Main
     system-exit: yes
-    executable: app/cli-acx/build/native/nativeCompile/acx-*
+    executable: ../cli-acx/build/native/nativeCompile/acx-*
 
 files:
   txtfile:
