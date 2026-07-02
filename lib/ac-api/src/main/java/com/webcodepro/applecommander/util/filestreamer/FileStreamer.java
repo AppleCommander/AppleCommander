@@ -21,11 +21,6 @@ package com.webcodepro.applecommander.util.filestreamer;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.PathMatcher;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -33,6 +28,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.webcodepro.applecommander.storage.*;
+import com.webcodepro.applecommander.util.GlobGenerator;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 
@@ -83,7 +79,7 @@ public class FileStreamer {
     // Filters
     private Predicate<FileTuple> filters = this::deletedFileFilter;
     private boolean includeDeletedFlag = false;
-    private final List<PathMatcher> pathMatchers = new ArrayList<>();
+    private final List<String> globs = new ArrayList<>();
     
     private FileStreamer(FormattedDisk... disks) {
         this.formattedDisks = disks;
@@ -99,10 +95,7 @@ public class FileStreamer {
     }
     public FileStreamer matchGlobs(List<String> globs) {
         if (globs != null && !globs.isEmpty()) {
-            FileSystem fs = FileSystems.getDefault();
-            for (String glob : globs) {
-                pathMatchers.add(fs.getPathMatcher("glob:" + glob));
-            }
+            this.globs.addAll(globs);
             this.filters = filters.and(this::globFilter);
         }
         return this;
@@ -143,17 +136,13 @@ public class FileStreamer {
             // If we don't match directories, no files can be listed.
             return true;
         }
-        // This may cause issues, but Path is a "real" filesystem construct, so the delimiters
-        // vary by OS (likely just "/" and "\"). However, Java also erases them to some degree,
-        // so using "/" (as used in ProDOS) will likely work out.
-        // Also note that we check the single file "PARMS.S" and full path "SOURCE/PARMS.S" since
-        // the user might have entered "*.S" or something like "SOURCE/PARMS.S".
-        FileSystem fs = FileSystems.getDefault();
-        Path filePath = Paths.get(tuple.fileEntry.getFilename());
-        Path fullPath = Paths.get(String.join(fs.getSeparator(), tuple.paths), 
-                tuple.fileEntry.getFilename());
-        for (PathMatcher pathMatcher : pathMatchers) {
-            if (pathMatcher.matches(filePath) || pathMatcher.matches(fullPath)) return true;
+        // Note that we don't pre-process the glob-to-regex since there is the possibility that
+        // the filesystems differ (as in those mixed DOS and ProDOS 140K disks).
+        String filePath = tuple.fileEntry.getFilename();
+        String fullPath = String.join("/", tuple.paths) + "/" + tuple.fileEntry.getFilename();
+        for (String glob : this.globs) {
+            String regex = GlobGenerator.globToRegex(glob, tuple.formattedDisk);
+            if (filePath.matches(regex) || fullPath.matches(regex)) return true;
         }
         return false;
     }
