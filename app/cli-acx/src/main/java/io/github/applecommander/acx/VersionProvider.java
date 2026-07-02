@@ -21,7 +21,10 @@ package io.github.applecommander.acx;
 
 import com.webcodepro.applecommander.ui.AppleCommander;
 
+import com.webcodepro.shrinkit.NuFileArchive;
 import io.github.applecommander.applesingle.AppleSingle;
+import io.github.applecommander.bastools.api.BasTools;
+import org.applecommander.disassembler.api.Disassembler;
 import picocli.CommandLine.IVersionProvider;
 
 /** Display version information.  Note that this is dependent on the Spring Boot Gradle plugin configuration. */
@@ -30,7 +33,10 @@ public class VersionProvider implements IVersionProvider {
     	return new String[] { 
             String.format("acx: %s", Main.class.getPackage().getImplementationVersion()),
             String.format("AppleCommander API: %s", AppleCommander.VERSION),
-            String.format("AppleSingle API: %s", AppleSingle.VERSION)
+            String.format("AppleSingle API: %s", AppleSingle.VERSION),
+            String.format("ShrinkItArchive: %s", NuFileArchive.VERSION),
+            String.format("B/BAS Tools API: %s", BasTools.VERSION),
+            String.format("acdasm API: %s", Disassembler.class.getPackage().getImplementationVersion())
 		};
     }
 }
