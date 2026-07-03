@@ -51,6 +51,12 @@ jobs:
           native-image-job-reports: 'true'
           native-image-musl: ${{ matrix.musl }}
 
+      - name: listLibrariesMissingMetadata
+        run: ./gradlew listLibrariesMissingMetadata
+        env:
+          # Needed for Windows; not an issue for other OSes
+          GRADLE_OPTS: -Djava.io.tmpdir=${{ runner.temp }}
+
       - name: Build ac/acx
         run: ./gradlew nativeCompile
         env:
