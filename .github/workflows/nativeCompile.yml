@@ -32,10 +32,10 @@ jobs:
             arch: x86_64
             musl: false
           # Note: GraalVM 25 -drops- MacOS Intel x86_64!
-          - label: macos-15-intel
-            os: darwin
-            arch: x86_64
-            musl: false
+          #- label: macos-15-intel
+          #  os: darwin
+          #  arch: x86_64
+          #  musl: false
           - label: macos-15
             os: darwin
             arch: arm64
@@ -45,7 +45,7 @@ jobs:
 
       - uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'graalvm-community'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
