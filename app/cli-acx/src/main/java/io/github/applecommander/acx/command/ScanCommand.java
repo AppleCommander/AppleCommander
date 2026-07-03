@@ -64,6 +64,9 @@ public class ScanCommand extends ReusableCommandOptions {
             defaultValue = "false")
     private boolean progress;
 
+    @Option(names = { "--strict" }, description = "Make all blocks/sectors failures an error", defaultValue = "false")
+    private boolean strict;
+
     private BiPredicate<ImageReport, ImageReport> degradationFn = this::degradationBySuccessFlag;
     @Option(names = { "--numbers" }, description = "Compare reports by numbers instead of success flag")
     private void detectDegradationByNumbers(boolean flag) {
@@ -77,7 +80,7 @@ public class ScanCommand extends ReusableCommandOptions {
             output = new PrintStream(Files.newOutputStream(reportPath));
         }
 
-        FileVisitor visitor = new FileVisitor(output, progress);
+        FileVisitor visitor = new FileVisitor(output, progress, strict);
         if (priorReportPath != null) {
             compare(visitor);
         }
@@ -185,6 +188,7 @@ public class ScanCommand extends ReusableCommandOptions {
         showInteger("Files Read", ReportSummary::getFilesRead, data);
         showCounts("Data Types Read", ReportSummary::getDataTypesRead, data);
         showInteger("Error Count", ReportSummary::getErrorCount, data);
+        showInteger("Warning Count", ReportSummary::getWarningCount, data);
         System.out.println();
     }
     private void showString(String heading, Function<ReportSummary,String> stringFn, ReportSummary... data) {
@@ -245,12 +249,14 @@ public class ScanCommand extends ReusableCommandOptions {
 
         private int counter;
         private final PrintStream output;
+        private final boolean strict;
         private final boolean progress;
         private final ReportSummary reportSummary = new ReportSummary("Scan");
 
-        public FileVisitor(PrintStream output, boolean progress) {
+        public FileVisitor(PrintStream output, boolean progress, boolean strict) {
             this.output = output;
             this.progress = progress;
+            this.strict = strict;
         }
 
         public int getCounter() {
@@ -273,7 +279,7 @@ public class ScanCommand extends ReusableCommandOptions {
 
         public ImageReport scanFile(Path file) {
             try {
-                return new ImageReport(file);
+                return new ImageReport(file, strict);
             } catch (Throwable t) {
                 return new ImageReport(file, t);
             }
@@ -292,6 +298,7 @@ public class ScanCommand extends ReusableCommandOptions {
         int filesRead = 0;
         Map<String,Integer> dataTypesRead = new HashMap<>();
         int errorCount = 0;
+        int warningCount = 0;
 
         ReportSummary(String title) {
             this.title = title;
@@ -311,6 +318,7 @@ public class ScanCommand extends ReusableCommandOptions {
             filesRead += imageReport.filesRead;
             dataTypesRead.merge(imageReport.dataType, imageReport.dataRead, Integer::sum);
             errorCount += imageReport.errors.size();
+            warningCount += imageReport.warnings.size();
         }
 
         public String getTitle() {
@@ -346,6 +354,9 @@ public class ScanCommand extends ReusableCommandOptions {
         public int getErrorCount() {
             return errorCount;
         }
+        public int getWarningCount() {
+            return warningCount;
+        }
     }
 
     public static class ImageReport {
@@ -362,6 +373,7 @@ public class ScanCommand extends ReusableCommandOptions {
         String dataType = "unknown";
         int dataRead = 0;
         List<String> errors = new ArrayList<>();
+        List<String> warnings = new ArrayList<>();
 
         /** A failure report. */
         ImageReport(Path file, Throwable t) {
@@ -369,7 +381,7 @@ public class ScanCommand extends ReusableCommandOptions {
             this.errors.add(t.getMessage());
         }
 
-        ImageReport(Path file) {
+        ImageReport(Path file, boolean strict) {
             try {
                 imageName = file.toString();
                 Source source = Sources.create(imageName).orElseThrow();
@@ -379,14 +391,15 @@ public class ScanCommand extends ReusableCommandOptions {
                     imageType = fdisk.getFormat();
                     readAllFiles(fdisk);
                     // Read all data
+                    var list = strict ? errors : warnings;
                     switch (fdisk) {
-                        case CpmFormatDisk cpm -> readAllCPMBlocks(cpm);
-                        case DosFormatDisk dos -> readAllSectors(dos);
-                        case GutenbergFormatDisk gutenberg -> readAllSectors(gutenberg);
-                        case NakedosFormatDisk nakedos -> readAllSectors(nakedos);
-                        case PascalFormatDisk pascal -> readAllBlocks(pascal);
-                        case ProdosFormatDisk prodos -> readAllBlocks(prodos);
-                        case RdosFormatDisk rdos -> readAllRDOSBlocks(rdos);
+                        case CpmFormatDisk cpm -> readAllCPMBlocks(cpm, list);
+                        case DosFormatDisk dos -> readAllSectors(dos, list);
+                        case GutenbergFormatDisk gutenberg -> readAllSectors(gutenberg, list);
+                        case NakedosFormatDisk nakedos -> readAllSectors(nakedos, list);
+                        case PascalFormatDisk pascal -> readAllBlocks(pascal, list);
+                        case ProdosFormatDisk prodos -> readAllBlocks(prodos, list);
+                        case RdosFormatDisk rdos -> readAllRDOSBlocks(rdos, list);
                         default -> throw new RuntimeException("Unexpected disk type: " + fdisk.getFormat());
                     }
                 }
@@ -431,7 +444,7 @@ public class ScanCommand extends ReusableCommandOptions {
             }
         }
 
-        private void readAllCPMBlocks(CpmFormatDisk cpm) {
+        private void readAllCPMBlocks(CpmFormatDisk cpm, List<String> list) {
             dataType = "CPM blocks";
             // Note that the "raw" device can read the entire CP/M disk and that the CP/M filesystem handles the
             // "logical" block 0 starting on track 3.
@@ -441,48 +454,48 @@ public class ScanCommand extends ReusableCommandOptions {
                     device.readBlock(b);
                     dataRead++;
                 } catch (Throwable t) {
-                    errors.add(String.format("Unable to read CPM block #%d for disk #%d", b, cpm.getLogicalDiskNumber()));
+                    list.add(String.format("Unable to read CPM block #%d for disk #%d", b, cpm.getLogicalDiskNumber()));
                 }
             }
         }
 
-        private void readAllBlocks(FormattedDisk fdisk) {
+        private void readAllBlocks(FormattedDisk fdisk, List<String> list) {
             BlockDevice device = BlockDeviceAdapter.from(fdisk);
             dataType = "blocks";
-            for (int b = 0; b < fdisk.getBitmapLength() && errors.size() < MAX_ERRORS; b++) {
+            for (int b = 0; b < fdisk.getBitmapLength() && list.size() < MAX_ERRORS; b++) {
                 try {
                     device.readBlock(b);
                     dataRead++;
                 } catch (Throwable t) {
-                    errors.add(String.format("Unable to read block #%d for disk #%d", b, fdisk.getLogicalDiskNumber()));
+                    list.add(String.format("Unable to read block #%d for disk #%d", b, fdisk.getLogicalDiskNumber()));
                 }
             }
         }
 
-        private void readAllRDOSBlocks(RdosFormatDisk rdos) {
+        private void readAllRDOSBlocks(RdosFormatDisk rdos, List<String> list) {
             dataType = "RDOS blocks";
             BlockDevice device = rdos.get(BlockDevice.class).orElseThrow();
-            for (int b = 0; b < rdos.getBitmapLength() && errors.size() < MAX_ERRORS; b++) {
+            for (int b = 0; b < rdos.getBitmapLength() && list.size() < MAX_ERRORS; b++) {
                 try {
                     device.readBlock(b);
                     dataRead++;
                 } catch (Throwable t) {
-                    errors.add(String.format("Unable to read RDOS block #%d for disk #%d", b, rdos.getLogicalDiskNumber()));
+                    list.add(String.format("Unable to read RDOS block #%d for disk #%d", b, rdos.getLogicalDiskNumber()));
                 }
             }
         }
 
-        private void readAllSectors(FormattedDisk fdisk) {
+        private void readAllSectors(FormattedDisk fdisk, List<String> list) {
             TrackSectorDevice device = TrackSectorDeviceAdapter.from(fdisk);
             dataType = "sectors";
             int[] dims = fdisk.getBitmapDimensions();
-            for (int track = 0; track < dims[0] && errors.size() < MAX_ERRORS; track++) {
-                for (int sector = 0; sector < dims[1] && errors.size() < MAX_ERRORS; sector++) {
+            for (int track = 0; track < dims[0] && list.size() < MAX_ERRORS; track++) {
+                for (int sector = 0; sector < dims[1] && list.size() < MAX_ERRORS; sector++) {
                     try {
                         device.readSector(track, sector);
                         dataRead++;
                     } catch (Throwable t) {
-                        errors.add(String.format("Unable to read sector T%d,S%s for disk #%d",
+                        list.add(String.format("Unable to read sector T%d,S%s for disk #%d",
                                 track, sector, fdisk.getLogicalDiskNumber()));
                     }
                 }
