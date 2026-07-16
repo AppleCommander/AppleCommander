@@ -105,6 +105,7 @@ public class ScanCommand extends ReusableCommandOptions {
             int improvementCount = 0;
             while (parser.hasNext()) {
                 ImageReport oldImageReport = gson.fromJson(parser.next(), ImageReport.class);
+                oldImageReport.fixup();
                 ImageReport newImageReport = visitor.scanFile(Path.of(oldImageReport.imageName));
                 oldData.tallyData(oldImageReport);
                 newData.tallyData(newImageReport);
@@ -411,6 +412,12 @@ public class ScanCommand extends ReusableCommandOptions {
                 if (msg == null) msg = t.getClass().getName();
                 errors.add(msg);
             }
+        }
+
+        void fixup() {
+            // Gson doesn't seem to have the ability to create an empty list for a non-existent field, so we do it ourselves!
+            if (errors == null) errors = new ArrayList<>();
+            if (warnings == null) warnings = new ArrayList<>();
         }
 
         /** Read all files, capturing errors. */
