@@ -1366,6 +1366,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 */
 	public DirectoryEntry createDirectory(ProdosCommonDirectoryHeader directory, String name) throws DiskFullException {
 		int blockNumber = directory.getFileEntryBlock();
+		int headerBlock = blockNumber;
 		while (blockNumber != 0) {
 			byte[] block = readBlock(blockNumber);
 			int entryNum = 1; // Beneath ProDOS says this starts at zero, but subsequent correction says it starts at 1.
@@ -1388,7 +1389,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 					subdirEntry.setFilename(name);
 					newHeader.setHousekeeping();
 					newHeader.setCreationDate(new Date());
-					newHeader.setParentPointer(blockNumber);
+					newHeader.setParentPointer(blockNumber);	// Header points to physical block with directory entry
 					newHeader.setParentEntry(entryNum);
 					newHeader.setParentEntryLength(ProdosCommonEntry.ENTRY_LENGTH);
 					// Now, add an entry for this subdirectory 
@@ -1406,7 +1407,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 					fileEntry.setCanRename(true);
 					fileEntry.setCanWrite(true);
 					fileEntry.setSubdirectory();
-					fileEntry.setHeaderPointer(blockNumber);
+					fileEntry.setHeaderPointer(headerBlock);	// Header points to start of directory
 					fileEntry.setFilename(name);
 					fileEntry.setFiletype(0x0f); // Filetype = subdirectory
 					directory.incrementFileCount();

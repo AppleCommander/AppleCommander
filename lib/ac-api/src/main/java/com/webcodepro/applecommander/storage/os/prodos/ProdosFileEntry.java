@@ -459,6 +459,8 @@ public class ProdosFileEntry extends ProdosCommonEntry implements FileEntry {
 				list.add(isSaplingFile() ? textBundle.get("ProdosFileEntry.Sapling") :  //$NON-NLS-1$
 					isSeedlingFile() ? textBundle.get("ProdosFileEntry.Seedling") :  //$NON-NLS-1$
 					isTreeFile() ? textBundle.get("ProdosFileEntry.Tree") :  //$NON-NLS-1$
+					isSubdirectory() ? textBundle.get("ProdosFileEntry.Subdirectory") :
+					isDeleted() ? textBundle.get("ProdosFileEntry.Deleted") :
 					textBundle.format("ProdosFileEntry.UnknownFileType", getFileTypeString())); //$NON-NLS-1$
 				list.add(hasChanged() ? 
 					textBundle.get("ProdosFileEntry.Changed") : "");  //$NON-NLS-1$//$NON-NLS-2$
