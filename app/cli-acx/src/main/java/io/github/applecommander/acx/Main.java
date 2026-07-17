@@ -39,6 +39,7 @@ import java.util.logging.Logger;
     optionListHeading = "%nOptions:%n",
     description = "'acx' experimental utility", 
     subcommands = {
+            CheckCommand.class,
             CompareCommand.class,
             ConvertCommand.class,
             CopyFileCommand.class,
