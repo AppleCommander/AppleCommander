@@ -56,12 +56,12 @@ jobs:
         run: ./scripts/run-clth-tests.sh
 
       - name: Upload binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ac-${{ matrix.os }}-${{ matrix.arch }}
           path: app/cli-ac/build/native/nativeCompile/ac-*
       - name: Upload binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: acx-${{ matrix.os }}-${{ matrix.arch }}
           path: app/cli-acx/build/native/nativeCompile/acx-*
