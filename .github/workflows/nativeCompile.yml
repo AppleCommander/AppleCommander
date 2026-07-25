@@ -44,6 +44,12 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
 
+      - name: Install Native Image prerequisites (Linux)
+        if: matrix.os == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libz-dev zlib1g-dev
+
       - name: Build ac/acx
         run: ./gradlew nativeCompile
         env:
