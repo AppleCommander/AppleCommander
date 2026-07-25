@@ -34,12 +34,14 @@ jobs:
           - label: macos-15
             os: darwin
             arch: arm64
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v7
 
       - uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'graalvm-community'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
