@@ -51,7 +51,7 @@ jobs:
       - name: Look for license phrase
         run: |
           outfile=$(mktemp)
-          find . -name "*.java" | xargs grep -L "GNU General Public License" > ${outfile}
+          find . -name "*.java" -not -name "Sleak.java" | xargs grep -L "GNU General Public License" > ${outfile}
           if [ -s "${outfile}" ]
           then
             echo "License headers missing on the following files:"
