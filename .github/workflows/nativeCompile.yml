@@ -56,7 +56,7 @@ jobs:
         run: ./gradlew nativeCompile
         env:
           # Needed for Windows; not an issue for other OSes
-          GRADLE_OPTS: "-Xmx8g -Djava.io.tmpdir=${{ runner.temp }}"
+          GRADLE_OPTS: "-Djava.io.tmpdir=${{ runner.temp }}"
 
       - name: Run CLTH tests
         if: ${{ matrix.os != 'windows' }}
