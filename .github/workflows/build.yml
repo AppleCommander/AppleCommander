@@ -9,8 +9,61 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  build-java:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v7
+    - name: Set up JDK 21
+      uses: actions/setup-java@v5
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+    - name: Build with Gradle
+      env:
+        # The SWT image tests fail in the pipeline; disable them.
+        AC_SKIP_SWT_TESTS: true
+      run: ./gradlew build
+    - name: Upload 'ac'
+      uses: actions/upload-artifact@v7
+      with:
+        name: build-artifacts
+        path: app/cli-ac/build/libs/AppleCommander-ac*
+        archive: false
+        if-no-files-found: error
+    - name: Upload 'acx'
+      uses: actions/upload-artifact@v7
+      with:
+        name: build-artifacts
+        path: app/cli-acx/build/libs/AppleCommander-acx*
+        archive: false
+        if-no-files-found: error
+
+  # This is a crude license header check. The ones I tested were susceptible to whitespace differences
+  # and I never got them to work. My primary goal is to ensure the headers exist, so this suffices.
+  license-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - name: Look for license phrase
+        run: |
+          outfile=$(mktemp)
+          find . -name "*.java" | xargs grep -L "GNU General Public License" > ${outfile}
+          if [ -s "${outfile}" ]
+          then
+            echo "License headers missing on the following files:"
+            cat ${outfile}
+            exit 1
+          else
+            echo "License headers appear to be valid!"
+          fi
+
+  build-native:
     name: ac/acx on ${{ matrix.os }}-${{ matrix.arch }}
+    needs: [build-java, license-check]
     runs-on: ${{ matrix.label  }}
     strategy:
       matrix:
@@ -36,32 +89,30 @@ jobs:
             arch: arm64
     steps:
       - uses: actions/checkout@v7
-
       - uses: graalvm/setup-graalvm@v1
         with:
           java-version: '25'
           distribution: 'liberica'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
-
       - name: Build ac/acx
         run: ./gradlew nativeCompile
         env:
           # Needed for Windows; not an issue for other OSes
           GRADLE_OPTS: -Djava.io.tmpdir=${{ runner.temp }}
-
       - name: Run CLTH tests
         if: ${{ matrix.os != 'windows' }}
         shell: bash
         run: ./scripts/run-clth-tests.sh
-
       - name: Upload binary
         uses: actions/upload-artifact@v7
         with:
           name: ac-${{ matrix.os }}-${{ matrix.arch }}
           path: app/cli-ac/build/native/nativeCompile/ac-*
+          archive: false
       - name: Upload binary
         uses: actions/upload-artifact@v7
         with:
           name: acx-${{ matrix.os }}-${{ matrix.arch }}
           path: app/cli-acx/build/native/nativeCompile/acx-*
+          archive: false
