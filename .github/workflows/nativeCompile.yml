@@ -28,21 +28,20 @@ jobs:
           - label: windows-latest
             os: windows
             arch: x86_64
-          # - label: macos-15-intel
-          #   os: darwin
-          #   arch: x86_64
+          - label: macos-15-intel
+            os: darwin
+            arch: x86_64
           - label: macos-15
             os: darwin
             arch: arm64
-    # permissions:
-    #   contents: write
     steps:
       - uses: actions/checkout@v7
 
       - uses: graalvm/setup-graalvm@v1
         with:
           java-version: '25'
-          distribution: 'graalvm-community'
+          #distribution: 'graalvm-community'
+          distribution: 'liberica'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
 
