@@ -40,7 +40,6 @@ jobs:
       - uses: graalvm/setup-graalvm@v1
         with:
           java-version: '25'
-          #distribution: 'graalvm-community'
           distribution: 'liberica'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
