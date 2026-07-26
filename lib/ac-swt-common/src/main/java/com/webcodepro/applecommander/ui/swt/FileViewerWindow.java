@@ -19,11 +19,15 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
+import com.webcodepro.applecommander.storage.FileEntry;
+import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.filters.*;
+import com.webcodepro.applecommander.ui.UiBundle;
+import com.webcodepro.applecommander.ui.swt.filteradapter.*;
+import com.webcodepro.applecommander.ui.swt.util.ImageManager;
+import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
+import com.webcodepro.applecommander.ui.swt.util.contentadapter.ContentTypeAdapter;
+import com.webcodepro.applecommander.util.TextBundle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.DisposeEvent;
@@ -36,22 +40,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FileFilter;
-import com.webcodepro.applecommander.ui.UiBundle;
-import com.webcodepro.applecommander.ui.swt.filteradapter.ApplesoftFilterAdapter;
-import com.webcodepro.applecommander.ui.swt.filteradapter.BusinessBASICFilterAdapter;
-import com.webcodepro.applecommander.ui.swt.filteradapter.DisassemblyFilterAdapter;
-import com.webcodepro.applecommander.ui.swt.filteradapter.FilterAdapter;
-import com.webcodepro.applecommander.ui.swt.filteradapter.GraphicsFilterAdapter;
-import com.webcodepro.applecommander.ui.swt.filteradapter.HexFilterAdapter;
-import com.webcodepro.applecommander.ui.swt.filteradapter.RawDumpFilterAdapter;
-import com.webcodepro.applecommander.ui.swt.filteradapter.ShapeTableFilterAdapter;
-import com.webcodepro.applecommander.ui.swt.filteradapter.TextFilterAdapter;
-import com.webcodepro.applecommander.ui.swt.util.ImageManager;
-import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
-import com.webcodepro.applecommander.ui.swt.util.contentadapter.ContentTypeAdapter;
-import com.webcodepro.applecommander.util.TextBundle;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * View a particular files content.

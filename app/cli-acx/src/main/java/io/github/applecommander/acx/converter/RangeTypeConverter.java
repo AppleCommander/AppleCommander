@@ -21,7 +21,7 @@ package io.github.applecommander.acx.converter;
 
 import com.webcodepro.applecommander.util.Range;
 
-import static picocli.CommandLine.*;
+import static picocli.CommandLine.ITypeConverter;
 
 public class RangeTypeConverter implements ITypeConverter<Range> {
     private static final IntegerTypeConverter helper = new IntegerTypeConverter();

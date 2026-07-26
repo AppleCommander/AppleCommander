@@ -19,10 +19,6 @@
  */
 package io.github.applecommander.acx.converter;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-
 import com.webcodepro.applecommander.storage.DiskFactory;
 import com.webcodepro.applecommander.storage.Disks;
 import com.webcodepro.applecommander.storage.FormattedDisk;
@@ -30,6 +26,10 @@ import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.TypeConversionException;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
 public class DiskConverter implements ITypeConverter<List<FormattedDisk>> {
     @Override

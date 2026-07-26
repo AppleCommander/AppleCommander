@@ -19,10 +19,10 @@
  */
 package com.webcodepro.applecommander.storage.os.prodos;
 
-import java.util.Date;
-
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.util.AppleUtil;
+
+import java.util.Date;
 
 /**
  * Represents the common Prodos entry behavior.

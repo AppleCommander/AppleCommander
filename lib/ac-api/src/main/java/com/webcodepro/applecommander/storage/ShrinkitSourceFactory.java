@@ -29,8 +29,8 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
+import static com.webcodepro.applecommander.util.ShrinkItUtilities.unpackSHKFile;
 import static com.webcodepro.shrinkit.io.ByteConstants.*;
-import static com.webcodepro.applecommander.util.ShrinkItUtilities.*;
 
 public class ShrinkitSourceFactory implements Source.Factory {
     @Override

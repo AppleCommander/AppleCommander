@@ -19,15 +19,14 @@
  */
 package io.github.applecommander.acx.command;
 
-import java.util.logging.Logger;
-
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
-
 import io.github.applecommander.acx.base.ReadWriteDiskCommandOptions;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
+
+import java.util.logging.Logger;
 
 @Command(name = "rename-disk", description = "Rename volume of a disk image.")
 public class RenameDiskCommand extends ReadWriteDiskCommandOptions {

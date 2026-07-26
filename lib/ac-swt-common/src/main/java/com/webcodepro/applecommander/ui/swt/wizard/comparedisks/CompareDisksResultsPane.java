@@ -19,12 +19,14 @@
  */
 package com.webcodepro.applecommander.ui.swt.wizard.comparedisks;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.webcodepro.applecommander.storage.DiskFactory;
 import com.webcodepro.applecommander.storage.Disks;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.compare.ComparisonResult;
+import com.webcodepro.applecommander.storage.compare.DiskDiff;
+import com.webcodepro.applecommander.ui.UiBundle;
+import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
+import com.webcodepro.applecommander.util.TextBundle;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 import org.eclipse.swt.SWT;
@@ -32,11 +34,8 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import com.webcodepro.applecommander.storage.compare.ComparisonResult;
-import com.webcodepro.applecommander.storage.compare.DiskDiff;
-import com.webcodepro.applecommander.ui.UiBundle;
-import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
-import com.webcodepro.applecommander.util.TextBundle;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Shows the result of the disk image comparison.

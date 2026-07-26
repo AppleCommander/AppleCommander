@@ -20,13 +20,12 @@
 package com.webcodepro.applecommander.ui.swt;
 
 import com.webcodepro.applecommander.storage.filters.imagehandlers.AppleImage;
-
-import java.io.OutputStream;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
+
+import java.io.OutputStream;
 
 /**
  * SwtImage is a specific implementation of AppleImage that handles all

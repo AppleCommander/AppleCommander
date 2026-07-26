@@ -19,6 +19,11 @@
  */
 package com.webcodepro.applecommander.util.filestreamer;
 
+import com.webcodepro.applecommander.storage.*;
+import com.webcodepro.applecommander.util.GlobGenerator;
+import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -26,11 +31,6 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import com.webcodepro.applecommander.storage.*;
-import com.webcodepro.applecommander.util.GlobGenerator;
-import org.applecommander.source.Source;
-import org.applecommander.source.Sources;
 
 /**
  * FileStreamer is utility class that will (optionally) recurse through all directories and

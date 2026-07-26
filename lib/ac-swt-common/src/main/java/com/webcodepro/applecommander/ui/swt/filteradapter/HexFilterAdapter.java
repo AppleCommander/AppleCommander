@@ -19,10 +19,9 @@
  */
 package com.webcodepro.applecommander.ui.swt.filteradapter;
 
-import org.eclipse.swt.graphics.Image;
-
 import com.webcodepro.applecommander.storage.filters.HexDumpFileFilter;
 import com.webcodepro.applecommander.ui.swt.FileViewerWindow;
+import org.eclipse.swt.graphics.Image;
 
 /**
  * Provides a view of a hex dump of the program as seen when loaded from the disk.

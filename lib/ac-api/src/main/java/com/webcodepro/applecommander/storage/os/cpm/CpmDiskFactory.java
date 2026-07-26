@@ -20,7 +20,9 @@
 package com.webcodepro.applecommander.storage.os.cpm;
 
 import com.webcodepro.applecommander.storage.DiskFactory;
-import org.applecommander.device.*;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.SkewedTrackSectorDevice;
+import org.applecommander.device.TrackSectorToBlockAdapter;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 

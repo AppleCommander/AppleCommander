@@ -19,20 +19,19 @@
  */
 package io.github.applecommander.acx.command;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.compare.ComparisonResult;
 import com.webcodepro.applecommander.storage.compare.DiskDiff;
-
 import io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions;
 import io.github.applecommander.acx.converter.DiskConverter;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 @Command(name = "compare", description = "Compare two disk images.")
 public class CompareCommand extends ReadOnlyDiskImageCommandOptions {

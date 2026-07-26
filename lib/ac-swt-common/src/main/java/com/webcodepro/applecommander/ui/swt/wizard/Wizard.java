@@ -19,9 +19,11 @@
  */
 package com.webcodepro.applecommander.ui.swt.wizard;
 
-import java.util.Stack;
-
+import com.webcodepro.applecommander.ui.UiBundle;
+import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
+import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 import com.webcodepro.applecommander.util.Host;
+import com.webcodepro.applecommander.util.TextBundle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -34,10 +36,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-import com.webcodepro.applecommander.ui.UiBundle;
-import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
-import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
-import com.webcodepro.applecommander.util.TextBundle;
+import java.util.Stack;
 
 /**
  * A framework for displaying a wizard-like user interface.

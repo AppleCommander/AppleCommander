@@ -19,6 +19,25 @@
  */
 package io.github.applecommander.acx.command;
 
+import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.Range;
+import io.github.applecommander.acx.base.ReadOnlyDiskContextCommandOptions;
+import io.github.applecommander.acx.converter.IntegerTypeConverter;
+import io.github.applecommander.acx.converter.RangeTypeConverter;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.device.nibble.NibbleTrackReaderWriter;
+import org.applecommander.disassembler.api.Disassembler;
+import org.applecommander.disassembler.api.Instruction;
+import org.applecommander.disassembler.api.InstructionSet;
+import org.applecommander.disassembler.api.mos6502.InstructionSet6502;
+import org.applecommander.disassembler.api.sweet16.InstructionSetSWEET16;
+import org.applecommander.disassembler.api.switching6502.InstructionSet6502Switching;
+import picocli.CommandLine.ArgGroup;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Mixin;
+import picocli.CommandLine.Option;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -26,26 +45,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-
-import com.webcodepro.applecommander.util.AppleUtil;
-
-import com.webcodepro.applecommander.util.Range;
-import io.github.applecommander.acx.base.ReadOnlyDiskContextCommandOptions;
-import io.github.applecommander.acx.converter.IntegerTypeConverter;
-import io.github.applecommander.acx.converter.RangeTypeConverter;
-import org.applecommander.disassembler.api.Disassembler;
-import org.applecommander.disassembler.api.Instruction;
-import org.applecommander.disassembler.api.InstructionSet;
-import org.applecommander.disassembler.api.mos6502.InstructionSet6502;
-import org.applecommander.disassembler.api.sweet16.InstructionSetSWEET16;
-import org.applecommander.disassembler.api.switching6502.InstructionSet6502Switching;
-import org.applecommander.device.BlockDevice;
-import org.applecommander.device.nibble.NibbleTrackReaderWriter;
-import org.applecommander.device.TrackSectorDevice;
-import picocli.CommandLine.ArgGroup;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Mixin;
-import picocli.CommandLine.Option;
 
 @Command(name = "dump", description = "Dump a block or sector.", sortOptions = false)
 public class DumpCommand extends ReadOnlyDiskContextCommandOptions {

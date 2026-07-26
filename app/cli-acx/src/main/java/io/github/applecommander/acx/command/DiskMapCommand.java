@@ -19,13 +19,12 @@
  */
 package io.github.applecommander.acx.command;
 
-import java.util.function.Function;
-
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
-
 import io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions;
 import picocli.CommandLine.Command;
+
+import java.util.function.Function;
 
 @Command(name = "diskmap", description = "Show disk usage map.",
          aliases = { "map" })

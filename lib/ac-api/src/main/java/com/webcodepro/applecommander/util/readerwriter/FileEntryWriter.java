@@ -19,12 +19,12 @@
  */
 package com.webcodepro.applecommander.util.readerwriter;
 
-import java.util.Date;
-
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.os.dos33.DosFileEntry;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFileEntry;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
+
+import java.util.Date;
 
 public interface FileEntryWriter {
     //  FileEntry common

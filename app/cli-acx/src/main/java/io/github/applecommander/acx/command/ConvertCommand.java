@@ -19,8 +19,6 @@
  */
 package io.github.applecommander.acx.command;
 
-import java.io.File;
-
 import com.webcodepro.applecommander.storage.DiskFactory;
 import com.webcodepro.applecommander.storage.Disks;
 import com.webcodepro.applecommander.storage.FormattedDisk;
@@ -30,6 +28,8 @@ import org.applecommander.source.Sources;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+
+import java.io.File;
 
 @Command(name = "convert", description = 
             "Uncompress a ShrinkIt or Binary II file; "

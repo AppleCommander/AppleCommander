@@ -19,8 +19,8 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.*;
+import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk.FileColumnHeader;
 import com.webcodepro.applecommander.storage.filters.*;
 import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
@@ -69,8 +69,8 @@ import org.eclipse.swt.widgets.*;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * Build the Disk File tab for the Disk Window.

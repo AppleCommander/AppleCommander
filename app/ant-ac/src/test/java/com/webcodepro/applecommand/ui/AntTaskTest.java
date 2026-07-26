@@ -21,7 +21,8 @@ package com.webcodepro.applecommand.ui;
 
 import com.webcodepro.applecommander.ui.AntTask;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 /**
  * This unit test is used to "mock" Ant itself. Current IDE does not allow debugging, and

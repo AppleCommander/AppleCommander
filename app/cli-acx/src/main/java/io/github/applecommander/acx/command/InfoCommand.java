@@ -19,13 +19,8 @@
  */
 package io.github.applecommander.acx.command;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.logging.Logger;
-
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskInformation;
-
 import io.github.applecommander.acx.base.ReadOnlyDiskContextCommandOptions;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.device.TrackSectorNibbleDevice;
@@ -33,6 +28,10 @@ import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
 import org.applecommander.util.Information;
 import picocli.CommandLine.Command;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.logging.Logger;
 
 @Command(name = "info", description = "Show information on a disk image(s).",
         aliases = "i")

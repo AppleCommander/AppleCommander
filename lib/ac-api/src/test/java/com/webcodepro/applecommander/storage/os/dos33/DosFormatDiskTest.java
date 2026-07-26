@@ -19,14 +19,13 @@
  */
 package com.webcodepro.applecommander.storage.os.dos33;
 
+import com.webcodepro.applecommander.storage.DiskConstants;
 import org.applecommander.device.DosOrderedTrackSectorDevice;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.hint.Hint;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.junit.jupiter.api.Test;
-
-import com.webcodepro.applecommander.storage.DiskConstants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

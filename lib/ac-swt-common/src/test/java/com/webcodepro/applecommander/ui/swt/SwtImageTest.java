@@ -19,12 +19,12 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import java.io.File;
-import java.io.FileOutputStream;
-
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.io.File;
+import java.io.FileOutputStream;
 
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;

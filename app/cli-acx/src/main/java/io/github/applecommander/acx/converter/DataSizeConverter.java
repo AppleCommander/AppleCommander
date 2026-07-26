@@ -19,11 +19,11 @@
  */
 package io.github.applecommander.acx.converter;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.TypeConversionException;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DataSizeConverter implements ITypeConverter<Integer> {
 	public static final int KB = 1024;

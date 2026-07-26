@@ -19,14 +19,10 @@
  */
 package com.webcodepro.applecommander.storage.compare;
 
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
-
-import com.webcodepro.applecommander.storage.*;
+import com.webcodepro.applecommander.storage.BlockDeviceAdapter;
+import com.webcodepro.applecommander.storage.DiskGeometry;
+import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.TrackSectorDeviceAdapter;
 import com.webcodepro.applecommander.util.Range;
 import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
@@ -35,6 +31,13 @@ import com.webcodepro.applecommander.util.readerwriter.FileEntryReader;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.util.DataBuffer;
+
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 /**
  * Perform a disk comparison based on selected strategy.

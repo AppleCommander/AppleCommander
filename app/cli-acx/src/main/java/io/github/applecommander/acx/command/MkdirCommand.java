@@ -19,16 +19,15 @@
  */
 package io.github.applecommander.acx.command;
 
-import java.util.Optional;
-
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
-
 import io.github.applecommander.acx.base.ReadWriteDiskCommandOptions;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+
+import java.util.Optional;
 
 @Command(name = "mkdir", description = "Create a directory on disk.",
          aliases = { "md" })

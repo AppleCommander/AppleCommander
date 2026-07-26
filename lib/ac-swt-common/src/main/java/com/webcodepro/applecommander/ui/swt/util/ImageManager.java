@@ -19,12 +19,12 @@
  */
 package com.webcodepro.applecommander.ui.swt.util;
 
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
+
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
 
 /**
  * Manage image for the SWT-base AppleCommander.

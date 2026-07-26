@@ -20,9 +20,10 @@
 package org.applecommander.device.nibble;
 
 import org.applecommander.util.DataBuffer;
-import static org.applecommander.device.nibble.NibbleUtil.*;
 
 import java.util.*;
+
+import static org.applecommander.device.nibble.NibbleUtil.decodeOddEven;
 
 /**
  * Scan a nibble disk and try to identify the formatting. Note that this is really only good for

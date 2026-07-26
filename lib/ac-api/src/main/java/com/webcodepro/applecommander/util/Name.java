@@ -21,12 +21,12 @@
  */
 package com.webcodepro.applecommander.util;
 
-import java.util.List;
-
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.ui.UiBundle;
+
+import java.util.List;
 
 public class Name {
     private static final TextBundle textBundle = UiBundle.getInstance();

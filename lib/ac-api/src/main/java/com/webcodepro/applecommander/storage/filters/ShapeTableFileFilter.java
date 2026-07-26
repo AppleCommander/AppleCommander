@@ -19,15 +19,14 @@
  */
 package com.webcodepro.applecommander.storage.filters;
 
+import com.webcodepro.applecommander.storage.FileEntry;
+import com.webcodepro.applecommander.storage.FileFilter;
+import org.applecommander.bastools.api.shapes.ShapeExporter;
+import org.applecommander.bastools.api.shapes.ShapeTable;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FileFilter;
-
-import org.applecommander.bastools.api.shapes.ShapeExporter;
-import org.applecommander.bastools.api.shapes.ShapeTable;
 
 public class ShapeTableFileFilter implements FileFilter {
     @Override

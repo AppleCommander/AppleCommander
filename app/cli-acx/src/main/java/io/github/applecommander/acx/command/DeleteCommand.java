@@ -19,16 +19,15 @@
  */
 package io.github.applecommander.acx.command;
 
-import java.util.logging.Logger;
-import java.util.Arrays;
-import java.util.List;
-
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
-
 import io.github.applecommander.acx.base.ReadWriteDiskCommandWithGlobOptions;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Logger;
 
 @Command(name = "delete", description = "Delete file(s) from a disk image.",
         aliases = { "del", "rm" })

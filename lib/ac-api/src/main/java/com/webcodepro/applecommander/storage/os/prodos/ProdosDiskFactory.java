@@ -23,7 +23,8 @@ import com.webcodepro.applecommander.storage.DiskFactory;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
-import static com.webcodepro.applecommander.storage.DiskConstants.*;
+
+import static com.webcodepro.applecommander.storage.DiskConstants.BLOCK_SIZE;
 
 public class ProdosDiskFactory implements DiskFactory {
     @Override

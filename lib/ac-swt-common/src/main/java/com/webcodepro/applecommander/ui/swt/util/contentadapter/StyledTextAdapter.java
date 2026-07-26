@@ -19,12 +19,11 @@
  */
 package com.webcodepro.applecommander.ui.swt.util.contentadapter;
 
+import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.StyledTextPrintOptions;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.printing.Printer;
-
-import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 
 /**
  * Content-specific adapter for StyledText.

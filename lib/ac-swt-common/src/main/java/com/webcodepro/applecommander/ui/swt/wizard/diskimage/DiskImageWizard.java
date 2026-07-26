@@ -19,17 +19,6 @@
  */
 package com.webcodepro.applecommander.ui.swt.wizard.diskimage;
 
-import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
-import org.applecommander.device.*;
-import org.applecommander.device.nibble.NibbleTrackReaderWriter;
-import org.applecommander.hint.Hint;
-import org.applecommander.image.NibbleImage;
-import org.applecommander.os.dos.OzdosAdapterStrategy;
-import org.applecommander.os.dos.UnidosAdapterStrategy;
-import org.applecommander.source.DataBufferSource;
-import org.applecommander.source.Source;
-import org.eclipse.swt.widgets.Shell;
-
 import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
@@ -39,8 +28,18 @@ import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
+import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 import com.webcodepro.applecommander.ui.swt.wizard.Wizard;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
+import org.applecommander.device.*;
+import org.applecommander.device.nibble.NibbleTrackReaderWriter;
+import org.applecommander.hint.Hint;
+import org.applecommander.image.NibbleImage;
+import org.applecommander.os.dos.OzdosAdapterStrategy;
+import org.applecommander.os.dos.UnidosAdapterStrategy;
+import org.applecommander.source.DataBufferSource;
+import org.applecommander.source.Source;
+import org.eclipse.swt.widgets.Shell;
 
 /**
  * Disk Image Wizard.

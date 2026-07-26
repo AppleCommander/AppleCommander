@@ -19,11 +19,11 @@
  */
 package com.webcodepro.applecommander.util.readerwriter;
 
-import java.util.Date;
-import java.util.Optional;
-
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
+
+import java.util.Date;
+import java.util.Optional;
 
 public class ProdosFileEntryReaderWriter implements FileEntryReader, FileEntryWriter {
     private final ProdosFileEntry fileEntry;

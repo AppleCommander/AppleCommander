@@ -26,9 +26,14 @@ import org.applecommander.hint.Hint;
 import org.applecommander.os.dos.OzdosAdapterStrategy;
 import org.applecommander.os.dos.UnidosAdapterStrategy;
 import org.applecommander.util.DataBuffer;
-import static com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk.CATALOG_TRACK;
+import static com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk.VTOC_SECTOR;
 
 public class DosDiskFactory implements DiskFactory {
     @Override

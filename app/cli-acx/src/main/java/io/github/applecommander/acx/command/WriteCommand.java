@@ -19,17 +19,17 @@
  */
 package io.github.applecommander.acx.command;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.function.Supplier;
-
 import io.github.applecommander.acx.arggroup.CoordinateSelection;
 import io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.function.Supplier;
 
 @Command(name = "write", description = "Write a block or sector.")
 public class WriteCommand extends ReadOnlyDiskImageCommandOptions {

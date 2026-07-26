@@ -19,14 +19,8 @@
  */
 package com.webcodepro.applecommander.storage.filters;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
-
 import com.webcodepro.applecommander.storage.os.cpm.CpmFileEntry;
 import com.webcodepro.applecommander.storage.os.nakedos.NakedosFileEntry;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFileEntry;
@@ -36,6 +30,11 @@ import org.applecommander.disassembler.api.Instruction;
 import org.applecommander.disassembler.api.InstructionSet;
 import org.applecommander.disassembler.api.mos6502.InstructionSet6502;
 import org.applecommander.disassembler.api.z80.InstructionSetZ80;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Disassemble the given set of bytes.
