@@ -26,12 +26,12 @@ import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 import com.webcodepro.applecommander.ui.swt.wizard.Wizard;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 import com.webcodepro.applecommander.util.ApplesoftTokenizer;
-import io.github.applecommander.bastools.api.Configuration;
-import io.github.applecommander.bastools.api.Parser;
-import io.github.applecommander.bastools.api.TokenReader;
-import io.github.applecommander.bastools.api.Visitors;
-import io.github.applecommander.bastools.api.model.Program;
-import io.github.applecommander.bastools.api.model.Token;
+import org.applecommander.bastools.api.Configuration;
+import org.applecommander.bastools.api.Parser;
+import org.applecommander.bastools.api.ClassicTokenReader;
+import org.applecommander.bastools.api.Visitors;
+import org.applecommander.bastools.api.model.Program;
+import org.applecommander.bastools.api.model.Token;
 import org.eclipse.swt.widgets.Shell;
 
 import java.io.File;
@@ -94,7 +94,7 @@ public class ImportWizard extends Wizard {
 					// 2. Make an attempt at tokenizing the file (assuming it's text).
 					File file = new File(importSpecification.getSourceFilename());
 					Configuration config = Configuration.builder().sourceFile(file).build();
-					Queue<Token> tokens = TokenReader.tokenize(config.sourceFile);
+					Queue<Token> tokens = ClassicTokenReader.tokenize(config.sourceFile);
 					Parser parser = new Parser(tokens);
 					Program program = parser.parse();
 					byte[] data = Visitors.byteVisitor(config).dump(program);

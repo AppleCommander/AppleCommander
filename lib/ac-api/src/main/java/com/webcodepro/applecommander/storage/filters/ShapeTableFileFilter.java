@@ -26,8 +26,8 @@ import java.io.UncheckedIOException;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 
-import io.github.applecommander.bastools.api.shapes.ShapeExporter;
-import io.github.applecommander.bastools.api.shapes.ShapeTable;
+import org.applecommander.bastools.api.shapes.ShapeExporter;
+import org.applecommander.bastools.api.shapes.ShapeTable;
 
 public class ShapeTableFileFilter implements FileFilter {
     @Override

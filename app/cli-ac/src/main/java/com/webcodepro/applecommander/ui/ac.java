@@ -49,12 +49,12 @@ import com.webcodepro.applecommander.util.TranslatorStream;
 
 import io.github.applecommander.applesingle.AppleSingle;
 import io.github.applecommander.applesingle.ProdosFileInfo;
-import io.github.applecommander.bastools.api.Configuration;
-import io.github.applecommander.bastools.api.Parser;
-import io.github.applecommander.bastools.api.TokenReader;
-import io.github.applecommander.bastools.api.Visitors;
-import io.github.applecommander.bastools.api.model.Program;
-import io.github.applecommander.bastools.api.model.Token;
+import org.applecommander.bastools.api.Configuration;
+import org.applecommander.bastools.api.Parser;
+import org.applecommander.bastools.api.ModernTokenReader;
+import org.applecommander.bastools.api.Visitors;
+import org.applecommander.bastools.api.model.Program;
+import org.applecommander.bastools.api.model.Token;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.device.DosOrderedTrackSectorDevice;
 import org.applecommander.device.ProdosOrderedBlockDevice;
@@ -207,7 +207,7 @@ public class ac {
 	    File fakeTempSource = File.createTempFile("ac-", "bas");
 	    fakeTempSource.deleteOnExit();
 		Configuration config = Configuration.builder().sourceFile(fakeTempSource).build();
-		Queue<Token> tokens = TokenReader.tokenize(System.in);
+		Queue<Token> tokens = ModernTokenReader.tokenize(System.in);
 		Parser parser = new Parser(tokens);
 		Program program = parser.parse();
 		byte[] data = Visitors.byteVisitor(config).dump(program);
