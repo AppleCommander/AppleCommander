@@ -19,6 +19,10 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
+import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.FormattedDisk.DiskInformation;
+import com.webcodepro.applecommander.ui.UiBundle;
+import com.webcodepro.applecommander.util.TextBundle;
 import org.applecommander.source.Source;
 import org.applecommander.util.Information;
 import org.eclipse.swt.SWT;
@@ -29,16 +33,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
-
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.FormattedDisk.DiskInformation;
-import com.webcodepro.applecommander.ui.UiBundle;
-import com.webcodepro.applecommander.util.TextBundle;
+import org.eclipse.swt.widgets.*;
 
 import java.util.ArrayList;
 import java.util.List;

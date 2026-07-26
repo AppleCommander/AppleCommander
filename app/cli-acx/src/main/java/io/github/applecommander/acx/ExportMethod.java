@@ -19,29 +19,15 @@
  */
 package io.github.applecommander.acx;
 
+import com.webcodepro.applecommander.storage.FileEntry;
+import com.webcodepro.applecommander.storage.FileFilter;
+import com.webcodepro.applecommander.storage.filters.*;
+import io.github.applecommander.filters.AppleSingleFileFilter;
+import io.github.applecommander.filters.RawFileFilter;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
-
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FileFilter;
-import com.webcodepro.applecommander.storage.filters.AppleWorksDataBaseFileFilter;
-import com.webcodepro.applecommander.storage.filters.AppleWorksSpreadSheetFileFilter;
-import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFileFilter;
-import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
-import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
-import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
-import com.webcodepro.applecommander.storage.filters.BusinessBASICFileFilter;
-import com.webcodepro.applecommander.storage.filters.DisassemblyFileFilter;
-import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
-import com.webcodepro.applecommander.storage.filters.GutenbergFileFilter;
-import com.webcodepro.applecommander.storage.filters.HexDumpFileFilter;
-import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
-import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
-import com.webcodepro.applecommander.storage.filters.TextFileFilter;
-
-import io.github.applecommander.filters.AppleSingleFileFilter;
-import io.github.applecommander.filters.RawFileFilter;
 
 public enum ExportMethod {
     APPLESINGLE(ignored -> new AppleSingleFileFilter(), "as", "applesingle"),

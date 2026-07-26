@@ -19,13 +19,12 @@
  */
 package com.webcodepro.applecommander.ui.swt.util.contentadapter;
 
+import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
+import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.printing.Printer;
-
-import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
-import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 
 /**
  * Content-specific adapter for an ImageCanvas.

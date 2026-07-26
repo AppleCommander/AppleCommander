@@ -26,11 +26,11 @@ import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
 
-import static com.webcodepro.applecommander.storage.DiskConstants.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static com.webcodepro.applecommander.storage.DiskConstants.SECTOR_SIZE;
 
 /**
  * Manages a disk that is in NakedOS format.

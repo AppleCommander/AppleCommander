@@ -19,6 +19,9 @@
  */
 package com.webcodepro.applecommander.ui.swt.wizard.exportfile;
 
+import com.webcodepro.applecommander.ui.UiBundle;
+import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
+import com.webcodepro.applecommander.util.TextBundle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -26,16 +29,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
-
-import com.webcodepro.applecommander.ui.UiBundle;
-import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
-import com.webcodepro.applecommander.util.TextBundle;
+import org.eclipse.swt.widgets.*;
 
 /**
  * Set locations and file names for the export.

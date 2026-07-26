@@ -19,6 +19,10 @@
  */
 package com.webcodepro.applecommander.ui.swt.filteradapter;
 
+import com.webcodepro.applecommander.storage.FileEntry;
+import com.webcodepro.applecommander.storage.FileFilter;
+import com.webcodepro.applecommander.ui.swt.FileViewerWindow;
+import com.webcodepro.applecommander.ui.swt.util.contentadapter.ContentTypeAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -28,11 +32,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
-
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FileFilter;
-import com.webcodepro.applecommander.ui.swt.FileViewerWindow;
-import com.webcodepro.applecommander.ui.swt.util.contentadapter.ContentTypeAdapter;
 
 /**
  * Represents a visual adapter for a FileFilter.  Generally, the display method is the

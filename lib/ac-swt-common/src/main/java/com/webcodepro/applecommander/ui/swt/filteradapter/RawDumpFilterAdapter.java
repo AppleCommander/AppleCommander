@@ -19,10 +19,9 @@
  */
 package com.webcodepro.applecommander.ui.swt.filteradapter;
 
-import org.eclipse.swt.graphics.Image;
-
 import com.webcodepro.applecommander.ui.swt.FileViewerWindow;
 import com.webcodepro.applecommander.util.AppleUtil;
+import org.eclipse.swt.graphics.Image;
 
 /**
  * Provides a view of a raw hex dump from the diskette.  This includes any operating

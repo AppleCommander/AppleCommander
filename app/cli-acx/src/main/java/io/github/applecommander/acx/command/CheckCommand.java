@@ -24,8 +24,8 @@ import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosDirectoryEntry;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import io.github.applecommander.acx.base.ReadWriteDiskCommandOptions;
-import picocli.CommandLine.Option;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 @Command(name = "check", description = "Check image for issues.", hidden = true)
 public class CheckCommand extends ReadWriteDiskCommandOptions {

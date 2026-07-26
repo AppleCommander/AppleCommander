@@ -19,11 +19,10 @@
  */
 package com.webcodepro.applecommander.storage.filters.imagehandlers;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
-
-import javax.imageio.ImageIO;
 
 /**
  * ImageIoImage is a specific implementation of AppleImage that handles all

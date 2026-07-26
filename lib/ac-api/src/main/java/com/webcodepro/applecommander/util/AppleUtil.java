@@ -19,15 +19,15 @@
  */
 package com.webcodepro.applecommander.util;
 
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.TrackSectorDevice;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-
-import org.applecommander.device.BlockDevice;
-import org.applecommander.device.TrackSectorDevice;
 
 /**
  * This class contains helper methods for dealing with Apple2 data.

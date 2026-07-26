@@ -23,7 +23,7 @@ import com.webcodepro.applecommander.ui.AppleCommander;
 
 import com.webcodepro.shrinkit.NuFileArchive;
 import io.github.applecommander.applesingle.AppleSingle;
-import io.github.applecommander.bastools.api.BasTools;
+import org.applecommander.bastools.api.BasTools;
 import org.applecommander.disassembler.api.Disassembler;
 import picocli.CommandLine.IVersionProvider;
 

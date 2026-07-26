@@ -19,10 +19,6 @@
  */
 package io.github.applecommander.acx.command;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.FormattedDisk.FileColumnHeader;
 import com.webcodepro.applecommander.ui.DirectoryLister.CsvListingStrategy;
@@ -31,11 +27,14 @@ import com.webcodepro.applecommander.ui.DirectoryLister.ListingStrategy;
 import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
 import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
-
 import io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 
 @Command(name = "list", description = "List directory of disk image(s).",
         aliases = { "ls" })

@@ -19,10 +19,9 @@
  */
 package com.webcodepro.applecommander.ui.swt.filteradapter;
 
-import org.eclipse.swt.graphics.Image;
-
 import com.webcodepro.applecommander.storage.filters.DisassemblyFileFilter;
 import com.webcodepro.applecommander.ui.swt.FileViewerWindow;
+import org.eclipse.swt.graphics.Image;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

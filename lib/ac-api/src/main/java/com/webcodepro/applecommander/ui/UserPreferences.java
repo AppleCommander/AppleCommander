@@ -19,11 +19,11 @@
  */
 package com.webcodepro.applecommander.ui;
 
+import com.webcodepro.applecommander.util.Host;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Properties;
-
-import com.webcodepro.applecommander.util.Host;
 
 /**
  * Provide a generalized and common mechanism to handle user preferences throughout

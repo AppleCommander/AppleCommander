@@ -19,9 +19,9 @@
  */
 package com.webcodepro.applecommander.util.readerwriter;
 
-import java.util.Optional;
-
 import com.webcodepro.applecommander.storage.os.nakedos.NakedosFileEntry;
+
+import java.util.Optional;
 
 public class NakedosFileEntryReader implements FileEntryReader {
     private final NakedosFileEntry fileEntry;

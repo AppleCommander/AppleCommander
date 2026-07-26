@@ -19,26 +19,21 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
+import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
+import com.webcodepro.applecommander.ui.UiBundle;
+import com.webcodepro.applecommander.util.TextBundle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
-import com.webcodepro.applecommander.ui.UiBundle;
-import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Build the Disk Map tab for the Disk Window.

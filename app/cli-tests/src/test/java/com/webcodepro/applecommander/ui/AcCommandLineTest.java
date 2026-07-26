@@ -22,6 +22,7 @@ package com.webcodepro.applecommander.ui;
 import io.github.a2geek.clth.Config;
 import io.github.a2geek.clth.JUnitHelper;
 import io.github.a2geek.clth.TestHarness;
+import io.github.a2geek.clth.TestSuite;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -31,8 +32,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.stream.Stream;
-
-import io.github.a2geek.clth.TestSuite;
 
 public class AcCommandLineTest {
     @ParameterizedTest(name = "{1}: {2}")

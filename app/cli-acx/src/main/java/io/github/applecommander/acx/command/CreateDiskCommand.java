@@ -19,16 +19,12 @@
  */
 package io.github.applecommander.acx.command;
 
-import java.util.Optional;
-import java.util.logging.Logger;
-
 import com.webcodepro.applecommander.storage.DiskFactory;
 import com.webcodepro.applecommander.storage.Disks;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
-
 import io.github.applecommander.acx.OrderType;
 import io.github.applecommander.acx.SystemType;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
@@ -44,6 +40,9 @@ import org.applecommander.source.Sources;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+
+import java.util.Optional;
+import java.util.logging.Logger;
 
 @Command(name = "create", description = "Create a disk image.",
 		 aliases = { "mkdisk" })

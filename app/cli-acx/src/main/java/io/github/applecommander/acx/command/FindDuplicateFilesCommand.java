@@ -19,6 +19,14 @@
  */
 package io.github.applecommander.acx.command;
 
+import com.webcodepro.applecommander.storage.FormattedDisk;
+import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
+import com.webcodepro.applecommander.util.filestreamer.FileTuple;
+import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
+import io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -27,15 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
-import com.webcodepro.applecommander.util.filestreamer.FileTuple;
-import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
-
-import io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
 
 @Command(name = "dups", description = "Find duplicate files.")
 public class FindDuplicateFilesCommand extends ReadOnlyDiskImageCommandOptions {

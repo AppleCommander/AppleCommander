@@ -19,13 +19,13 @@
  */
 package com.webcodepro.applecommander.storage.filters;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
-
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.util.BusinessBASICToken;
 import com.webcodepro.applecommander.util.BusinessBASICTokenizer;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 
 /**
  * Filter the given file as an Apple /// Business BASIC file.

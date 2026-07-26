@@ -25,7 +25,8 @@ import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 
-import static com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk.*;
+import static com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk.CATALOG_TRACK;
+import static com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk.VTOC_SECTOR;
 
 public class GutenbergDiskFactory implements DiskFactory {
     @Override

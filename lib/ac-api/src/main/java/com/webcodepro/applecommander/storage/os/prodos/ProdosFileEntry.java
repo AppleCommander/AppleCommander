@@ -19,21 +19,17 @@
  */
 package com.webcodepro.applecommander.storage.os.prodos;
 
+import com.webcodepro.applecommander.storage.*;
+import com.webcodepro.applecommander.storage.filters.*;
+import com.webcodepro.applecommander.util.AppleUtil;
+import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.os.pascal.CodeFile;
+
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import com.webcodepro.applecommander.storage.DiskFullException;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FileFilter;
-import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.StorageBundle;
-import com.webcodepro.applecommander.storage.filters.*;
-import com.webcodepro.applecommander.util.AppleUtil;
-import com.webcodepro.applecommander.util.TextBundle;
-import org.applecommander.os.pascal.CodeFile;
 
 /**
  * Represents a ProDOS file entry on disk.

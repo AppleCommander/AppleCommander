@@ -19,15 +19,14 @@
  */
 package io.github.applecommander.acx.command;
 
-import java.util.logging.Logger;
-import java.util.Arrays;
-import java.util.List;
-
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
-
 import io.github.applecommander.acx.base.ReadWriteDiskCommandWithGlobOptions;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Logger;
 
 @Command(name = "lock", description = "Lock file(s) on a disk image.")
 public class LockCommand extends ReadWriteDiskCommandWithGlobOptions {

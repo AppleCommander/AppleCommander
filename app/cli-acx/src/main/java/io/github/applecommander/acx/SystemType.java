@@ -19,18 +19,17 @@
  */
 package io.github.applecommander.acx;
 
-import java.util.Arrays;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.logging.Logger;
-
 import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
-
 import io.github.applecommander.acx.fileutil.FileUtils;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.util.DataBuffer;
+
+import java.util.Arrays;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.logging.Logger;
 
 public enum SystemType {
 	DOS(OrderType.DOS, SystemType::enforce140KbDisk, 

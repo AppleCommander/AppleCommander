@@ -19,14 +19,14 @@
  */
 package com.webcodepro.applecommander.util.filestreamer;
 
+import com.webcodepro.applecommander.storage.DirectoryEntry;
+import com.webcodepro.applecommander.storage.FileEntry;
+import com.webcodepro.applecommander.storage.FormattedDisk;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
-
-import com.webcodepro.applecommander.storage.DirectoryEntry;
-import com.webcodepro.applecommander.storage.FileEntry;
-import com.webcodepro.applecommander.storage.FormattedDisk;
 
 public class FileTuple {
     public static final String SEPARATOR = "/";

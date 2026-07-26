@@ -19,16 +19,15 @@
  */
 package io.github.applecommander.filters;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.os.dos33.DosFileEntry;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
-
 import io.github.applecommander.applesingle.AppleSingle;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 
 /**
  *	A FileFilter to write each file to an independent AppleSingle file. 

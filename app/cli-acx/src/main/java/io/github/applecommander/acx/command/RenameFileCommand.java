@@ -19,17 +19,16 @@
  */
 package io.github.applecommander.acx.command;
 
-import java.util.List;
-import java.util.logging.Logger;
-
 import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
 import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
-
 import io.github.applecommander.acx.base.ReadWriteDiskCommandOptions;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+
+import java.util.List;
+import java.util.logging.Logger;
 
 @Command(name = "rename", description = "Rename file on a disk image.",
         aliases = { "ren" })

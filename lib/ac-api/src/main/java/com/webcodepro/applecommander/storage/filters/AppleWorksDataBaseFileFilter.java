@@ -19,14 +19,14 @@
  */
 package com.webcodepro.applecommander.storage.filters;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
-
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 
 /**
  * Export an AppleWorks database file to a text file.

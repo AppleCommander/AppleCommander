@@ -19,6 +19,12 @@
  */
 package io.github.applecommander.acx.command;
 
+import io.github.applecommander.acx.arggroup.CoordinateSelection;
+import io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions;
+import picocli.CommandLine.ArgGroup;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -26,12 +32,6 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.function.Consumer;
-
-import io.github.applecommander.acx.arggroup.CoordinateSelection;
-import io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions;
-import picocli.CommandLine.ArgGroup;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
 
 @Command(name = "read", description = "Read a block or sector.")
 public class ReadCommand extends ReadOnlyDiskImageCommandOptions {

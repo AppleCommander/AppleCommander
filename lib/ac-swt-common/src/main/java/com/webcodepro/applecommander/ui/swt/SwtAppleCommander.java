@@ -19,7 +19,10 @@
  */
 package com.webcodepro.applecommander.ui.swt;
 
-import com.webcodepro.applecommander.storage.*;
+import com.webcodepro.applecommander.storage.DiskFactory;
+import com.webcodepro.applecommander.storage.Disks;
+import com.webcodepro.applecommander.storage.FilenameFilter;
+import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.ui.AppleCommander;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.UserPreferences;

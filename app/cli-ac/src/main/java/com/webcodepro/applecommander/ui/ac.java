@@ -21,21 +21,8 @@
  */
 package com.webcodepro.applecommander.ui;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Queue;
-
 import com.webcodepro.applecommander.storage.*;
+import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskInformation;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
 import com.webcodepro.applecommander.storage.filters.HexDumpFileFilter;
@@ -46,15 +33,14 @@ import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 import com.webcodepro.applecommander.util.TranslatorStream;
-
 import io.github.applecommander.applesingle.AppleSingle;
 import io.github.applecommander.applesingle.ProdosFileInfo;
-import io.github.applecommander.bastools.api.Configuration;
-import io.github.applecommander.bastools.api.Parser;
-import io.github.applecommander.bastools.api.TokenReader;
-import io.github.applecommander.bastools.api.Visitors;
-import io.github.applecommander.bastools.api.model.Program;
-import io.github.applecommander.bastools.api.model.Token;
+import org.applecommander.bastools.api.Configuration;
+import org.applecommander.bastools.api.ModernTokenReader;
+import org.applecommander.bastools.api.Parser;
+import org.applecommander.bastools.api.Visitors;
+import org.applecommander.bastools.api.model.Program;
+import org.applecommander.bastools.api.model.Token;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.device.DosOrderedTrackSectorDevice;
 import org.applecommander.device.ProdosOrderedBlockDevice;
@@ -65,6 +51,12 @@ import org.applecommander.source.FileSource;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 import org.applecommander.util.Information;
+
+import java.io.*;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Queue;
 
 /**
  * ac provides a command line interface to key AppleCommander functions. Text
@@ -207,7 +199,7 @@ public class ac {
 	    File fakeTempSource = File.createTempFile("ac-", "bas");
 	    fakeTempSource.deleteOnExit();
 		Configuration config = Configuration.builder().sourceFile(fakeTempSource).build();
-		Queue<Token> tokens = TokenReader.tokenize(System.in);
+		Queue<Token> tokens = ModernTokenReader.tokenize(System.in);
 		Parser parser = new Parser(tokens);
 		Program program = parser.parse();
 		byte[] data = Visitors.byteVisitor(config).dump(program);

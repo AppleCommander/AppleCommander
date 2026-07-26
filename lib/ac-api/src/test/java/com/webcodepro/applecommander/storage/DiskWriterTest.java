@@ -19,9 +19,10 @@
  */
 package com.webcodepro.applecommander.storage;
 
-import java.io.IOException;
-import java.util.List;
-
+import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
+import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
+import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
+import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import org.applecommander.device.*;
 import org.applecommander.hint.Hint;
 import org.applecommander.image.NibbleImage;
@@ -31,10 +32,8 @@ import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.junit.jupiter.api.Test;
 
-import com.webcodepro.applecommander.storage.FormattedDisk.DiskUsage;
-import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
-import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
-import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
+import java.io.IOException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;

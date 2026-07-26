@@ -19,11 +19,6 @@
  */
 package com.webcodepro.applecommander.storage.os.cpm;
 
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
@@ -34,6 +29,11 @@ import com.webcodepro.applecommander.storage.filters.MBASICFileFilter;
 import com.webcodepro.applecommander.storage.filters.TextFileFilter;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Support the CP/M file entry.  Note that this may actually contain references

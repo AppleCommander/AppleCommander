@@ -27,9 +27,9 @@ import org.applecommander.source.Source;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
-import static com.webcodepro.applecommander.storage.DiskConstants.*;
-
 import java.util.*;
+
+import static com.webcodepro.applecommander.storage.DiskConstants.*;
 
 /**
  * Manages a disk that is in the RDOS format.

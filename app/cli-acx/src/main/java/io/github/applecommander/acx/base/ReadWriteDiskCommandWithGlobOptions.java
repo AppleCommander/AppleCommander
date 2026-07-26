@@ -19,12 +19,12 @@
  */
 package io.github.applecommander.acx.base;
 
-import java.util.List;
-import java.util.logging.Logger;
-
 import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
 import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
+
+import java.util.List;
+import java.util.logging.Logger;
 
 public abstract class ReadWriteDiskCommandWithGlobOptions extends ReadWriteDiskCommandOptions {
     private static final Logger LOG = Logger.getLogger(ReadWriteDiskCommandWithGlobOptions.class.getName());

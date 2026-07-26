@@ -21,15 +21,18 @@ package com.webcodepro.applecommander.storage.os.rdos;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFactory;
-import org.applecommander.device.*;
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.SkewedTrackSectorDevice;
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.device.TrackSectorToBlockAdapter;
 import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
 
-import static com.webcodepro.applecommander.storage.DiskConstants.DOS32_SECTORS_ON_115KB_DISK;
-import static com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk.*;
-
 import java.util.Set;
+
+import static com.webcodepro.applecommander.storage.DiskConstants.DOS32_SECTORS_ON_115KB_DISK;
+import static com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk.CATALOG_SECTORS;
 
 public class RdosDiskFactory implements DiskFactory {
     private final static Set<Integer> validFileTypes = Set.of(0xc1 /*A*/, 0xc2 /*B*/, 0xd4 /*T*/, 0xd3 /*S*/);

@@ -27,11 +27,11 @@ import org.applecommander.source.Source;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
-import static com.webcodepro.applecommander.storage.DiskConstants.*;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+
+import static com.webcodepro.applecommander.storage.DiskConstants.BLOCK_SIZE;
 
 /**
  * Manages a disk that is in the ProDOS format.

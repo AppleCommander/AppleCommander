@@ -19,13 +19,12 @@
  */
 package com.webcodepro.applecommander.ui.swt.filteradapter;
 
+import com.webcodepro.applecommander.ui.swt.FileViewerWindow;
+import com.webcodepro.applecommander.ui.swt.util.contentadapter.StyledTextAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-
-import com.webcodepro.applecommander.ui.swt.FileViewerWindow;
-import com.webcodepro.applecommander.ui.swt.util.contentadapter.StyledTextAdapter;
 
 /**
  * Provides a view of a simple text file.

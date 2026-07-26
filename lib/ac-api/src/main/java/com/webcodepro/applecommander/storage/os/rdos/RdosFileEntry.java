@@ -19,21 +19,17 @@
  */
 package com.webcodepro.applecommander.storage.os.rdos;
 
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.StorageBundle;
-import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
-import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
-import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
-import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
-import com.webcodepro.applecommander.storage.filters.TextFileFilter;
+import com.webcodepro.applecommander.storage.filters.*;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Handle RDOS file entry format.

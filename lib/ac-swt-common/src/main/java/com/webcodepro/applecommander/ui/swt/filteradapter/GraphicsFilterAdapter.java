@@ -19,8 +19,11 @@
  */
 package com.webcodepro.applecommander.ui.swt.filteradapter;
 
-import java.io.ByteArrayInputStream;
-
+import com.webcodepro.applecommander.ui.UiBundle;
+import com.webcodepro.applecommander.ui.swt.FileViewerWindow;
+import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
+import com.webcodepro.applecommander.ui.swt.util.contentadapter.ImageCanvasAdapter;
+import com.webcodepro.applecommander.ui.swt.util.contentadapter.NoActionContentTypeAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
@@ -29,11 +32,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Label;
 
-import com.webcodepro.applecommander.ui.UiBundle;
-import com.webcodepro.applecommander.ui.swt.FileViewerWindow;
-import com.webcodepro.applecommander.ui.swt.util.ImageCanvas;
-import com.webcodepro.applecommander.ui.swt.util.contentadapter.ImageCanvasAdapter;
-import com.webcodepro.applecommander.ui.swt.util.contentadapter.NoActionContentTypeAdapter;
+import java.io.ByteArrayInputStream;
 
 /**
  * Provides a view of an Apple graphic image.

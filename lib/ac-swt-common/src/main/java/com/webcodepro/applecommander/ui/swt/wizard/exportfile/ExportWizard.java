@@ -19,14 +19,13 @@
  */
 package com.webcodepro.applecommander.ui.swt.wizard.exportfile;
 
-import org.eclipse.swt.widgets.Shell;
-
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 import com.webcodepro.applecommander.ui.swt.wizard.Wizard;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
+import org.eclipse.swt.widgets.Shell;
 
 /**
  * File export wizard.

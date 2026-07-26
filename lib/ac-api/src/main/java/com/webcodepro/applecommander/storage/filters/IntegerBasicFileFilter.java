@@ -19,12 +19,12 @@
  */
 package com.webcodepro.applecommander.storage.filters;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
-
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.util.AppleUtil;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 
 /**
  * Filter the given file as an Integer BASIC file.

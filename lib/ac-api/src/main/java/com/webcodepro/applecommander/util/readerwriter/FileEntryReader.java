@@ -19,16 +19,16 @@
  */
 package com.webcodepro.applecommander.util.readerwriter;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Optional;
-
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.os.dos33.DosFileEntry;
 import com.webcodepro.applecommander.storage.os.nakedos.NakedosFileEntry;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFileEntry;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFileEntry;
+
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Optional;
 
 public interface FileEntryReader {
     //  FileEntry common

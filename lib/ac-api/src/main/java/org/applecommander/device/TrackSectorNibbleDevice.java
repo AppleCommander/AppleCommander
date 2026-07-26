@@ -20,15 +20,19 @@
 package org.applecommander.device;
 
 import org.applecommander.capability.Capability;
-import org.applecommander.device.nibble.*;
+import org.applecommander.device.nibble.DiskMarker;
+import org.applecommander.device.nibble.NibbleDiskCodec;
+import org.applecommander.device.nibble.NibbleScanner;
+import org.applecommander.device.nibble.NibbleTrackReaderWriter;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.Information;
 
-import static org.applecommander.device.nibble.NibbleUtil.*;
-
 import java.util.*;
+
+import static org.applecommander.device.nibble.NibbleUtil.decodeOddEven;
+import static org.applecommander.device.nibble.NibbleUtil.encodeOddEven;
 
 public class TrackSectorNibbleDevice implements TrackSectorDevice {
     /**

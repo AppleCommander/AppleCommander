@@ -19,6 +19,8 @@
  */
 package com.webcodepro.applecommander.ui.swt.util;
 
+import com.webcodepro.applecommander.ui.UiBundle;
+import com.webcodepro.applecommander.util.TextBundle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.graphics.FontMetrics;
@@ -30,9 +32,6 @@ import org.eclipse.swt.printing.PrinterData;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
-
-import com.webcodepro.applecommander.ui.UiBundle;
-import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * SWT-related utility code.

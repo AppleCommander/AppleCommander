@@ -19,15 +19,15 @@
  */
 package com.webcodepro.applecommander.storage.filters;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.ui.AppleCommander;
 import com.webcodepro.applecommander.util.AppleUtil;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Extract the contents of an AWP (AppleWorks word processor) document and

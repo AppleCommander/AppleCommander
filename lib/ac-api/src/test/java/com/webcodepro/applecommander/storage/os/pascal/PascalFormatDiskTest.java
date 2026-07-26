@@ -19,15 +19,14 @@
  */
 package com.webcodepro.applecommander.storage.os.pascal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import com.webcodepro.applecommander.storage.DiskConstants;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.device.ProdosOrderedBlockDevice;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
-
-import com.webcodepro.applecommander.storage.DiskConstants;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PascalFormatDiskTest {
     @Test

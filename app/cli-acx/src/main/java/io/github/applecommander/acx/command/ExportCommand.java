@@ -19,18 +19,6 @@
  */
 package io.github.applecommander.acx.command;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UncheckedIOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.logging.Logger;
-
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
@@ -38,18 +26,20 @@ import com.webcodepro.applecommander.storage.filters.HexDumpFileFilter;
 import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
 import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
-
 import io.github.applecommander.acx.ExportMethod;
 import io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions;
 import io.github.applecommander.acx.converter.ExportMethodConverter;
 import io.github.applecommander.acx.converter.ExportMethodConverter.ExportMethodCandidates;
-import picocli.CommandLine.ArgGroup;
-import picocli.CommandLine.Command;
+import picocli.CommandLine.*;
 import picocli.CommandLine.Model.CommandSpec;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.ParameterException;
-import picocli.CommandLine.Parameters;
-import picocli.CommandLine.Spec;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.logging.Logger;
 
 @Command(name = "export", description = "Export file(s) from a disk image.",
         aliases = { "x", "get" })

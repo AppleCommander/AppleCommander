@@ -18,8 +18,6 @@
  */
 package com.webcodepro.applecommander.util;
 
-import java.io.*;
-
 import com.webcodepro.applecommander.storage.Disks;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.StorageBundle;
@@ -33,6 +31,10 @@ import org.applecommander.device.BlockDevice;
 import org.applecommander.device.ProdosOrderedBlockDevice;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Some higher-level utilities for dealing with a NuFX archive.

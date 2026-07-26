@@ -19,17 +19,16 @@
  */
 package com.webcodepro.applecommander.ui.swt.filteradapter;
 
+import com.webcodepro.applecommander.ui.swt.FileViewerWindow;
+import com.webcodepro.applecommander.ui.swt.util.contentadapter.StyledTextAdapter;
+import com.webcodepro.applecommander.util.BusinessBASICToken;
+import com.webcodepro.applecommander.util.BusinessBASICTokenizer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-
-import com.webcodepro.applecommander.ui.swt.FileViewerWindow;
-import com.webcodepro.applecommander.ui.swt.util.contentadapter.StyledTextAdapter;
-import com.webcodepro.applecommander.util.BusinessBASICToken;
-import com.webcodepro.applecommander.util.BusinessBASICTokenizer;
 
 /**
  * Provides a view of a syntax-colored Apple /// Business BASIC program listing.

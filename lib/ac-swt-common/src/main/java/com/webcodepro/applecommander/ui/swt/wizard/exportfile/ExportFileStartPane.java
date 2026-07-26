@@ -19,6 +19,10 @@
  */
 package com.webcodepro.applecommander.ui.swt.wizard.exportfile;
 
+import com.webcodepro.applecommander.storage.filters.*;
+import com.webcodepro.applecommander.ui.UiBundle;
+import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
+import com.webcodepro.applecommander.util.TextBundle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -26,22 +30,6 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-
-import com.webcodepro.applecommander.storage.filters.AppleWorksDataBaseFileFilter;
-import com.webcodepro.applecommander.storage.filters.AppleWorksSpreadSheetFileFilter;
-import com.webcodepro.applecommander.storage.filters.AppleWorksWordProcessorFileFilter;
-import com.webcodepro.applecommander.storage.filters.ApplesoftFileFilter;
-import com.webcodepro.applecommander.storage.filters.AssemblySourceFileFilter;
-import com.webcodepro.applecommander.storage.filters.BinaryFileFilter;
-import com.webcodepro.applecommander.storage.filters.BusinessBASICFileFilter;
-import com.webcodepro.applecommander.storage.filters.GraphicsFileFilter;
-import com.webcodepro.applecommander.storage.filters.HexDumpFileFilter;
-import com.webcodepro.applecommander.storage.filters.IntegerBasicFileFilter;
-import com.webcodepro.applecommander.storage.filters.PascalTextFileFilter;
-import com.webcodepro.applecommander.storage.filters.TextFileFilter;
-import com.webcodepro.applecommander.ui.UiBundle;
-import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
-import com.webcodepro.applecommander.util.TextBundle;
 
 /**
  * Provides the wizard pane which gets the export filter.

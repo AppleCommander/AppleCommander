@@ -21,31 +21,6 @@
  */
 package com.webcodepro.applecommander.ui;
 
-import java.io.FileInputStream;
-
-/*
- * Copyright (C) 2012 by David Schmidt
- * david__schmidt at users.sourceforge.net
- *
- * This program is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by the 
- * Free Software Foundation; either version 2 of the License, or (at your 
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License 
- * for more details.
- *
- * You should have received a copy of the GNU General Public License along 
- * with this program; if not, write to the Free Software Foundation, Inc., 
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
-
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-
 import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.os.cpm.CpmDiskFactory;
 import com.webcodepro.applecommander.storage.os.dos33.DosDiskFactory;
@@ -56,11 +31,34 @@ import com.webcodepro.applecommander.storage.os.prodos.ProdosDiskFactory;
 import com.webcodepro.applecommander.storage.os.rdos.RdosDiskFactory;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-
 import org.applecommander.image.DiskCopyImage;
 import org.applecommander.image.UniversalDiskImage;
 import org.applecommander.source.FileSource;
 import org.applecommander.source.Sources;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+
+/*
+ * Copyright (C) 2012 by David Schmidt
+ * david__schmidt at users.sourceforge.net
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 
 public class AntTask extends Task
 {
