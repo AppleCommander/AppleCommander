@@ -20,6 +20,14 @@ dependencies {
     }
 }
 
+tasks.register("copyDependencies", Copy) {
+    from(configurations.runtimeClasspath).into(layout.buildDirectory.dir("jars"))
+}
+tasks.register("copyJar", Copy) {
+    from(tasks.jar).into(layout.buildDirectory.dir("jars"))
+}
+build.dependsOn("copyDependencies", "copyJar")
+
 application {
     mainClass = 'com.webcodepro.applecommander.ui.swt.SwtAppleCommander'
 }
