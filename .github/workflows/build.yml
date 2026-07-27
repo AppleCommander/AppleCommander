@@ -1,4 +1,4 @@
-name: GraalVM Native Image builds
+name: AppleCommander builds
 
 on:
   push:
@@ -90,10 +90,12 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
       - name: Build with Gradle
-        env:
-          # The SWT image tests fail in the pipeline; disable them.
-          AC_SKIP_SWT_TESTS: true
-        run: ./gradlew build
+        # Targeting just the needed SWT builds; this avoids all the tests.
+        run: >
+          ./gradlew
+            :app:gui-swt-macosx-aarch64:build 
+            :app:gui-swt-macosx-x86_64:build
+            :app:gui-swt-win32-x86_64:build
       - name: Create DMG file (MacOS)
         if: runner.os == 'macOS'
         run: ./scripts/build-macos-dmg.sh ${{ matrix.path }}
