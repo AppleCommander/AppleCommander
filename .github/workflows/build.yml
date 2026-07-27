@@ -70,11 +70,11 @@ jobs:
           - label: macos-15-intel
             os: darwin
             arch: x86_64
-            path: app/gui-swt-macosx-aarch64
+            path: app/gui-swt-macosx-x86_64
           - label: macos-15
             os: darwin
             arch: arm64
-            path: app/gui-swt-macosx-x86_64
+            path: app/gui-swt-macosx-aarch64
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
