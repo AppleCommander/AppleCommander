@@ -67,6 +67,10 @@ jobs:
     strategy:
       matrix:
         include:
+          - label: windows-latest
+            os: windows
+            arch: x86_64
+            path: app\gui-swt-win32-x86_64
           - label: macos-15-intel
             os: darwin
             arch: x86_64
@@ -93,10 +97,26 @@ jobs:
       - name: Create DMG file (MacOS)
         if: runner.os == 'macOS'
         run: ./scripts/build-macos-dmg.sh ${{ matrix.path }}
+      - name: Create MSI file (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          dotnet tool install --global wix --version 5
+          wix extension add -g WixToolset.Util.wixext/5.0.0
+          wix extension add -g WixToolset.Ui.wixext/5.0.0
+          .\scripts\build-windows-msi.ps1
       - name: Upload DMG
+        if: runner.os == 'macOS'
         uses: actions/upload-artifact@v7
         with:
           path: AppleCommander-*.dmg
+          archive: false
+          if-no-files-found: error
+      - name: Upload MSI
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v7
+        with:
+          path: AppleCommander-*.msi
           archive: false
           if-no-files-found: error
 
