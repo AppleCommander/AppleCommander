@@ -46,9 +46,9 @@ jpackage `
   --win-shortcut `
   --win-upgrade-uuid 4ea8ae7d-f155-4c10-af96-467cda0b343f
 
-if ($version -ne $props['version']) {
-  Write-Host "Renaming AppleCommander-${version}.msi to be AppleCommander-$($props['version']).msi to keep versions consistent."
-  Rename-Item -Path "AppleCommander-${version}.msi" -NewName "AppleCommander-$($props['version']).msi"
-}
+$src="AppleCommander-${version}.msi"
+$dst="AppleCommander-$($props['version'])-windows-${arch}.msi"
+Write-Host "Renaming ${src} to be ${dst} to keep versions consistent."
+Rename-Item -Path "${src}" -NewName "${dst}"
 
 Write-Host "Done!"

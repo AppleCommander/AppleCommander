@@ -43,7 +43,7 @@ jpackage \
 # There doesn't appear to be a mechanism to set the output name without
 # changing the application name as well. So we just 'mv' it.
 SRC=$(find . -name "applecommander*.deb")
-DST="AppleCommander-${VERSION}-${ARCH}.deb"
+DST="AppleCommander-${version}-linux-${ARCH}.deb"
 mv -v ${SRC} ${DST}
 
 echo "Done!"
