@@ -67,6 +67,14 @@ jobs:
     strategy:
       matrix:
         include:
+          - label: ubuntu-latest
+            os: linux
+            arch: x86_64
+            path: app/gui-swt-linux-x86_64
+          - label: ubuntu-24.04-arm
+            os: linux
+            arch: aarch64
+            path: app/gui-swt-linux-aarch64
           - label: windows-latest
             os: windows
             arch: x86_64
@@ -103,6 +111,9 @@ jobs:
           wix extension add -g WixToolset.Util.wixext/5.0.0
           wix extension add -g WixToolset.Ui.wixext/5.0.0
           .\scripts\build-windows-msi.ps1 ${{ matrix.path }}
+      - name: Create DEB file (Linux)
+        if: runner.os == 'Linux'
+        run: ./scripts/build-linux-deb.sh ${{ matrix.path }}
       - name: Upload DMG
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v7
@@ -115,6 +126,13 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           path: AppleCommander-*.msi
+          archive: false
+          if-no-files-found: error
+      - name: Upload DEB
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v7
+        with:
+          path: AppleCommander-*.deb
           archive: false
           if-no-files-found: error
 
