@@ -42,7 +42,7 @@ jpackage \
 # There doesn't appear to be a mechanism to set the output name without
 # changing the application name as well. So we just 'mv' it.
 SRC="AppleCommander-${VERSION}.dmg"
-DST="AppleCommander-${VERSION}-${ARCH}.dmg"
+DST="AppleCommander-${version}-${ARCH}.dmg"
 mv -v ${SRC} ${DST}
 
 echo "Done!"
