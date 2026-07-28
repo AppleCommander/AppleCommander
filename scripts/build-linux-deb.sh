@@ -35,11 +35,10 @@ jpackage \
   --license-file LICENSE \
   --main-class com.webcodepro.applecommander.ui.swt.SwtAppleCommander \
   --icon lib/ac-swt-common/src/main/resources/linux/AppleCommander-128x128.png \
-  --linux-deb-maintainer "Rob Greene <robgreene@gmail.com>" \
+  --linux-deb-maintainer "robgreene@gmail.com" \
   --linux-menu-group Utility \
   --linux-rpm-license-type "GPL-2.0-or-later" \
-  --linux-app-category "Utility" \
-  --linux-app-release "${VERSION}"
+  --linux-app-category "Utility"
 
 # There doesn't appear to be a mechanism to set the output name without
 # changing the application name as well. So we just 'mv' it.
