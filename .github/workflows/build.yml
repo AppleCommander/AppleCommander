@@ -1,4 +1,4 @@
-name: GraalVM Native Image builds
+name: AppleCommander builds
 
 on:
   push:
@@ -10,6 +10,7 @@ on:
 
 jobs:
   build-java:
+    name: Java build
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -44,6 +45,7 @@ jobs:
   # This is a crude license header check. The ones I tested were susceptible to whitespace differences
   # and I never got them to work. My primary goal is to ensure the headers exist, so this suffices.
   license-check:
+    name: License check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -61,14 +63,88 @@ jobs:
             echo "License headers appear to be valid!"
           fi
 
-  build-native:
-    name: ac/acx on ${{ matrix.os }}-${{ matrix.arch }}
+  build-jpackage:
+    name: jpackage on ${{ matrix.os }}-${{ matrix.arch }}
     needs: [build-java, license-check]
-    runs-on: ${{ matrix.label  }}
+    runs-on: ${{ matrix.label }}
     strategy:
       matrix:
-        # Note that Graal v21 builds to the current architecture, and "--target" is not functional.
-        # Therefore, we try to find runners that fit our targets.
+        include:
+          - label: ubuntu-latest
+            os: linux
+            arch: x86_64
+            path: app/gui-swt-linux-x86_64
+          - label: ubuntu-24.04-arm
+            os: linux
+            arch: aarch64
+            path: app/gui-swt-linux-aarch64
+          - label: windows-latest
+            os: windows
+            arch: x86_64
+            path: app\gui-swt-win32-x86_64
+          - label: macos-15-intel
+            os: darwin
+            arch: x86_64
+            path: app/gui-swt-macosx-x86_64
+          - label: macos-15
+            os: darwin
+            arch: arm64
+            path: app/gui-swt-macosx-aarch64
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - name: Set up JDK 25
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: Build with Gradle
+        # Skipping all tests. SWT image tests fail in the pipeline and ANT tests fail under Windows.
+        run: ./gradlew build -x test
+      - name: Create DMG file (MacOS)
+        if: runner.os == 'macOS'
+        run: ./scripts/build-macos-dmg.sh ${{ matrix.path }}
+      - name: Create MSI file (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          dotnet tool install --global wix --version 5
+          wix extension add -g WixToolset.Util.wixext/5.0.0
+          wix extension add -g WixToolset.Ui.wixext/5.0.0
+          .\scripts\build-windows-msi.ps1 ${{ matrix.path }}
+      - name: Create DEB file (Linux)
+        if: runner.os == 'Linux'
+        run: ./scripts/build-linux-deb.sh ${{ matrix.path }}
+      - name: Upload DMG
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v7
+        with:
+          path: AppleCommander-*.dmg
+          archive: false
+          if-no-files-found: error
+      - name: Upload MSI
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v7
+        with:
+          path: AppleCommander-*.msi
+          archive: false
+          if-no-files-found: error
+      - name: Upload DEB
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v7
+        with:
+          path: AppleCommander-*.deb
+          archive: false
+          if-no-files-found: error
+
+  build-native:
+    name: ac/acx on ${{ matrix.os }}-${{ matrix.arch }}
+    needs: [build-jpackage]
+    runs-on: ${{ matrix.label }}
+    strategy:
+      matrix:
         # See: https://docs.github.com/en/actions/concepts/runners/about-github-hosted-runners#overview-of-github-hosted-runners
         # ... and follow the links to the related GitHub repositories
         include:
