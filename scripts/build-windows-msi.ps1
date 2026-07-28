@@ -47,7 +47,7 @@ jpackage `
   --win-upgrade-uuid 4ea8ae7d-f155-4c10-af96-467cda0b343f
 
 $src="AppleCommander-${version}.msi"
-$dst="AppleCommander-$($props['version'])-${arch}.msi"
+$dst="AppleCommander-$($props['version'])-windows-${arch}.msi"
 Write-Host "Renaming ${src} to be ${dst} to keep versions consistent."
 Rename-Item -Path "${src}" -NewName "${dst}"
 
