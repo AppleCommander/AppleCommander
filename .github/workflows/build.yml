@@ -10,6 +10,7 @@ on:
 
 jobs:
   build-java:
+    name: Java build
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -44,6 +45,7 @@ jobs:
   # This is a crude license header check. The ones I tested were susceptible to whitespace differences
   # and I never got them to work. My primary goal is to ensure the headers exist, so this suffices.
   license-check:
+    name: License check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -62,6 +64,7 @@ jobs:
           fi
 
   build-jpackage:
+    name: jpackage on ${{ matrix.os }}-${{ matrix.arch }}
     needs: [build-java, license-check]
     runs-on: ${{ matrix.label }}
     strategy:
