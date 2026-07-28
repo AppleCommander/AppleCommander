@@ -102,7 +102,7 @@ jobs:
           dotnet tool install --global wix --version 5
           wix extension add -g WixToolset.Util.wixext/5.0.0
           wix extension add -g WixToolset.Ui.wixext/5.0.0
-          .\scripts\build-windows-msi.ps1
+          .\scripts\build-windows-msi.ps1 ${{ matrix.path }}
       - name: Upload DMG
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v7
