@@ -90,12 +90,8 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
       - name: Build with Gradle
-        # Targeting just the needed SWT builds; this avoids all the tests.
-        run: |
-          ./gradlew \
-            :app:gui-swt-macosx-aarch64:build \ 
-            :app:gui-swt-macosx-x86_64:build \
-            :app:gui-swt-win32-x86_64:build
+        # Skipping all tests. SWT image tests fail in the pipeline and ANT tests fail under Windows.
+        run: ./gradlew build -x test
       - name: Create DMG file (MacOS)
         if: runner.os == 'macOS'
         run: ./scripts/build-macos-dmg.sh ${{ matrix.path }}
