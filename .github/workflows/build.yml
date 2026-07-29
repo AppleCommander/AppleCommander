@@ -117,6 +117,11 @@ jobs:
       - name: Create DEB file (Linux)
         if: runner.os == 'Linux'
         run: ./scripts/build-linux-deb.sh ${{ matrix.path }}
+      - name: Create RPM file (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt install -y rpm
+          ./scripts/build-linux-rpm.sh ${{ matrix.path }}
       - name: Upload DMG
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v7
@@ -136,6 +141,13 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           path: AppleCommander-*.deb
+          archive: false
+          if-no-files-found: error
+      - name: Upload RPM
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v7
+        with:
+          path: AppleCommander-*.rpm
           archive: false
           if-no-files-found: error
 
