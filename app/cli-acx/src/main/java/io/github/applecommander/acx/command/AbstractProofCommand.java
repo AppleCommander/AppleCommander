@@ -28,11 +28,11 @@ import io.github.applecommander.acx.converter.DiskConverter;
 import org.applecommander.bastools.api.Configuration;
 import org.applecommander.bastools.api.ModernTokenReader;
 import org.applecommander.bastools.api.Parser;
-import picocli.CommandLine.*;
-import picocli.CommandLine.Model.*;
 import org.applecommander.bastools.api.model.Program;
 import org.applecommander.bastools.api.model.Token;
 import org.applecommander.bastools.api.proofreaders.*;
+import picocli.CommandLine.*;
+import picocli.CommandLine.Model.CommandSpec;
 
 import java.io.File;
 import java.io.FileNotFoundException;

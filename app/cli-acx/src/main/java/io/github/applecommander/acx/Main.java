@@ -20,7 +20,8 @@
 package io.github.applecommander.acx;
 
 import io.github.applecommander.acx.command.*;
-import io.github.applecommander.acx.command.AbstractProofCommand.*;
+import io.github.applecommander.acx.command.AbstractProofCommand.HiddenProofCommand;
+import io.github.applecommander.acx.command.AbstractProofCommand.ProofCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
