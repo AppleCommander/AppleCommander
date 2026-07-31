@@ -20,6 +20,7 @@
 package io.github.applecommander.acx;
 
 import io.github.applecommander.acx.command.*;
+import io.github.applecommander.acx.command.AbstractProofCommand.*;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
@@ -55,6 +56,7 @@ import java.util.logging.Logger;
             ListCommand.class,
             LockCommand.class,
             MkdirCommand.class,
+            ProofCommand.class,
             ReadCommand.class,
             RenameFileCommand.class,
             RenameDiskCommand.class,
@@ -99,6 +101,10 @@ public class Main {
 
     public static void main(String[] args) {
         CommandLine cmd = new CommandLine(new Main());
+        for (var name : HiddenProofCommand.PROOF_READERS) {
+            cmd.addSubcommand(name, new AbstractProofCommand.HiddenProofCommand());
+        }
+        cmd.setUsageHelpAutoWidth(true);
         cmd.setExecutionExceptionHandler(new PrintExceptionMessageHandler());
         cmd.setCaseInsensitiveEnumValuesAllowed(true);
         if (args.length == 0) {
