@@ -23,6 +23,7 @@ import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
+import com.webcodepro.applecommander.util.filestreamer.FileTuple;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
 import io.github.applecommander.acx.converter.DiskConverter;
 import org.applecommander.bastools.api.Configuration;
@@ -35,13 +36,16 @@ import picocli.CommandLine.*;
 import picocli.CommandLine.Model.CommandSpec;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
+import java.util.logging.Logger;
 
 /**
  * Perform "checking" of a program that was printed in a magazine.
@@ -49,6 +53,8 @@ import java.util.function.Function;
  */
 @Command(name = "proof", description = "Proof-read/calculate program checksums (as printed in magazines) on file.")
 public abstract class AbstractProofCommand extends ReusableCommandOptions {
+    private static final Logger LOG = Logger.getLogger(AbstractProofCommand.class.getName());
+
     // This is different from the base options as the disk entry is optional.
     @Option(names = { "-d", "--disk" }, description = "Image to process [$ACX_DISK_NAME].",
             converter = DiskConverter.class, defaultValue = "${ACX_DISK_NAME}")
@@ -65,59 +71,67 @@ public abstract class AbstractProofCommand extends ReusableCommandOptions {
     private String programName;
 
     public int handle(Function<Configuration,Object> proofReaderFn) throws Exception {
-        final List<String> basicTypes = List.of("B", "BAS");
-        File sourceFile = null;
-        int startAddress = 0x801;
-        byte[] tokenizedProgram = null;
-        if (disks != null && !disks.isEmpty()) {
-            // The current BT API only supports physical files, so we need to transmogrify any program on disk to a temp file.
-            Optional<FileEntry> opt = FileStreamer.forDisks(disks)
-                    .matchGlobs(programName)
-                    .stream()
-                    .filter(tuple -> tuple.isFile() && basicTypes.contains(tuple.fileEntry.getFiletype()))
-                    .map(tuple -> tuple.fileEntry)
-                    .findFirst();
-            FileEntry fileEntry = opt.orElseThrow(() -> {
-                var msg = String.format("Program '%s' not found on disk.", programName);
-                return new FileNotFoundException(msg);
-            });
-            startAddress = fileEntry.getAddress();
-            tokenizedProgram = fileEntry.getFileData();
-            // Generate source text - we may need it depending on the selected proofer/checker.
-            FileFilter filter = fileEntry.getSuggestedFilter();
-            String code = new String(filter.filter(fileEntry));
-            sourceFile = File.createTempFile("proof-", ".bas");
-            sourceFile.deleteOnExit();
-            // TODO file creation
-        }
-        else {
-            sourceFile = new File(programName);
-        }
-
-        // Note that the "sourceFile" is used for printing.
         Configuration.Builder builder = Configuration.builder()
                 .sourceFile(new File(programName));
         if (debugFlag) builder.debugStream(System.out);
 
-        Queue<Token> tokens = ModernTokenReader.tokenize(sourceFile);
-        Parser parser = new Parser(tokens);
-        Program program = parser.parse();
+        // Build is configured differently depending on if we find it in a disk image or as source.
+        Optional<FileEntry> optFileEntry = findFileEntry();
+        optFileEntry.ifPresent(fileEntry -> {
+            builder.startAddress(fileEntry.getAddress());
+        });
+
         Object checker = proofReaderFn.apply(builder.build());
         switch (checker) {
             case ApplesoftInputBufferProofReader inputBufferProofReader -> {
-                inputBufferProofReader.addProgram(program);
+                inputBufferProofReader.addProgram(getProgram(optFileEntry));
             }
             case ApplesoftTokenizedProofReader tokenizedProofReader -> {
-                if (tokenizedProgram != null) {
-                    tokenizedProofReader.addBytes(tokenizedProgram);
+                if (optFileEntry.isPresent()) {
+                    tokenizedProofReader.addBytes(optFileEntry.map(FileEntry::getFileData).orElseThrow());
                 }
                 else {  // We fall back to the source code if we don't have tokens
-                    tokenizedProofReader.addProgram(program);
+                    tokenizedProofReader.addProgram(getProgram(optFileEntry));
                 }
             }
             default -> throw new RuntimeException("Unknown type of proofer/checker: " + checker);
         }
         return 0;
+    }
+
+    public Program getProgram(Optional<FileEntry> optFileEntry) throws IOException {
+        File sourceFile = optFileEntry.map(fileEntry -> {
+            LOG.warning("BASIC source generated from tokenized program. May not match proof-reader codes.");
+            FileFilter filter = fileEntry.getSuggestedFilter();
+            try {
+                File tmpFile = File.createTempFile("proof-", ".bas");
+                tmpFile.deleteOnExit();
+                try (FileOutputStream out = new FileOutputStream(tmpFile)) {
+                    out.write(filter.filter(fileEntry));
+                }
+                return tmpFile;
+            } catch (IOException ex) {
+                throw new UncheckedIOException(ex);
+            }
+        }).orElse(new File(programName));
+
+        Queue<Token> tokens = ModernTokenReader.tokenize(sourceFile);
+        Parser parser = new Parser(tokens);
+        return parser.parse();
+    }
+
+    public Optional<FileEntry> findFileEntry() {
+        final List<String> basicTypes = List.of("A", "BAS");
+        if (disks != null && !disks.isEmpty()) {
+            return FileStreamer.forDisks(disks)
+                    .matchGlobs(programName)
+                    .stream()
+                    .filter(FileTuple::isFile)
+                    .map(tuple -> tuple.fileEntry)
+                    .filter(fileEntry -> basicTypes.contains(fileEntry.getFiletype()))
+                    .findFirst();
+        }
+        return Optional.empty();
     }
 
     @Command(hidden = true, name = "proof")
