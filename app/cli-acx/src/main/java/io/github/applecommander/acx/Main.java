@@ -104,6 +104,9 @@ public class Main {
         CommandLine cmd = new CommandLine(new Main());
         for (var name : HiddenProofCommand.PROOF_READER_FNS.keySet()) {
             cmd.addSubcommand(name, new AbstractProofCommand.HiddenProofCommand());
+            // By default, the subcommand name remains "proof"; this makes it the subcommand
+            // name (more obvious which checker it is). It is not returned by "addSubcommand"!
+            cmd.getSubcommands().get(name).setCommandName(name);
         }
         cmd.setUsageHelpAutoWidth(true);
         cmd.setExecutionExceptionHandler(new PrintExceptionMessageHandler());
