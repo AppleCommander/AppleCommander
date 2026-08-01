@@ -37,6 +37,7 @@ import picocli.CommandLine.Model.CommandSpec;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.Callable;
@@ -121,14 +122,17 @@ public abstract class AbstractProofCommand extends ReusableCommandOptions {
 
     @Command(hidden = true, name = "proof")
     public static class HiddenProofCommand extends AbstractProofCommand implements Callable<Integer> {
-        public static final String[] PROOF_READERS = {
-                "apple-checker",
-                "checkit",
-                "kp2", "key-perfect-2",
-                "kp4", "key-perfect-4",
-                "kp5", "key-perfect-5",
-                "proofreader"
-        };
+        public static final Map<String,Function<Configuration,Object>> PROOF_READER_FNS = Map.of(
+                "apple-checker", NibbleAppleChecker::new,
+                "checkit",       NibbleCheckit::new,
+                "kp2",           MicrosparcKeyPerfect2::new,
+                "key-perfect-2", MicrosparcKeyPerfect2::new,
+                "kp4",           MicrosparcKeyPerfect4::new,
+                "key-perfect-4", MicrosparcKeyPerfect4::new,
+                "kp5",           MicrosparcKeyPerfect5::new,
+                "key-perfect-5", MicrosparcKeyPerfect5::new,
+                "proofreader",   ComputeAutomaticProofreader::new
+        );
 
         @Spec
         private CommandSpec spec;
@@ -136,15 +140,9 @@ public abstract class AbstractProofCommand extends ReusableCommandOptions {
         @Override
         public int handleCommand() throws Exception {
             String commandName = spec.commandLine().getCommandName();
-            Function<Configuration,Object> proofReaderFn = switch (commandName) {
-                case "apple-checker" -> NibbleAppleChecker::new;
-                case "checkit" -> NibbleCheckit::new;
-                case "kp2", "key-perfect-2" -> MicrosparcKeyPerfect2::new;
-                case "kp4", "key-perfect-4" -> MicrosparcKeyPerfect4::new;
-                case "kp5", "key-perfect-5" -> MicrosparcKeyPerfect5::new;
-                case "proofreader" -> ComputeAutomaticProofreader::new;
-                default -> throw new UnmatchedArgumentException(spec.commandLine(), "Unknown subcommand: " + commandName);
-            };
+            Function<Configuration,Object> proofReaderFn = PROOF_READER_FNS.getOrDefault(commandName, key -> {
+                throw new UnmatchedArgumentException(spec.commandLine(), "Unknown subcommand: " + key);
+            });
             return handle(proofReaderFn);
         }
     }

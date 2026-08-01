@@ -102,7 +102,7 @@ public class Main {
 
     public static void main(String[] args) {
         CommandLine cmd = new CommandLine(new Main());
-        for (var name : HiddenProofCommand.PROOF_READERS) {
+        for (var name : HiddenProofCommand.PROOF_READER_FNS.keySet()) {
             cmd.addSubcommand(name, new AbstractProofCommand.HiddenProofCommand());
         }
         cmd.setUsageHelpAutoWidth(true);
