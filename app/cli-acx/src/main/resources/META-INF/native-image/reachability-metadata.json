@@ -1,0 +1,604 @@
+{
+  "reflection": [
+    {
+      "type": "groovy.lang.Closure"
+    },
+    {
+      "type": "io.github.applecommander.acx.Main",
+      "fields": [
+        {
+          "name": "enableStackTrace"
+        }
+      ],
+      "methods": [
+        {
+          "name": "main",
+          "parameterTypes": [
+            "java.lang.String[]"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.VersionProvider",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.arggroup.CoordinateSelection",
+      "fields": [
+        {
+          "name": "blockCoordinate"
+        },
+        {
+          "name": "sectorCoordinate"
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.arggroup.CoordinateSelection$BlockCoordinateSelection"
+    },
+    {
+      "type": "io.github.applecommander.acx.arggroup.CoordinateSelection$SectorCoordinateSelection"
+    },
+    {
+      "type": "io.github.applecommander.acx.base.ReadOnlyDiskContextCommandOptions"
+    },
+    {
+      "type": "io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions"
+    },
+    {
+      "type": "io.github.applecommander.acx.base.ReadWriteDiskCommandOptions"
+    },
+    {
+      "type": "io.github.applecommander.acx.base.ReadWriteDiskCommandWithGlobOptions"
+    },
+    {
+      "type": "io.github.applecommander.acx.base.ReusableCommandOptions"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.AbstractProofCommand",
+      "fields": [
+        {
+          "name": "tokenizerSelection"
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.command.AbstractProofCommand$HiddenProofCommand",
+      "fields": [
+        {
+          "name": "spec"
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.command.AbstractProofCommand$ProofCommand",
+      "fields": [
+        {
+          "name": "proofReader"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.command.AbstractProofCommand$ProofReaderSelection"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.AbstractProofCommand$TokenizerSelection"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.AbstractProofCommand$TokenizerSelectionTransformer",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.command.CheckCommand"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.CompareCommand",
+      "fields": [
+        {
+          "name": "strategySelection"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.command.CompareCommand$StrategySelection"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.ConvertCommand"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.CopyFileCommand"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.CreateDiskCommand",
+      "fields": [
+        {
+          "name": "orderSelection"
+        },
+        {
+          "name": "systemSelection"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.command.CreateDiskCommand$OrderSelection"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.CreateDiskCommand$SystemSelection"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.DeleteCommand"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.DiskMapCommand"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.DumpCommand",
+      "fields": [
+        {
+          "name": "options"
+        },
+        {
+          "name": "output"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.command.DumpCommand$BlockRangeSelection"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.DumpCommand$CoordinateRangeSelection",
+      "fields": [
+        {
+          "name": "blockRangeSelection"
+        },
+        {
+          "name": "nibbleTrackRangeSelection"
+        },
+        {
+          "name": "trackSectorRangeSelection"
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.command.DumpCommand$DisassemblerOptions",
+      "fields": [
+        {
+          "name": "instructionSet"
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.command.DumpCommand$DisassemblerOptions$InstructionSetSelection"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.DumpCommand$NibbleTrackRangeSelection"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.DumpCommand$Options",
+      "fields": [
+        {
+          "name": "coordinate"
+        },
+        {
+          "name": "disassemblerOptions"
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.command.DumpCommand$OutputSelection"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.DumpCommand$TrackSectorRangeSelection"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.ExportCommand",
+      "fields": [
+        {
+          "name": "extraction"
+        },
+        {
+          "name": "spec"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.command.ExportCommand$FileExtractMethods"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.FindDuplicateFilesCommand"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.ImportCommand",
+      "fields": [
+        {
+          "name": "inputData"
+        },
+        {
+          "name": "overrides"
+        },
+        {
+          "name": "processor"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.command.ImportCommand$InputData"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.ImportCommand$Overrides"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.ImportCommand$Processor"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.InfoCommand"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.ListCommand",
+      "fields": [
+        {
+          "name": "fileDisplay"
+        },
+        {
+          "name": "outputType"
+        },
+        {
+          "name": "typeOfFile"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.command.ListCommand$FileDisplay"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.ListCommand$OutputType"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.ListCommand$TypeOfFileSelection"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.LockCommand"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.MkdirCommand"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.ReadCommand",
+      "fields": [
+        {
+          "name": "coordinate"
+        },
+        {
+          "name": "output"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.command.ReadCommand$OutputSelection"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.RenameDiskCommand"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.RenameFileCommand"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.RmdirCommand"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.ScanCommand"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.UnlockCommand"
+    },
+    {
+      "type": "io.github.applecommander.acx.command.WriteCommand",
+      "fields": [
+        {
+          "name": "coordinate"
+        },
+        {
+          "name": "input"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.command.WriteCommand$InputSelection"
+    },
+    {
+      "type": "io.github.applecommander.acx.converter.DataSizeConverter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.converter.DiskConverter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.converter.DiskFactoryContextConverter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.converter.ExportMethodConverter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.converter.ExportMethodConverter$ExportMethodCandidates",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.converter.IntegerTypeConverter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.applecommander.acx.converter.RangeTypeConverter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.io.Console",
+      "methods": [
+        {
+          "name": "isTerminal",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.Boolean",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "getBoolean",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.lang.Object"
+    },
+    {
+      "type": "java.lang.ProcessBuilder",
+      "methods": [
+        {
+          "name": "redirectError",
+          "parameterTypes": [
+            "java.lang.ProcessBuilder$Redirect"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.lang.ProcessBuilder$Redirect",
+      "fields": [
+        {
+          "name": "INHERIT"
+        }
+      ]
+    },
+    {
+      "type": "java.lang.System",
+      "methods": [
+        {
+          "name": "console",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.nio.file.Path"
+    },
+    {
+      "type": "java.nio.file.Paths"
+    },
+    {
+      "type": "java.sql.Connection"
+    },
+    {
+      "type": "java.sql.Driver"
+    },
+    {
+      "type": "java.sql.DriverManager"
+    },
+    {
+      "type": "java.sql.Time"
+    },
+    {
+      "type": "java.sql.Timestamp"
+    },
+    {
+      "type": "java.time.Duration"
+    },
+    {
+      "type": "java.time.Instant"
+    },
+    {
+      "type": "java.time.LocalDate"
+    },
+    {
+      "type": "java.time.LocalDateTime"
+    },
+    {
+      "type": "java.time.LocalTime"
+    },
+    {
+      "type": "java.time.MonthDay"
+    },
+    {
+      "type": "java.time.OffsetDateTime"
+    },
+    {
+      "type": "java.time.OffsetTime"
+    },
+    {
+      "type": "java.time.Period"
+    },
+    {
+      "type": "java.time.Year"
+    },
+    {
+      "type": "java.time.YearMonth"
+    },
+    {
+      "type": "java.time.ZoneId"
+    },
+    {
+      "type": "java.time.ZoneOffset"
+    },
+    {
+      "type": "java.time.ZonedDateTime"
+    },
+    {
+      "type": "picocli.CommandLine$AutoHelpMixin",
+      "fields": [
+        {
+          "name": "helpRequested"
+        },
+        {
+          "name": "versionRequested"
+        }
+      ]
+    },
+    {
+      "type": "picocli.CommandLine$HelpCommand",
+      "fields": [
+        {
+          "name": "commands"
+        },
+        {
+          "name": "helpRequested"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.text.resources.BreakIteratorInfo"
+    },
+    {
+      "type": "sun.text.resources.BreakIteratorResources"
+    },
+    {
+      "type": "sun.text.resources.BreakIteratorResources_en"
+    },
+    {
+      "type": "sun.text.resources.BreakIteratorResources_en_US"
+    }
+  ],
+  "resources": [
+    {
+      "glob": "META-INF/services/java.net.spi.URLStreamHandlerProvider"
+    },
+    {
+      "glob": "META-INF/services/java.time.zone.ZoneRulesProvider"
+    },
+    {
+      "module": "java.base",
+      "glob": "sun/text/resources/LineBreakIteratorData"
+    }
+  ]
+}
