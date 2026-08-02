@@ -105,7 +105,7 @@ public abstract class AbstractProofCommand extends ReusableCommandOptions {
         return 0;
     }
 
-    public Program getProgram(Optional<FileEntry> optFileEntry) throws IOException {
+    public Program getProgram(Optional<FileEntry> optFileEntry) {
         File sourceFile = optFileEntry.map(fileEntry -> {
             LOG.warning("BASIC source generated from tokenized program. May not match proof-reader codes.");
             FileFilter filter = fileEntry.getSuggestedFilter();
