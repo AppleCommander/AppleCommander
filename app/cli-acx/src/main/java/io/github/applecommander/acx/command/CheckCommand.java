@@ -19,13 +19,15 @@
  */
 package io.github.applecommander.acx.command;
 
-import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.os.prodos.ProdosDirectoryEntry;
-import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import io.github.applecommander.acx.base.ReadWriteDiskCommandOptions;
+import org.applecommander.os.DiskCheck;
+import org.applecommander.os.DiskCheck.Finding;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+
+import java.util.List;
+import java.util.Optional;
 
 @Command(name = "check", description = "Check image for issues.")
 public class CheckCommand extends ReadWriteDiskCommandOptions {
@@ -34,52 +36,32 @@ public class CheckCommand extends ReadWriteDiskCommandOptions {
 
     @Override
     public int handleCommand() throws Exception {
+        int checkCount = 0;
+        int findingCount = 0;
         for (FormattedDisk disk : selectedDisks()) {
-            switch (disk) {
-                case ProdosFormatDisk p -> handleProdosFormatDisk(p);
-                default -> {
-                    System.err.println("Currently only support ProDOS disks.\n");
-                    return 1;
-                }
-            }
-        }
-        return 0;
-    }
-
-    private void handleProdosFormatDisk(ProdosFormatDisk disk) throws DiskException {
-        for (var dir : disk.getFiles()) {
-            if ( ! (dir instanceof ProdosDirectoryEntry pdosDir)) {
-                // Skip anything but directories
+            Optional<DiskCheck> opt = disk.get(DiskCheck.class);
+            if (opt.isEmpty()) {
+                System.err.printf("Disk check not supported for disks of type '%s'.\n", disk.getFormat());
                 continue;
             }
-            if (pdosDir.getHeaderPointer() != 2) {
-                System.out.printf("Subdirectory %s is not pointing to the key block of disk %s.\n", pdosDir.getDirname(), disk.getDirname());
-            }
-            if (fix) {
-                applyHeaderPointerFix(pdosDir, 2);
-            }
-            handleDirectory(pdosDir);
+            checkCount++;
+            findingCount += handleDiskCheck(opt.get());
         }
+        if (checkCount > 0) {
+            System.out.printf("Found %d items.\n", findingCount);
+        }
+        // If we processed _nothing_ treat it as an error.
+        return checkCount == 0 ? 1 : 0;
     }
 
-    private void handleDirectory(ProdosDirectoryEntry mainDir) throws DiskException {
-        for (var dir : mainDir.getFiles()) {
-            if ( ! (dir instanceof ProdosDirectoryEntry pdosDir)) {
-                // Skip anything but directories
-                continue;
-            }
-            if (pdosDir.getHeaderPointer() != mainDir.getKeyPointer()) {
-                System.out.printf("Subdirectory %s is not pointing to the key block of directory %s.\n", pdosDir.getDirname(), mainDir.getDirname());
-            }
+    public int handleDiskCheck(DiskCheck diskCheck) throws Exception {
+        List<Finding> findings = diskCheck.scan();
+        for (Finding finding : findings) {
+            System.out.printf("[%-10.10s] %s @ %s\n", finding.classification(), finding.description(), finding.coordinate());
             if (fix) {
-                applyHeaderPointerFix(pdosDir, mainDir.getKeyPointer());
+                finding.action().ifPresent(Runnable::run);
             }
-            handleDirectory(pdosDir);
         }
-    }
-
-    private void applyHeaderPointerFix(ProdosDirectoryEntry pdosDir, int newHeaderPointerBlock) {
-        pdosDir.setHeaderPointer(newHeaderPointerBlock);
-        System.out.printf("Patch applied to subdirectory %s.\n", pdosDir.getDirname());
+        return findings.size();
     }
 }
