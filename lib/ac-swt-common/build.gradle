@@ -18,13 +18,13 @@ repositories {
 dependencies {
     implementation project(':lib:ac-api')
 
-    implementation "net.sf.applecommander:applesingle-api:$asVersion"
-    implementation "org.applecommander:bastools-api:$btVersion"
+    implementation "net.sf.applecommander:applesingle-api:1.2.2"
+    implementation "org.applecommander:bastools-api:5.0"
 
-    testImplementation platform("org.junit:junit-bom:$junitVersion")
+    testImplementation platform("org.junit:junit-bom:6.1.2")
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation "org.apache.commons:commons-lang3:$commonsLang3Version"
+    testImplementation "org.apache.commons:commons-lang3:3.20.0"
 }
 
 test {
@@ -36,19 +36,19 @@ test {
             osArch = "x86_64"
             break
         case 'arm':
-            swtVersion = "$piSwtVersion"
+            swtVersion = "3.8.2"
             break
     }
     String swtDependency
     switch (osName) {
         case 'windows':
-            swtDependency = "org.eclipse.platform:org.eclipse.swt.win32.win32.${osArch}:$swtVersion"
+            swtDependency = "org.eclipse.platform:org.eclipse.swt.win32.win32.${osArch}:3.134.0"
             break
         case 'linux':
-            swtDependency = "org.eclipse.platform:org.eclipse.swt.gtk.linux.${osArch}:$swtVersion"
+            swtDependency = "org.eclipse.platform:org.eclipse.swt.gtk.linux.${osArch}:3.134.0"
             break
         case 'mac':
-            swtDependency = "org.eclipse.platform:org.eclipse.swt.cocoa.macosx.${osArch}:$swtVersion"
+            swtDependency = "org.eclipse.platform:org.eclipse.swt.cocoa.macosx.${osArch}:3.134.0"
             break
         default:
             throw new Exception('Unknown OS')

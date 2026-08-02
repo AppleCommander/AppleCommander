@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version "$springBoot"
+    id 'org.springframework.boot' version "4.1.0"
     id 'application'
 }
 
@@ -15,7 +15,7 @@ repositories {
 dependencies {
     implementation project(':lib:ac-swt-common')
 
-    implementation("org.eclipse.platform:org.eclipse.swt.cocoa.macosx.aarch64:$swtVersion") {
+    implementation("org.eclipse.platform:org.eclipse.swt.cocoa.macosx.aarch64:3.134.0") {
         exclude group: "org.eclipse.platform", module: "org.eclipse.swt"
     }
 }

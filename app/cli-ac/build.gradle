@@ -1,7 +1,7 @@
 plugins {
-    id 'org.springframework.boot' version "$springBoot"
+    id 'org.springframework.boot' version "4.1.0"
     id 'application'
-    id 'org.graalvm.buildtools.native' version "$graalvmBuildVersion"
+    id 'org.graalvm.buildtools.native' version "1.1.6"
 }
 
 java {
@@ -15,13 +15,13 @@ repositories {
 
 dependencies {
     implementation project(':lib:ac-api')
-    implementation "net.sf.applecommander:ShrinkItArchive:$shkVersion"
-    implementation "net.sf.applecommander:applesingle-api:$asVersion"
-    implementation "org.applecommander:bastools-api:$btVersion"
+    implementation "net.sf.applecommander:ShrinkItArchive:1.2.2"
+    implementation "net.sf.applecommander:applesingle-api:1.2.2"
+    implementation "org.applecommander:bastools-api:5.0"
 
-    compileOnly "org.apache.ant:ant:$antVersion"
+    compileOnly "org.apache.ant:ant:1.10.17"
 
-    testImplementation platform("org.junit:junit-bom:$junitVersion")
+    testImplementation platform("org.junit:junit-bom:6.1.2")
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

@@ -1,8 +1,8 @@
 plugins {
-    id 'org.springframework.boot' version "$springBoot"
+    id 'org.springframework.boot' version "4.1.0"
     id 'java'
     id 'application'
-    id 'org.graalvm.buildtools.native' version "$graalvmBuildVersion"
+    id 'org.graalvm.buildtools.native' version "1.1.6"
 }
 
 java {
@@ -15,17 +15,17 @@ repositories {
 }
 
 dependencies {
-    implementation "info.picocli:picocli:$picocliVersion"
+    implementation "info.picocli:picocli:4.7.7"
     implementation project(':lib:ac-api')
-    implementation "net.sf.applecommander:ShrinkItArchive:$shkVersion"
-    implementation "net.sf.applecommander:applesingle-api:$asVersion"
-    implementation "org.applecommander:bastools-api:$btVersion"
-    implementation "org.applecommander:acdasm:$acdasmVersion"
-    implementation "com.google.code.gson:gson:$gsonVersion"
+    implementation "net.sf.applecommander:ShrinkItArchive:1.2.2"
+    implementation "net.sf.applecommander:applesingle-api:1.2.2"
+    implementation "org.applecommander:bastools-api:5.0"
+    implementation "org.applecommander:acdasm:6.1"
+    implementation "com.google.code.gson:gson:2.14.0"
 
-    annotationProcessor "info.picocli:picocli-codegen:$picocliVersion"
+    annotationProcessor "info.picocli:picocli-codegen:4.7.7"
 
-    testImplementation platform("org.junit:junit-bom:$junitVersion")
+    testImplementation platform("org.junit:junit-bom:6.1.2")
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

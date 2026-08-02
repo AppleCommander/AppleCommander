@@ -17,13 +17,13 @@ repositories {
 }
 
 dependencies {
-    implementation "net.sf.applecommander:ShrinkItArchive:$shkVersion"
-    implementation "org.applecommander:acdasm:$acdasmVersion"
-    implementation "org.applecommander:bastools-api:$btVersion"
-    implementation "org.apache.commons:commons-csv:$commonsCsvVersion"
-    implementation "com.google.code.gson:gson:$gsonVersion"
+    implementation "net.sf.applecommander:ShrinkItArchive:1.2.2"
+    implementation "org.applecommander:acdasm:6.1"
+    implementation "org.applecommander:bastools-api:5.0"
+    implementation "org.apache.commons:commons-csv:1.14.1"
+    implementation "com.google.code.gson:gson:2.14.0"
 
-    testImplementation platform("org.junit:junit-bom:$junitVersion")
+    testImplementation platform("org.junit:junit-bom:6.1.2")
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.junit.jupiter:junit-jupiter-params'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

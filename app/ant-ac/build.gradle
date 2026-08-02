@@ -14,12 +14,12 @@ repositories {
 dependencies {
     implementation project(':app:cli-ac')
     implementation project(':lib:ac-api')
-    compileOnly "org.apache.ant:ant:$antVersion"
+    compileOnly "org.apache.ant:ant:1.10.17"
 
-    testImplementation platform("org.junit:junit-bom:$junitVersion")
+    testImplementation platform("org.junit:junit-bom:6.1.2")
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation "org.apache.ant:ant:$antVersion"
+    testImplementation "org.apache.ant:ant:1.10.17"
 }
 
 test {
