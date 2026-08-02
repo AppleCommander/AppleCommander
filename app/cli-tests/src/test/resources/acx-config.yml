@@ -79,6 +79,7 @@ tests:
       - command: acx import -d $disk $txtfile --name TESTFILE
       - command: acx rm -d $disk TESTFILE
       - command: acx import -d $disk $txtfile --name TESTFILE
+
   - name: big exercise
     variables:
       flag: ["--dos", "--prodos"]
@@ -126,6 +127,7 @@ tests:
         criteria:
           whitespace: trim
         stdout: $disassembly
+
   - name: ticket207
     steps:
       # Note: Since we are not actually at the shell, the quotes around the wildcard patterns are not needed.
@@ -138,3 +140,35 @@ tests:
             A 057 SUPER QUEST/INTRO              
             B 002 PACK/UNPACK                    
           DOS 3.3 format; 1,536 bytes free; 408,064 bytes used.
+
+  - name: Proof reader test
+    steps:
+      # The help subcommand did cause issues with native compilation due to the dynamic help text generation.
+      - command: acx help proof
+        criteria:
+          match: contains
+        stdout: program checksums
+      # Test a check on "basfile" as a source file.
+      - command: acx proof --checkit $basfile
+        criteria:
+          whitespace: trim
+        stdout: |
+          Nibble Checkit, Copyright 1988, Microsparc Inc.
+          5D | 10  TEXT : HOME 
+          BC | 20  PRINT "HELLO, WORLD"
+          91 | 30  END 
+          TOTAL: 1CB9
+      # Create a ProDOS disk, load the file, and then perform checkit against that disk image file.
+      - command: acx mkdisk -d $testdisk.po --prodos
+      - command: acx import -d $testdisk.po --name BASFILE --basic $basfile
+      - command: acx proof -d $testdisk.po --checkit BASFILE
+        criteria:
+          whitespace: trim
+        stderr: |
+          WARNING: BASIC source generated from tokenized program. May not match proof-reader codes.
+        stdout: |
+          Nibble Checkit, Copyright 1988, Microsparc Inc.
+          5D | 10  TEXT : HOME 
+          BC | 20  PRINT "HELLO, WORLD"
+          91 | 30  END 
+          TOTAL: 1CB9

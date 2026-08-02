@@ -20,6 +20,8 @@
 package io.github.applecommander.acx;
 
 import io.github.applecommander.acx.command.*;
+import io.github.applecommander.acx.command.AbstractProofCommand.HiddenProofCommand;
+import io.github.applecommander.acx.command.AbstractProofCommand.ProofCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
@@ -55,6 +57,7 @@ import java.util.logging.Logger;
             ListCommand.class,
             LockCommand.class,
             MkdirCommand.class,
+            ProofCommand.class,
             ReadCommand.class,
             RenameFileCommand.class,
             RenameDiskCommand.class,
@@ -99,6 +102,13 @@ public class Main {
 
     public static void main(String[] args) {
         CommandLine cmd = new CommandLine(new Main());
+        for (var name : HiddenProofCommand.PROOF_READER_FNS.keySet()) {
+            cmd.addSubcommand(name, new AbstractProofCommand.HiddenProofCommand());
+            // By default, the subcommand name remains "proof"; this makes it the subcommand
+            // name (more obvious which checker it is). It is not returned by "addSubcommand"!
+            cmd.getSubcommands().get(name).setCommandName(name);
+        }
+        cmd.setUsageHelpAutoWidth(true);
         cmd.setExecutionExceptionHandler(new PrintExceptionMessageHandler());
         cmd.setCaseInsensitiveEnumValuesAllowed(true);
         if (args.length == 0) {
