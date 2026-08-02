@@ -26,19 +26,18 @@ import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
 import io.github.applecommander.acx.converter.DiskConverter;
+import org.applecommander.bastools.api.ClassicTokenReader;
 import org.applecommander.bastools.api.Configuration;
 import org.applecommander.bastools.api.ModernTokenReader;
 import org.applecommander.bastools.api.Parser;
 import org.applecommander.bastools.api.model.Program;
 import org.applecommander.bastools.api.model.Token;
 import org.applecommander.bastools.api.proofreaders.*;
+import picocli.CommandLine;
 import picocli.CommandLine.*;
 import picocli.CommandLine.Model.CommandSpec;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,11 +46,14 @@ import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_FOOTER;
+
 /**
  * Perform "checking" of a program that was printed in a magazine.
  * Note the structure of AbstractProofCommand, HiddenProofCommand, and ProofCommand.
  */
-@Command(name = "proof", description = "Proof-read/calculate program checksums (as printed in magazines) on file.")
+@Command(name = "proof", description = "Proof-read/calculate program checksums (as printed in magazines) on file.",
+         modelTransformer = AbstractProofCommand.TokenizerSelectionTransformer.class)
 public abstract class AbstractProofCommand extends ReusableCommandOptions {
     private static final Logger LOG = Logger.getLogger(AbstractProofCommand.class.getName());
 
@@ -67,12 +69,16 @@ public abstract class AbstractProofCommand extends ReusableCommandOptions {
     @Option(names = "--debug", description = "Print debug output.")
     private static boolean debugFlag;
 
+    @ArgGroup(heading = "%nTokenizer Selection:%n")
+    private final TokenizerSelection tokenizerSelection = new TokenizerSelection();
+
     @Parameters(arity = "1", description = "Program name")
     private String programName;
 
     public int handle(Function<Configuration,Object> proofReaderFn) throws Exception {
         Configuration.Builder builder = Configuration.builder()
-                .sourceFile(new File(programName));
+                .sourceFile(new File(programName))
+                .preserveNumbers(tokenizerSelection.preserveNumbers);
         if (debugFlag) builder.debugStream(System.out);
 
         // Build is configured differently depending on if we find it in a disk image or as source.
@@ -115,7 +121,7 @@ public abstract class AbstractProofCommand extends ReusableCommandOptions {
             }
         }).orElse(new File(programName));
 
-        Queue<Token> tokens = ModernTokenReader.tokenize(sourceFile);
+        Queue<Token> tokens = tokenizerSelection.tokenizerFn.apply(sourceFile);
         Parser parser = new Parser(tokens);
         return parser.parse();
     }
@@ -134,7 +140,8 @@ public abstract class AbstractProofCommand extends ReusableCommandOptions {
         return Optional.empty();
     }
 
-    @Command(hidden = true, name = "proof")
+    @Command(hidden = true, name = "proof", footer = { "",
+            "* The 'proof' subcommand explains the tokenizer options in more detail.", ""})
     public static class HiddenProofCommand extends AbstractProofCommand implements Callable<Integer> {
         public static final Map<String,Function<Configuration,Object>> PROOF_READER_FNS = Map.of(
                 "apple-checker", NibbleAppleChecker::new,
@@ -161,13 +168,9 @@ public abstract class AbstractProofCommand extends ReusableCommandOptions {
         }
     }
 
-    @Command(name = "proof", footer = {
-            "",
-            "* Note this command can be called with the tokenizer as the subcommand ('acx checkit' etc).",
-            ""
-    })
+    @Command(name = "proof")
     public static class ProofCommand extends AbstractProofCommand implements Callable<Integer>  {
-        @ArgGroup(heading = "%nTokenizer Selection:%n", multiplicity = "1")
+        @ArgGroup(heading = "%nProof Reader Selection:%n", multiplicity = "1")
         private final ProofReaderSelection proofReader = new ProofReaderSelection();
 
         @Override
@@ -207,6 +210,84 @@ public abstract class AbstractProofCommand extends ReusableCommandOptions {
         @Option(names = { "--key-perfect-5", "--kp5" }, description = "Apply MicroSPARC Key Perfect V5 (ca 1985) to code")
         public void selectKeyPerfectV5(boolean flag) {
             this.proofReaderFn = MicrosparcKeyPerfect5::new;
+        }
+    }
+
+    public static class TokenizerSelection {
+        Function<File,Queue<Token>> tokenizerFn = this::modernTokenizer;
+        boolean preserveNumbers = false;
+
+        @Option(names = "--modern", description = "Select modern tokenizer (default)")
+        public void selectModernTokenizer(boolean flag) {
+            this.tokenizerFn = this::modernTokenizer;
+            this.preserveNumbers = false;
+        }
+
+        @Option(names = "--classic", description = "Select classic tokenizer")
+        public void selectClassicTokenizer(boolean flag) {
+            this.tokenizerFn = this::classicTokenizer;
+            this.preserveNumbers = false;
+        }
+
+        @Option(names = "--preserve", description = "Select classic tokenizer with number preservation")
+        public void selectPreserveTokenizer(boolean flag) {
+            this.tokenizerFn = this::classicTokenizer;
+            this.preserveNumbers = true;
+        }
+
+        Queue<Token> modernTokenizer(File file) {
+            try {
+                return ModernTokenReader.tokenize(file);
+            } catch (IOException ex) {
+                throw new UncheckedIOException(ex);
+            }
+        }
+        Queue<Token> classicTokenizer(File file) {
+            try {
+                return ClassicTokenReader.tokenize(file);
+            } catch (IOException ex) {
+                throw new UncheckedIOException(ex);
+            }
+        }
+    }
+
+    public static class TokenizerSelectionTransformer implements IModelTransformer {
+        @Override
+        public CommandSpec transform(CommandSpec commandSpec) {
+            // Taken directly from 'bt' utility.
+            commandSpec.commandLine().getHelpSectionMap().put(SECTION_KEY_FOOTER, help -> {
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                pw.println("\nTokenizer Defaults:");
+                CommandLine.Help.Column[] columns = {
+                        new CommandLine.Help.Column(12, 2, CommandLine.Help.Column.Overflow.WRAP),
+                        new CommandLine.Help.Column(20, 2, CommandLine.Help.Column.Overflow.WRAP),
+                        new CommandLine.Help.Column(11, 2, CommandLine.Help.Column.Overflow.WRAP),
+                        new CommandLine.Help.Column(11, 2, CommandLine.Help.Column.Overflow.WRAP),
+                        new CommandLine.Help.Column(11, 2, CommandLine.Help.Column.Overflow.WRAP)
+                };
+                CommandLine.Help.TextTable table = CommandLine.Help.TextTable.forColumns(help.colorScheme(), columns);
+                table.addRowValues("Option", "Tokenizer Class", "Parsing?", "Numbers?", "DATA?");
+                table.addRowValues("----------", "------------------", "---------", "---------", "---------");
+                table.addRowValues("--modern", "ModernTokenReader", "'Modern'", "Rewritten", "Rewritten");
+                table.addRowValues("--classic", "ClassicTokenReader", "Applesoft", "Rewritten", "Preserved");
+                table.addRowValues("--preserve", "ClassicTokenReader", "Applesoft", "Preserved", "Preserved");
+                table.addRowValues("----------", "------------------", "---------", "---------", "---------");
+                pw.print(table);
+                pw.println("  * Parsing: 'Modern' -  spaces between keywords and tokens are important,");
+                pw.println("                         any variable name can be used;");
+                pw.println("             Applesoft - ignores spaces, special logic to disambiguate AT/ATN/A TO,");
+                pw.println("                         variables cannot have keywords in them (ex: TON is invalid).");
+                pw.println("  * Numbers: Rewritten - means that a 0.600 is output as 0.6;");
+                pw.println("             Preserved - means that a 0.600 is output as 0.600.");
+                pw.println("  * Data:    Rewritten - the tokenizer identifies the data type and handles it appropriately;");
+                pw.println("             Preserved - the statement text (including all whitespace) is preserved.");
+                pw.println("");
+                pw.println("* Note this command can be called with the proof reader as the subcommand ('acx checkit' etc).");
+                pw.println("");
+                return sw.toString();
+            });
+            return commandSpec;
         }
     }
 }
