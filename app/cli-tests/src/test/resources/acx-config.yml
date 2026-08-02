@@ -164,6 +164,8 @@ tests:
       - command: acx proof -d $testdisk.po --checkit BASFILE
         criteria:
           whitespace: trim
+        stderr: |
+          WARNING: BASIC source generated from tokenized program. May not match proof-reader codes.
         stdout: |
           Nibble Checkit, Copyright 1988, Microsparc Inc.
           5D | 10  TEXT : HOME 
