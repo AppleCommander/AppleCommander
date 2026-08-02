@@ -27,7 +27,7 @@ import io.github.applecommander.acx.base.ReadWriteDiskCommandOptions;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-@Command(name = "check", description = "Check image for issues.", hidden = true)
+@Command(name = "check", description = "Check image for issues.")
 public class CheckCommand extends ReadWriteDiskCommandOptions {
     @Option(names = { "--fix" }, description = "Fix defects (modifies image in place).")
     private boolean fix;
