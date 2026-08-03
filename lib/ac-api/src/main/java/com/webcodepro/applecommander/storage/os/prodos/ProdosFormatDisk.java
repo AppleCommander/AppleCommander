@@ -76,6 +76,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 	private final ProdosVolumeDirectoryHeader volumeHeader;
 
 	private final BlockDevice device;
+	private final ProdosDiskCheck diskCheck;
 
 	/**
 	 * This class holds filetype mappings.
@@ -138,6 +139,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 		super(filename, device.get(Source.class).orElseThrow());
 		this.device = device;
 		this.volumeHeader = new ProdosVolumeDirectoryHeader(this);
+		this.diskCheck = new ProdosDiskCheck(this);
 	}
 	
 	/*
@@ -177,7 +179,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 
 	@Override
 	public <T> Optional<T> get(Class<T> iface) {
-		return Container.get(iface, device, new ProdosDiskCheck(this));
+		return Container.get(iface, device, diskCheck);
 	}
 
 	/**
@@ -1101,14 +1103,21 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 */
 	public byte[] readVolumeBitMap() {
 		int volumeBitmapBlock = volumeHeader.getBitMapPointer();
-		int volumeBitmapBlocks = volumeHeader.getTotalBlocks();
-		int blocksToRead = (volumeBitmapBlocks / 4096) + 1;
+		int blocksToRead = getVolumeBitmapBlockCount();
 		// Read in the entire volume bitmap:
 		byte[] data = new byte[blocksToRead * BLOCK_SIZE];
 		for (int i=0; i<blocksToRead; i++) {
 			System.arraycopy(readBlock(volumeBitmapBlock+i), 0, data, i*BLOCK_SIZE, BLOCK_SIZE);
 		}
 		return data;
+	}
+
+	/**
+	 * Volume Bit Map size in blocks.
+	 */
+	public int getVolumeBitmapBlockCount() {
+		int volumeBitmapBlocks = volumeHeader.getTotalBlocks();
+		return(volumeBitmapBlocks / 4096) + 1;
 	}
 	
 	/**
