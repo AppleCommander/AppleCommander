@@ -28,11 +28,13 @@ import picocli.CommandLine.Option;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 
 @Command(name = "check", description = "Check image for issues.")
 public class CheckCommand extends ReadWriteDiskCommandOptions {
-    @Option(names = { "--fix" }, description = "Fix defects (modifies image in place).")
-    private boolean fix;
+    @Option(names = { "--fix" }, description = "Fix defects (modifies image in place). Use classification, coordinate, or 'prompt'. Can combine.")
+    private final Set<String> fixes = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
     @Override
     public int handleCommand() throws Exception {
@@ -55,10 +57,22 @@ public class CheckCommand extends ReadWriteDiskCommandOptions {
     }
 
     public int handleDiskCheck(DiskCheck diskCheck) throws Exception {
+        boolean prompt = fixes.contains("prompt");
+        if (prompt && System.console() == null) {
+            throw new RuntimeException("Console is not available. 'prompt' is invalid.");
+        }
+
         List<Finding> findings = diskCheck.scan();
         for (Finding finding : findings) {
             System.out.printf("[%-10.10s] %s @ %s\n", finding.classification(), finding.description(), finding.coordinate());
-            if (fix) {
+            if (fixes.contains(finding.classification()) || fixes.contains(finding.coordinate().toString())) {
+                if (prompt) {
+                    String answer = System.console().readLine("Apply fix? [y/N] ");
+                    if (answer == null) continue;
+                    answer = answer.trim().toLowerCase();
+                    if (!answer.startsWith("y")) continue;
+                }
+                System.out.println(" -> Applying fix.");
                 finding.action().ifPresent(Runnable::run);
             }
         }
