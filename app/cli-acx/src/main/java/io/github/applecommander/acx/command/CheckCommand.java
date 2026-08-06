@@ -30,10 +30,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 
 @Command(name = "check", description = "Check image for issues.")
 public class CheckCommand extends ReadWriteDiskCommandOptions {
-    @Option(names = { "--fix" }, description = "Fix defects (modifies image in place). Use classification, coordinate, or 'prompt'. Can combine.")
+    @Option(names = { "--fix" }, description = "Fix defects (modifies image in place). Use classification, coordinate, or 'prompt'. Can combine.",
+        split = ",")
     private final Set<String> fixes = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
     @Override
@@ -57,23 +59,55 @@ public class CheckCommand extends ReadWriteDiskCommandOptions {
     }
 
     public int handleDiskCheck(DiskCheck diskCheck) throws Exception {
-        boolean prompt = fixes.contains("prompt");
+        boolean prompt = false;
+        final Set<String> classifications = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        final Set<String> coordinates = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        for (String fix : fixes) {
+            if ("prompt".equalsIgnoreCase(fix)) {
+                prompt = true;
+            }
+            else if (fix.matches("(?i)b\\d+")) {
+                coordinates.add(fix);
+            }
+            else if (fix.matches("(?i)t\\d+s\\d+")) {
+                coordinates.add(fix);
+            }
+            else {
+                classifications.add(fix);
+            }
+        }
+
         if (prompt && System.console() == null) {
             throw new RuntimeException("Console is not available. 'prompt' is invalid.");
         }
 
+        // If we have fixes, assume "true" (which get ANDed for a valid condition).
+        // If no fixing to be done, we skip applying it.
+        Predicate<Finding> conditions = _ -> !fixes.isEmpty();
+        if (!classifications.isEmpty()) {
+            conditions = conditions.and(finding -> classifications.contains(finding.classification()));
+        }
+        if (!coordinates.isEmpty()) {
+            conditions = conditions.and(finding -> coordinates.contains(finding.coordinate().toString()));
+        }
+
         List<Finding> findings = diskCheck.scan();
         for (Finding finding : findings) {
-            System.out.printf("[%-10.10s] %s @ %s\n", finding.classification(), finding.description(), finding.coordinate());
-            if (fixes.contains(finding.classification()) || fixes.contains(finding.coordinate().toString())) {
-                if (prompt) {
-                    String answer = System.console().readLine("Apply fix? [y/N] ");
-                    if (answer == null) continue;
-                    answer = answer.trim().toLowerCase();
-                    if (!answer.startsWith("y")) continue;
+            System.out.printf("[%-10s] %s @ %s\n", finding.classification(), finding.description(), finding.coordinate());
+            if (finding.action().isPresent()) {
+                if (conditions.test(finding)) {
+                    if (prompt) {
+                        String answer = System.console().readLine("Apply fix? [y/N] ");
+                        if (answer == null) answer= "n";
+                        answer = answer.trim().toLowerCase();
+                        if (!answer.startsWith("y")) {
+                            System.out.println(" -> Skipped.");
+                            continue;
+                        }
+                    }
+                    System.out.println(" -> Applying fix.");
+                    finding.action().ifPresent(Runnable::run);
                 }
-                System.out.println(" -> Applying fix.");
-                finding.action().ifPresent(Runnable::run);
             }
         }
         return findings.size();
