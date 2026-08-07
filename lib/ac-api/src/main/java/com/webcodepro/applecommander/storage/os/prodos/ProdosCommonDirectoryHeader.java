@@ -101,36 +101,4 @@ public class ProdosCommonDirectoryHeader extends ProdosCommonEntry {
 		if (data[0x21] != 0) data[0x21]--;
 		writeFileEntry(data);
 	}
-	
-	/**
-	 * Get the block number of the bit map.
-	 */
-	public int getBitMapPointer() {
-		return AppleUtil.getWordValue(readFileEntry(), 0x23);
-	}
-
-	/**
-	 * Set the block number of the bit map.
-	 */
-	public void setBitMapPointer(int blockNumber) {
-		byte[] data = readFileEntry();
-		AppleUtil.setWordValue(data, 0x23, blockNumber);
-		writeFileEntry(data);
-	}
-	
-	/**
-	 * Get the total number of blocks on this volume (only valid for volume directory block).
-	 */
-	public int getTotalBlocks() {
-		return AppleUtil.getWordValue(readFileEntry(), 0x25);
-	}
-
-	/**
-	 * Set the total number of blocks on this volume (only valid for volume directory block).
-	 */
-	public void setTotalBlocks(int totalBlocks) {
-		byte[] data = readFileEntry();
-		AppleUtil.setWordValue(data, 0x25, totalBlocks);
-		writeFileEntry(data);
-	}
 }
