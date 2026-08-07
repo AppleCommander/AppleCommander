@@ -21,6 +21,8 @@ package io.github.applecommander.acx.command;
 
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import io.github.applecommander.acx.base.ReadWriteDiskCommandOptions;
+import org.applecommander.device.TrackSectorNibbleDevice;
+import org.applecommander.device.TrackSectorNibbleDiskCheck;
 import org.applecommander.os.DiskCheck;
 import org.applecommander.os.DiskCheck.Finding;
 import picocli.CommandLine.Command;
@@ -43,6 +45,13 @@ public class CheckCommand extends ReadWriteDiskCommandOptions {
         int checkCount = 0;
         int findingCount = 0;
         for (FormattedDisk disk : selectedDisks()) {
+            // Special case for nibble devices
+            Optional<TrackSectorNibbleDevice> nibbleOpt = disk.get(TrackSectorNibbleDevice.class);
+            if (nibbleOpt.isPresent()) {
+                TrackSectorNibbleDiskCheck check = new TrackSectorNibbleDiskCheck(nibbleOpt.get());
+                findingCount += handleDiskCheck(check);
+            }
+
             Optional<DiskCheck> opt = disk.get(DiskCheck.class);
             if (opt.isEmpty()) {
                 System.err.printf("Disk check not supported for disks of type '%s'.\n", disk.getFormat());
