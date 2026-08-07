@@ -20,52 +20,74 @@ public class ProdosDiskCheck implements DiskCheck {
     private final ProdosFormatDisk disk;
     private final BlockDevice device;
 
-    public ProdosDiskCheck(ProdosFormatDisk disk) {
+    private final List<Finding> findings = new ArrayList<>();
+    private final BitSet usedBlocks = new BitSet();
+    private boolean applePascalAreaFound = false;
+    private boolean gsosExtendedFileFound = false;
+
+    public ProdosDiskCheck(ProdosFormatDisk disk, BlockDevice device) {
         this.disk = disk;
-        this.device = disk.get(BlockDevice.class).orElseThrow();
+        this.device = device;
     }
 
     @Override
     public List<Finding> scan() throws Exception {
-        List<Finding> findings = new ArrayList<>();
-        checkVolumeBitmap(findings);
-        for (var dir : disk.getFiles()) {
-            if ( ! (dir instanceof ProdosDirectoryEntry pdosDir)) {
-                // Skip anything but directories
-                continue;
-            }
-            if (pdosDir.getHeaderPointer() != 2) {
-                String description = String.format("Subdirectory %s is not pointing to the key block of disk %s.",
-                        pdosDir.getDirname(), disk.getDirname());
-                Finding finding = new Finding(description,
-                        Optional.of(() -> pdosDir.setHeaderPointer(2)),
-                        DIRECTORY, new Coordinate(pdosDir.getKeyPointer()));
-                findings.add(finding);
-            }
-            handleDirectory(findings, pdosDir);
-        }
+        initVolumeBitmap();
+        handleSubdirectory(disk, 2);
+        checkVolumeBitmap();
         return findings;
     }
 
-    private void handleDirectory(List<Finding> findings, ProdosDirectoryEntry mainDir) throws DiskException {
-        for (var dir : mainDir.getFiles()) {
-            if ( ! (dir instanceof ProdosDirectoryEntry pdosDir)) {
-                // Skip anything but directories
-                continue;
+    private void handleSubdirectory(DirectoryEntry parentDirectory, int parentKeyPointer) throws DiskException {
+        for (var entry : parentDirectory.getFiles()) {
+            switch (entry) {
+                case ProdosDirectoryEntry subdirectory -> {
+                    markDirectoryBlocks(usedBlocks, subdirectory.getKeyPointer());
+                    checkSubdirectoryHeaderPointer(subdirectory, parentKeyPointer, parentDirectory.getDirname());
+                    handleSubdirectory(subdirectory, subdirectory.getKeyPointer());
+                }
+                case ProdosFileEntry file -> {
+                    switch (file.getStorageType()) {
+                        case 0x00 -> { /* Deleted file - ignore */ }
+                        case 0x01 -> usedBlocks.set(file.getKeyPointer());
+                        case 0x02 -> markIndexBlocks(usedBlocks, file.getKeyPointer(), false);
+                        case 0x03 -> markIndexBlocks(usedBlocks, file.getKeyPointer(), true);
+                        case 0x04 -> applePascalAreaFound = true;
+                        case 0x05 -> gsosExtendedFileFound = true;
+                        case 0x0d -> { /* Subdirectory file, should never get here? */ }
+                        case 0x0e -> { /* Subdirectory Header - ignore */ }
+                        case 0x0f -> { /* Volume Directory Header - ignore */ }
+                        default -> throw new RuntimeException("Unexpected storage_type: " + file.getStorageType());
+                    }
+                }
+                default -> throw new RuntimeException("Unexpected file entry type: " + entry.getClass().getName());
             }
-            if (pdosDir.getHeaderPointer() != mainDir.getKeyPointer()) {
-                String description = String.format("Subdirectory %s is not pointing to the key block of directory %s.",
-                        pdosDir.getDirname(), mainDir.getDirname());
-                Finding finding = new Finding(description,
-                        Optional.of(() -> pdosDir.setHeaderPointer(mainDir.getKeyPointer())),
-                        DIRECTORY, new Coordinate(pdosDir.getKeyPointer()));
-                findings.add(finding);
-            }
-            handleDirectory(findings, pdosDir);
         }
     }
 
-    private void checkVolumeBitmap(List<Finding> findings) throws DiskException {
+    private void checkSubdirectoryHeaderPointer(ProdosDirectoryEntry subdirectory, int parentHeaderPointer, String parentName) {
+        final String pointingAtVolumeHeader = "Subdirectory %s is not pointing to the key block of disk %s.";
+        final String pointingAtSubdirectoryHeader = "Subdirectory %s is not pointing to the key block of directory %s.";
+        if (subdirectory.getHeaderPointer() != parentHeaderPointer) {
+            String description = String.format(parentHeaderPointer == 2 ? pointingAtVolumeHeader : pointingAtSubdirectoryHeader,
+                    subdirectory.getDirname(), parentName);
+            Finding finding = new Finding(description,
+                    Optional.of(() -> subdirectory.setHeaderPointer(parentHeaderPointer)),
+                    DIRECTORY, new Coordinate(subdirectory.getFileEntryBlock()));
+            findings.add(finding);
+        }
+    }
+
+    private void initVolumeBitmap() {
+        // Boot block(s)
+        usedBlocks.set(0, 2);
+        // Volume directory
+        markDirectoryBlocks(usedBlocks, 2);
+        // Volume bitmap
+        int block = disk.getVolumeHeader().getBitMapPointer();
+        usedBlocks.set(block, block + disk.getVolumeBitmapBlockCount());
+    }
+    private void checkVolumeBitmap() throws DiskException {
         // ProDOS only allows 65535 blocks
         if (Math.min(device.getGeometry().blocksOnDevice(),65535) != disk.getBitmapLength()) {
             String description = String.format("""
@@ -80,45 +102,6 @@ public class ProdosDiskCheck implements DiskCheck {
             return;
         }
 
-        BitSet usedBlocks = new BitSet(device.getGeometry().blocksOnDevice());
-        // Boot block(s)
-        usedBlocks.set(0, 2);
-        // Volume directory
-        markDirectoryBlocks(usedBlocks, 2);
-        // Volume bitmap
-        int block = disk.getVolumeHeader().getBitMapPointer();
-        usedBlocks.set(block, block + disk.getVolumeBitmapBlockCount());
-        // Handle files and subdirectories
-        boolean applePascalAreaFound = false;
-        boolean gsosExtendedFileFound = false;
-        Deque<DirectoryEntry> directories = new LinkedList<>();
-        directories.add(disk);
-        while (!directories.isEmpty()) {
-            DirectoryEntry directory = directories.pop();
-            for (FileEntry entry : directory.getFiles()) {
-                switch (entry) {
-                    case ProdosDirectoryEntry subdirectory -> {
-                        markDirectoryBlocks(usedBlocks, subdirectory.getKeyPointer());
-                        directories.push(subdirectory);
-                    }
-                    case ProdosFileEntry file -> {
-                        switch (file.getStorageType()) {
-                            case 0x00 -> { /* Deleted file - ignore */ }
-                            case 0x01 -> usedBlocks.set(file.getKeyPointer());
-                            case 0x02 -> markIndexBlocks(usedBlocks, file.getKeyPointer(), false);
-                            case 0x03 -> markIndexBlocks(usedBlocks, file.getKeyPointer(), true);
-                            case 0x04 -> applePascalAreaFound = true;
-                            case 0x05 -> gsosExtendedFileFound = true;
-                            case 0x0d -> { /* Subdirectory file, should never get here. */ }
-                            case 0x0e -> { /* Subdirectory Header - ignore */ }
-                            case 0x0f -> { /* Volume Directory Header - ignore */ }
-                            default -> throw new RuntimeException("Unexpected storage_type: " + file.getStorageType());
-                        }
-                    }
-                    default -> throw new RuntimeException("Unexpected file entry type: " + entry.getClass().getName());
-                }
-            }
-        }
         // Identify known problem areas
         if (applePascalAreaFound || gsosExtendedFileFound) {
             String description;
@@ -133,7 +116,7 @@ public class ProdosDiskCheck implements DiskCheck {
         // Figure out allocation errors
         List<Integer> allocationErrors = new ArrayList<>();
         byte[] volumeBitMap = disk.readVolumeBitMap();
-        for (block = 0; block < device.getGeometry().blocksOnDevice(); block++) {
+        for (int block = 0; block < device.getGeometry().blocksOnDevice(); block++) {
             if (disk.isBlockUsed(volumeBitMap, block) != usedBlocks.get(block)) {
                 allocationErrors.add(block);
             }

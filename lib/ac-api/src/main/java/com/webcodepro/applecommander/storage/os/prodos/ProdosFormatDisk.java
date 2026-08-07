@@ -76,7 +76,6 @@ public class ProdosFormatDisk extends FormattedDisk {
 	private final ProdosVolumeDirectoryHeader volumeHeader;
 
 	private final BlockDevice device;
-	private final ProdosDiskCheck diskCheck;
 
 	/**
 	 * This class holds filetype mappings.
@@ -139,7 +138,6 @@ public class ProdosFormatDisk extends FormattedDisk {
 		super(filename, device.get(Source.class).orElseThrow());
 		this.device = device;
 		this.volumeHeader = new ProdosVolumeDirectoryHeader(this);
-		this.diskCheck = new ProdosDiskCheck(this);
 	}
 	
 	/*
@@ -179,7 +177,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 
 	@Override
 	public <T> Optional<T> get(Class<T> iface) {
-		return Container.get(iface, device, diskCheck);
+		return Container.get(iface, device, new ProdosDiskCheck(this, device));
 	}
 
 	/**
