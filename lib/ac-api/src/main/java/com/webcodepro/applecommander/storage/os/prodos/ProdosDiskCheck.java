@@ -2,7 +2,6 @@ package com.webcodepro.applecommander.storage.os.prodos;
 
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.DiskException;
-import com.webcodepro.applecommander.storage.FileEntry;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.os.DiskCheck;
 import org.applecommander.util.DataBuffer;
@@ -33,18 +32,24 @@ public class ProdosDiskCheck implements DiskCheck {
     @Override
     public List<Finding> scan() throws Exception {
         initVolumeBitmap();
-        handleSubdirectory(disk, 2);
+        int fileCount = handleSubdirectory(disk, 2);
+        checkDirectoryFileCount(disk.getVolumeHeader(), fileCount);
+        checkDirectoryEntryConstants(disk.getVolumeHeader());
         checkVolumeBitmap();
         return findings;
     }
 
-    private void handleSubdirectory(DirectoryEntry parentDirectory, int parentKeyPointer) throws DiskException {
+    private int handleSubdirectory(DirectoryEntry parentDirectory, int parentKeyPointer) throws DiskException {
+        int fileCount = 0;
         for (var entry : parentDirectory.getFiles()) {
             switch (entry) {
                 case ProdosDirectoryEntry subdirectory -> {
+                    fileCount++;
                     markDirectoryBlocks(usedBlocks, subdirectory.getKeyPointer());
                     checkSubdirectoryHeaderPointer(subdirectory, parentKeyPointer, parentDirectory.getDirname());
-                    handleSubdirectory(subdirectory, subdirectory.getKeyPointer());
+                    int files = handleSubdirectory(subdirectory, subdirectory.getKeyPointer());
+                    checkDirectoryFileCount(subdirectory.getSubdirectoryHeader(), files);
+                    checkDirectoryEntryConstants(subdirectory.getSubdirectoryHeader());
                 }
                 case ProdosFileEntry file -> {
                     switch (file.getStorageType()) {
@@ -59,10 +64,12 @@ public class ProdosDiskCheck implements DiskCheck {
                         case 0x0f -> { /* Volume Directory Header - ignore */ }
                         default -> throw new RuntimeException("Unexpected storage_type: " + file.getStorageType());
                     }
+                    if (!file.isDeleted()) fileCount++;
                 }
                 default -> throw new RuntimeException("Unexpected file entry type: " + entry.getClass().getName());
             }
         }
+        return fileCount;
     }
 
     private void checkSubdirectoryHeaderPointer(ProdosDirectoryEntry subdirectory, int parentHeaderPointer, String parentName) {
@@ -74,6 +81,34 @@ public class ProdosDiskCheck implements DiskCheck {
             Finding finding = new Finding(description,
                     Optional.of(() -> subdirectory.setHeaderPointer(parentHeaderPointer)),
                     DIRECTORY, new Coordinate(subdirectory.getFileEntryBlock()));
+            findings.add(finding);
+        }
+    }
+    private void checkDirectoryFileCount(ProdosCommonDirectoryHeader commonDirectoryHeader, int fileCount) {
+        if (commonDirectoryHeader.getFileCount() != fileCount) {
+            final String description = String.format("File count for directory %s does not match. Counted %d but header has %d.",
+                    commonDirectoryHeader.getName(), fileCount, commonDirectoryHeader.getFileCount());
+            Finding finding = new Finding(description,
+                    Optional.of(() -> commonDirectoryHeader.setFileCount(fileCount)),
+                    DIRECTORY, new Coordinate(commonDirectoryHeader.getFileEntryBlock()));
+            findings.add(finding);
+        }
+    }
+    private void checkDirectoryEntryConstants(ProdosCommonDirectoryHeader commonDirectoryHeader) {
+        if (commonDirectoryHeader.getEntryLength() != 0x27) {
+            final String description = String.format("Field 'entry_length' is usually $27. For directory %s it is $%02X.",
+                    commonDirectoryHeader.getName(), commonDirectoryHeader.getEntryLength());
+            Finding finding = new Finding(description,
+                    Optional.of(commonDirectoryHeader::setEntryLength),
+                    DIRECTORY, new Coordinate(commonDirectoryHeader.getFileEntryBlock()));
+            findings.add(finding);
+        }
+        if (commonDirectoryHeader.getEntriesPerBlock() != 0x0d) {
+            final String description = String.format("Field 'entries_per_block' is usually $0D. For directory %s it is $%02X.",
+                    commonDirectoryHeader.getName(), commonDirectoryHeader.getEntriesPerBlock());
+            Finding finding = new Finding(description,
+                    Optional.of(commonDirectoryHeader::setEntriesPerBlock),
+                    DIRECTORY, new Coordinate(commonDirectoryHeader.getFileEntryBlock()));
             findings.add(finding);
         }
     }

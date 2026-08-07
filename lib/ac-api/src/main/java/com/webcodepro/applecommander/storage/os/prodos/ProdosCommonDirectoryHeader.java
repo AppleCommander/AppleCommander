@@ -37,6 +37,13 @@ public class ProdosCommonDirectoryHeader extends ProdosCommonEntry {
 	}
 
 	/**
+	 * Return the name of this common directory header.
+	 */
+	public String getName() {
+		return AppleUtil.getProdosString(readFileEntry(), 0);
+	}
+
+	/**
 	 * Get the length of each entry.  Expected to be 0x27.
 	 */
 	public int getEntryLength() {
