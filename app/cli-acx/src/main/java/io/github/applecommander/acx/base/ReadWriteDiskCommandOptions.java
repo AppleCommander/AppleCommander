@@ -19,6 +19,7 @@
  */
 package io.github.applecommander.acx.base;
 
+import org.applecommander.util.BackupStrategy;
 import picocli.CommandLine.Option;
 
 public abstract class ReadWriteDiskCommandOptions extends ReadOnlyDiskImageCommandOptions {
@@ -33,11 +34,7 @@ public abstract class ReadWriteDiskCommandOptions extends ReadOnlyDiskImageComma
         int returnCode = handleCommand();
         
         if (returnCode == 0) {
-            BackupStrategy backupStrategy = switch (backupCode) {
-                case "" -> BackupStrategy.none();
-                case "bak" -> BackupStrategy.fileExtension("bak");
-                default -> BackupStrategy.directory(backupCode);
-            };
+            BackupStrategy backupStrategy = BackupStrategy.create(backupCode);
             saveDisk(selectedDisks().getFirst(), backupStrategy);
         }
         

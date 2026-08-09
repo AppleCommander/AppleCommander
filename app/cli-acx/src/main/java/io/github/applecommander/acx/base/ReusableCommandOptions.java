@@ -20,6 +20,7 @@
 package io.github.applecommander.acx.base;
 
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import org.applecommander.util.BackupStrategy;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 

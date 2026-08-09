@@ -22,7 +22,7 @@ package io.github.applecommander.acx.command;
 import com.webcodepro.applecommander.storage.DiskFactory;
 import com.webcodepro.applecommander.storage.Disks;
 import com.webcodepro.applecommander.storage.FormattedDisk;
-import io.github.applecommander.acx.base.BackupStrategy;
+import org.applecommander.util.BackupStrategy;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
