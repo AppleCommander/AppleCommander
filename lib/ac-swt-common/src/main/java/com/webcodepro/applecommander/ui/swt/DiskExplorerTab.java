@@ -125,6 +125,7 @@ public class DiskExplorerTab {
 	private List<FileEntry> currentFileList;
 	private final Map<Integer,int[]> columnWidths = new HashMap<>();
 	private boolean showDeletedFiles;
+	private boolean newDiskImage;
 
 	/**
 	 * Create the DISK INFO tab.
@@ -1352,6 +1353,12 @@ public class DiskExplorerTab {
 		}
 	}
 	/**
+	 * Set new image flag. Intended for external control based on how the image was setup.
+	 */
+	public void setNewDiskImage(boolean newDiskImage) {
+		this.newDiskImage = newDiskImage;
+	}
+	/**
 	 * Handle SaveAs.
 	 */
 	protected void saveAs() {
@@ -1368,6 +1375,7 @@ public class DiskExplorerTab {
 		}
 		try {
 			disks[0].saveAs(fullpath);
+			newDiskImage = false;
 			diskWindow.setStandardWindowTitle();
 			saveToolItem.setEnabled(disks[0].hasChanged());
 		} catch (IOException ex) {
@@ -1381,7 +1389,7 @@ public class DiskExplorerTab {
 	 */
 	protected void save() {
 		try {
-			if (disks[0].isNewImage()) {
+			if (newDiskImage) {
 				saveAs();	// no directory -> assume a new/unsaved image
 				return;
 			}

@@ -271,6 +271,8 @@ public class SwtAppleCommander implements Listener {
 			FormattedDisk[] disks = wizard.getFormattedDisks();
 			DiskWindow window = new DiskWindow(shell, disks, imageManager);
 			window.open();
+			// Has to be after open because that's where the window is created!
+			window.setNewDiskImage(true);
 		}
 	}
 
