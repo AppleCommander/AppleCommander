@@ -50,6 +50,7 @@ import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.FileSource;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
+import org.applecommander.util.BackupStrategy;
 import org.applecommander.util.Information;
 
 import java.io.*;
@@ -99,8 +100,7 @@ import java.util.Queue;
  * </pre>
  * 
  * @author John B. Matthews
- *
- * Changed at: Dec 1, 2017
+ * @author Robert Greene
  * @author Lisias Toledo
  */
 public class ac {
@@ -189,6 +189,14 @@ public class ac {
 			System.exit(1);
 		}
 	}
+
+	public static void save(FormattedDisk formattedDisk) throws IOException {
+		if (formattedDisk.hasChanged()) {
+			BackupStrategy backupStrategy = BackupStrategy.create(System.getenv("AC_BACKUP_STRATEGY"));
+			backupStrategy.backup(formattedDisk.getFilename());
+			formattedDisk.save();
+		}
+	}
 	
 	/**
 	 * Convert the AppleSoft BASIC program from text into it's "native" tokenized format.
@@ -226,7 +234,7 @@ public class ac {
 			if (entry.needsAddress()) {
 				entry.setAddress(config.startAddress);
 			}
-			formattedDisk.save();
+			save(formattedDisk);
 		}
 	}
 
@@ -259,7 +267,7 @@ public class ac {
 				if (entry.needsAddress()) {
 					entry.setAddress(stringToInt(address));
 				}
-				formattedDisk.save();
+				save(formattedDisk);
 			}
 		}
 	}
@@ -315,7 +323,7 @@ public class ac {
 				if (entry.needsAddress()) {
 					entry.setAddress(stringToInt(address));
 				}
-				formattedDisk.save();
+				save(formattedDisk);
 			} else {
 				throw new IOException("Unable to create entry...");
 			}
@@ -407,7 +415,7 @@ public class ac {
 				FileEntry entry = name.getEntry(formattedDisk);
 				if (entry != null) {
 					entry.delete();
-					formattedDisk.save();
+					save(formattedDisk);
 				} else {
 					System.err.println(textBundle.format(
 							"CommandLineNoMatchMessage", name.fullName)); //$NON-NLS-1$
@@ -568,7 +576,7 @@ public class ac {
 				FileEntry entry = name.getEntry(formattedDisk);
 				if (entry != null) {
 					entry.setLocked(lockState);
-					formattedDisk.save();
+					save(formattedDisk);
 				} else {
 					System.err.println(textBundle.format(
 						"CommandLineNoMatchMessage", name.fullName)); //$NON-NLS-1$
@@ -590,7 +598,7 @@ public class ac {
         if (!source.isAny(Hint.DISK_COPY_IMAGE, Hint.ORIGIN_SHRINKIT, Hint.UNIVERSAL_DISK_IMAGE)) {
 			FormattedDisk formattedDisk = ctx.disks.getFirst();
 			formattedDisk.setDiskName(volName);
-			formattedDisk.save();
+			save(formattedDisk);
 		}
 		else
 			throw new IOException(textBundle.get("CommandLineSDKReadOnly"));
@@ -604,7 +612,7 @@ public class ac {
 		Source source = DataBufferSource.create(imageSize, fileName).hints(Hint.DOS_SECTOR_ORDER).get();
         TrackSectorDevice device = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
 		FormattedDisk[] disks = DosFormatDisk.create(fileName, device);
-		disks[0].save();
+		save(disks[0]);
 	}
 
 	/**
@@ -615,7 +623,7 @@ public class ac {
 		Source source = DataBufferSource.create(imageSize, fileName).hints(Hint.PRODOS_BLOCK_ORDER).get();
 		BlockDevice device = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = PascalFormatDisk.create(fileName, volName, device);
-		disks[0].save();
+		save(disks[0]);
 	}
 
 	/**
@@ -626,7 +634,7 @@ public class ac {
 		Source source = DataBufferSource.create(imageSize, fileName).hints(Hint.PRODOS_BLOCK_ORDER).get();
 		BlockDevice device = new ProdosOrderedBlockDevice(source, BlockDevice.STANDARD_BLOCK_SIZE);
 		FormattedDisk[] disks = ProdosFormatDisk.create(fileName, volName, device);
-		disks[0].save();
+		save(disks[0]);
 	}
 
 	/**
@@ -660,7 +668,7 @@ public class ac {
         DiskFactory.Context ctx = Disks.inspect(source);
         FormattedDisk disk = ctx.disks.getFirst();
 		disk.setFilename(imageName);
-		disk.save();
+		save(disk);
 	}
 
 	static int stringToInt(String s) {
