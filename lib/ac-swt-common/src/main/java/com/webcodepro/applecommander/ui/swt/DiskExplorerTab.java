@@ -1386,6 +1386,7 @@ public class DiskExplorerTab {
 				saveAs();	// no directory -> assume a new/unsaved image
 				return;
 			}
+			userPreferences.createBackupStrategy().backup(disks[0].getFilename());
 			disks[0].save();
 			saveToolItem.setEnabled(disks[0].hasChanged());
 		} catch (IOException ex) {
