@@ -132,7 +132,6 @@ public abstract class FormattedDisk implements DirectoryEntry, Container{
 	}
 
     private String filename;
-    private boolean newImage = false;
     private final Source source;
 
     /**
@@ -141,7 +140,6 @@ public abstract class FormattedDisk implements DirectoryEntry, Container{
 	public FormattedDisk(String filename, Source source) {
         this.source = source;
         this.filename = filename;
-        this.newImage = true;
 	}
 
 	/**
@@ -390,7 +388,6 @@ public abstract class FormattedDisk implements DirectoryEntry, Container{
         output.write(fileData);
         output.close();
         getSource().clearChanges();
-        newImage = false;
     }
 
     /**
@@ -429,14 +426,6 @@ public abstract class FormattedDisk implements DirectoryEntry, Container{
      */
     public boolean hasChanged() {
         return getSource().hasChanged();
-    }
-
-    /**
-     * Indicates if the disk image is new.  This can be used
-     * for Save As processing.
-     */
-    public boolean isNewImage() {
-        return newImage;
     }
 
 	/**

@@ -46,7 +46,8 @@ public class DiskWindow {
 	
 	private Shell shell;
 	private FormattedDisk[] disks;
-	
+
+	private DiskExplorerTab diskExplorerTab;
 	private DiskInfoTab diskInfoTab;
 	private DiskMapTab[] diskMapTabs;
 
@@ -84,7 +85,7 @@ public class DiskWindow {
 		});
 			
 		CTabFolder tabFolder = new CTabFolder(shell, SWT.BOTTOM);
-		new DiskExplorerTab(tabFolder, disks, imageManager, this);
+		diskExplorerTab = new DiskExplorerTab(tabFolder, disks, imageManager, this);
 		diskMapTabs = new DiskMapTab[disks.length];
 		for (int i=0; i<disks.length; i++) {
 			if (disks[i].supportsDiskMap()) {
@@ -95,6 +96,13 @@ public class DiskWindow {
 		tabFolder.setSelection(tabFolder.getItems()[0]);
 		
 		shell.open();
+	}
+
+	/**
+	 * This is a shim for the primary app (SwtAppleCommander) to indicate this is a new disk image.
+	 */
+	public void setNewDiskImage(boolean newDiskImage) {
+		diskExplorerTab.setNewDiskImage(newDiskImage);
 	}
 	
 	/**
