@@ -25,8 +25,8 @@ import picocli.CommandLine.Option;
 public abstract class ReadWriteDiskCommandOptions extends ReadOnlyDiskImageCommandOptions {
     @Option(names = "--backup", description = {
             "Automated backup when an image changes; use 'bak' to append '.bak' to file name;",
-            "any other value is assumed to be a directory. [$ACX_BACKUP]"
-        }, defaultValue = "${ACX_BACKUP}")
+            "any other value is assumed to be a directory. [$ACX_BACKUP_STRATEGY]"
+        }, defaultValue = "${ACX_BACKUP_STRATEGY}")
     private String backupCode = "";
 
     @Override
