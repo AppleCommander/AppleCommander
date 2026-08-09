@@ -1591,27 +1591,35 @@ public class DiskExplorerTab {
 				            }
 						}
 					} else {	// No CTRL key
-					    if ((event.stateMask & SWT.ALT) != SWT.ALT)	// Ignore ALT key combinations like alt-F4!
-						try {
-							switch (event.keyCode) {
-								case SWT.F2:	// Standard file display
-									changeCurrentFormat(FormattedDisk.FILE_DISPLAY_STANDARD);
-									break;
-								case SWT.F3:	// Native file display
-									changeCurrentFormat(FormattedDisk.FILE_DISPLAY_NATIVE);
-									break;
-								case SWT.F4:	// Detail file display
-									changeCurrentFormat(FormattedDisk.FILE_DISPLAY_DETAIL);
-									break;
-								case SWT.F5:	// Show deleted files
-									setShowDeletedFiles(!getShowDeletedFilesToolItem().getSelection());
-									getShowDeletedFilesToolItem().setSelection(isShowDeletedFiles());
-									fillFileTable(getCurrentFileList());
-									break;
+					    if ((event.stateMask & SWT.ALT) != SWT.ALT) {    // Ignore ALT key combinations like alt-F4!
+							try {
+								switch (event.keyCode) {
+									case SWT.F2:    // Standard file display
+										changeCurrentFormat(FormattedDisk.FILE_DISPLAY_STANDARD);
+										break;
+									case SWT.F3:    // Native file display
+										changeCurrentFormat(FormattedDisk.FILE_DISPLAY_NATIVE);
+										break;
+									case SWT.F4:    // Detail file display
+										changeCurrentFormat(FormattedDisk.FILE_DISPLAY_DETAIL);
+										break;
+									case SWT.F5:    // Show deleted files
+										setShowDeletedFiles(!getShowDeletedFilesToolItem().getSelection());
+										getShowDeletedFilesToolItem().setSelection(isShowDeletedFiles());
+										fillFileTable(getCurrentFileList());
+										break;
+									case SWT.DEL:	// Delete current file
+										FileEntry fileEntry = getSelectedFileEntry();
+										if (getDisk(0).canDeleteFile()
+												&& fileEntry != null && !fileEntry.isDeleted()) {
+											deleteFile();
+										}
+										break;
+								}
+							} catch (DiskException e) {
+								DiskExplorerTab.this.diskWindow.handle(e);
 							}
-			            } catch (DiskException e) {
-			            	DiskExplorerTab.this.diskWindow.handle(e);
-			            }
+						}
 					}
 				}
 			}
