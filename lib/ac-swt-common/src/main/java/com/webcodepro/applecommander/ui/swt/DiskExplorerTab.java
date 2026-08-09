@@ -82,7 +82,6 @@ import java.util.List;
  * @author Lisias Toledo
  */
 public class DiskExplorerTab {
-	private static final char CTRL_C = 'C' - '@';
 	private static final char CTRL_D = 'D' - '@';
 	private static final char CTRL_E = 'E' - '@';
 	private static final char CTRL_I = 'I' - '@';
