@@ -111,7 +111,7 @@ public class DataBufferSource implements Source {
         return new Builder(DataBuffer.wrap(rawData), name);
     }
     public static Builder create(int imageSize, String name) {
-        return new Builder(DataBuffer.create(imageSize), name);
+        return new Builder(DataBuffer.create(imageSize), name).changed(true);
     }
 
     public static class Builder {
