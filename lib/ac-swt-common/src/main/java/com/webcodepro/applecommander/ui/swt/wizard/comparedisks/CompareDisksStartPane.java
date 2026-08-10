@@ -36,7 +36,7 @@ import org.eclipse.swt.widgets.*;
  * <p>
  * @author Rob Greene
  */
-public class CompareDisksStartPane extends WizardPane {
+public class CompareDisksStartPane extends WizardPane<CompareDisksWizard.Pages> {
 	private final TextBundle textBundle = UiBundle.getInstance();
 	private final Composite parent;
 	private final Object layoutData;
@@ -58,11 +58,9 @@ public class CompareDisksStartPane extends WizardPane {
 	/**
 	 * Open up and configure the wizard pane.
 	 */
-	public void open() {
+	public Control create() {
 		control = new Composite(parent, SWT.NULL);
 		control.setLayoutData(layoutData);
-		wizard.enableNextButton(true);
-		wizard.enableFinishButton(false);
 		RowLayout layout = new RowLayout(SWT.VERTICAL);
 		layout.justify = true;
 		layout.marginBottom = 5;
@@ -73,15 +71,13 @@ public class CompareDisksStartPane extends WizardPane {
 		control.setLayout(layout);
 		
 		Label label = new Label(control, SWT.WRAP);
-		label.setText(textBundle.get("CompareDisksStartPane.Description")); //$NON-NLS-1$
+		label.setText(textBundle.get("CompareDisksStartPane.Description"));
 
 		label = new Label(control, SWT.WRAP);
 		label.setText(getDiskLabel(1));
 
 		diskname1Text = new Text(control, SWT.WRAP | SWT.BORDER);
-		if (wizard.getDiskname1() != null) diskname1Text.setText(wizard.getDiskname1());
 		diskname1Text.setLayoutData(new RowData(300, -1));
-		diskname1Text.setFocus();
 		diskname1Text.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent event) {
 				Text text = (Text) event.getSource();
@@ -90,7 +86,7 @@ public class CompareDisksStartPane extends WizardPane {
 		});
 		
 		Button button = new Button(control, SWT.PUSH);
-		button.setText(textBundle.get("BrowseButton")); //$NON-NLS-1$
+		button.setText(textBundle.get("BrowseButton"));
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				FileDialog fileDialog = new FileDialog(getControl().getShell());
@@ -107,7 +103,6 @@ public class CompareDisksStartPane extends WizardPane {
 		label.setText(getDiskLabel(2));
 
 		diskname2Text = new Text(control, SWT.WRAP | SWT.BORDER);
-		if (wizard.getDiskname2() != null) diskname2Text.setText(wizard.getDiskname2());
 		diskname2Text.setLayoutData(new RowData(300, -1));
 		diskname2Text.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent event) {
@@ -117,7 +112,7 @@ public class CompareDisksStartPane extends WizardPane {
 		});
 		
 		button = new Button(control, SWT.PUSH);
-		button.setText(textBundle.get("BrowseButton")); //$NON-NLS-1$
+		button.setText(textBundle.get("BrowseButton"));
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				FileDialog fileDialog = new FileDialog(getControl().getShell());
@@ -155,21 +150,24 @@ public class CompareDisksStartPane extends WizardPane {
         limitText.addModifyListener(this::limitTextModifyListener);
         
         parent.pack();
+		return control;
 	}
 	/**
 	 * Get the next pane. A null return indicates the end of the wizard.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
-	public WizardPane getNextPane() {
-		return new CompareDisksResultsPane(parent, wizard, layoutData);
+	public CompareDisksWizard.Pages getNextPane() {
+		return CompareDisksWizard.Pages.RESULT_PANE;
 	}
 	/**
-	 * Dispose of resources.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
+	 * Called when the page is activated.
 	 */
-	public void dispose() {
-		control.dispose();
-		control = null;
+	public void activate() {
+		wizard.enableNextButton(true);
+		wizard.enableFinishButton(false);
+		diskname1Text.setFocus();
+
+		if (wizard.getDiskname1() != null) diskname1Text.setText(wizard.getDiskname1());
+		if (wizard.getDiskname2() != null) diskname2Text.setText(wizard.getDiskname2());
 	}
 	protected Composite getControl() {
 		return control;
@@ -184,7 +182,7 @@ public class CompareDisksStartPane extends WizardPane {
 		return wizard;
 	}
 	protected String getDiskLabel(int diskNumber) {
-		return textBundle.format("CompareDisksStartPane.DiskNLabel", //$NON-NLS-1$
+		return textBundle.format("CompareDisksStartPane.DiskNLabel",
 				diskNumber);
 	}
 	

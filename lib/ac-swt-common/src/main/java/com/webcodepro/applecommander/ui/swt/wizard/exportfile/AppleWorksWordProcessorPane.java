@@ -29,6 +29,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 
 /**
@@ -37,37 +38,45 @@ import org.eclipse.swt.widgets.Label;
  * Date created: Nov 15, 2002 11:31:15 PM
  * @author Rob Greene
  */
-public class AppleWorksWordProcessorPane extends WizardPane {
+public class AppleWorksWordProcessorPane extends WizardPane<ExportWizard.Pages> {
 	private final TextBundle textBundle = UiBundle.getInstance();
 	private final Composite parent;
-	private final Object layoutData;
 	private Composite control;
 	private final ExportWizard wizard;
+	private Button textRenderingButton;
+	private Button htmlRenderingButton;
+	private Button rtfRenderingButton;
 	/**
 	 * Constructor for AppleWorksWordProcessorPane.
 	 */
-	public AppleWorksWordProcessorPane(Composite parent, ExportWizard exportWizard, Object layoutData) {
+	public AppleWorksWordProcessorPane(Composite parent, ExportWizard exportWizard) {
 		super();
 		this.parent = parent;
 		this.wizard = exportWizard;
-		this.layoutData = layoutData;
 	}
 	/**
 	 * Get the next WizardPane.
 	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
-	public WizardPane getNextPane() {
-		return new ExportFileDestinationPane(parent, wizard, layoutData);
+	public ExportWizard.Pages getNextPane() {
+		return ExportWizard.Pages.DESTINATION;
+	}
+	/**
+	 * Called when the page is activated.
+	 */
+	public void activate() {
+		wizard.enableFinishButton(false);
+		wizard.enableNextButton(true);
+
+		textRenderingButton.setSelection(getFilter().isTextRendering());
+		htmlRenderingButton.setSelection(getFilter().isHtmlRendering());
+		rtfRenderingButton.setSelection(getFilter().isRtfRendering());
 	}
 	/**
 	 * Create and display the wizard pane.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#open()
 	 */
-	public void open() {
-		wizard.enableFinishButton(false);
-		wizard.enableNextButton(true);
+	public Control create() {
 		control = new Composite(parent, SWT.NULL);
-		control.setLayoutData(layoutData);
 		RowLayout layout = new RowLayout(SWT.VERTICAL);
 		layout.justify = true;
 		layout.marginBottom = 5;
@@ -81,34 +90,31 @@ public class AppleWorksWordProcessorPane extends WizardPane {
 		RowLayout subpanelLayout = new RowLayout(SWT.VERTICAL);
 		subpanelLayout.justify = true;
 		subpanelLayout.spacing = 3;
-		Button button = new Button(control, SWT.RADIO);
-		button.setText(textBundle.get("AppleWorksWordProcessorFormatAsText")); //$NON-NLS-1$
-		button.setSelection(getFilter().isTextRendering());
-		button.addSelectionListener(new SelectionAdapter() {
+		textRenderingButton = new Button(control, SWT.RADIO);
+		textRenderingButton.setText(textBundle.get("AppleWorksWordProcessorFormatAsText")); //$NON-NLS-1$
+		textRenderingButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				getFilter().selectTextRendering();
 			}
 		});
-		button = new Button(control, SWT.RADIO);
-		button.setText(textBundle.get("AppleWorksWordProcessorFormatAsHtml")); //$NON-NLS-1$
-		button.setSelection(getFilter().isHtmlRendering());
-		button.addSelectionListener(new SelectionAdapter() {
+		htmlRenderingButton = new Button(control, SWT.RADIO);
+		htmlRenderingButton.setText(textBundle.get("AppleWorksWordProcessorFormatAsHtml")); //$NON-NLS-1$
+		htmlRenderingButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				getFilter().selectHtmlRendering();
 			}
 		});
-		button = new Button(control, SWT.RADIO);
-		button.setText(textBundle.get("AppleWorksWordProcessorFormatAsRtf")); //$NON-NLS-1$
-		button.setSelection(getFilter().isRtfRendering());
-		button.addSelectionListener(new SelectionAdapter() {
+		rtfRenderingButton = new Button(control, SWT.RADIO);
+		rtfRenderingButton.setText(textBundle.get("AppleWorksWordProcessorFormatAsRtf")); //$NON-NLS-1$
+		rtfRenderingButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				getFilter().selectRtfRendering();
 			}
 		});
+		return control;
 	}
 	/**
 	 * Dispose of any resources.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
 	 */
 	public void dispose() {
 		control.dispose();

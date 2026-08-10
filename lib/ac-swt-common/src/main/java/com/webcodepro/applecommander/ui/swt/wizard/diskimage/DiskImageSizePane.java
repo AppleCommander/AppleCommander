@@ -29,6 +29,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 
 /**
@@ -37,11 +38,16 @@ import org.eclipse.swt.widgets.Label;
  * Created on Dec 15, 2002.
  * @author Rob Greene
  */
-public class DiskImageSizePane extends WizardPane {
+public class DiskImageSizePane extends WizardPane<DiskImageWizard.Pages> {
 	private final TextBundle textBundle = UiBundle.getInstance();
 	private final DiskImageWizard wizard;
 	private Composite control;
 	private final Composite parent;
+	// These are dynamic based on format being ProDOS:
+	private Button size5MbButton;
+	private Button size10MbButton;
+	private Button size20MbButton;
+	private Button size32MbButton;
 	/**
 	 * Constructor for DiskImageSizePane.
 	 */
@@ -54,17 +60,27 @@ public class DiskImageSizePane extends WizardPane {
 	 * Get the next visible pane.
 	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
-	public WizardPane getNextPane() {
-		return new DiskImageNamePane(parent, wizard);
+	public DiskImageWizard.Pages getNextPane() {
+		return DiskImageWizard.Pages.NAME;
+	}
+	/**
+	 * Called when the page is activated.
+	 */
+	public void activate() {
+		wizard.enableNextButton(true);
+		wizard.enableFinishButton(false);
+
+		boolean prodosFormat = wizard.getFormat() == DiskImageWizard.FORMAT_PRODOS;
+		size5MbButton.setVisible(prodosFormat);
+		size10MbButton.setVisible(prodosFormat);
+		size20MbButton.setVisible(prodosFormat);
+		size32MbButton.setVisible(prodosFormat);
 	}
 	/**
 	 * Create the wizard pane.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#open()
 	 */
-	public void open() {
+	public Control create() {
 		control = new Composite(parent, SWT.NULL);
-		wizard.enableNextButton(true);
-		wizard.enableFinishButton(false);
 		RowLayout layout = new RowLayout(SWT.VERTICAL);
 		layout.justify = true;
 		layout.marginBottom = 5;
@@ -75,39 +91,36 @@ public class DiskImageSizePane extends WizardPane {
 		control.setLayout(layout);
 		Label label = new Label(control, SWT.WRAP);
 		label.setText(
-			textBundle.get("DiskImageSizePrompt")); //$NON-NLS-1$
+			textBundle.get("DiskImageSizePrompt"));
 		RowLayout subpanelLayout = new RowLayout(SWT.VERTICAL);
 		subpanelLayout.justify = true;
 		subpanelLayout.spacing = 3;
 		Composite buttonSubpanel = new Composite(control, SWT.NULL);
 		buttonSubpanel.setLayout(subpanelLayout);
-		createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize140Kb"),  //$NON-NLS-1$
+		createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize140Kb"),
 			DiskConstants.APPLE_140KB_DISK,
-			textBundle.get("DiskImageSize140KbText")); //$NON-NLS-1$
-		createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize800Kb"),  //$NON-NLS-1$
+			textBundle.get("DiskImageSize140KbText"));
+		createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize800Kb"),
 			DiskConstants.APPLE_800KB_DISK,
-			textBundle.get("DiskImageSize800KbText")); //$NON-NLS-1$
-		if (wizard.getFormat() == DiskImageWizard.FORMAT_PRODOS) {
-			createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize5Mb"),  //$NON-NLS-1$
-				DiskConstants.APPLE_5MB_HARDDISK,
-				textBundle.get("DiskImageSize5MbText")); //$NON-NLS-1$
-			createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize10Mb"),  //$NON-NLS-1$
-				DiskConstants.APPLE_10MB_HARDDISK,
-				textBundle.get("DiskImageSize10MbText")); //$NON-NLS-1$
-			createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize20Mb"),  //$NON-NLS-1$
-				DiskConstants.APPLE_20MB_HARDDISK,
-				textBundle.get("DiskImageSize20MbText")); //$NON-NLS-1$
-			createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize32Mb"),  //$NON-NLS-1$
-				DiskConstants.APPLE_32MB_HARDDISK,
-				textBundle.get("DiskImageSize32MbText")); //$NON-NLS-1$
-		}
+			textBundle.get("DiskImageSize800KbText"));
+		size5MbButton = createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize5Mb"),
+			DiskConstants.APPLE_5MB_HARDDISK,
+			textBundle.get("DiskImageSize5MbText"));
+		size10MbButton = createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize10Mb"),
+			DiskConstants.APPLE_10MB_HARDDISK,
+			textBundle.get("DiskImageSize10MbText"));
+		size20MbButton = createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize20Mb"),
+			DiskConstants.APPLE_20MB_HARDDISK,
+			textBundle.get("DiskImageSize20MbText"));
+		size32MbButton = createRadioButton(buttonSubpanel, textBundle.get("DiskImageSize32Mb"),
+			DiskConstants.APPLE_32MB_HARDDISK,
+			textBundle.get("DiskImageSize32MbText"));
+		return control;
 	}
 	/**
 	 * Create a radio button for the disk image size list.
 	 */
-	protected void createRadioButton(Composite composite, String label, 
-		final int size, String helpText) {
-			
+	protected Button createRadioButton(Composite composite, String label, final int size, String helpText) {
 		Button button = new Button(composite, SWT.RADIO);
 		button.setText(label);
 		button.setToolTipText(helpText);
@@ -117,10 +130,10 @@ public class DiskImageSizePane extends WizardPane {
 				getWizard().setSize(size);
 			}
 		});
+		return button;
 	}
 	/**
 	 * Dispose of all resources.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
 	 */
 	public void dispose() {
 		control.dispose();

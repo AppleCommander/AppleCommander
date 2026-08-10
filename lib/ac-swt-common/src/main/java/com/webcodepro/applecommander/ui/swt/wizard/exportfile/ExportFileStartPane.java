@@ -29,6 +29,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 
 /**
@@ -37,29 +38,24 @@ import org.eclipse.swt.widgets.Label;
  * Date created: Nov 7, 2002 8:43:27 PM
  * @author Rob Greene
  */
-public class ExportFileStartPane extends WizardPane {
+public class ExportFileStartPane extends WizardPane<ExportWizard.Pages> {
 	private final TextBundle textBundle = UiBundle.getInstance();
 	private final Composite parent;
-	private final Object layoutData;
 	private Composite control;
 	private final ExportWizard wizard;
 	/**
 	 * Constructor for ExportFileStartPane.
 	 */
-	public ExportFileStartPane(Composite parent, ExportWizard exportWizard, Object layoutData) {
+	public ExportFileStartPane(Composite parent, ExportWizard exportWizard) {
 		super();
 		this.parent = parent;
 		this.wizard = exportWizard;
-		this.layoutData = layoutData;
 	}
 	/**
 	 * Open up and configure the wizard pane.
 	 */
-	public void open() {
+	public Control create() {
 		control = new Composite(parent, SWT.NULL);
-		control.setLayoutData(layoutData);
-		wizard.enableNextButton(true);
-		wizard.enableFinishButton(false);
 		RowLayout layout = new RowLayout(SWT.VERTICAL);
 		layout.justify = true;
 		layout.marginBottom = 5;
@@ -180,22 +176,28 @@ public class ExportFileStartPane extends WizardPane {
 				getWizard().setFileFilter(new GraphicsFileFilter());
 			}
 		});
+		return control;
 	}
 	/**
 	 * Get the next pane. A null return indicates the end of the wizard.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
-	public WizardPane getNextPane() {
+	public ExportWizard.Pages getNextPane() {
 		if (wizard.getFileFilter() instanceof GraphicsFileFilter) {
-			return new ExportGraphicsTypePane(parent, wizard, layoutData);
+			return ExportWizard.Pages.GRAPHICS;
 		} else if (wizard.getFileFilter() instanceof AppleWorksWordProcessorFileFilter) {
-			return new AppleWorksWordProcessorPane(parent, wizard, layoutData);
+			return ExportWizard.Pages.APPLEWORKS;
 		}
-		return new ExportFileDestinationPane(parent, wizard, layoutData);
+		return ExportWizard.Pages.DESTINATION;
+	}
+	/**
+	 * Called when the page is activated.
+	 */
+	public void activate() {
+		wizard.enableNextButton(true);
+		wizard.enableFinishButton(false);
 	}
 	/**
 	 * Dispose of resources.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
 	 */
 	public void dispose() {
 		control.dispose();

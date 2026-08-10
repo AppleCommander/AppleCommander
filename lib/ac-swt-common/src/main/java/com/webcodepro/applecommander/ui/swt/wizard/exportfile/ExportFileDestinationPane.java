@@ -37,39 +37,41 @@ import org.eclipse.swt.widgets.*;
  * Date created: Nov 8, 2002 11:18:47 PM
  * @author Rob Greene
  */
-public class ExportFileDestinationPane extends WizardPane {
+public class ExportFileDestinationPane extends WizardPane<ExportWizard.Pages> {
 	private final TextBundle textBundle = UiBundle.getInstance();
 	private final Composite parent;
-	private final Object layoutData;
 	private Composite control;
 	private final ExportWizard wizard;
 	private Text directoryText;
 	/**
 	 * Constructor for ExportFileDestinationPane.
 	 */
-	public ExportFileDestinationPane(Composite parent, ExportWizard exportWizard, Object layoutData) {
+	public ExportFileDestinationPane(Composite parent, ExportWizard exportWizard) {
 		super();
 		this.parent = parent;
 		this.wizard = exportWizard;
-		this.layoutData = layoutData;
 	}
 	/**
 	 * This is the last pane in the wizard, so a null is returned to indicate no
 	 * more pages.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
-	public WizardPane getNextPane() {
+	public ExportWizard.Pages getNextPane() {
 		return null;
 	}
 	/**
-	 * Create and display the wizard pane.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#open()
+	 * Called when the page is activated.
 	 */
-	public void open() {
-		control = new Composite(parent, SWT.NULL);
-		control.setLayoutData(layoutData);
+	public void activate() {
 		wizard.enableNextButton(false);
 		wizard.enableFinishButton(true);
+		directoryText.setFocus();
+		if (wizard.getDirectory() != null) directoryText.setText(wizard.getDirectory());
+	}
+	/**
+	 * Create and display the wizard pane.
+	 */
+	public Control create() {
+		control = new Composite(parent, SWT.NULL);
 		RowLayout layout = new RowLayout(SWT.VERTICAL);
 		layout.justify = true;
 		layout.marginBottom = 5;
@@ -77,14 +79,13 @@ public class ExportFileDestinationPane extends WizardPane {
 		layout.marginRight = 5;
 		layout.marginTop = 5;
 		layout.spacing = 3;
+		layout.fill = true;
 		control.setLayout(layout);
 		Label label = new Label(control, SWT.WRAP);
 		label.setText(textBundle.get("ExportFilePrompt")); //$NON-NLS-1$
 
 		directoryText = new Text(control, SWT.WRAP | SWT.BORDER);
-		if (wizard.getDirectory() != null) directoryText.setText(wizard.getDirectory());
 		directoryText.setLayoutData(new RowData(parent.getSize().x - 30, -1));
-		directoryText.setFocus();
 		directoryText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent event) {
 				Text text = (Text) event.getSource();
@@ -106,10 +107,10 @@ public class ExportFileDestinationPane extends WizardPane {
 				}
 			}
 		});
+		return control;
 	}
 	/**
 	 * Dispose of any resources.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
 	 */
 	public void dispose() {
 		directoryText.dispose();

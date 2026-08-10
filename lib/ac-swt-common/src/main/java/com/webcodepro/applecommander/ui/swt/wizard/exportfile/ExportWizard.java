@@ -27,13 +27,15 @@ import com.webcodepro.applecommander.ui.swt.wizard.Wizard;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 import org.eclipse.swt.widgets.Shell;
 
+import java.util.Map;
+
 /**
  * File export wizard.
  * <p>
  * Date created: Nov 7, 2002 9:22:35 PM
  * @author Rob Greene
  */
-public class ExportWizard extends Wizard {
+public class ExportWizard extends Wizard<ExportWizard.Pages> {
 	private final FormattedDisk disk;
 	private FileFilter fileFilter;
 	private String directory;
@@ -79,10 +81,26 @@ public class ExportWizard extends Wizard {
 	}
 	/**
 	 * Create the initial display used in the wizard.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.Wizard#createInitialWizardPane()
 	 */
-	public WizardPane createInitialWizardPane() {
-		return new ExportFileStartPane(getContentPane(), this, null);
+	public Map<Pages,WizardPane<Pages>> createWizardPanes() {
+		return Map.of(
+			Pages.APPLEWORKS, new AppleWorksWordProcessorPane(getContentPane(), this),
+			Pages.DESTINATION, new ExportFileDestinationPane(getContentPane(), this),
+			Pages.START, new ExportFileStartPane(getContentPane(), this),
+			Pages.GRAPHICS, new ExportGraphicsTypePane(getContentPane(), this)
+		);
+	}
+	/**
+	 * Indicates the first pane of the wizard.
+	 */
+	public Pages getFirstWizardPane() {
+		return Pages.START;
 	}
 
+	public enum Pages {
+		APPLEWORKS,
+		DESTINATION,
+		START,
+		GRAPHICS
+	}
 }

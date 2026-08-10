@@ -29,6 +29,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 
 /**
@@ -38,11 +39,14 @@ import org.eclipse.swt.widgets.Label;
  * Created on Dec 16, 2002.
  * @author Rob Greene
  */
-public class DiskImageOrderPane extends WizardPane {
+public class DiskImageOrderPane extends WizardPane<DiskImageWizard.Pages> {
 	private final TextBundle textBundle = UiBundle.getInstance();
 	private final DiskImageWizard wizard;
 	private Composite control;
 	private final Composite parent;
+	private Button nibbleOrderButton;
+	private Label imageOrderLabel;
+	private Label compressionLabel;
 	/**
 	 * Constructor for DiskImageNamePane.
 	 */
@@ -53,19 +57,32 @@ public class DiskImageOrderPane extends WizardPane {
 	}
 	/**
 	 * Get the next visible pane.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
-	public WizardPane getNextPane() {
+	public DiskImageWizard.Pages getNextPane() {
 		return null;
 	}
 	/**
-	 * Create the wizard pane.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#open()
+	 * Called when the page is activated.
 	 */
-	public void open() {
-		control = new Composite(parent, SWT.NULL);
+	public void activate() {
 		wizard.enableNextButton(false);
 		wizard.enableFinishButton(true);
+
+		nibbleOrderButton.setEnabled(wizard.getSize() == DiskConstants.APPLE_140KB_DISK);
+		if (wizard.isHardDisk()) {
+			imageOrderLabel.setText(textBundle.get("DiskImageOrderProdosOnly"));
+			compressionLabel.setText(textBundle.get("DiskImageOrderNoCompression"));
+		} else {
+			imageOrderLabel.setText(textBundle.get("DiskImageOrderPrompt"));
+			compressionLabel.setText(textBundle.get("DiskImageOrderCompressionPrompt"));
+		}
+
+	}
+	/**
+	 * Create the wizard pane.
+	 */
+	public Control create() {
+		control = new Composite(parent, SWT.NULL);
 		RowLayout layout = new RowLayout(SWT.VERTICAL);
 		layout.justify = true;
 		layout.marginBottom = 5;
@@ -74,38 +91,28 @@ public class DiskImageOrderPane extends WizardPane {
 		layout.marginTop = 5;
 		layout.spacing = 3;
 		control.setLayout(layout);
-		Label label = new Label(control, SWT.WRAP);
-		if (wizard.isHardDisk()) {
-			label.setText(textBundle.get("DiskImageOrderProdosOnly")); //$NON-NLS-1$
-		} else {
-			label.setText(textBundle.get("DiskImageOrderPrompt")); //$NON-NLS-1$
-		}
+		imageOrderLabel = new Label(control, SWT.WRAP);
+		imageOrderLabel.setText(textBundle.get("DiskImageOrderProdosOnly"));	// Trying to pick the "biggest"
 		RowLayout subpanelLayout = new RowLayout(SWT.VERTICAL);
 		subpanelLayout.justify = true;
 		subpanelLayout.spacing = 3;
 		Composite buttonSubpanel = new Composite(control, SWT.NULL);
 		buttonSubpanel.setLayout(subpanelLayout);
-		createRadioButton(buttonSubpanel, textBundle.get("DiskImageOrderDosLabel"),  //$NON-NLS-1$
+		createRadioButton(buttonSubpanel, textBundle.get("DiskImageOrderDosLabel"),
 			DiskImageWizard.ORDER_DOS,
-			textBundle.get("DiskImageOrderDosText")); //$NON-NLS-1$
-		createRadioButton(buttonSubpanel, textBundle.get("DiskImageOrderProdosLabel"),  //$NON-NLS-1$
+			textBundle.get("DiskImageOrderDosText"));
+		createRadioButton(buttonSubpanel, textBundle.get("DiskImageOrderProdosLabel"),
 			DiskImageWizard.ORDER_PRODOS,
-			textBundle.get("DiskImageOrderProdosText")); //$NON-NLS-1$
-		if (wizard.getSize() == DiskConstants.APPLE_140KB_DISK) {
-			createRadioButton(buttonSubpanel, textBundle.get("DiskImageOrderNibbleLabel"), //$NON-NLS-1$
-				DiskImageWizard.ORDER_NIBBLE,
-				textBundle.get("DiskImageOrderNibbleText")); //$NON-NLS-1$
-		}
-		
-		label = new Label(control, SWT.WRAP);
-		if (wizard.isHardDisk()) {
-			label.setText(textBundle.get("DiskImageOrderNoCompression")); //$NON-NLS-1$
-		} else {
-			label.setText(textBundle.get("DiskImageOrderCompressionPrompt")); //$NON-NLS-1$
-		}
+			textBundle.get("DiskImageOrderProdosText"));
+		nibbleOrderButton = createRadioButton(buttonSubpanel, textBundle.get("DiskImageOrderNibbleLabel"),
+			DiskImageWizard.ORDER_NIBBLE,
+			textBundle.get("DiskImageOrderNibbleText"));
+
+		compressionLabel = new Label(control, SWT.WRAP);
+		compressionLabel.setText(textBundle.get("DiskImageOrderCompressionPrompt"));	// Hopefully the "biggest"
 		final Button button = new Button(control, SWT.CHECK);
-		button.setText(textBundle.get("DiskImageOrderGzipCheckbox")); //$NON-NLS-1$
-		button.setToolTipText(textBundle.get("DiskImageOrderGzipTooltip")); //$NON-NLS-1$
+		button.setText(textBundle.get("DiskImageOrderGzipCheckbox"));
+		button.setToolTipText(textBundle.get("DiskImageOrderGzipTooltip"));
 		button.setSelection(wizard.isCompressed());
 		button.setEnabled(!wizard.isHardDisk());
 		button.addSelectionListener(new SelectionAdapter() {
@@ -113,13 +120,12 @@ public class DiskImageOrderPane extends WizardPane {
 				getWizard().setCompressed(!getWizard().isCompressed());
 			}
 		});
+		return control;
 	}
 	/**
 	 * Create a radio button for the disk image size list.
 	 */
-	protected void createRadioButton(Composite composite, String label, 
-		final int order, String helpText) {
-			
+	protected Button createRadioButton(Composite composite, String label, final int order, String helpText) {
 		Button button = new Button(composite, SWT.RADIO);
 		button.setText(label);
 		button.setToolTipText(helpText);
@@ -133,10 +139,10 @@ public class DiskImageOrderPane extends WizardPane {
 				}
 			}
 		});
+		return button;
 	}
 	/**
 	 * Dispose of all resources.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
 	 */
 	public void dispose() {
 		control.dispose();

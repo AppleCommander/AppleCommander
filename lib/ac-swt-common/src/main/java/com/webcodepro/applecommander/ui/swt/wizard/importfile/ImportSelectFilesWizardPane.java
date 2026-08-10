@@ -50,7 +50,7 @@ import java.util.Optional;
  * Created on Jan 17, 2003.
  * @author Rob Greene
  */
-public class ImportSelectFilesWizardPane extends WizardPane {
+public class ImportSelectFilesWizardPane extends WizardPane<ImportWizard.Pages> {
 	private final TextBundle textBundle = UiBundle.getInstance();
 	private final ImportWizard wizard;
 	private Composite control;
@@ -60,6 +60,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 	private Table fileTable;
 	private Text addressText;
 	private Button rawCheckbox;
+	private Button chooseButton;
 	/**
 	 * Constructor for ImportSelectFilesWizardPane.
 	 */
@@ -72,17 +73,23 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 	 * Get the next visible pane.
 	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
-	public WizardPane getNextPane() {
+	public ImportWizard.Pages getNextPane() {
 		return null;
 	}
 	/**
-	 * Create the wizard pane.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#open()
+	 * Called when the page is activated.
 	 */
-	public void open() {
-		control = new Composite(parent, SWT.NULL);
+	public void activate() {
 		wizard.enableNextButton(false);
 		wizard.enableFinishButton(false);
+		chooseButton.setFocus();
+	}
+	/**
+	 * Create the wizard pane.
+	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#create()
+	 */
+	public Control create() {
+		control = new Composite(parent, SWT.NULL);
 		RowLayout layout = new RowLayout(SWT.VERTICAL);
 		layout.justify = true;
 		layout.marginBottom = 5;
@@ -127,9 +134,8 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 		Composite buttonPanel = new Composite(control, SWT.NULL);
 		buttonPanel.setLayout(new FillLayout());
 
-		Button chooseButton = new Button(buttonPanel, SWT.PUSH);
-		chooseButton.setText(textBundle.get("ChooseButton")); //$NON-NLS-1$
-		chooseButton.setFocus();
+		chooseButton = new Button(buttonPanel, SWT.PUSH);
+		chooseButton.setText(textBundle.get("ChooseButton"));
 		chooseButton.addSelectionListener(new SelectionAdapter() {
 			/**
 			 * Single click.
@@ -152,7 +158,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 					mb.setText("Error!");
 					StringBuilder message = new StringBuilder();
 					while (t != null) {
-						if (t.getMessage() != null && t.getMessage().length() > 0) {
+						if (t.getMessage() != null && !t.getMessage().isEmpty()) {
 							message.append(t.getMessage());
 							message.append("\n");
 						}
@@ -165,7 +171,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 		});
 
 		removeButton = new Button(buttonPanel, SWT.PUSH);
-		removeButton.setText(textBundle.get("RemoveButton")); //$NON-NLS-1$
+		removeButton.setText(textBundle.get("RemoveButton"));
 		removeButton.setEnabled(false);
 		removeButton.addSelectionListener(new SelectionAdapter() {
 			/**
@@ -185,7 +191,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 		});
 		
 		editButton = new Button(buttonPanel, SWT.PUSH);
-		editButton.setText(textBundle.get("EditButton")); //$NON-NLS-1$
+		editButton.setText(textBundle.get("EditButton"));
 		editButton.setEnabled(false);
 		editButton.addSelectionListener(new SelectionAdapter() {
 			/**
@@ -195,6 +201,7 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 				editSelection();
 			}
 		});
+		return control;
 	}
 	/**
 	 * Set all filenames to be imported.
@@ -247,14 +254,6 @@ public class ImportSelectFilesWizardPane extends WizardPane {
 		}
 		fileTable.redraw();
 		wizard.enableFinishButton(canFinish);
-	}
-	/**
-	 * Dispose of all resources.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
-	 */
-	public void dispose() {
-		fileTable.dispose();
-		control.dispose();
 	}
 	/**
 	 * Edit the current selection.

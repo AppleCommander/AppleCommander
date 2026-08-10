@@ -29,7 +29,11 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Choose graphics options for file export.
@@ -37,37 +41,57 @@ import org.eclipse.swt.widgets.Label;
  * Date created: Nov 7, 2002 10:25:43 PM
  * @author Rob Greene
  */
-public class ExportGraphicsTypePane extends WizardPane {
+public class ExportGraphicsTypePane extends WizardPane<ExportWizard.Pages> {
 	private final TextBundle textBundle = UiBundle.getInstance();
 	private final Composite parent;
-	private final Object layoutData;
 	private Composite control;
 	private final ExportWizard wizard;
+	private Button hiresBlackAndWhiteModeButton;
+	private Button hiresColorModeButton;
+	private Button doubleHiresBlackAndWhiteModeButton;
+	private Button doubleHiresColorModeButton;
+	private Button superHires16ModeButton;
+	private Button superHires3200ModeButton;
+	private Button quickDraw2IconButton;
+	private final Map<String,Button> byFileExtensionButtons = new HashMap<>();
 	/**
 	 * Constructor for ExportGraphicsTypePane.
 	 */
-	public ExportGraphicsTypePane(Composite parent, ExportWizard exportWizard, Object layoutData) {
+	public ExportGraphicsTypePane(Composite parent, ExportWizard exportWizard) {
 		super();
 		this.parent = parent;
 		this.wizard = exportWizard;
-		this.layoutData = layoutData;
 	}
 	/**
 	 * Determine the next wizard pane and return an instance.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
-	public WizardPane getNextPane() {
-		return new ExportFileDestinationPane(parent, wizard, layoutData);
+	public ExportWizard.Pages getNextPane() {
+		return ExportWizard.Pages.DESTINATION;
+	}
+	/**
+	 * Called when the page is activated.
+	 */
+	public void activate() {
+		wizard.enableFinishButton(false);
+		wizard.enableNextButton(true);
+		// Toggle buttons
+		hiresBlackAndWhiteModeButton.setSelection(getGraphicsFilter().isHiresBlackAndWhiteMode());
+		hiresColorModeButton.setSelection(getGraphicsFilter().isHiresColorMode());
+		doubleHiresBlackAndWhiteModeButton.setSelection(getGraphicsFilter().isDoubleHiresBlackAndWhiteMode());
+		doubleHiresColorModeButton.setSelection(getGraphicsFilter().isDoubleHiresColorMode());
+		superHires16ModeButton.setSelection(getGraphicsFilter().isSuperHires16Mode());
+		superHires3200ModeButton.setSelection(getGraphicsFilter().isSuperHires3200Mode());
+		quickDraw2IconButton.setSelection(getGraphicsFilter().isQuickDraw2Icon());
+		//
+		byFileExtensionButtons.forEach((ext, button) -> {
+			button.setSelection(ext.equals(getGraphicsFilter().getExtension()));
+		});
 	}
 	/**
 	 * Open up and configure the wizard pane.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#open()
 	 */
-	public void open() {
-		wizard.enableFinishButton(false);
-		wizard.enableNextButton(true);
+	public Control create() {
 		control = new Composite(parent, SWT.NULL);
-		control.setLayoutData(layoutData);
 		RowLayout layout = new RowLayout(SWT.VERTICAL);
 		layout.justify = true;
 		layout.marginBottom = 5;
@@ -83,58 +107,51 @@ public class ExportGraphicsTypePane extends WizardPane {
 		subpanelLayout.spacing = 3;
 		Composite graphicsModeGroup = new Composite(control, SWT.NULL);
 		graphicsModeGroup.setLayout(subpanelLayout);
-		Button button = new Button(graphicsModeGroup, SWT.RADIO);
-		button.setText(textBundle.get("ExportGraphicsTypeHiresBlackAndWhite")); //$NON-NLS-1$
-		button.setSelection(getGraphicsFilter().isHiresBlackAndWhiteMode());
-		button.addSelectionListener(new SelectionAdapter() {
+		hiresBlackAndWhiteModeButton = new Button(graphicsModeGroup, SWT.RADIO);
+		hiresBlackAndWhiteModeButton.setText(textBundle.get("ExportGraphicsTypeHiresBlackAndWhite")); //$NON-NLS-1$
+		hiresBlackAndWhiteModeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_HGR_BLACK_AND_WHITE);
 			}
 		});
-		button = new Button(graphicsModeGroup, SWT.RADIO);
-		button.setText(textBundle.get("ExportGraphicsTypeHiresColor")); //$NON-NLS-1$
-		button.setSelection(getGraphicsFilter().isHiresColorMode());
-		button.addSelectionListener(new SelectionAdapter() {
+		hiresColorModeButton = new Button(graphicsModeGroup, SWT.RADIO);
+		hiresColorModeButton.setText(textBundle.get("ExportGraphicsTypeHiresColor")); //$NON-NLS-1$
+		hiresColorModeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_HGR_COLOR);
 			}
 		});
-		button = new Button(graphicsModeGroup, SWT.RADIO);
-		button.setText(textBundle.get("ExportGraphicsTypeDoubleHiresBlackAndWhite")); //$NON-NLS-1$
-		button.setSelection(getGraphicsFilter().isDoubleHiresBlackAndWhiteMode());
-		button.addSelectionListener(new SelectionAdapter() {
+		doubleHiresBlackAndWhiteModeButton = new Button(graphicsModeGroup, SWT.RADIO);
+		doubleHiresBlackAndWhiteModeButton.setText(textBundle.get("ExportGraphicsTypeDoubleHiresBlackAndWhite")); //$NON-NLS-1$
+		doubleHiresBlackAndWhiteModeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_DHR_BLACK_AND_WHITE);
 			}
 		});
-		button = new Button(graphicsModeGroup, SWT.RADIO);
-		button.setText(textBundle.get("ExportGraphicsTypeDoubleHiresColor")); //$NON-NLS-1$
-		button.setSelection(getGraphicsFilter().isDoubleHiresColorMode());
-		button.addSelectionListener(new SelectionAdapter() {
+		doubleHiresColorModeButton = new Button(graphicsModeGroup, SWT.RADIO);
+		doubleHiresColorModeButton.setText(textBundle.get("ExportGraphicsTypeDoubleHiresColor")); //$NON-NLS-1$
+		doubleHiresColorModeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_DHR_COLOR);
 			}
 		});
-		button = new Button(graphicsModeGroup, SWT.RADIO);
-		button.setText(textBundle.get("ExportGraphicsTypeSuperHiresColor")); //$NON-NLS-1$
-		button.setSelection(getGraphicsFilter().isSuperHires16Mode());
-		button.addSelectionListener(new SelectionAdapter() {
+		superHires16ModeButton = new Button(graphicsModeGroup, SWT.RADIO);
+		superHires16ModeButton.setText(textBundle.get("ExportGraphicsTypeSuperHiresColor")); //$NON-NLS-1$
+		superHires16ModeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_SHR_16);
 			}
 		});
-		button = new Button(graphicsModeGroup, SWT.RADIO);
-		button.setText(textBundle.get("ExportGraphicsTypeSuperHires3200Color")); //$NON-NLS-1$
-		button.setSelection(getGraphicsFilter().isSuperHires3200Mode());
-		button.addSelectionListener(new SelectionAdapter() {
+		superHires3200ModeButton = new Button(graphicsModeGroup, SWT.RADIO);
+		superHires3200ModeButton.setText(textBundle.get("ExportGraphicsTypeSuperHires3200Color")); //$NON-NLS-1$
+		superHires3200ModeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_SHR_3200);
 			}
 		});
-		button = new Button(graphicsModeGroup, SWT.RADIO);
-		button.setText(textBundle.get("ExportGraphicsTypeQuickDraw2Icon")); //$NON-NLS-1$
-		button.setSelection(getGraphicsFilter().isQuickDraw2Icon());
-		button.addSelectionListener(new SelectionAdapter() {
+		quickDraw2IconButton = new Button(graphicsModeGroup, SWT.RADIO);
+		quickDraw2IconButton.setText(textBundle.get("ExportGraphicsTypeQuickDraw2Icon")); //$NON-NLS-1$
+		quickDraw2IconButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_QUICKDRAW2_ICON);
 			}
@@ -145,20 +162,20 @@ public class ExportGraphicsTypePane extends WizardPane {
 		graphicsFormatGroup.setLayout(subpanelLayout);
 		String[] formats = GraphicsFileFilter.getFileExtensions();
 		for (int i=0; i<formats.length; i++) {
-			button = new Button(graphicsFormatGroup, SWT.RADIO);
+			Button button = new Button(graphicsFormatGroup, SWT.RADIO);
 			button.setText(formats[i]);
-			button.setSelection(formats[i].equals(getGraphicsFilter().getExtension()));
 			button.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
 					Button source = (Button) e.getSource();
 					getGraphicsFilter().setExtension(source.getText());
 				}
 			});
+			byFileExtensionButtons.put(formats[i], button);
 		}
+		return control;
 	}
 	/**
 	 * Dispose of widgets.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
 	 */
 	public void dispose() {
 		control.dispose();
