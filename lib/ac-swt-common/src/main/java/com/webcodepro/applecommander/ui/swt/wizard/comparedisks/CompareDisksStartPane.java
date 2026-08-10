@@ -77,7 +77,7 @@ public class CompareDisksStartPane extends WizardPane<CompareDisksWizard.Pages> 
 		label.setText(getDiskLabel(1));
 
 		diskname1Text = new Text(control, SWT.WRAP | SWT.BORDER);
-		diskname1Text.setLayoutData(new RowData(300, -1));
+		diskname1Text.setLayoutData(new RowData(400, 100));
 		diskname1Text.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent event) {
 				Text text = (Text) event.getSource();
@@ -103,7 +103,7 @@ public class CompareDisksStartPane extends WizardPane<CompareDisksWizard.Pages> 
 		label.setText(getDiskLabel(2));
 
 		diskname2Text = new Text(control, SWT.WRAP | SWT.BORDER);
-		diskname2Text.setLayoutData(new RowData(300, -1));
+		diskname2Text.setLayoutData(new RowData(400, 100));
 		diskname2Text.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent event) {
 				Text text = (Text) event.getSource();

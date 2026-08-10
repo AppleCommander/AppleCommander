@@ -30,6 +30,7 @@ import com.webcodepro.applecommander.util.TextBundle;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -48,6 +49,7 @@ public class CompareDisksResultsPane extends WizardPane<CompareDisksWizard.Pages
 	private final Composite parent;
 	private final Object layoutData;
     private final CompareDisksWizard wizard;
+	private Label resultLabel;
 	/**
 	 * Constructor for ExportFileStartPane.
 	 */
@@ -72,12 +74,11 @@ public class CompareDisksResultsPane extends WizardPane<CompareDisksWizard.Pages
 		layout.spacing = 3;
 		control.setLayout(layout);
 
-		String message = compareDisks();
-		
-		Label label = new Label(control, SWT.WRAP);
-		label.setText(message);
 
-		label = new Label(control, SWT.WRAP);
+		resultLabel = new Label(control, SWT.WRAP);
+		resultLabel.setLayoutData(new RowData(400, 500));
+
+		Label label = new Label(control, SWT.WRAP);
 		label.setText(textBundle.get("CompareDisksResultsPane.RestartText"));
 		
 		parent.pack();
@@ -95,6 +96,9 @@ public class CompareDisksResultsPane extends WizardPane<CompareDisksWizard.Pages
 	public void activate() {
 		wizard.enableNextButton(false);
 		wizard.enableFinishButton(true);
+
+		String message = compareDisks();
+		resultLabel.setText(message);
 	}
 	protected String compareDisks() {
 		List<String> errorMessages = new ArrayList<>();	
