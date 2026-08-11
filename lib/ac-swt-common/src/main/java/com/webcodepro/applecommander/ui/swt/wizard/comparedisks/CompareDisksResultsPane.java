@@ -48,24 +48,21 @@ import java.util.List;
 public class CompareDisksResultsPane extends WizardPane<CompareDisksWizard.Pages> {
 	private static final TextBundle textBundle = UiBundle.getInstance();
 	private final Composite parent;
-	private final Object layoutData;
     private final CompareDisksWizard wizard;
 	private Text resultText;
 	/**
 	 * Constructor for ExportFileStartPane.
 	 */
-	public CompareDisksResultsPane(Composite parent, CompareDisksWizard wizard, Object layoutData) {
+	public CompareDisksResultsPane(Composite parent, CompareDisksWizard wizard) {
 		super();
 		this.parent = parent;
 		this.wizard = wizard;
-		this.layoutData = layoutData;
 	}
 	/**
 	 * Open up and configure the wizard pane.
 	 */
 	public Control create() {
         Composite control = new Composite(parent, SWT.NULL);
-		control.setLayoutData(layoutData);
 		GridLayout layout = new GridLayout();
 		layout.marginBottom = 5;
 		layout.marginLeft = 5;

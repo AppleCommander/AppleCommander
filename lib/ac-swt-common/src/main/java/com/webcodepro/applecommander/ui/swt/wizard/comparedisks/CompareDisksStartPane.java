@@ -24,7 +24,6 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 import com.webcodepro.applecommander.util.TextBundle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -39,7 +38,6 @@ import org.eclipse.swt.widgets.*;
 public class CompareDisksStartPane extends WizardPane<CompareDisksWizard.Pages> {
 	private final TextBundle textBundle = UiBundle.getInstance();
 	private final Composite parent;
-	private final Object layoutData;
 	private Composite control;
 	private final CompareDisksWizard wizard;
 	private Text diskname1Text;
@@ -49,18 +47,16 @@ public class CompareDisksStartPane extends WizardPane<CompareDisksWizard.Pages> 
 	/**
 	 * Constructor for CompareDisksStartPane.
 	 */
-	public CompareDisksStartPane(Composite parent, CompareDisksWizard wizard, Object layoutData) {
+	public CompareDisksStartPane(Composite parent, CompareDisksWizard wizard) {
 		super();
 		this.parent = parent;
 		this.wizard = wizard;
-		this.layoutData = layoutData;
 	}
 	/**
 	 * Open up and configure the wizard pane.
 	 */
 	public Control create() {
 		control = new Composite(parent, SWT.NULL);
-		control.setLayoutData(layoutData);
 		GridLayout layout = new GridLayout();
 		layout.marginBottom = 5;
 		layout.marginLeft = 5;
@@ -76,16 +72,15 @@ public class CompareDisksStartPane extends WizardPane<CompareDisksWizard.Pages> 
 		label.setText(getDiskLabel(1));
 		label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.GRAB_HORIZONTAL));
 
-		int widthHint = parent.getSize().x - parent.getBorderWidth();
-
 		diskname1Text = new Text(control, SWT.WRAP | SWT.BORDER | SWT.V_SCROLL | SWT.MULTI);
-		diskname1Text.setLayoutData(new GridData(GridData.FILL_BOTH));
-		diskname1Text.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent event) {
-				Text text = (Text) event.getSource();
-				getWizard().setDiskname1(text.getText());
-			}
-		});
+		float fontHeight = diskname1Text.getFont().getFontData()[0].height;
+		GridData disknameGridData = new GridData(GridData.FILL_BOTH);
+		disknameGridData.heightHint = (int)fontHeight * 4;
+		diskname1Text.setLayoutData(disknameGridData);
+		diskname1Text.addModifyListener(event -> {
+            Text text = (Text) event.getSource();
+            getWizard().setDiskname1(text.getText());
+        });
 		
 		Button button = new Button(control, SWT.PUSH);
 		button.setText(textBundle.get("BrowseButton"));
@@ -105,13 +100,11 @@ public class CompareDisksStartPane extends WizardPane<CompareDisksWizard.Pages> 
 		label.setText(getDiskLabel(2));
 
 		diskname2Text = new Text(control, SWT.WRAP | SWT.BORDER | SWT.V_SCROLL | SWT.MULTI);
-		diskname2Text.setLayoutData(new GridData(GridData.FILL_BOTH));
-		diskname2Text.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent event) {
-				Text text = (Text) event.getSource();
-				getWizard().setDiskname2(text.getText());
-			}
-		});
+		diskname2Text.setLayoutData(disknameGridData);
+		diskname2Text.addModifyListener(event -> {
+            Text text = (Text) event.getSource();
+            getWizard().setDiskname2(text.getText());
+        });
 		
 		button = new Button(control, SWT.PUSH);
 		button.setText(textBundle.get("BrowseButton"));
@@ -148,8 +141,9 @@ public class CompareDisksStartPane extends WizardPane<CompareDisksWizard.Pages> 
         
         limitText = new Text(control, SWT.WRAP | SWT.BORDER);
         limitText.setText(Integer.toString(wizard.getMessageLimit()));
-		limitText.setTextLimit(10);
-        limitText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+		GridData limitGridData = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+		limitGridData.widthHint = 100;
+        limitText.setLayoutData(limitGridData);
         limitText.addModifyListener(this::limitTextModifyListener);
         
         parent.pack();

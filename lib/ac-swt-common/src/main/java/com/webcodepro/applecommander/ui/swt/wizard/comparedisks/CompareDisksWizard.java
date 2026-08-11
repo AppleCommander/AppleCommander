@@ -49,8 +49,8 @@ public class CompareDisksWizard extends Wizard<CompareDisksWizard.Pages> {
 	 */
 	public Map<Pages,WizardPane<Pages>> createWizardPanes() {
 		return Map.of(
-			Pages.START_PANE, new CompareDisksStartPane(getContentPane(), this, null),
-			Pages.RESULT_PANE, new CompareDisksResultsPane(getContentPane(), this, null)
+			Pages.START_PANE, new CompareDisksStartPane(getContentPane(), this),
+			Pages.RESULT_PANE, new CompareDisksResultsPane(getContentPane(), this)
 		);
 	}
 	/**
