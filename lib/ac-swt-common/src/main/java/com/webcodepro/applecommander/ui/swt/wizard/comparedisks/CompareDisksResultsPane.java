@@ -30,11 +30,12 @@ import com.webcodepro.applecommander.util.TextBundle;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.RowData;
-import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +50,7 @@ public class CompareDisksResultsPane extends WizardPane<CompareDisksWizard.Pages
 	private final Composite parent;
 	private final Object layoutData;
     private final CompareDisksWizard wizard;
-	private Label resultLabel;
+	private Text resultText;
 	/**
 	 * Constructor for ExportFileStartPane.
 	 */
@@ -65,20 +66,19 @@ public class CompareDisksResultsPane extends WizardPane<CompareDisksWizard.Pages
 	public Control create() {
         Composite control = new Composite(parent, SWT.NULL);
 		control.setLayoutData(layoutData);
-		RowLayout layout = new RowLayout(SWT.VERTICAL);
-		layout.justify = true;
+		GridLayout layout = new GridLayout();
 		layout.marginBottom = 5;
 		layout.marginLeft = 5;
 		layout.marginRight = 5;
 		layout.marginTop = 5;
-		layout.spacing = 3;
 		control.setLayout(layout);
 
-
-		resultLabel = new Label(control, SWT.WRAP);
-		resultLabel.setLayoutData(new RowData(400, 500));
+		resultText = new Text(control, SWT.WRAP | SWT.BORDER | SWT.V_SCROLL | SWT.MULTI);
+		resultText.setEditable(false);
+		resultText.setLayoutData(new GridData(GridData.FILL_BOTH));
 
 		Label label = new Label(control, SWT.WRAP);
+		label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		label.setText(textBundle.get("CompareDisksResultsPane.RestartText"));
 		
 		parent.pack();
@@ -98,7 +98,7 @@ public class CompareDisksResultsPane extends WizardPane<CompareDisksWizard.Pages
 		wizard.enableFinishButton(true);
 
 		String message = compareDisks();
-		resultLabel.setText(message);
+		resultText.setText(message);
 	}
 	protected String compareDisks() {
 		List<String> errorMessages = new ArrayList<>();	
