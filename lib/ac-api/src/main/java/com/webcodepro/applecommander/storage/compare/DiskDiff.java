@@ -32,6 +32,7 @@ import org.applecommander.device.BlockDevice;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.util.DataBuffer;
 
+import javax.sound.midi.Track;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -147,8 +148,16 @@ public class DiskDiff {
 
     /** Compare disks by 256-byte DOS sectors. */
     public void compareByTrackSectorGeometry(FormattedDisk formattedDiskA, FormattedDisk formattedDiskB) {
-        TrackSectorDevice deviceA = TrackSectorDeviceAdapter.from(formattedDiskA);
-        TrackSectorDevice deviceB = TrackSectorDeviceAdapter.from(formattedDiskB);
+        Optional<TrackSectorDevice> optA = formattedDiskA.get(TrackSectorDevice.class);
+        Optional<TrackSectorDevice> optB = formattedDiskB.get(TrackSectorDevice.class);
+        if (optA.isEmpty() || optB.isEmpty()) {
+            if (optA.isEmpty()) results.addError("Disk %s does not have a track/sector device.", formattedDiskA.getFilename());
+            if (optB.isEmpty()) results.addError("Disk %s does not have a track/sector device.", formattedDiskB.getFilename());
+            return;
+        }
+
+        TrackSectorDevice deviceA = optA.get();
+        TrackSectorDevice deviceB = optB.get();
 
         int sectorsPerDiskA = deviceA.getGeometry().sectorsPerDisk();
         int sectorsPerDiskB = deviceB.getGeometry().sectorsPerDisk();
