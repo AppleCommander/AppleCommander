@@ -26,7 +26,8 @@ import com.webcodepro.applecommander.util.TextBundle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -56,22 +57,19 @@ public class ExportFileStartPane extends WizardPane<ExportWizard.Pages> {
 	 */
 	public Control create() {
 		control = new Composite(parent, SWT.NULL);
-		RowLayout layout = new RowLayout(SWT.VERTICAL);
-		layout.justify = true;
+		GridLayout layout = new GridLayout();
+		layout.verticalSpacing = 10;
 		layout.marginBottom = 5;
 		layout.marginLeft = 5;
 		layout.marginRight = 5;
 		layout.marginTop = 5;
-		layout.spacing = 3;
 		control.setLayout(layout);
+
 		Label label = new Label(control, SWT.WRAP);
+		label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		label.setText(textBundle.get("ExportFileTypePrompt")); //$NON-NLS-1$
-		RowLayout subpanelLayout = new RowLayout(SWT.VERTICAL);
-		subpanelLayout.justify = true;
-		subpanelLayout.spacing = 3;
-		Composite buttonSubpanel = new Composite(control, SWT.NULL);
-		buttonSubpanel.setLayout(subpanelLayout);
-		Button button = new Button(buttonSubpanel, SWT.RADIO);
+		Button button = new Button(control, SWT.RADIO);
+		button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		button.setText(textBundle.get("ExportFileAsRawDiskData")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() == null);
 		button.addSelectionListener(new SelectionAdapter() {
@@ -79,7 +77,8 @@ public class ExportFileStartPane extends WizardPane<ExportWizard.Pages> {
 				getWizard().setFileFilter(null);
 			}
 		});
-		button = new Button(buttonSubpanel, SWT.RADIO);
+		button = new Button(control, SWT.RADIO);
+		button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		button.setText(textBundle.get("ExportFileAsBinaryFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof BinaryFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
@@ -87,7 +86,8 @@ public class ExportFileStartPane extends WizardPane<ExportWizard.Pages> {
 				getWizard().setFileFilter(new BinaryFileFilter());
 			}
 		});
-		button = new Button(buttonSubpanel, SWT.RADIO);
+		button = new Button(control, SWT.RADIO);
+		button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		button.setText(textBundle.get("ExportFileAsHexDump")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof HexDumpFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
@@ -95,7 +95,8 @@ public class ExportFileStartPane extends WizardPane<ExportWizard.Pages> {
 				getWizard().setFileFilter(new HexDumpFileFilter());
 			}
 		});
-		button = new Button(buttonSubpanel, SWT.RADIO);
+		button = new Button(control, SWT.RADIO);
+		button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		button.setText(textBundle.get("ExportFileAsAsciiTextFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof TextFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
@@ -103,7 +104,8 @@ public class ExportFileStartPane extends WizardPane<ExportWizard.Pages> {
 				getWizard().setFileFilter(new TextFileFilter());
 			}
 		});
-		button = new Button(buttonSubpanel, SWT.RADIO);
+		button = new Button(control, SWT.RADIO);
+		button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		button.setText(textBundle.get("ExportFileAsFormattedAssemblyTextFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof AssemblySourceFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
@@ -111,7 +113,8 @@ public class ExportFileStartPane extends WizardPane<ExportWizard.Pages> {
 				getWizard().setFileFilter(new AssemblySourceFileFilter());
 			}
 		});
-		button = new Button(buttonSubpanel, SWT.RADIO);
+		button = new Button(control, SWT.RADIO);
+		button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		button.setText(textBundle.get("ExportFileAsPascalTextFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof PascalTextFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
@@ -119,7 +122,8 @@ public class ExportFileStartPane extends WizardPane<ExportWizard.Pages> {
 				getWizard().setFileFilter(new PascalTextFileFilter());
 			}
 		});
-		button = new Button(buttonSubpanel, SWT.RADIO);
+		button = new Button(control, SWT.RADIO);
+		button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		button.setText(textBundle.get("ExportFileAsApplesoftBasicFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof ApplesoftFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
@@ -127,7 +131,8 @@ public class ExportFileStartPane extends WizardPane<ExportWizard.Pages> {
 				getWizard().setFileFilter(new ApplesoftFileFilter());
 			}
 		});
-		button = new Button(buttonSubpanel, SWT.RADIO);
+		button = new Button(control, SWT.RADIO);
+		button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		button.setText(textBundle.get("ExportFileAsIntegerBasicFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof IntegerBasicFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
@@ -135,7 +140,8 @@ public class ExportFileStartPane extends WizardPane<ExportWizard.Pages> {
 				getWizard().setFileFilter(new IntegerBasicFileFilter());
 			}
 		});
-		button = new Button(buttonSubpanel, SWT.RADIO);
+		button = new Button(control, SWT.RADIO);
+		button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		button.setText(textBundle.get("ExportFileAsBusinessBASICFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof BusinessBASICFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
@@ -143,7 +149,8 @@ public class ExportFileStartPane extends WizardPane<ExportWizard.Pages> {
 				getWizard().setFileFilter(new BusinessBASICFileFilter());
 			}
 		});
-		button = new Button(buttonSubpanel, SWT.RADIO);
+		button = new Button(control, SWT.RADIO);
+		button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		button.setText(textBundle.get("ExportFileAsAppleworksWordProcessorFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof AppleWorksWordProcessorFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
@@ -151,7 +158,8 @@ public class ExportFileStartPane extends WizardPane<ExportWizard.Pages> {
 				getWizard().setFileFilter(new AppleWorksWordProcessorFileFilter());
 			}
 		});
-		button = new Button(buttonSubpanel, SWT.RADIO);
+		button = new Button(control, SWT.RADIO);
+		button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		button.setText(textBundle.get("ExportFileAsAppleworksDatabaseFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof AppleWorksDataBaseFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
@@ -159,7 +167,8 @@ public class ExportFileStartPane extends WizardPane<ExportWizard.Pages> {
 				getWizard().setFileFilter(new AppleWorksDataBaseFileFilter());
 			}
 		});
-		button = new Button(buttonSubpanel, SWT.RADIO);
+		button = new Button(control, SWT.RADIO);
+		button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		button.setText(textBundle.get("ExportFileAsAppleworksSpreadsheetFile")); //$NON-NLS-1$
 		button.setSelection(wizard.getFileFilter() instanceof AppleWorksSpreadSheetFileFilter);
 		button.addSelectionListener(new SelectionAdapter() {
@@ -167,7 +176,8 @@ public class ExportFileStartPane extends WizardPane<ExportWizard.Pages> {
 				getWizard().setFileFilter(new AppleWorksSpreadSheetFileFilter());
 			}
 		});
-		button = new Button(buttonSubpanel, SWT.RADIO);
+		button = new Button(control, SWT.RADIO);
+		button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		button.setText(textBundle.get("ExportFileAsGraphicsFile")); //$NON-NLS-1$
 		button.setEnabled(GraphicsFileFilter.isCodecAvailable());
 		button.setSelection(wizard.getFileFilter() instanceof GraphicsFileFilter);

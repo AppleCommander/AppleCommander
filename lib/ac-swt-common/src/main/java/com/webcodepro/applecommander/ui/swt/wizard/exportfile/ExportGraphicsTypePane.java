@@ -26,7 +26,8 @@ import com.webcodepro.applecommander.util.TextBundle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -92,64 +93,67 @@ public class ExportGraphicsTypePane extends WizardPane<ExportWizard.Pages> {
 	 */
 	public Control create() {
 		control = new Composite(parent, SWT.NULL);
-		RowLayout layout = new RowLayout(SWT.VERTICAL);
-		layout.justify = true;
+		GridLayout layout = new GridLayout();
+		layout.verticalSpacing = 10;
 		layout.marginBottom = 5;
 		layout.marginLeft = 5;
 		layout.marginRight = 5;
 		layout.marginTop = 5;
-		layout.spacing = 3;
 		control.setLayout(layout);
 		Label label = new Label(control, SWT.WRAP);
+		label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		label.setText(textBundle.get("ExportGraphicsTypePrompt")); //$NON-NLS-1$
-		RowLayout subpanelLayout = new RowLayout(SWT.VERTICAL);
-		subpanelLayout.justify = true;
-		subpanelLayout.spacing = 3;
-		Composite graphicsModeGroup = new Composite(control, SWT.NULL);
-		graphicsModeGroup.setLayout(subpanelLayout);
-		hiresBlackAndWhiteModeButton = new Button(graphicsModeGroup, SWT.RADIO);
+
+		hiresBlackAndWhiteModeButton = new Button(control, SWT.RADIO);
+		hiresBlackAndWhiteModeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		hiresBlackAndWhiteModeButton.setText(textBundle.get("ExportGraphicsTypeHiresBlackAndWhite")); //$NON-NLS-1$
 		hiresBlackAndWhiteModeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_HGR_BLACK_AND_WHITE);
 			}
 		});
-		hiresColorModeButton = new Button(graphicsModeGroup, SWT.RADIO);
+		hiresColorModeButton = new Button(control, SWT.RADIO);
+		hiresColorModeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		hiresColorModeButton.setText(textBundle.get("ExportGraphicsTypeHiresColor")); //$NON-NLS-1$
 		hiresColorModeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_HGR_COLOR);
 			}
 		});
-		doubleHiresBlackAndWhiteModeButton = new Button(graphicsModeGroup, SWT.RADIO);
+		doubleHiresBlackAndWhiteModeButton = new Button(control, SWT.RADIO);
+		doubleHiresBlackAndWhiteModeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		doubleHiresBlackAndWhiteModeButton.setText(textBundle.get("ExportGraphicsTypeDoubleHiresBlackAndWhite")); //$NON-NLS-1$
 		doubleHiresBlackAndWhiteModeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_DHR_BLACK_AND_WHITE);
 			}
 		});
-		doubleHiresColorModeButton = new Button(graphicsModeGroup, SWT.RADIO);
+		doubleHiresColorModeButton = new Button(control, SWT.RADIO);
+		doubleHiresColorModeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		doubleHiresColorModeButton.setText(textBundle.get("ExportGraphicsTypeDoubleHiresColor")); //$NON-NLS-1$
 		doubleHiresColorModeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_DHR_COLOR);
 			}
 		});
-		superHires16ModeButton = new Button(graphicsModeGroup, SWT.RADIO);
+		superHires16ModeButton = new Button(control, SWT.RADIO);
+		superHires16ModeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		superHires16ModeButton.setText(textBundle.get("ExportGraphicsTypeSuperHiresColor")); //$NON-NLS-1$
 		superHires16ModeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_SHR_16);
 			}
 		});
-		superHires3200ModeButton = new Button(graphicsModeGroup, SWT.RADIO);
+		superHires3200ModeButton = new Button(control, SWT.RADIO);
+		superHires3200ModeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		superHires3200ModeButton.setText(textBundle.get("ExportGraphicsTypeSuperHires3200Color")); //$NON-NLS-1$
 		superHires3200ModeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				getGraphicsFilter().setMode(GraphicsFileFilter.MODE_SHR_3200);
 			}
 		});
-		quickDraw2IconButton = new Button(graphicsModeGroup, SWT.RADIO);
+		quickDraw2IconButton = new Button(control, SWT.RADIO);
+		quickDraw2IconButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		quickDraw2IconButton.setText(textBundle.get("ExportGraphicsTypeQuickDraw2Icon")); //$NON-NLS-1$
 		quickDraw2IconButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -157,12 +161,12 @@ public class ExportGraphicsTypePane extends WizardPane<ExportWizard.Pages> {
 			}
 		});
 		label = new Label(control, SWT.WRAP);
+		label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		label.setText(textBundle.get("ExportGraphicsFileFormatPrompt")); //$NON-NLS-1$
-		Composite graphicsFormatGroup = new Composite(control, SWT.NULL);
-		graphicsFormatGroup.setLayout(subpanelLayout);
 		String[] formats = GraphicsFileFilter.getFileExtensions();
 		for (int i=0; i<formats.length; i++) {
-			Button button = new Button(graphicsFormatGroup, SWT.RADIO);
+			Button button = new Button(control, SWT.RADIO);
+			button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 			button.setText(formats[i]);
 			button.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {

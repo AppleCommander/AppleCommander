@@ -26,7 +26,8 @@ import com.webcodepro.applecommander.util.TextBundle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -77,20 +78,18 @@ public class AppleWorksWordProcessorPane extends WizardPane<ExportWizard.Pages> 
 	 */
 	public Control create() {
 		control = new Composite(parent, SWT.NULL);
-		RowLayout layout = new RowLayout(SWT.VERTICAL);
-		layout.justify = true;
+		GridLayout layout = new GridLayout();
+		layout.verticalSpacing = 10;
 		layout.marginBottom = 5;
 		layout.marginLeft = 5;
 		layout.marginRight = 5;
 		layout.marginTop = 5;
-		layout.spacing = 3;
 		control.setLayout(layout);
 		Label label = new Label(control, SWT.WRAP);
+		label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		label.setText(textBundle.get("AppleWorksWordProcessorFormatPrompt")); //$NON-NLS-1$
-		RowLayout subpanelLayout = new RowLayout(SWT.VERTICAL);
-		subpanelLayout.justify = true;
-		subpanelLayout.spacing = 3;
 		textRenderingButton = new Button(control, SWT.RADIO);
+		textRenderingButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		textRenderingButton.setText(textBundle.get("AppleWorksWordProcessorFormatAsText")); //$NON-NLS-1$
 		textRenderingButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -98,6 +97,7 @@ public class AppleWorksWordProcessorPane extends WizardPane<ExportWizard.Pages> 
 			}
 		});
 		htmlRenderingButton = new Button(control, SWT.RADIO);
+		htmlRenderingButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		htmlRenderingButton.setText(textBundle.get("AppleWorksWordProcessorFormatAsHtml")); //$NON-NLS-1$
 		htmlRenderingButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -105,6 +105,7 @@ public class AppleWorksWordProcessorPane extends WizardPane<ExportWizard.Pages> 
 			}
 		});
 		rtfRenderingButton = new Button(control, SWT.RADIO);
+		rtfRenderingButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		rtfRenderingButton.setText(textBundle.get("AppleWorksWordProcessorFormatAsRtf")); //$NON-NLS-1$
 		rtfRenderingButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
