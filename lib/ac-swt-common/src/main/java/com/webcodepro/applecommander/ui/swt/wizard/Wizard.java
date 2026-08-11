@@ -30,8 +30,8 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.RowData;
-import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 
 import java.util.ArrayDeque;
@@ -78,31 +78,27 @@ public abstract class Wizard<E> {
 		}
 		dialog = new Shell(parent, styles);
 		dialog.setText(title);
-		RowLayout layout = new RowLayout(SWT.VERTICAL);
-		layout.justify = true;
+		GridLayout layout = new GridLayout();
 		layout.marginBottom = 5;
 		layout.marginLeft = 5;
 		layout.marginRight = 5;
 		layout.marginTop = 5;
-		layout.spacing = 3;
 		dialog.setLayout(layout);
 
-		// Wizard logo		
-		RowData rowData = new RowData();
-		rowData.width = logo.getImageData().width;
-		rowData.height = logo.getImageData().height;
-		imageCanvas = new ImageCanvas(dialog, SWT.BORDER, logo, rowData);
+		// Wizard logo
+		GridData imageLayoutData = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_CENTER);
+		imageLayoutData.widthHint = logo.getImageData().width;
+		imageLayoutData.heightHint = logo.getImageData().height;
+		imageCanvas = new ImageCanvas(dialog, SWT.BORDER, logo,imageLayoutData);
 
 		// Content pane
-		rowData = new RowData();
-		rowData.width = logo.getImageData().width;
 		contentPane = new Composite(dialog, SWT.BORDER);
-		contentPane.setLayoutData(rowData);
+		contentPane.setLayoutData(new GridData(GridData.FILL_BOTH));
 		contentPane.setLayout(stackLayout);
 
 		// Bottom row of buttons
 		Composite composite = new Composite(dialog, SWT.NONE);
-		composite.setLayoutData(rowData);
+		composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_END));
 		composite.setLayout(new FillLayout(SWT.HORIZONTAL));
 		Button button = new Button(composite, SWT.PUSH);
 		button.setText(textBundle.get("CancelButton"));
