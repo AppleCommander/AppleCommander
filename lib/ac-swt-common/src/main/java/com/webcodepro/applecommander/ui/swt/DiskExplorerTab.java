@@ -1399,6 +1399,20 @@ public class DiskExplorerTab {
 			showSaveError(ex);
 		}
 	}
+	protected void showError(Throwable t) {
+		// Locate root error message
+		while (t.getCause() != null) {
+			t = t.getCause();
+		}
+		String errorMessage = t.getMessage();
+		if (errorMessage == null) {
+			errorMessage = t.getClass().getName();
+		}
+		MessageBox box = new MessageBox(shell, SWT.ICON_ERROR | SWT.CLOSE);
+		box.setText("An unexpected error occurred!");
+		box.setMessage(errorMessage);
+		box.open();
+	}
 	/**
 	 * Display the Save error dialog box.
 	 * @see #save
@@ -1500,7 +1514,11 @@ public class DiskExplorerTab {
             if (window == null) {
                 window = new FileViewerWindow(shell, fileEntry, imageManager);
             }
-			window.open();
+			try {
+				window.open();
+			} catch (Throwable t) {
+				showError(t);
+			}
 		}
 	}
 	/**
