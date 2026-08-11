@@ -1,6 +1,6 @@
 ```
 AppleCommander - An Apple ][ image utility.
-Copyright (c) 2002-2022 by Robert Greene and others
+Copyright (c) 2002-2026 by Robert Greene and others
 robgreene at users.sourceforge.net  (should still be functional)
 ```
 
