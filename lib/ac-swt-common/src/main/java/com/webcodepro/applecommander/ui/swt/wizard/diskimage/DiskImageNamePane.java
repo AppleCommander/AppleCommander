@@ -23,7 +23,8 @@ import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 import com.webcodepro.applecommander.util.TextBundle;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 
 /**
@@ -88,37 +89,36 @@ public class DiskImageNamePane extends WizardPane<DiskImageWizard.Pages> {
 	 */
 	public Control create() {
 		control = new Composite(parent, SWT.NULL);
-		RowLayout layout = new RowLayout(SWT.VERTICAL);
-		layout.justify = true;
+		GridLayout layout = new GridLayout();
+		layout.verticalSpacing = 10;
 		layout.marginBottom = 5;
 		layout.marginLeft = 5;
 		layout.marginRight = 5;
 		layout.marginTop = 5;
-		layout.spacing = 3;
-		layout.fill = true;
 		control.setLayout(layout);
 		Label label = new Label(control, SWT.WRAP);
+		label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		label.setText(textBundle.get("DiskImageNamePrompt"));
 		fileName = new Text(control, SWT.BORDER);
-		setNextButtonStatus();
-		fileName.addListener(SWT.Verify, new Listener() {
-			public void handleEvent(Event e) {
-				String s = edit(fileName.getText(), e);
-				wizard.setFileName(s);
-				setNextButtonStatus();
-			}
-		});
+		fileName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		fileName.addListener(SWT.Verify, e -> {
+            String s = edit(fileName.getText(), e);
+            wizard.setFileName(s);
+            setNextButtonStatus();
+        });
 
 		volumeLabel = new Label(control, SWT.WRAP);
+		volumeLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		volumeText = new Text(control, SWT.BORDER);
-		volumeText.addListener(SWT.Verify, new Listener() {
-			public void handleEvent(Event e) {
-				e.text = e.text.toUpperCase();
-				String s = edit(volumeText.getText(), e);
-				wizard.setVolumeName(s);
-				setNextButtonStatus();
-			}
-		});
+		volumeText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		volumeText.addListener(SWT.Verify, e -> {
+            e.text = e.text.toUpperCase();
+            String s = edit(volumeText.getText(), e);
+            wizard.setVolumeName(s);
+            setNextButtonStatus();
+        });
+
+		setNextButtonStatus();
 		return control;
 	}
 	/**
@@ -156,9 +156,5 @@ public class DiskImageNamePane extends WizardPane<DiskImageWizard.Pages> {
 	 */
 	public void dispose() {
 		control.dispose();
-	}
-	
-	protected DiskImageWizard getWizard() {
-		return wizard;
 	}
 }

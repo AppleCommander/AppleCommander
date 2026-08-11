@@ -22,7 +22,6 @@ package com.webcodepro.applecommander.storage.compare;
 import com.webcodepro.applecommander.storage.BlockDeviceAdapter;
 import com.webcodepro.applecommander.storage.DiskGeometry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.TrackSectorDeviceAdapter;
 import com.webcodepro.applecommander.util.Range;
 import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
@@ -32,7 +31,6 @@ import org.applecommander.device.BlockDevice;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.util.DataBuffer;
 
-import javax.sound.midi.Track;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

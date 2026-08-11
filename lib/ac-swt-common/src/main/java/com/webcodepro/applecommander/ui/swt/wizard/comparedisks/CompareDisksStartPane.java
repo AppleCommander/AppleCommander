@@ -58,15 +58,19 @@ public class CompareDisksStartPane extends WizardPane<CompareDisksWizard.Pages> 
 	public Control create() {
 		control = new Composite(parent, SWT.NULL);
 		GridLayout layout = new GridLayout();
+		layout.verticalSpacing = 10;
 		layout.marginBottom = 5;
 		layout.marginLeft = 5;
 		layout.marginRight = 5;
 		layout.marginTop = 5;
 		control.setLayout(layout);
-		
+
 		Label label = new Label(control, SWT.WRAP);
 		label.setText(textBundle.get("CompareDisksStartPane.Description"));
 		label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.GRAB_HORIZONTAL));
+
+		label = new Label(control, SWT.WRAP);
+		label.setText("");	// just a vertical spacer
 
 		label = new Label(control, SWT.WRAP);
 		label.setText(getDiskLabel(1));
@@ -121,7 +125,7 @@ public class CompareDisksStartPane extends WizardPane<CompareDisksWizard.Pages> 
 		});
 		
 		label = new Label(control, SWT.WRAP);
-		label.setText("Select comparison time:");
+		label.setText("Select comparison type:");
 		
 		comparisonStrategyCombo = new Combo(control, SWT.BORDER | SWT.READ_ONLY);
 		comparisonStrategyCombo.setItems("Compare by native geometry",

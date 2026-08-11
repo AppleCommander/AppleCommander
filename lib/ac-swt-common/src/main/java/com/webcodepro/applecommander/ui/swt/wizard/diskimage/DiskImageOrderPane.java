@@ -26,7 +26,8 @@ import com.webcodepro.applecommander.util.TextBundle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -83,28 +84,22 @@ public class DiskImageOrderPane extends WizardPane<DiskImageWizard.Pages> {
 	 */
 	public Control create() {
 		control = new Composite(parent, SWT.NULL);
-		RowLayout layout = new RowLayout(SWT.VERTICAL);
-		layout.justify = true;
+		GridLayout layout = new GridLayout();
+		layout.verticalSpacing = 10;
 		layout.marginBottom = 5;
 		layout.marginLeft = 5;
 		layout.marginRight = 5;
 		layout.marginTop = 5;
-		layout.spacing = 3;
 		control.setLayout(layout);
 		imageOrderLabel = new Label(control, SWT.WRAP);
 		imageOrderLabel.setText(textBundle.get("DiskImageOrderProdosOnly"));	// Trying to pick the "biggest"
-		RowLayout subpanelLayout = new RowLayout(SWT.VERTICAL);
-		subpanelLayout.justify = true;
-		subpanelLayout.spacing = 3;
-		Composite buttonSubpanel = new Composite(control, SWT.NULL);
-		buttonSubpanel.setLayout(subpanelLayout);
-		createRadioButton(buttonSubpanel, textBundle.get("DiskImageOrderDosLabel"),
+		createRadioButton(control, textBundle.get("DiskImageOrderDosLabel"),
 			DiskImageWizard.ORDER_DOS,
 			textBundle.get("DiskImageOrderDosText"));
-		createRadioButton(buttonSubpanel, textBundle.get("DiskImageOrderProdosLabel"),
+		createRadioButton(control, textBundle.get("DiskImageOrderProdosLabel"),
 			DiskImageWizard.ORDER_PRODOS,
 			textBundle.get("DiskImageOrderProdosText"));
-		nibbleOrderButton = createRadioButton(buttonSubpanel, textBundle.get("DiskImageOrderNibbleLabel"),
+		nibbleOrderButton = createRadioButton(control, textBundle.get("DiskImageOrderNibbleLabel"),
 			DiskImageWizard.ORDER_NIBBLE,
 			textBundle.get("DiskImageOrderNibbleText"));
 
@@ -117,7 +112,7 @@ public class DiskImageOrderPane extends WizardPane<DiskImageWizard.Pages> {
 		button.setEnabled(!wizard.isHardDisk());
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				getWizard().setCompressed(!getWizard().isCompressed());
+				wizard.setCompressed(!wizard.isCompressed());
 			}
 		});
 		return control;
@@ -131,11 +126,12 @@ public class DiskImageOrderPane extends WizardPane<DiskImageWizard.Pages> {
 		button.setToolTipText(helpText);
 		button.setSelection(wizard.getOrder() == order);
 		button.setEnabled(!wizard.isHardDisk());
+		button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				getWizard().setOrder(order);
+				wizard.setOrder(order);
 				if (order == DiskImageWizard.ORDER_NIBBLE) {
-					getWizard().setSize(DiskConstants.APPLE_140KB_NIBBLE_DISK);
+					wizard.setSize(DiskConstants.APPLE_140KB_NIBBLE_DISK);
 				}
 			}
 		});
@@ -146,9 +142,5 @@ public class DiskImageOrderPane extends WizardPane<DiskImageWizard.Pages> {
 	 */
 	public void dispose() {
 		control.dispose();
-	}
-	
-	protected DiskImageWizard getWizard() {
-		return wizard;
 	}
 }

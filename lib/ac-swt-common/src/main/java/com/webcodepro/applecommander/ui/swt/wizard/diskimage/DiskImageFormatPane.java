@@ -26,7 +26,8 @@ import com.webcodepro.applecommander.util.TextBundle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -89,41 +90,36 @@ public class DiskImageFormatPane extends WizardPane<DiskImageWizard.Pages> {
 	 */
 	public Control create() {
 		control = new Composite(parent, SWT.NULL);
-		RowLayout layout = new RowLayout(SWT.VERTICAL);
-		layout.justify = true;
+		GridLayout layout = new GridLayout();
+		layout.verticalSpacing = 10;
 		layout.marginBottom = 5;
 		layout.marginLeft = 5;
 		layout.marginRight = 5;
 		layout.marginTop = 5;
-		layout.spacing = 3;
 		control.setLayout(layout);
 		Label label = new Label(control, SWT.WRAP);
+		label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		label.setText(
 			textBundle.get("DiskImageFormatPrompt"));
-		RowLayout subpanelLayout = new RowLayout(SWT.VERTICAL);
-		subpanelLayout.justify = true;
-		subpanelLayout.spacing = 3;
-		Composite buttonSubpanel = new Composite(control, SWT.NULL);
-		buttonSubpanel.setLayout(subpanelLayout);
-		createRadioButton(buttonSubpanel, textBundle.get("Dos"),
+		createRadioButton(control, textBundle.get("Dos"),
 			DiskImageWizard.FORMAT_DOS33,
 			textBundle.get("DiskImageFormatDosTooltip"));
-		createRadioButton(buttonSubpanel, textBundle.get("Unidos"),
+		createRadioButton(control, textBundle.get("Unidos"),
 			DiskImageWizard.FORMAT_UNIDOS,
 			textBundle.get("DiskImageFormatUnidosTooltip"));
-		createRadioButton(buttonSubpanel, textBundle.get("Ozdos"),
+		createRadioButton(control, textBundle.get("Ozdos"),
 			DiskImageWizard.FORMAT_OZDOS, 
 			textBundle.get("DiskImageFormatOzdosTooltip"));
-		createRadioButton(buttonSubpanel, textBundle.get("Prodos"),
+		createRadioButton(control, textBundle.get("Prodos"),
 			DiskImageWizard.FORMAT_PRODOS, 
 			textBundle.get("DiskImageFormatProdosTooltip"));
-		createRadioButton(buttonSubpanel, textBundle.get("Pascal"),
+		createRadioButton(control, textBundle.get("Pascal"),
 			DiskImageWizard.FORMAT_PASCAL, 
 			textBundle.get("DiskImageFormatPascalTooltip"));
-		createRadioButton(buttonSubpanel, textBundle.get("Rdos"),
+		createRadioButton(control, textBundle.get("Rdos"),
 			DiskImageWizard.FORMAT_RDOS, 
 			textBundle.get("DiskImageFormatRdosTooltip"));
-		createRadioButton(buttonSubpanel, textBundle.get("Cpm"),
+		createRadioButton(control, textBundle.get("Cpm"),
 			DiskImageWizard.FORMAT_CPM, 
 			textBundle.get("DiskImageFormatCpmTooltip"));
 		control.pack();
@@ -139,9 +135,10 @@ public class DiskImageFormatPane extends WizardPane<DiskImageWizard.Pages> {
 		button.setText(label);
 		button.setSelection(wizard.getFormat() == format);
 		button.setToolTipText(helpText);
+		button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				getWizard().setFormat(format);
+				wizard.setFormat(format);
 			}
 		});
 	}
@@ -150,9 +147,5 @@ public class DiskImageFormatPane extends WizardPane<DiskImageWizard.Pages> {
 	 */
 	public void dispose() {
 		control.dispose();
-	}
-	
-	protected DiskImageWizard getWizard() {
-		return wizard;
 	}
 }

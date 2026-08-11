@@ -64,17 +64,21 @@ public class CompareDisksResultsPane extends WizardPane<CompareDisksWizard.Pages
 	public Control create() {
         Composite control = new Composite(parent, SWT.NULL);
 		GridLayout layout = new GridLayout();
+		layout.verticalSpacing = 10;
 		layout.marginBottom = 5;
 		layout.marginLeft = 5;
 		layout.marginRight = 5;
 		layout.marginTop = 5;
 		control.setLayout(layout);
 
+		Label label = new Label(control, SWT.WRAP);
+		label.setText("Results:\n");
+
 		resultText = new Text(control, SWT.WRAP | SWT.BORDER | SWT.V_SCROLL | SWT.MULTI);
 		resultText.setEditable(false);
 		resultText.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-		Label label = new Label(control, SWT.WRAP);
+		label = new Label(control, SWT.WRAP);
 		label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		label.setText(textBundle.get("CompareDisksResultsPane.RestartText"));
 		

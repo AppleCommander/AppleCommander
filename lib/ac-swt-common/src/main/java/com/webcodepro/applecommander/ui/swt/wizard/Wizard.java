@@ -79,6 +79,7 @@ public abstract class Wizard<E> {
 		dialog = new Shell(parent, styles);
 		dialog.setText(title);
 		GridLayout layout = new GridLayout();
+		layout.verticalSpacing = 10;
 		layout.marginBottom = 5;
 		layout.marginLeft = 5;
 		layout.marginRight = 5;
@@ -93,13 +94,19 @@ public abstract class Wizard<E> {
 
 		// Content pane
 		contentPane = new Composite(dialog, SWT.BORDER);
-		contentPane.setLayoutData(new GridData(GridData.FILL_BOTH));
+		GridData gridData = new GridData(GridData.FILL_BOTH);
+		gridData.widthHint = logo.getImageData().width + 100;
+		contentPane.setLayoutData(gridData);
 		contentPane.setLayout(stackLayout);
 
 		// Bottom row of buttons
 		Composite composite = new Composite(dialog, SWT.NONE);
 		composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_END));
-		composite.setLayout(new FillLayout(SWT.HORIZONTAL));
+		FillLayout buttonLayout = new FillLayout(SWT.HORIZONTAL);
+		buttonLayout.marginHeight = 5;
+		buttonLayout.marginWidth = 5;
+		buttonLayout.spacing = 5;
+		composite.setLayout(buttonLayout);
 		Button button = new Button(composite, SWT.PUSH);
 		button.setText(textBundle.get("CancelButton"));
 		button.addSelectionListener(new SelectionAdapter() {
