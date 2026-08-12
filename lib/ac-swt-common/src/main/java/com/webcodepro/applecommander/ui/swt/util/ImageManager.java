@@ -40,40 +40,41 @@ import java.util.Map;
  * @author Rob Greene
  */
 public class ImageManager {
-	public static final String ICON_DISK = "diskicon.gif"; //$NON-NLS-1$
-	public static final String ICON_STANDARD_FILE_VIEW = "standardfileview.gif"; //$NON-NLS-1$
-	public static final String ICON_NATIVE_FILE_VIEW = "nativefileview.gif"; //$NON-NLS-1$
-	public static final String ICON_DETAIL_FILE_VIEW = "detailfileview.gif"; //$NON-NLS-1$
-	public static final String ICON_IMPORT_FILE = "importfile.gif"; //$NON-NLS-1$
-	public static final String ICON_EXPORT_FILE = "exportfile.gif"; //$NON-NLS-1$
-	public static final String ICON_SAVE_DISK_IMAGE = "saveimage.gif"; //$NON-NLS-1$
-	public static final String ICON_DELETE_FILE = "deletefile.gif"; //$NON-NLS-1$
-	public static final String ICON_SHOW_DELETED_FILES = "deletedfiles.gif"; //$NON-NLS-1$
-	public static final String ICON_OPEN_DISK_IMAGE = "opendisk.gif"; //$NON-NLS-1$
-	public static final String ICON_NEW_DISK_IMAGE = "newdisk.gif"; //$NON-NLS-1$
-	public static final String ICON_ABOUT_APPLECOMMANDER = "about.gif"; //$NON-NLS-1$
-	public static final String ICON_VIEW_FILE = "viewfile.gif"; //$NON-NLS-1$
-	public static final String ICON_SAVE_DISK_IMAGE_AS = "saveas.gif"; //$NON-NLS-1$
-	public static final String ICON_VIEW_AS_DATABASE = "database.gif"; //$NON-NLS-1$
-	public static final String ICON_VIEW_IN_HEX = "hex.gif"; //$NON-NLS-1$
-	public static final String ICON_VIEW_AS_IMAGE = "image.gif"; //$NON-NLS-1$
-	public static final String ICON_PRINT_FILE = "print.gif"; //$NON-NLS-1$
-	public static final String ICON_VIEW_IN_RAW_HEX = "raw.gif"; //$NON-NLS-1$
-	public static final String ICON_VIEW_AS_SPREADSHEET = "spreadsheet.gif"; //$NON-NLS-1$
-	public static final String ICON_VIEW_AS_TEXTFILE = "text.gif"; //$NON-NLS-1$
-	public static final String ICON_VIEW_AS_WORDPROCESSOR = "wordprocessor.gif"; //$NON-NLS-1$
-	public static final String ICON_VIEW_AS_BASIC_PROGRAM = "appleicon.gif"; //$NON-NLS-1$
-	public static final String ICON_COPY = "copy.gif"; //$NON-NLS-1$
-	public static final String ICON_COMPARE_DISKS = "comparedisks.gif"; //$NON-NLS-1$
-	public static final String ICON_CHANGE_IMAGE_ORDER = "changeorder.gif"; //$NON-NLS-1$
+	public static final String ICON_DISK = "diskicon.gif";
+	public static final String ICON_STANDARD_FILE_VIEW = "standardfileview.gif";
+	public static final String ICON_NATIVE_FILE_VIEW = "nativefileview.gif";
+	public static final String ICON_DETAIL_FILE_VIEW = "detailfileview.gif";
+	public static final String ICON_IMPORT_FILE = "importfile.gif";
+	public static final String ICON_EXPORT_FILE = "exportfile.gif";
+	public static final String ICON_SAVE_DISK_IMAGE = "saveimage.gif";
+	public static final String ICON_DELETE_FILE = "deletefile.gif";
+	public static final String ICON_SHOW_DELETED_FILES = "deletedfiles.gif";
+	public static final String ICON_OPEN_DISK_IMAGE = "opendisk.gif";
+	public static final String ICON_NEW_DISK_IMAGE = "newdisk.gif";
+	public static final String ICON_ABOUT_APPLECOMMANDER = "about.gif";
+	public static final String ICON_VIEW_FILE = "viewfile.gif";
+	public static final String ICON_SAVE_DISK_IMAGE_AS = "saveas.gif";
+	public static final String ICON_VIEW_AS_DATABASE = "database.gif";
+	public static final String ICON_VIEW_IN_HEX = "hex.gif";
+	public static final String ICON_VIEW_AS_IMAGE = "image.gif";
+	public static final String ICON_PRINT_FILE = "print.gif";
+	public static final String ICON_VIEW_IN_RAW_HEX = "raw.gif";
+	public static final String ICON_VIEW_AS_SPREADSHEET = "spreadsheet.gif";
+	public static final String ICON_VIEW_AS_TEXTFILE = "text.gif";
+	public static final String ICON_VIEW_AS_WORDPROCESSOR = "wordprocessor.gif";
+	public static final String ICON_VIEW_AS_BASIC_PROGRAM = "appleicon.gif";
+	public static final String ICON_COPY = "copy.gif";
+	public static final String ICON_COMPARE_DISKS = "comparedisks.gif";
+	public static final String ICON_CHANGE_IMAGE_ORDER = "changeorder.gif";
 	public static final String ICON_SHAPE_TABLE = "shape_table.gif";
 	public static final String ICON_DISASSEMBLE_FILE = "disassemble.gif";
+	public static final String ICON_SETTINGS = "settings.png";
 
-	public static final String LOGO_EXPORT_WIZARD        = "ExportWizardLogo.jpg"; //$NON-NLS-1$
-	public static final String LOGO_APPLECOMMANDER       = "AppleCommanderLogo.jpg"; //$NON-NLS-1$
-	public static final String LOGO_DISK_IMAGE_WIZARD    = "DiskImageWizardLogo.jpg"; //$NON-NLS-1$
-	public static final String LOGO_IMPORT_WIZARD        = "ImportWizardLogo.jpg"; //$NON-NLS-1$
-	public static final String LOGO_COMPARE_IMAGE_WIZARD = "CompareImageWizardLogo.jpg"; //$NON-NLS-1$
+	public static final String LOGO_EXPORT_WIZARD        = "ExportWizardLogo.jpg";
+	public static final String LOGO_APPLECOMMANDER       = "AppleCommanderLogo.jpg";
+	public static final String LOGO_DISK_IMAGE_WIZARD    = "DiskImageWizardLogo.jpg";
+	public static final String LOGO_IMPORT_WIZARD        = "ImportWizardLogo.jpg";
+	public static final String LOGO_COMPARE_IMAGE_WIZARD = "CompareImageWizardLogo.jpg";
 	
 	private final Map<String,Image> images = new HashMap<>();
 	private final String[] imageNames = {
@@ -92,6 +93,7 @@ public class ImageManager {
 		ICON_VIEW_AS_WORDPROCESSOR,	ICON_VIEW_AS_BASIC_PROGRAM,
 		ICON_COPY,					ICON_COMPARE_DISKS,
 		ICON_CHANGE_IMAGE_ORDER,    ICON_SHAPE_TABLE,
+		ICON_SETTINGS,
 		// Logos:
 		LOGO_EXPORT_WIZARD,			LOGO_APPLECOMMANDER,
 		LOGO_DISK_IMAGE_WIZARD,		LOGO_IMPORT_WIZARD,
@@ -101,22 +103,20 @@ public class ImageManager {
 	 * Construct the ImageManager and load all images.
 	 */
 	public ImageManager(Display display) {
-		for (int i=0; i<imageNames.length; i++) {
-			String imageName = imageNames[i];
-			Image image = createImage(display, imageName);
-			images.put(imageName, image);
-		}
+        for (String imageName : imageNames) {
+            Image image = createImage(display, imageName);
+            images.put(imageName, image);
+        }
 	}
 	/**
 	 * Dispose of resources.
 	 */
 	public void dispose() {
-		for (int i=0; i<imageNames.length; i++) {
-			String imageName = imageNames[i];
-			Image image = (Image) images.get(imageName);
-			image.dispose();
-			images.remove(imageName);
-		}
+        for (String imageName : imageNames) {
+            Image image = images.get(imageName);
+            image.dispose();
+            images.remove(imageName);
+        }
 	}
 	/**
 	 * Creates an image.
@@ -124,7 +124,7 @@ public class ImageManager {
 	private Image createImage(Display display, String path) {
 		try {
 			InputStream stream = getClass().getResourceAsStream(
-				"/com/webcodepro/applecommander/ui/images/" + path); //$NON-NLS-1$
+				"/com/webcodepro/applecommander/ui/images/" + path);
 			if (stream != null) {
 				Image image = new Image(display, stream);
 				stream.close();
@@ -139,6 +139,6 @@ public class ImageManager {
 	 * Get an image.
 	 */
 	public Image get(String imageName) {
-		return (Image) images.get(imageName);
+		return images.get(imageName);
 	}
 }

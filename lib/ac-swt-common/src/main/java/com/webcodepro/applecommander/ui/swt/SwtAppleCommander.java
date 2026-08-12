@@ -36,7 +36,6 @@ import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -133,7 +132,7 @@ public class SwtAppleCommander implements Listener {
 	 * Opens the main program.
 	 */
 	protected Shell open(Display display) {		
-		Display.setAppName(textBundle.get("SwtAppleCommander.AppleCommander")); //$NON-NLS-1$
+		Display.setAppName(textBundle.get("SwtAppleCommander.AppleCommander"));
 		// Find the system About menu on Mac OS X.
 		// See https://www.eclipse.org/swt/R3_7/new_and_noteworthy.html#m6
 		if (display.getSystemMenu() != null) {
@@ -144,15 +143,13 @@ public class SwtAppleCommander implements Listener {
 			}
 		}
 		shell = new Shell(display, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.TITLE | SWT.RESIZE);
-		shell.setText(textBundle.get("SwtAppleCommander.AppleCommander")); //$NON-NLS-1$
+		shell.setText(textBundle.get("SwtAppleCommander.AppleCommander"));
 		shell.setImage(imageManager.get(ImageManager.ICON_DISK));
-		shell.addDisposeListener(new DisposeListener() {
-				public void widgetDisposed(DisposeEvent event) {
-					dispose(event);
-				}
-			});
+		shell.addDisposeListener(this::dispose);
 
 		GridLayout gridLayout = new GridLayout();
+		gridLayout.horizontalSpacing = 10;
+		gridLayout.verticalSpacing = 10;
 		gridLayout.marginHeight = 5;
 		gridLayout.marginWidth = 5;
 		shell.setLayout(gridLayout);	
@@ -165,6 +162,8 @@ public class SwtAppleCommander implements Listener {
 		Image logoImage = imageManager.get(ImageManager.LOGO_APPLECOMMANDER);
 		gridData.widthHint = logoImage.getImageData().width;
 		gridData.heightHint = logoImage.getImageData().height;
+		gridData.verticalAlignment = SWT.CENTER;
+		gridData.horizontalAlignment = SWT.CENTER;
 		imageCanvas = new ImageCanvas(shell, SWT.BORDER, logoImage, gridData);
 		imageCanvas.addListener(SWT.KeyUp, this);
 		imageCanvas.setFocus();
@@ -240,9 +239,9 @@ public class SwtAppleCommander implements Listener {
 	protected void showUnexpectedErrorMessage(String fullpath) {
 		Shell finalShell = shell;
 		MessageBox box = new MessageBox(finalShell, SWT.ICON_ERROR | SWT.OK);
-		box.setText(textBundle.get("SwtAppleCommander.UnexpectedErrorTitle")); //$NON-NLS-1$
+		box.setText(textBundle.get("SwtAppleCommander.UnexpectedErrorTitle"));
 		box.setMessage(
-			  textBundle.format("SwtAppleCommander.UnexpectedErrorMessage", //$NON-NLS-1$
+			  textBundle.format("SwtAppleCommander.UnexpectedErrorMessage",
 			  		fullpath));
 		box.open();
 	}
@@ -254,9 +253,9 @@ public class SwtAppleCommander implements Listener {
 	protected void showUnrecognizedDiskFormatMessage(String fullpath) {
 		Shell finalShell = shell;
 		MessageBox box = new MessageBox(finalShell, SWT.ICON_ERROR | SWT.OK);
-		box.setText(textBundle.get("SwtAppleCommander.UnrecognizedFormatTitle")); //$NON-NLS-1$
+		box.setText(textBundle.get("SwtAppleCommander.UnrecognizedFormatTitle"));
 		box.setMessage(
-			  textBundle.format("SwtAppleCommander.UnrecognizedFormatMessage", //$NON-NLS-1$
+			  textBundle.format("SwtAppleCommander.UnrecognizedFormatMessage",
 			  		fullpath));
 		box.open();
 	}
@@ -285,9 +284,9 @@ public class SwtAppleCommander implements Listener {
 
 		ToolItem item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(imageManager.get(ImageManager.ICON_OPEN_DISK_IMAGE));
-		item.setText(textBundle.get("OpenButton")); //$NON-NLS-1$
+		item.setText(textBundle.get("OpenButton"));
 		item.setSelection(false);
-		item.setToolTipText(textBundle.get("SwtAppleCommander.OpenDiskImageTooltip")); //$NON-NLS-1$
+		item.setToolTipText(textBundle.get("SwtAppleCommander.OpenDiskImageTooltip"));
 		item.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				openFile();
@@ -297,8 +296,8 @@ public class SwtAppleCommander implements Listener {
 
 		item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(imageManager.get(ImageManager.ICON_NEW_DISK_IMAGE));
-		item.setText(textBundle.get("CreateButton")); //$NON-NLS-1$
-		item.setToolTipText(textBundle.get("SwtAppleCommander.CreateDiskImageTooltip")); //$NON-NLS-1$
+		item.setText(textBundle.get("CreateButton"));
+		item.setToolTipText(textBundle.get("SwtAppleCommander.CreateDiskImageTooltip"));
 		item.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				createDiskImage();
@@ -308,8 +307,8 @@ public class SwtAppleCommander implements Listener {
 
 		item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(imageManager.get(ImageManager.ICON_COMPARE_DISKS));
-		item.setText(textBundle.get("CompareButton")); //$NON-NLS-1$
-		item.setToolTipText(textBundle.get("SwtAppleCommander.CompareDiskImageTooltip")); //$NON-NLS-1$
+		item.setText(textBundle.get("CompareButton"));
+		item.setToolTipText(textBundle.get("SwtAppleCommander.CompareDiskImageTooltip"));
 		item.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				compareDiskImages();
@@ -318,9 +317,20 @@ public class SwtAppleCommander implements Listener {
 		item = new ToolItem(toolBar, SWT.SEPARATOR);
 
 		item = new ToolItem(toolBar, SWT.PUSH);
+		item.setImage(imageManager.get(ImageManager.ICON_SETTINGS));
+		item.setText("Settings");
+		item.setToolTipText("Modify application settings");
+		item.addSelectionListener(new SelectionAdapter () {
+			public void widgetSelected(SelectionEvent e) {
+				showSettings();
+			}
+		});
+		item = new ToolItem(toolBar, SWT.SEPARATOR);
+
+		item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(imageManager.get(ImageManager.ICON_ABOUT_APPLECOMMANDER));
-		item.setText(textBundle.get("AboutButton")); //$NON-NLS-1$
-		item.setToolTipText(textBundle.get("SwtAppleCommander.AboutTooltip")); //$NON-NLS-1$
+		item.setText(textBundle.get("AboutButton"));
+		item.setToolTipText(textBundle.get("SwtAppleCommander.AboutTooltip"));
 		item.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
 				showAboutAppleCommander();
@@ -334,10 +344,10 @@ public class SwtAppleCommander implements Listener {
 	public void showAboutAppleCommander() {
 		final Shell finalShell = shell;
 		MessageBox box = new MessageBox(finalShell, SWT.ICON_INFORMATION | SWT.OK);
-		box.setText(textBundle.get("SwtAppleCommander.AboutTitle")); //$NON-NLS-1$
+		box.setText(textBundle.get("SwtAppleCommander.AboutTitle"));
 		box.setMessage( 
-		  textBundle.format("SwtAppleCommander.AboutMessage", //$NON-NLS-1$
-		          AppleCommander.VERSION, textBundle.get("Copyright"))); //$NON-NLS-1$
+		  textBundle.format("SwtAppleCommander.AboutMessage",
+		          AppleCommander.VERSION, textBundle.get("Copyright")));
 		box.open();
 	}
 
@@ -367,5 +377,10 @@ public class SwtAppleCommander implements Listener {
 	public void compareDiskImages() {
 		CompareDisksWizard wizard = new CompareDisksWizard(shell, imageManager);
 		wizard.open();
+	}
+
+	public void showSettings() {
+		SettingsDialog dialog = new SettingsDialog(shell);
+		dialog.open();
 	}
 }

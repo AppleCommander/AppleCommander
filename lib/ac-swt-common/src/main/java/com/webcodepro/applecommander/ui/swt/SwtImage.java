@@ -41,11 +41,11 @@ public class SwtImage extends AppleImage {
 	 * as well as sets up the class.
 	 */
 	public SwtImage(int width, int height) throws ClassNotFoundException {
-		super(new String[] { "BMP", "RLE", "JPEG", "ICO" });  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$//$NON-NLS-4$
-		Class.forName("org.eclipse.swt.graphics.ImageLoader"); //$NON-NLS-1$
-		Class.forName("org.eclipse.swt.graphics.ImageData"); //$NON-NLS-1$
-		Class.forName("org.eclipse.swt.graphics.Image"); //$NON-NLS-1$
-		Class.forName("org.eclipse.swt.SWT"); //$NON-NLS-1$
+		super(new String[] { "BMP", "RLE", "JPEG", "ICO" });
+		Class.forName("org.eclipse.swt.graphics.ImageLoader");
+		Class.forName("org.eclipse.swt.graphics.ImageData");
+		Class.forName("org.eclipse.swt.graphics.Image");
+		Class.forName("org.eclipse.swt.SWT");
 		// Gives better results than manually building the ImageData
 		// object.  However, explicitly requires DLL in the path.
 		imageData = new Image(null, width, height).getImageData();
@@ -68,20 +68,14 @@ public class SwtImage extends AppleImage {
 	public void save(OutputStream outputStream) {
 		ImageLoader imageLoader = new ImageLoader();
 		imageLoader.data = new ImageData[] { imageData };
-		int format = SWT.IMAGE_PNG;
-		if ("BMP".equals(getFileExtension())) { //$NON-NLS-1$
-			format = SWT.IMAGE_BMP;
-		} else if ("RLE".equals(getFileExtension())) { //$NON-NLS-1$
-			format = SWT.IMAGE_BMP_RLE;
-		} else if ("GIF".equals(getFileExtension())) { //$NON-NLS-1$
-			format = SWT.IMAGE_GIF;
-		} else if ("ICO".equals(getFileExtension())) { //$NON-NLS-1$
-			format = SWT.IMAGE_ICO;
-		} else if ("JPEG".equals(getFileExtension())) { //$NON-NLS-1$
-			format = SWT.IMAGE_JPEG;
-		} else if ("PNG".equals(getFileExtension())) { //$NON-NLS-1$
-			format = SWT.IMAGE_PNG;
-		}
+		int format = switch (getFileExtension()) {
+			case "BMP" -> SWT.IMAGE_BMP;
+			case "RLE" -> SWT.IMAGE_BMP_RLE;
+			case "GIF" -> SWT.IMAGE_GIF;
+			case "ICO" -> SWT.IMAGE_ICO;
+			case "JPEG" -> SWT.IMAGE_JPEG;
+			default -> SWT.IMAGE_PNG;
+		};
 		imageLoader.save(outputStream, format);
 	}
 	/**

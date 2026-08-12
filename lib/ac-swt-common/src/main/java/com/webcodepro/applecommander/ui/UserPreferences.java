@@ -40,6 +40,11 @@ public class UserPreferences {
 	private static final String SAVE_DIRECTORY = "saveDirectory";
 	private static final String IMPORT_DIRECTORY = "importDirectory";
 	private static final String BACKUP_STRATEGY = "backupStrategy";
+	private static final String SAVE_WINDOW_SIZE = "saveWindowSize";
+	private static final String SAVED_WINDOW_HEIGHT = "savedWindowHeight";
+	private static final String SAVED_WINDOW_WIDTH = "savedWindowWidth";
+	private static final String SAVED_WINDOW_MAXIMIZED = "savedWindowMaximized";
+	private static final String CENTER_WINDOW = "centerWindow";
 	private static UserPreferences instance;
 	private final Properties properties = new Properties();
 	/**
@@ -64,7 +69,7 @@ public class UserPreferences {
 	private void load() {
 		try {
 			FileInputStream inputStream =
-				new FileInputStream(Host.getPrefDir() + FILENAME);
+				new FileInputStream(getPreferencesPath());
 			properties.load(inputStream);
 			inputStream.close();
 		} catch (Exception ignored) {
@@ -77,13 +82,20 @@ public class UserPreferences {
 	public void save() {
 		try {
 			FileOutputStream outputStream =
-				new FileOutputStream(Host.getPrefDir() + FILENAME);
+				new FileOutputStream(getPreferencesPath());
 			properties.store(outputStream, UiBundle.getInstance().
 				get("UserPreferencesComment"));
 			outputStream.close();
 		} catch (Exception ignored) {
 			// Ignored
 		}
+	}
+
+	/**
+	 * Returns the full pathname for the preferences file.
+	 */
+	public String getPreferencesPath() {
+		return Host.getPrefDir() + FILENAME;
 	}
 	/**
 	 * Get the disk image directory (used for "open" command).
@@ -113,13 +125,66 @@ public class UserPreferences {
 	 * Get the backup strategy text.
 	 */
 	public String getBackupStrategy() {
-		return properties.getProperty(BACKUP_STRATEGY);
+		return properties.getProperty(BACKUP_STRATEGY, "");
 	}
 	/**
 	 * Create the BackupStrategy object.
 	 */
 	public BackupStrategy createBackupStrategy() {
 		return BackupStrategy.create(getBackupStrategy());
+	}
+	/**
+	 * Indicates if we are saving the window size. Used when windows are RESIZED.
+	 */
+	public boolean getSaveWindowSize() {
+		return toBoolean(SAVE_WINDOW_SIZE);
+	}
+	/**
+	 * Get the saved window height. 0 means not saved.
+	 */
+	public int getSavedWindowHeight() {
+		return toInt(SAVED_WINDOW_HEIGHT);
+	}
+	/**
+	 * Get the saved window width. 0 means not saved.
+	 */
+	public int getSavedWindowWidth() {
+		return toInt(SAVED_WINDOW_WIDTH);
+	}
+	/**
+	 * Indicates if the window was maximized when saved.
+	 */
+	public boolean getSavedWindowMaximized() {
+		return toBoolean(SAVED_WINDOW_MAXIMIZED);
+	}
+	/**
+	 * Indicates if the window should be centered on the screen when created.
+	 */
+	public boolean getCenterWindow() {
+		return toBoolean(CENTER_WINDOW);
+	}
+
+	/**
+	 * Convert existing string to boolean. This is excessively paranoid, but we catch any exceptions
+	 * and then default to false.
+	 */
+	private boolean toBoolean(final String propertyName) {
+		try {
+			return Boolean.parseBoolean(properties.getProperty(propertyName, "false"));
+		} catch (Exception _) {
+			return false;
+		}
+	}
+	/**
+	 * Convert existing string to an int. This is excessively paranoid, but we catch any exceptions
+	 * and then default to 0.
+	 */
+	private int toInt(final String propertyName) {
+		try {
+			return Integer.parseInt(properties.getProperty(propertyName, "0"));
+		} catch (Exception _) {
+			return 0;
+		}
 	}
 
 	/**
@@ -151,5 +216,35 @@ public class UserPreferences {
 	 */
 	public void setBackupStrategy(String backupStrategy) {
 		properties.setProperty(BACKUP_STRATEGY, backupStrategy);
+	}
+	/**
+	 * Indicates if we are saving the window size. Used when windows are RESIZED.
+	 */
+	public void setSaveWindowSize(boolean flag) {
+		properties.setProperty(SAVE_WINDOW_SIZE, Boolean.toString(flag));
+	}
+	/**
+	 * Get the saved window height. 0 means not saved.
+	 */
+	public void setSavedWindowHeight(int height) {
+		properties.setProperty(SAVED_WINDOW_HEIGHT, Integer.toString(height));
+	}
+	/**
+	 * Get the saved window width. 0 means not saved.
+	 */
+	public void setSavedWindowWidth(int width) {
+		properties.setProperty(SAVED_WINDOW_WIDTH, Integer.toString(width));
+	}
+	/**
+	 * Indicates if the window was maximized when saved.
+	 */
+	public void setSavedWindowMaximized(boolean maximized) {
+		properties.setProperty(SAVED_WINDOW_MAXIMIZED, Boolean.toString(maximized));
+	}
+	/**
+	 * Indicates if the window should be centered on the screen when created.
+	 */
+	public void setCenterWindow(boolean flag) {
+		properties.setProperty(CENTER_WINDOW, Boolean.toString(flag));
 	}
 }
