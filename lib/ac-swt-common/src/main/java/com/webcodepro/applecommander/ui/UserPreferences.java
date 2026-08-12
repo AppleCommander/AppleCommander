@@ -20,6 +20,7 @@
 package com.webcodepro.applecommander.ui;
 
 import com.webcodepro.applecommander.util.Host;
+import org.applecommander.util.BackupStrategy;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -33,11 +34,12 @@ import java.util.Properties;
  * @author Rob Greene
  */
 public class UserPreferences {
-	private static final String FILENAME = "AppleCommander.preferences"; //$NON-NLS-1$
-	private static final String IMAGE_DIRECTORY = "imageDirectory"; //$NON-NLS-1$
-	private static final String EXPORT_DIRECTORY = "exportDirectory"; //$NON-NLS-1$
-	private static final String SAVE_DIRECTORY = "saveDirectory"; //$NON-NLS-1$
-	private static final String IMPORT_DIRECTORY = "importDirectory"; //$NON-NLS-1$
+	private static final String FILENAME = "AppleCommander.preferences";
+	private static final String IMAGE_DIRECTORY = "imageDirectory";
+	private static final String EXPORT_DIRECTORY = "exportDirectory";
+	private static final String SAVE_DIRECTORY = "saveDirectory";
+	private static final String IMPORT_DIRECTORY = "importDirectory";
+	private static final String BACKUP_STRATEGY = "backupStrategy";
 	private static UserPreferences instance;
 	private final Properties properties = new Properties();
 	/**
@@ -77,7 +79,7 @@ public class UserPreferences {
 			FileOutputStream outputStream =
 				new FileOutputStream(Host.getPrefDir() + FILENAME);
 			properties.store(outputStream, UiBundle.getInstance().
-				get("UserPreferencesComment")); //$NON-NLS-1$
+				get("UserPreferencesComment"));
 			outputStream.close();
 		} catch (Exception ignored) {
 			// Ignored
@@ -108,6 +110,19 @@ public class UserPreferences {
 		return properties.getProperty(IMPORT_DIRECTORY);
 	}
 	/**
+	 * Get the backup strategy text.
+	 */
+	public String getBackupStrategy() {
+		return properties.getProperty(BACKUP_STRATEGY);
+	}
+	/**
+	 * Create the BackupStrategy object.
+	 */
+	public BackupStrategy createBackupStrategy() {
+		return BackupStrategy.create(getBackupStrategy());
+	}
+
+	/**
 	 * Set the disk image directory.
 	 */
 	public void setDiskImageDirectory(String diskImageDirectory) {
@@ -130,5 +145,11 @@ public class UserPreferences {
 	 */
 	public void setImportDirectory(String importDirectory) {
 		properties.setProperty(IMPORT_DIRECTORY, importDirectory);
+	}
+	/**
+	 * Set the backup strategy code.
+	 */
+	public void setBackupStrategy(String backupStrategy) {
+		properties.setProperty(BACKUP_STRATEGY, backupStrategy);
 	}
 }

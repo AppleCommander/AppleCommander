@@ -27,6 +27,7 @@ import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import io.github.applecommander.acx.OrderType;
 import io.github.applecommander.acx.SystemType;
+import org.applecommander.util.BackupStrategy;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
 import io.github.applecommander.acx.converter.DataSizeConverter;
 import org.applecommander.device.*;
@@ -107,7 +108,7 @@ public class CreateDiskCommand extends ReusableCommandOptions {
     		systemType.copySystem(disks[0], ctx.disks.getFirst());
     	}
     	
-    	saveDisk(disks[0]);
+    	saveDisk(disks[0], BackupStrategy.none());
     	
         return 0;
     }

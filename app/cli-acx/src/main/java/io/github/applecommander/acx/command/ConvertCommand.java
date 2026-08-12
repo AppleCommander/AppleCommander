@@ -22,6 +22,7 @@ package io.github.applecommander.acx.command;
 import com.webcodepro.applecommander.storage.DiskFactory;
 import com.webcodepro.applecommander.storage.Disks;
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import org.applecommander.util.BackupStrategy;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
@@ -56,7 +57,7 @@ public class ConvertCommand extends ReusableCommandOptions {
         DiskFactory.Context ctx = Disks.inspect(source);
         FormattedDisk disk = ctx.disks.getFirst();
         disk.setFilename(diskName);
-        saveDisk(disk);
+        saveDisk(disk, BackupStrategy.none());
 
         return 0;
     }

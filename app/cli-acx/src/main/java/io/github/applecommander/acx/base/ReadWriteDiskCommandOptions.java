@@ -19,13 +19,23 @@
  */
 package io.github.applecommander.acx.base;
 
+import org.applecommander.util.BackupStrategy;
+import picocli.CommandLine.Option;
+
 public abstract class ReadWriteDiskCommandOptions extends ReadOnlyDiskImageCommandOptions {
+    @Option(names = "--backup", description = {
+            "Automated backup when an image changes; use 'bak' to append '.bak' to file name;",
+            "any other value is assumed to be a directory. [$ACX_BACKUP_STRATEGY]"
+        }, defaultValue = "${ACX_BACKUP_STRATEGY}")
+    private String backupCode = "";
+
     @Override
     public Integer call() throws Exception {
         int returnCode = handleCommand();
         
         if (returnCode == 0) {
-            saveDisk(selectedDisks().getFirst());
+            BackupStrategy backupStrategy = BackupStrategy.create(backupCode);
+            saveDisk(selectedDisks().getFirst(), backupStrategy);
         }
         
         return returnCode;

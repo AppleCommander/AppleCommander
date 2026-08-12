@@ -20,6 +20,7 @@
 package io.github.applecommander.acx.base;
 
 import com.webcodepro.applecommander.storage.FormattedDisk;
+import org.applecommander.util.BackupStrategy;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -43,11 +44,12 @@ public abstract class ReusableCommandOptions implements Callable<Integer> {
     
     public abstract int handleCommand() throws Exception;
 
-    public void saveDisk(FormattedDisk disk) {
+    public void saveDisk(FormattedDisk disk, BackupStrategy backupStrategy) {
         try {
             // Only save if there are changes.
             if (disk.getSource().hasChanged()) {
                 LOG.fine(() -> String.format("Saving disk '%s'", disk.getFilename()));
+                backupStrategy.backup(disk.getFilename());
                 disk.save();
             } else {
                 LOG.fine(() -> String.format("Disk '%s' has not changed; not saving.", disk.getFilename()));
