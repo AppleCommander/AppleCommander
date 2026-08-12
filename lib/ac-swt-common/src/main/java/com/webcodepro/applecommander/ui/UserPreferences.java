@@ -64,7 +64,7 @@ public class UserPreferences {
 	private void load() {
 		try {
 			FileInputStream inputStream =
-				new FileInputStream(Host.getPrefDir() + FILENAME);
+				new FileInputStream(getPreferencesPath());
 			properties.load(inputStream);
 			inputStream.close();
 		} catch (Exception ignored) {
@@ -77,13 +77,20 @@ public class UserPreferences {
 	public void save() {
 		try {
 			FileOutputStream outputStream =
-				new FileOutputStream(Host.getPrefDir() + FILENAME);
+				new FileOutputStream(getPreferencesPath());
 			properties.store(outputStream, UiBundle.getInstance().
 				get("UserPreferencesComment"));
 			outputStream.close();
 		} catch (Exception ignored) {
 			// Ignored
 		}
+	}
+
+	/**
+	 * Returns the full pathname for the preferences file.
+	 */
+	public String getPreferencesPath() {
+		return Host.getPrefDir() + FILENAME;
 	}
 	/**
 	 * Get the disk image directory (used for "open" command).

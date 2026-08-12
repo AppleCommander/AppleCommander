@@ -30,9 +30,15 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 
+import java.util.Map;
 import java.util.Optional;
 
+/**
+ * The settings dialog allows some management of AppleCommander behavior.
+ * It also shows some of the "hidden" things that people may be interested in.
+ */
 public class SettingsDialog {
+    private final UserPreferences preference = UserPreferences.getInstance();
     private final Shell parent;
     private Shell dialog;
     private Combo backupStrategyCombo;
@@ -58,108 +64,24 @@ public class SettingsDialog {
         dialogLayout.verticalSpacing = 10;
         dialog.setLayout(dialogLayout);
 
-        UserPreferences preference = UserPreferences.getInstance();
-
         TabFolder tabFolder = new TabFolder(dialog, SWT.NONE);
         tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        TabItem item = new TabItem(tabFolder, SWT.NONE);
-        item.setText("Backup");
-        Composite control = new Composite(tabFolder, SWT.NONE);
         GridLayout tabItemLayout = new GridLayout(2, false);
         tabItemLayout.marginLeft = 5;
         tabItemLayout.marginRight = 5;
         tabItemLayout.verticalSpacing = 10;
+        tabItemLayout.horizontalSpacing = 10;
         tabItemLayout.marginTop = 5;
         tabItemLayout.marginBottom = 5;
-        control.setLayout(tabItemLayout);
-        item.setControl(control);
 
-        Label label = new Label(control, SWT.NONE);
-        label.setText("Strategy:");
-        backupStrategyCombo = new Combo(control, SWT.READ_ONLY);
-        backupStrategyCombo.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
-        backupStrategyCombo.setItems("Disabled", "Append '.bak'", "To directory");
-        backupStrategyCombo.select(switch (preference.getBackupStrategy()) {
-                case "bak" -> 1;
-                case "" -> 0;
-                default -> 2;
-            });
-        backupStrategyCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                backupBrowseButton.setEnabled(backupStrategyCombo.getSelectionIndex() == 2);
-                if (backupStrategyCombo.getSelectionIndex() < 2) {
-                    backupDirectoryText.setText("");
-                }
-            }
-        });
-        label = new Label(control, SWT.NONE);
-        label.setText("... To?");
-        backupDirectoryText = new Text(control, SWT.WRAP | SWT.BORDER | SWT.V_SCROLL | SWT.MULTI);
-        float fontHeight = backupDirectoryText.getFont().getFontData()[0].height;
-        GridData textGridData = new GridData(GridData.FILL_BOTH);
-        textGridData.heightHint = (int)fontHeight * 4;
-        backupDirectoryText.setLayoutData(textGridData);
-        backupDirectoryText.setText(switch (preference.getBackupStrategy()) {
-                case "", "bak" -> "";
-                default -> preference.getBackupStrategy();
-            });
-        label = new Label(control, SWT.NONE);   // spacing
-        backupBrowseButton = new Button(control, SWT.PUSH);
-        backupBrowseButton.setText("Browse...");
-        backupBrowseButton.setEnabled(backupStrategyCombo.getSelectionIndex() == 2);
-        backupBrowseButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                DirectoryDialog dialog = new DirectoryDialog(parent.getShell());
-                dialog.setFilterPath(backupDirectoryText.getText());
-                dialog.setText("Select backup directory");
-                dialog.setMessage("Please select the backup directory.");
-                Optional<String> result = dialog.openDialog();
-                result.ifPresent(backupDirectoryText::setText);
-            }
-        });
-
-        item = new TabItem(tabFolder, SWT.NONE);
-        item.setText("Info");
-        control = new Composite(tabFolder, SWT.NONE);
-        control.setLayout(tabItemLayout);
-        item.setControl(control);
-
-        label = new Label(control, SWT.WRAP);
-        label.setText("""
-                These are the current directories that AppleCommander is using.
-                They change as you select different folders for a related activity.
-                """);
         GridData rowSpanGridData = new GridData(GridData.FILL_HORIZONTAL);
         rowSpanGridData.horizontalSpan = 2;
-        label.setLayoutData(rowSpanGridData);
 
-        label = new Label(control, SWT.NONE);
-        label.setText("Images:");
-        label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        label = new Label(control, SWT.NONE);
-        label.setText(preference.getDiskImageDirectory());
+        createBackupTab(tabFolder, tabItemLayout, rowSpanGridData);
+        createInfoTab(tabFolder, tabItemLayout, rowSpanGridData);
 
-        label = new Label(control, SWT.NONE);
-        label.setText("Export:");
-        label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        label = new Label(control, SWT.NONE);
-        label.setText(preference.getExportDirectory());
-
-        label = new Label(control, SWT.NONE);
-        label.setText("Import:");
-        label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        label = new Label(control, SWT.NONE);
-        label.setText(preference.getImportDirectory());
-
-        label = new Label(control, SWT.NONE);
-        label.setText("Save:");
-        label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        label = new Label(control, SWT.NONE);
-        label.setText(preference.getSaveDirectory());
-
+        // Bottom row of buttons
         Composite buttonRow = new Composite(dialog, SWT.NONE);
         GridData buttonRowGridData = new GridData();
         buttonRowGridData.grabExcessHorizontalSpace = true;
@@ -191,5 +113,103 @@ public class SettingsDialog {
         dialog.pack();
         SwtUtil.center(parent, dialog);
         dialog.open();
+    }
+
+    public void createBackupTab(TabFolder tabFolder, GridLayout tabItemLayout, GridData rowSpanGridData) {
+        TabItem item = new TabItem(tabFolder, SWT.NONE);
+        item.setText("Backup");
+        Composite control = new Composite(tabFolder, SWT.NONE);
+        control.setLayout(tabItemLayout);
+        item.setControl(control);
+
+        Label label = new Label(control, SWT.WRAP);
+        label.setText("""
+                AppleCommander has the ability to backup an image on Save.
+                This does not impact Save As, since the image is under a new name.
+                """);
+        label.setLayoutData(rowSpanGridData);
+
+        label = new Label(control, SWT.NONE);
+        label.setText("Strategy:");
+        backupStrategyCombo = new Combo(control, SWT.READ_ONLY);
+        backupStrategyCombo.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
+        backupStrategyCombo.setItems("Disabled", "Append '.bak'", "To directory");
+        backupStrategyCombo.select(switch (preference.getBackupStrategy()) {
+            case "bak" -> 1;
+            case "" -> 0;
+            default -> 2;
+        });
+        backupStrategyCombo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                backupBrowseButton.setEnabled(backupStrategyCombo.getSelectionIndex() == 2);
+                if (backupStrategyCombo.getSelectionIndex() < 2) {
+                    backupDirectoryText.setText("");
+                }
+            }
+        });
+
+        label = new Label(control, SWT.NONE);
+        label.setText("... To?");
+        backupDirectoryText = new Text(control, SWT.WRAP | SWT.BORDER | SWT.V_SCROLL | SWT.MULTI);
+        float fontHeight = backupDirectoryText.getFont().getFontData()[0].height;
+        GridData textGridData = new GridData(GridData.FILL_BOTH);
+        textGridData.heightHint = (int)fontHeight * 4;
+        backupDirectoryText.setLayoutData(textGridData);
+        backupDirectoryText.setText(switch (preference.getBackupStrategy()) {
+            case "", "bak" -> "";
+            default -> preference.getBackupStrategy();
+        });
+        label = new Label(control, SWT.NONE);   // spacing
+        backupBrowseButton = new Button(control, SWT.PUSH);
+        backupBrowseButton.setText("Browse...");
+        backupBrowseButton.setEnabled(backupStrategyCombo.getSelectionIndex() == 2);
+        backupBrowseButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                DirectoryDialog dialog = new DirectoryDialog(parent.getShell());
+                dialog.setFilterPath(backupDirectoryText.getText());
+                dialog.setText("Select backup directory");
+                dialog.setMessage("Please select the backup directory.");
+                Optional<String> result = dialog.openDialog();
+                result.ifPresent(backupDirectoryText::setText);
+            }
+        });
+    }
+
+    public void createInfoTab(TabFolder tabFolder, GridLayout tabItemLayout, GridData rowSpanGridData) {
+        TabItem item = new TabItem(tabFolder, SWT.NONE);
+        item.setText("Info");
+        Composite control = new Composite(tabFolder, SWT.NONE);
+        control.setLayout(tabItemLayout);
+        item.setControl(control);
+
+        Label label = new Label(control, SWT.NONE);
+        label.setText("Location:");
+        label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        label = new Label(control, SWT.WRAP);
+        label.setText(preference.getPreferencesPath());
+
+        label = new Label(control, SWT.WRAP);
+        label.setText("""
+                These are the current directories that AppleCommander is using.
+                They change as you select different folders for a related activity.
+                """);
+        label.setLayoutData(rowSpanGridData);
+
+        // Collapsing all the info into pairings as order doesn't matter too much:
+        final Map<String,String> pairings = Map.of(
+                "Images:", preference.getDiskImageDirectory(),
+                "Export:", preference.getExportDirectory(),
+                "Import:", preference.getImportDirectory(),
+                "Save:", preference.getSaveDirectory()
+        );
+        for (var entry : pairings.entrySet()) {
+            label = new Label(control, SWT.NONE);
+            label.setText(entry.getKey());
+            label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            label = new Label(control, SWT.WRAP);
+            label.setText(entry.getValue());
+        }
     }
 }
