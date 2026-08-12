@@ -22,6 +22,7 @@ package org.applecommander.capability;
 public enum Capability {
     ENCODE,
     WRITE_TRACK,
+    FORMAT_TRACK,
     WRITE_SECTOR,
     WRITE_BLOCK,
     SAVE_SOURCE

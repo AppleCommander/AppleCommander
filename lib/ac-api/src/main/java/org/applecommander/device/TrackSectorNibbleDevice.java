@@ -141,7 +141,7 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
 
     @Override
     public boolean can(Capability capability) {
-        if (capability == Capability.WRITE_SECTOR) {
+        if (capability == Capability.WRITE_SECTOR || capability == Capability.FORMAT_TRACK) {
             if (trackReaderWriter.can(Capability.WRITE_TRACK)) {
                 // Only answer "true" for standard disks -- that is, one marker for entire disk
                 if (diskMarkers.length == 1) return diskMarkers[0].codec().can(Capability.ENCODE);
@@ -288,7 +288,13 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         if (getGeometry().sectorsPerTrack() == 13) {
             throw new RuntimeException("formatting 13-sector disks not supported");
         }
-        // create initial address and data fields
+        for (int track=0; track < geometry.tracksOnDisk(); track++) {
+            formatTrack(track);
+        }
+    }
+
+    public void formatTrack(int track) {
+        // create address and data fields
         DiskMarker diskMarker = diskMarkers[0];
         DataBuffer addressField = DataBuffer.create(14);
         DataBuffer dataField = DataBuffer.create(349);
@@ -305,25 +311,24 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         int addressSync = 43;	// number of sync bytes before address field
         int dataSync = 10;		// number of sync bytes before data field
         int volume = 254;		// disk volume# is always 254
-        for (int track=0; track < geometry.tracksOnDisk(); track++) {
-            DataBuffer trackData = trackReaderWriter.readTrackData(track);
-            trackData.fill(0xff);
-            int offset = 0;
-            for (int sector=0; sector < geometry.sectorsPerTrack(); sector++) {
-                // fill in address field:
-                encodeOddEven(addressField, 3, volume);
-                encodeOddEven(addressField, 5, track);
-                encodeOddEven(addressField, 7, sector);
-                encodeOddEven(addressField, 9, volume ^ track ^ sector);
-                // write out sector data:
-                offset+= addressSync;
-                trackData.put(offset, addressField);
-                offset+= addressField.limit();
-                offset+= dataSync;
-                trackData.put(offset, dataField);
-                offset+= dataField.limit();
-            }
-            trackReaderWriter.writeTrackData(track, trackData);
+        DataBuffer trackData = trackReaderWriter.readTrackData(track);
+        trackData.fill(0xff);
+        int offset = 0;
+        for (int sector=0; sector < geometry.sectorsPerTrack(); sector++) {
+            // fill in address field:
+            encodeOddEven(addressField, 3, volume);
+            encodeOddEven(addressField, 5, track);
+            encodeOddEven(addressField, 7, sector);
+            encodeOddEven(addressField, 9, volume ^ track ^ sector);
+            // write out sector data:
+            offset+= addressSync;
+            trackData.put(offset, addressField);
+            offset+= addressField.limit();
+            offset+= dataSync;
+            trackData.put(offset, dataField);
+            offset+= dataField.limit();
         }
+        trackReaderWriter.writeTrackData(track, trackData);
+
     }
 }

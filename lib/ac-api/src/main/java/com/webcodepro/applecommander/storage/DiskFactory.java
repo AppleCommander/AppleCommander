@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * The DiskFactory inspects a given Source inspect it to see if it matches filesystem structure(s).
+ * The DiskFactory inspects a given Source to see if it matches filesystem structure(s).
  * Invoke via {@link Disks#inspect(Source)} which will return a Context. The Context _can be empty_.
  * If this is the case, devices can be created via the {@link Context#blockDevice()} and
  * {@link Context#trackSectorDevice()} builders.

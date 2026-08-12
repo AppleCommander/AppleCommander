@@ -72,6 +72,10 @@ public class DosFileEntry implements FileEntry {
 		this.sector = sector;
 		this.offset = offset;
 	}
+
+	public DosSectorAddress getFileFileAddress() {
+		return new DosSectorAddress(track, sector);
+	}
 	
 	/**
 	 * Read the FileEntry from the disk image.

@@ -177,7 +177,7 @@ public class ProdosFormatDisk extends FormattedDisk {
 
 	@Override
 	public <T> Optional<T> get(Class<T> iface) {
-		return Container.get(iface, device);
+		return Container.get(iface, device, new ProdosDiskCheck(this, device));
 	}
 
 	/**
@@ -1101,14 +1101,21 @@ public class ProdosFormatDisk extends FormattedDisk {
 	 */
 	public byte[] readVolumeBitMap() {
 		int volumeBitmapBlock = volumeHeader.getBitMapPointer();
-		int volumeBitmapBlocks = volumeHeader.getTotalBlocks();
-		int blocksToRead = (volumeBitmapBlocks / 4096) + 1;
+		int blocksToRead = getVolumeBitmapBlockCount();
 		// Read in the entire volume bitmap:
 		byte[] data = new byte[blocksToRead * BLOCK_SIZE];
 		for (int i=0; i<blocksToRead; i++) {
 			System.arraycopy(readBlock(volumeBitmapBlock+i), 0, data, i*BLOCK_SIZE, BLOCK_SIZE);
 		}
 		return data;
+	}
+
+	/**
+	 * Volume Bit Map size in blocks.
+	 */
+	public int getVolumeBitmapBlockCount() {
+		int volumeBitmapBlocks = volumeHeader.getTotalBlocks();
+		return(volumeBitmapBlocks / 4096) + 1;
 	}
 	
 	/**
