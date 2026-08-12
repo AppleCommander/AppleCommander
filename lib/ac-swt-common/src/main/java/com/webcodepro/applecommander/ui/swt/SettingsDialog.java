@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.*;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * The settings dialog allows some management of AppleCommander behavior.
@@ -44,6 +45,10 @@ public class SettingsDialog {
     private Combo backupStrategyCombo;
     private Button backupBrowseButton;
     private Text backupDirectoryText;
+
+    // Temporary state of the window settings
+    private boolean saveWindowSize;
+    private boolean centerWindow;
 
     public SettingsDialog(Shell parent) {
         this.parent = parent;
@@ -78,6 +83,7 @@ public class SettingsDialog {
         GridData rowSpanGridData = new GridData(GridData.FILL_HORIZONTAL);
         rowSpanGridData.horizontalSpan = 2;
 
+        createWindowTab(tabFolder, tabItemLayout);
         createBackupTab(tabFolder, tabItemLayout, rowSpanGridData);
         createInfoTab(tabFolder, tabItemLayout, rowSpanGridData);
 
@@ -100,12 +106,7 @@ public class SettingsDialog {
         dialog.setDefaultButton(button);
         button.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
-                String strategy = switch (backupStrategyCombo.getSelectionIndex()) {
-                    case 1 -> "bak";
-                    case 2 -> backupDirectoryText.getText();
-                    default -> "";
-                };
-                preference.setBackupStrategy(strategy);
+                savePreferences();
                 dialog.close();
             }
         });
@@ -113,6 +114,63 @@ public class SettingsDialog {
         dialog.pack();
         SwtUtil.center(parent, dialog);
         dialog.open();
+    }
+
+    public void savePreferences() {
+        // Window tab
+        preference.setSaveWindowSize(saveWindowSize);
+        preference.setCenterWindow(centerWindow);
+
+        // Backup tab
+        String strategy = switch (backupStrategyCombo.getSelectionIndex()) {
+            case 1 -> "bak";
+            case 2 -> backupDirectoryText.getText();
+            default -> "";
+        };
+        preference.setBackupStrategy(strategy);
+
+        preference.save();
+    }
+
+    public void createWindowTab(TabFolder tabFolder, GridLayout tabItemLayout) {
+        TabItem item = new TabItem(tabFolder, SWT.NONE);
+        item.setText("Window");
+        Composite control = new Composite(tabFolder, SWT.NONE);
+        control.setLayout(tabItemLayout);
+        item.setControl(control);
+
+        Label label = new Label(control, SWT.NONE);
+        label.setText("Save Window Size?");
+        saveWindowSize = preference.getSaveWindowSize();
+        addYesNoRadio(control, saveWindowSize, flag -> saveWindowSize = flag);
+
+        label = new Label(control, SWT.NONE);
+        label.setText("Center Window on Screen?");
+        centerWindow = preference.getCenterWindow();
+        addYesNoRadio(control, centerWindow, flag -> centerWindow = flag);
+    }
+
+    private void addYesNoRadio(Composite control, boolean value, Consumer<Boolean> callback) {
+        Composite ynPanel = new Composite(control, SWT.NONE);
+        ynPanel.setLayout(new FillLayout(SWT.HORIZONTAL));
+
+        Button button = new Button(ynPanel, SWT.RADIO);
+        button.setText("Yes");
+        button.setSelection(value);
+        button.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                callback.accept(true);
+            }
+        });
+
+        button = new Button(ynPanel, SWT.RADIO);
+        button.setText("No");
+        button.setSelection(!value);
+        button.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                callback.accept(false);
+            }
+        });
     }
 
     public void createBackupTab(TabFolder tabFolder, GridLayout tabItemLayout, GridData rowSpanGridData) {

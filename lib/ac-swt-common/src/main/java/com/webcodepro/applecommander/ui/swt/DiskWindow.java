@@ -23,6 +23,7 @@ import com.webcodepro.applecommander.storage.DiskCorruptException;
 import com.webcodepro.applecommander.storage.DiskException;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.ui.UiBundle;
+import com.webcodepro.applecommander.ui.UserPreferences;
 import com.webcodepro.applecommander.ui.swt.util.ImageManager;
 import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 import com.webcodepro.applecommander.util.TextBundle;
@@ -41,6 +42,7 @@ import org.eclipse.swt.widgets.Shell;
  * @author Rob Greene
  */
 public class DiskWindow {
+	private final UserPreferences preferences = UserPreferences.getInstance();
 	private final Shell parentShell;
 	private final ImageManager imageManager;
 	
@@ -56,7 +58,7 @@ public class DiskWindow {
 	/**
 	 * Construct the disk window.
 	 */
-	public DiskWindow(Shell parentShell, FormattedDisk[] disks, ImageManager imageManager) {
+	public DiskWindow(Shell shell, FormattedDisk[] disks, ImageManager imageManager) {
 		this.parentShell = shell;
 		this.disks = disks;
 		this.imageManager = imageManager;
@@ -70,6 +72,10 @@ public class DiskWindow {
 		shell.setLayout(new FillLayout());
 		shell.setImage(imageManager.get(ImageManager.ICON_DISK));
 		shell.setMinimumSize(400, 300);
+		if (preferences.getSavedWindowHeight() != 0 && preferences.getSavedWindowWidth() != 0) {
+			shell.setSize(preferences.getSavedWindowWidth(), preferences.getSavedWindowHeight());
+		}
+		shell.setMaximized(preferences.getSavedWindowMaximized());
 		setStandardWindowTitle();
 		shell.addDisposeListener(new DisposeListener() {
 				public void widgetDisposed(DisposeEvent event) {
@@ -83,6 +89,14 @@ public class DiskWindow {
 				event.doit = button == SWT.YES;
 			}
 		});
+		shell.addListener(SWT.Resize, e -> {
+			// It doesn't look like the event itself has this info, so using the primary shell
+			if (preferences.getSaveWindowSize()) {
+				preferences.setSavedWindowHeight(shell.getSize().y);
+				preferences.setSavedWindowWidth(shell.getSize().x);
+				preferences.setSavedWindowMaximized(shell.getMaximized());
+			}
+		});
 			
 		CTabFolder tabFolder = new CTabFolder(shell, SWT.BOTTOM);
 		diskExplorerTab = new DiskExplorerTab(tabFolder, disks, imageManager, this);
@@ -94,7 +108,10 @@ public class DiskWindow {
 		}
 		diskInfoTab = new DiskInfoTab(tabFolder, disks);
 		tabFolder.setSelection(tabFolder.getItems()[0]);
-		
+
+		if (preferences.getCenterWindow()) {
+			SwtUtil.center(parentShell, shell);
+		}
 		shell.open();
 	}
 
@@ -113,9 +130,9 @@ public class DiskWindow {
 	protected void handle(final DiskCorruptException e) {
 		Shell finalShell = shell;
 		MessageBox box = new MessageBox(finalShell, SWT.ICON_ERROR | SWT.OK);
-		box.setText(textBundle.get("SwtAppleCommander." + e.kind + ".Title")); //$NON-NLS-1$
+		box.setText(textBundle.get("SwtAppleCommander." + e.kind + ".Title"));
 		box.setMessage(
-			  textBundle.format("SwtAppleCommander.DiskCorruptException.Message", //$NON-NLS-1$
+			  textBundle.format("SwtAppleCommander.DiskCorruptException.Message",
 					  e.imagepath
 			  		));
 		box.open();
@@ -132,9 +149,9 @@ public class DiskWindow {
 			return;
 		}
 		final MessageBox box = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK | SWT.MODELESS);
-		box.setText(textBundle.get("SwtAppleCommander.DiskException.Title")); //$NON-NLS-1$
+		box.setText(textBundle.get("SwtAppleCommander.DiskException.Title"));
 		box.setMessage(
-				  textBundle.format("SwtAppleCommander.DiskException.Message", //$NON-NLS-1$
+				  textBundle.format("SwtAppleCommander.DiskException.Message",
 						  e.imagepath, e.toString()));
 		box.open();
 	}
@@ -148,9 +165,9 @@ public class DiskWindow {
 		final TextBundle textBundle = UiBundle.getInstance();
 		Shell finalShell = shell;
 		MessageBox box = new MessageBox(finalShell, SWT.ICON_ERROR | SWT.OK);
-		box.setText(textBundle.get("SwtAppleCommander.UnexpectedErrorTitle")); //$NON-NLS-1$
+		box.setText(textBundle.get("SwtAppleCommander.UnexpectedErrorTitle"));
 		box.setMessage(
-			  textBundle.get("SwtAppleCommander.UnexpectedErrorMessage" //$NON-NLS-1$
+			  textBundle.get("SwtAppleCommander.UnexpectedErrorMessage"
 			  ));
 		box.open();
 		e.printStackTrace();
@@ -162,7 +179,7 @@ public class DiskWindow {
 	 */
 	public void setStandardWindowTitle() {
 		shell.setText(UiBundle.getInstance().format(
-				"DiskWindow.Title", disks[0].getFilename())); //$NON-NLS-1$
+				"DiskWindow.Title", disks[0].getFilename()));
 	}
 	
 	/**
