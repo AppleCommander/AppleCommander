@@ -19,13 +19,15 @@
  */
 package com.webcodepro.applecommander.ui.swt.wizard;
 
+import org.eclipse.swt.widgets.Control;
+
 /**
  * Represents a pane of a wizard.
  * <p>
  * Date created: Nov 7, 2002 8:40:44 PM
  * @author Rob Greene
  */
-public abstract class WizardPane {
+public abstract class WizardPane<E> {
 	/**
 	 * Constructor for WizardPane.
 	 */
@@ -33,15 +35,15 @@ public abstract class WizardPane {
 		super();
 	}
 	/**
-	 * Get the next WizardPane.
+	 * Get the control for this pane.
 	 */
-	public abstract WizardPane getNextPane();
+	public abstract Control create();
 	/**
-	 * Create and display the wizard pane.
+	 * Get the next WizardPane identifier. A null return indicates the end of the wizard.
 	 */
-	public abstract void open();
+	public abstract E getNextPane();
 	/**
-	 * Dispose of any resources.
+	 * Called when the page is activated.
 	 */
-	public abstract void dispose();
+	public abstract void activate();
 }

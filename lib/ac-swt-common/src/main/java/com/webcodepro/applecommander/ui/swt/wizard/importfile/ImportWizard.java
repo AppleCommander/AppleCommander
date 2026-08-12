@@ -38,10 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The Disk Import Wizard.
@@ -49,7 +46,7 @@ import java.util.Set;
  * Created on Jan 16, 2003.
  * @author Rob Greene
  */
-public class ImportWizard extends Wizard {
+public class ImportWizard extends Wizard<ImportWizard.Pages> {
 	private static final Set<String> APPLESOFT_FILETYPES = Set.of("B", "BAS");
 	private final FormattedDisk disk;
 	private List<ImportSpecification> importSpecifications;
@@ -62,11 +59,18 @@ public class ImportWizard extends Wizard {
 		this.disk = disk;
 	}
 	/**
-	 * Create the initial display used in the wizard.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.Wizard#createInitialWizardPane()
+	 * Create the panes used in the wizard.
 	 */
-	public WizardPane createInitialWizardPane() {
-		return new ImportSelectFilesWizardPane(getContentPane(), this);
+	public Map<Pages,WizardPane<Pages>> createWizardPanes() {
+		return Map.of(
+			Pages.SELECT_FILES, new ImportSelectFilesWizardPane(getContentPane(), this)
+		);
+	}
+	/**
+	 * Indicates the first pane of the wizard.
+	 */
+	public Pages getFirstWizardPane() {
+		return Pages.SELECT_FILES;
 	}
 	/**
 	 * Add an import specification.
@@ -125,5 +129,9 @@ public class ImportWizard extends Wizard {
 	 */
 	public FormattedDisk getDisk() {
 		return disk;
+	}
+
+	public enum Pages {
+		SELECT_FILES;
 	}
 }

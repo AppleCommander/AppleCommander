@@ -22,7 +22,6 @@ package com.webcodepro.applecommander.storage.compare;
 import com.webcodepro.applecommander.storage.BlockDeviceAdapter;
 import com.webcodepro.applecommander.storage.DiskGeometry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.storage.TrackSectorDeviceAdapter;
 import com.webcodepro.applecommander.util.Range;
 import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
@@ -147,8 +146,16 @@ public class DiskDiff {
 
     /** Compare disks by 256-byte DOS sectors. */
     public void compareByTrackSectorGeometry(FormattedDisk formattedDiskA, FormattedDisk formattedDiskB) {
-        TrackSectorDevice deviceA = TrackSectorDeviceAdapter.from(formattedDiskA);
-        TrackSectorDevice deviceB = TrackSectorDeviceAdapter.from(formattedDiskB);
+        Optional<TrackSectorDevice> optA = formattedDiskA.get(TrackSectorDevice.class);
+        Optional<TrackSectorDevice> optB = formattedDiskB.get(TrackSectorDevice.class);
+        if (optA.isEmpty() || optB.isEmpty()) {
+            if (optA.isEmpty()) results.addError("Disk %s does not have a track/sector device.", formattedDiskA.getFilename());
+            if (optB.isEmpty()) results.addError("Disk %s does not have a track/sector device.", formattedDiskB.getFilename());
+            return;
+        }
+
+        TrackSectorDevice deviceA = optA.get();
+        TrackSectorDevice deviceB = optB.get();
 
         int sectorsPerDiskA = deviceA.getGeometry().sectorsPerDisk();
         int sectorsPerDiskB = deviceB.getGeometry().sectorsPerDisk();

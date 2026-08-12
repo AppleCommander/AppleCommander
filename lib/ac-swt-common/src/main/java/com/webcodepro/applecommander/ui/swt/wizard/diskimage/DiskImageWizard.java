@@ -41,13 +41,15 @@ import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.eclipse.swt.widgets.Shell;
 
+import java.util.Map;
+
 /**
  * Disk Image Wizard.
  * <br>
  * Created on Dec 15, 2002.
  * @author Rob Greene
  */
-public class DiskImageWizard extends Wizard {
+public class DiskImageWizard extends Wizard<DiskImageWizard.Pages> {
 	public static final int FORMAT_DOS33 = 1;
 	public static final int FORMAT_UNIDOS = 2;
 	public static final int FORMAT_PRODOS = 3;
@@ -60,8 +62,8 @@ public class DiskImageWizard extends Wizard {
 	public static final int ORDER_NIBBLE = 3;
 	private int format = FORMAT_DOS33;
 	private int size = DiskConstants.APPLE_140KB_DISK;
-	private String fileName = new String();
-	private String volumeName = new String();
+	private String fileName = "";
+	private String volumeName = "";
 	private int order = ORDER_PRODOS;
 	private boolean compressed = false;
 	/**
@@ -72,11 +74,21 @@ public class DiskImageWizard extends Wizard {
 				UiBundle.getInstance().get("DiskImageWizardTitle")); //$NON-NLS-1$
 	}
 	/**
-	 * Create the initial display used in the wizard.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.Wizard#createInitialWizardPane()
+	 * Create the panes used in the wizard.
 	 */
-	public WizardPane createInitialWizardPane() {
-		return new DiskImageFormatPane(getContentPane(), this);
+	public Map<Pages,WizardPane<Pages>> createWizardPanes() {
+		return Map.of(
+			Pages.FORMAT, new DiskImageFormatPane(getContentPane(), this),
+			Pages.NAME, new DiskImageNamePane(getContentPane(), this),
+			Pages.ORDER, new DiskImageOrderPane(getContentPane(), this),
+			Pages.SIZE, new DiskImageSizePane(getContentPane(), this)
+		);
+	}
+	/**
+	 * Indicates the first pane of the wizard.
+	 */
+	public Pages getFirstWizardPane() {
+		return Pages.FORMAT;
 	}
 	/**
 	 * Get the FormattedDisk as specified.
@@ -236,5 +248,12 @@ public class DiskImageWizard extends Wizard {
 	 */
 	public boolean isHardDisk() {
 		return size > DiskConstants.APPLE_800KB_2IMG_DISK;
+	}
+
+	public enum Pages {
+		FORMAT,
+		NAME,
+		ORDER,
+		SIZE
 	}
 }

@@ -30,9 +30,12 @@ import com.webcodepro.applecommander.util.TextBundle;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,64 +45,62 @@ import java.util.List;
  * <p>
  * @author Rob Greene
  */
-public class CompareDisksResultsPane extends WizardPane {
+public class CompareDisksResultsPane extends WizardPane<CompareDisksWizard.Pages> {
 	private static final TextBundle textBundle = UiBundle.getInstance();
 	private final Composite parent;
-	private final Object layoutData;
-	private Composite control;
-	private final CompareDisksWizard wizard;
+    private final CompareDisksWizard wizard;
+	private Text resultText;
 	/**
 	 * Constructor for ExportFileStartPane.
 	 */
-	public CompareDisksResultsPane(Composite parent, CompareDisksWizard wizard, Object layoutData) {
+	public CompareDisksResultsPane(Composite parent, CompareDisksWizard wizard) {
 		super();
 		this.parent = parent;
 		this.wizard = wizard;
-		this.layoutData = layoutData;
 	}
 	/**
 	 * Open up and configure the wizard pane.
 	 */
-	public void open() {
-		control = new Composite(parent, SWT.NULL);
-		control.setLayoutData(layoutData);
-		wizard.enableNextButton(false);
-		wizard.enableFinishButton(true);
-		RowLayout layout = new RowLayout(SWT.VERTICAL);
-		layout.justify = true;
+	public Control create() {
+        Composite control = new Composite(parent, SWT.NULL);
+		GridLayout layout = new GridLayout();
+		layout.verticalSpacing = 10;
 		layout.marginBottom = 5;
 		layout.marginLeft = 5;
 		layout.marginRight = 5;
 		layout.marginTop = 5;
-		layout.spacing = 3;
 		control.setLayout(layout);
 
-		String message = compareDisks();
-		
 		Label label = new Label(control, SWT.WRAP);
-		label.setText(message);
+		label.setText("Results:\n");
+
+		resultText = new Text(control, SWT.WRAP | SWT.BORDER | SWT.V_SCROLL | SWT.MULTI);
+		resultText.setEditable(false);
+		resultText.setLayoutData(new GridData(GridData.FILL_BOTH));
 
 		label = new Label(control, SWT.WRAP);
-		label.setText(textBundle.get("CompareDisksResultsPane.RestartText")); //$NON-NLS-1$
+		label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		label.setText(textBundle.get("CompareDisksResultsPane.RestartText"));
 		
 		parent.pack();
+		return control;
 	}
 	/**
 	 * Get the next pane. A null return indicates the end of the wizard.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
-	public WizardPane getNextPane() {
+	public CompareDisksWizard.Pages getNextPane() {
 		return null;
 	}
 	/**
-	 * Dispose of resources.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
+	 * Called when the page is activated.
 	 */
-	public void dispose() {
-		control.dispose();
-		control = null;
+	public void activate() {
+		wizard.enableNextButton(false);
+		wizard.enableFinishButton(true);
+
+		String message = compareDisks();
+		resultText.setText(message);
 	}
-	
 	protected String compareDisks() {
 		List<String> errorMessages = new ArrayList<>();	
 		List<FormattedDisk> disk1 = null;
@@ -109,7 +110,7 @@ public class CompareDisksResultsPane extends WizardPane {
             disk1 = ctx.disks;
 		} catch (Throwable t) {
 			errorMessages.add(textBundle.
-				format("CompareDisksResultsPane.UnableToLoadDiskN", //$NON-NLS-1$
+				format("CompareDisksResultsPane.UnableToLoadDiskN",
 					1, t.getLocalizedMessage()));
 		}
         List<FormattedDisk> disk2 = null;
@@ -119,7 +120,7 @@ public class CompareDisksResultsPane extends WizardPane {
 			disk2 = ctx.disks;
 		} catch (Throwable t) {
 			errorMessages.add(textBundle.
-				format("CompareDisksResultsPane.UnableToLoadDiskN", //$NON-NLS-1$
+				format("CompareDisksResultsPane.UnableToLoadDiskN",
 					2, t.getLocalizedMessage()));
 		}
 		if (disk1 != null && disk2 != null) {
@@ -143,8 +144,8 @@ public class CompareDisksResultsPane extends WizardPane {
 		    ComparisonResult result = builder.compare();
 		    errorMessages.addAll(result.getLimitedMessages(wizard.getMessageLimit()));
 		}
-		if (errorMessages.size() == 0) {
-			return textBundle.get("CompareDisksResultsPane.DisksMatch"); //$NON-NLS-1$
+		if (errorMessages.isEmpty()) {
+			return textBundle.get("CompareDisksResultsPane.DisksMatch");
 		}
 		return String.join("\n", errorMessages);
 	}

@@ -23,12 +23,10 @@ import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 import com.webcodepro.applecommander.util.TextBundle;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.RowData;
-import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 
 /**
@@ -37,79 +35,80 @@ import org.eclipse.swt.widgets.*;
  * Date created: Nov 8, 2002 11:18:47 PM
  * @author Rob Greene
  */
-public class ExportFileDestinationPane extends WizardPane {
+public class ExportFileDestinationPane extends WizardPane<ExportWizard.Pages> {
 	private final TextBundle textBundle = UiBundle.getInstance();
 	private final Composite parent;
-	private final Object layoutData;
 	private Composite control;
 	private final ExportWizard wizard;
 	private Text directoryText;
 	/**
 	 * Constructor for ExportFileDestinationPane.
 	 */
-	public ExportFileDestinationPane(Composite parent, ExportWizard exportWizard, Object layoutData) {
+	public ExportFileDestinationPane(Composite parent, ExportWizard exportWizard) {
 		super();
 		this.parent = parent;
 		this.wizard = exportWizard;
-		this.layoutData = layoutData;
 	}
 	/**
 	 * This is the last pane in the wizard, so a null is returned to indicate no
 	 * more pages.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
-	public WizardPane getNextPane() {
+	public ExportWizard.Pages getNextPane() {
 		return null;
 	}
 	/**
-	 * Create and display the wizard pane.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#open()
+	 * Called when the page is activated.
 	 */
-	public void open() {
-		control = new Composite(parent, SWT.NULL);
-		control.setLayoutData(layoutData);
+	public void activate() {
 		wizard.enableNextButton(false);
 		wizard.enableFinishButton(true);
-		RowLayout layout = new RowLayout(SWT.VERTICAL);
-		layout.justify = true;
+		directoryText.setFocus();
+		if (wizard.getDirectory() != null) directoryText.setText(wizard.getDirectory());
+	}
+	/**
+	 * Create and display the wizard pane.
+	 */
+	public Control create() {
+		control = new Composite(parent, SWT.NULL);
+		GridLayout layout = new GridLayout();
+		layout.verticalSpacing = 10;
 		layout.marginBottom = 5;
 		layout.marginLeft = 5;
 		layout.marginRight = 5;
 		layout.marginTop = 5;
-		layout.spacing = 3;
 		control.setLayout(layout);
 		Label label = new Label(control, SWT.WRAP);
-		label.setText(textBundle.get("ExportFilePrompt")); //$NON-NLS-1$
+		label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		label.setText(textBundle.get("ExportFilePrompt"));
 
-		directoryText = new Text(control, SWT.WRAP | SWT.BORDER);
-		if (wizard.getDirectory() != null) directoryText.setText(wizard.getDirectory());
-		directoryText.setLayoutData(new RowData(parent.getSize().x - 30, -1));
-		directoryText.setFocus();
-		directoryText.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent event) {
-				Text text = (Text) event.getSource();
-				getWizard().setDirectory(text.getText());
-			}
-		});
+		directoryText = new Text(control, SWT.WRAP | SWT.BORDER | SWT.V_SCROLL | SWT.MULTI);
+		GridData directoryGridData = new GridData(GridData.FILL_HORIZONTAL);
+		directoryGridData.heightHint = (int)directoryText.getFont().getFontData()[0].height * 4;
+		directoryText.setLayoutData(directoryGridData);
+		directoryText.addModifyListener(event -> {
+            Text text = (Text) event.getSource();
+            getWizard().setDirectory(text.getText());
+        });
 		
 		Button button = new Button(control, SWT.PUSH);
-		button.setText(textBundle.get("BrowseButton")); //$NON-NLS-1$
+		button.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+		button.setText(textBundle.get("BrowseButton")); 
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				DirectoryDialog directoryDialog = new DirectoryDialog(getShell());
 				directoryDialog.setFilterPath(getDirectoryText().getText());
 				directoryDialog.setMessage(
-					UiBundle.getInstance().get("ExportFileDirectoryPrompt")); //$NON-NLS-1$
+					UiBundle.getInstance().get("ExportFileDirectoryPrompt")); 
 				String directory = directoryDialog.open();
 				if (directory != null) {
 					getDirectoryText().setText(directory);
 				}
 			}
 		});
+		return control;
 	}
 	/**
 	 * Dispose of any resources.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
 	 */
 	public void dispose() {
 		directoryText.dispose();

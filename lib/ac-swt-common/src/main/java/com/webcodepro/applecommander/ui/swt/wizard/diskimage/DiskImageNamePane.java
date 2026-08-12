@@ -23,8 +23,8 @@ import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 import com.webcodepro.applecommander.util.TextBundle;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.RowData;
-import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 
 /**
@@ -34,11 +34,15 @@ import org.eclipse.swt.widgets.*;
  * Created on Dec 16, 2002.
  * @author Rob Greene, John B. Matthews
  */
-public class DiskImageNamePane extends WizardPane {
+public class DiskImageNamePane extends WizardPane<DiskImageWizard.Pages> {
 	private final TextBundle textBundle = UiBundle.getInstance();
 	private final DiskImageWizard wizard;
 	private Composite control;
 	private final Composite parent;
+	private Text fileName;
+	// These can be hidden or visible depending on what disk type was chosen:
+	private Label volumeLabel;
+	private Text volumeText;
 	/**
 	 * Constructor for DiskImageNamePane.
 	 */
@@ -51,65 +55,71 @@ public class DiskImageNamePane extends WizardPane {
 	 * Get the next visible pane.
 	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
-	public WizardPane getNextPane() {
-		return new DiskImageOrderPane(parent, wizard);
+	public DiskImageWizard.Pages getNextPane() {
+		return DiskImageWizard.Pages.ORDER;
+	}
+	/**
+	 * Called when the page is activated.
+	 */
+	public void activate() {
+		wizard.enableFinishButton(false);
+		setNextButtonStatus();
+		fileName.setFocus();
+
+		boolean needVolumeDetails = wizard.isFormatProdos() || wizard.isFormatPascal();
+		volumeLabel.setVisible(needVolumeDetails);
+		volumeText.setVisible(needVolumeDetails);
+		fileName.setText(wizard.getFileName());
+
+		int maxLength = wizard.isFormatProdos() ? 15 : 7;
+		String name = wizard.isFormatProdos()
+				? textBundle.get("Prodos")
+				: textBundle.get("Pascal");
+		volumeLabel.setText(textBundle.format(
+				"DiskImageNameLengthText", name, maxLength));
+		volumeText.setText(wizard.getVolumeName());
+		volumeText.setTextLimit(maxLength);
+
 	}
 	/**
 	 * Create the wizard pane.
 	 * Listen for Verify events on the Text widgets.
 	 * Require upper case for optional volume name.
 	 * Preserve names when navigating among panes.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#open()
 	 */
-	public void open() {
+	public Control create() {
 		control = new Composite(parent, SWT.NULL);
-		wizard.enableNextButton(false);
-		wizard.enableFinishButton(false);
-		RowLayout layout = new RowLayout(SWT.VERTICAL);
-		layout.justify = true;
+		GridLayout layout = new GridLayout();
+		layout.verticalSpacing = 10;
 		layout.marginBottom = 5;
 		layout.marginLeft = 5;
 		layout.marginRight = 5;
 		layout.marginTop = 5;
-		layout.spacing = 3;
 		control.setLayout(layout);
 		Label label = new Label(control, SWT.WRAP);
-		label.setText(
-			textBundle.get("DiskImageNamePrompt")); //$NON-NLS-1$
-		final Text fileName = new Text(control, SWT.BORDER);
-		fileName.setFocus();
-		RowData rowData = new RowData();
-		rowData.width = parent.getClientArea().width - 50;
-		fileName.setLayoutData(rowData);
-		fileName.setText(wizard.getFileName());
-		setButtonStatus();
-		fileName.addListener(SWT.Verify, new Listener() {
-			public void handleEvent(Event e) {
-				String s = edit(fileName.getText(), e);
-				wizard.setFileName(s);
-				setButtonStatus();
-			}
-		});
-		if (wizard.isFormatProdos() || wizard.isFormatPascal()) {
-			int maxLength = wizard.isFormatProdos() ? 15 : 7;
-			label = new Label(control, SWT.WRAP);
-			String name = wizard.isFormatProdos()
-					? textBundle.get("Prodos")  //$NON-NLS-1$
-					: textBundle.get("Pascal"); //$NON-NLS-1$
-			label.setText(textBundle.format(
-					"DiskImageNameLengthText", name, maxLength)); //$NON-NLS-1$
-			final Text volumeName = new Text(control, SWT.BORDER);
-			volumeName.setText(wizard.getVolumeName());
-			volumeName.setTextLimit(maxLength);
-			volumeName.addListener(SWT.Verify, new Listener() {
-				public void handleEvent(Event e) {
-					e.text = e.text.toUpperCase();
-					String s = edit(volumeName.getText(), e);
-					wizard.setVolumeName(s);
-					setButtonStatus();
-				}
-			});
-		}
+		label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		label.setText(textBundle.get("DiskImageNamePrompt"));
+		fileName = new Text(control, SWT.BORDER);
+		fileName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		fileName.addListener(SWT.Verify, e -> {
+            String s = edit(fileName.getText(), e);
+            wizard.setFileName(s);
+            setNextButtonStatus();
+        });
+
+		volumeLabel = new Label(control, SWT.WRAP);
+		volumeLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		volumeText = new Text(control, SWT.BORDER);
+		volumeText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		volumeText.addListener(SWT.Verify, e -> {
+            e.text = e.text.toUpperCase();
+            String s = edit(volumeText.getText(), e);
+            wizard.setVolumeName(s);
+            setNextButtonStatus();
+        });
+
+		setNextButtonStatus();
+		return control;
 	}
 	/**
 	 * Edit a name in response to a Verify event.
@@ -129,7 +139,7 @@ public class DiskImageNamePane extends WizardPane {
 	/**
 	 * Enable the Next button when data has been entered into all fields.
 	 */
-	protected void setButtonStatus() {
+	protected void setNextButtonStatus() {
 		String vName = wizard.getVolumeName();
 		String fName = wizard.getFileName();
 		if (wizard.isFormatProdos() || wizard.isFormatPascal()) {
@@ -143,13 +153,8 @@ public class DiskImageNamePane extends WizardPane {
 	}
 	/**
 	 * Dispose of all resources.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
 	 */
 	public void dispose() {
 		control.dispose();
-	}
-	
-	protected DiskImageWizard getWizard() {
-		return wizard;
 	}
 }

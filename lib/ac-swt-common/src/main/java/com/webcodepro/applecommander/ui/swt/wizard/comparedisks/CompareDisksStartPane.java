@@ -24,11 +24,10 @@ import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 import com.webcodepro.applecommander.util.TextBundle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.RowData;
-import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 
 /**
@@ -36,10 +35,9 @@ import org.eclipse.swt.widgets.*;
  * <p>
  * @author Rob Greene
  */
-public class CompareDisksStartPane extends WizardPane {
+public class CompareDisksStartPane extends WizardPane<CompareDisksWizard.Pages> {
 	private final TextBundle textBundle = UiBundle.getInstance();
 	private final Composite parent;
-	private final Object layoutData;
 	private Composite control;
 	private final CompareDisksWizard wizard;
 	private Text diskname1Text;
@@ -49,48 +47,47 @@ public class CompareDisksStartPane extends WizardPane {
 	/**
 	 * Constructor for CompareDisksStartPane.
 	 */
-	public CompareDisksStartPane(Composite parent, CompareDisksWizard wizard, Object layoutData) {
+	public CompareDisksStartPane(Composite parent, CompareDisksWizard wizard) {
 		super();
 		this.parent = parent;
 		this.wizard = wizard;
-		this.layoutData = layoutData;
 	}
 	/**
 	 * Open up and configure the wizard pane.
 	 */
-	public void open() {
+	public Control create() {
 		control = new Composite(parent, SWT.NULL);
-		control.setLayoutData(layoutData);
-		wizard.enableNextButton(true);
-		wizard.enableFinishButton(false);
-		RowLayout layout = new RowLayout(SWT.VERTICAL);
-		layout.justify = true;
+		GridLayout layout = new GridLayout();
+		layout.verticalSpacing = 10;
 		layout.marginBottom = 5;
 		layout.marginLeft = 5;
 		layout.marginRight = 5;
 		layout.marginTop = 5;
-		layout.spacing = 3;
 		control.setLayout(layout);
-		
+
 		Label label = new Label(control, SWT.WRAP);
-		label.setText(textBundle.get("CompareDisksStartPane.Description")); //$NON-NLS-1$
+		label.setText(textBundle.get("CompareDisksStartPane.Description"));
+		label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.GRAB_HORIZONTAL));
+
+		label = new Label(control, SWT.WRAP);
+		label.setText("");	// just a vertical spacer
 
 		label = new Label(control, SWT.WRAP);
 		label.setText(getDiskLabel(1));
+		label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.GRAB_HORIZONTAL));
 
-		diskname1Text = new Text(control, SWT.WRAP | SWT.BORDER);
-		if (wizard.getDiskname1() != null) diskname1Text.setText(wizard.getDiskname1());
-		diskname1Text.setLayoutData(new RowData(300, -1));
-		diskname1Text.setFocus();
-		diskname1Text.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent event) {
-				Text text = (Text) event.getSource();
-				getWizard().setDiskname1(text.getText());
-			}
-		});
+		diskname1Text = new Text(control, SWT.WRAP | SWT.BORDER | SWT.V_SCROLL | SWT.MULTI);
+		float fontHeight = diskname1Text.getFont().getFontData()[0].height;
+		GridData disknameGridData = new GridData(GridData.FILL_BOTH);
+		disknameGridData.heightHint = (int)fontHeight * 4;
+		diskname1Text.setLayoutData(disknameGridData);
+		diskname1Text.addModifyListener(event -> {
+            Text text = (Text) event.getSource();
+            getWizard().setDiskname1(text.getText());
+        });
 		
 		Button button = new Button(control, SWT.PUSH);
-		button.setText(textBundle.get("BrowseButton")); //$NON-NLS-1$
+		button.setText(textBundle.get("BrowseButton"));
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				FileDialog fileDialog = new FileDialog(getControl().getShell());
@@ -106,18 +103,15 @@ public class CompareDisksStartPane extends WizardPane {
 		label = new Label(control, SWT.WRAP);
 		label.setText(getDiskLabel(2));
 
-		diskname2Text = new Text(control, SWT.WRAP | SWT.BORDER);
-		if (wizard.getDiskname2() != null) diskname2Text.setText(wizard.getDiskname2());
-		diskname2Text.setLayoutData(new RowData(300, -1));
-		diskname2Text.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent event) {
-				Text text = (Text) event.getSource();
-				getWizard().setDiskname2(text.getText());
-			}
-		});
+		diskname2Text = new Text(control, SWT.WRAP | SWT.BORDER | SWT.V_SCROLL | SWT.MULTI);
+		diskname2Text.setLayoutData(disknameGridData);
+		diskname2Text.addModifyListener(event -> {
+            Text text = (Text) event.getSource();
+            getWizard().setDiskname2(text.getText());
+        });
 		
 		button = new Button(control, SWT.PUSH);
-		button.setText(textBundle.get("BrowseButton")); //$NON-NLS-1$
+		button.setText(textBundle.get("BrowseButton"));
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				FileDialog fileDialog = new FileDialog(getControl().getShell());
@@ -131,7 +125,7 @@ public class CompareDisksStartPane extends WizardPane {
 		});
 		
 		label = new Label(control, SWT.WRAP);
-		label.setText("Select comparison time:");
+		label.setText("Select comparison type:");
 		
 		comparisonStrategyCombo = new Combo(control, SWT.BORDER | SWT.READ_ONLY);
 		comparisonStrategyCombo.setItems("Compare by native geometry",
@@ -151,25 +145,30 @@ public class CompareDisksStartPane extends WizardPane {
         
         limitText = new Text(control, SWT.WRAP | SWT.BORDER);
         limitText.setText(Integer.toString(wizard.getMessageLimit()));
-        limitText.setLayoutData(new RowData(200, -1));
+		GridData limitGridData = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+		limitGridData.widthHint = 100;
+        limitText.setLayoutData(limitGridData);
         limitText.addModifyListener(this::limitTextModifyListener);
         
         parent.pack();
+		return control;
 	}
 	/**
 	 * Get the next pane. A null return indicates the end of the wizard.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#getNextPane()
 	 */
-	public WizardPane getNextPane() {
-		return new CompareDisksResultsPane(parent, wizard, layoutData);
+	public CompareDisksWizard.Pages getNextPane() {
+		return CompareDisksWizard.Pages.RESULT_PANE;
 	}
 	/**
-	 * Dispose of resources.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.WizardPane#dispose()
+	 * Called when the page is activated.
 	 */
-	public void dispose() {
-		control.dispose();
-		control = null;
+	public void activate() {
+		wizard.enableNextButton(true);
+		wizard.enableFinishButton(false);
+		diskname1Text.setFocus();
+
+		if (wizard.getDiskname1() != null) diskname1Text.setText(wizard.getDiskname1());
+		if (wizard.getDiskname2() != null) diskname2Text.setText(wizard.getDiskname2());
 	}
 	protected Composite getControl() {
 		return control;
@@ -184,7 +183,7 @@ public class CompareDisksStartPane extends WizardPane {
 		return wizard;
 	}
 	protected String getDiskLabel(int diskNumber) {
-		return textBundle.format("CompareDisksStartPane.DiskNLabel", //$NON-NLS-1$
+		return textBundle.format("CompareDisksStartPane.DiskNLabel",
 				diskNumber);
 	}
 	

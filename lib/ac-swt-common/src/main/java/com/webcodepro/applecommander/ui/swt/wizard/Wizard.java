@@ -25,30 +25,34 @@ import com.webcodepro.applecommander.ui.swt.util.SwtUtil;
 import com.webcodepro.applecommander.util.Host;
 import com.webcodepro.applecommander.util.TextBundle;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.RowData;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.*;
 
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A framework for displaying a wizard-like user interface.
  * @author Rob Greene
  */
-public abstract class Wizard {
+public abstract class Wizard<E> {
 	private final TextBundle textBundle = UiBundle.getInstance();
 	private final Shell parent;
 	private Shell dialog;
 	private final Image logo;
 	private final String title;
-	private final Stack<WizardPane> wizardPanes = new Stack<>();
+	private final Map<E,Control> wizardControls = new HashMap<>();
+	private final Map<E,WizardPane<E>> wizardPanes = new HashMap<>();
+	private final StackLayout stackLayout = new StackLayout();
+	private final Deque<E> wizardHistory = new ArrayDeque<>();
 	private boolean wizardCompleted;
 	private Button backButton;
 	private Button nextButton;
@@ -74,34 +78,37 @@ public abstract class Wizard {
 		}
 		dialog = new Shell(parent, styles);
 		dialog.setText(title);
-		RowLayout layout = new RowLayout(SWT.VERTICAL);
-		layout.justify = true;
+		GridLayout layout = new GridLayout();
+		layout.verticalSpacing = 10;
 		layout.marginBottom = 5;
 		layout.marginLeft = 5;
 		layout.marginRight = 5;
 		layout.marginTop = 5;
-		layout.spacing = 3;
 		dialog.setLayout(layout);
 
-		// Wizard logo		
-		RowData rowData = new RowData();
-		rowData.width = logo.getImageData().width;
-		rowData.height = logo.getImageData().height;
-		imageCanvas = new ImageCanvas(dialog, SWT.BORDER, logo, rowData);
+		// Wizard logo
+		GridData imageLayoutData = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_CENTER);
+		imageLayoutData.widthHint = logo.getImageData().width;
+		imageLayoutData.heightHint = logo.getImageData().height;
+		imageCanvas = new ImageCanvas(dialog, SWT.BORDER, logo,imageLayoutData);
 
 		// Content pane
-		rowData = new RowData();
-		rowData.width = logo.getImageData().width;
 		contentPane = new Composite(dialog, SWT.BORDER);
-		contentPane.setLayoutData(rowData);
-		contentPane.setLayout(new FillLayout());
+		GridData gridData = new GridData(GridData.FILL_BOTH);
+		gridData.widthHint = logo.getImageData().width + 100;
+		contentPane.setLayoutData(gridData);
+		contentPane.setLayout(stackLayout);
 
 		// Bottom row of buttons
 		Composite composite = new Composite(dialog, SWT.NONE);
-		composite.setLayoutData(rowData);
-		composite.setLayout(new FillLayout(SWT.HORIZONTAL));
+		composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_END));
+		FillLayout buttonLayout = new FillLayout(SWT.HORIZONTAL);
+		buttonLayout.marginHeight = 5;
+		buttonLayout.marginWidth = 5;
+		buttonLayout.spacing = 5;
+		composite.setLayout(buttonLayout);
 		Button button = new Button(composite, SWT.PUSH);
-		button.setText(textBundle.get("CancelButton")); //$NON-NLS-1$
+		button.setText(textBundle.get("CancelButton"));
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				setWizardCompleted(false);
@@ -110,50 +117,61 @@ public abstract class Wizard {
 		});
 		backButton = new Button(composite, SWT.PUSH);
 		backButton.setEnabled(false);
-		backButton.setText(textBundle.get("BackButton")); //$NON-NLS-1$
+		backButton.setText(textBundle.get("BackButton"));
 		backButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				WizardPane current = getWizardPanes().pop();
-				WizardPane previous = getWizardPanes().peek();
-				getBackButton().setEnabled(getWizardPanes().size() > 1);
-				current.dispose();
-				previous.open();
-				getDialog().pack();
+				E _ = wizardHistory.pop();
+				E previousPane = wizardHistory.peek();
+				getBackButton().setEnabled(wizardHistory.size() > 1);
+				stackLayout.topControl = wizardControls.get(previousPane);
+				contentPane.layout();
+				wizardPanes.get(previousPane).activate();
 			}
 		});
 		nextButton = new Button(composite, SWT.PUSH);
-		nextButton.setText(textBundle.get("NextButton")); //$NON-NLS-1$
+		nextButton.setText(textBundle.get("NextButton"));
 		nextButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				WizardPane current = (WizardPane) getWizardPanes().peek();
-				WizardPane next = current.getNextPane();
-				getWizardPanes().add(next);
-				getBackButton().setEnabled(getWizardPanes().size() > 1);
-				current.dispose();
-				next.open();
-				getDialog().pack();
+				E currentPane = wizardHistory.peek();
+				E nextPane = wizardPanes.get(currentPane).getNextPane();
+				wizardHistory.push(nextPane);
+				getBackButton().setEnabled(wizardHistory.size() > 1);
+				stackLayout.topControl = wizardControls.get(nextPane);
+				contentPane.layout();
+				wizardPanes.get(nextPane).activate();
 			}
 		});
 		finishButton = new Button(composite, SWT.PUSH);
 		finishButton.setEnabled(false);
-		finishButton.setText(textBundle.get("FinishButton")); //$NON-NLS-1$
+		finishButton.setText(textBundle.get("FinishButton"));
 		finishButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				setWizardCompleted(true);
 				getDialog().close();
 			}
 		});
-		
-		WizardPane wizardPane = createInitialWizardPane();
-		wizardPanes.add(wizardPane);
-		wizardPane.open();
+
+		// Keep the WizardPane for the page-to-page logic
+		wizardPanes.putAll(createWizardPanes());
+		// Setup all the controls and hold those
+		wizardPanes.forEach((key,value) -> {
+			wizardControls.put(key, value.create());
+		});
+		wizardHistory.push(getFirstWizardPane());
+		stackLayout.topControl = wizardControls.get(wizardHistory.peek());
+		contentPane.layout();
+		wizardPanes.get(wizardHistory.peek()).activate();
 
 		dialog.pack();
 	}
 	/**
-	 * Create the initial display used in the wizard.
+	 * Create the panes used in the wizard.
 	 */
-	public abstract WizardPane createInitialWizardPane();
+	public abstract Map<E,WizardPane<E>> createWizardPanes();
+	/**
+	 * Indicates the first pane of the wizard.
+	 */
+	public abstract E getFirstWizardPane();
 	/**
 	 * Open and display the dialog.
 	 */
@@ -170,10 +188,8 @@ public abstract class Wizard {
 	 * Dispose of all panels and resources.
 	 */
 	public void dispose() {
-		while (!wizardPanes.empty()) {
-			WizardPane pane = (WizardPane) wizardPanes.pop();
-			pane.dispose();
-			pane = null;
+		for (Control wizardPane : wizardControls.values()) {
+			wizardPane.dispose();
 		}
 		imageCanvas.dispose();
 		dialog.dispose();
@@ -220,12 +236,6 @@ public abstract class Wizard {
 	 */
 	protected Button getBackButton() {
 		return backButton;
-	}
-	/**
-	 * @return Returns the wizardPanes.
-	 */
-	protected Stack<WizardPane> getWizardPanes() {
-		return wizardPanes;
 	}
 	/**
 	 * @param wizardCompleted The wizardCompleted to set.

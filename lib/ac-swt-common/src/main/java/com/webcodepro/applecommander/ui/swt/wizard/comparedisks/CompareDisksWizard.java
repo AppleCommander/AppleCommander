@@ -25,12 +25,14 @@ import com.webcodepro.applecommander.ui.swt.wizard.Wizard;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 import org.eclipse.swt.widgets.Shell;
 
+import java.util.Map;
+
 /**
  * Compare disks wizard.
  * <p>
  * @author Rob Greene
  */
-public class CompareDisksWizard extends Wizard {
+public class CompareDisksWizard extends Wizard<CompareDisksWizard.Pages> {
 	private String diskname1;
 	private String diskname2;
 	private int comparisonStrategy = 0;
@@ -40,15 +42,24 @@ public class CompareDisksWizard extends Wizard {
 	 */
 	public CompareDisksWizard(Shell parent, ImageManager imageManager) {
 		super(parent, imageManager.get(ImageManager.LOGO_COMPARE_IMAGE_WIZARD), 
-				UiBundle.getInstance().get("CompareDisksTitle")); //$NON-NLS-1$
+				UiBundle.getInstance().get("CompareDisksTitle"));
 	}
 	/**
-	 * Create the initial display used in the wizard.
-	 * @see com.webcodepro.applecommander.ui.swt.wizard.Wizard#createInitialWizardPane()
+	 * Create the panes used in the wizard.
 	 */
-	public WizardPane createInitialWizardPane() {
-		return new CompareDisksStartPane(getContentPane(), this, null);
+	public Map<Pages,WizardPane<Pages>> createWizardPanes() {
+		return Map.of(
+			Pages.START_PANE, new CompareDisksStartPane(getContentPane(), this),
+			Pages.RESULT_PANE, new CompareDisksResultsPane(getContentPane(), this)
+		);
 	}
+	/**
+	 * Indicates the first pane of the wizard.
+	 */
+	public Pages getFirstWizardPane() {
+		return Pages.START_PANE;
+	}
+
 	public String getDiskname1() {
 		return diskname1;
 	}
@@ -73,4 +84,9 @@ public class CompareDisksWizard extends Wizard {
 	public void setMessageLimit(int messageLimit) {
         this.messageLimit = messageLimit;
     }
+
+	public enum Pages {
+		START_PANE,
+		RESULT_PANE
+	}
 }
