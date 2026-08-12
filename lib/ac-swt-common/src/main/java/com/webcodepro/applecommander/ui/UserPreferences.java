@@ -113,7 +113,7 @@ public class UserPreferences {
 	 * Get the backup strategy text.
 	 */
 	public String getBackupStrategy() {
-		return properties.getProperty(BACKUP_STRATEGY);
+		return properties.getProperty(BACKUP_STRATEGY, "");
 	}
 	/**
 	 * Create the BackupStrategy object.
