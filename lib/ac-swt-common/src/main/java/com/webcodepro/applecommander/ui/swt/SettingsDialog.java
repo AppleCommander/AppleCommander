@@ -152,7 +152,9 @@ public class SettingsDialog {
 
     private void addYesNoRadio(Composite control, boolean value, Consumer<Boolean> callback) {
         Composite ynPanel = new Composite(control, SWT.NONE);
-        ynPanel.setLayout(new FillLayout(SWT.HORIZONTAL));
+        FillLayout ynLayout = new FillLayout(SWT.HORIZONTAL);
+        ynLayout.spacing = 10;
+        ynPanel.setLayout(ynLayout);
 
         Button button = new Button(ynPanel, SWT.RADIO);
         button.setText("Yes");
