@@ -101,25 +101,25 @@ public class UserPreferences {
 	 * Get the disk image directory (used for "open" command).
 	 */
 	public String getDiskImageDirectory() {
-		return properties.getProperty(IMAGE_DIRECTORY);
+		return properties.getProperty(IMAGE_DIRECTORY, System.getProperty("user.home"));
 	}
 	/**
 	 * Get the export directory.
 	 */
 	public String getExportDirectory() {
-		return properties.getProperty(EXPORT_DIRECTORY);
+		return properties.getProperty(EXPORT_DIRECTORY, System.getProperty("user.home"));
 	}
 	/**
 	 * Get the save directory.
 	 */
 	public String getSaveDirectory() {
-		return properties.getProperty(SAVE_DIRECTORY);
+		return properties.getProperty(SAVE_DIRECTORY, System.getProperty("user.home"));
 	}
 	/**
 	 * Get the import directory.
 	 */
 	public String getImportDirectory() {
-		return properties.getProperty(IMPORT_DIRECTORY);
+		return properties.getProperty(IMPORT_DIRECTORY, System.getProperty("user.home"));
 	}
 	/**
 	 * Get the backup strategy text.
