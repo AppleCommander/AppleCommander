@@ -69,6 +69,7 @@ public class ImageManager {
 	public static final String ICON_SHAPE_TABLE = "shape_table.gif";
 	public static final String ICON_DISASSEMBLE_FILE = "disassemble.gif";
 	public static final String ICON_SETTINGS = "settings.png";
+	public static final String ICON_HEALTH_CHECK = "health-check.png";
 
 	public static final String LOGO_EXPORT_WIZARD        = "ExportWizardLogo.jpg";
 	public static final String LOGO_APPLECOMMANDER       = "AppleCommanderLogo.jpg";
@@ -93,7 +94,7 @@ public class ImageManager {
 		ICON_VIEW_AS_WORDPROCESSOR,	ICON_VIEW_AS_BASIC_PROGRAM,
 		ICON_COPY,					ICON_COMPARE_DISKS,
 		ICON_CHANGE_IMAGE_ORDER,    ICON_SHAPE_TABLE,
-		ICON_SETTINGS,
+		ICON_SETTINGS,				ICON_HEALTH_CHECK,
 		// Logos:
 		LOGO_EXPORT_WIZARD,			LOGO_APPLECOMMANDER,
 		LOGO_DISK_IMAGE_WIZARD,		LOGO_IMPORT_WIZARD,
