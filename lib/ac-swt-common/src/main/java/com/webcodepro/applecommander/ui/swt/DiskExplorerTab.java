@@ -45,8 +45,10 @@ import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 import io.github.applecommander.applesingle.AppleSingle;
 import org.applecommander.device.*;
+import org.applecommander.device.Device;
 import org.applecommander.hint.Hint;
 import org.applecommander.image.NibbleImage;
+import org.applecommander.os.DiskCheck;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
@@ -55,12 +57,8 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.layout.*;
 import org.eclipse.swt.printing.PrintDialog;
 import org.eclipse.swt.printing.Printer;
 import org.eclipse.swt.printing.PrinterData;
@@ -71,6 +69,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Build the Disk File tab for the Disk Window.
@@ -111,6 +111,7 @@ public class DiskExplorerTab {
 	private ToolItem saveToolItem;
 	private ToolItem saveAsToolItem;
 	private ToolItem changeOrderToolItem;
+	private ToolItem checkDiskToolItem;
 	private Menu changeImageOrderMenu;
 
 	private final UserPreferences userPreferences = UserPreferences.getInstance();
@@ -1299,6 +1300,27 @@ public class DiskExplorerTab {
 				getChangeImageOrderMenu().setVisible(true);
 			}
 		});
+
+		new ToolItem(toolBar, SWT.SEPARATOR);
+
+		checkDiskToolItem = new ToolItem(toolBar, SWT.PUSH);
+		checkDiskToolItem.setImage(imageManager.get(ImageManager.ICON_HEALTH_CHECK));
+		checkDiskToolItem.setText("Check Disk");
+		checkDiskToolItem.setToolTipText("Check disk for errors.");
+		// Handle the combo disk setup that split across OSes.
+		checkDiskToolItem.setEnabled(false);
+		for (FormattedDisk disk : disks) {
+			if (disk.get(DiskCheck.class).isPresent()) checkDiskToolItem.setEnabled(true);
+		}
+		checkDiskToolItem.addSelectionListener(new SelectionAdapter () {
+			public void widgetSelected(SelectionEvent e) {
+                try {
+                    checkDisk();
+                } catch (Exception ex) {
+                    showError(ex);
+                }
+            }
+		});
 		
 		new ToolItem(toolBar, SWT.SEPARATOR);
 
@@ -1892,6 +1914,267 @@ public class DiskExplorerTab {
 				"ChangeImageOrderErrorMessage", errorMessage)); //$NON-NLS-1$
 			box.open();
 		}
+	}
+
+	protected void checkDisk() throws Exception {
+		// If we have more than one disk, we want to operate across all the disks!
+		List<DiskCheck> diskChecks = new ArrayList<>();
+		for (FormattedDisk disk : disks) {
+			disk.get(DiskCheck.class).ifPresent(diskChecks::add);
+		}
+		if (diskChecks.isEmpty()) {
+			// Shouldn't have gotten here anyway!
+			return;
+		}
+
+		List<DiskCheck.Finding> results = new ArrayList<>();
+		for (DiskCheck diskCheck : diskChecks) {
+			results.addAll(diskCheck.scan());
+		}
+		if (results.isEmpty()) {
+			SwtUtil.showOkDialog(shell, "Disk Check", "No errors were found in the disk check!");
+			return;
+		}
+
+		int styles = SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.RESIZE;
+		if (Host.isMacosx()) {
+			styles |= SWT.SHEET;
+		}
+		Shell dialog = new Shell(shell, styles);
+		dialog.setText("Check Disk");
+		dialog.setMinimumSize(640,400);
+		GridLayout layout = new GridLayout();
+		layout.verticalSpacing = 10;
+		layout.horizontalSpacing = 10;
+		layout.marginBottom = 5;
+		layout.marginLeft = 5;
+		layout.marginRight = 5;
+		layout.marginTop = 5;
+		dialog.setLayout(layout);
+
+		// Information...
+		Composite panel = new Composite(dialog, SWT.BORDER);
+		final Color color = new Color(205,150,0);
+		final Image warningIcon = shell.getDisplay().getSystemImage(SWT.ICON_WARNING);
+		BorderLayout panelLayout = new BorderLayout();
+		panelLayout.marginHeight = 5;
+		panelLayout.marginWidth = 5;
+		panelLayout.spacing = 10;
+		panel.setLayout(panelLayout);
+		panel.setBackground(color);
+		panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		Label label = new Label(panel, SWT.NONE);
+		label.setImage(warningIcon);
+		label.setLayoutData(new BorderData(SWT.LEFT));
+		label = new Label(panel, SWT.WRAP);
+		label.setText("Please consider this capability BETA!\n\nPlease use caution!");
+		label.setForeground(shell.getDisplay().getSystemColor(SWT.COLOR_BLACK));
+		label.setLayoutData(new BorderData(SWT.CENTER));
+
+		CTabFolder tabFolder = new CTabFolder(dialog, SWT.BORDER);
+		tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
+		tabFolder.setLayout(new FillLayout());
+
+		// Actionable tab
+		CTabItem actionable = new CTabItem(tabFolder, SWT.NONE);
+		actionable.setText("Actionable");
+		Table actionTable = new Table(tabFolder, SWT.FULL_SELECTION | SWT.BORDER);
+		actionable.setControl(actionTable);
+		actionTable.setHeaderVisible(true);
+		new TableColumn(actionTable, SWT.LEFT).setText("Classification");
+		new TableColumn(actionTable, SWT.LEFT).setText("Coordinate");
+		new TableColumn(actionTable, SWT.LEFT).setText("Description");
+		int fixable = 0;
+		for (DiskCheck.Finding finding : results) {
+			if (finding.action().isPresent()) {
+				fixable++;
+				TableItem item = new TableItem(actionTable, SWT.NONE);
+				item.setText(0, finding.classification());
+				item.setText(1, finding.coordinate().toString());
+				item.setText(2, finding.description());
+				item.setData(finding);
+			}
+		}
+		actionTable.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				TableItem item = actionTable.getSelection()[0];
+				showFinding((DiskCheck.Finding)item.getData());
+			}
+		});
+
+		// Informational tab
+		CTabItem informational = new CTabItem(tabFolder, SWT.NONE);
+		informational.setText("Informational");
+		Table infoTable = new Table(tabFolder, SWT.FULL_SELECTION | SWT.BORDER);
+		informational.setControl(infoTable);
+		infoTable.setHeaderVisible(true);
+		new TableColumn(infoTable, SWT.LEFT).setText("Classification");
+		new TableColumn(infoTable, SWT.LEFT).setText("Coordinate");
+		new TableColumn(infoTable, SWT.LEFT).setText("Description");
+		for (DiskCheck.Finding finding : results) {
+			if (finding.action().isEmpty()) {
+				TableItem item = new TableItem(infoTable, SWT.NONE);
+				item.setText(0, finding.classification());
+				item.setText(1, finding.coordinate().toString());
+				item.setText(2, finding.description());
+				item.setData(finding);
+			}
+		}
+		infoTable.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				TableItem item = infoTable.getSelection()[0];
+				showFinding((DiskCheck.Finding)item.getData());
+			}
+		});
+
+		// If we have nothing to fix, show the informational tab instead
+		if (fixable == 0) {
+			tabFolder.setSelection(informational);
+		}
+
+		// Adjust column size -- and make certain none are more than 2x the average (trying to prevent super wide screens)
+		// Note: Same logic applied to both tabs
+		Consumer<Table> adjustColumns = table -> {
+			int columnWidthTotal = 0;
+			for (TableColumn column : table.getColumns()) {
+				column.pack();
+				columnWidthTotal += column.getWidth();
+			}
+			int columnWidthAvg = columnWidthTotal / table.getColumns().length;
+			for (TableColumn column : table.getColumns()) {
+				if (column.getWidth() > columnWidthAvg * 2) {
+					column.setWidth(columnWidthAvg * 2);
+				}
+			}
+		};
+		adjustColumns.accept(actionTable);
+		adjustColumns.accept(infoTable);
+
+		// Common processing
+		Consumer<TableItem[]> performActions = items -> {
+			int total = 0;
+			int successes = 0;
+			int failures = 0;
+			for (TableItem item : items) {
+				DiskCheck.Finding finding = (DiskCheck.Finding)item.getData();
+				total++;
+				if (finding.action().isPresent()) {
+					try {
+						finding.action().get().run();
+						successes++;
+					} catch (Throwable ex) {
+						failures++;
+					}
+				}
+			}
+			saveToolItem.setEnabled(successes > 0);
+
+			SwtUtil.showOkDialog(shell, "Actions completed!",
+				"There were %d items. %d succeeded; %d failed.", total, successes, failures);
+		};
+
+		// Button row
+		Composite buttonsRow = new Composite(dialog, SWT.NONE);
+		buttonsRow.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		GridLayout buttonsLayout = new GridLayout(3, true);
+		buttonsLayout.horizontalSpacing = 10;
+		buttonsLayout.verticalSpacing = 10;
+		buttonsLayout.marginTop = 5;
+		buttonsLayout.marginBottom = 5;
+		buttonsLayout.marginLeft = 5;
+		buttonsLayout.marginRight = 5;
+		buttonsRow.setLayout(buttonsLayout);
+		Button closeButton = new Button(buttonsRow, SWT.PUSH);
+		closeButton.setText("Close");
+		closeButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		closeButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				dialog.close();
+				dialog.dispose();
+				color.dispose();
+			}
+		});
+		dialog.setDefaultButton(closeButton);
+		Button fixSelectedButton = new Button(buttonsRow, SWT.PUSH);
+		fixSelectedButton.setText("Fix Selected");
+		fixSelectedButton.setEnabled(false);
+		fixSelectedButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		fixSelectedButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				performActions.accept(actionTable.getSelection());
+				dialog.close();
+				dialog.dispose();
+				color.dispose();
+			}
+		});
+		actionTable.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				fixSelectedButton.setEnabled(actionTable.getSelectionCount() > 0);
+			}
+		});
+		Button fixAllButton = new Button(buttonsRow, SWT.PUSH);
+		fixAllButton.setText("Fix All");
+		fixAllButton.setEnabled(fixable > 0);
+		fixAllButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		fixAllButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				performActions.accept(actionTable.getItems());
+				dialog.close();
+				dialog.dispose();
+				color.dispose();
+			}
+		});
+
+		dialog.pack();
+		SwtUtil.center(shell, dialog);
+		dialog.open();
+	}
+	protected void showFinding(DiskCheck.Finding finding) {
+		int styles = SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.RESIZE;
+		if (Host.isMacosx()) {
+			styles |= SWT.SHEET;
+		}
+		Shell dialog = new Shell(shell, styles);
+		dialog.setText("Finding Detail");
+		dialog.setMinimumSize(320, 200);
+		dialog.setLayout(new FillLayout());
+		Composite composite = new Composite(dialog, SWT.NONE);
+		composite.setLayout(new GridLayout(2, false));
+		// Shared label creation logic:
+        BiConsumer<String,String> makeLabel = (key,value) -> {
+			Label label = new Label(composite, SWT.BOLD);
+			label.setText(key);
+			label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
+			label = new Label(composite, SWT.WRAP);
+			label.setText(value);
+			label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.GRAB_HORIZONTAL));
+		};
+		makeLabel.accept("Classification:", finding.classification());
+		makeLabel.accept("Coordinate:", finding.coordinate().toString());
+		makeLabel.accept("Description:", finding.description());
+		makeLabel.accept("Actionable?", finding.action().isPresent() ? "Yes" : "No");
+
+		Button close = new Button(composite, SWT.PUSH);
+		close.setText("Close");
+		dialog.setDefaultButton(close);
+		close.setLayoutData(new GridData(SWT.CENTER, SWT.BOTTOM, true, true, 2, 1));
+		close.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				dialog.close();
+				dialog.dispose();
+			}
+		});
+
+		dialog.pack();
+		SwtUtil.center(shell, dialog);
+		dialog.open();
 	}
 
 	/**

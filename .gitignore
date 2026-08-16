@@ -25,6 +25,9 @@ reports/
 /*.2img
 /*.nib
 
+# Ignoring and backups
+*.bak
+
 # Ignoring all the test output if we've enabled writing the disks
 /lib/ac-api/*.do
 /lib/ac-api/*.dsk

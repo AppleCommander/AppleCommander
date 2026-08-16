@@ -122,4 +122,14 @@ public class SwtUtil {
 		showErrorDialog(shell, textBundle.get("SystemErrorTitle"), //$NON-NLS-1$
 			textBundle.format("SystemErrorMessage", throwable.getMessage())); //$NON-NLS-1$
 	}
+
+	/**
+	 * Display an informational dialog box with OK.
+	 */
+	public static void showOkDialog(Shell shell, String title, String fmt, Object... args) {
+		MessageBox messageBox = new MessageBox(shell, SWT.ICON_QUESTION | SWT.OK);
+		messageBox.setText(title);
+		messageBox.setMessage(String.format(fmt, args));
+		messageBox.open();
+	}
 }

@@ -60,7 +60,7 @@ public class DosDiskCheck implements DiskCheck {
                     // Noting odd file types. Really can't fix it.
                     DosSectorAddress ts = file.getFileFileAddress();
                     addFinding("file", ts.track, ts.sector,Optional.empty(),
-                            "Unexpected DOS file type of %02X.", filetype);
+                            "Unexpected DOS file type of %02X with file '%s'.", filetype, entry.getFilename());
                 }
             }
             else {
@@ -115,8 +115,8 @@ public class DosDiskCheck implements DiskCheck {
         if (sectorsRemaining > 0) {
             // This seems fishy. More of a warning, so fix to apply.
             addFinding("file", file.getTrack(), file.getSector(), Optional.empty(),
-                    "Sectors used appears to be too high (file entry says %d but we have %d left over)",
-                    file.getSectorsUsed(), sectorsRemaining);
+                    "Sectors used appears to be too high for '%s' (file entry says %d sectors but we have %d sectors left over)",
+                    file.getFilename(), file.getSectorsUsed(), sectorsRemaining);
         }
     }
 
