@@ -1309,7 +1309,11 @@ public class DiskExplorerTab {
 		checkDiskToolItem.setImage(imageManager.get(ImageManager.ICON_HEALTH_CHECK));
 		checkDiskToolItem.setText("Check Disk");
 		checkDiskToolItem.setToolTipText("Check disk for errors.");
-		checkDiskToolItem.setEnabled(disks[0].get(DiskCheck.class).isPresent());
+		// Handle the combo disk setup that split across OSes.
+		checkDiskToolItem.setEnabled(false);
+		for (FormattedDisk disk : disks) {
+			if (disk.get(DiskCheck.class).isPresent()) checkDiskToolItem.setEnabled(true);
+		}
 		checkDiskToolItem.addSelectionListener(new SelectionAdapter () {
 			public void widgetSelected(SelectionEvent e) {
                 try {
@@ -1915,13 +1919,20 @@ public class DiskExplorerTab {
 	}
 
 	protected void checkDisk() throws Exception {
-		Optional<DiskCheck> diskCheck = disks[0].get(DiskCheck.class);
-		if (diskCheck.isEmpty()) {
+		// If we have more than one disk, we want to operate across all the disks!
+		List<DiskCheck> diskChecks = new ArrayList<>();
+		for (FormattedDisk disk : disks) {
+			disk.get(DiskCheck.class).ifPresent(diskChecks::add);
+		}
+		if (diskChecks.isEmpty()) {
 			// Shouldn't have gotten here anyway!
 			return;
 		}
 
-		List<DiskCheck.Finding> results = diskCheck.get().scan();
+		List<DiskCheck.Finding> results = new ArrayList<>();
+		for (DiskCheck diskCheck : diskChecks) {
+			results.addAll(diskCheck.scan());
+		}
 		if (results.isEmpty()) {
 			SwtUtil.showOkDialog(shell, "Disk Check", "No errors were found in the disk check!");
 			return;
