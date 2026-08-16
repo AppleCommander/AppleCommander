@@ -1922,6 +1922,10 @@ public class DiskExplorerTab {
 		}
 
 		List<DiskCheck.Finding> results = diskCheck.get().scan();
+		if (results.isEmpty()) {
+			SwtUtil.showOkDialog(shell, "Disk Check", "No errors were found in the disk check!");
+			return;
+		}
 
 		int styles = SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.RESIZE;
 		if (Host.isMacosx()) {
@@ -2032,11 +2036,8 @@ public class DiskExplorerTab {
 			}
 			saveToolItem.setEnabled(successes > 0);
 
-			MessageBox messageBox = new MessageBox(shell, SWT.ICON_QUESTION | SWT.OK);
-			messageBox.setText("Actions completed!");
-			messageBox.setMessage(String.format("There were %d items. %d succeeded; %d failed.",
-					total, successes, failures));
-			messageBox.open();
+			SwtUtil.showOkDialog(shell, "Actions completed!",
+				"There were %d items. %d succeeded; %d failed.", total, successes, failures);
 		};
 
 		// Button row
