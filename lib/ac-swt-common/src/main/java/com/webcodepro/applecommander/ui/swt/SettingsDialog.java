@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.*;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -244,32 +245,26 @@ public class SettingsDialog {
         control.setLayout(tabItemLayout);
         item.setControl(control);
 
-        Label label = new Label(control, SWT.NONE);
-        label.setText("Location:");
-        label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        label = new Label(control, SWT.WRAP);
-        label.setText(preference.getPreferencesPath());
+        BiConsumer<String,String> infoPairings = (key, value) -> {
+            Label label = new Label(control, SWT.NONE);
+            label.setText(key);
+            label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            label = new Label(control, SWT.WRAP | SWT.BORDER);
+            label.setText(value);
+            label.setLayoutData(new GridData(GridData.FILL_BOTH));
+        };
+        infoPairings.accept("Location:", preference.getPreferencesPath());
 
-        label = new Label(control, SWT.WRAP);
+        Label label = new Label(control, SWT.WRAP);
         label.setText("""
                 These are the current directories that AppleCommander is using.
                 They change as you select different folders for a related activity.
                 """);
         label.setLayoutData(rowSpanGridData);
 
-        // Collapsing all the info into pairings as order doesn't matter too much:
-        final Map<String,String> pairings = Map.of(
-                "Images:", preference.getDiskImageDirectory(),
-                "Export:", preference.getExportDirectory(),
-                "Import:", preference.getImportDirectory(),
-                "Save:", preference.getSaveDirectory()
-        );
-        for (var entry : pairings.entrySet()) {
-            label = new Label(control, SWT.NONE);
-            label.setText(entry.getKey());
-            label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            label = new Label(control, SWT.WRAP);
-            label.setText(entry.getValue());
-        }
+        infoPairings.accept("Images:", preference.getDiskImageDirectory());
+        infoPairings.accept("Export:", preference.getExportDirectory());
+        infoPairings.accept("Import:", preference.getImportDirectory());
+        infoPairings.accept("Save:", preference.getSaveDirectory());
     }
 }
