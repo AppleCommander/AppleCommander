@@ -2024,7 +2024,7 @@ public class DiskExplorerTab {
 		infoTable.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
-				TableItem item = actionTable.getSelection()[0];
+				TableItem item = infoTable.getSelection()[0];
 				showFinding((DiskCheck.Finding)item.getData());
 			}
 		});
