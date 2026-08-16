@@ -58,9 +58,7 @@ import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.*;
 import org.eclipse.swt.printing.PrintDialog;
 import org.eclipse.swt.printing.Printer;
 import org.eclipse.swt.printing.PrinterData;
@@ -1954,8 +1952,24 @@ public class DiskExplorerTab {
 		layout.marginTop = 5;
 		dialog.setLayout(layout);
 
-		Label label = new Label(dialog, SWT.WRAP);
-		label.setText("These are the results of the disk check. Please be cautious!");
+		// Information...
+		Composite panel = new Composite(dialog, SWT.BORDER);
+		final Color color = new Color(205,150,0);
+		final Image warningIcon = shell.getDisplay().getSystemImage(SWT.ICON_WARNING);
+		BorderLayout panelLayout = new BorderLayout();
+		panelLayout.marginHeight = 5;
+		panelLayout.marginWidth = 5;
+		panelLayout.spacing = 10;
+		panel.setLayout(panelLayout);
+		panel.setBackground(color);
+		panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		Label label = new Label(panel, SWT.NONE);
+		label.setImage(warningIcon);
+		label.setLayoutData(new BorderData(SWT.LEFT));
+		label = new Label(panel, SWT.WRAP);
+		label.setText("Please consider this capability BETA!\n\nPlease use caution!");
+		label.setForeground(shell.getDisplay().getSystemColor(SWT.COLOR_BLACK));
+		label.setLayoutData(new BorderData(SWT.CENTER));
 
 		CTabFolder tabFolder = new CTabFolder(dialog, SWT.BORDER);
 		tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -2080,6 +2094,7 @@ public class DiskExplorerTab {
 			public void widgetSelected(SelectionEvent e) {
 				dialog.close();
 				dialog.dispose();
+				color.dispose();
 			}
 		});
 		dialog.setDefaultButton(closeButton);
@@ -2093,6 +2108,7 @@ public class DiskExplorerTab {
 				performActions.accept(actionTable.getSelection());
 				dialog.close();
 				dialog.dispose();
+				color.dispose();
 			}
 		});
 		actionTable.addSelectionListener(new SelectionAdapter() {
@@ -2111,6 +2127,7 @@ public class DiskExplorerTab {
 				performActions.accept(actionTable.getItems());
 				dialog.close();
 				dialog.dispose();
+				color.dispose();
 			}
 		});
 
