@@ -1978,19 +1978,6 @@ public class DiskExplorerTab {
 			}
 		});
 
-		// Adjust column size -- and make certain none are more than 2x the average (trying to prevent super wide screens)
-		int columnWidthTotal = 0;
-		for (TableColumn column : actionTable.getColumns()) {
-			column.pack();
-			columnWidthTotal += column.getWidth();
-		}
-		int columnWidthAvg = columnWidthTotal / actionTable.getColumns().length;
-		for (TableColumn column : actionTable.getColumns()) {
-			if (column.getWidth() > columnWidthAvg * 2) {
-				column.setWidth(columnWidthAvg * 2);
-			}
-		}
-
 		// Informational tab
 		CTabItem informational = new CTabItem(tabFolder, SWT.NONE);
 		informational.setText("Informational");
@@ -2016,6 +2003,29 @@ public class DiskExplorerTab {
 				showFinding((DiskCheck.Finding)item.getData());
 			}
 		});
+
+		// If we have nothing to fix, show the informational tab instead
+		if (fixable == 0) {
+			tabFolder.setSelection(informational);
+		}
+
+		// Adjust column size -- and make certain none are more than 2x the average (trying to prevent super wide screens)
+		// Note: Same logic applied to both tabs
+		Consumer<Table> adjustColumns = table -> {
+			int columnWidthTotal = 0;
+			for (TableColumn column : table.getColumns()) {
+				column.pack();
+				columnWidthTotal += column.getWidth();
+			}
+			int columnWidthAvg = columnWidthTotal / table.getColumns().length;
+			for (TableColumn column : table.getColumns()) {
+				if (column.getWidth() > columnWidthAvg * 2) {
+					column.setWidth(columnWidthAvg * 2);
+				}
+			}
+		};
+		adjustColumns.accept(actionTable);
+		adjustColumns.accept(infoTable);
 
 		// Common processing
 		Consumer<TableItem[]> performActions = items -> {
