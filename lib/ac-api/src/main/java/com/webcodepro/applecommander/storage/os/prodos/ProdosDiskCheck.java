@@ -25,7 +25,10 @@ import org.applecommander.device.BlockDevice;
 import org.applecommander.os.DiskCheck;
 import org.applecommander.util.DataBuffer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 public class ProdosDiskCheck implements DiskCheck {
