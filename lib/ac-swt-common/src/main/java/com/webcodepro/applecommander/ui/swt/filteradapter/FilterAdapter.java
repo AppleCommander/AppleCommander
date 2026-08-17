@@ -62,6 +62,11 @@ public abstract class FilterAdapter {
 
 	public abstract void display();
 
+	public void increaseSize() {
+	}
+	public void decreaseSize() {
+	}
+
 	public void dispose() {
 		// nothing to dispose
 	}

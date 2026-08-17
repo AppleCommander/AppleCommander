@@ -31,7 +31,6 @@ import com.webcodepro.applecommander.util.TextBundle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
@@ -69,6 +68,8 @@ public class FileViewerWindow {
 	private ToolItem nativeToolItem;
 	private ToolItem hexDumpToolItem;
 	private ToolItem rawDumpToolItem;
+	private ToolItem increaseSizeToolItem;
+	private ToolItem decreaseSizeToolItem;
 	private ToolItem copyToolItem;
 	// May or may not be setup
     private Optional<ToolItem> disassemblyToolItem = Optional.empty();
@@ -112,11 +113,7 @@ public class FileViewerWindow {
 		shell.setImage(imageManager.get(ImageManager.ICON_DISK));
 		shell.setText(textBundle.format("FileViewerWindow.Title", //$NON-NLS-1$ 
 				fileEntry.getFilename()));
-		shell.addDisposeListener(new DisposeListener() {
-				public void widgetDisposed(DisposeEvent event) {
-					dispose(event);
-				}
-			});
+		shell.addDisposeListener(this::dispose);
 
 		Composite composite = new Composite(shell, SWT.NULL);
 		GridLayout gridLayout = new GridLayout(1, false);
@@ -261,6 +258,9 @@ public class FileViewerWindow {
 		    shapeTableToolItem = Optional.of(createShapeTableToolItem());
 		}
 		new ToolItem(toolBar, SWT.SEPARATOR);
+		increaseSizeToolItem = createPlusToolItem();
+		decreaseSizeToolItem = createMinusToolItem();
+		new ToolItem(toolBar, SWT.SEPARATOR);
 		copyToolItem = createCopyToolItem();
 		new ToolItem(toolBar, SWT.SEPARATOR);
 		createPrintToolItem();
@@ -349,6 +349,40 @@ public class FileViewerWindow {
 		return toolItem;
 	}
 
+	protected ToolItem createPlusToolItem() {
+		ToolItem toolItem = new ToolItem(toolBar, SWT.PUSH);
+		toolItem.setImage(imageManager.get(ImageManager.ICON_PLUS));
+		toolItem.setText("Increase");
+		toolItem.setEnabled(true);
+		toolItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				FilterAdapter adapter = getCurrentFilterAdapter();
+				if (adapter != null) {
+					adapter.increaseSize();
+					adapter.display();
+				}
+			}
+		});
+		return toolItem;
+	}
+
+	protected ToolItem createMinusToolItem() {
+		ToolItem toolItem = new ToolItem(toolBar, SWT.PUSH);
+		toolItem.setImage(imageManager.get(ImageManager.ICON_MINUS));
+		toolItem.setText("Decrease");
+		toolItem.setEnabled(true);
+		toolItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				FilterAdapter adapter = getCurrentFilterAdapter();
+				if (adapter != null) {
+					adapter.decreaseSize();
+					adapter.display();
+				}
+			}
+		});
+		return toolItem;
+	}
+
 	/**
 	 * The toolbar command handler contains the global toolbar
 	 * actions. The intent is that the listener is then added to 
@@ -416,6 +450,24 @@ public class FileViewerWindow {
 		rawDumpToolItem.setSelection(dumpSelected);
 		disassemblyToolItem.ifPresent(toolItem -> toolItem.setSelection(disassemblySelected));
 		shapeTableToolItem.ifPresent(toolItem -> toolItem.setSelection(shapeTableSelected));
+	}
+	public FilterAdapter getCurrentFilterAdapter() {
+		if (nativeToolItem != null && nativeToolItem.getSelection()) {
+			return getNativeFilterAdapter();
+		}
+		else if (hexDumpToolItem.getSelection()) {
+			return getHexFilterAdapter();
+		}
+		else if (rawDumpToolItem.getSelection()) {
+			return getRawDumpFilterAdapter();
+		}
+		else if (disassemblyToolItem.isPresent() && disassemblyToolItem.get().getSelection()) {
+			return disassemblyFilterAdapter;
+		}
+		else if (shapeTableToolItem.isPresent() && shapeTableToolItem.get().getSelection()) {
+			return shapeTableFilterAdapter;
+		}
+		return null;
 	}
 	protected ContentTypeAdapter getContentTypeAdapter() {
 		return contentTypeAdapter;

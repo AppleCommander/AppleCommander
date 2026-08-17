@@ -42,6 +42,7 @@ import java.io.ByteArrayInputStream;
 public class GraphicsFilterAdapter extends FilterAdapter {
 	private Image image;
 	private boolean error = false;
+	private int multiplier = 1;
 	
 	public GraphicsFilterAdapter(FileViewerWindow window, String text, String toolTipText, Image image) {
 		super(window, text, toolTipText, image);
@@ -50,7 +51,7 @@ public class GraphicsFilterAdapter extends FilterAdapter {
 	public void display() {
 		getCopyToolItem().setEnabled(false);
 
-		if (image == null && error == false) {
+		if (image == null && !error) {
 			try {
 				byte[] imageBytes = getFileFilter().filter(getFileEntry());
 				ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes);
@@ -63,17 +64,20 @@ public class GraphicsFilterAdapter extends FilterAdapter {
 		}
 
 		if (!error) {
+			int width = image.getBounds().width * multiplier;
+			int height = image.getBounds().height * multiplier;
 			GridLayout layout = new GridLayout();
 			getComposite().setLayout(layout);
 			GridData gridData = new GridData();
-			gridData.widthHint = image.getImageData().width;
-			gridData.heightHint = image.getImageData().height;
-			ImageCanvas imageCanvas = new ImageCanvas(getComposite(), SWT.NONE, image, gridData);
+			gridData.widthHint = width;
+			gridData.heightHint = height;
+			ImageCanvas imageCanvas = new ImageCanvas(getComposite(), SWT.NONE, image, gridData, multiplier);
+			imageCanvas.setSize(width, height);
 			getComposite().setContent(imageCanvas);
 			getComposite().setExpandHorizontal(true);
 			getComposite().setExpandVertical(true);
-			getComposite().setMinWidth(image.getImageData().width);
-			getComposite().setMinHeight(image.getImageData().height);
+			getComposite().setMinWidth(width);
+			getComposite().setMinHeight(height);
 			setContentTypeAdapter(new ImageCanvasAdapter(imageCanvas, getFileEntry().getFilename()));
 		} else {
 			Label label = new Label(getComposite(), SWT.NULL);
@@ -90,5 +94,16 @@ public class GraphicsFilterAdapter extends FilterAdapter {
 		if (image != null) image.dispose();
 	}
 
+	@Override
+	public void increaseSize() {
+		multiplier++;
+	}
 
+	@Override
+	public void decreaseSize() {
+		multiplier--;
+		if  (multiplier < 1) {
+			multiplier = 1;
+		}
+	}
 }
