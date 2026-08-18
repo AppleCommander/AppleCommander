@@ -7,6 +7,10 @@ on:
       - '*'
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build-java:
@@ -253,3 +257,23 @@ jobs:
           name: acx-${{ matrix.os }}-${{ matrix.arch }}
           path: app/cli-acx/build/native/nativeCompile/acx-*
           archive: false
+
+  release:
+    name: Create draft release
+    if: github.ref_type == 'tag'
+    needs: [build-java, build-jpackage, build-native]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v3
+        with:
+          draft: true
+          generate_release_notes: true
+          files: |
+            ac-*
+            acx-*
+            AppleCommander-*
