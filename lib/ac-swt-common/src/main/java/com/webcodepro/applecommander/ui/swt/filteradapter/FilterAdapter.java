@@ -27,7 +27,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ToolBar;
@@ -61,6 +60,8 @@ public abstract class FilterAdapter {
 	}
 
 	public abstract void display();
+	public abstract void increaseSize();
+	public abstract void decreaseSize();
 
 	public void dispose() {
 		// nothing to dispose
@@ -108,9 +109,6 @@ public abstract class FilterAdapter {
 	}
 	protected void setContentTypeAdapter(ContentTypeAdapter adapter) {
 		window.setContentTypeAdapter(adapter);
-	}
-	protected Font getCourierFont() {
-		return window.getCourierFont();
 	}
 	protected Listener getToolbarCommandHandler() {
 		return window.createToolbarCommandHandler();

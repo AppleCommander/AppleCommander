@@ -36,14 +36,20 @@ import org.eclipse.swt.widgets.Composite;
  */
 public class ImageCanvas extends Canvas implements PaintListener {
 	private final Image image;
+	private final int width;
+	private final int height;
 	/**
 	 * Constructor for ImageCanvas.
 	 */
 	public ImageCanvas(Composite parent, int style, Image image, Object layoutData) {
+		this(parent, style, image, layoutData, 1);
+	}
+	public ImageCanvas(Composite parent, int style, Image image, Object layoutData, int multiplier) {
 		super(parent, style | SWT.SHELL_TRIM | SWT.NO_BACKGROUND | SWT.NO_REDRAW_RESIZE);
 		this.image = image;
+		this.width = image.getBounds().width * multiplier;
+		this.height = image.getBounds().height * multiplier;
 		setLayoutData(layoutData);
-		setSize(image.getImageData().width, image.getImageData().height);
 		addPaintListener(this);
 	}
 	/**
@@ -51,16 +57,15 @@ public class ImageCanvas extends Canvas implements PaintListener {
 	 */
 	public void paintControl(PaintEvent event) {
 		GC gc = event.gc;
-		gc.drawImage (image, 0, 0);
-		Rectangle rect = image.getBounds ();
+		gc.drawImage(image, 0, 0, width, height);
 		Rectangle client = getClientArea();
-		int marginWidth = client.width - rect.width;
+		int marginWidth = client.width - width;
 		if (marginWidth > 0) {
-			gc.fillRectangle (rect.width, 0, marginWidth, client.height);
+			gc.fillRectangle(width, 0, marginWidth, client.height);
 		}
-		int marginHeight = client.height - rect.height;
+		int marginHeight = client.height - height;
 		if (marginHeight > 0) {
-			gc.fillRectangle (0, rect.height, client.width, marginHeight);
+			gc.fillRectangle(0, height, client.width, marginHeight);
 		}
 	}
 	/**

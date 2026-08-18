@@ -23,6 +23,7 @@ import com.webcodepro.applecommander.ui.swt.FileViewerWindow;
 import com.webcodepro.applecommander.ui.swt.util.contentadapter.StyledTextAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
@@ -33,6 +34,8 @@ import org.eclipse.swt.graphics.Point;
  */
 public class TextFilterAdapter extends FilterAdapter {
 	private String textContent;
+	private int fontSize = 10;
+	private Font courier;
 	
 	public TextFilterAdapter(FileViewerWindow window, String text, String toolTipText, Image image) {
 		super(window, text, toolTipText, image);
@@ -44,16 +47,30 @@ public class TextFilterAdapter extends FilterAdapter {
 		}
 		getCopyToolItem().setEnabled(true);
 		createTextWidget(textContent);
+		getWindow().setZoomText("Font: %s, %spt", courier.getFontData()[0].getName(), fontSize);
 	}
 	
 	protected String createTextContent() {
 		return new String(getFileFilter().filter(getFileEntry()));
 	}
 
+	@Override
+	public void dispose() {
+		super.dispose();
+		if (courier != null) {
+			courier.dispose();
+		}
+	}
+
 	protected void createTextWidget(String textContents) {
+		if (courier != null) {
+			courier.dispose();
+		}
+		courier = new Font(getComposite().getDisplay(), "Courier", fontSize, SWT.NORMAL); //$NON-NLS-1$
+
 		StyledText styledText = new StyledText(getComposite(), SWT.NONE);
 		styledText.setText(textContents);
-		styledText.setFont(getCourierFont());
+		styledText.setFont(courier);
 		styledText.setEditable(false);
 		//styledText.setWordWrap(true);		// seems to throw size out-of-whack
 		Point size = styledText.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
@@ -66,5 +83,18 @@ public class TextFilterAdapter extends FilterAdapter {
 
 		getToolItem().setSelection(true);		
 		setContentTypeAdapter(new StyledTextAdapter(styledText, getFileEntry().getFilename()));
+	}
+
+	@Override
+	public void increaseSize() {
+		fontSize++;
+	}
+
+	@Override
+	public void decreaseSize() {
+		fontSize--;
+		if  (fontSize < 8) {
+			fontSize = 8;
+		}
 	}
 }

@@ -27,6 +27,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
@@ -40,6 +41,8 @@ public class BusinessBASICFilterAdapter extends FilterAdapter {
 	private Color separatorColor;
 	private Color stringColor;
 	private Color tokenColor;
+	private int fontSize = 10;
+	private Font courier;
 
 	public BusinessBASICFilterAdapter(FileViewerWindow window, String text, String toolTipText, Image image) {
 		super(window, text, toolTipText, image);
@@ -58,6 +61,7 @@ public class BusinessBASICFilterAdapter extends FilterAdapter {
 		getComposite().getContent().addListener(SWT.KeyUp, getToolbarCommandHandler());
 			
 		setContentTypeAdapter(new StyledTextAdapter(styledText, getFileEntry().getFilename()));
+		getWindow().setZoomText("Font: %s, %spt", courier.getFontData()[0].getName(), fontSize);
 	}
 	
 	public void dispose() {
@@ -65,17 +69,22 @@ public class BusinessBASICFilterAdapter extends FilterAdapter {
 		separatorColor.dispose();
 		tokenColor.dispose();
 		stringColor.dispose();
+		if (courier != null) {
+			courier.dispose();
+		}
 	}
 
 
 	protected void createStyledText() {
+		courier = new Font(getComposite().getDisplay(), "Courier", fontSize, SWT.NORMAL); //$NON-NLS-1$
+
 		separatorColor = new Color(getComposite().getDisplay(), 192, 0, 0);
 		tokenColor = new Color(getComposite().getDisplay(), 0, 0, 192);
 		stringColor = new Color(getComposite().getDisplay(), 0, 192, 0);
 
 		styledText = new StyledText(getComposite(), SWT.NONE);
 		styledText.setForeground(getComposite().getForeground());
-		styledText.setFont(getCourierFont());
+		styledText.setFont(courier);
 		styledText.setEditable(false);
 
 		BusinessBASICTokenizer tokenizer = new BusinessBASICTokenizer(getFileEntry());
@@ -138,6 +147,30 @@ public class BusinessBASICFilterAdapter extends FilterAdapter {
 				else if (token.isOutdenter()) {
 					nestLevels --; }
 			}
+		}
+	}
+
+	@Override
+	public void increaseSize() {
+		fontSize++;
+		updateFontSize();
+	}
+
+	@Override
+	public void decreaseSize() {
+		fontSize--;
+		if  (fontSize < 8) {
+			fontSize = 8;
+		}
+		updateFontSize();
+	}
+
+	public void updateFontSize() {
+		Font oldFont = courier;
+		courier = new Font(getComposite().getDisplay(), "Courier", fontSize, SWT.NORMAL); //$NON-NLS-1$
+		styledText.setFont(courier);
+		if (oldFont != null) {
+			oldFont.dispose();
 		}
 	}
 }
