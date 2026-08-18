@@ -93,7 +93,7 @@ public class FileViewerWindow {
 	 * Construct the file viewer window.
 	 */
 	public FileViewerWindow(Shell parentShell, FileEntry fileEntry, ImageManager imageManager, FileFilter nativeFilter) {
-		this.parentShell = parentShell;
+		this.parentShell = shell;
 		this.fileEntry = fileEntry;
 		this.imageManager = imageManager;
 		this.nativeFilter = nativeFilter;
