@@ -41,6 +41,48 @@ jobs:
         path: app/cli-acx/build/libs/AppleCommander-acx*
         archive: false
         if-no-files-found: error
+    - name: Upload MacOS aarch64
+      uses: actions/upload-artifact@v7
+      with:
+        name: build-artifacts
+        path: app/gui-swt-macosx-aarch64/build/libs/AppleCommander*.jar
+        archive: false
+        if-no-files-found: error
+    - name: Upload MacOS x86_64
+      uses: actions/upload-artifact@v7
+      with:
+        name: build-artifacts
+        path: app/gui-swt-macosx-x86_64/build/libs/AppleCommander*.jar
+        archive: false
+        if-no-files-found: error
+    - name: Upload Linux x86_64
+      uses: actions/upload-artifact@v7
+      with:
+        name: build-artifacts
+        path: app/gui-swt-linux-x86_64/build/libs/AppleCommander*.jar
+        archive: false
+        if-no-files-found: error
+    - name: Upload Linux ARM (Raspberry Pi?)
+      uses: actions/upload-artifact@v7
+      with:
+        name: build-artifacts
+        path: app/gui-swt-linux-arm/build/libs/AppleCommander*.jar
+        archive: false
+        if-no-files-found: error
+    - name: Upload Linux aarch64
+      uses: actions/upload-artifact@v7
+      with:
+        name: build-artifacts
+        path: app/gui-swt-linux-aarch64/build/libs/AppleCommander*.jar
+        archive: false
+        if-no-files-found: error
+    - name: Upload Windows x86_64
+      uses: actions/upload-artifact@v7
+      with:
+        name: build-artifacts
+        path: app/gui-swt-win32-x86_64/build/libs/AppleCommander*.jar
+        archive: false
+        if-no-files-found: error
 
   # This is a crude license header check. The ones I tested were susceptible to whitespace differences
   # and I never got them to work. My primary goal is to ensure the headers exist, so this suffices.
