@@ -27,6 +27,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
@@ -41,7 +42,9 @@ public class ApplesoftFilterAdapter extends FilterAdapter {
 	private Color separatorColor;
 	private Color stringColor;
 	private Color tokenColor;
-	
+	private int fontSize = 10;
+	private Font courier;
+
 	public ApplesoftFilterAdapter(FileViewerWindow window, String text, String toolTipText, Image image) {
 		super(window, text, toolTipText, image);
 	}
@@ -66,10 +69,14 @@ public class ApplesoftFilterAdapter extends FilterAdapter {
 		separatorColor.dispose();
 		tokenColor.dispose();
 		stringColor.dispose();
+		if (courier != null) {
+			courier.dispose();
+		}
 	}
 
-
 	protected void createStyledText() {
+		courier = new Font(getComposite().getDisplay(), "Courier", fontSize, SWT.NORMAL); //$NON-NLS-1$
+
 		if (Display.isSystemDarkTheme()) {
 			separatorColor = new Color(getComposite().getDisplay(), 255, 128, 128);
 			tokenColor = new Color(getComposite().getDisplay(), 192, 192, 255);
@@ -82,7 +89,7 @@ public class ApplesoftFilterAdapter extends FilterAdapter {
 
 		styledText = new StyledText(getComposite(), SWT.NONE);
 		styledText.setForeground(getComposite().getForeground());
-		styledText.setFont(getCourierFont());
+		styledText.setFont(courier);
 		styledText.setEditable(false);
 
 		ApplesoftTokenizer tokenizer = new ApplesoftTokenizer(getFileEntry());
@@ -126,6 +133,30 @@ public class ApplesoftFilterAdapter extends FilterAdapter {
 				styleRange.foreground = tokenColor;
 				styledText.setStyleRange(styleRange);
 			}
+		}
+	}
+
+	@Override
+	public void increaseSize() {
+		fontSize++;
+		updateFontSize();
+	}
+
+	@Override
+	public void decreaseSize() {
+		fontSize--;
+		if  (fontSize < 8) {
+			fontSize = 8;
+		}
+		updateFontSize();
+	}
+
+	public void updateFontSize() {
+		Font oldFont = courier;
+		courier = new Font(getComposite().getDisplay(), "Courier", fontSize, SWT.NORMAL); //$NON-NLS-1$
+		styledText.setFont(courier);
+		if (oldFont != null) {
+			oldFont.dispose();
 		}
 	}
 }

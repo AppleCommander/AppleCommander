@@ -33,7 +33,6 @@ import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -74,8 +73,6 @@ public class FileViewerWindow {
 	// May or may not be setup
     private Optional<ToolItem> disassemblyToolItem = Optional.empty();
     private Optional<ToolItem> shapeTableToolItem = Optional.empty();
-	
-	private Font courier;
 
 	private ContentTypeAdapter contentTypeAdapter;
 	private Map<Class<?>,FilterAdapter> nativeFilterAdapterMap;
@@ -96,7 +93,7 @@ public class FileViewerWindow {
 	 * Construct the file viewer window.
 	 */
 	public FileViewerWindow(Shell parentShell, FileEntry fileEntry, ImageManager imageManager, FileFilter nativeFilter) {
-		this.parentShell = shell;
+		this.parentShell = parentShell;
 		this.fileEntry = fileEntry;
 		this.imageManager = imageManager;
 		this.nativeFilter = nativeFilter;
@@ -126,8 +123,6 @@ public class FileViewerWindow {
 		gridData = new GridData(GridData.FILL_BOTH);
 		content.setLayoutData(gridData);
 		content.addListener(SWT.KeyUp, createToolbarCommandHandler());
-
-		courier = new Font(shell.getDisplay(), "Courier", 10, SWT.NORMAL); //$NON-NLS-1$
 
 		nativeFilterAdapter.display();
 		
@@ -222,10 +217,11 @@ public class FileViewerWindow {
 	 * Dispose of all shared resources.
 	 */
 	protected void dispose(DisposeEvent event) {
-		courier.dispose();
 		if (nativeFilterAdapter != null) nativeFilterAdapter.dispose();
-		hexFilterAdapter.dispose();
-		rawDumpFilterAdapter.dispose();
+		if (hexFilterAdapter != null) hexFilterAdapter.dispose();
+		if (rawDumpFilterAdapter != null) rawDumpFilterAdapter.dispose();
+		if (disassemblyFilterAdapter != null) disassemblyFilterAdapter.dispose();
+		if (shapeTableFilterAdapter != null) shapeTableFilterAdapter.dispose();
 		System.gc();
 	}
 
@@ -439,9 +435,6 @@ public class FileViewerWindow {
 	}
 	public void setContentTypeAdapter(ContentTypeAdapter adapter) {
 		this.contentTypeAdapter = adapter;
-	}
-	public Font getCourierFont() {
-		return courier;
 	}
 	public void setFilterToolItemSelection(boolean nativeSelected, boolean hexSelected, boolean dumpSelected,
 	        boolean disassemblySelected, boolean shapeTableSelected) {
