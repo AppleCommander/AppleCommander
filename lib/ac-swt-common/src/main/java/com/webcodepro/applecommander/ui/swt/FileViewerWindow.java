@@ -68,6 +68,7 @@ public class FileViewerWindow {
 	private ToolItem hexDumpToolItem;
 	private ToolItem rawDumpToolItem;
 	private ToolItem increaseSizeToolItem;
+	private Text zoomText;
 	private ToolItem decreaseSizeToolItem;
 	private ToolItem copyToolItem;
 	// May or may not be setup
@@ -102,7 +103,7 @@ public class FileViewerWindow {
 	}
 	
 	/**
-	 * Setup the File Viewer window and display (open) it.
+	 * Set up the File Viewer window and display (open) it.
 	 */
 	public void open() {
 		shell = new Shell(parentShell, SWT.SHELL_TRIM);
@@ -113,16 +114,16 @@ public class FileViewerWindow {
 		shell.addDisposeListener(this::dispose);
 
 		Composite composite = new Composite(shell, SWT.NULL);
-		GridLayout gridLayout = new GridLayout(1, false);
-		composite.setLayout(gridLayout);
+		composite.setLayout(new GridLayout(1, false));
 		
-		GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
-		createToolBar(composite, gridData);
+		createToolBar(composite, new GridData(GridData.FILL_HORIZONTAL));
 
 		content = new ScrolledComposite(composite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-		gridData = new GridData(GridData.FILL_BOTH);
-		content.setLayoutData(gridData);
+		content.setLayoutData(new GridData(GridData.FILL_BOTH));
 		content.addListener(SWT.KeyUp, createToolbarCommandHandler());
+
+		zoomText = new Text(composite, SWT.SINGLE | SWT.BORDER);
+		zoomText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_END));
 
 		nativeFilterAdapter.display();
 		
@@ -461,6 +462,9 @@ public class FileViewerWindow {
 			return shapeTableFilterAdapter;
 		}
 		return null;
+	}
+	public void setZoomText(String fmt, Object... args) {
+		zoomText.setText(String.format(fmt, args));
 	}
 	protected ContentTypeAdapter getContentTypeAdapter() {
 		return contentTypeAdapter;

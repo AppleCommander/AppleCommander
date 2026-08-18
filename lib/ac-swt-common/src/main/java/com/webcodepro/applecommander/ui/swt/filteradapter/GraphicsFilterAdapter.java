@@ -51,6 +51,7 @@ public class GraphicsFilterAdapter extends FilterAdapter {
 	public void display() {
 		getCopyToolItem().setEnabled(false);
 
+		String errorText = null;
 		if (image == null && !error) {
 			try {
 				byte[] imageBytes = getFileFilter().filter(getFileEntry());
@@ -59,6 +60,7 @@ public class GraphicsFilterAdapter extends FilterAdapter {
 				ImageData[] imageData = imageLoader.load(inputStream);
 				image = new Image(getComposite().getDisplay(), imageData[0]);
 			} catch (Throwable t) {
+				errorText = t.getMessage();
 				error = true;
 			}
 		}
@@ -79,6 +81,7 @@ public class GraphicsFilterAdapter extends FilterAdapter {
 			getComposite().setMinWidth(width);
 			getComposite().setMinHeight(height);
 			setContentTypeAdapter(new ImageCanvasAdapter(imageCanvas, getFileEntry().getFilename()));
+			getWindow().setZoomText("Image: %dx%d; Zoom: %dx", image.getBounds().width, image.getBounds().height, multiplier);
 		} else {
 			Label label = new Label(getComposite(), SWT.NULL);
 			label.setText(UiBundle.getInstance().get(
@@ -87,6 +90,7 @@ public class GraphicsFilterAdapter extends FilterAdapter {
 			getComposite().setExpandHorizontal(true);
 			getComposite().setExpandVertical(true);
 			setContentTypeAdapter(new NoActionContentTypeAdapter());
+			getWindow().setZoomText("Error: %s", errorText);
 		}
 	}
 	
