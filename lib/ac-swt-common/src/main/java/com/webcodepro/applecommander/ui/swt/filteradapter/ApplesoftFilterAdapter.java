@@ -62,7 +62,7 @@ public class ApplesoftFilterAdapter extends FilterAdapter {
 		getComposite().getContent().addListener(SWT.KeyUp, getToolbarCommandHandler());
 			
 		setContentTypeAdapter(new StyledTextAdapter(styledText, getFileEntry().getFilename()));
-		getWindow().setZoomText("Font: %s, %spt", courier.getFontData()[0].name, fontSize);
+		getWindow().setZoomText("Font: %s, %spt", courier.getFontData()[0].getName(), fontSize);
 	}
 	
 	public void dispose() {

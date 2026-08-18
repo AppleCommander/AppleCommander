@@ -47,7 +47,7 @@ public class TextFilterAdapter extends FilterAdapter {
 		}
 		getCopyToolItem().setEnabled(true);
 		createTextWidget(textContent);
-		getWindow().setZoomText("Font: %s, %spt", courier.getFontData()[0].name, fontSize);
+		getWindow().setZoomText("Font: %s, %spt", courier.getFontData()[0].getName(), fontSize);
 	}
 	
 	protected String createTextContent() {
