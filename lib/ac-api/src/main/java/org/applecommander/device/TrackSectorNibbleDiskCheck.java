@@ -19,6 +19,7 @@
  */
 package org.applecommander.device;
 
+import com.webcodepro.applecommander.util.Range;
 import org.applecommander.capability.Capability;
 import org.applecommander.os.DiskCheck;
 import org.applecommander.util.DataBuffer;
@@ -43,28 +44,31 @@ public class TrackSectorNibbleDiskCheck implements DiskCheck {
     @Override
     public List<Finding> scan() {
         List<Finding> findings = new ArrayList<>();
-        if (device.can(Capability.WRITE_SECTOR) && device.can(Capability.FORMAT_TRACK)) {
-            TrackSectorDevice.Geometry geometry = device.getGeometry();
-            for (int track = 0; track < geometry.tracksOnDisk(); track++) {
-                int badSectors = 0;
-                int trackSize = geometry.sectorsPerTrack() * SECTOR_SIZE;
-                DataBuffer trackData = DataBuffer.create(trackSize);
-                for (int sector = 0; sector < geometry.sectorsPerTrack(); sector++) {
-                    try {
-                        DataBuffer sectorData = device.readSector(track, sector);
-                        trackData.put(sector * SECTOR_SIZE, sectorData);
-                    } catch (Throwable t) {
-                        badSectors++;
-                    }
+        boolean canFix = device.can(Capability.WRITE_SECTOR) && device.can(Capability.FORMAT_TRACK);
+        TrackSectorDevice.Geometry geometry = device.getGeometry();
+        for (int track = 0; track < geometry.tracksOnDisk(); track++) {
+            List<Integer> badSectors = new ArrayList<>();
+            int trackSize = geometry.sectorsPerTrack() * SECTOR_SIZE;
+            DataBuffer trackData = DataBuffer.create(trackSize);
+            for (int sector = 0; sector < geometry.sectorsPerTrack(); sector++) {
+                try {
+                    DataBuffer sectorData = device.readSector(track, sector);
+                    trackData.put(sector * SECTOR_SIZE, sectorData);
+                } catch (Throwable t) {
+                    badSectors.add(sector);
                 }
-                if (badSectors > 0) {
-                    final int problemTrack = track;
-                    Finding finding = new Finding(
-                            String.format("Unable to read %d sectors on track %d.", badSectors, problemTrack),
-                            Optional.of(() -> rewriteTrack(problemTrack, trackData)),
-                            "nibble", new Coordinate(problemTrack, 0));
-                    findings.add(finding);
+            }
+            if (!badSectors.isEmpty()) {
+                final int problemTrack = track;
+                Optional<Runnable> action = Optional.empty();
+                if (canFix) {
+                    action = Optional.of(() -> rewriteTrack(problemTrack, trackData));
                 }
+                List<Range> badSectorRanges = Range.from(badSectors);
+                Finding finding = new Finding(
+                        String.format("Unable to read sectors %s on track %d.", badSectorRanges, problemTrack),
+                        action, "nibble", new Coordinate(problemTrack, 0));
+                findings.add(finding);
             }
         }
         return findings;
