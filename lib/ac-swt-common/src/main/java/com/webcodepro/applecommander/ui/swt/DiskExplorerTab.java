@@ -438,6 +438,27 @@ public class DiskExplorerTab {
 	            }
 			}
 		});
+
+		item = new MenuItem(menu, SWT.NONE);
+		item.setText("View disk image...");
+		item.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				try {
+					FileEntry fileEntry = getSelectedFileEntry();
+					Source originalSource = new FileEntrySource(fileEntry);
+					Source source = Sources.create(originalSource).orElseThrow();
+					DiskFactory.Context ctx = Disks.inspect(source);
+					if (!ctx.disks.isEmpty()) {
+						DiskWindow diskWindow = new DiskWindow(shell, ctx.disks.toArray(new FormattedDisk[0]), imageManager);
+						diskWindow.open();
+					} else {
+						throw new DiskUnrecognizedException(fileEntry.getFilename());
+					}
+				} catch (Exception e) {
+					DiskExplorerTab.this.diskWindow.handle(e);
+				}
+			}
+		});
 		
 		return menu;
 	}
@@ -1525,7 +1546,7 @@ public class DiskExplorerTab {
 				window = new FileViewerWindow(shell, fileEntry, imageManager, fileFilter);
 			} else if (fileEntry.getFilename().toLowerCase().endsWith(".shk")
 				    || fileEntry.getFilename().toLowerCase().endsWith(".sdk")) {
-                Source shkSource = new FileEntrySource(fileEntry);
+                Source shkSource = new FileEntrySource(fileEntry, Hint.PRODOS_BLOCK_ORDER);
                 Source source = Sources.create(shkSource).orElseThrow();
                 DiskFactory.Context ctx = Disks.inspect(source);
                 if (!ctx.disks.isEmpty()) {
