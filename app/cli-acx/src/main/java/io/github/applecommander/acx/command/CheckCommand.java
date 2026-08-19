@@ -102,7 +102,8 @@ public class CheckCommand extends ReadWriteDiskCommandOptions {
 
         List<Finding> findings = diskCheck.scan();
         for (Finding finding : findings) {
-            System.out.printf("[%-10s] %s @ %s\n", finding.classification(), finding.description(), finding.coordinate());
+            System.out.printf("%s[%-10s] %s @ %s\n", finding.action().isPresent() ? "+" : "-",
+                    finding.classification(), finding.description(), finding.coordinate());
             if (finding.action().isPresent()) {
                 if (conditions.test(finding)) {
                     if (prompt) {
