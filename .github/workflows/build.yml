@@ -277,3 +277,36 @@ jobs:
             ac-*
             acx-*
             AppleCommander-*
+
+  publish:
+    name: Publish to Maven Central
+    if: github.ref_type == 'tag'
+    needs: [build-java, build-jpackage, build-native]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install gpg secret key
+      run: |
+        cat <(echo -e "${{ secrets.OSSRH_GPG_SECRET_KEY }}") | gpg --batch --import
+    - name: Setup .netrc file
+      uses: extractions/netrc@v3
+      with:
+        machine: ossrh-staging-api.central.sonatype.com
+        username: ${{ secrets.OSSRH_USERNAME }}
+        password: ${{ secrets.OSSRH_TOKEN }}
+    - name: Checkout code
+      uses: actions/checkout@v7
+    - name: Set up JDK 25
+      uses: actions/setup-java@v5.7.0
+      with:
+        java-version: '25'
+        distribution: 'temurin'
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+    - name: Publish with Gradle
+      run: >
+        ./gradlew 
+        -PossrhUsername="${{ secrets.OSSRH_USERNAME }}"
+        -PossrhPassword="${{ secrets.OSSRH_TOKEN }}"
+        -Psigning.keyId="${{ secrets.GPG_SIGNING_KEY }}"
+        -Psigning.password="${{ secrets.GPG_SIGNING_PASSPHRASE }}"
+        build publish -x test
