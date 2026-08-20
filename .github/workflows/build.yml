@@ -310,3 +310,5 @@ jobs:
         -Psigning.keyId="${{ secrets.GPG_SIGNING_KEY }}"
         -Psigning.password="${{ secrets.GPG_SIGNING_PASSPHRASE }}"
         build publish -x test
+    - name: Finish publishing
+      run: ./scripts/finish-publishing.sh
