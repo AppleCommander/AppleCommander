@@ -67,7 +67,7 @@ jar {
     archiveBaseName = 'AppleCommander'
     archiveAppendix = 'swt-common'
     manifest {
-        attributes 'Implementation-Title': 'AppleCommander (Mac Arm)',
+        attributes 'Implementation-Title': 'AppleCommander',
                 'Implementation-Version': archiveVersion
     }
 }
