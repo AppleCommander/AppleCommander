@@ -28,15 +28,18 @@ import org.applecommander.util.Information;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class FileEntrySource implements Source {
     private final FileEntry fileEntry;
     private final DataBuffer buffer;
     private boolean changed;
+    private final Set<Hint> hints;
 
-    public FileEntrySource(FileEntry fileEntry) {
+    public FileEntrySource(FileEntry fileEntry, Hint... hints) {
         this.fileEntry = fileEntry;
         this.buffer = DataBuffer.wrap(fileEntry.getFileData());
+        this.hints = Set.of(hints);
     }
 
     @Override
@@ -52,8 +55,7 @@ public class FileEntrySource implements Source {
 
     @Override
     public boolean is(Hint hint) {
-        // Right now this is all SHK/SDK
-        return hint == Hint.PRODOS_BLOCK_ORDER;
+        return hints.contains(hint);
     }
 
     @Override

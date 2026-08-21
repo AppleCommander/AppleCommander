@@ -23,6 +23,9 @@ dependencies {
 }
 
 test {
+    if (System.getenv("AC_BACKUP_STRATEGY") != null) {
+        throw new GradleException("Ant tests fail if AC_BACKUP_STRATEGY is set!")
+    }
     useJUnitPlatform()
 }
 
