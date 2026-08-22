@@ -40,6 +40,10 @@ import picocli.CommandLine.Option;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.Provider;
+import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -64,7 +68,9 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
                 options.includesBootSector = block == 0;
                 try {
                     byte[] data = device.readBlock(block).asBytes();
-                    System.out.printf("Block #%d:\n", block);
+                    if (output.showCoordinates) {
+                        System.out.printf("Block #%d:\n", block);
+                    }
                     System.out.println(output.format(options, data));
                 } catch (Throwable t) {
                     System.err.println(t.getMessage());
@@ -81,7 +87,9 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
                     options.includesBootSector = track == 0 && sector == 0;
                     try {
                         byte[] data = device.readSector(track, sector).asBytes();
-                        System.out.printf("Track %02d, Sector %02d:\n", track, sector);
+                        if (output.showCoordinates) {
+                            System.out.printf("Track %02d, Sector %02d:\n", track, sector);
+                        }
                         System.out.println(output.format(options, data));
                     } catch (Throwable t) {
                         System.err.println(t.getMessage());
@@ -103,7 +111,9 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
                 }
                 try {
                     byte[] data = trackReaderWriter.readTrackData(track).asBytes();
-                    System.out.printf("Track %02d\n", track);
+                    if (output.showCoordinates) {
+                        System.out.printf("Track %02d\n", track);
+                    }
                     System.out.println(output.format(options, data));
                 } catch (Throwable t) {
                     System.err.println(t.getMessage());
@@ -144,7 +154,10 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
         public String format(Options options, byte[] data) {
             return fn.apply(options, data);
         }
-        
+
+        // Internal flags
+        private boolean showCoordinates = true;
+
         @Option(names = "--hex", description = "Hex dump. (default)")
         public void selectHexDump(boolean flag) {
             fn = this::formatHexDump;
@@ -153,6 +166,27 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
         @Option(names = "--disassembly", description = "Disassembly.")
         public void selectDisassembly(boolean flag) {
             fn = this::formatDisassembly;
+        }
+
+        @Option(names = "--hash", description = "Calculate hash value. Options: MD5, SHA1, SHA256")
+        public void selectHash(String hashFunction) {
+            final String algorithm = switch (hashFunction.toUpperCase()) {
+                case "MD5" -> "MD5";
+                case "SHA1" -> "SHA-1";
+                case "SHA256" -> "SHA-256";
+                default -> throw new IllegalArgumentException("Unknown hash function: " + hashFunction);
+            };
+            showCoordinates = false;
+            fn = (_, data) -> {
+                try {
+                    MessageDigest digest = MessageDigest.getInstance(algorithm);
+                    digest.update(data);
+                    String fmt = String.format("%%0%dX", digest.getDigestLength()*2);
+                    return String.format(fmt, new BigInteger(1, digest.digest()));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            };
         }
         
         public String formatHexDump(Options options, byte[] data) {
@@ -228,7 +262,7 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
 
         @ArgGroup(multiplicity = "1")
         private CoordinateRangeSelection coordinate = new CoordinateRangeSelection();
-		
+
         @ArgGroup(heading = "%nDisassembler Options:%n", exclusive = false)
         private DisassemblerOptions disassemblerOptions = new DisassemblerOptions();
     }
