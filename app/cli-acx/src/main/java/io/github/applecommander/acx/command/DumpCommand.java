@@ -24,6 +24,7 @@ import com.webcodepro.applecommander.util.Range;
 import io.github.applecommander.acx.base.ReadOnlyDiskContextCommandOptions;
 import io.github.applecommander.acx.converter.IntegerTypeConverter;
 import io.github.applecommander.acx.converter.RangeTypeConverter;
+import org.applecommander.capability.Capability;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.device.nibble.NibbleTrackReaderWriter;
@@ -33,6 +34,9 @@ import org.applecommander.disassembler.api.InstructionSet;
 import org.applecommander.disassembler.api.mos6502.InstructionSet6502;
 import org.applecommander.disassembler.api.sweet16.InstructionSetSWEET16;
 import org.applecommander.disassembler.api.switching6502.InstructionSet6502Switching;
+import org.applecommander.hint.Hint;
+import org.applecommander.util.Container;
+import org.applecommander.util.DataBuffer;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
@@ -40,6 +44,10 @@ import picocli.CommandLine.Option;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.Provider;
+import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -64,7 +72,9 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
                 options.includesBootSector = block == 0;
                 try {
                     byte[] data = device.readBlock(block).asBytes();
-                    System.out.printf("Block #%d:\n", block);
+                    if (output.showCoordinates) {
+                        System.out.printf("Block #%d:\n", block);
+                    }
                     System.out.println(output.format(options, data));
                 } catch (Throwable t) {
                     System.err.println(t.getMessage());
@@ -73,15 +83,55 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
             return 0;
         }
         else if (options.coordinate.trackSectorRangeSelection != null) {
-            TrackSectorDevice device = trackSectorDevice()
-                    .orElseThrow(() -> new RuntimeException("there is no track/sector device available"));
+            TrackSectorDevice device = trackSectorDevice().orElseGet(() -> {
+                if (options.coordinate.trackSectorRangeSelection.isBootSector()) {
+                    return new TrackSectorDevice() {
+                        private BlockDevice blockDevice = blockDevice().orElseThrow();
+
+                        @Override
+                        public Geometry getGeometry() {
+                            // Just enough to pass validations. This only supports track 0 sector 0. Nothing else.
+                            return new Geometry(1, 1);
+                        }
+
+                        @Override
+                        public DataBuffer readSector(int track, int sector) {
+                            assert track == 0 && sector == 0;
+                            return blockDevice.readBlock(0).slice(0, SECTOR_SIZE);
+                        }
+
+                        @Override
+                        public void writeSector(int track, int sector, DataBuffer data) {
+                            throw new  RuntimeException("write sector not supported for boot sector block device wrapper");
+                        }
+
+                        @Override
+                        public boolean can(Capability capability) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean is(Hint hint) {
+                            return false;
+                        }
+
+                        @Override
+                        public <T> Optional<T> get(Class<T> iface) {
+                            return Container.get(iface, blockDevice);
+                        }
+                    };
+                }
+                throw new RuntimeException("there is no track/sector device available");
+            });
             options.coordinate.trackSectorRangeSelection.tracks.stream().forEach(track -> {
                 options.coordinate.trackSectorRangeSelection.sectors.stream().forEach(sector -> {
                     validateTrackAndSector(device, track, sector);
                     options.includesBootSector = track == 0 && sector == 0;
                     try {
                         byte[] data = device.readSector(track, sector).asBytes();
-                        System.out.printf("Track %02d, Sector %02d:\n", track, sector);
+                        if (output.showCoordinates) {
+                            System.out.printf("Track %02d, Sector %02d:\n", track, sector);
+                        }
                         System.out.println(output.format(options, data));
                     } catch (Throwable t) {
                         System.err.println(t.getMessage());
@@ -103,7 +153,9 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
                 }
                 try {
                     byte[] data = trackReaderWriter.readTrackData(track).asBytes();
-                    System.out.printf("Track %02d\n", track);
+                    if (output.showCoordinates) {
+                        System.out.printf("Track %02d\n", track);
+                    }
                     System.out.println(output.format(options, data));
                 } catch (Throwable t) {
                     System.err.println(t.getMessage());
@@ -144,7 +196,10 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
         public String format(Options options, byte[] data) {
             return fn.apply(options, data);
         }
-        
+
+        // Internal flags
+        private boolean showCoordinates = true;
+
         @Option(names = "--hex", description = "Hex dump. (default)")
         public void selectHexDump(boolean flag) {
             fn = this::formatHexDump;
@@ -153,6 +208,27 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
         @Option(names = "--disassembly", description = "Disassembly.")
         public void selectDisassembly(boolean flag) {
             fn = this::formatDisassembly;
+        }
+
+        @Option(names = "--hash", description = "Calculate hash value. Options: MD5, SHA1, SHA256")
+        public void selectHash(String hashFunction) {
+            final String algorithm = switch (hashFunction.toUpperCase()) {
+                case "MD5" -> "MD5";
+                case "SHA1" -> "SHA-1";
+                case "SHA256" -> "SHA-256";
+                default -> throw new IllegalArgumentException("Unknown hash function: " + hashFunction);
+            };
+            showCoordinates = false;
+            fn = (_, data) -> {
+                try {
+                    MessageDigest digest = MessageDigest.getInstance(algorithm);
+                    digest.update(data);
+                    String fmt = String.format("%%0%dX", digest.getDigestLength()*2);
+                    return String.format(fmt, new BigInteger(1, digest.digest()));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            };
         }
         
         public String formatHexDump(Options options, byte[] data) {
@@ -228,7 +304,7 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
 
         @ArgGroup(multiplicity = "1")
         private CoordinateRangeSelection coordinate = new CoordinateRangeSelection();
-		
+
         @ArgGroup(heading = "%nDisassembler Options:%n", exclusive = false)
         private DisassemblerOptions disassemblerOptions = new DisassemblerOptions();
     }
@@ -296,6 +372,10 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
         @Option(names = { "-s", "--sector" }, required = true, description = "Sector number(s).",
                 converter = RangeTypeConverter.class)
         private Range sectors;
+
+        public boolean isBootSector() {
+            return tracks.getFirst() == 0 && tracks.getLast() == 0 && sectors.getFirst() == 0 && sectors.getLast() == 0;
+        }
     }
     public static class NibbleTrackRangeSelection {
         @Option(names = "-n", description = "Track number(s).",
