@@ -24,6 +24,7 @@ import com.webcodepro.applecommander.util.Range;
 import io.github.applecommander.acx.base.ReadOnlyDiskContextCommandOptions;
 import io.github.applecommander.acx.converter.IntegerTypeConverter;
 import io.github.applecommander.acx.converter.RangeTypeConverter;
+import org.applecommander.capability.Capability;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.device.nibble.NibbleTrackReaderWriter;
@@ -33,6 +34,9 @@ import org.applecommander.disassembler.api.InstructionSet;
 import org.applecommander.disassembler.api.mos6502.InstructionSet6502;
 import org.applecommander.disassembler.api.sweet16.InstructionSetSWEET16;
 import org.applecommander.disassembler.api.switching6502.InstructionSet6502Switching;
+import org.applecommander.hint.Hint;
+import org.applecommander.util.Container;
+import org.applecommander.util.DataBuffer;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
@@ -79,8 +83,46 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
             return 0;
         }
         else if (options.coordinate.trackSectorRangeSelection != null) {
-            TrackSectorDevice device = trackSectorDevice()
-                    .orElseThrow(() -> new RuntimeException("there is no track/sector device available"));
+            TrackSectorDevice device = trackSectorDevice().orElseGet(() -> {
+                if (options.coordinate.trackSectorRangeSelection.isBootSector()) {
+                    return new TrackSectorDevice() {
+                        private BlockDevice blockDevice = blockDevice().orElseThrow();
+
+                        @Override
+                        public Geometry getGeometry() {
+                            // Just enough to pass validations. This only supports track 0 sector 0. Nothing else.
+                            return new Geometry(1, 1);
+                        }
+
+                        @Override
+                        public DataBuffer readSector(int track, int sector) {
+                            assert track == 0 && sector == 0;
+                            return blockDevice.readBlock(0).slice(0, SECTOR_SIZE);
+                        }
+
+                        @Override
+                        public void writeSector(int track, int sector, DataBuffer data) {
+                            throw new  RuntimeException("write sector not supported for boot sector block device wrapper");
+                        }
+
+                        @Override
+                        public boolean can(Capability capability) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean is(Hint hint) {
+                            return false;
+                        }
+
+                        @Override
+                        public <T> Optional<T> get(Class<T> iface) {
+                            return Container.get(iface, blockDevice);
+                        }
+                    };
+                }
+                throw new RuntimeException("there is no track/sector device available");
+            });
             options.coordinate.trackSectorRangeSelection.tracks.stream().forEach(track -> {
                 options.coordinate.trackSectorRangeSelection.sectors.stream().forEach(sector -> {
                     validateTrackAndSector(device, track, sector);
@@ -330,6 +372,10 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
         @Option(names = { "-s", "--sector" }, required = true, description = "Sector number(s).",
                 converter = RangeTypeConverter.class)
         private Range sectors;
+
+        public boolean isBootSector() {
+            return tracks.getFirst() == 0 && tracks.getLast() == 0 && sectors.getFirst() == 0 && sectors.getLast() == 0;
+        }
     }
     public static class NibbleTrackRangeSelection {
         @Option(names = "-n", description = "Track number(s).",
