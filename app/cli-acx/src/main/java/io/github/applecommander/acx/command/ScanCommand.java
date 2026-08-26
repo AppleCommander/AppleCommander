@@ -69,6 +69,9 @@ public class ScanCommand extends ReusableCommandOptions {
     @Option(names = { "--strict" }, description = "Make all blocks/sectors failures an error", defaultValue = "false")
     private boolean strict;
 
+    @Option(names = { "--quiet" }, description = "Suppress summary output and just output the JSON stream.", defaultValue = "false")
+    private boolean quiet;
+
     private BiPredicate<ImageReport, ImageReport> degradationFn = this::degradationBySuccessFlag;
     @Option(names = { "--numbers" }, description = "Compare reports by numbers instead of success flag")
     private void detectDegradationByNumbers(boolean flag) {
@@ -91,8 +94,10 @@ public class ScanCommand extends ReusableCommandOptions {
             for (Path dir : directories) {
                 Files.walkFileTree(dir, visitor);
             }
-            showReportData(visitor.reportSummary);
-            System.out.printf("Scanned %d disk images.\n", visitor.getCounter());
+            if (!quiet) {
+                showReportData(visitor.reportSummary);
+                System.out.printf("Scanned %d disk images.\n", visitor.getCounter());
+            }
         }
         return 0;
     }
