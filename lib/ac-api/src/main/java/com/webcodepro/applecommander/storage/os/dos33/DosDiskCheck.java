@@ -23,6 +23,7 @@ import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.util.AppleUtil;
 import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.os.Coordinate;
 import org.applecommander.os.DiskCheck;
 import org.applecommander.util.DataBuffer;
 
@@ -184,7 +185,7 @@ public class DosDiskCheck implements DiskCheck {
     private void addFinding(String classification, int track, int sector, Optional<Runnable> action,
                             String fmt, Object... args) {
         String description = String.format(fmt, args);
-        Finding finding = new Finding(description, action, classification, new Coordinate(track, sector));
+        Finding finding = new Finding(description, action, classification, Coordinate.trackAndSector(track, sector));
         findings.add(finding);
     }
 

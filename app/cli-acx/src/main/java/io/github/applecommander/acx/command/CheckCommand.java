@@ -81,6 +81,9 @@ public class CheckCommand extends ReadWriteDiskCommandOptions {
             else if (fix.matches("(?i)t\\d+s\\d+")) {
                 coordinates.add(fix);
             }
+            else if (fix.matches("(?i)t\\d+")) {
+                coordinates.add(fix);
+            }
             else {
                 classifications.add(fix);
             }

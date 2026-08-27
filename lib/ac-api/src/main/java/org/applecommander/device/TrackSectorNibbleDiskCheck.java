@@ -21,6 +21,7 @@ package org.applecommander.device;
 
 import com.webcodepro.applecommander.util.Range;
 import org.applecommander.capability.Capability;
+import org.applecommander.os.Coordinate;
 import org.applecommander.os.DiskCheck;
 import org.applecommander.util.DataBuffer;
 
@@ -67,7 +68,7 @@ public class TrackSectorNibbleDiskCheck implements DiskCheck {
                 List<Range> badSectorRanges = Range.from(badSectors);
                 Finding finding = new Finding(
                         String.format("Unable to read sectors %s on track %d.", badSectorRanges, problemTrack),
-                        action, "nibble", new Coordinate(problemTrack, 0));
+                        action, "nibble", Coordinate.trackOnly(problemTrack));
                 findings.add(finding);
             }
         }
