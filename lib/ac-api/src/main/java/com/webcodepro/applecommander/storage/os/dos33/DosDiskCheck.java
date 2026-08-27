@@ -59,8 +59,8 @@ public class DosDiskCheck implements DiskCheck {
                 filetype &= 0x7f;
                 if (AppleUtil.getBitCount(filetype) > 1) {
                     // Noting odd file types. Really can't fix it.
-                    DosSectorAddress ts = file.getFileFileAddress();
-                    addFinding("file", ts.track, ts.sector,Optional.empty(),
+                    Coordinate coordinate = file.getFileFileAddress();
+                    addFinding("file", coordinate,Optional.empty(),
                             "Unexpected DOS file type of %02X with file '%s'.", filetype, entry.getFilename());
                 }
             }
@@ -115,7 +115,7 @@ public class DosDiskCheck implements DiskCheck {
         }
         if (sectorsRemaining > 0) {
             // This seems fishy. More of a warning, so fix to apply.
-            addFinding("file", file.getTrack(), file.getSector(), Optional.empty(),
+            addFinding("file", Coordinate.trackAndSector(file.getTrack(), file.getSector()), Optional.empty(),
                     "Sectors used appears to be too high for '%s' (file entry says %d sectors but we have %d sectors left over)",
                     file.getFilename(), file.getSectorsUsed(), sectorsRemaining);
         }
@@ -123,22 +123,23 @@ public class DosDiskCheck implements DiskCheck {
 
     private void checkVtoc() {
         DataBuffer data = DataBuffer.wrap(disk.readVtoc());
+        final Coordinate vtocCoordinate = Coordinate.trackAndSector(17, 0);
         if (data.getUnsignedByte(0x27) != 122) {
-            addFinding("vtoc", 17, 0, Optional.of(() -> {
+            addFinding("vtoc", vtocCoordinate, Optional.of(() -> {
                 data.putByte(0x27, 122);
                 disk.writeVtoc(data.asBytes());
             }), "VTOC T/S pairs is expected to be 122 but is %d.", data.getUnsignedByte(0x27));
         }
         // Note: These next two just reuse the VTOC bytes instead of the #getTracks or #getSectors on DosFormatDisk.
         if (data.getUnsignedByte(0x34) != device.getGeometry().tracksOnDisk()) {
-            addFinding("vtoc", 17, 0, Optional.of(() -> {
+            addFinding("vtoc", vtocCoordinate, Optional.of(() -> {
                 data.putByte(0x34, device.getGeometry().tracksOnDisk());
                 disk.writeVtoc(data.asBytes());
             }), "VTOC tracks on disk (%d) do not match device tracks on disk (%d).",
                     data.getUnsignedByte(0x34), device.getGeometry().tracksOnDisk());
         }
         if (data.getUnsignedByte(0x35) != device.getGeometry().sectorsPerTrack()) {
-            addFinding("vtoc", 17, 0, Optional.of(() -> {
+            addFinding("vtoc", vtocCoordinate, Optional.of(() -> {
                 data.putByte(0x35, device.getGeometry().sectorsPerTrack());
                 disk.writeVtoc(data.asBytes());
             }), "VTOC sectors per track (%d) does not match device sectors per track (%d).",
@@ -147,12 +148,12 @@ public class DosDiskCheck implements DiskCheck {
     }
 
     private void checkVtocBitMap() {
-        List<DosSectorAddress> allocationErrors = new ArrayList<>();
+        List<Coordinate> allocationErrors = new ArrayList<>();
         byte[] vtoc = disk.readVtoc();
         for (int track = 0; track < disk.getTracks(); track++) {
             for (int sector = 0; sector < disk.getSectors(); sector++) {
                 if (usedSectors.get(track, sector) != disk.isSectorUsed(track, sector, vtoc)) {
-                    allocationErrors.add(new DosSectorAddress(track, sector));
+                    allocationErrors.add(Coordinate.trackAndSector(track, sector));
                 }
             }
         }
@@ -177,15 +178,15 @@ public class DosDiskCheck implements DiskCheck {
                     disk.writeVtoc(vtoc);
                 });
             }
-            addFinding("vtoc", 17, 0, action, description);
+            addFinding("vtoc", Coordinate.trackAndSector(17,0), action, description);
         }
     }
 
     // TODO should List<Finding> become Findings which has helper methods like this and/or a builder mechanism?
-    private void addFinding(String classification, int track, int sector, Optional<Runnable> action,
+    private void addFinding(String classification, Coordinate coordinate, Optional<Runnable> action,
                             String fmt, Object... args) {
         String description = String.format(fmt, args);
-        Finding finding = new Finding(description, action, classification, Coordinate.trackAndSector(track, sector));
+        Finding finding = new Finding(description, action, classification, coordinate);
         findings.add(finding);
     }
 

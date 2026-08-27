@@ -26,6 +26,7 @@ import org.applecommander.device.BlockDevice;
 import org.applecommander.device.BlockToTrackSectorAdapter;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.device.TrackSectorToBlockStrategy;
+import org.applecommander.os.Coordinate;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
@@ -190,13 +191,16 @@ public class DosFormatDisk extends FormattedDisk {
             // Some folks zeroed out the next track field, so try the same as VTOC (T17)
             track = catalogTrack;
         }
-		final Set<DosSectorAddress> visits = new HashSet<>();
+		final Set<Coordinate> visits = new HashSet<>();
 		while (sector != 0) { // bug fix: iterate through all catalog _sectors_
-
 			// Prevents a recursive catalog crawling.
-			final DosSectorAddress address = new DosSectorAddress(track, sector);
-			if ( visits.contains(address)) throw new DiskCorruptException(this.getFilename(), DiskCorruptException.Kind.RECURSIVE_DIRECTORY_STRUCTURE, address);
-			else visits.add(address);
+			final Coordinate address = Coordinate.trackAndSector(track, sector);
+			if (visits.contains(address)) {
+				throw new DiskCorruptException(this.getFilename(), DiskCorruptException.Kind.RECURSIVE_DIRECTORY_STRUCTURE, address);
+			}
+			else {
+				visits.add(address);
+			}
 
 			byte[] catalogSector = readSector(track, sector);
 			int offset = 0x0b;
