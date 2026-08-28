@@ -119,6 +119,7 @@ public class PascalFormatDisk extends FormattedDisk {
 	}
 
 	private final BlockDevice device;
+	private final PascalDiskOptimizer optimizer;
 	
 	/**
 	 * Constructor for PascalFormatDisk.
@@ -126,6 +127,7 @@ public class PascalFormatDisk extends FormattedDisk {
 	public PascalFormatDisk(String filename, BlockDevice device) {
 		super(filename, device.get(Source.class).orElseThrow());
 		this.device = device;
+		this.optimizer = new PascalDiskOptimizer(this);
 	}
 
 	/**
@@ -147,7 +149,7 @@ public class PascalFormatDisk extends FormattedDisk {
 
 	@Override
 	public <T> Optional<T> get(Class<T> iface) {
-		return Container.get(iface, device);
+		return Container.get(iface, device, optimizer);
 	}
 
 	/**

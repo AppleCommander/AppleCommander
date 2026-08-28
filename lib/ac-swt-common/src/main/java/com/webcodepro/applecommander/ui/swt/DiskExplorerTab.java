@@ -49,6 +49,7 @@ import org.applecommander.device.Device;
 import org.applecommander.hint.Hint;
 import org.applecommander.image.NibbleImage;
 import org.applecommander.os.DiskCheck;
+import org.applecommander.os.DiskOptimizer;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
@@ -112,6 +113,7 @@ public class DiskExplorerTab {
 	private ToolItem saveAsToolItem;
 	private ToolItem changeOrderToolItem;
 	private ToolItem checkDiskToolItem;
+	private ToolItem optimizeDiskToolItem;
 	private Menu changeImageOrderMenu;
 
 	private final UserPreferences userPreferences = UserPreferences.getInstance();
@@ -1342,7 +1344,25 @@ public class DiskExplorerTab {
                 }
             }
 		});
-		
+
+		optimizeDiskToolItem = new ToolItem(toolBar, SWT.PUSH);
+		optimizeDiskToolItem.setImage(imageManager.get(ImageManager.ICON_DISK_OPTIMIZE));
+		optimizeDiskToolItem.setText("Optimize");
+		optimizeDiskToolItem.setToolTipText("Optimize disk.");
+		optimizeDiskToolItem.setEnabled(false);
+		for (FormattedDisk disk : disks) {
+			if (disk.get(DiskOptimizer.class).isPresent()) optimizeDiskToolItem.setEnabled(true);
+		}
+		optimizeDiskToolItem.addSelectionListener(new SelectionAdapter () {
+			public void widgetSelected(SelectionEvent e) {
+				try {
+					optimizeDisk();
+				} catch (Exception ex) {
+					showError(ex);
+				}
+			}
+		});
+
 		new ToolItem(toolBar, SWT.SEPARATOR);
 
 		saveToolItem = new ToolItem(toolBar, SWT.PUSH);
@@ -2196,6 +2216,32 @@ public class DiskExplorerTab {
 		dialog.pack();
 		SwtUtil.center(shell, dialog);
 		dialog.open();
+	}
+
+	protected void optimizeDisk() {
+		int completed = 0;
+		int didntNeed = 0;
+		int skipped = 0;
+		for (FormattedDisk disk : disks) {
+			Optional<DiskOptimizer> opt = disk.get(DiskOptimizer.class);
+			if (opt.isEmpty()) {
+				skipped++;
+				continue;
+			}
+			DiskOptimizer optimizer = opt.get();
+			if (!optimizer.canOptimizeDisk()) {
+				didntNeed++;
+				continue;
+			}
+			optimizer.optimizeDisk();
+			completed++;
+		}
+
+		MessageBox box = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.CLOSE);
+		box.setText("Optimization results");
+		box.setMessage(String.format("%d disks were optimized, %d disks didn't need optimization, and %d disks were skipped.",
+				completed, didntNeed, skipped));
+		box.open();
 	}
 
 	/**
