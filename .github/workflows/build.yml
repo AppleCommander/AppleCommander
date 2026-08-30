@@ -236,7 +236,7 @@ jobs:
           GRADLE_OPTS: -Djava.io.tmpdir=${{ runner.temp }}
       - name: Run UPX
         uses: crazy-max/ghaction-upx@v4
-        if: runner.os == 'Windows' || runner.os == 'Linux'
+        if: runner.os == 'Linux'
         with:
           files: |
             app/cli-ac/build/native/nativeCompile/ac-*
