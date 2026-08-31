@@ -24,6 +24,7 @@ reports/
 /*.2mg
 /*.2img
 /*.nib
+/*.dsk.gz
 
 # Ignoring and backups
 *.bak
