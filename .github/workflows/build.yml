@@ -309,7 +309,7 @@ jobs:
         -PossrhPassword="${{ secrets.OSSRH_TOKEN }}"
         -Psigning.keyId="${{ secrets.GPG_SIGNING_KEY }}"
         -Psigning.password="${{ secrets.GPG_SIGNING_PASSPHRASE }}"
-        -Psigning.secretKeyRingFile=~/.gnupg/trustdb.gpg
+        -Psigning.secretKeyRingFile=/home/runner/.gnupg/trustdb.gpg
         build publish -x test
     - name: Finish publishing
       run: ./scripts/finish-publishing.sh
