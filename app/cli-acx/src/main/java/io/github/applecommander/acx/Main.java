@@ -57,6 +57,7 @@ import java.util.logging.Logger;
             ListCommand.class,
             LockCommand.class,
             MkdirCommand.class,
+            OptimizeCommand.class,
             ProofCommand.class,
             ReadCommand.class,
             RenameFileCommand.class,

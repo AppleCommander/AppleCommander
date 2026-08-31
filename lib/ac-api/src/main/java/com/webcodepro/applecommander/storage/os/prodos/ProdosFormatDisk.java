@@ -23,6 +23,7 @@ import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 import org.applecommander.device.BlockDevice;
+import org.applecommander.os.Coordinate;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
@@ -279,8 +280,12 @@ public class ProdosFormatDisk extends FormattedDisk {
 		final Set<Integer> visits = new HashSet<>();
 		while (blockNumber != 0) {
 			// Prevents a recursive catalog crawling.
-			if ( visits.contains(blockNumber)) throw new DiskCorruptException(this.getFilename(), DiskCorruptException.Kind.RECURSIVE_DIRECTORY_STRUCTURE, new ProdosBlockAddress(blockNumber));
-			else visits.add(blockNumber);
+			if (visits.contains(blockNumber)) {
+				throw new DiskCorruptException(this.getFilename(), DiskCorruptException.Kind.RECURSIVE_DIRECTORY_STRUCTURE, Coordinate.block(blockNumber));
+			}
+			else {
+				visits.add(blockNumber);
+			}
 
 			byte[] block = readBlock(blockNumber);
 			int offset = 4;

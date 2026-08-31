@@ -23,6 +23,7 @@ import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.filters.*;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
+import org.applecommander.os.Coordinate;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -73,8 +74,8 @@ public class DosFileEntry implements FileEntry {
 		this.offset = offset;
 	}
 
-	public DosSectorAddress getFileFileAddress() {
-		return new DosSectorAddress(track, sector);
+	public Coordinate getFileFileAddress() {
+		return Coordinate.trackAndSector(track, sector);
 	}
 	
 	/**

@@ -22,6 +22,7 @@ package com.webcodepro.applecommander.storage.os.prodos;
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.DiskException;
 import org.applecommander.device.BlockDevice;
+import org.applecommander.os.Coordinate;
 import org.applecommander.os.DiskCheck;
 import org.applecommander.util.DataBuffer;
 
@@ -102,7 +103,7 @@ public class ProdosDiskCheck implements DiskCheck {
                     subdirectory.getDirname(), parentName);
             Finding finding = new Finding(description,
                     Optional.of(() -> subdirectory.setHeaderPointer(parentHeaderPointer)),
-                    DIRECTORY, new Coordinate(subdirectory.getFileEntryBlock()));
+                    DIRECTORY, Coordinate.block(subdirectory.getFileEntryBlock()));
             findings.add(finding);
         }
     }
@@ -112,7 +113,7 @@ public class ProdosDiskCheck implements DiskCheck {
                     commonDirectoryHeader.getName(), fileCount, commonDirectoryHeader.getFileCount());
             Finding finding = new Finding(description,
                     Optional.of(() -> commonDirectoryHeader.setFileCount(fileCount)),
-                    DIRECTORY, new Coordinate(commonDirectoryHeader.getFileEntryBlock()));
+                    DIRECTORY, Coordinate.block(commonDirectoryHeader.getFileEntryBlock()));
             findings.add(finding);
         }
     }
@@ -122,7 +123,7 @@ public class ProdosDiskCheck implements DiskCheck {
                     commonDirectoryHeader.getName(), commonDirectoryHeader.getEntryLength());
             Finding finding = new Finding(description,
                     Optional.of(commonDirectoryHeader::setEntryLength),
-                    DIRECTORY, new Coordinate(commonDirectoryHeader.getFileEntryBlock()));
+                    DIRECTORY, Coordinate.block(commonDirectoryHeader.getFileEntryBlock()));
             findings.add(finding);
         }
         if (commonDirectoryHeader.getEntriesPerBlock() != 0x0d) {
@@ -130,7 +131,7 @@ public class ProdosDiskCheck implements DiskCheck {
                     commonDirectoryHeader.getName(), commonDirectoryHeader.getEntriesPerBlock());
             Finding finding = new Finding(description,
                     Optional.of(commonDirectoryHeader::setEntriesPerBlock),
-                    DIRECTORY, new Coordinate(commonDirectoryHeader.getFileEntryBlock()));
+                    DIRECTORY, Coordinate.block(commonDirectoryHeader.getFileEntryBlock()));
             findings.add(finding);
         }
     }
@@ -154,7 +155,7 @@ public class ProdosDiskCheck implements DiskCheck {
                 device.getGeometry().blocksOnDevice(), disk.getBitmapLength());
             Finding finding = new Finding(description,
                     Optional.empty(),
-                    ALLOCATION, new Coordinate(2));
+                    ALLOCATION, Coordinate.block(2));
             findings.add(finding);
             return;
         }
@@ -166,7 +167,7 @@ public class ProdosDiskCheck implements DiskCheck {
             else if (applePascalAreaFound) description = "An Apple Pascal Area";
             else description = "A GS/OS Extended File";
             Finding finding = new Finding(description + " was found, making block allocation incomplete.",
-                    Optional.empty(), ALLOCATION, new Coordinate(2));
+                    Optional.empty(), ALLOCATION, Coordinate.block(2));
             findings.add(finding);
             return;
         }
@@ -197,7 +198,7 @@ public class ProdosDiskCheck implements DiskCheck {
                 });
             }
             Finding finding = new Finding(description,
-                    action, ALLOCATION, new Coordinate(disk.getVolumeHeader().getBitMapPointer()));
+                    action, ALLOCATION, Coordinate.block(disk.getVolumeHeader().getBitMapPointer()));
             findings.add(finding);
         }
     }

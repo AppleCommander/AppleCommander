@@ -1,6 +1,6 @@
 /*
  * AppleCommander - An Apple ][ image utility.
- * Copyright (C) 2002-2022 by Robert Greene
+ * Copyright (C) 2026 by Robert Greene and others
  * robgreene at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -17,23 +17,22 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package com.webcodepro.applecommander.storage.os.prodos;
+package org.applecommander.os;
 
 /**
- * A Container for DOS 3.3 Sector Addresses.
- * <br>
- * Created on Dec 13, 2017.
- * @author Lisias Toledo
+ * An optional disk optimizer interface.
+ *
+ * @see org.applecommander.util.Container#get(Class)
  */
-public class ProdosBlockAddress {
+public interface DiskOptimizer {
+    /**
+     * Indicates if this disk can be optimized.
+     * For instance, a Pascal disk can be "krunched" to pack the files together but it may not need it.
+     */
+    boolean canOptimizeDisk();
 
-	public final Integer number;
-	
-	public ProdosBlockAddress(int number) {
-		this.number = number;
-	}
-	
-	public String toString() {
-		return "Block:" + this.number;
-	}
+    /**
+     * Perform disk optimization.
+     */
+    void optimizeDisk();
 }
