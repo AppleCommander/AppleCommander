@@ -1,6 +1,6 @@
 /*
  * AppleCommander - An Apple ][ image utility.
- * Copyright (C) 2025 by Robert Greene and others
+ * Copyright (C) 2026 by Robert Greene and others
  * robgreene at users.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -17,19 +17,21 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.applecommander.capability;
+package com.webcodepro.applecommander.storage;
 
-public enum Capability {
-    ENCODE,
-    WRITE_TRACK,
-    FORMAT_TRACK,
-    WRITE_SECTOR,
-    WRITE_BLOCK,
-    SAVE_SOURCE,
-    CREATE_FILES,
-    DELETE_FILES,
-    WRITE_FILES,
-    SUPPORTS_DIRECTORIES,
-    CREATE_DIRECTORIES,
-    SUPPORTS_RESOURCE_FORKS
+import org.applecommander.filestore.FileStoreFactory;
+
+/**
+ * The DiskFileStoreFactory is a shim that maps the FormattedDisk discovery
+ * mechanism to the FileStoreFactory discovery. This is intended to be a short-term
+ * component.
+ */
+public class DiskFileStoreFactory implements FileStoreFactory {
+    @Override
+    public void inspect(Context ctx) {
+        DiskFactory.Context context = Disks.inspect(ctx.source);
+        context.disks.forEach(disk -> {
+            ctx.fileStores.add(new DiskFileStoreAdapter(disk));
+        });
+    }
 }
