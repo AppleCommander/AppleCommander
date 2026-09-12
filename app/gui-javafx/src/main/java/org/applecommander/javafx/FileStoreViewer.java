@@ -54,6 +54,7 @@ import javafx.stage.Stage;
 import org.applecommander.source.FileSource;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -73,8 +74,6 @@ public class FileStoreViewer {
     @FXML private ImageView deletedFilesIcon;
     @FXML private Button switchDiskButton;
     @FXML private HBox breadcrumbBar;
-
-    // Disk usage UI
     @FXML private VBox diskUsagePane;
     @FXML private Canvas diskUsageCanvas;
     @FXML private HBox legendBox;
@@ -105,6 +104,7 @@ public class FileStoreViewer {
         Parent root = loader.load();
 
         FileStoreViewer controller = loader.getController();
+        controller.enforceFxmlTagsArePopulated();
         controller.setPrimaryStage(stage);
 
         Scene scene = new Scene(root, 1200, 700);
@@ -122,6 +122,22 @@ public class FileStoreViewer {
 
         if (diskFile != null) {
             controller.openDiskFile(diskFile, false);
+        }
+    }
+
+    /**
+     * The purpose of this method is to be certain ALL fields tagged as an FXML element
+     * were populated. The intent is to prevent null-checking fields and catching stupid
+     * typos early in the development cycle. An optional improvement may be to have
+     * a development/debug setting to prevent this from running in a production build.
+     */
+    private void enforceFxmlTagsArePopulated() throws IllegalAccessException {
+        for (Field field : getClass().getDeclaredFields()) {
+            if (field.getAnnotation(FXML.class) != null) {
+                if (field.get(this) == null) {
+                    throw new RuntimeException("FXML tags are not populated");
+                }
+            }
         }
     }
 
@@ -152,10 +168,8 @@ public class FileStoreViewer {
         applyViewMode(currentDisplayMode);
 
         // Bind canvas size to the table area so the disk usage can reuse available space
-        if (diskUsageCanvas != null && fileTable != null) {
-            diskUsageCanvas.widthProperty().bind(fileTable.widthProperty());
-            diskUsageCanvas.heightProperty().bind(fileTable.heightProperty().subtract(60));
-        }
+        diskUsageCanvas.widthProperty().bind(fileTable.widthProperty());
+        diskUsageCanvas.heightProperty().bind(fileTable.heightProperty().subtract(60));
     }
 
     public void setPrimaryStage(Stage stage) {
@@ -163,7 +177,6 @@ public class FileStoreViewer {
     }
 
     public void bindScene(Scene scene) {
-        if (scene == null) return;
         // Open: Shortcut + o (lowercase)
         applyShortcutToButton(scene, openDiskButton, "Open Disk",
                 new KeyCharacterCombination("o", KeyCombination.SHORTCUT_DOWN), this::openDisk);
@@ -266,9 +279,7 @@ public class FileStoreViewer {
         currentDiskIndex = (currentDiskIndex + 1) % availableDisks.size();
         FormattedDisk nextDisk = availableDisks.get(currentDiskIndex);
         displayDisk(nextDisk);
-        if (primaryStage != null) {
-            primaryStage.setTitle("AppleCommanderFX - " + nextDisk.getDiskName());
-        }
+        primaryStage.setTitle("AppleCommanderFX - " + nextDisk.getDiskName());
     }
 
     @FXML
@@ -340,43 +351,27 @@ public class FileStoreViewer {
     private void applyContentMode(int contentMode) {
         this.currentContentMode = contentMode;
 
-        if (filesContentButton != null) {
-            filesContentButton.setSelected(contentMode == CONTENT_FILES);
-        }
-        if (diskUsageContentButton != null) {
-            diskUsageContentButton.setSelected(contentMode == CONTENT_DISK_USAGE);
-        }
+        filesContentButton.setSelected(contentMode == CONTENT_FILES);
+        diskUsageContentButton.setSelected(contentMode == CONTENT_DISK_USAGE);
 
         boolean filesSelected = contentMode == CONTENT_FILES;
         setViewControlsEnabled(currentDisk != null && filesSelected);
-        if (nativeToolButton != null) {
-            nativeToolButton.setVisible(filesSelected);
-            nativeToolButton.setManaged(filesSelected);
-        }
-        if (detailToolButton != null) {
-            detailToolButton.setVisible(filesSelected);
-            detailToolButton.setManaged(filesSelected);
-        }
-        if (deletedFilesToggleButton != null) {
-            deletedFilesToggleButton.setVisible(filesSelected);
-            deletedFilesToggleButton.setManaged(filesSelected);
-            deletedFilesToggleButton.setDisable(currentDisk == null || !filesSelected);
-        }
-        if (breadcrumbBar != null) {
-            boolean breadcrumbSupported = currentDisk instanceof ProdosFormatDisk;
-            breadcrumbBar.setVisible(filesSelected && breadcrumbSupported);
-            breadcrumbBar.setManaged(filesSelected && breadcrumbSupported);
-        }
+        nativeToolButton.setVisible(filesSelected);
+        nativeToolButton.setManaged(filesSelected);
+        detailToolButton.setVisible(filesSelected);
+        detailToolButton.setManaged(filesSelected);
+        deletedFilesToggleButton.setVisible(filesSelected);
+        deletedFilesToggleButton.setManaged(filesSelected);
+        deletedFilesToggleButton.setDisable(currentDisk == null || !filesSelected);
+        boolean breadcrumbSupported = currentDisk instanceof ProdosFormatDisk;
+        breadcrumbBar.setVisible(filesSelected && breadcrumbSupported);
+        breadcrumbBar.setManaged(filesSelected && breadcrumbSupported);
 
         // toggle which content pane is visible
-        if (fileTable != null) {
-            fileTable.setVisible(filesSelected);
-            fileTable.setManaged(filesSelected);
-        }
-        if (diskUsagePane != null) {
-            diskUsagePane.setVisible(!filesSelected);
-            diskUsagePane.setManaged(!filesSelected);
-        }
+        fileTable.setVisible(filesSelected);
+        fileTable.setManaged(filesSelected);
+        diskUsagePane.setVisible(!filesSelected);
+        diskUsagePane.setManaged(!filesSelected);
 
         if (currentDisk != null) {
             refreshDiskView();
@@ -386,12 +381,8 @@ public class FileStoreViewer {
     private void applyViewMode(int displayMode) {
         this.currentDisplayMode = displayMode;
 
-        if (nativeToolButton != null) {
-            nativeToolButton.setSelected(displayMode == FormattedDisk.FILE_DISPLAY_NATIVE);
-        }
-        if (detailToolButton != null) {
-            detailToolButton.setSelected(displayMode == FormattedDisk.FILE_DISPLAY_DETAIL);
-        }
+        nativeToolButton.setSelected(displayMode == FormattedDisk.FILE_DISPLAY_NATIVE);
+        detailToolButton.setSelected(displayMode == FormattedDisk.FILE_DISPLAY_DETAIL);
 
         if (currentDisk != null) {
             refreshDiskView();
@@ -399,24 +390,14 @@ public class FileStoreViewer {
     }
 
     private void setContentControlsEnabled(boolean enabled) {
-        if (filesContentButton != null) {
-            filesContentButton.setDisable(!enabled);
-        }
-        if (diskUsageContentButton != null) {
-            diskUsageContentButton.setDisable(!enabled);
-        }
-        if (deletedFilesToggleButton != null) {
-            deletedFilesToggleButton.setDisable(!enabled || currentContentMode != CONTENT_FILES);
-        }
+        filesContentButton.setDisable(!enabled);
+        diskUsageContentButton.setDisable(!enabled);
+        deletedFilesToggleButton.setDisable(!enabled || currentContentMode != CONTENT_FILES);
     }
 
     private void setViewControlsEnabled(boolean enabled) {
-        if (nativeToolButton != null) {
-            nativeToolButton.setDisable(!enabled);
-        }
-        if (detailToolButton != null) {
-            detailToolButton.setDisable(!enabled);
-        }
+        nativeToolButton.setDisable(!enabled);
+        detailToolButton.setDisable(!enabled);
     }
 
     private void displayDisk(FormattedDisk disk) {
@@ -430,13 +411,11 @@ public class FileStoreViewer {
         updateSwitchDiskButton();
 
         // Enable disk-usage only if the disk reports support
-        if (diskUsageContentButton != null) {
-            boolean supported = disk.supportsDiskMap();
-            diskUsageContentButton.setDisable(!supported);
-            if (!supported && currentContentMode == CONTENT_DISK_USAGE) {
-                // fall back to files view
-                currentContentMode = CONTENT_FILES;
-            }
+        boolean supported = disk.supportsDiskMap();
+        diskUsageContentButton.setDisable(!supported);
+        if (!supported && currentContentMode == CONTENT_DISK_USAGE) {
+            // fall back to files view
+            currentContentMode = CONTENT_FILES;
         }
 
         setViewControlsEnabled(currentContentMode == CONTENT_FILES);
@@ -460,21 +439,19 @@ public class FileStoreViewer {
 
     private void refreshDiskView() {
         if (currentDisk == null) {
-            if (breadcrumbBar != null) {
-                breadcrumbBar.setVisible(false);
-                breadcrumbBar.setManaged(false);
-            }
+            breadcrumbBar.setVisible(false);
+            breadcrumbBar.setManaged(false);
             return;
         }
 
         try {
-            if (breadcrumbBar != null) {
-                boolean breadcrumbSupported = currentContentMode == CONTENT_FILES && currentDisk instanceof ProdosFormatDisk;
-                breadcrumbBar.setVisible(breadcrumbSupported);
-                breadcrumbBar.setManaged(breadcrumbSupported);
-            }
+            boolean breadcrumbSupported = currentContentMode == CONTENT_FILES && currentDisk instanceof ProdosFormatDisk;
+            breadcrumbBar.setVisible(breadcrumbSupported);
+            breadcrumbBar.setManaged(breadcrumbSupported);
+
             updateSwitchDiskButton();
             refreshBreadcrumbs();
+
             if (currentContentMode == CONTENT_DISK_USAGE) {
                 // Render the disk usage map
                 renderDiskUsage(currentDisk);
@@ -482,14 +459,10 @@ public class FileStoreViewer {
                 return;
             }
             // Files view
-            if (diskUsagePane != null) {
-                diskUsagePane.setVisible(false);
-                diskUsagePane.setManaged(false);
-            }
-            if (fileTable != null) {
-                fileTable.setVisible(true);
-                fileTable.setManaged(true);
-            }
+            diskUsagePane.setVisible(false);
+            diskUsagePane.setManaged(false);
+            fileTable.setVisible(true);
+            fileTable.setManaged(true);
             populateDiskRows(currentDirectory, currentDisplayMode);
             statusLabel.setText(buildDiskStatusText());
         } catch (DiskException ex) {
@@ -505,7 +478,6 @@ public class FileStoreViewer {
 
     private void renderDiskUsage(FormattedDisk disk) throws DiskException {
         if (disk == null) return;
-        if (diskUsagePane == null || diskUsageCanvas == null) return;
 
         if (!disk.supportsDiskMap()) {
             // nothing to render
@@ -707,23 +679,21 @@ public class FileStoreViewer {
         }
 
         // Legend
-        if (legendBox != null) {
-            legendBox.getChildren().clear();
+        legendBox.getChildren().clear();
 
-            HBox freeLegend = new HBox(6);
-            Region freeSwatch = new Region();
-            freeSwatch.setStyle("-fx-background-color: #90EE90; -fx-border-color: #000000; -fx-min-width: 16px; -fx-min-height: 16px;");
-            Label freeLabel = new Label("Free");
-            freeLegend.getChildren().addAll(freeSwatch, freeLabel);
+        HBox freeLegend = new HBox(6);
+        Region freeSwatch = new Region();
+        freeSwatch.setStyle("-fx-background-color: #90EE90; -fx-border-color: #000000; -fx-min-width: 16px; -fx-min-height: 16px;");
+        Label freeLabel = new Label("Free");
+        freeLegend.getChildren().addAll(freeSwatch, freeLabel);
 
-            HBox usedLegend = new HBox(6);
-            Region usedSwatch = new Region();
-            usedSwatch.setStyle("-fx-background-color: #F08080; -fx-border-color: #000000; -fx-min-width: 16px; -fx-min-height: 16px;");
-            Label usedLabel = new Label("Used");
-            usedLegend.getChildren().addAll(usedSwatch, usedLabel);
+        HBox usedLegend = new HBox(6);
+        Region usedSwatch = new Region();
+        usedSwatch.setStyle("-fx-background-color: #F08080; -fx-border-color: #000000; -fx-min-width: 16px; -fx-min-height: 16px;");
+        Label usedLabel = new Label("Used");
+        usedLegend.getChildren().addAll(usedSwatch, usedLabel);
 
-            legendBox.getChildren().addAll(freeLegend, usedLegend);
-        }
+        legendBox.getChildren().addAll(freeLegend, usedLegend);
     }
 
     private void populateDiskRows(DirectoryEntry directory, int displayMode) throws DiskException {
@@ -759,9 +729,6 @@ public class FileStoreViewer {
     }
 
     private void refreshBreadcrumbs() {
-        if (breadcrumbBar == null) {
-            return;
-        }
         breadcrumbBar.getChildren().clear();
         if (!(currentDisk instanceof ProdosFormatDisk)) {
             return;
@@ -796,23 +763,14 @@ public class FileStoreViewer {
     }
 
     private void setDeletedFilesButtonState() {
-        if (deletedFilesToggleButton == null) {
-            return;
-        }
-
         deletedFilesToggleButton.setSelected(showDeletedFiles);
-        if (deletedFilesIcon != null) {
-            String imagePath = showDeletedFiles
-                    ? "/images/deleted-files-visible.png"
-                    : "/images/deleted-files-hidden.png";
-            deletedFilesIcon.setImage(new Image(getClass().getResource(imagePath).toExternalForm()));
-        }
+        String imagePath = showDeletedFiles
+                ? "/images/deleted-files-visible.png"
+                : "/images/deleted-files-hidden.png";
+        deletedFilesIcon.setImage(new Image(getClass().getResource(imagePath).toExternalForm()));
     }
 
     private void updateSwitchDiskButton() {
-        if (switchDiskButton == null) {
-            return;
-        }
         boolean enabled = availableDisks != null && availableDisks.size() > 1 && currentDisk != null;
         switchDiskButton.setDisable(!enabled);
         switchDiskButton.setVisible(enabled);
