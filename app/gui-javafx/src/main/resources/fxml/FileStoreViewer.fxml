@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.applecommander.javafx.FileStoreViewer">
+    <fx:define>
+        <ToggleGroup fx:id="contentModeGroup" />
+        <ToggleGroup fx:id="viewModeGroup" />
+    </fx:define>
+
+    <top>
+        <ToolBar>
+            <items>
+                <Button fx:id="openDiskButton" onAction="#openDisk" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0;">
+                    <graphic>
+                        <VBox alignment="CENTER" spacing="2">
+                            <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
+                                <image>
+                                    <Image url="@/images/open-file.png" />
+                                </image>
+                            </ImageView>
+                            <Label text="Open" />
+                        </VBox>
+                    </graphic>
+                </Button>
+                <Separator orientation="VERTICAL" />
+                <HBox spacing="0">
+                    <children>
+                        <ToggleButton fx:id="filesContentButton" toggleGroup="$contentModeGroup" selected="true" onAction="#selectFilesContent" disable="true" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0; -fx-border-radius: 0; -fx-background-insets: 0;">
+                            <graphic>
+                                <VBox alignment="CENTER" spacing="2">
+                                    <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
+                                        <image>
+                                            <Image url="@/images/image-file-view.png" />
+                                        </image>
+                                    </ImageView>
+                                    <Label text="Files" />
+                                </VBox>
+                            </graphic>
+                        </ToggleButton>
+                        <ToggleButton fx:id="diskUsageContentButton" toggleGroup="$contentModeGroup" onAction="#selectDiskUsageContent" disable="true" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0; -fx-border-radius: 0; -fx-background-insets: 0;">
+                            <graphic>
+                                <VBox alignment="CENTER" spacing="2">
+                                    <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
+                                        <image>
+                                            <Image url="@/images/image-usage-view.png" />
+                                        </image>
+                                    </ImageView>
+                                    <Label text="Disk Usage" />
+                                </VBox>
+                            </graphic>
+                        </ToggleButton>
+                        <ToggleButton fx:id="imageInformationViewButton" toggleGroup="$contentModeGroup" disable="true" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0; -fx-border-radius: 0; -fx-background-insets: 0;">
+                            <graphic>
+                                <VBox alignment="CENTER" spacing="2">
+                                    <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
+                                        <image>
+                                            <Image url="@/images/image-information-view.png" />
+                                        </image>
+                                    </ImageView>
+                                    <Label text="Information" />
+                                </VBox>
+                            </graphic>
+                        </ToggleButton>
+                    </children>
+                </HBox>
+                <Separator orientation="VERTICAL" />
+                <HBox spacing="4">
+                    <children>
+                        <HBox spacing="0">
+                            <children>
+                                <ToggleButton fx:id="nativeToolButton" toggleGroup="$viewModeGroup" onAction="#selectNativeView" disable="true" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0; -fx-border-radius: 0; -fx-background-insets: 0;">
+                                    <graphic>
+                                        <VBox alignment="CENTER" spacing="2">
+                                            <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
+                                                <image>
+                                                    <Image url="@/images/file-native-view.png" />
+                                                </image>
+                                            </ImageView>
+                                            <Label text="Native" />
+                                        </VBox>
+                                    </graphic>
+                                </ToggleButton>
+                                <ToggleButton fx:id="detailToolButton" toggleGroup="$viewModeGroup" onAction="#selectDetailView" disable="true" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0; -fx-border-radius: 0; -fx-background-insets: 0;">
+                                    <graphic>
+                                        <VBox alignment="CENTER" spacing="2">
+                                            <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
+                                                <image>
+                                                    <Image url="@/images/file-detail-view.png" />
+                                                </image>
+                                            </ImageView>
+                                            <Label text="Detail" />
+                                        </VBox>
+                                    </graphic>
+                                </ToggleButton>
+                            </children>
+                        </HBox>
+                        <ToggleButton fx:id="deletedFilesToggleButton" onAction="#toggleDeletedFiles" disable="true" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0; -fx-border-radius: 0; -fx-background-insets: 0;">
+                            <graphic>
+                                <VBox alignment="CENTER" spacing="2">
+                                    <ImageView fx:id="deletedFilesIcon" fitWidth="24" fitHeight="24" preserveRatio="true">
+                                        <image>
+                                            <Image url="@/images/deleted-files-hidden.png" />
+                                        </image>
+                                    </ImageView>
+                                    <Label text="Deleted" />
+                                </VBox>
+                            </graphic>
+                        </ToggleButton>
+                    </children>
+                </HBox>
+            </items>
+        </ToolBar>
+    </top>
+
+    <center>
+        <VBox spacing="6">
+            <HBox fx:id="breadcrumbBar" visible="true" managed="true" spacing="6" alignment="CENTER_LEFT" style="-fx-padding: 4 8 0 8;" />
+            <StackPane>
+                <children>
+                    <TableView fx:id="fileTable" prefWidth="1100" prefHeight="600">
+                        <placeholder>
+                            <VBox alignment="CENTER" spacing="10">
+                                <ImageView preserveRatio="true">
+                                    <image>
+                                        <Image url="@/images/AppleCommanderLogo.png" />
+                                    </image>
+                                </ImageView>
+                                <Label text="No disk image open. Use File &gt; Open to browse for a disk image." style="-fx-font-size: 14px;" />
+                            </VBox>
+                        </placeholder>
+                    </TableView>
+
+                    <VBox fx:id="diskUsagePane" alignment="TOP_CENTER" spacing="8" visible="false" managed="false">
+                        <Canvas fx:id="diskUsageCanvas" width="800" height="480" />
+                        <HBox fx:id="legendBox" alignment="CENTER" spacing="12" />
+                    </VBox>
+                </children>
+            </StackPane>
+        </VBox>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="6" style="-fx-padding: 4 8 4 8;">
+            <Button fx:id="switchDiskButton" onAction="#switchDisk" disable="true" style="-fx-padding: 2 6 2 6;">
+                <graphic>
+                    <ImageView fitWidth="16" fitHeight="16" preserveRatio="true">
+                        <image>
+                            <Image url="@/images/switch-disks.png" />
+                        </image>
+                    </ImageView>
+                </graphic>
+            </Button>
+            <Label fx:id="statusLabel" text="No disk image opened." />
+        </HBox>
+    </bottom>
+</BorderPane>

@@ -1,0 +1,29 @@
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+java {
+    sourceCompatibility = 25
+    targetCompatibility = 25
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    implementation project(':lib:ac-api')
+    implementation 'com.github.Dansoftowner:jSystemThemeDetector:3.6'
+}
+
+javafx {
+    version = '25.0.4'
+    modules = ['javafx.controls', 'javafx.graphics', 'javafx.fxml']
+}
+
+application {
+    applicationDefaultJvmArgs = ["--enable-native-access=javafx.graphics"]
+    mainClass = 'org.applecommander.javafx.AppleCommanderFX'
+}
