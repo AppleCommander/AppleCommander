@@ -28,7 +28,15 @@ import java.util.stream.Collectors;
  * FileStores that don't naturally support a directory do contain a root directory,
  * so there will be a directory associated to each FileStore.
  */
-public interface DirectoryEntry {
+public interface Directory {
+    /**
+     * Get the parent directory. If this is the root directory, it returns empty.
+     */
+    Optional<Directory> getParent();
+    /**
+     * Returns the FileStore that this Directory belongs to.
+     */
+    FileStore getFileStore();
     /**
      * Return all entries that are stored in this directory.
      */
@@ -36,10 +44,11 @@ public interface DirectoryEntry {
     /**
      * Filter out the <code>DirectoryEntry</code> entries in this directory.
      */
-    default List<DirectoryEntry> getDirectories() {
+    default List<Directory> getDirectories() {
         return getFiles().stream()
-                .filter(fileEntry -> fileEntry instanceof DirectoryEntry)
-                .map(fileEntry -> (DirectoryEntry)fileEntry)
+                .map(fileEntry -> fileEntry.get(Directory.class))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .collect(Collectors.toList());
     }
     /**
@@ -50,9 +59,9 @@ public interface DirectoryEntry {
             if (name.equalsIgnoreCase(fileEntry.getName())) {
                 return Optional.of(fileEntry);
             }
-            Optional<DirectoryEntry> directoryEntry = fileEntry.get(DirectoryEntry.class);
-            if (directoryEntry.isPresent()) {
-                Optional<FileEntry> finding = directoryEntry.get().findFile(name);
+            Optional<Directory> directory = fileEntry.get(Directory.class);
+            if (directory.isPresent()) {
+                Optional<FileEntry> finding = directory.get().findFile(name);
                 if (finding.isPresent()) {
                     return finding;
                 }

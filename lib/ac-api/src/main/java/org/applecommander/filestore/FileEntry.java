@@ -29,7 +29,7 @@ public interface FileEntry extends Container {
     /**
      * The parent <code>DirectoryEntry</code>, if applicable. Can return <code>null</code>.
      */
-    DirectoryEntry getParent();
+    Directory getParent();
     /**
      * Indicates if this <code>Entry</code> is deleted.
      */

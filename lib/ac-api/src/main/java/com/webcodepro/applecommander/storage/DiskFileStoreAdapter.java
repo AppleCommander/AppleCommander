@@ -22,13 +22,14 @@ package com.webcodepro.applecommander.storage;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosDirectoryEntry;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import org.applecommander.capability.Capability;
-import org.applecommander.filestore.DirectoryEntry;
-import org.applecommander.filestore.Entry;
+import org.applecommander.filestore.Directory;
+import org.applecommander.filestore.DisplayColumn;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.util.Container;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * The DiskFileStoreAdapter is a shim that allows FormattedDisk to be mapped into the
@@ -52,8 +53,8 @@ public class DiskFileStoreAdapter implements FileStore {
     }
 
     @Override
-    public DirectoryEntry getRootDirectory() {
-        return new DiskDirectoryEntryAdapter(this, null, disk);
+    public DiskDirectoryAdapter getRootDirectory() {
+        return new DiskDirectoryAdapter(this, null, disk);
     }
 
     @Override
@@ -73,46 +74,73 @@ public class DiskFileStoreAdapter implements FileStore {
         };
     }
 
-    public abstract static class DiskEntryAdapter implements Entry {
-        protected final DiskFileStoreAdapter adapter;
-        protected final DirectoryEntry parent;
-
-        DiskEntryAdapter(DiskFileStoreAdapter adapter, DirectoryEntry parent) {
-            this.adapter = adapter;
-            this.parent = parent;
+    /**
+     * Translate the "legacy" FormattedDisk FileColumnHeader to the new DisplayColumn structure.
+     * Note that we need to track what has been seen as well as where it comes from and the index
+     * values in order to replicate most of the capability. This does not solve for type since the
+     * old API pre-formats everything as a String.
+     */
+    @Override
+    public List<DisplayColumn> getDisplayColumns() {
+        List<DisplayColumn> columns = new ArrayList<>();
+        Set<String> alreadySeenKeys = new HashSet<>();
+        for (int displayMode : List.of(FormattedDisk.FILE_DISPLAY_NATIVE,
+                                       FormattedDisk.FILE_DISPLAY_DETAIL)) {
+            List<FormattedDisk.FileColumnHeader> headers = disk.getFileColumnHeaders(displayMode);
+            DisplayColumn.Mode mode = DisplayColumn.Mode.DETAIL;
+            if (displayMode == FormattedDisk.FILE_DISPLAY_NATIVE) {
+                mode = DisplayColumn.Mode.NATIVE;
+            };
+            for (int i = 0; i<headers.size(); i++) {
+                var header = headers.get(i);
+                DisplayColumn.Alignment alignment = switch(header.getAlignment()) {
+                    case FormattedDisk.FileColumnHeader.ALIGN_CENTER -> DisplayColumn.Alignment.CENTER;
+                    case FormattedDisk.FileColumnHeader.ALIGN_RIGHT -> DisplayColumn.Alignment.RIGHT;
+                    default -> DisplayColumn.Alignment.LEFT;
+                };
+                if (!alreadySeenKeys.contains(header.getKey())) {
+                    alreadySeenKeys.add(header.getKey());
+                    final int headerIndex = i;
+                    Function<FileEntry,String> mappingFn = entry -> {
+                        // TODO investigate to see if generics work across these interfaces
+                        if (entry instanceof DiskFileEntryAdapter fileEntryAdapter) {
+                            return fileEntryAdapter.fileEntry.getFileColumnData(displayMode).get(headerIndex);
+                        }
+                        throw new RuntimeException("Unexpected file entry type: " + entry.getClass().getName());
+                    };
+                    DisplayColumn displayColumn = new DisplayColumn(header.getTitle(),
+                            alignment, mappingFn::apply, "%s", mode);
+                    columns.add(displayColumn);
+                }
+            }
         }
-
-        public DirectoryEntry getParent() {
-            return parent;
-        }
-        public FileStore getFileStore() {
-            return adapter;
-        }
+        return columns;
     }
+
     /**
      * The DiskFileEntryAdapter is a shim that allows a FileEntry to be mapped into the
      * new/evolving FileEntry interface(s).
      */
     public static class DiskFileEntryAdapter implements FileEntry {
         private final DiskFileStoreAdapter adapter;
-        private final DirectoryEntry parent;
+        private final DiskDirectoryAdapter parent;
         private final com.webcodepro.applecommander.storage.FileEntry fileEntry;
-        private final DirectoryEntry subdirectory;
+        private final DiskDirectoryAdapter subdirectory;
 
-        public DiskFileEntryAdapter(DiskFileStoreAdapter adapter, DirectoryEntry parent,
+        public DiskFileEntryAdapter(DiskFileStoreAdapter adapter, DiskDirectoryAdapter parent,
                                     com.webcodepro.applecommander.storage.FileEntry fileEntry) {
             this.adapter = adapter;
             this.parent = parent;
             this.fileEntry = fileEntry;
             if (fileEntry instanceof ProdosDirectoryEntry prodosDirectoryEntry) {
-                this.subdirectory = new DiskDirectoryEntryAdapter(adapter, parent, prodosDirectoryEntry);
+                this.subdirectory = new DiskDirectoryAdapter(adapter, parent, prodosDirectoryEntry);
             }
             else {
                 this.subdirectory = null;
             }
         }
         @Override
-        public DirectoryEntry getParent() {
+        public DiskDirectoryAdapter getParent() {
             return parent;
         }
         @Override
@@ -168,16 +196,20 @@ public class DiskFileStoreAdapter implements FileStore {
      * The DiskDirectoryEntryAdapter is a shim that allows a FormattedDisk or DirectoryEntry to be mapped into the
      * new/evolving DirectoryEntry interface(s).
      */
-    public static class DiskDirectoryEntryAdapter implements DirectoryEntry {
+    public static class DiskDirectoryAdapter implements Directory {
         private final DiskFileStoreAdapter adapter;
-        private final DirectoryEntry parent;
+        private final DiskDirectoryAdapter parent;
         private final com.webcodepro.applecommander.storage.DirectoryEntry directoryEntry;
 
-        public DiskDirectoryEntryAdapter(DiskFileStoreAdapter adapter, DirectoryEntry parent,
-                                         com.webcodepro.applecommander.storage.DirectoryEntry directoryEntry) {
+        public DiskDirectoryAdapter(DiskFileStoreAdapter adapter, DiskDirectoryAdapter parent,
+                                    com.webcodepro.applecommander.storage.DirectoryEntry directoryEntry) {
             this.adapter = adapter;
             this.parent = parent;
             this.directoryEntry = directoryEntry;
+        }
+        @Override
+        public Optional<Directory> getParent() {
+            return Optional.ofNullable(parent);
         }
         @Override
         public List<FileEntry> getFiles() {
@@ -190,6 +222,10 @@ public class DiskFileStoreAdapter implements FileStore {
             } catch (DiskException e) {
                 throw new RuntimeException(e);
             }
+        }
+        @Override
+        public DiskFileStoreAdapter getFileStore() {
+            return adapter;
         }
     }
 }

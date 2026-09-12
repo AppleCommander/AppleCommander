@@ -21,7 +21,6 @@ package com.webcodepro.applecommander.storage;
 
 import org.applecommander.capability.Capability;
 import org.applecommander.filestore.*;
-import org.applecommander.filestore.DirectoryEntry;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
@@ -248,20 +247,30 @@ public class DiskFileStoreTest {
         return ctx.fileStores;
     }
 
-    protected void showFiles(DirectoryEntry parent, String indent) {
+    protected void showFiles(Directory parent, String indent) {
+        FileStore fileStore = parent.getFileStore();
+        List<DisplayColumn> displayColumns = fileStore.getDisplayColumns();
+        if (parent.getParent().isEmpty()) {
+            // Print columns only at the top
+            System.out.print(indent);
+            displayColumns.forEach(column -> {
+                System.out.print(column.headerText());
+                System.out.print(" ");
+            });
+            System.out.println();
+        }
         for (FileEntry file : parent.getFiles()) {
             if (!file.isDeleted()) {
-                //List<String> data = entry.getFileColumnData(FormattedDisk.FILE_DISPLAY_NATIVE);
-                //System.out.print(indent);
-                //for (int d=0; d<data.size(); d++) {
-                //    System.out.print(data.get(d));
-                //    System.out.print(" ");
-                //}
-                //System.out.println();
-                System.out.printf("%s%s %s %d\n", indent, file.getName(), file.getFiletype(), file.getSize());
+                System.out.print(indent);
+                displayColumns.forEach(column -> {
+                    System.out.print(column.formatAsText(file));
+                    System.out.print(" ");
+                });
+                System.out.println();
+
+                Optional<Directory> subdirectory = file.get(Directory.class);
+                subdirectory.ifPresent(directoryEntry -> showFiles(directoryEntry, indent + "  "));
             }
-            Optional<DirectoryEntry> subdirectory = file.get(DirectoryEntry.class);
-            subdirectory.ifPresent(directoryEntry -> showFiles(directoryEntry, indent + "  "));
         }
     }
 
@@ -313,9 +322,9 @@ public class DiskFileStoreTest {
         }
     }
 
-    protected void assertCanReadFiles(DirectoryEntry parent) throws DiskException {
+    protected void assertCanReadFiles(Directory parent) throws DiskException {
         for (FileEntry fileEntry : parent.getFiles()) {
-            Optional<DirectoryEntry> subdirectory = fileEntry.get(DirectoryEntry.class);
+            Optional<Directory> subdirectory = fileEntry.get(Directory.class);
             if (fileEntry.isDeleted()) {
                 System.out.printf("Skipping deleted file: %s\n", fileEntry.getName());
             }
