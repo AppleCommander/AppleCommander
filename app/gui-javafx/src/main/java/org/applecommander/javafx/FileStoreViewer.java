@@ -79,10 +79,7 @@ public class FileStoreViewer {
     @FXML private HBox legendBox;
 
     private Stage primaryStage;
-    private List<FormattedDisk> availableDisks = new ArrayList<>();
-    private int currentDiskIndex = -1;
-    private FormattedDisk currentDisk;
-    private DirectoryEntry currentDirectory;
+    private final SelectionHolder<FormattedDisk> selection = new SelectionHolder<>();
     private List<DirectoryEntry> directoryPath = new ArrayList<>();
     private int currentContentMode = CONTENT_FILES;
     private int currentDisplayMode = FormattedDisk.FILE_DISPLAY_STANDARD;
@@ -226,7 +223,7 @@ public class FileStoreViewer {
             return;
         }
 
-        if (promptForWindow && currentDisk != null) {
+        if (promptForWindow && !selection.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.initOwner(primaryStage);
             alert.setTitle("Open disk image");
@@ -249,9 +246,8 @@ public class FileStoreViewer {
 
         try {
             var inspected = Disks.inspect(new FileSource(selectedFile.toPath()));
-            availableDisks = inspected.disks;
-            currentDiskIndex = availableDisks.isEmpty() ? -1 : 0;
-            if (availableDisks.isEmpty()) {
+            selection.setSelectedItems(inspected.disks);
+            if (selection.isEmpty()) {
                 closeDisk();
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Unable to open disk");
@@ -262,7 +258,7 @@ public class FileStoreViewer {
                 alert.showAndWait();
                 return;
             }
-            displayDisk(availableDisks.get(currentDiskIndex));
+            displayDisk();
             if (primaryStage != null) {
                 primaryStage.setTitle("AppleCommanderFX - " + selectedFile.getName());
             }
@@ -273,21 +269,14 @@ public class FileStoreViewer {
 
     @FXML
     private void switchDisk() {
-        if (availableDisks == null || availableDisks.size() <= 1) {
-            return;
-        }
-        currentDiskIndex = (currentDiskIndex + 1) % availableDisks.size();
-        FormattedDisk nextDisk = availableDisks.get(currentDiskIndex);
-        displayDisk(nextDisk);
-        primaryStage.setTitle("AppleCommanderFX - " + nextDisk.getDiskName());
+        selection.nextItem();
+        displayDisk();
+        primaryStage.setTitle("AppleCommanderFX - " + selection.getSelectedItem().getDiskName());
     }
 
     @FXML
     private void closeDisk() {
-        availableDisks.clear();
-        currentDiskIndex = -1;
-        currentDisk = null;
-        currentDirectory = null;
+        selection.clear();
         directoryPath.clear();
         currentContentMode = CONTENT_FILES;
         showDeletedFiles = false;
@@ -343,7 +332,7 @@ public class FileStoreViewer {
     private void toggleDeletedFiles() {
         showDeletedFiles = deletedFilesToggleButton != null && deletedFilesToggleButton.isSelected();
         setDeletedFilesButtonState();
-        if (currentDisk != null && currentContentMode == CONTENT_FILES) {
+        if (!selection.isEmpty() && currentContentMode == CONTENT_FILES) {
             refreshDiskView();
         }
     }
@@ -355,15 +344,15 @@ public class FileStoreViewer {
         diskUsageContentButton.setSelected(contentMode == CONTENT_DISK_USAGE);
 
         boolean filesSelected = contentMode == CONTENT_FILES;
-        setViewControlsEnabled(currentDisk != null && filesSelected);
+        setViewControlsEnabled(!selection.isEmpty() && filesSelected);
         nativeToolButton.setVisible(filesSelected);
         nativeToolButton.setManaged(filesSelected);
         detailToolButton.setVisible(filesSelected);
         detailToolButton.setManaged(filesSelected);
         deletedFilesToggleButton.setVisible(filesSelected);
         deletedFilesToggleButton.setManaged(filesSelected);
-        deletedFilesToggleButton.setDisable(currentDisk == null || !filesSelected);
-        boolean breadcrumbSupported = currentDisk instanceof ProdosFormatDisk;
+        deletedFilesToggleButton.setDisable(!selection.isEmpty() || !filesSelected);
+        boolean breadcrumbSupported = selection.getSelectedItem() instanceof ProdosFormatDisk;
         breadcrumbBar.setVisible(filesSelected && breadcrumbSupported);
         breadcrumbBar.setManaged(filesSelected && breadcrumbSupported);
 
@@ -373,7 +362,7 @@ public class FileStoreViewer {
         diskUsagePane.setVisible(!filesSelected);
         diskUsagePane.setManaged(!filesSelected);
 
-        if (currentDisk != null) {
+        if (!selection.isEmpty()) {
             refreshDiskView();
         }
     }
@@ -384,7 +373,7 @@ public class FileStoreViewer {
         nativeToolButton.setSelected(displayMode == FormattedDisk.FILE_DISPLAY_NATIVE);
         detailToolButton.setSelected(displayMode == FormattedDisk.FILE_DISPLAY_DETAIL);
 
-        if (currentDisk != null) {
+        if (!selection.isEmpty()) {
             refreshDiskView();
         }
     }
@@ -400,10 +389,8 @@ public class FileStoreViewer {
         detailToolButton.setDisable(!enabled);
     }
 
-    private void displayDisk(FormattedDisk disk) {
-        currentDisk = disk;
-        currentDiskIndex = availableDisks.indexOf(disk);
-        currentDirectory = disk;
+    private void displayDisk() {
+        FormattedDisk disk = selection.getSelectedItem();
         directoryPath = new ArrayList<>();
         directoryPath.add(disk);
         setContentControlsEnabled(true);
@@ -426,7 +413,6 @@ public class FileStoreViewer {
         if (directory == null) {
             return;
         }
-        currentDirectory = directory;
         if (directoryPath.contains(directory)) {
             while (directoryPath.size() > 1 && !directoryPath.getLast().equals(directory)) {
                 directoryPath.removeLast();
@@ -438,13 +424,14 @@ public class FileStoreViewer {
     }
 
     private void refreshDiskView() {
-        if (currentDisk == null) {
+        if (selection.isEmpty()) {
             breadcrumbBar.setVisible(false);
             breadcrumbBar.setManaged(false);
             return;
         }
 
         try {
+            FormattedDisk currentDisk = selection.getSelectedItem();
             boolean breadcrumbSupported = currentContentMode == CONTENT_FILES && currentDisk instanceof ProdosFormatDisk;
             breadcrumbBar.setVisible(breadcrumbSupported);
             breadcrumbBar.setManaged(breadcrumbSupported);
@@ -463,10 +450,9 @@ public class FileStoreViewer {
             diskUsagePane.setManaged(false);
             fileTable.setVisible(true);
             fileTable.setManaged(true);
-            populateDiskRows(currentDirectory, currentDisplayMode);
+            populateDiskRows(directoryPath.getLast(), currentDisplayMode);
             statusLabel.setText(buildDiskStatusText());
         } catch (DiskException ex) {
-            currentDisk = null;
             setContentControlsEnabled(false);
             setViewControlsEnabled(false);
             showErrorDialog("Could not read files from disk image", ex);
@@ -698,7 +684,7 @@ public class FileStoreViewer {
 
     private void populateDiskRows(DirectoryEntry directory, int displayMode) throws DiskException {
         fileTable.getColumns().clear();
-        List<FormattedDisk.FileColumnHeader> headers = currentDisk.getFileColumnHeaders(displayMode);
+        List<FormattedDisk.FileColumnHeader> headers = selection.getSelectedItem().getFileColumnHeaders(displayMode);
 
         for (int i = 0; i < headers.size(); i++) {
             final int columnIndex = i;
@@ -730,6 +716,7 @@ public class FileStoreViewer {
 
     private void refreshBreadcrumbs() {
         breadcrumbBar.getChildren().clear();
+        FormattedDisk currentDisk = selection.getSelectedItem();
         if (!(currentDisk instanceof ProdosFormatDisk)) {
             return;
         }
@@ -753,7 +740,6 @@ public class FileStoreViewer {
                 List<DirectoryEntry> newPath = new ArrayList<>(directoryPath.subList(0, index + 1));
                 directoryPath.clear();
                 directoryPath.addAll(newPath);
-                currentDirectory = directoryPath.getLast();
                 refreshDiskView();
             });
             Label separator = new Label("/");
@@ -771,20 +757,22 @@ public class FileStoreViewer {
     }
 
     private void updateSwitchDiskButton() {
-        boolean enabled = availableDisks != null && availableDisks.size() > 1 && currentDisk != null;
+        selection.nextItem();
+        boolean enabled = selection.getSize() > 1;
         switchDiskButton.setDisable(!enabled);
         switchDiskButton.setVisible(enabled);
         switchDiskButton.setManaged(enabled);
     }
 
     private String buildDiskStatusText() {
-        if (currentDisk == null) {
+        if (selection.isEmpty()) {
             return "No disk image opened.";
         }
+        FormattedDisk currentDisk = selection.getSelectedItem();
         String diskName = currentDisk.getDiskName();
         String format = currentDisk.getFormat();
-        if (availableDisks != null && availableDisks.size() > 1) {
-            return "Current disk (" + (currentDiskIndex + 1) + " of " + availableDisks.size() + "): " + diskName + " (" + format + ")";
+        if (selection.getSize() > 1) {
+            return "Current disk (" + (selection.getSelectedIndex() + 1) + " of " + selection.getSize() + "): " + diskName + " (" + format + ")";
         }
         return "Current disk: " + diskName + " (" + format + ")";
     }
