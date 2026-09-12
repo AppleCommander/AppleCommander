@@ -51,13 +51,15 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import org.applecommander.source.FileSource;
+import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
 
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 public class FileStoreViewer {
     private static final int CONTENT_FILES = 0;
@@ -80,7 +82,7 @@ public class FileStoreViewer {
 
     private Stage primaryStage;
     private final SelectionHolder<FormattedDisk> selection = new SelectionHolder<>();
-    private List<DirectoryEntry> directoryPath = new ArrayList<>();
+    private final List<DirectoryEntry> directoryPath = new ArrayList<>();
     private int currentContentMode = CONTENT_FILES;
     private int currentDisplayMode = FormattedDisk.FILE_DISPLAY_STANDARD;
     private boolean showDeletedFiles = false;
@@ -245,8 +247,12 @@ public class FileStoreViewer {
         }
 
         try {
-            var inspected = Disks.inspect(new FileSource(selectedFile.toPath()));
-            selection.setSelectedItems(inspected.disks);
+            selection.clear();
+            Optional<Source> opt = Sources.create(selectedFile);
+            opt.ifPresent(source -> {
+                var inspected = Disks.inspect(source);
+                selection.setSelectedItems(inspected.disks);
+            });
             if (selection.isEmpty()) {
                 closeDisk();
                 Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -271,7 +277,7 @@ public class FileStoreViewer {
     private void switchDisk() {
         selection.nextItem();
         displayDisk();
-        primaryStage.setTitle("AppleCommanderFX - " + selection.getSelectedItem().getDiskName());
+        primaryStage.setTitle("AppleCommanderFX - " + selection.getSelectedItem().getFilename());
     }
 
     @FXML
@@ -391,7 +397,7 @@ public class FileStoreViewer {
 
     private void displayDisk() {
         FormattedDisk disk = selection.getSelectedItem();
-        directoryPath = new ArrayList<>();
+        directoryPath.clear();
         directoryPath.add(disk);
         setContentControlsEnabled(true);
         setDeletedFilesButtonState();
