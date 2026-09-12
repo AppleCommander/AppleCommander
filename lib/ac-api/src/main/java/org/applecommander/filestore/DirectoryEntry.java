@@ -27,44 +27,32 @@ import java.util.stream.Collectors;
  * A DirectoryEntry represents a directory in a FileStore.  Note that even
  * FileStores that don't naturally support a directory do contain a root directory,
  * so there will be a directory associated to each FileStore.
- *
- * @see Entry
- * @see FileEntry
  */
-public interface DirectoryEntry extends Entry {
+public interface DirectoryEntry {
     /**
      * Return all entries that are stored in this directory.
      */
-    List<Entry> getEntries();
-    /**
-     * Filter out the <code>FileEntry</code> entries in this directory.
-     */
-    default List<FileEntry> getFiles() {
-        return getEntries().stream()
-                .filter(e -> e instanceof FileEntry)
-                .map(e -> (FileEntry)e)
-                .collect(Collectors.toList());
-
-    }
+    List<FileEntry> getFiles();
     /**
      * Filter out the <code>DirectoryEntry</code> entries in this directory.
      */
     default List<DirectoryEntry> getDirectories() {
-        return getEntries().stream()
-                .filter(e -> e instanceof DirectoryEntry)
-                .map(e -> (DirectoryEntry)e)
+        return getFiles().stream()
+                .filter(fileEntry -> fileEntry instanceof DirectoryEntry)
+                .map(fileEntry -> (DirectoryEntry)fileEntry)
                 .collect(Collectors.toList());
     }
     /**
-     * Locate a given entry of the given type recursively on the disk.
+     * Locate a given file of the given name recursively on the disk.
      */
-    default <T> Optional<T> findEntry(Class<T> type, String name) {
-        for (Entry entry : getEntries()) {
-            if (type.isInstance(entry) && name.equalsIgnoreCase(entry.getName())) {
-                return Optional.of(type.cast(entry));
+    default Optional<FileEntry> findFile(String name) {
+        for (FileEntry fileEntry : getFiles()) {
+            if (name.equalsIgnoreCase(fileEntry.getName())) {
+                return Optional.of(fileEntry);
             }
-            if (entry instanceof DirectoryEntry directoryEntry) {
-                Optional<T> finding = directoryEntry.findEntry(type, name);
+            Optional<DirectoryEntry> directoryEntry = fileEntry.get(DirectoryEntry.class);
+            if (directoryEntry.isPresent()) {
+                Optional<FileEntry> finding = directoryEntry.get().findFile(name);
                 if (finding.isPresent()) {
                     return finding;
                 }

@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -248,8 +249,8 @@ public class DiskFileStoreTest {
     }
 
     protected void showFiles(DirectoryEntry parent, String indent) {
-        for (Entry entry : parent.getEntries()) {
-            if (!entry.isDeleted()) {
+        for (FileEntry file : parent.getFiles()) {
+            if (!file.isDeleted()) {
                 //List<String> data = entry.getFileColumnData(FormattedDisk.FILE_DISPLAY_NATIVE);
                 //System.out.print(indent);
                 //for (int d=0; d<data.size(); d++) {
@@ -257,52 +258,51 @@ public class DiskFileStoreTest {
                 //    System.out.print(" ");
                 //}
                 //System.out.println();
-                System.out.printf("%s%s %s %d\n", indent, entry.getName(), entry.getFiletype(), entry.getSize());
+                System.out.printf("%s%s %s %d\n", indent, file.getName(), file.getFiletype(), file.getSize());
             }
-            if (entry instanceof DirectoryEntry sub) {
-                showFiles(sub, indent + "  ");
-            }
+            Optional<DirectoryEntry> subdirectory = file.get(DirectoryEntry.class);
+            subdirectory.ifPresent(directoryEntry -> showFiles(directoryEntry, indent + "  "));
         }
     }
 
     protected void assertApplesoftFile(FileStore fileStore, String filename) throws DiskException {
         assertNotNull(fileStore, filename + " test: Disk should not be null");
-        FileEntry fileEntry = fileStore.getRootDirectory().findEntry(FileEntry.class, filename).orElseThrow();
+        FileEntry fileEntry = fileStore.getRootDirectory().findFile(filename).orElseThrow();
         assertNotNull(fileEntry, filename + " test: File not found");
         //assertInstanceOf(ApplesoftFileFilter.class, fileEntry.getSuggestedFilter(), "ApplesoftFileFilter was not chosen");
     }
 
     protected void assertIntegerFile(FileStore fileStore, String filename) throws DiskException {
         assertNotNull(fileStore, filename + " test: Disk should not be null");
-        FileEntry fileEntry = fileStore.getRootDirectory().findEntry(FileEntry.class, filename).orElseThrow();
+        FileEntry fileEntry = fileStore.getRootDirectory().findFile(filename).orElseThrow();
         assertNotNull(fileEntry, filename + " test: File not found");
         //assertInstanceOf(IntegerBasicFileFilter.class, fileEntry.getSuggestedFilter(), "IntegerBasicFileFilter was not chosen");
     }
 
     protected void assertTextFile(FileStore fileStore, String filename) throws DiskException {
         assertNotNull(fileStore, filename + " test: Disk should not be null");
-        FileEntry fileEntry = fileStore.getRootDirectory().findEntry(FileEntry.class, filename).orElseThrow();
+        FileEntry fileEntry = fileStore.getRootDirectory().findFile(filename).orElseThrow();
         assertNotNull(fileEntry, filename + " test: File not found");
         //assertInstanceOf(TextFileFilter.class, fileEntry.getSuggestedFilter(), "TextFileFilter was not chosen");
     }
 
     protected void assertBinaryFile(FileStore fileStore, String filename) throws DiskException {
         assertNotNull(fileStore, filename + " test: Disk should not be null");
-        FileEntry fileEntry = fileStore.getRootDirectory().findEntry(FileEntry.class, filename).orElseThrow();
+        FileEntry fileEntry = fileStore.getRootDirectory().findFile(filename).orElseThrow();
         assertNotNull(fileEntry, filename + " test: File not found");
         //assertInstanceOf(BinaryFileFilter.class, fileEntry.getSuggestedFilter(), "BinaryFileFilter was not chosen");
     }
 
     protected void assertDisassemblyFile(FileStore fileStore, String filename) throws DiskException {
         assertNotNull(fileStore, filename + " test: Disk should not be null");
-        FileEntry fileEntry = fileStore.getRootDirectory().findEntry(FileEntry.class, filename).orElseThrow();
+        FileEntry fileEntry = fileStore.getRootDirectory().findFile(filename).orElseThrow();
         assertNotNull(fileEntry, filename + " test: File not found");
         //assertInstanceOf(DisassemblyFileFilter.class, fileEntry.getSuggestedFilter(), "DisassemblyFileFilter was not chosen");
     }
 
     protected void assertGraphicsFile(FileStore fileStore, String filename) throws DiskException {
         assertNotNull(fileStore, filename + " test: Disk should not be null");
-        FileEntry fileEntry = fileStore.getRootDirectory().findEntry(FileEntry.class, filename).orElseThrow();
+        FileEntry fileEntry = fileStore.getRootDirectory().findFile(filename).orElseThrow();
         assertNotNull(fileEntry, filename + " test: File not found");
         //assertInstanceOf(GraphicsFileFilter.class, fileEntry.getSuggestedFilter(), "GraphicsFileFilter was not chosen");
     }
@@ -314,18 +314,20 @@ public class DiskFileStoreTest {
     }
 
     protected void assertCanReadFiles(DirectoryEntry parent) throws DiskException {
-        for (Entry entry : parent.getEntries()) {
-            if (entry instanceof DirectoryEntry sub) {
-                assertCanReadFiles(sub);
+        for (FileEntry fileEntry : parent.getFiles()) {
+            Optional<DirectoryEntry> subdirectory = fileEntry.get(DirectoryEntry.class);
+            if (fileEntry.isDeleted()) {
+                System.out.printf("Skipping deleted file: %s\n", fileEntry.getName());
             }
-            else if (entry.isDeleted()) {
-                System.out.printf("Skipping deleted file: %s\n", entry.getName());
-            } else if (entry instanceof FileEntry file) {
+            else if (subdirectory.isPresent()) {
+                assertCanReadFiles(subdirectory.get());
+            }
+            else {
                 try {
-                    byte[] data = file.getDataFork();
+                    byte[] data = fileEntry.getDataFork();
                     assertNotNull(data);
                 } catch (Exception e) {
-                    throw new AssertionError(String.format("Unable to read file '%s'", file.getName()), e);
+                    throw new AssertionError(String.format("Unable to read file '%s'", fileEntry.getName()), e);
                 }
             }
         }

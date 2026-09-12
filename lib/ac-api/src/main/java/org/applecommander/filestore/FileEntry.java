@@ -20,14 +20,44 @@
 package org.applecommander.filestore;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.util.Container;
 
 /**
  * A FileEntry represents a single file on disk.
- *
- * @see Entry
- * @see DirectoryEntry
  */
-public interface FileEntry extends Entry {
+public interface FileEntry extends Container {
+    /**
+     * The parent <code>DirectoryEntry</code>, if applicable. Can return <code>null</code>.
+     */
+    DirectoryEntry getParent();
+    /**
+     * Indicates if this <code>Entry</code> is deleted.
+     */
+    boolean isDeleted();
+    /**
+     * Returns the <code>FileStore</code> that this <code>Entry</code> originates from.
+     */
+    FileStore getFileStore();
+    /**
+     * Returns the name of this entry: either a directory name or a file name.
+     * This does not contain any directory components -- strictly the name of this entry.
+     * Note that depending on context, this may be a computed field.
+     */
+    String getName();
+    /**
+     * Allows the name of this entry to be changed (depending on the {@link Capability}
+     * allowed by the underlying {@link FileStore}).
+     */
+    void setName(String name);
+    /**
+     * Returns the size, in bytes, of this item.
+     * It may be approximate (based off a sector count, for instance).
+     */
+    int getSize();
+    /**
+     * Return the textual representation of the file type, such as "BAS" or "A" for Applesoft.
+     */
+    String getFiletype();
     /**
      * Return the file's data.
      * This does not include any metadata that may be embedded with the file.

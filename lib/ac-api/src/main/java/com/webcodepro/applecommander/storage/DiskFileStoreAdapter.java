@@ -28,16 +28,14 @@ import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.util.Container;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * The DiskFileStoreAdapter is a shim that allows FormattedDisk to be mapped into the
  * new/evolving FileStore interface(s).
  */
 public class DiskFileStoreAdapter implements FileStore {
-    private FormattedDisk disk;
+    private final FormattedDisk disk;
 
     public DiskFileStoreAdapter(FormattedDisk disk) {
         this.disk = disk;
@@ -95,15 +93,36 @@ public class DiskFileStoreAdapter implements FileStore {
      * The DiskFileEntryAdapter is a shim that allows a FileEntry to be mapped into the
      * new/evolving FileEntry interface(s).
      */
-    public static class DiskFileEntryAdapter extends DiskEntryAdapter implements FileEntry {
+    public static class DiskFileEntryAdapter implements FileEntry {
+        private final DiskFileStoreAdapter adapter;
+        private final DirectoryEntry parent;
         private final com.webcodepro.applecommander.storage.FileEntry fileEntry;
+        private final DirectoryEntry subdirectory;
 
         public DiskFileEntryAdapter(DiskFileStoreAdapter adapter, DirectoryEntry parent,
                                     com.webcodepro.applecommander.storage.FileEntry fileEntry) {
-            super(adapter, parent);
+            this.adapter = adapter;
+            this.parent = parent;
             this.fileEntry = fileEntry;
+            if (fileEntry instanceof ProdosDirectoryEntry prodosDirectoryEntry) {
+                this.subdirectory = new DiskDirectoryEntryAdapter(adapter, parent, prodosDirectoryEntry);
+            }
+            else {
+                this.subdirectory = null;
+            }
         }
-
+        @Override
+        public DirectoryEntry getParent() {
+            return parent;
+        }
+        @Override
+        public FileStore getFileStore() {
+            return adapter;
+        }
+        @Override
+        public <T> Optional<T> get(Class<T> iface) {
+            return Container.get(iface, subdirectory);
+        }
         @Override
         public byte[] getDataFork() {
             return fileEntry.getFileData();
@@ -149,62 +168,28 @@ public class DiskFileStoreAdapter implements FileStore {
      * The DiskDirectoryEntryAdapter is a shim that allows a FormattedDisk or DirectoryEntry to be mapped into the
      * new/evolving DirectoryEntry interface(s).
      */
-    public static class DiskDirectoryEntryAdapter extends DiskEntryAdapter implements DirectoryEntry {
+    public static class DiskDirectoryEntryAdapter implements DirectoryEntry {
+        private final DiskFileStoreAdapter adapter;
+        private final DirectoryEntry parent;
         private final com.webcodepro.applecommander.storage.DirectoryEntry directoryEntry;
 
         public DiskDirectoryEntryAdapter(DiskFileStoreAdapter adapter, DirectoryEntry parent,
                                          com.webcodepro.applecommander.storage.DirectoryEntry directoryEntry) {
-            super(adapter, parent);
+            this.adapter = adapter;
+            this.parent = parent;
             this.directoryEntry = directoryEntry;
         }
-
         @Override
-        public List<Entry> getEntries() {
+        public List<FileEntry> getFiles() {
             try {
-                List<Entry> entries = new ArrayList<>();
+                List<FileEntry> entries = new ArrayList<>();
                 for (var file : directoryEntry.getFiles()) {
-                    if (file instanceof com.webcodepro.applecommander.storage.DirectoryEntry de) {
-                        entries.add(new DiskDirectoryEntryAdapter(adapter, parent, de));
-                    }
-                    else if (file instanceof com.webcodepro.applecommander.storage.FileEntry fe) {
-                        entries.add(new DiskFileEntryAdapter(adapter, parent, fe));
-                    }
+                    entries.add(new DiskFileEntryAdapter(adapter, parent, file));
                 }
                 return entries;
             } catch (DiskException e) {
                 throw new RuntimeException(e);
             }
-        }
-        @Override
-        public boolean isDeleted() {
-            return false;
-        }
-        @Override
-        public String getName() {
-            return directoryEntry.getDirname();
-        }
-        @Override
-        public void setName(String name) {
-            if (directoryEntry instanceof ProdosDirectoryEntry prodos) {
-                prodos.setFilename(name);
-            }
-            else {
-                throw new RuntimeException("Not supported by the legacy AppleCommander.");
-            }
-        }
-        @Override
-        public int getSize() {
-            if (directoryEntry instanceof ProdosDirectoryEntry prodos) {
-                return prodos.getSize();
-            }
-            return 0;
-        }
-        @Override
-        public String getFiletype() {
-            if (directoryEntry instanceof ProdosDirectoryEntry prodos) {
-                return prodos.getFiletype();
-            }
-            return "DIR";
         }
     }
 }
