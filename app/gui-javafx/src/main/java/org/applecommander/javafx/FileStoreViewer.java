@@ -28,8 +28,10 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.geometry.VPos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -86,6 +88,42 @@ public class FileStoreViewer {
     private int currentContentMode = CONTENT_FILES;
     private int currentDisplayMode = FormattedDisk.FILE_DISPLAY_STANDARD;
     private boolean showDeletedFiles = false;
+
+    public static void openNewWindow(File diskFile) {
+        Stage stage = new Stage();
+        try {
+            createWindow(stage, diskFile);
+            stage.toFront();
+            stage.requestFocus();
+        } catch (Exception ex) {
+            throw new RuntimeException("Could not open new disk window", ex);
+        }
+    }
+
+    public static void createWindow(Stage stage, File diskFile) throws Exception {
+        FXMLLoader loader = new FXMLLoader(AppleCommanderFX.class.getResource("/fxml/FileStoreViewer.fxml"));
+        Parent root = loader.load();
+
+        FileStoreViewer controller = loader.getController();
+        controller.setPrimaryStage(stage);
+
+        Scene scene = new Scene(root, 1200, 700);
+
+        stage.setTitle("AppleCommanderFX");
+        stage.setScene(scene);
+
+        // Bind keyboard shortcuts in controller
+        try {
+            controller.bindScene(scene);
+        } catch (Exception ignored) {
+        }
+
+        stage.show();
+
+        if (diskFile != null) {
+            controller.openDiskFile(diskFile, false);
+        }
+    }
 
     @FXML
     private void initialize() {
@@ -191,7 +229,7 @@ public class FileStoreViewer {
                 return;
             }
             if (result.get() == newWindow) {
-                AppleCommanderFX.openNewWindow(selectedFile);
+                openNewWindow(selectedFile);
                 return;
             }
         }

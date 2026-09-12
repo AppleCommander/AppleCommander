@@ -16,6 +16,7 @@ repositories {
 dependencies {
     implementation project(':lib:ac-api')
     implementation 'com.github.Dansoftowner:jSystemThemeDetector:3.6'
+    implementation 'org.slf4j:slf4j-jdk14:2.0.19'
 }
 
 javafx {

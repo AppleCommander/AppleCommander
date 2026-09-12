@@ -35,44 +35,9 @@ public class AppleCommanderFX extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        createWindow(stage, null);
+        FileStoreViewer.createWindow(stage, null);
     }
 
-    public static void openNewWindow(File diskFile) {
-        Stage stage = new Stage();
-        try {
-            createWindow(stage, diskFile);
-            stage.toFront();
-            stage.requestFocus();
-        } catch (Exception ex) {
-            throw new RuntimeException("Could not open new disk window", ex);
-        }
-    }
-
-    private static void createWindow(Stage stage, File diskFile) throws Exception {
-        FXMLLoader loader = new FXMLLoader(AppleCommanderFX.class.getResource("/fxml/FileStoreViewer.fxml"));
-        Parent root = loader.load();
-
-        FileStoreViewer controller = loader.getController();
-        controller.setPrimaryStage(stage);
-
-        Scene scene = new Scene(root, 1200, 700);
-
-        stage.setTitle("AppleCommanderFX");
-        stage.setScene(scene);
-
-        // Bind keyboard shortcuts in controller
-        try {
-            controller.bindScene(scene);
-        } catch (Exception ignored) {
-        }
-
-        stage.show();
-
-        if (diskFile != null) {
-            controller.openDiskFile(diskFile, false);
-        }
-    }
 
     static void main(String[] args) {
         launch(args);
