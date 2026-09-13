@@ -55,7 +55,6 @@ import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -65,7 +64,10 @@ public class FileStoreViewer {
     private static final int CONTENT_FILES = 0;
     private static final int CONTENT_DISK_USAGE = 1;
 
-    @FXML private Button openDiskButton;
+    @FXML private Button openFileButton;
+    @FXML private Button createFileButton;
+    @FXML private Button saveFileButton;
+    @FXML private Button saveFileAsButton;
     @FXML private TableView<DiskFileRow> fileTable;
     @FXML private Label statusLabel;
     @FXML private ToggleButton filesContentButton;
@@ -103,7 +105,7 @@ public class FileStoreViewer {
         Parent root = loader.load();
 
         FileStoreViewer controller = loader.getController();
-        controller.enforceFxmlTagsArePopulated();
+        AppleCommanderFX.enforceFxmlTagsArePopulated(controller);
         controller.setPrimaryStage(stage);
 
         Scene scene = new Scene(root, 1200, 700);
@@ -121,22 +123,6 @@ public class FileStoreViewer {
 
         if (diskFile != null) {
             controller.openDiskFile(diskFile, false);
-        }
-    }
-
-    /**
-     * The purpose of this method is to be certain ALL fields tagged as an FXML element
-     * were populated. The intent is to prevent null-checking fields and catching stupid
-     * typos early in the development cycle. An optional improvement may be to have
-     * a development/debug setting to prevent this from running in a production build.
-     */
-    private void enforceFxmlTagsArePopulated() throws IllegalAccessException {
-        for (Field field : getClass().getDeclaredFields()) {
-            if (field.getAnnotation(FXML.class) != null) {
-                if (field.get(this) == null) {
-                    throw new RuntimeException("FXML tags are not populated");
-                }
-            }
         }
     }
 
@@ -177,8 +163,8 @@ public class FileStoreViewer {
 
     public void bindScene(Scene scene) {
         // Open: Shortcut + o (lowercase)
-        applyShortcutToButton(scene, openDiskButton, "Open Disk",
-                new KeyCharacterCombination("o", KeyCombination.SHORTCUT_DOWN), this::openDisk);
+        applyShortcutToButton(scene, openFileButton, "Open Disk",
+                new KeyCharacterCombination("o", KeyCombination.SHORTCUT_DOWN), this::openFile);
 
         // Function keys for view modes
         applyShortcutToButton(scene, nativeToolButton, "Native View",
@@ -203,7 +189,7 @@ public class FileStoreViewer {
     }
 
     @FXML
-    private void openDisk() {
+    private void openFile() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Apple II disk image");
         AppleCommanderFX.getLastOpenedDirectory().ifPresent(fileChooser::setInitialDirectory);
@@ -271,6 +257,18 @@ public class FileStoreViewer {
         } catch (Throwable t) {
             showErrorDialog("Could not open disk image", t);
         }
+    }
+
+    public void createFile() {
+        // TODO
+    }
+
+    public void saveFile() {
+        // TODO
+    }
+
+    public void saveFileAs() {
+        // TODO
     }
 
     @FXML

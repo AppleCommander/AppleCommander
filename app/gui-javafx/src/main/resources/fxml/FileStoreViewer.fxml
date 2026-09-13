@@ -15,7 +15,7 @@
     <top>
         <ToolBar>
             <items>
-                <Button fx:id="openDiskButton" onAction="#openDisk" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0;">
+                <Button fx:id="openFileButton" onAction="#openFile" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0;">
                     <graphic>
                         <VBox alignment="CENTER" spacing="2">
                             <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
@@ -24,6 +24,42 @@
                                 </image>
                             </ImageView>
                             <Label text="Open" />
+                        </VBox>
+                    </graphic>
+                </Button>
+                <Button fx:id="createFileButton" onAction="#createFile" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0;" disable="true">
+                    <graphic>
+                        <VBox alignment="CENTER" spacing="2">
+                            <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
+                                <image>
+                                    <Image url="@/images/new-file.png" />
+                                </image>
+                            </ImageView>
+                            <Label text="Create" />
+                        </VBox>
+                    </graphic>
+                </Button>
+                <Button fx:id="saveFileButton" onAction="#saveFile" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0;" disable="true">
+                    <graphic>
+                        <VBox alignment="CENTER" spacing="2">
+                            <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
+                                <image>
+                                    <Image url="@/images/save-file.png" />
+                                </image>
+                            </ImageView>
+                            <Label text="Save" />
+                        </VBox>
+                    </graphic>
+                </Button>
+                <Button fx:id="saveFileAsButton" onAction="#saveFileAs" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0;" disable="true">
+                    <graphic>
+                        <VBox alignment="CENTER" spacing="2">
+                            <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
+                                <image>
+                                    <Image url="@/images/save-as-file.png" />
+                                </image>
+                            </ImageView>
+                            <Label text="Save As" />
                         </VBox>
                     </graphic>
                 </Button>
