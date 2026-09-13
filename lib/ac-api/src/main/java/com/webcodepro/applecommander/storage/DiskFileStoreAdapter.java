@@ -19,13 +19,22 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
+import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
+import com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk;
+import com.webcodepro.applecommander.storage.os.nakedos.NakedosFormatDisk;
+import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosDirectoryEntry;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
+import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import org.applecommander.capability.Capability;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.DisplayColumn;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
+import org.applecommander.usage.BlockUsage;
+import org.applecommander.usage.DiskUsage;
+import org.applecommander.usage.SectorUsage;
 import org.applecommander.util.Container;
 
 import java.util.*;
@@ -37,14 +46,59 @@ import java.util.function.Function;
  */
 public class DiskFileStoreAdapter implements FileStore {
     private final FormattedDisk disk;
+    private final DiskUsage usage;
 
     public DiskFileStoreAdapter(FormattedDisk disk) {
         this.disk = disk;
+        // Prep the DiskUsage shims
+        this.usage = switch (disk) {
+            case DosFormatDisk dos -> {
+                final byte[] vtoc = dos.readVtoc();
+                yield new SectorUsage(dos::getUsedSectors, dos::getFreeSectors,
+                        (t,s) -> dos.isSectorUsed(t, s, vtoc),
+                        dos.getTracks(), dos.getSectors());
+            }
+            case ProdosFormatDisk prodos -> {
+                final byte[] bitmap = prodos.readVolumeBitMap();
+                yield new BlockUsage(DiskConstants.BLOCK_SIZE, prodos::getUsedBlocks,
+                        prodos::getFreeBlocks, (b) -> prodos.isBlockUsed(bitmap, b));
+            }
+            // Current implementation of GutenbergFormatDisk and NakedosFormatDisk simply marks everything as used.
+            case GutenbergFormatDisk gutenberg -> new SectorUsage(gutenberg::getUsedSectors,
+                    gutenberg::getFreeSectors, (_,_) -> true,
+                    gutenberg.getTracks(), gutenberg.getSectors());
+            case NakedosFormatDisk nakedos -> new SectorUsage(nakedos::getUsedSectors,
+                    nakedos::getFreeSectors, (_,_) -> true,
+                    nakedos.getTracks(), nakedos.getSectors());
+            // CP/M, Pascal, and RDOS all synthesize the bitmap. So we do too!
+            case CpmFormatDisk cpm -> new BlockUsage(CpmFormatDisk.CPM_BLOCKSIZE, cpm::getBlocksUsed, cpm::getBlocksFree,
+                    synthesizeBitmap(cpm));
+            case PascalFormatDisk pascal -> new BlockUsage(DiskConstants.BLOCK_SIZE, pascal::getUsedBlocks,
+                    pascal::getFreeBlocks, synthesizeBitmap(pascal));
+            case RdosFormatDisk rdos -> new BlockUsage(DiskConstants.SECTOR_SIZE, rdos::getUsedBlocks, rdos::getFreeBlocks,
+                    synthesizeBitmap(rdos));
+            default -> throw new IllegalArgumentException("Unsupported format disk");
+        };
+    }
+
+    /**
+     * This is a helper method to make a copy of the legacy DiskUsage into a BitSet for the shim.
+     */
+    private Function<Integer,Boolean> synthesizeBitmap(FormattedDisk formattedDisk) {
+        final BitSet used = new BitSet(formattedDisk.getBitmapLength());
+        int block = 0;
+        FormattedDisk.DiskUsage diskUsage = formattedDisk.getDiskUsage();
+        while (diskUsage.hasNext()) {
+            diskUsage.next();
+            used.set(block++, diskUsage.isUsed());
+        }
+        assert(block == disk.getBitmapLength());
+        return used::get;
     }
 
     @Override
     public <T> Optional<T> get(Class<T> iface) {
-        return Container.get(iface, disk);
+        return Container.get(iface, disk, usage);
     }
 
     @Override

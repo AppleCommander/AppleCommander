@@ -162,6 +162,13 @@ public class CpmFormatDisk extends FormattedDisk {
 	}
 
 	/**
+	 * Compute the number of CP/M blocks that are free.
+	 */
+	public int getBlocksFree() {
+		return getBitmapLength() - getBlocksUsed();
+	}
+
+	/**
 	 * Get suggested dimensions for display of bitmap.
 	 * Typically, this will be only used for 5.25" floppies.
 	 * This can return null if there is no suggestion.
