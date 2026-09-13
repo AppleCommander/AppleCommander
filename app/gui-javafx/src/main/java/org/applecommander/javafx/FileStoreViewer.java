@@ -108,7 +108,7 @@ public class FileStoreViewer {
 
         Scene scene = new Scene(root, 1200, 700);
 
-        stage.setTitle("AppleCommanderFX");
+        stage.setTitle(AppleCommanderFX.buildTitle());
         stage.setScene(scene);
 
         // Bind keyboard shortcuts in controller
@@ -266,7 +266,7 @@ public class FileStoreViewer {
             }
             displayDisk();
             if (primaryStage != null) {
-                primaryStage.setTitle("AppleCommanderFX - " + selectedFile.getName());
+                primaryStage.setTitle(AppleCommanderFX.buildTitle(selectedFile.getName()));
             }
         } catch (Throwable t) {
             showErrorDialog("Could not open disk image", t);
@@ -277,7 +277,7 @@ public class FileStoreViewer {
     private void switchDisk() {
         selection.nextItem();
         displayDisk();
-        primaryStage.setTitle("AppleCommanderFX - " + selection.getSelectedItem().getFilename());
+        primaryStage.setTitle(AppleCommanderFX.buildTitle(selection.getSelectedItem().getFilename()));
     }
 
     @FXML
@@ -300,7 +300,7 @@ public class FileStoreViewer {
         updateSwitchDiskButton();
         statusLabel.setText("No disk image opened.");
         if (primaryStage != null) {
-            primaryStage.setTitle("AppleCommanderFX");
+            primaryStage.setTitle(AppleCommanderFX.buildTitle());
         }
     }
 

@@ -19,11 +19,14 @@
  */
 package org.applecommander.javafx;
 
+import com.webcodepro.applecommander.ui.AppleCommander;
 import javafx.application.Application;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Optional;
 import java.util.prefs.Preferences;
 
@@ -35,9 +38,22 @@ public class AppleCommanderFX extends Application {
         FileStoreViewer.createWindow(stage, null);
     }
 
-
     static void main(String[] args) {
         launch(args);
+    }
+
+    public static String buildTitle(String... args) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        pw.printf("AppleCommanderFX %s (BETA)", AppleCommander.VERSION);
+        if (args.length > 0) {
+            pw.print(" -");
+            for (String arg : args) {
+                pw.print(" ");
+                pw.print(arg);
+            }
+        }
+        return sw.toString();
     }
 
     public static void showErrorDialog(String message, Throwable t) {
