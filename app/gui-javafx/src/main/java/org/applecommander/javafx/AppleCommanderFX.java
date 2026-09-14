@@ -19,9 +19,11 @@
  */
 package org.applecommander.javafx;
 
+import com.jthemedetecor.OsThemeDetector;
 import com.webcodepro.applecommander.ui.AppleCommander;
 import javafx.application.Application;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
@@ -31,6 +33,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.prefs.Preferences;
 
@@ -80,6 +83,13 @@ public class AppleCommanderFX extends Application {
             throw new RuntimeException("FXML tags are not populated for: " + unpopulatedTags);
         }
     }
+
+    public static void applyTheme(Scene scene) {
+        scene.getStylesheets().clear();
+        String cssPath = OsThemeDetector.getDetector().isDark() ? "/fxml/theme-dark.css" : "/fxml/theme-light.css";
+        scene.getStylesheets().add(Objects.requireNonNull(AppleCommanderFX.class.getResource(cssPath)).toExternalForm());
+    }
+
 
     public static void showErrorDialog(String message, Throwable t) {
         Alert alert = new Alert(Alert.AlertType.ERROR);

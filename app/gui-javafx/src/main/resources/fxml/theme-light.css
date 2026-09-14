@@ -1,0 +1,46 @@
+.root {
+    -fx-base: #f3f3f3;
+    -fx-accent: #dfeaf6;
+    -fx-default-button: #dfeaf6;
+    -fx-focus-color: #4d90fe;
+    -fx-faint-focus-color: transparent;
+    -fx-text-base-color: #1d1d1d;
+    -fx-background-color: #ffffff;
+    -fx-control-inner-background: #ffffff;
+    -fx-control-inner-background-alt: #f7f7f7;
+    -fx-table-cell-border-color: #d6d6d6;
+    -fx-table-row-cell-background: #ffffff;
+    -fx-table-row-cell-background-alt: #f7f7f7;
+}
+
+.menu-bar, .tool-bar, .table-view, .label, .button, .toggle-button {
+    -fx-text-fill: #1d1d1d;
+}
+
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #d0d0d0;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #f7f7f7;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #cfe2ff;
+    -fx-text-fill: #111111;
+}
+
+.button, .toggle-button {
+    -fx-background-color: #f6f6f6;
+    -fx-border-color: #c9c9c9;
+}
+
+.button:hover, .toggle-button:hover {
+    -fx-background-color: #eaeaea;
+}
+
+.toggle-button:selected {
+    -fx-background-color: #dfeaf6;
+    -fx-border-color: #9bb7d3;
+}

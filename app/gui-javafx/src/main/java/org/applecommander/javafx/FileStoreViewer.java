@@ -111,6 +111,8 @@ public class FileStoreViewer {
         controller.setPrimaryStage(stage);
 
         Scene scene = new Scene(root, 1200, 700);
+        AppleCommanderFX.applyTheme(scene);
+        OsThemeDetector.getDetector().registerListener(isDark -> Platform.runLater(() -> AppleCommanderFX.applyTheme(scene)));
 
         stage.setTitle(AppleCommanderFX.buildTitle());
         stage.setScene(scene);
