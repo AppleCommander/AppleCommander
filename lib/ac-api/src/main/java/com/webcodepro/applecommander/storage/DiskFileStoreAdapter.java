@@ -37,7 +37,10 @@ import org.applecommander.usage.DiskUsage;
 import org.applecommander.usage.SectorUsage;
 import org.applecommander.util.Container;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -137,7 +140,6 @@ public class DiskFileStoreAdapter implements FileStore {
     @Override
     public List<DisplayColumn> getDisplayColumns() {
         List<DisplayColumn> columns = new ArrayList<>();
-        Set<String> alreadySeenKeys = new HashSet<>();
         for (int displayMode : List.of(FormattedDisk.FILE_DISPLAY_NATIVE,
                                        FormattedDisk.FILE_DISPLAY_DETAIL)) {
             List<FormattedDisk.FileColumnHeader> headers = disk.getFileColumnHeaders(displayMode);
@@ -152,20 +154,17 @@ public class DiskFileStoreAdapter implements FileStore {
                     case FormattedDisk.FileColumnHeader.ALIGN_RIGHT -> DisplayColumn.Alignment.RIGHT;
                     default -> DisplayColumn.Alignment.LEFT;
                 };
-                if (!alreadySeenKeys.contains(header.getKey())) {
-                    alreadySeenKeys.add(header.getKey());
-                    final int headerIndex = i;
-                    Function<FileEntry,String> mappingFn = entry -> {
-                        // TODO investigate to see if generics work across these interfaces
-                        if (entry instanceof DiskFileEntryAdapter fileEntryAdapter) {
-                            return fileEntryAdapter.fileEntry.getFileColumnData(displayMode).get(headerIndex);
-                        }
-                        throw new RuntimeException("Unexpected file entry type: " + entry.getClass().getName());
-                    };
-                    DisplayColumn displayColumn = new DisplayColumn(header.getTitle(),
-                            alignment, mappingFn::apply, "%s", mode);
-                    columns.add(displayColumn);
-                }
+                final int headerIndex = i;
+                Function<FileEntry,String> mappingFn = entry -> {
+                    // TODO investigate to see if generics work across these interfaces
+                    if (entry instanceof DiskFileEntryAdapter fileEntryAdapter) {
+                        return fileEntryAdapter.fileEntry.getFileColumnData(displayMode).get(headerIndex);
+                    }
+                    throw new RuntimeException("Unexpected file entry type: " + entry.getClass().getName());
+                };
+                DisplayColumn displayColumn = new DisplayColumn(header.getTitle(),
+                        alignment, mappingFn::apply, "%s", mode);
+                columns.add(displayColumn);
             }
         }
         return columns;
@@ -280,6 +279,10 @@ public class DiskFileStoreAdapter implements FileStore {
         @Override
         public DiskFileStoreAdapter getFileStore() {
             return adapter;
+        }
+        @Override
+        public String getName() {
+            return directoryEntry.getDirname();
         }
     }
 }
