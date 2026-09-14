@@ -618,7 +618,7 @@ public class FileStoreViewer {
                 boolean isFree = false;
                 boolean isUsed = false;
                 if (usage instanceof BlockUsage blockUsage) {
-                    int block = row * xCount + col;
+                    int block = col * yCount + row;
                     if (block < blockUsage.getTotal()) {
                         isUsed = blockUsage.isUsed(block);
                         isFree = !isUsed;
@@ -636,7 +636,7 @@ public class FileStoreViewer {
                 } else if (isUsed) {
                     gc.setFill(usedColor);
                 } else {
-                    gc.setFill(Color.LIGHTGRAY);
+                    continue;
                 }
                 gc.fillRect(x, y, Math.max(1, cellW), Math.max(1, cellH));
                 gc.setStroke(borderColor);
