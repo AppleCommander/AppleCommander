@@ -38,6 +38,10 @@ public interface Directory {
      */
     FileStore getFileStore();
     /**
+     * Returns the name of this directory.
+     */
+    String getName();
+    /**
      * Return all entries that are stored in this directory.
      */
     List<FileEntry> getFiles();
