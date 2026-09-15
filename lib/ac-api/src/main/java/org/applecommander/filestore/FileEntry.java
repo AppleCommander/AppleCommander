@@ -33,6 +33,7 @@ public interface FileEntry extends Container {
     /**
      * Indicates if this <code>Entry</code> is deleted.
      */
+    // TODO should deletion be a general interface field?
     boolean isDeleted();
     /**
      * Returns the <code>FileStore</code> that this <code>Entry</code> originates from.
@@ -57,6 +58,7 @@ public interface FileEntry extends Container {
     /**
      * Return the textual representation of the file type, such as "BAS" or "A" for Applesoft.
      */
+    // TODO file type is not always a concept, maybe take this out of the general interface? (CP/M, Zip files for instance)
     String getFiletype();
     /**
      * Return the file's data.
@@ -68,16 +70,20 @@ public interface FileEntry extends Container {
      * This may not be supported and may throw an exception.
      * @see Capability
      */
+    // TODO should resource form reading and writing be deferred to a container operation?
+    //  ... Then we don't need capability (which is our test) and we don't have to implement no-op functions.
     byte[] getResourceFork();
     /**
      * Store the file's data.
      * This does not include any metadata that may be embedded with the file.
      */
+    // TODO should write capability be deferred to a resource as well?
     void setDataFork(byte[] data);
     /**
      * Store the resource fork data.
      * This may not be supported and may throw an exception.
      * @see Capability
      */
+    // TODO ditto...
     void setResourceFork(byte[] data);
 }
