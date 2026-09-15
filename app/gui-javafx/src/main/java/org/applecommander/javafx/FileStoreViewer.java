@@ -48,6 +48,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import org.applecommander.capability.Capability;
 import org.applecommander.filestore.*;
@@ -58,6 +59,8 @@ import org.applecommander.source.Sources;
 import org.applecommander.usage.BlockUsage;
 import org.applecommander.usage.DiskUsage;
 import org.applecommander.usage.SectorUsage;
+import org.applecommander.util.FileExtensions;
+import org.applecommander.util.FileExtensions.FileExtension;
 
 import java.io.File;
 import java.util.*;
@@ -195,10 +198,9 @@ public class FileStoreViewer {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Apple II disk image");
         AppleCommanderFX.getLastOpenedDirectory().ifPresent(fileChooser::setInitialDirectory);
-        // TODO need to expose file filters in new API
-//        for (FilenameFilter filter : FilenameFilter.getFilenameFilters()) {
-//            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(filter.getNames(), filter.getExtensionList()));
-//        }
+        for (FileExtension extension : FileExtensions.FILE_EXTENSIONS) {
+            fileChooser.getExtensionFilters().add(new ExtensionFilter(extension.description(), extension.extensions()));
+        }
 
         File selectedFile = fileChooser.showOpenDialog(primaryStage);
         if (selectedFile == null) {
