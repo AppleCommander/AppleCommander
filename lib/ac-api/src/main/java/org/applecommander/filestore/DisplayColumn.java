@@ -19,6 +19,12 @@
  */
 package org.applecommander.filestore;
 
+import java.nio.file.attribute.FileTime;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -50,11 +56,72 @@ public record DisplayColumn(String headerText, Alignment alignment, Function<Fil
 		DETAIL
 	}
 	/**
-	 * Indicates how this column should be formatted.
+	 * Indicates how this column should be aligned.
 	 */
 	public enum Alignment {
 		LEFT,
 		CENTER,
 		RIGHT
 	}
+
+	public static <T extends FileEntry> Builder<T> builder(Class<T> clazz) {
+		return new Builder<>(clazz);
+	}
+	public static class Builder<T extends FileEntry> {
+		private static final DateTimeFormatter FILE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
+		private final Class<T> clazz;
+		private final List<DisplayColumn> columns = new ArrayList<>();
+
+		private Builder(Class<T> clazz) {
+			this.clazz = clazz;
+		}
+
+		public List<DisplayColumn> toList() {
+			return columns;
+		}
+
+		public Builder<T> addIntField(String name, Function<T,Integer> valueFn, Mode ...modes) {
+			columns.add(new DisplayColumn(name, Alignment.RIGHT, entry -> convert(entry, valueFn), "%d", modes));
+			return this;
+		}
+		public Builder<T> addStringField(String name, Function<T,String> valueFn, Mode ...modes) {
+			columns.add(new DisplayColumn(name, Alignment.LEFT, entry -> convert(entry, valueFn), "%s", modes));
+			return this;
+		}
+		public Builder<T> addPercentField(String name, Function<T,Number> numeratorFn, Function<T,Number> denominatorFn, String fmt, Mode ...modes) {
+			columns.add(new DisplayColumn(name, Alignment.RIGHT, entry -> percentage(entry, numeratorFn, denominatorFn), fmt, modes));
+			return this;
+		}
+		public Builder<T> addFileTimeField(String name, Function<T,FileTime> valueFn, Mode ...modes) {
+			columns.add(new DisplayColumn(name, Alignment.CENTER, entry -> formatFileTime(entry, valueFn), "%s", modes));
+			return this;
+		}
+		public Builder<T> addLongField(String name, Function<T,Long> valueFn, Mode ...modes) {
+			return addLongField(name, valueFn, "%d", modes);
+		}
+		public Builder<T> addLongField(String name, Function<T,Long> valueFn, String fmt, Mode ...modes) {
+			columns.add(new DisplayColumn(name, Alignment.RIGHT, entry -> convert(entry, valueFn), fmt, modes));
+			return this;
+		}
+
+		private <S> S convert(FileEntry fileEntry, Function<T,S> valueFn) {
+			T typedFileEntry = clazz.cast(fileEntry);
+			return valueFn.apply(typedFileEntry);
+		}
+		private double percentage(FileEntry fileEntry, Function<T,Number> numeratorFn, Function<T,Number> denominatorFn) {
+			T typedFileEntry = clazz.cast(fileEntry);
+			Number numerator = numeratorFn.apply(typedFileEntry);
+			Number denominator = denominatorFn.apply(typedFileEntry);
+			return (1.0 - numerator.doubleValue() / denominator.doubleValue()) * 100.0;
+		}
+		private String formatFileTime(FileEntry fileEntry, Function<T,FileTime> valueFn) {
+			T typedFileEntry = clazz.cast(fileEntry);
+			// https://mkyong.com/java/how-to-format-filetime-in-java/
+			LocalDateTime localDateTime = valueFn.apply(typedFileEntry)
+					.toInstant()
+					.atZone(ZoneId.systemDefault())
+					.toLocalDateTime();
+			return localDateTime.format(FILE_TIME_FORMATTER);
+		}
+ 	}
 }

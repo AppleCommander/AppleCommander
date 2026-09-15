@@ -687,7 +687,7 @@ public class FileStoreViewer {
             fileTable.getColumns().add(column);
         }
 
-        List<FileEntry> rows = directory.getFiles().stream()
+        List<? extends FileEntry> rows = directory.getFiles().stream()
                 .filter(fileEntry -> showDeletedFiles || !fileEntry.isDeleted())
                 .toList();
 

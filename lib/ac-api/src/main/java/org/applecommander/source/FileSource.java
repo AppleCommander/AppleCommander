@@ -80,7 +80,7 @@ public class FileSource implements Source {
 
     @Override
     public <T> Optional<T> get(Class<T> iface) {
-        return Container.get(iface, buffer);
+        return Container.get(iface, buffer, path);
     }
 
     @Override
