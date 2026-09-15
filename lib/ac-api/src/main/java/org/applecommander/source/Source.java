@@ -37,7 +37,7 @@ import java.util.Optional;
  *    if (sourceOpt.isPresent()) {
  *      // do something with sourceOpt.get()
  *      System.out.println(sourceOpt.get().getSize());
-  *    }
+  *   }
  *    // Only happens if the initiating object is not understood
  *    throw new RuntimeException("Unable to create image source");
  * }
