@@ -51,7 +51,9 @@ public class FileExtensions {
             String description = String.format("%s (%s)", parts[0], String.join(", ", plainExtensions));
             List<String> combinedExtensions = new ArrayList<>();
             combinedExtensions.addAll(plainExtensions);
+            combinedExtensions.addAll(plainExtensions.stream().map(String::toUpperCase).toList());
             combinedExtensions.addAll(gzipExtensions);
+            combinedExtensions.addAll(gzipExtensions.stream().map(String::toUpperCase).toList());
             FileExtension fileExtension = new FileExtension(description, Collections.unmodifiableList(combinedExtensions));
             fileExtensions.add(fileExtension);
             allExtensions.addAll(combinedExtensions);
@@ -67,6 +69,7 @@ public class FileExtensions {
                 extensions.add(String.format("*.%s", ext));
             }
             String description = String.format("%s (%s)", parts[0], String.join(",", extensions));
+            extensions.addAll(extensions.stream().map(String::toUpperCase).toList());
             FileExtension fileExtension = new FileExtension(description, Collections.unmodifiableList(extensions));
             fileExtensions.add(fileExtension);
             allExtensions.addAll(extensions);
