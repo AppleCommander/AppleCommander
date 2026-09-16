@@ -113,10 +113,10 @@ public record DisplayColumn(String headerText, Alignment alignment, Function<Fil
 			return addLongField(name, valueFn, "%d", modes);
 		}
 		public Builder<T> addLongField(String name, Function<T,Long> valueFn, String fmt, Mode ...modes) {
-			columns.add(new DisplayColumn(name, Alignment.RIGHT, entry -> convert(entry, valueFn), fmt, modes));
-			return this;
 			return add(name, Alignment.RIGHT, entry -> convert(entry, valueFn), fmt, modes);
 		}
+		public Builder<T> addDateField(String name, Function<T,Date> valueFn, Mode ...modes) {
+			return add(name, Alignment.CENTER, entry -> formatDate(entry, valueFn), "%s", modes);
 		}
 
 		private <S> S convert(FileEntry fileEntry, Function<T,S> valueFn) {
@@ -132,10 +132,6 @@ public record DisplayColumn(String headerText, Alignment alignment, Function<Fil
 		private String formatFileTime(FileEntry fileEntry, Function<T,FileTime> valueFn) {
 			T typedFileEntry = clazz.cast(fileEntry);
 			// https://mkyong.com/java/how-to-format-filetime-in-java/
-			LocalDateTime localDateTime = valueFn.apply(typedFileEntry)
-					.toInstant()
-					.atZone(ZoneId.systemDefault())
-					.toLocalDateTime();
 			FileTime fileTime = valueFn.apply(typedFileEntry);
 			if (fileTime == null) {
 				return "- No Date -";
@@ -143,6 +139,13 @@ public record DisplayColumn(String headerText, Alignment alignment, Function<Fil
 			LocalDateTime localDateTime = fileTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 			return localDateTime.format(FILE_TIME_FORMATTER);
 		}
+		private String formatDate(FileEntry fileEntry, Function<T, Date> valueFn) {
+			T typedFileEntry = clazz.cast(fileEntry);
+			Date date = valueFn.apply(typedFileEntry);
+			if (date == null) {
+				return "- No Date -";
+			}
+			LocalDateTime localDateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 			return localDateTime.format(FILE_TIME_FORMATTER);
 		}
  	}
