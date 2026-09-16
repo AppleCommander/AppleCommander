@@ -80,21 +80,34 @@ public record DisplayColumn(String headerText, Alignment alignment, Function<Fil
 			return columns;
 		}
 
-		public Builder<T> addIntField(String name, Function<T,Integer> valueFn, Mode ...modes) {
-			columns.add(new DisplayColumn(name, Alignment.RIGHT, entry -> convert(entry, valueFn), "%d", modes));
+		/**
+		 * A helper method that allows a short-cut of 0 modes meaning ALL modes.
+		 */
+		private Builder<T> add(String name, Alignment alignment, Function<FileEntry,Object> valueFn, String fmt, Mode ...modes) {
+			if (modes.length == 0) {
+				modes = new Mode[] { Mode.NATIVE, Mode.DETAIL };
+			}
+			columns.add(new DisplayColumn(name, alignment, valueFn, fmt, modes));
 			return this;
+		}
+
+		public Builder<T> addIntField(String name, Function<T,Integer> valueFn, Mode ...modes) {
+			return addIntField(name, valueFn, "%d", modes);
+		}
+		public Builder<T> addIntField(String name, Function<T,Integer> valueFn, String fmt, Mode ...modes) {
+			return add(name, Alignment.RIGHT, entry -> convert(entry, valueFn), fmt, modes);
 		}
 		public Builder<T> addStringField(String name, Function<T,String> valueFn, Mode ...modes) {
-			columns.add(new DisplayColumn(name, Alignment.LEFT, entry -> convert(entry, valueFn), "%s", modes));
-			return this;
+			return add(name, Alignment.LEFT, entry -> convert(entry, valueFn), "%s", modes);
+		}
+		public Builder<T> addStringField(String name, Alignment alignment, Function<T,String> valueFn, Mode ...modes) {
+			return add(name, alignment, entry -> convert(entry, valueFn), "%s", modes);
 		}
 		public Builder<T> addPercentField(String name, Function<T,Number> numeratorFn, Function<T,Number> denominatorFn, String fmt, Mode ...modes) {
-			columns.add(new DisplayColumn(name, Alignment.RIGHT, entry -> percentage(entry, numeratorFn, denominatorFn), fmt, modes));
-			return this;
+			return add(name, Alignment.RIGHT, entry -> percentage(entry, numeratorFn, denominatorFn), fmt, modes);
 		}
 		public Builder<T> addFileTimeField(String name, Function<T,FileTime> valueFn, Mode ...modes) {
-			columns.add(new DisplayColumn(name, Alignment.CENTER, entry -> formatFileTime(entry, valueFn), "%s", modes));
-			return this;
+			return add(name, Alignment.CENTER, entry -> formatFileTime(entry, valueFn), "%s", modes);
 		}
 		public Builder<T> addLongField(String name, Function<T,Long> valueFn, Mode ...modes) {
 			return addLongField(name, valueFn, "%d", modes);
@@ -102,6 +115,8 @@ public record DisplayColumn(String headerText, Alignment alignment, Function<Fil
 		public Builder<T> addLongField(String name, Function<T,Long> valueFn, String fmt, Mode ...modes) {
 			columns.add(new DisplayColumn(name, Alignment.RIGHT, entry -> convert(entry, valueFn), fmt, modes));
 			return this;
+			return add(name, Alignment.RIGHT, entry -> convert(entry, valueFn), fmt, modes);
+		}
 		}
 
 		private <S> S convert(FileEntry fileEntry, Function<T,S> valueFn) {
@@ -121,6 +136,13 @@ public record DisplayColumn(String headerText, Alignment alignment, Function<Fil
 					.toInstant()
 					.atZone(ZoneId.systemDefault())
 					.toLocalDateTime();
+			FileTime fileTime = valueFn.apply(typedFileEntry);
+			if (fileTime == null) {
+				return "- No Date -";
+			}
+			LocalDateTime localDateTime = fileTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+			return localDateTime.format(FILE_TIME_FORMATTER);
+		}
 			return localDateTime.format(FILE_TIME_FORMATTER);
 		}
  	}
