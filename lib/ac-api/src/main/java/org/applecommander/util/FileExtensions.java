@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class FileExtensions {
-    public static final List<FileExtension> FILE_EXTENSIONS;
+    public static final List<FileExtension> FILE_FILTERS;
 
     static {
         List<FileExtension> fileExtensions = new ArrayList<>();
@@ -76,7 +76,7 @@ public class FileExtensions {
         fileExtensions.add(new FileExtension("All Disk Images", diskExtensions));
         fileExtensions.add(new FileExtension("All Archive Images", archiveExtensions));
         fileExtensions.add(new FileExtension("All Files", List.of("*.*")));
-        FILE_EXTENSIONS = Collections.unmodifiableList(fileExtensions);
+        FILE_FILTERS = Collections.unmodifiableList(fileExtensions);
     }
 
     public record FileExtension(String description, List<String> extensions) {}

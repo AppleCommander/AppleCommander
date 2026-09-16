@@ -198,7 +198,7 @@ public class FileStoreViewer {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Apple II disk image");
         AppleCommanderFX.getLastOpenedDirectory().ifPresent(fileChooser::setInitialDirectory);
-        for (FileExtension extension : FileExtensions.FILE_EXTENSIONS) {
+        for (FileExtension extension : FileExtensions.FILE_FILTERS) {
             fileChooser.getExtensionFilters().add(new ExtensionFilter(extension.description(), extension.extensions()));
         }
 
