@@ -54,7 +54,7 @@ public interface FileEntry extends Container {
      * Returns the size, in bytes, of this item.
      * It may be approximate (based off a sector count, for instance).
      */
-    int getSize();
+    long getSize();
     /**
      * Return the textual representation of the file type, such as "BAS" or "A" for Applesoft.
      */

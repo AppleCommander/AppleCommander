@@ -20,7 +20,6 @@
 package org.applecommander.archive.zip;
 
 import org.applecommander.capability.Capability;
-import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.DisplayColumn;
 import org.applecommander.filestore.DisplayColumn.Mode;
 import org.applecommander.filestore.FileEntry;
@@ -88,7 +87,7 @@ public class ZipFileStore implements FileStore {
     @Override
     public List<DisplayColumn> getDisplayColumns() {
         return DisplayColumn.builder(ZipFileEntry.class)
-            .addIntField("Length", FileEntry::getSize, Mode.NATIVE, Mode.DETAIL)
+            .addLongField("Length", FileEntry::getSize)
             .addStringField("Method", ZipFileEntry::getMethodName, Mode.DETAIL)
             .addLongField("Size", ZipFileEntry::getCompressedSize, Mode.DETAIL)
             .addPercentField("Ratio", ZipFileEntry::getCompressedSize, ZipFileEntry::getSize, "%2.0f%%", Mode.DETAIL)

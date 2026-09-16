@@ -237,7 +237,7 @@ public class DiskFileStoreAdapter implements FileStore {
             fileEntry.setFilename(name);
         }
         @Override
-        public int getSize() {
+        public long getSize() {
             return fileEntry.getSize();
         }
         @Override

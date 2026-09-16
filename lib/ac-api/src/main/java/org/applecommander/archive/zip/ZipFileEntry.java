@@ -71,8 +71,8 @@ public class ZipFileEntry implements FileEntry {
     }
 
     @Override
-    public int getSize() {
-        return (int)entry.getSize();
+    public long getSize() {
+        return entry.getSize();
     }
 
     @Override
