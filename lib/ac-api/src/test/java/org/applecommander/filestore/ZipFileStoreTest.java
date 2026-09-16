@@ -20,6 +20,7 @@
 package org.applecommander.filestore;
 
 import org.applecommander.archive.zip.ZipFileStore;
+import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 import org.junit.jupiter.api.Test;
@@ -47,9 +48,11 @@ public class ZipFileStoreTest {
             byte[] data = fileEntry.getDataFork();
             assertNotNull(data);
             assertEquals(143360, data.length);
+            Source disk = DataBufferSource.create(data, fileEntry.getName()).get();
+            FileStoreTestHelper.showDirectory(disk);
         }
         else {
-            fail("Expecting a ZipFileEntry!");
+            fail("Expecting a ZipFileStore!");
         }
     }
 }
