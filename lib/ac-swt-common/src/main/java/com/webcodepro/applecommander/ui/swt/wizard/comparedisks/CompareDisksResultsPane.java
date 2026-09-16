@@ -28,7 +28,7 @@ import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 import com.webcodepro.applecommander.util.TextBundle;
 import org.applecommander.source.Source;
-import org.applecommander.source.Sources;
+import com.webcodepro.applecommander.storage.Sources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;

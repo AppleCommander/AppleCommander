@@ -17,23 +17,21 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.applecommander.source;
+package com.webcodepro.applecommander.storage;
 
-import com.webcodepro.applecommander.storage.ShrinkitSourceFactory;
+import org.applecommander.source.Source;
 
 import java.util.*;
 
-/**
- * Sources is a hook into the Source discovery and construction logic.
- */
+/// Sources is a hook into the Source discovery and construction logic.
+/// Note that this is the LEGACY Sources interface. It will unwrap a SHK/SDK into
+/// a disk image instead of delivering a `ShrinkitFileStore`. Use the Sources class
+/// in the `org.applecommander.source` package if making a `FileStore`.
 public class Sources {
     private static final List<Source.Factory> FACTORIES;
     static {
          FACTORIES = new ArrayList<>();
          for (Source.Factory factory : ServiceLoader.load(Source.Factory.class)) {
-             if (factory instanceof ShrinkitSourceFactory) {
-                 continue;
-             }
              FACTORIES.add(factory);
          }
     }

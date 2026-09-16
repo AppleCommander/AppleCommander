@@ -36,7 +36,7 @@ import org.applecommander.os.dos.OzdosAdapterStrategy;
 import org.applecommander.os.dos.UnidosAdapterStrategy;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
-import org.applecommander.source.Sources;
+import com.webcodepro.applecommander.storage.Sources;
 import org.applecommander.util.BackupStrategy;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;

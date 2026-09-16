@@ -33,7 +33,7 @@ import com.webcodepro.applecommander.ui.swt.wizard.diskimage.DiskImageWizard;
 import com.webcodepro.applecommander.util.Host;
 import com.webcodepro.applecommander.util.TextBundle;
 import org.applecommander.source.Source;
-import org.applecommander.source.Sources;
+import com.webcodepro.applecommander.storage.Sources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.SelectionAdapter;

@@ -21,7 +21,7 @@ package com.webcodepro.applecommander.util.filestreamer;
 
 import com.webcodepro.applecommander.storage.*;
 import org.applecommander.source.Source;
-import org.applecommander.source.Sources;
+import com.webcodepro.applecommander.storage.Sources;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

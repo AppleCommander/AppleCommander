@@ -52,7 +52,7 @@ import org.applecommander.os.DiskCheck;
 import org.applecommander.os.DiskOptimizer;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
-import org.applecommander.source.Sources;
+import com.webcodepro.applecommander.storage.Sources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;

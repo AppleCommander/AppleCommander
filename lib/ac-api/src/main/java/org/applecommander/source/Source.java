@@ -32,15 +32,15 @@ import java.util.Optional;
  * Source and Factory for an archive or disk in AppleCommander.
  * <p/>
  * Typical usage:
- * {@snippet lang=java:
- *    Optional<Source> sourceOpt = Sources.create(Path.of(filename));
+ * {@snippet lang = java:
+ *    import com.webcodepro.applecommander.storage.Sources;Optional<Source> sourceOpt = Sources.create(Path.of(filename));
  *    if (sourceOpt.isPresent()) {
  *      // do something with sourceOpt.get()
  *      System.out.println(sourceOpt.get().getSize());
-  *   }
+ *   }
  *    // Only happens if the initiating object is not understood
  *    throw new RuntimeException("Unable to create image source");
- * }
+ *}
  */
 public interface Source extends CapabilityProvider, HintProvider, Container {
     int getSize();
