@@ -58,7 +58,8 @@ public class FileExtensions {
             diskExtensions.addAll(combinedExtensions);
         });
         // Archive formats generally do not have compression
-        List.of("Zip Images:zip")
+        List.of("Zip Archives:zip",
+                "ShrinkIt Archives:shk,sdk")
         .forEach(extension -> {
             String[] parts = extension.split(":");
             List<String> extensions = new ArrayList<>();

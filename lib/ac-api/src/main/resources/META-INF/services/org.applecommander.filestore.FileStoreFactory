@@ -1,3 +1,4 @@
+org.applecommander.archive.shrinkit.ShrinkitFileStoreFactory
 org.applecommander.archive.zip.ZipFileStoreFactory
 
 # Legacy shim
