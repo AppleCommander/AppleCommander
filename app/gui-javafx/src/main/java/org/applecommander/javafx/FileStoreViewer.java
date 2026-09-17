@@ -677,10 +677,10 @@ public class FileStoreViewer {
             column.setUserData(displayColumn);
             column.setCellValueFactory(cell ->
                     new SimpleStringProperty(displayColumn.formatAsText(cell.getValue())));
-            column.setMinWidth(60);
+            //column.setMinWidth(60);
             // TODO or delete?
             //column.setPrefWidth(Math.clamp(header.getMaximumWidth() * 7L, 80, 220));
-            column.setMaxWidth(400);
+            //column.setMaxWidth(400);
             if (displayColumn.alignment() == Alignment.RIGHT) {
                 column.setStyle("-fx-alignment: CENTER-RIGHT;");
             } else if (displayColumn.alignment() == Alignment.CENTER) {
