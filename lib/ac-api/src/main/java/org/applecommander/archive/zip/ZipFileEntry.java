@@ -66,11 +66,6 @@ public class ZipFileEntry implements FileEntry {
     }
 
     @Override
-    public void setName(String name) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public long getSize() {
         return entry.getSize();
     }
@@ -130,16 +125,6 @@ public class ZipFileEntry implements FileEntry {
 
     @Override
     public byte[] getResourceFork() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setDataFork(byte[] data) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setResourceFork(byte[] data) {
         throw new UnsupportedOperationException();
     }
 

@@ -46,11 +46,6 @@ public interface FileEntry extends Container {
      */
     String getName();
     /**
-     * Allows the name of this entry to be changed (depending on the {@link Capability}
-     * allowed by the underlying {@link FileStore}).
-     */
-    void setName(String name);
-    /**
      * Returns the size, in bytes, of this item.
      * It may be approximate (based off a sector count, for instance).
      */
@@ -73,17 +68,4 @@ public interface FileEntry extends Container {
     // TODO should resource form reading and writing be deferred to a container operation?
     //  ... Then we don't need capability (which is our test) and we don't have to implement no-op functions.
     byte[] getResourceFork();
-    /**
-     * Store the file's data.
-     * This does not include any metadata that may be embedded with the file.
-     */
-    // TODO should write capability be deferred to a resource as well?
-    void setDataFork(byte[] data);
-    /**
-     * Store the resource fork data.
-     * This may not be supported and may throw an exception.
-     * @see Capability
-     */
-    // TODO ditto...
-    void setResourceFork(byte[] data);
 }

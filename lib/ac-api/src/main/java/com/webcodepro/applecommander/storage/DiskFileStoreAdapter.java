@@ -28,14 +28,13 @@ import com.webcodepro.applecommander.storage.os.prodos.ProdosDirectoryEntry;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import org.applecommander.capability.Capability;
-import org.applecommander.filestore.Directory;
-import org.applecommander.filestore.DisplayColumn;
+import org.applecommander.filestore.*;
 import org.applecommander.filestore.FileEntry;
-import org.applecommander.filestore.FileStore;
 import org.applecommander.usage.BlockUsage;
 import org.applecommander.usage.DiskUsage;
 import org.applecommander.usage.SectorUsage;
 import org.applecommander.util.Container;
+import org.applecommander.util.DataBuffer;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -174,7 +173,7 @@ public class DiskFileStoreAdapter implements FileStore {
      * The DiskFileEntryAdapter is a shim that allows a FileEntry to be mapped into the
      * new/evolving FileEntry interface(s).
      */
-    public static class DiskFileEntryAdapter implements FileEntry {
+    public static class DiskFileEntryAdapter implements WritableFileEntry {
         private final DiskFileStoreAdapter adapter;
         private final DiskDirectoryAdapter parent;
         private final com.webcodepro.applecommander.storage.FileEntry fileEntry;
@@ -213,15 +212,15 @@ public class DiskFileStoreAdapter implements FileStore {
             throw new RuntimeException("Not supported by the legacy AppleCommander.");
         }
         @Override
-        public void setDataFork(byte[] fileData) {
+        public void setDataFork(DataBuffer fileData) {
             try {
-                fileEntry.setFileData(fileData);
+                fileEntry.setFileData(fileData.asBytes());
             } catch (DiskFullException e) {
                 throw new RuntimeException(e);
             }
         }
         @Override
-        public void setResourceFork(byte[] data) {
+        public void setResourceFork(DataBuffer data) {
             throw new RuntimeException("Not supported by the legacy AppleCommander.");
         }
         @Override

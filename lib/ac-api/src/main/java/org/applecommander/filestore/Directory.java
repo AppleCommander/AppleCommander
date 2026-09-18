@@ -24,11 +24,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * A DirectoryEntry represents a directory in a FileStore.  Note that even
+ * A Directory represents a directory in a FileStore.  Note that even
  * FileStores that don't naturally support a directory do contain a root directory,
  * so there will be a directory associated to each FileStore.
  */
-// TODO FUTURE should create file be deferred to a container operation? Not everything will support file creation.
 public interface Directory {
     /**
      * Get the parent directory. If this is the root directory, it returns empty.

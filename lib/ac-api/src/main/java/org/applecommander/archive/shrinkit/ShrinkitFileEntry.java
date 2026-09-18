@@ -62,11 +62,6 @@ public class ShrinkitFileEntry implements FileEntry {
     }
 
     @Override
-    public void setName(String name) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public long getSize() {
         return headerBlock.getUncompressedSize();
     }
@@ -195,16 +190,6 @@ public class ShrinkitFileEntry implements FileEntry {
     @Override
     public byte[] getResourceFork() {
         return decompress(headerBlock.getResourceForkThreadRecord());
-    }
-
-    @Override
-    public void setDataFork(byte[] data) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setResourceFork(byte[] data) {
-        throw new UnsupportedOperationException();
     }
 
     @Override
