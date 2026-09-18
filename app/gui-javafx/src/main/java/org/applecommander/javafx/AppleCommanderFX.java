@@ -110,7 +110,10 @@ public class AppleCommanderFX extends Application {
 
     public static Optional<ThemeSelection> getThemeSelection() {
         Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
-        String themeName = prefs.get(THEME_SELECTION, ThemeSelection.MODENA.name());
+        String themeName = prefs.get(THEME_SELECTION, null);
+        if (themeName == null || themeName.isBlank()) {
+            return Optional.empty();
+        }
         return Optional.of(ThemeSelection.valueOf(themeName));
     }
     public static void setThemeSelection(ThemeSelection themeSelection) {
