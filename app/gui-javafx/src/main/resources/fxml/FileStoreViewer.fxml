@@ -15,7 +15,7 @@
     <top>
         <ToolBar>
             <items>
-                <Button fx:id="openFileButton" onAction="#openFile" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0;">
+                <Button fx:id="openFileButton" onAction="#openFile">
                     <graphic>
                         <VBox alignment="CENTER" spacing="2">
                             <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
@@ -27,7 +27,7 @@
                         </VBox>
                     </graphic>
                 </Button>
-                <Button fx:id="createFileButton" onAction="#createFile" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0;" disable="true">
+                <Button fx:id="createFileButton" onAction="#createFile" disable="true">
                     <graphic>
                         <VBox alignment="CENTER" spacing="2">
                             <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
@@ -39,7 +39,7 @@
                         </VBox>
                     </graphic>
                 </Button>
-                <Button fx:id="saveFileButton" onAction="#saveFile" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0;" disable="true">
+                <Button fx:id="saveFileButton" onAction="#saveFile" disable="true">
                     <graphic>
                         <VBox alignment="CENTER" spacing="2">
                             <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
@@ -51,7 +51,7 @@
                         </VBox>
                     </graphic>
                 </Button>
-                <Button fx:id="saveFileAsButton" onAction="#saveFileAs" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0;" disable="true">
+                <Button fx:id="saveFileAsButton" onAction="#saveFileAs" disable="true">
                     <graphic>
                         <VBox alignment="CENTER" spacing="2">
                             <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
@@ -66,7 +66,7 @@
                 <Separator orientation="VERTICAL" />
                 <HBox spacing="0">
                     <children>
-                        <ToggleButton fx:id="filesContentButton" toggleGroup="$contentModeGroup" selected="true" onAction="#selectFilesContent" disable="true" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0; -fx-border-radius: 0; -fx-background-insets: 0;">
+                        <ToggleButton fx:id="filesContentButton" toggleGroup="$contentModeGroup" selected="true" onAction="#selectFilesContent" disable="true">
                             <graphic>
                                 <VBox alignment="CENTER" spacing="2">
                                     <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
@@ -78,7 +78,7 @@
                                 </VBox>
                             </graphic>
                         </ToggleButton>
-                        <ToggleButton fx:id="diskUsageContentButton" toggleGroup="$contentModeGroup" onAction="#selectDiskUsageContent" disable="true" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0; -fx-border-radius: 0; -fx-background-insets: 0;">
+                        <ToggleButton fx:id="diskUsageContentButton" toggleGroup="$contentModeGroup" onAction="#selectDiskUsageContent" disable="true">
                             <graphic>
                                 <VBox alignment="CENTER" spacing="2">
                                     <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
@@ -90,7 +90,7 @@
                                 </VBox>
                             </graphic>
                         </ToggleButton>
-                        <ToggleButton fx:id="imageInformationViewButton" toggleGroup="$contentModeGroup" disable="true" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0; -fx-border-radius: 0; -fx-background-insets: 0;">
+                        <ToggleButton fx:id="imageInformationViewButton" toggleGroup="$contentModeGroup" disable="true">
                             <graphic>
                                 <VBox alignment="CENTER" spacing="2">
                                     <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
@@ -109,7 +109,7 @@
                     <children>
                         <HBox spacing="0">
                             <children>
-                                <ToggleButton fx:id="nativeToolButton" toggleGroup="$viewModeGroup" onAction="#selectNativeView" disable="true" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0; -fx-border-radius: 0; -fx-background-insets: 0;">
+                                <ToggleButton fx:id="nativeToolButton" toggleGroup="$viewModeGroup" onAction="#selectNativeView" disable="true">
                                     <graphic>
                                         <VBox alignment="CENTER" spacing="2">
                                             <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
@@ -121,7 +121,7 @@
                                         </VBox>
                                     </graphic>
                                 </ToggleButton>
-                                <ToggleButton fx:id="detailToolButton" toggleGroup="$viewModeGroup" onAction="#selectDetailView" disable="true" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0; -fx-border-radius: 0; -fx-background-insets: 0;">
+                                <ToggleButton fx:id="detailToolButton" toggleGroup="$viewModeGroup" onAction="#selectDetailView" disable="true">
                                     <graphic>
                                         <VBox alignment="CENTER" spacing="2">
                                             <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
@@ -135,7 +135,7 @@
                                 </ToggleButton>
                             </children>
                         </HBox>
-                        <ToggleButton fx:id="deletedFilesToggleButton" onAction="#toggleDeletedFiles" disable="true" style="-fx-padding: 4 8 4 8; -fx-background-radius: 0; -fx-border-radius: 0; -fx-background-insets: 0;">
+                        <ToggleButton fx:id="deletedFilesToggleButton" onAction="#toggleDeletedFiles" disable="true">
                             <graphic>
                                 <VBox alignment="CENTER" spacing="2">
                                     <ImageView fx:id="deletedFilesIcon" fitWidth="24" fitHeight="24" preserveRatio="true">
@@ -155,7 +155,7 @@
 
     <center>
         <VBox spacing="6">
-            <HBox fx:id="breadcrumbBar" visible="true" managed="true" spacing="6" alignment="CENTER_LEFT" style="-fx-padding: 4 8 0 8;" />
+            <HBox fx:id="breadcrumbBar" visible="true" managed="true" spacing="6" alignment="CENTER_LEFT" />
             <StackPane>
                 <children>
                     <TableView fx:id="fileTable" prefWidth="1100" prefHeight="600">
@@ -166,7 +166,7 @@
                                         <Image url="@/images/AppleCommanderLogo.png" />
                                     </image>
                                 </ImageView>
-                                <Label text="No disk image open. Use File &gt; Open to browse for a disk image." style="-fx-font-size: 14px;" />
+                                <Label text="No disk image open. Use File &gt; Open to browse for a disk image." />
                             </VBox>
                         </placeholder>
                     </TableView>
@@ -181,8 +181,8 @@
     </center>
 
     <bottom>
-        <HBox alignment="CENTER_LEFT" spacing="6" style="-fx-padding: 4 8 4 8;">
-            <Button fx:id="switchDiskButton" onAction="#switchDisk" disable="true" style="-fx-padding: 2 6 2 6;">
+        <HBox alignment="CENTER_LEFT" spacing="6">
+            <Button fx:id="switchDiskButton" onAction="#switchDisk" disable="true">
                 <graphic>
                     <ImageView fitWidth="16" fitHeight="16" preserveRatio="true">
                         <image>

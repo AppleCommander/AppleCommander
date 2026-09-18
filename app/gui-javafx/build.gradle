@@ -10,12 +10,11 @@ java {
 
 repositories {
     mavenCentral()
-    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
     implementation project(':lib:ac-api')
-    implementation 'com.github.Dansoftowner:jSystemThemeDetector:3.6'
+    implementation 'io.github.mkpaz:atlantafx-base:2.1.0'
     implementation 'org.slf4j:slf4j-jdk14:2.0.19'
 }
 

@@ -19,7 +19,6 @@
  */
 package org.applecommander.javafx;
 
-import com.jthemedetecor.OsThemeDetector;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -114,9 +113,6 @@ public class FileStoreViewer {
         controller.setPrimaryStage(stage);
 
         Scene scene = new Scene(root, 1200, 700);
-        AppleCommanderFX.applyTheme(scene);
-        OsThemeDetector.getDetector().registerListener(isDark -> Platform.runLater(() -> AppleCommanderFX.applyTheme(scene)));
-
         stage.setTitle(AppleCommanderFX.buildTitle());
         stage.setScene(scene);
 
@@ -516,8 +512,8 @@ public class FileStoreViewer {
         double gap = 2.0;
 
         // Determine label font sizes and measure required label areas
-        Font titleFont = Font.font(12);
-        Font labelFont = Font.font(10);
+        Font titleFont = Font.font(14);
+        Font labelFont = Font.font(12);
 
         // Measure top labels (column numbers) and left labels (row numbers)
         double maxTopLabelWidth = 0.0;
@@ -563,10 +559,7 @@ public class FileStoreViewer {
         Color freeColor = Color.web("#90EE90"); // lightgreen
         Color usedColor = Color.web("#F08080"); // lightcoral
         Color borderColor = Color.web("#000000");
-        Color textColor = OsThemeDetector.getDetector().isDark() ? Color.web("#E0E0E0") : Color.web("#000000");
 
-        // Draw axis titles and numeric labels
-        gc.setFill(textColor);
         // Use measured titleFont and labelFont from earlier
         gc.setFont(titleFont);
 

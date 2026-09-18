@@ -19,11 +19,10 @@
  */
 package org.applecommander.javafx;
 
-import com.jthemedetecor.OsThemeDetector;
+import atlantafx.base.theme.*;
 import com.webcodepro.applecommander.ui.AppleCommander;
 import javafx.application.Application;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
@@ -33,15 +32,18 @@ import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.prefs.Preferences;
 
 public class AppleCommanderFX extends Application {
     private static final String IMAGE_DIRECTORY_KEY = "image_directory";
+    private static final String THEME_SELECTION = "theme_selection";
 
     @Override
     public void start(Stage stage) throws Exception {
+        // Based on user selection, use that theme.
+        getThemeSelection().orElse(ThemeSelection.MODENA).urls.forEach(Application::setUserAgentStylesheet);
+
         FileStoreViewer.createWindow(stage, null);
     }
 
@@ -84,13 +86,6 @@ public class AppleCommanderFX extends Application {
         }
     }
 
-    public static void applyTheme(Scene scene) {
-        scene.getStylesheets().clear();
-        String cssPath = OsThemeDetector.getDetector().isDark() ? "/fxml/theme-dark.css" : "/fxml/theme-light.css";
-        scene.getStylesheets().add(Objects.requireNonNull(AppleCommanderFX.class.getResource(cssPath)).toExternalForm());
-    }
-
-
     public static void showErrorDialog(String message, Throwable t) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setHeaderText(message);
@@ -104,14 +99,43 @@ public class AppleCommanderFX extends Application {
         if (directoryPath == null || directoryPath.isBlank()) {
             return Optional.empty();
         }
-
         return Optional.of(new File(directoryPath));
     }
-
     public static void setLastOpenedDirectory(File directory) {
         if (directory != null && directory.isDirectory()) {
             Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
             prefs.put(IMAGE_DIRECTORY_KEY, directory.getAbsolutePath());
+        }
+    }
+
+    public static Optional<ThemeSelection> getThemeSelection() {
+        Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
+        String themeName = prefs.get(THEME_SELECTION, ThemeSelection.MODENA.name());
+        return Optional.of(ThemeSelection.valueOf(themeName));
+    }
+    public static void setThemeSelection(ThemeSelection themeSelection) {
+        Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
+        prefs.put(THEME_SELECTION, themeSelection.name());
+    }
+
+    public enum ThemeSelection {
+        MODENA(Application.STYLESHEET_MODENA),
+        PRIMER(new PrimerLight().getUserAgentStylesheet(), new PrimerDark().getUserAgentStylesheet()),
+        NORD(new NordLight().getUserAgentStylesheet(), new NordDark().getUserAgentStylesheet()),
+        CUPERTINO(new CupertinoLight().getUserAgentStylesheet(), new CupertinoDark().getUserAgentStylesheet()),
+        DRACULA(new Dracula().getUserAgentStylesheet());
+
+        public final List<String> urls;
+
+        ThemeSelection(String... urls) {
+            this.urls = List.of(urls);
+        }
+
+        public boolean includesDarkMode() {
+            return this != MODENA;
+        }
+        public boolean includesLightMode() {
+            return this != DRACULA;
         }
     }
 }
