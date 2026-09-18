@@ -24,6 +24,7 @@ import com.webcodepro.shrinkit.ThreadRecord;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.util.Container;
+import org.applecommander.util.DataBuffer;
 import org.applecommander.util.FileMagic;
 
 import java.io.IOException;
@@ -171,25 +172,28 @@ public class ShrinkitFileEntry implements FileEntry {
         return headerBlock.getModWhen();
     }
 
-    private byte[] decompress(ThreadRecord record) {
+    private DataBuffer decompress(ThreadRecord record) {
         if (record == null) {
-            return new byte[0];
+            return DataBuffer.create(0);
         }
         try (InputStream is = record.getInputStream()) {
-            return is.readAllBytes();
+            return DataBuffer.wrap(is.readAllBytes());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
     @Override
-    public byte[] getDataFork() {
+    public DataBuffer getDataFork() {
         return decompress(headerBlock.getDataForkThreadRecord());
     }
 
     @Override
-    public byte[] getResourceFork() {
-        return decompress(headerBlock.getResourceForkThreadRecord());
+    public Optional<DataBuffer> getResourceFork() {
+        if (headerBlock.getResourceForkThreadRecord() == null) {
+            return Optional.empty();
+        }
+        return Optional.of(decompress(headerBlock.getResourceForkThreadRecord()));
     }
 
     @Override

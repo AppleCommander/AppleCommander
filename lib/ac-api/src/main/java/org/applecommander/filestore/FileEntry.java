@@ -21,6 +21,9 @@ package org.applecommander.filestore;
 
 import org.applecommander.capability.Capability;
 import org.applecommander.util.Container;
+import org.applecommander.util.DataBuffer;
+
+import java.util.Optional;
 
 /**
  * A FileEntry represents a single file on disk.
@@ -59,13 +62,13 @@ public interface FileEntry extends Container {
      * Return the file's data.
      * This does not include any metadata that may be embedded with the file.
      */
-    byte[] getDataFork();
+    DataBuffer getDataFork();
     /**
      * Return the resource fork data.
      * This may not be supported and may throw an exception.
      * @see Capability
      */
-    // TODO should resource form reading and writing be deferred to a container operation?
-    //  ... Then we don't need capability (which is our test) and we don't have to implement no-op functions.
-    byte[] getResourceFork();
+    default Optional<DataBuffer> getResourceFork() {
+        return Optional.empty();
+    }
 }

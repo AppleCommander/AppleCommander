@@ -289,7 +289,7 @@ public class DiskFileStoreTest {
             }
             else {
                 try {
-                    byte[] data = fileEntry.getDataFork();
+                    byte[] data = fileEntry.getDataFork().asBytes();
                     assertNotNull(data);
                 } catch (Exception e) {
                     throw new AssertionError(String.format("Unable to read file '%s'", fileEntry.getName()), e);

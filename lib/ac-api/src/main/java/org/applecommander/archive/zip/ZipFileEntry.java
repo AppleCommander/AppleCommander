@@ -23,6 +23,7 @@ import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.util.Container;
+import org.applecommander.util.DataBuffer;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -103,16 +104,16 @@ public class ZipFileEntry implements FileEntry {
     }
 
     @Override
-    public byte[] getDataFork() {
+    public DataBuffer getDataFork() {
         try (ZipInputStream inputStream = fileStore.getZipInputStream()) {
             int n = 0;
             while (true) {
                 ZipEntry temp = inputStream.getNextEntry();
                 if (temp == null) break;
-                // Since the ZipEntry doesn't have an equals method and we can't trust name (can have multiple
+                // Since the ZipEntry doesn't have an equals method, and we can't trust name (can have multiple
                 // entries with the same name), we track the entry number that we read from originally.
                 if (n == this.entryNumber) {
-                    return inputStream.readAllBytes();
+                    return DataBuffer.wrap(inputStream.readAllBytes());
                 }
                 n++;
             }
@@ -121,11 +122,6 @@ public class ZipFileEntry implements FileEntry {
         catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
-    }
-
-    @Override
-    public byte[] getResourceFork() {
-        throw new UnsupportedOperationException();
     }
 
     @Override

@@ -45,7 +45,7 @@ public class ShrinkitFileStoreTest {
             assertEquals(1, files.size());
             FileEntry fileEntry = files.getFirst();
             assertEquals("TIP.DISK", fileEntry.getName());
-            byte[] data = fileEntry.getDataFork();
+            byte[] data = fileEntry.getDataFork().asBytes();
             assertNotNull(data);
             assertEquals(143360, data.length);
             Source disk = DataBufferSource.create(data, fileEntry.getName()).get();

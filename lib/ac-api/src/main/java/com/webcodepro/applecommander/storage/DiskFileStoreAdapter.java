@@ -204,11 +204,11 @@ public class DiskFileStoreAdapter implements FileStore {
             return Container.get(iface, subdirectory);
         }
         @Override
-        public byte[] getDataFork() {
-            return fileEntry.getFileData();
+        public DataBuffer getDataFork() {
+            return DataBuffer.wrap(fileEntry.getFileData());
         }
         @Override
-        public byte[] getResourceFork() {
+        public Optional<DataBuffer> getResourceFork() {
             throw new RuntimeException("Not supported by the legacy AppleCommander.");
         }
         @Override
