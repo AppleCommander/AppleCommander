@@ -24,6 +24,7 @@ import com.webcodepro.shrinkit.ThreadRecord;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.util.Container;
+import org.applecommander.util.FileMagic;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,20 +74,7 @@ public class ShrinkitFileEntry implements FileEntry {
     @Override
     public String getFiletype() {
         if (headerBlock.getFileSysId() == 1) {
-            // FIXME PRODOS filetypes will likely be managed elsewhere
-            return switch ((int) headerBlock.getFileType()) {
-                case 0x04 -> "TXT";
-                case 0x06 -> "BIN";
-                case 0x0f -> "DIR";
-                case 0x19 -> "ADB";
-                case 0x1a -> "AWP";
-                case 0x1b -> "ASP";
-                case 0xfa -> "INT";
-                case 0xfc -> "BAS";
-                case 0xfd -> "VAR";
-                case 0xff -> "SYS";
-                default -> String.format("$%02X", headerBlock.getFileType());
-            };
+            return FileMagic.getProdosFileTypeText((int) headerBlock.getFileType(), (int) headerBlock.getExtraType());
         }
         // FIXME
         return "?";

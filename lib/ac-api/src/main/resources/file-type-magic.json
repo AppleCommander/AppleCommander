@@ -1,0 +1,2189 @@
+[
+  {
+    "code": "$00",
+    "abbreviation": "NON",
+    "description": "Unknown",
+    "auxTypes": []
+  },
+  {
+    "code": "$01",
+    "abbreviation": "BAD",
+    "description": "Bad blocks",
+    "auxTypes": []
+  },
+  {
+    "code": "$02",
+    "abbreviation": "PCD",
+    "description": "Pascal code",
+    "auxTypes": []
+  },
+  {
+    "code": "$03",
+    "abbreviation": "PTX",
+    "description": "Pascal text",
+    "auxTypes": []
+  },
+  {
+    "code": "$04",
+    "abbreviation": "TXT",
+    "description": "ASCII text [Random-access record-length]",
+    "auxTypes": [
+      {
+        "code": "$1080",
+        "description": "GSummer MD5"
+      }
+    ]
+  },
+  {
+    "code": "$05",
+    "abbreviation": "PDA",
+    "description": "Pascal data",
+    "auxTypes": []
+  },
+  {
+    "code": "$06",
+    "abbreviation": "BIN",
+    "description": "Binary [Load address in bank 0]",
+    "auxTypes": []
+  },
+  {
+    "code": "$07",
+    "abbreviation": "FNT",
+    "description": "Apple /// Font",
+    "auxTypes": []
+  },
+  {
+    "code": "$08",
+    "abbreviation": "FOT",
+    "description": "Apple II or /// Graphics",
+    "auxTypes": [
+      {
+        "code": "$4000",
+        "description": "Packed Hi-Res Image [Image Format]"
+      },
+      {
+        "code": "$4001",
+        "description": "Packed Double Hi-Res Image [Image Format]"
+      },
+      {
+        "code": "$8001",
+        "description": "Printographer Packed HGR file [Image Format]"
+      },
+      {
+        "code": "$8002",
+        "description": "Printographer Packed DHGR file [Image Format]"
+      },
+      {
+        "code": "$8003",
+        "description": "Softdisk Hi-Res image [Application-Specific]"
+      },
+      {
+        "code": "$8004",
+        "description": "Softdisk Double Hi-Res [Application-Specific]"
+      },
+      {
+        "code": "$8066",
+        "description": "CiderPress LZ4FH 'Fadden Hires' Image"
+      }
+    ]
+  },
+  {
+    "code": "$09",
+    "abbreviation": "BA3",
+    "description": "Apple /// BASIC program",
+    "auxTypes": []
+  },
+  {
+    "code": "$0A",
+    "abbreviation": "DA3",
+    "description": "Apple /// BASIC data",
+    "auxTypes": []
+  },
+  {
+    "code": "$0B",
+    "abbreviation": "WPF",
+    "description": "Apple II or /// Word Processor",
+    "auxTypes": [
+      {
+        "code": "$8001",
+        "description": "Write This Way document [Application Specific]"
+      },
+      {
+        "code": "$8002",
+        "description": "Writing & Publishing document [Application Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$0C",
+    "abbreviation": "SOS",
+    "description": "Apple /// SOS System",
+    "auxTypes": []
+  },
+  {
+    "code": "$0F",
+    "abbreviation": "DIR",
+    "description": "Folder",
+    "auxTypes": []
+  },
+  {
+    "code": "$10",
+    "abbreviation": "RPD",
+    "description": "Apple /// RPS data",
+    "auxTypes": []
+  },
+  {
+    "code": "$11",
+    "abbreviation": "RPI",
+    "description": "Apple /// RPS index",
+    "auxTypes": []
+  },
+  {
+    "code": "$12",
+    "abbreviation": "AFD",
+    "description": "Apple /// AppleFile discard",
+    "auxTypes": []
+  },
+  {
+    "code": "$13",
+    "abbreviation": "AFM",
+    "description": "Apple /// AppleFile model",
+    "auxTypes": []
+  },
+  {
+    "code": "$14",
+    "abbreviation": "AFR",
+    "description": "Apple /// AppleFile report format",
+    "auxTypes": []
+  },
+  {
+    "code": "$15",
+    "abbreviation": "SCL",
+    "description": "Apple /// screen library",
+    "auxTypes": []
+  },
+  {
+    "code": "$16",
+    "abbreviation": "PFS",
+    "description": "PFS document",
+    "auxTypes": [
+      {
+        "code": "$0001",
+        "description": "PFS:File document [Program Specific]"
+      },
+      {
+        "code": "$0002",
+        "description": "PFS:Write document [Program Specific]"
+      },
+      {
+        "code": "$0003",
+        "description": "PFS:Graph document [Program Specific]"
+      },
+      {
+        "code": "$0004",
+        "description": "PFS:Plan document [Program Specific]"
+      },
+      {
+        "code": "$0016",
+        "description": "PFS internal data [Program Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$19",
+    "abbreviation": "ADB",
+    "description": "AppleWorks Data Base [Upper-/lowercase in name]",
+    "auxTypes": []
+  },
+  {
+    "code": "$1A",
+    "abbreviation": "AWP",
+    "description": "AppleWorks Word Processor [Upper-/lowercase in name]",
+    "auxTypes": []
+  },
+  {
+    "code": "$1B",
+    "abbreviation": "ASP",
+    "description": "AppleWorks Spreadsheet [Upper-/lowercase in name]",
+    "auxTypes": []
+  },
+  {
+    "code": "$20",
+    "abbreviation": "TDM",
+    "description": "Desktop Manager document",
+    "auxTypes": []
+  },
+  {
+    "code": "$21",
+    "description": "Instant Pascal source",
+    "auxTypes": []
+  },
+  {
+    "code": "$22",
+    "description": "UCSD Pascal Volume",
+    "auxTypes": []
+  },
+  {
+    "code": "$29",
+    "description": "Apple /// SOS Dictionary",
+    "auxTypes": []
+  },
+  {
+    "code": "$2A",
+    "abbreviation": "8SC",
+    "description": "Apple II Source Code [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$8001",
+        "description": "EBBS command script"
+      }
+    ]
+  },
+  {
+    "code": "$2B",
+    "abbreviation": "8OB",
+    "description": "Apple II Object Code [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$8001",
+        "description": "GBBS Pro object Code [Application Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$2C",
+    "abbreviation": "8IC",
+    "description": "Apple II Interpreted Code [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$8003",
+        "description": "APEX Program File [Application Specific]"
+      },
+      {
+        "code": "$8005",
+        "description": "EBBS tokenized command script"
+      }
+    ]
+  },
+  {
+    "code": "$2D",
+    "abbreviation": "8LD",
+    "description": "Apple II Language Data [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$8006",
+        "description": "EBBS message bundle"
+      },
+      {
+        "code": "$8007",
+        "description": "EBBS compressed message bundle"
+      }
+    ]
+  },
+  {
+    "code": "$2E",
+    "abbreviation": "P8C",
+    "description": "ProDOS 8 code module [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$8001",
+        "description": "Davex 8 Command [Application Specific]"
+      },
+      {
+        "code": "$8002",
+        "abbreviation": "PTP",
+        "description": "Point-to-Point drivers [Application Specific]"
+      },
+      {
+        "code": "$8003",
+        "abbreviation": "PTP",
+        "description": "Point-to-Point code [Application Specific]"
+      },
+      {
+        "code": "$8004",
+        "description": "Softdisk printer driver"
+      }
+    ]
+  },
+  {
+    "code": "$38",
+    "description": "Reserved",
+    "auxTypes": []
+  },
+  {
+    "code": "$39",
+    "description": "Reserved",
+    "auxTypes": []
+  },
+  {
+    "code": "$3A",
+    "description": "Reserved",
+    "auxTypes": []
+  },
+  {
+    "code": "$3B",
+    "description": "Reserved",
+    "auxTypes": []
+  },
+  {
+    "code": "$3C",
+    "description": "Reserved",
+    "auxTypes": []
+  },
+  {
+    "code": "$3D",
+    "description": "Reserved",
+    "auxTypes": []
+  },
+  {
+    "code": "$3E",
+    "description": "Reserved",
+    "auxTypes": []
+  },
+  {
+    "code": "$3F",
+    "description": "Reserved",
+    "auxTypes": []
+  },
+  {
+    "code": "$40",
+    "abbreviation": "DIC",
+    "description": "Dictionary file [Application Specific]",
+    "auxTypes": []
+  },
+  {
+    "code": "$41",
+    "description": "OCR data [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$8001",
+        "description": "InWords OCR font table [Application Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$42",
+    "abbreviation": "FTD",
+    "description": "File Type Descriptors [Search order]",
+    "auxTypes": []
+  },
+  {
+    "code": "$43",
+    "description": "Peripheral data [Application-Specific]",
+    "auxTypes": [
+      {
+        "code": "$8001",
+        "description": "Express document"
+      }
+    ]
+  },
+  {
+    "code": "$44",
+    "description": "Personal information",
+    "auxTypes": [
+      {
+        "code": "$8001",
+        "description": "ResuMaker personal information"
+      },
+      {
+        "code": "$8002",
+        "description": "ResuMaker resume"
+      },
+      {
+        "code": "$8003",
+        "description": "II Notes document"
+      },
+      {
+        "code": "$8004",
+        "description": "Softdisk scrapbook document"
+      },
+      {
+        "code": "$8005",
+        "description": "Don't Forget document"
+      },
+      {
+        "code": "$80FF",
+        "description": "What To Do data"
+      },
+      {
+        "code": "$BEEF",
+        "description": "Table Scraps scrapbook"
+      }
+    ]
+  },
+  {
+    "code": "$45",
+    "description": "Mathematical document",
+    "auxTypes": [
+      {
+        "code": "$8001",
+        "description": "GSymbolix 3D graph document"
+      },
+      {
+        "code": "$8002",
+        "description": "GSymbolix formula document"
+      },
+      {
+        "code": "$8001",
+        "description": "AutoSave profiles"
+      }
+    ]
+  },
+  {
+    "code": "$50",
+    "abbreviation": "GWP",
+    "description": "Apple IIgs Word Processor",
+    "auxTypes": [
+      {
+        "code": "$5445",
+        "description": "Teach document [Application Specific]"
+      },
+      {
+        "code": "$8001",
+        "description": "DeluxeWrite document [Application Specific]"
+      },
+      {
+        "code": "$8003",
+        "description": "Personal Journal document [Application-Specific]"
+      },
+      {
+        "code": "$8010",
+        "description": "AppleWorks GS Word processor [Application Specific]"
+      },
+      {
+        "code": "$8011",
+        "description": "Softdisk issue text [Application-Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$51",
+    "abbreviation": "GSS",
+    "description": "Apple IIgs Spreadsheet",
+    "auxTypes": [
+      {
+        "code": "$2358",
+        "description": "QC Calc spreadsheet"
+      },
+      {
+        "code": "$8010",
+        "description": "AppleWorks GS Spreadsheet [Application Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$52",
+    "abbreviation": "GDB",
+    "description": "Apple IIgs Data Base",
+    "auxTypes": [
+      {
+        "code": "$8001",
+        "description": "GTv database [Application Specific]"
+      },
+      {
+        "code": "$8010",
+        "description": "AppleWorks GS Data Base [Application Specific]"
+      },
+      {
+        "code": "$8011",
+        "description": "AppleWorks GS DB Template [Application Specific]"
+      },
+      {
+        "code": "$8013",
+        "description": "GSAS database [Application Specific]"
+      },
+      {
+        "code": "$8014",
+        "description": "GSAS accounting journals [Application Specific]"
+      },
+      {
+        "code": "$8015",
+        "description": "Address Manager document [Application Specific]"
+      },
+      {
+        "code": "$8016",
+        "description": "Address Manager defaults [Application-Specific]"
+      },
+      {
+        "code": "$8017",
+        "description": "Address Manager index [Application-Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$53",
+    "abbreviation": "DRW",
+    "description": "Drawing",
+    "auxTypes": [
+      {
+        "code": "$8002",
+        "description": "Graphic Disk Labeler document [Application Specific]"
+      },
+      {
+        "code": "$8010",
+        "description": "AppleWorks GS Graphics [Application Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$54",
+    "abbreviation": "GDP",
+    "description": "Desktop Publishing",
+    "auxTypes": [
+      {
+        "code": "$8002",
+        "description": "GraphicWriter document [Application Specific]"
+      },
+      {
+        "code": "$8003",
+        "description": "Label It document [Application-Specific]"
+      },
+      {
+        "code": "$8010",
+        "description": "AppleWorks GS Page Layout [Application Specific]"
+      },
+      {
+        "code": "$DD3E",
+        "description": "Medley document [Application Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$55",
+    "abbreviation": "HMD",
+    "description": "Hypermedia [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$0001",
+        "description": "HyperCard IIgs stack [Application Specific]"
+      },
+      {
+        "code": "$8001",
+        "description": "Tutor-Tech document [Application Specific]"
+      },
+      {
+        "code": "$8002",
+        "description": "HyperStudio document [Application Specific]"
+      },
+      {
+        "code": "$8003",
+        "description": "Nexus document [Application Specific]"
+      },
+      {
+        "code": "$8004",
+        "description": "HyperSoft stack [Application-Specific]"
+      },
+      {
+        "code": "$8005",
+        "description": "HyperSoft card [Application-Specific]"
+      },
+      {
+        "code": "$8006",
+        "description": "HyperSoft external command [Application-Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$56",
+    "abbreviation": "EDU",
+    "description": "Educational Data [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$8001",
+        "description": "Tutor-Tech Scores [Application Specific]"
+      },
+      {
+        "code": "$8007",
+        "description": "GradeBook Data [Application-specific]"
+      }
+    ]
+  },
+  {
+    "code": "$57",
+    "abbreviation": "STN",
+    "description": "Stationery",
+    "auxTypes": [
+      {
+        "code": "$8003",
+        "description": "Music Writer format [Application Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$58",
+    "abbreviation": "HLP",
+    "description": "Help File",
+    "auxTypes": [
+      {
+        "code": "$8002",
+        "description": "Davex 8 Help File [Application Specific]"
+      },
+      {
+        "code": "$8005",
+        "description": "MICOL Advanced BASIC help file [Application Specific]"
+      },
+      {
+        "code": "$8006",
+        "description": "Locator help document [Application-Specific]"
+      },
+      {
+        "code": "$8007",
+        "description": "Personal Journal help [Application-Specific]"
+      },
+      {
+        "code": "$8008",
+        "description": "Home Refinancer help [Application-Specific]"
+      },
+      {
+        "code": "$8009",
+        "description": "The Optimizer help [Application Specific]"
+      },
+      {
+        "code": "$800A",
+        "description": "Text Wizard help"
+      },
+      {
+        "code": "$800B",
+        "description": "WordWorks Pro help system"
+      },
+      {
+        "code": "$800C",
+        "description": "Sound Wizard help"
+      },
+      {
+        "code": "$800D",
+        "description": "SeeHear help system"
+      },
+      {
+        "code": "$800E",
+        "description": "QuickForms help system"
+      },
+      {
+        "code": "$800F",
+        "description": "Don't Forget help system"
+      }
+    ]
+  },
+  {
+    "code": "$59",
+    "abbreviation": "COM",
+    "description": "Communications File [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$8010",
+        "description": "AppleWorks GS Communications [Application Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$5A",
+    "abbreviation": "CFG",
+    "description": "Configuration file [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$0000",
+        "description": "Sound settings files [Identified by name]"
+      },
+      {
+        "code": "$0002",
+        "description": "Battery RAM configuration"
+      },
+      {
+        "code": "$0003",
+        "description": "AutoLaunch preferences [Application Specific]"
+      },
+      {
+        "code": "$0004",
+        "description": "SetStart preferences"
+      },
+      {
+        "code": "$0005",
+        "description": "GSBug configuration [Application Specific]"
+      },
+      {
+        "code": "$0006",
+        "description": "Archiver preferences"
+      },
+      {
+        "code": "$0007",
+        "description": "Archiver Table of Contents"
+      },
+      {
+        "code": "$0008",
+        "description": "Font Manager data"
+      },
+      {
+        "code": "$0009",
+        "description": "Print Manager data"
+      },
+      {
+        "code": "$000A",
+        "description": "IR preferences"
+      },
+      {
+        "code": "$8001",
+        "description": "Master Tracks Jr. preferences"
+      },
+      {
+        "code": "$8002",
+        "description": "GraphicWriter preferences [Application Specific]"
+      },
+      {
+        "code": "$8003",
+        "description": "Z-Link configuration [Application Specific]"
+      },
+      {
+        "code": "$8004",
+        "description": "JumpStart configuration [Application Specific]"
+      },
+      {
+        "code": "$8005",
+        "description": "Davex 8 configuration [Application Specific]"
+      },
+      {
+        "code": "$8006",
+        "description": "Nifty List configuration [Application Specific]"
+      },
+      {
+        "code": "$8007",
+        "description": "GTv videodisc configuration [Application Specific]"
+      },
+      {
+        "code": "$8008",
+        "description": "GTv Workshop configuration [Application Specific]"
+      },
+      {
+        "code": "$8009",
+        "abbreviation": "PTP",
+        "description": "Point-to-Point preferences [Application Specific]"
+      },
+      {
+        "code": "$800A",
+        "description": "ORCA/Disassembler preferences [Application Specific]"
+      },
+      {
+        "code": "$800B",
+        "description": "SnowTerm preferences [Application Specific]"
+      },
+      {
+        "code": "$800C",
+        "description": "My Word! preferences [Application Specific]"
+      },
+      {
+        "code": "$800D",
+        "description": "Chipmunk configuration [Application Specific]"
+      },
+      {
+        "code": "$8010",
+        "description": "AppleWorks GS configuration [Application Specific]"
+      },
+      {
+        "code": "$8011",
+        "description": "SDE Shell preferences [Application Specific]"
+      },
+      {
+        "code": "$8012",
+        "description": "SDE Editor preferences [Application Specific]"
+      },
+      {
+        "code": "$8013",
+        "description": "SDE system tab ruler [Application Specific]"
+      },
+      {
+        "code": "$8014",
+        "description": "Nexus configuration [Application Specific]"
+      },
+      {
+        "code": "$8015",
+        "description": "DesignMaster preferences [Application Specific]"
+      },
+      {
+        "code": "$801A",
+        "description": "MAX/Edit keyboard template [Application-Specific]"
+      },
+      {
+        "code": "$801B",
+        "description": "MAX/Edit tab ruler set [Application-Specific]"
+      },
+      {
+        "code": "$801C",
+        "description": "Platinum Paint preferences [Application Specific]"
+      },
+      {
+        "code": "$801D",
+        "description": "Sea Scan 1000 preferences [Application-Specific]"
+      },
+      {
+        "code": "$801E",
+        "description": "Allison preferences [Application Specific]"
+      },
+      {
+        "code": "$801F",
+        "description": "Gold of the Americas options [Application-Specific]"
+      },
+      {
+        "code": "$8021",
+        "description": "GSAS accounting setup [Application Specific]"
+      },
+      {
+        "code": "$8022",
+        "description": "GSAS accounting document [Application Specific]"
+      },
+      {
+        "code": "$8023",
+        "description": "UtilityLaunch preferences [Application-Specific]"
+      },
+      {
+        "code": "$8024",
+        "description": "Softdisk configuration [Application Specific]"
+      },
+      {
+        "code": "$8025",
+        "description": "Quit-To configuration [Application Specific]"
+      },
+      {
+        "code": "$8026",
+        "description": "Big Edit Thing preferences [Application-Specific]"
+      },
+      {
+        "code": "$8027",
+        "description": "ZMaker preferences [Application-Specific]"
+      },
+      {
+        "code": "$8028",
+        "description": "Minstrel configuration [Application-Specific]"
+      },
+      {
+        "code": "$8029",
+        "description": "WordWorks Pro preferences [Application-Specific]"
+      },
+      {
+        "code": "$802B",
+        "description": "Pointless preferences [Application-Specific]"
+      },
+      {
+        "code": "$802E",
+        "description": "Label It configuration [Application-Specific]"
+      },
+      {
+        "code": "$802F",
+        "description": "Cool Cursor document [Application-Specific]"
+      },
+      {
+        "code": "$8030",
+        "description": "Locator preferences [Application-Specific]"
+      },
+      {
+        "code": "$8031",
+        "description": "Replicator preferences [Application-Specific]"
+      },
+      {
+        "code": "$8033",
+        "description": "Kangaroo configuration"
+      },
+      {
+        "code": "$8034",
+        "description": "Kangaroo data"
+      },
+      {
+        "code": "$8035",
+        "description": "Home Refinancer preferences [Application-Specific]"
+      },
+      {
+        "code": "$8035",
+        "description": "Home Refinancer preferences"
+      },
+      {
+        "code": "$8036",
+        "description": "Easy Eyes settings"
+      },
+      {
+        "code": "$8037",
+        "description": "The Optimizer settings"
+      },
+      {
+        "code": "$8038",
+        "description": "Text Wizard settings"
+      },
+      {
+        "code": "$803B",
+        "description": "Disk Access II preferences"
+      },
+      {
+        "code": "$803D",
+        "description": "Quick DA configuration"
+      },
+      {
+        "code": "$803E",
+        "description": "Crazy 8s preferences"
+      },
+      {
+        "code": "$803F",
+        "description": "Sound Wizard settings"
+      },
+      {
+        "code": "$8041",
+        "description": "Quick Window configuration"
+      },
+      {
+        "code": "$8044",
+        "description": "Universe Master disk map"
+      },
+      {
+        "code": "$8046",
+        "description": "Autopilot configuration"
+      },
+      {
+        "code": "$8047",
+        "description": "EGOed preferences"
+      },
+      {
+        "code": "$8049",
+        "description": "Quick DA preferences"
+      },
+      {
+        "code": "$804B",
+        "description": "HardPressed volume preferences"
+      },
+      {
+        "code": "$804C",
+        "description": "HardPressed global preferences"
+      },
+      {
+        "code": "$804D",
+        "description": "HardPressed profile"
+      },
+      {
+        "code": "$8050",
+        "description": "Don't Forget settings"
+      },
+      {
+        "code": "$8052",
+        "description": "ProBOOT preferences"
+      },
+      {
+        "code": "$8054",
+        "description": "Battery Brain preferences"
+      },
+      {
+        "code": "$8055",
+        "description": "Rainbow configuration"
+      },
+      {
+        "code": "$8061",
+        "description": "TypeSet preferences"
+      },
+      {
+        "code": "$8063",
+        "description": "Cool Cursor preferences"
+      },
+      {
+        "code": "$8069",
+        "description": "Spectrum preferences"
+      },
+      {
+        "code": "$806E",
+        "description": "Balloon preferences"
+      },
+      {
+        "code": "$80FE",
+        "description": "Special Edition configuration"
+      },
+      {
+        "code": "$80FF",
+        "description": "Sun Dial preferences"
+      }
+    ]
+  },
+  {
+    "code": "$5B",
+    "abbreviation": "ANM",
+    "description": "Animation file [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$8001",
+        "description": "Cartooners movie [Application Specific]"
+      },
+      {
+        "code": "$8002",
+        "description": "Cartooners actors [Application Specific]"
+      },
+      {
+        "code": "$8005",
+        "description": "Arcade King Super document [Application Specific]"
+      },
+      {
+        "code": "$8006",
+        "description": "Arcade King DHRG document [Application Specific]"
+      },
+      {
+        "code": "$8007",
+        "description": "DreamVision movie [Application Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$5C",
+    "abbreviation": "MUM",
+    "description": "Multimedia document [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$8001",
+        "description": "GTv multimedia playlist [Application Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$5D",
+    "description": "Generic game document",
+    "auxTypes": []
+  },
+  {
+    "code": "$5D",
+    "abbreviation": "ENT",
+    "description": "Game/Entertainment document [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$8001",
+        "description": "Solitaire Royale document [Application Specific]"
+      },
+      {
+        "code": "$8002",
+        "description": "BattleFront scenario"
+      },
+      {
+        "code": "$8003",
+        "description": "BattleFront saved game"
+      },
+      {
+        "code": "$8004",
+        "description": "Gold of the Americas game [Application-Specific]"
+      },
+      {
+        "code": "$8006",
+        "description": "Blackjack Tutor document [Application Specific]"
+      },
+      {
+        "code": "$8008",
+        "description": "Canasta document"
+      },
+      {
+        "code": "$800B",
+        "description": "Word Search document"
+      },
+      {
+        "code": "$800C",
+        "description": "Tarot deal"
+      },
+      {
+        "code": "$800D",
+        "description": "Tarot tournament"
+      },
+      {
+        "code": "$800E",
+        "description": "Full Metal Planet game"
+      },
+      {
+        "code": "$800F",
+        "description": "Full Metal Planet player"
+      },
+      {
+        "code": "$8010",
+        "description": "Quizzical high scores [Application-Specific]"
+      },
+      {
+        "code": "$8011",
+        "description": "Meltdown high scores [Application-Specific]"
+      },
+      {
+        "code": "$8012",
+        "description": "BlockWords high scores [Application-Specific]"
+      },
+      {
+        "code": "$8013",
+        "description": "Lift-A-Gon scores"
+      },
+      {
+        "code": "$8014",
+        "description": "Softdisk Adventure"
+      },
+      {
+        "code": "$8015",
+        "description": "Blankety Blank document"
+      },
+      {
+        "code": "$8016",
+        "description": "Son of Star Axe champion"
+      },
+      {
+        "code": "$8017",
+        "description": "Digit Fidget high scores"
+      },
+      {
+        "code": "$8018",
+        "description": "Eddie map"
+      },
+      {
+        "code": "$8019",
+        "description": "Eddie tile set"
+      },
+      {
+        "code": "$801A",
+        "description": "Les Passagers du Vent party file"
+      },
+      {
+        "code": "$801B",
+        "description": "Bill Palmer party file"
+      },
+      {
+        "code": "$801C",
+        "description": "Brutal Deluxe game party file"
+      },
+      {
+        "code": "$801D",
+        "description": "L'Egérie party file"
+      },
+      {
+        "code": "$801E",
+        "description": "Canal Meurtre party file"
+      },
+      {
+        "code": "$801F",
+        "description": "Tout a disparu party file"
+      },
+      {
+        "code": "$8020",
+        "description": "Le retour du Dr Genius"
+      },
+      {
+        "code": "$8021",
+        "description": "La Belle Zohra"
+      },
+      {
+        "code": "$8022",
+        "description": "reserved"
+      },
+      {
+        "code": "$8023",
+        "description": "Time Pilot"
+      },
+      {
+        "code": "$8024",
+        "description": "reserved"
+      },
+      {
+        "code": "$8025",
+        "description": "Kontrabant 2"
+      },
+      {
+        "code": "$8026",
+        "description": "Kontrabant 1"
+      },
+      {
+        "code": "$8027",
+        "description": "Le mystère de Kikekankoi"
+      },
+      {
+        "code": "$8028",
+        "description": "Boulder Dash"
+      },
+      {
+        "code": "$8029",
+        "description": "L'Affaire Santa Fe"
+      },
+      {
+        "code": "$802A",
+        "description": "reserved"
+      },
+      {
+        "code": "$802B",
+        "description": "Athanor"
+      },
+      {
+        "code": "$802C",
+        "description": "reserved"
+      },
+      {
+        "code": "$802D",
+        "description": "reserved"
+      },
+      {
+        "code": "$8122",
+        "description": "Wolfenstein 3D scenario"
+      },
+      {
+        "code": "$8123",
+        "description": "Wolfenstein 3D saved game"
+      }
+    ]
+  },
+  {
+    "code": "$5E",
+    "abbreviation": "DVU",
+    "description": "Development utility document [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$0001",
+        "description": "Resource file"
+      },
+      {
+        "code": "$8001",
+        "description": "ORCA/Disassembler template [Application Specific]"
+      },
+      {
+        "code": "$8003",
+        "description": "DesignMaster document [Application Specific]"
+      },
+      {
+        "code": "$8008",
+        "description": "ORCA/C symbol file"
+      }
+    ]
+  },
+  {
+    "code": "$5F",
+    "abbreviation": "FIN",
+    "description": "Financial document [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$8001",
+        "description": "Your Money Matters document [Application Specific]"
+      },
+      {
+        "code": "$8002",
+        "description": "Home Refinancer document [Application Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$6B",
+    "abbreviation": "BIO",
+    "description": "PC Transporter BIOS",
+    "auxTypes": []
+  },
+  {
+    "code": "$6D",
+    "abbreviation": "TDR",
+    "description": "PC Transporter driver",
+    "auxTypes": []
+  },
+  {
+    "code": "$6E",
+    "abbreviation": "PRE",
+    "description": "PC Transporter pre-boot",
+    "auxTypes": []
+  },
+  {
+    "code": "$6F",
+    "abbreviation": "HDV",
+    "description": "PC Transporter volume",
+    "auxTypes": []
+  },
+  {
+    "code": "$A0",
+    "abbreviation": "WP",
+    "description": "WordPerfect document [WordPerfect]",
+    "auxTypes": []
+  },
+  {
+    "code": "$AB",
+    "abbreviation": "GSB",
+    "description": "Apple IIgs BASIC program",
+    "auxTypes": []
+  },
+  {
+    "code": "$AC",
+    "abbreviation": "TDF",
+    "description": "Apple IIgs BASIC TDF",
+    "auxTypes": []
+  },
+  {
+    "code": "$AD",
+    "abbreviation": "BDF",
+    "description": "Apple IIgs BASIC data",
+    "auxTypes": []
+  },
+  {
+    "code": "$AF",
+    "description": "Apple IIgs interpreted code",
+    "auxTypes": []
+  },
+  {
+    "code": "$B0",
+    "abbreviation": "SRC",
+    "description": "Apple IIgs source code [APW Language type]",
+    "auxTypes": [
+      {
+        "code": "$0001",
+        "description": "APW Text file"
+      },
+      {
+        "code": "$0003",
+        "description": "APW 65816 Assembly source code"
+      },
+      {
+        "code": "$0005",
+        "description": "ORCA/Pascal source code"
+      },
+      {
+        "code": "$0006",
+        "description": "APW command file"
+      },
+      {
+        "code": "$0008",
+        "description": "ORCA/C source code"
+      },
+      {
+        "code": "$0009",
+        "description": "APW Linker command file"
+      },
+      {
+        "code": "$000A",
+        "description": "APW C source code"
+      },
+      {
+        "code": "$000C",
+        "description": "ORCA/Desktop command file"
+      },
+      {
+        "code": "$0015",
+        "description": "APW Rez source file"
+      },
+      {
+        "code": "$0017",
+        "description": "Installer script [Application-Specific]"
+      },
+      {
+        "code": "$001E",
+        "description": "TML Pascal source code"
+      },
+      {
+        "code": "$0116",
+        "description": "ORCA/Disassembler script [Application Specific]"
+      },
+      {
+        "code": "$0503",
+        "description": "SDE Assembler source code [Application Specific]"
+      },
+      {
+        "code": "$0506",
+        "description": "SDE command script [Application Specific]"
+      },
+      {
+        "code": "$0601",
+        "description": "Nifty List data [Application-Specific]"
+      },
+      {
+        "code": "$0719",
+        "description": "PostScript file [Application-Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$B1",
+    "abbreviation": "OBJ",
+    "description": "Apple IIgs object code",
+    "auxTypes": []
+  },
+  {
+    "code": "$B2",
+    "abbreviation": "LIB",
+    "description": "Apple IIgs Library file",
+    "auxTypes": []
+  },
+  {
+    "code": "$B3",
+    "abbreviation": "S16",
+    "description": "GS/OS application",
+    "auxTypes": []
+  },
+  {
+    "code": "$B4",
+    "abbreviation": "RTL",
+    "description": "GS/OS Run-Time Library",
+    "auxTypes": []
+  },
+  {
+    "code": "$B5",
+    "abbreviation": "EXE",
+    "description": "GS/OS Shell application",
+    "auxTypes": []
+  },
+  {
+    "code": "$B6",
+    "abbreviation": "PIF",
+    "description": "Permanent initialization file [Not loaded if bit 15 set]",
+    "auxTypes": []
+  },
+  {
+    "code": "$B7",
+    "abbreviation": "TIF",
+    "description": "Temporary initialization file [Not loaded if bit 15 set]",
+    "auxTypes": []
+  },
+  {
+    "code": "$B8",
+    "abbreviation": "NDA",
+    "description": "New desk accessory [Not loaded if bit 15 set]",
+    "auxTypes": []
+  },
+  {
+    "code": "$B9",
+    "abbreviation": "CDA",
+    "description": "Classic desk accessory [Not loaded if bit 15 set]",
+    "auxTypes": []
+  },
+  {
+    "code": "$BA",
+    "abbreviation": "TOL",
+    "description": "Tool",
+    "auxTypes": []
+  },
+  {
+    "code": "$BB",
+    "abbreviation": "DVR",
+    "description": "Apple IIgs Device Driver file [Not loaded if bit 15 set]",
+    "auxTypes": [
+      {
+        "code": "$0070",
+        "description": "GNO/ME terminal device driver"
+      },
+      {
+        "code": "$7E02",
+        "description": "Spectrum drivers (Application specific)"
+      },
+      {
+        "code": "$7E02",
+        "description": "Spectrum serial port or HTML Engine"
+      },
+      {
+        "code": "$7F01",
+        "description": "GTv videodisc serial driver [Application Specific]"
+      },
+      {
+        "code": "$7F02",
+        "description": "GTv videodisc game port driver [Application Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$BC",
+    "abbreviation": "LDF",
+    "description": "Load file (generic)",
+    "auxTypes": [
+      {
+        "code": "$4001",
+        "description": "Nifty List Module [Application Specific]"
+      },
+      {
+        "code": "$4002",
+        "description": "Super Info module [Application Specific]"
+      },
+      {
+        "code": "$4004",
+        "description": "Twilight document [Application Specific]"
+      },
+      {
+        "code": "$4006",
+        "description": "Foundation resource editor"
+      },
+      {
+        "code": "$4007",
+        "description": "HyperStudio New Button Action [Application-Specific]"
+      },
+      {
+        "code": "$4008",
+        "description": "HyperStudio Screen Transition [Application-Specific]"
+      },
+      {
+        "code": "$4009",
+        "description": "DreamGrafix module [Application Specific]"
+      },
+      {
+        "code": "$400A",
+        "description": "HyperStudio Extra utility [Application-Specific]"
+      },
+      {
+        "code": "$400F",
+        "description": "HardPressed compression module"
+      },
+      {
+        "code": "$4010",
+        "description": "Graphic Exchange translator"
+      },
+      {
+        "code": "$4011",
+        "description": "Desktop Enhancer blanker"
+      },
+      {
+        "code": "$4015",
+        "description": "Spectrum plugin Display [Application specific]"
+      },
+      {
+        "code": "$4080",
+        "description": "Spectrum XCMD [Appliction specific]"
+      },
+      {
+        "code": "$4083",
+        "description": "Marineti link layer module"
+      }
+    ]
+  },
+  {
+    "code": "$BD",
+    "abbreviation": "FST",
+    "description": "GS/OS File System Translator [Not loaded if bit 15 set]",
+    "auxTypes": []
+  },
+  {
+    "code": "$BE",
+    "description": "Translator",
+    "auxTypes": []
+  },
+  {
+    "code": "$BF",
+    "abbreviation": "DOC",
+    "description": "GS/OS document",
+    "auxTypes": []
+  },
+  {
+    "code": "$C0",
+    "abbreviation": "PNT",
+    "description": "Packed Super Hi-Res picture [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$0000",
+        "description": "Paintworks Packed picture [Application Specific]"
+      },
+      {
+        "code": "$0001",
+        "description": "Packed Super Hi-Res Image [Application Specific]"
+      },
+      {
+        "code": "$0002",
+        "description": "Apple Preferred Format picture [Application Specific]"
+      },
+      {
+        "code": "$0003",
+        "description": "Packed QuickDraw II PICT file [Application Specific]"
+      },
+      {
+        "code": "$0080",
+        "description": "TIFF document"
+      },
+      {
+        "code": "$0081",
+        "description": "JFIF (JPEG) document"
+      },
+      {
+        "code": "$8001",
+        "description": "GTv background image [Application Specific]"
+      },
+      {
+        "code": "$8005",
+        "description": "DreamGrafix document [Application Specific]"
+      },
+      {
+        "code": "$8006",
+        "description": "GIF document [Application-Specific]"
+      },
+      {
+        "code": "$BDBD",
+        "abbreviation": "LZ4",
+        "description": "LZ4 document [Application-Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$C1",
+    "abbreviation": "PIC",
+    "description": "Super Hi-Res picture [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$0000",
+        "description": "Super Hi-Res Screen image [Application Specific]"
+      },
+      {
+        "code": "$0001",
+        "description": "QuickDraw PICT file [Application Specific]"
+      },
+      {
+        "code": "$0002",
+        "description": "Super Hi-Res 3200 color screen image"
+      },
+      {
+        "code": "$8001",
+        "description": "Allison raw image doc. [Application Specific]"
+      },
+      {
+        "code": "$8002",
+        "description": "ThunderScan image doc. [Application Specific]"
+      },
+      {
+        "code": "$8003",
+        "description": "DreamGrafix document [Application-Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$C2",
+    "abbreviation": "ANI",
+    "description": "Paintworks animation",
+    "auxTypes": [
+      {
+        "code": "$8005",
+        "abbreviation": "GSLA",
+        "descripion": "GSLA animation [Application-Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$C3",
+    "abbreviation": "PAL",
+    "description": "Paintworks palette",
+    "auxTypes": []
+  },
+  {
+    "code": "$C5",
+    "abbreviation": "OOG",
+    "description": "Object-oriented graphics [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$8000",
+        "description": "Draw Plus document [Application Specific]"
+      },
+      {
+        "code": "$C000",
+        "description": "DYOH: Architecture doc. [Application Specific]"
+      },
+      {
+        "code": "$C001",
+        "description": "DYOH predrawn objects [Application Specific]"
+      },
+      {
+        "code": "$C002",
+        "description": "DYOH custom objects [Application Specific]"
+      },
+      {
+        "code": "$C003",
+        "description": "DYOH clipboard [Application Specific]"
+      },
+      {
+        "code": "$C004",
+        "description": "[Application Specific]"
+      },
+      {
+        "code": "$C005",
+        "description": "[Application Specific]"
+      },
+      {
+        "code": "$C006",
+        "description": "DYOH: Landscape Document [Application Specific]"
+      },
+      {
+        "code": "$C007",
+        "description": "PyWare Document [Application-Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$C6",
+    "abbreviation": "SCR",
+    "description": "Script [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$8001",
+        "description": "Davex 8 script"
+      },
+      {
+        "code": "$8002",
+        "description": "Universe Master backup script"
+      },
+      {
+        "code": "$8003",
+        "description": "Universe Master Chain script"
+      }
+    ]
+  },
+  {
+    "code": "$C7",
+    "abbreviation": "CDV",
+    "description": "Control Panel document [Not loaded if bit 15 set]",
+    "auxTypes": []
+  },
+  {
+    "code": "$C8",
+    "abbreviation": "FON",
+    "description": "Font",
+    "auxTypes": [
+      {
+        "code": "$0000",
+        "description": "Font (Standard Apple IIgs QuickDraw II Font) [Reserved]"
+      },
+      {
+        "code": "$0001",
+        "description": "TrueType font resource"
+      },
+      {
+        "code": "$0008",
+        "description": "Postscript font resource"
+      },
+      {
+        "code": "$0081",
+        "description": "TrueType font file"
+      },
+      {
+        "code": "$0088",
+        "description": "Postscript font file"
+      }
+    ]
+  },
+  {
+    "code": "$C9",
+    "abbreviation": "FND",
+    "description": "Finder data",
+    "auxTypes": []
+  },
+  {
+    "code": "$CA",
+    "abbreviation": "ICN",
+    "description": "Icons",
+    "auxTypes": []
+  },
+  {
+    "code": "$D5",
+    "abbreviation": "MUS",
+    "description": "Music sequence [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$0000",
+        "description": "Music Construction Set song [Application Specific]"
+      },
+      {
+        "code": "$0001",
+        "description": "MIDI Synth sequence"
+      },
+      {
+        "code": "$0007",
+        "description": "SoundSmith document [Application Specific]"
+      },
+      {
+        "code": "$0008",
+        "abbreviation": "NTP",
+        "description": "NinjaTrackerPlus sequence [Application Specific]"
+      },
+      {
+        "code": "$8002",
+        "description": "Diversi-Tune sequence [Application Specific]"
+      },
+      {
+        "code": "$8003",
+        "description": "Master Tracks Jr. sequence [Application Specific]"
+      },
+      {
+        "code": "$8004",
+        "description": "Music Writer sequence"
+      },
+      {
+        "code": "$8005",
+        "description": "Arcade King Super music [Application Specific]"
+      },
+      {
+        "code": "$8006",
+        "description": "Music Composer file"
+      },
+      {
+        "code": "$D0E7",
+        "description": "Electric Duet [Application Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$D6",
+    "abbreviation": "INS",
+    "description": "Instrument [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$0000",
+        "description": "Music Construction Set instrument"
+      },
+      {
+        "code": "$0001",
+        "description": "MIDI Synth instrument"
+      },
+      {
+        "code": "$8002",
+        "description": "Diversi-Tune instrument [Application Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$D7",
+    "abbreviation": "MID",
+    "description": "MIDI data",
+    "auxTypes": [
+      {
+        "code": "$0000",
+        "description": "MIDI standard data [Application Specific]"
+      },
+      {
+        "code": "$0080",
+        "description": "MIDI System Exclusive data"
+      },
+      {
+        "code": "$8001",
+        "description": "MasterTracks Pro Sysex file"
+      }
+    ]
+  },
+  {
+    "code": "$D8",
+    "abbreviation": "SND",
+    "description": "Sampled sound [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$0000",
+        "description": "Audio IFF document [Application Specific]"
+      },
+      {
+        "code": "$0001",
+        "description": "AIFF-C document [Application Specific]"
+      },
+      {
+        "code": "$0002",
+        "description": "ASIF instrument [Application Specific]"
+      },
+      {
+        "code": "$0003",
+        "description": "Sound resource file [Application-Specific]"
+      },
+      {
+        "code": "$0004",
+        "description": "MIDI Synth wave data"
+      },
+      {
+        "code": "$0005",
+        "description": "Compact-Disc Digital Audio Track"
+      },
+      {
+        "code": "$0006",
+        "description": "Compact-Disc Digital Data Track"
+      },
+      {
+        "code": "$8001",
+        "description": "HyperStudio sound [Application Specific]"
+      },
+      {
+        "code": "$8002",
+        "description": "Arcade King Super sound [Application Specific]"
+      },
+      {
+        "code": "$8003",
+        "description": "SoundOff! sound bank [Application-Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$D9",
+    "abbreviation": "TTS",
+    "description": "Text-To-Speech (via S.A.M.)",
+    "auxTypes": [
+      {
+        "code": "$0001",
+        "description": "Text-To-Speech (via S.A.M.)"
+      }
+    ]
+  },
+  {
+    "code": "$DB",
+    "abbreviation": "DBM",
+    "description": "DB Master document [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$0001",
+        "description": "DB Master document [Application Specific]"
+      }
+    ]
+  },
+  {
+    "code": "$E0",
+    "abbreviation": "LBR",
+    "description": "Archival library [Application Specific]",
+    "auxTypes": [
+      {
+        "code": "$0000",
+        "description": "ALU library [Carolina System Software]"
+      },
+      {
+        "code": "$0001",
+        "description": "AppleSingle File [Application Specific]"
+      },
+      {
+        "code": "$0002",
+        "description": "AppleDouble Header File [Application Specific]"
+      },
+      {
+        "code": "$0003",
+        "description": "AppleDouble Data File [Application Specific]"
+      },
+      {
+        "code": "$0004",
+        "description": "Archiver archive"
+      },
+      {
+        "code": "$0005",
+        "description": "DiskCopy disk image [Application-Specific]"
+      },
+      {
+        "code": "$0100",
+        "description": "Apple 5.25 disk image"
+      },
+      {
+        "code": "$0101",
+        "description": "Profile 5MB disk image"
+      },
+      {
+        "code": "$0102",
+        "description": "Profile 10MB disk image"
+      },
+      {
+        "code": "$0103",
+        "description": "Apple 3.5 disk image"
+      },
+      {
+        "code": "$0104",
+        "description": "SCSI device image"
+      },
+      {
+        "code": "$0105",
+        "description": "SCSI hard disk image"
+      },
+      {
+        "code": "$0106",
+        "description": "SCSI tape image"
+      },
+      {
+        "code": "$0107",
+        "description": "SCSI CD-ROM image"
+      },
+      {
+        "code": "$010E",
+        "description": "RAM disk image"
+      },
+      {
+        "code": "$010F",
+        "description": "ROM disk image"
+      },
+      {
+        "code": "$0110",
+        "description": "File server image"
+      },
+      {
+        "code": "$0113",
+        "description": "Hard disk image"
+      },
+      {
+        "code": "$0114",
+        "description": "Floppy disk image"
+      },
+      {
+        "code": "$0115",
+        "description": "Tape image"
+      },
+      {
+        "code": "$011E",
+        "description": "AppleTalk file server image"
+      },
+      {
+        "code": "$0120",
+        "description": "DiskCopy 6 disk image"
+      },
+      {
+        "code": "$0130",
+        "description": "Universal Disk Image file"
+      },
+      {
+        "code": "$8000",
+        "description": "Binary II File [Application Specific]"
+      },
+      {
+        "code": "$8001",
+        "description": "AppleLink ACU document [Application Specific]"
+      },
+      {
+        "code": "$8002",
+        "description": "ShrinkIt (NuFX) document [Application Specific]"
+      },
+      {
+        "code": "$8003",
+        "description": "360 MS archive file"
+      },
+      {
+        "code": "$8004",
+        "description": "Davex archived volume [Application Specific]"
+      },
+      {
+        "code": "$8006",
+        "description": "EZ Backup Saveset doc. [Application Specific]"
+      },
+      {
+        "code": "$8007",
+        "description": "ELS DOS 3.3 volume [Application Specific]"
+      },
+      {
+        "code": "$8009",
+        "description": "UtilityWorks document [Application-Specific]"
+      },
+      {
+        "code": "$800A",
+        "description": "Replicator document [Application-Specific]"
+      },
+      {
+        "code": "$800B",
+        "description": "AutoArk compressed document"
+      },
+      {
+        "code": "$800C",
+        "description": "Bill Tudor's SixPack Encrypt/Decrypt [Application-Specific]"
+      },
+      {
+        "code": "$800D",
+        "description": "HardPressed compressed file (data fork compressed)"
+      },
+      {
+        "code": "$800E",
+        "description": "HardPressed compressed file (rsrc fork compressed)"
+      },
+      {
+        "code": "$800F",
+        "description": "HardPressed compressed file (both forks compressed)"
+      },
+      {
+        "code": "$8010",
+        "description": "LHA archive"
+      }
+    ]
+  },
+  {
+    "code": "$E1",
+    "abbreviation": "ATK",
+    "description": "AppleTalk data",
+    "auxTypes": [
+      {
+        "code": "$0001",
+        "description": "AppleTalk data"
+      }
+    ]
+  },
+  {
+    "code": "$E2",
+    "abbreviation": "ATK",
+    "description": "AppleTalk data",
+    "auxTypes": [
+      {
+        "code": "$FFFF",
+        "description": "EasyMount document"
+      }
+    ]
+  },
+  {
+    "code": "$EE",
+    "abbreviation": "R16",
+    "description": "EDASM 816 relocatable file",
+    "auxTypes": []
+  },
+  {
+    "code": "$EF",
+    "abbreviation": "PAS",
+    "description": "Pascal area",
+    "auxTypes": []
+  },
+  {
+    "code": "$F0",
+    "abbreviation": "CMD",
+    "description": "BASIC command",
+    "auxTypes": []
+  },
+  {
+    "code": "$F1",
+    "description": "User #1",
+    "auxTypes": []
+  },
+  {
+    "code": "$F2",
+    "description": "User #2",
+    "auxTypes": []
+  },
+  {
+    "code": "$F3",
+    "description": "User #3",
+    "auxTypes": []
+  },
+  {
+    "code": "$F4",
+    "description": "User #4",
+    "auxTypes": []
+  },
+  {
+    "code": "$F5",
+    "description": "User #5",
+    "auxTypes": []
+  },
+  {
+    "code": "$F6",
+    "description": "User #6",
+    "auxTypes": []
+  },
+  {
+    "code": "$F7",
+    "description": "User #7",
+    "auxTypes": []
+  },
+  {
+    "code": "$F8",
+    "description": "User #8",
+    "auxTypes": []
+  },
+  {
+    "code": "$F9",
+    "abbreviation": "OS",
+    "description": "GS/OS System file",
+    "auxTypes": []
+  },
+  {
+    "code": "$FA",
+    "abbreviation": "INT",
+    "description": "Integer BASIC program",
+    "auxTypes": []
+  },
+  {
+    "code": "$FB",
+    "abbreviation": "IVR",
+    "description": "Integer BASIC variables",
+    "auxTypes": []
+  },
+  {
+    "code": "$FC",
+    "abbreviation": "BAS",
+    "description": "AppleSoft BASIC program",
+    "auxTypes": []
+  },
+  {
+    "code": "$FD",
+    "abbreviation": "VAR",
+    "description": "AppleSoft BASIC variables",
+    "auxTypes": []
+  },
+  {
+    "code": "$FE",
+    "abbreviation": "REL",
+    "description": "Relocatable code",
+    "auxTypes": []
+  },
+  {
+    "code": "$FF",
+    "abbreviation": "SYS",
+    "description": "ProDOS 8 application",
+    "auxTypes": []
+  }
+]

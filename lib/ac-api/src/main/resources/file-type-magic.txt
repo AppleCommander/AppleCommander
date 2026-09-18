@@ -1,0 +1,2 @@
+Source(s): See ticket https://github.com/a2infinitum/apple2-filetypes/issues/8 for links.
+Some manual massaging of data has been done to force it into a JSON structure.
