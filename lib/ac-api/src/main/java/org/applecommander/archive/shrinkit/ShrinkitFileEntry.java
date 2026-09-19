@@ -199,12 +199,12 @@ public class ShrinkitFileEntry implements FileEntry {
     }
 
     @Override
-    public Optional<ContentType> getContentType() {
+    public ContentType getContentType() {
         ThreadRecord record = headerBlock.getDataForkThreadRecord();
         if (record != null && record.getThreadKind() == ThreadKind.DISK_IMAGE) {
-            return Optional.of(ContentType.DISK_IMAGE);
+            return ContentType.DISK_IMAGE;
         }
-        return Optional.empty();
+        return ContentType.UNKNOWN;
     }
 
     @Override

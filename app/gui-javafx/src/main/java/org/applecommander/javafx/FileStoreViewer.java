@@ -179,15 +179,14 @@ public class FileStoreViewer {
                 // TODO
                 //FileViewer.open(entry, primaryStage);
             });
-            selectedRow.getContentType().ifPresent(contentType -> {
-                switch (contentType) {
-                    case DISK_IMAGE, ARCHIVE_IMAGE -> {
-                        Optional<Source> opt = Sources.create(selectedRow);
-                        Source source = opt.orElseThrow();  // we don't expect this to fail!
-                        FileStoreViewer.openNewWindow(source);
-                    }
+            switch (selectedRow.getContentType()) {
+                case DISK_IMAGE, ARCHIVE_IMAGE -> {
+                    Optional<Source> opt = Sources.create(selectedRow);
+                    Source source = opt.orElseThrow();  // we don't expect this to fail!
+                    FileStoreViewer.openNewWindow(source);
                 }
-            });
+                case UNKNOWN -> { /* Do Nothing */ }
+            }
         });
         setDeletedFilesButtonState();
         setContentControlsEnabled(false);

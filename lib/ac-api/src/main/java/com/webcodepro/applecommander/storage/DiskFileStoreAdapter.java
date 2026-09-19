@@ -246,12 +246,12 @@ public class DiskFileStoreAdapter implements FileStore {
             return fileEntry.getFiletype();
         }
         @Override
-        public Optional<ContentType> getContentType() {
+        public ContentType getContentType() {
             if (fileEntry instanceof ProdosFileEntry prodosFileEntry) {
-                return Optional.of(FileMagic.getProdosContentType(prodosFileEntry.getFiletypeByte(),
-                                                                  prodosFileEntry.getAuxiliaryType()));
+                return FileMagic.getProdosContentType(prodosFileEntry.getFiletypeByte(),
+                                                      prodosFileEntry.getAuxiliaryType());
             }
-            return WritableFileEntry.super.getContentType();
+            return ContentType.UNKNOWN;
         }
     }
     /**

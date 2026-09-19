@@ -72,9 +72,10 @@ public interface FileEntry extends Container {
         return Optional.empty();
     }
     /**
-     * Return the type of content, if known.
+     * Return the type of content, if known. It should never return null; use UNKNOWN if not known.
+     * @see ContentType
      */
-    default Optional<ContentType> getContentType() {
-        return Optional.empty();
+    default ContentType getContentType() {
+        return ContentType.UNKNOWN;
     }
 }
