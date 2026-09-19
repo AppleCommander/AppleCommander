@@ -19,11 +19,13 @@
  */
 package org.applecommander.archive.zip;
 
+import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+import org.applecommander.util.FileMagic;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -122,6 +124,11 @@ public class ZipFileEntry implements FileEntry {
         catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
+    }
+
+    @Override
+    public ContentType getContentType() {
+        return FileMagic.identifyContentType(getName());
     }
 
     @Override

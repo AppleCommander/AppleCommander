@@ -25,6 +25,8 @@ import java.util.List;
 
 public class FileExtensions {
     public static final List<FileExtension> FILE_FILTERS;
+    public static final List<String> DISK_IMAGE_EXTENSIONS;
+    public static final List<String> ARCHIVE_IMAGE_EXTENSIONS;
 
     static {
         List<FileExtension> fileExtensions = new ArrayList<>();
@@ -81,6 +83,9 @@ public class FileExtensions {
         fileExtensions.add(new FileExtension("All Archive Images", archiveExtensions));
         fileExtensions.add(new FileExtension("All Files", List.of("*.*")));
         FILE_FILTERS = Collections.unmodifiableList(fileExtensions);
+        // Note that these drop the leading '*'.
+        DISK_IMAGE_EXTENSIONS = diskExtensions.stream().map(s -> s.substring(1)).toList();
+        ARCHIVE_IMAGE_EXTENSIONS = archiveExtensions.stream().map(s -> s.substring(1)).toList();
     }
 
     public record FileExtension(String description, List<String> extensions) {}

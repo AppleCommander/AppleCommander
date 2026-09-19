@@ -67,6 +67,18 @@ public class FileMagic {
         return findProdosFileType(fileType, auxType).map(FileTypeSummary::contentType).orElse(ContentType.UNKNOWN);
     }
 
+    /// Given a filename, try to identify the content type.
+    public static ContentType identifyContentType(String fileName) {
+        ContentType contentType = ContentType.UNKNOWN;
+        if (FileExtensions.ARCHIVE_IMAGE_EXTENSIONS.stream().anyMatch(e -> fileName.toLowerCase().endsWith(e))) {
+            contentType = ContentType.ARCHIVE_IMAGE;
+        } else if (FileExtensions.DISK_IMAGE_EXTENSIONS.stream().anyMatch(e -> fileName.toLowerCase().endsWith(e))) {
+            contentType = ContentType.DISK_IMAGE;
+        }
+
+        return contentType;
+    }
+
     /// Filter through the ProDOS metadata and generate a file type summary using the `aux_type` as primary
     /// and then falling back to the ProDOS `file_type`.
     public static Optional<FileTypeSummary> findProdosFileType(int fileType, int auxType) {
