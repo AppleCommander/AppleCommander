@@ -103,6 +103,18 @@ public class FileStoreViewer {
             throw new RuntimeException("Could not open new disk window", ex);
         }
     }
+    // FIXME cloning a lot of existing code
+    public static void openNewWindow(Source source) {
+        Objects.requireNonNull(source);
+        Stage stage = new Stage();
+        try {
+            createWindow(stage, source);
+            stage.toFront();
+            stage.requestFocus();
+        } catch (Exception ex) {
+            throw new RuntimeException("Could not open new disk window", ex);
+        }
+    }
 
     public static void createWindow(Stage stage, File diskFile) throws Exception {
         FXMLLoader loader = new FXMLLoader(AppleCommanderFX.class.getResource("/fxml/FileStoreViewer.fxml"));
@@ -128,6 +140,28 @@ public class FileStoreViewer {
             controller.openDiskFile(diskFile, false);
         }
     }
+    public static void createWindow(Stage stage, Source source) throws Exception {
+        Objects.requireNonNull(source);
+        FXMLLoader loader = new FXMLLoader(AppleCommanderFX.class.getResource("/fxml/FileStoreViewer.fxml"));
+        Parent root = loader.load();
+
+        FileStoreViewer controller = loader.getController();
+        AppleCommanderFX.enforceFxmlTagsArePopulated(controller);
+        controller.setPrimaryStage(stage);
+
+        Scene scene = new Scene(root, 1200, 700);
+        stage.setTitle(AppleCommanderFX.buildTitle());
+        stage.setScene(scene);
+
+        // Bind keyboard shortcuts in controller
+        try {
+            controller.bindScene(scene);
+        } catch (Exception ignored) {
+        }
+
+        stage.show();
+        controller.openDiskFile(source, false);
+    }
 
     @FXML
     private void initialize() {
@@ -144,6 +178,15 @@ public class FileStoreViewer {
             selectedRow.get(Directory.class).ifPresentOrElse(this::navigateToDirectory, () -> {
                 // TODO
                 //FileViewer.open(entry, primaryStage);
+            });
+            selectedRow.getContentType().ifPresent(contentType -> {
+                switch (contentType) {
+                    case DISK_IMAGE, ARCHIVE_IMAGE -> {
+                        Optional<Source> opt = Sources.create(selectedRow);
+                        Source source = opt.orElseThrow();  // we don't expect this to fail!
+                        FileStoreViewer.openNewWindow(source);
+                    }
+                }
             });
         });
         setDeletedFilesButtonState();
@@ -253,6 +296,52 @@ public class FileStoreViewer {
             displayDisk();
             if (primaryStage != null) {
                 primaryStage.setTitle(AppleCommanderFX.buildTitle(selectedFile.getName()));
+            }
+        } catch (Throwable t) {
+            showErrorDialog("Could not open disk image", t);
+        }
+    }
+    public void openDiskFile(Source source, boolean promptForWindow) {
+        Objects.requireNonNull(source);
+        if (promptForWindow && !selection.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.initOwner(primaryStage);
+            alert.setTitle("Open disk image");
+            alert.setHeaderText("A disk image is already open.");
+            alert.setContentText("Would you like to open this disk in the current window or in a new window?");
+            ButtonType newWindow = new ButtonType("New Window", ButtonBar.ButtonData.YES);
+            ButtonType thisWindow = new ButtonType("This Window", ButtonBar.ButtonData.NO);
+            ButtonType cancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+            alert.getButtonTypes().setAll(thisWindow, newWindow, cancel);
+
+            java.util.Optional<ButtonType> result = alert.showAndWait();
+            if (result.isEmpty() || result.get() == cancel) {
+                return;
+            }
+            if (result.get() == newWindow) {
+                openNewWindow(source);
+                return;
+            }
+        }
+
+        try {
+            selection.clear();
+            var inspected = FileStores.inspect(source);
+            selection.setSelectedItems(inspected.fileStores);
+            if (selection.isEmpty()) {
+                closeDisk();
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Unable to open disk");
+                alert.setHeaderText("Disk image not recognized.");
+                alert.setContentText("The disk format was not recognized. No error occurred.");
+                Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+                stage.setAlwaysOnTop(true);
+                alert.showAndWait();
+                return;
+            }
+            displayDisk();
+            if (primaryStage != null) {
+                primaryStage.setTitle(AppleCommanderFX.buildTitle(source.getName()));
             }
         } catch (Throwable t) {
             showErrorDialog("Could not open disk image", t);

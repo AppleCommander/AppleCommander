@@ -71,4 +71,10 @@ public interface FileEntry extends Container {
     default Optional<DataBuffer> getResourceFork() {
         return Optional.empty();
     }
+    /**
+     * Return the type of content, if known.
+     */
+    default Optional<ContentType> getContentType() {
+        return Optional.empty();
+    }
 }

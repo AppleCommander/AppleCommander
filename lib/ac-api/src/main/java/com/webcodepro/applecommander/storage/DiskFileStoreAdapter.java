@@ -25,6 +25,7 @@ import com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk;
 import com.webcodepro.applecommander.storage.os.nakedos.NakedosFormatDisk;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosDirectoryEntry;
+import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import org.applecommander.capability.Capability;
@@ -35,6 +36,7 @@ import org.applecommander.usage.DiskUsage;
 import org.applecommander.usage.SectorUsage;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+import org.applecommander.util.FileMagic;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -242,6 +244,14 @@ public class DiskFileStoreAdapter implements FileStore {
         @Override
         public String getFiletype() {
             return fileEntry.getFiletype();
+        }
+        @Override
+        public Optional<ContentType> getContentType() {
+            if (fileEntry instanceof ProdosFileEntry prodosFileEntry) {
+                return Optional.of(FileMagic.getProdosContentType(prodosFileEntry.getFiletypeByte(),
+                                                                  prodosFileEntry.getAuxiliaryType()));
+            }
+            return WritableFileEntry.super.getContentType();
         }
     }
     /**

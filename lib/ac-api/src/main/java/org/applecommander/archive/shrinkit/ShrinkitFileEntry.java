@@ -20,7 +20,9 @@
 package org.applecommander.archive.shrinkit;
 
 import com.webcodepro.shrinkit.HeaderBlock;
+import com.webcodepro.shrinkit.ThreadKind;
 import com.webcodepro.shrinkit.ThreadRecord;
+import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.util.Container;
@@ -194,6 +196,15 @@ public class ShrinkitFileEntry implements FileEntry {
             return Optional.empty();
         }
         return Optional.of(decompress(headerBlock.getResourceForkThreadRecord()));
+    }
+
+    @Override
+    public Optional<ContentType> getContentType() {
+        ThreadRecord record = headerBlock.getDataForkThreadRecord();
+        if (record != null && record.getThreadKind() == ThreadKind.DISK_IMAGE) {
+            return Optional.of(ContentType.DISK_IMAGE);
+        }
+        return Optional.empty();
     }
 
     @Override

@@ -22,6 +22,7 @@ package org.applecommander.util;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import org.applecommander.filestore.ContentType;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +30,7 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /// Provide some shared file identification across FileStores.
 public class FileMagic {
@@ -55,25 +57,57 @@ public class FileMagic {
         }
     }
 
-    /// Given a prodos file_type and aux_type, identify the 3-letter abbreviation to use.
+    /// Given a prodos `file_type` and `aux_type`, identify the 3-letter abbreviation to use.
     public static String getProdosFileTypeText(int fileType, int auxType) {
+        return findProdosFileType(fileType, auxType).map(FileTypeSummary::abbreviation).orElse("???");
+    }
+
+    /// Given a prodos `file_type` and `aux_type`, identify the content type it represents.
+    public static ContentType getProdosContentType(int fileType, int auxType) {
+        return findProdosFileType(fileType, auxType).map(FileTypeSummary::contentType).orElse(ContentType.UNKNOWN);
+    }
+
+    /// Filter through the ProDOS metadata and generate a file type summary using the `aux_type` as primary
+    /// and then falling back to the ProDOS `file_type`.
+    public static Optional<FileTypeSummary> findProdosFileType(int fileType, int auxType) {
         if (PRODOS_FILE_TYPES[fileType] == null) {
-            return String.format("$%02X", fileType);
+            return Optional.empty();
         }
         ProdosFileType prodosFileType = PRODOS_FILE_TYPES[fileType];
+        String abbreviation = null;
+        String description = null;
+        ContentType contentType = null;
+        // Figure out if we have a "closer" aux. type and use those values.
         if (prodosFileType.auxTypes() != null) {
             for (ProdosAuxType prodosAuxType : prodosFileType.auxTypes()) {
-                if (prodosAuxType.code == auxType && prodosAuxType.abbreviation() != null) {
-                    return prodosAuxType.abbreviation();
+                if (prodosAuxType.code == auxType) {
+                    abbreviation = prodosAuxType.abbreviation();
+                    description = prodosAuxType.description;
+                    contentType = prodosAuxType.contentType;
                 }
             }
         }
-        if (prodosFileType.abbreviation() == null) {
-            return String.format("$%02X", fileType);
+        // For any values that are UNSET, over-ride from the file type itself.
+        if (abbreviation == null) {
+            abbreviation = prodosFileType.abbreviation;
+            if (abbreviation == null) {
+                abbreviation = String.format("$%02X", fileType);
+            }
         }
-        return prodosFileType.abbreviation();
+        if (description == null) {
+            description = prodosFileType.description;
+        }
+        if (contentType == null) {
+            contentType = prodosFileType.contentType;
+            if (contentType == null) {
+                contentType = ContentType.UNKNOWN;
+            }
+        }
+        return Optional.of(new FileTypeSummary(abbreviation, description, contentType));
     }
 
-    public record ProdosFileType(int code, String abbreviation, String description, List<ProdosAuxType> auxTypes) {}
-    public record ProdosAuxType(int code, String abbreviation, String description) {}
+    public record FileTypeSummary(String abbreviation, String description, ContentType contentType) {}
+
+    public record ProdosFileType(int code, String abbreviation, String description, List<ProdosAuxType> auxTypes, ContentType contentType) {}
+    public record ProdosAuxType(int code, String abbreviation, String description, ContentType contentType) {}
 }

@@ -1932,23 +1932,28 @@
       },
       {
         "code": "$0005",
-        "description": "DiskCopy disk image [Application-Specific]"
+        "description": "DiskCopy disk image [Application-Specific]",
+        "contentType": "DISK_IMAGE"
       },
       {
         "code": "$0100",
-        "description": "Apple 5.25 disk image"
+        "description": "Apple 5.25 disk image",
+        "contentType": "DISK_IMAGE"
       },
       {
         "code": "$0101",
-        "description": "Profile 5MB disk image"
+        "description": "Profile 5MB disk image",
+        "contentType": "DISK_IMAGE"
       },
       {
         "code": "$0102",
-        "description": "Profile 10MB disk image"
+        "description": "Profile 10MB disk image",
+        "contentType": "DISK_IMAGE"
       },
       {
         "code": "$0103",
-        "description": "Apple 3.5 disk image"
+        "description": "Apple 3.5 disk image",
+        "contentType": "DISK_IMAGE"
       },
       {
         "code": "$0104",
@@ -1984,7 +1989,8 @@
       },
       {
         "code": "$0114",
-        "description": "Floppy disk image"
+        "description": "Floppy disk image",
+        "contentType": "DISK_IMAGE"
       },
       {
         "code": "$0115",
@@ -1996,11 +2002,13 @@
       },
       {
         "code": "$0120",
-        "description": "DiskCopy 6 disk image"
+        "description": "DiskCopy 6 disk image",
+        "contentType": "DISK_IMAGE"
       },
       {
         "code": "$0130",
-        "description": "Universal Disk Image file"
+        "description": "Universal Disk Image file",
+        "contentType": "DISK_IMAGE"
       },
       {
         "code": "$8000",
@@ -2012,7 +2020,9 @@
       },
       {
         "code": "$8002",
-        "description": "ShrinkIt (NuFX) document [Application Specific]"
+        "abbreviation": "SHK",
+        "description": "ShrinkIt (NuFX) document [Application Specific]",
+        "contentType": "ARCHIVE_IMAGE"
       },
       {
         "code": "$8003",
