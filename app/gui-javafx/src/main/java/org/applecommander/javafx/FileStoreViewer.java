@@ -20,7 +20,6 @@
 package org.applecommander.javafx;
 
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -91,12 +90,13 @@ public class FileStoreViewer {
 
     private Stage primaryStage;
     private final List<Directory> directoryPath = new ArrayList<>();
-    private Mode currentDisplayMode = Mode.NATIVE;
-    private boolean showDeletedFiles = false;
 
     private final ObjectProperty<ViewMode> viewMode = new SimpleObjectProperty<>(ViewMode.LANDING);
+    private final ObjectProperty<Mode> listingMode = new SimpleObjectProperty<>(Mode.NATIVE);
     private final FileStoreSelectionModel selection = new FileStoreSelectionModel();
     private final SimpleBooleanProperty supportsDirectories = new SimpleBooleanProperty(false);
+    private final SimpleBooleanProperty supportsFileDeletion = new SimpleBooleanProperty(false);
+    private final SimpleBooleanProperty supportsDiskUsage = new SimpleBooleanProperty(false);
 
     public static void openNewWindow(Source source) {
         Objects.requireNonNull(source);
@@ -158,16 +158,15 @@ public class FileStoreViewer {
                 case UNKNOWN -> { /* Do Nothing */ }
             }
         });
-        setDeletedFilesButtonState();
-        setContentControlsEnabled(false);
-        setViewControlsEnabled(false);
         updateSwitchDiskButton();
-        applyDisplayMode(currentDisplayMode);
 
         // Bind canvas size to the table area so the disk usage can reuse available space
 //        diskUsageCanvas.widthProperty().bind(fileTable.widthProperty());
 //        diskUsageCanvas.heightProperty().bind(fileTable.heightProperty().subtract(60));
         diskUsageCanvas.setRepaint(this::renderDiskUsage);
+
+        filesContentButton.disableProperty().bind(selection.selectedItemProperty().isNull());
+        diskUsageContentButton.disableProperty().bind(selection.selectedItemProperty().isNull().or(supportsDiskUsage.not()));
 
         nativeToolButton.visibleProperty().bind(viewMode.isEqualTo(ViewMode.FILES));
         nativeToolButton.managedProperty().bind(nativeToolButton.visibleProperty());
@@ -175,7 +174,7 @@ public class FileStoreViewer {
         detailToolButton.managedProperty().bind(detailToolButton.visibleProperty());
         deletedFilesToggleButton.visibleProperty().bind(fileTable.visibleProperty());
         deletedFilesToggleButton.managedProperty().bind(deletedFilesToggleButton.visibleProperty());
-        deletedFilesToggleButton.disableProperty().bind(Bindings.isEmpty(fileTable.getSelectionModel().getSelectedItems()));
+        deletedFilesToggleButton.disableProperty().bind(supportsFileDeletion.not());
 
         breadcrumbBar.visibleProperty().bind(viewMode.isEqualTo(ViewMode.FILES).and(supportsDirectories));
         breadcrumbBar.managedProperty().bind(breadcrumbBar.visibleProperty());
@@ -187,11 +186,35 @@ public class FileStoreViewer {
         diskUsagePane.visibleProperty().bind(viewMode.isEqualTo(ViewMode.USAGE));
         diskUsagePane.managedProperty().bind(diskUsagePane.visibleProperty());
 
-        selection.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+        selection.selectedItemProperty().addListener((_, _, newValue) -> {
             if (newValue != null) {
+                directoryPath.clear();
+                directoryPath.add(newValue.getRootDirectory());
+                viewMode.setValue(ViewMode.FILES);
+                listingMode.setValue(Mode.NATIVE);
                 supportsDirectories.setValue(newValue.can(Capability.SUPPORTS_DIRECTORIES));
+                supportsFileDeletion.setValue(newValue.can(Capability.DELETE_FILES));
+                supportsDiskUsage.setValue(newValue.get(DiskUsage.class).isPresent());
             }
         });
+
+        deletedFilesToggleButton.selectedProperty().addListener((_, _, _) -> {
+            String imagePath = deletedFilesToggleButton.isSelected()
+                    ? "/images/deleted-files-visible.png"
+                    : "/images/deleted-files-hidden.png";
+            deletedFilesIcon.setImage(new Image(Objects.requireNonNull(getClass().getResource(imagePath)).toExternalForm()));
+        });
+
+        listingMode.addListener((_, _, newValue) -> {
+            fileTable.getColumns().forEach(column -> {
+                nativeToolButton.setSelected(newValue == Mode.NATIVE);
+                detailToolButton.setSelected(newValue == Mode.DETAIL);
+                if (column.getUserData() instanceof DisplayColumn displayColumn) {
+                    column.visibleProperty().setValue(displayColumn.supports(newValue));
+                }
+            });
+        });
+        viewMode.addListener((_, _, _) -> populateDiskRows());
     }
 
     public void setPrimaryStage(Stage stage) {
@@ -284,6 +307,7 @@ public class FileStoreViewer {
             }
             displayDisk();
             viewMode.setValue(ViewMode.FILES);
+            listingMode.setValue(Mode.NATIVE);
             primaryStage.setTitle(AppleCommanderFX.buildTitle(source.getName()));
         } catch (Throwable t) {
             showErrorDialog("Could not open disk image", t);
@@ -315,18 +339,10 @@ public class FileStoreViewer {
         selection.clearFileStores();
         directoryPath.clear();
         viewMode.setValue(ViewMode.LANDING);
-        showDeletedFiles = false;
+        listingMode.setValue(Mode.NATIVE);
+        deletedFilesToggleButton.setSelected(false);
         fileTable.setItems(FXCollections.emptyObservableList());
         fileTable.getColumns().clear();
-        setContentControlsEnabled(false);
-        setViewControlsEnabled(false);
-        if (filesContentButton != null) {
-            filesContentButton.setSelected(true);
-        }
-        if (diskUsageContentButton != null) {
-            diskUsageContentButton.setSelected(false);
-        }
-        setDeletedFilesButtonState();
         updateSwitchDiskButton();
         statusLabel.setText("No disk image opened.");
         if (primaryStage != null) {
@@ -351,61 +367,34 @@ public class FileStoreViewer {
 
     @FXML
     private void selectNativeView() {
-        applyDisplayMode(Mode.NATIVE);
+        listingMode.set(Mode.NATIVE);
     }
 
     @FXML
     private void selectDetailView() {
-        applyDisplayMode(Mode.DETAIL);
+        listingMode.set(Mode.DETAIL);
     }
 
     @FXML
     private void toggleDeletedFiles() {
-        showDeletedFiles = deletedFilesToggleButton != null && deletedFilesToggleButton.isSelected();
-        setDeletedFilesButtonState();
         if (!selection.isEmpty() && viewMode.isEqualTo(ViewMode.FILES).get()) {
             refreshDiskView();
         }
-    }
-
-    private void applyDisplayMode(Mode displayMode) {
-        this.currentDisplayMode = displayMode;
-
-        nativeToolButton.setSelected(displayMode == Mode.NATIVE);
-        detailToolButton.setSelected(displayMode == Mode.DETAIL);
-
-        if (!selection.isEmpty()) {
-            refreshDiskView();
-        }
-    }
-
-    private void setContentControlsEnabled(boolean enabled) {
-        filesContentButton.setDisable(!enabled);
-        diskUsageContentButton.setDisable(!enabled);
-    }
-
-    private void setViewControlsEnabled(boolean enabled) {
-        nativeToolButton.setDisable(!enabled);
-        detailToolButton.setDisable(!enabled);
     }
 
     private void displayDisk() {
         FileStore fileStore = selection.getSelectedItem();
         directoryPath.clear();
         directoryPath.add(fileStore.getRootDirectory());
-        setContentControlsEnabled(true);
-        setDeletedFilesButtonState();
         updateSwitchDiskButton();
 
         // Enable disk-usage only if the disk reports support
         boolean supported = fileStore.get(DiskUsage.class).isPresent();
-        diskUsageContentButton.setDisable(!supported);
         if (!supported && viewMode.isEqualTo(ViewMode.USAGE).get()) {
             // fall back to files view
             viewMode.setValue(ViewMode.FILES);
         }
 
-        setViewControlsEnabled(viewMode.isEqualTo(ViewMode.FILES).get());
         refreshDiskView();
     }
 
@@ -439,11 +428,9 @@ public class FileStoreViewer {
                 return;
             }
             // Files view
-            populateDiskRows(directoryPath.getLast(), currentDisplayMode);
+            populateDiskRows();
             statusLabel.setText(buildDiskStatusText());
         } catch (Throwable t) {
-            setContentControlsEnabled(false);
-            setViewControlsEnabled(false);
             showErrorDialog("Could not read files from disk image", t);
             fileTable.setItems(FXCollections.emptyObservableList());
             fileTable.getColumns().clear();
@@ -642,17 +629,17 @@ public class FileStoreViewer {
         legendBox.getChildren().addAll(freeLegend, usedLegend);
     }
 
-    private void populateDiskRows(Directory directory, Mode displayMode) {
-        fileTable.getColumns().clear();
-        List<DisplayColumn> displayColumns = directory.getFileStore().getDisplayColumns().stream()
-                .filter(d -> Set.of(d.modes()).contains(displayMode))
-                .toList();
+    private void populateDiskRows() {
+        Directory directory = directoryPath.getLast();
+        List<DisplayColumn> displayColumns = directory.getFileStore().getDisplayColumns();
 
+        fileTable.getColumns().clear();
         for (final DisplayColumn displayColumn : displayColumns) {
             TableColumn<FileEntry,String> column = new TableColumn<>(displayColumn.headerText());
             column.setUserData(displayColumn);
             column.setCellValueFactory(cell ->
                     new SimpleStringProperty(displayColumn.formatAsText(cell.getValue())));
+            column.visibleProperty().setValue(displayColumn.supports(listingMode.get()));
             if (displayColumn.alignment() == Alignment.RIGHT) {
                 column.setStyle("-fx-alignment: CENTER-RIGHT;");
             } else if (displayColumn.alignment() == Alignment.CENTER) {
@@ -662,7 +649,7 @@ public class FileStoreViewer {
         }
 
         List<? extends FileEntry> rows = directory.getFiles().stream()
-                .filter(fileEntry -> showDeletedFiles || !fileEntry.isDeleted())
+                .filter(fileEntry -> deletedFilesToggleButton.isSelected() || !fileEntry.isDeleted())
                 .toList();
 
         ObservableList<FileEntry> rowList = FXCollections.observableArrayList(rows);
@@ -670,6 +657,9 @@ public class FileStoreViewer {
         sortedRows.comparatorProperty().bind(fileTable.comparatorProperty());
         fileTable.setItems(sortedRows);
         fileTable.getSortOrder().clear();
+        // If selection is bound, the ToolButton crashes and burns, so need to manage it manually.
+        nativeToolButton.setSelected(listingMode.get() == Mode.NATIVE);
+        detailToolButton.setSelected(listingMode.get() == Mode.DETAIL);
     }
 
     private void refreshBreadcrumbs() {
@@ -699,13 +689,6 @@ public class FileStoreViewer {
             breadcrumbBar.getChildren().add(separator);
             breadcrumbBar.getChildren().add(crumb);
         }
-    }
-
-    private void setDeletedFilesButtonState() {
-        String imagePath = showDeletedFiles
-                ? "/images/deleted-files-visible.png"
-                : "/images/deleted-files-hidden.png";
-        deletedFilesIcon.setImage(new Image(getClass().getResource(imagePath).toExternalForm()));
     }
 
     private void updateSwitchDiskButton() {
