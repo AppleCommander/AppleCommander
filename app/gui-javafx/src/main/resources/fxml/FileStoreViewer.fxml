@@ -163,19 +163,23 @@
                             <Image url="@/images/AppleCommanderLogo.png" />
                         </image>
                     </ImageView>
-                    <Label text="No disk image open. Use File &gt; Open to browse for a disk image." />
+                    <Label text="No disk image open. Use open to browse for a disk image." />
                 </VBox>
 
-                <VBox spacing="6">
-                    <HBox fx:id="breadcrumbBar" visible="true" managed="true" spacing="6" alignment="CENTER_LEFT" />
-                    <TableView fx:id="fileTable">
-                        <placeholder>
-                            <VBox alignment="CENTER" spacing="10">
-                                <Label text="No files." />
-                            </VBox>
-                        </placeholder>
-                    </TableView>
-                </VBox>
+                <BorderPane>
+                    <top>
+                        <HBox fx:id="breadcrumbBar" visible="true" managed="true" spacing="6" alignment="CENTER_LEFT" />
+                    </top>
+                    <center>
+                        <TableView fx:id="fileTable">
+                            <placeholder>
+                                <VBox alignment="CENTER" spacing="10">
+                                    <Label text="This image has no files." />
+                                </VBox>
+                            </placeholder>
+                        </TableView>
+                    </center>
+                </BorderPane>
 
                 <BorderPane fx:id="diskUsagePane" visible="false" managed="false">
                     <center>
