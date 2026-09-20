@@ -4,6 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
+<?import org.applecommander.javafx.CanvasPane?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.applecommander.javafx.FileStoreViewer">
@@ -154,34 +155,38 @@
     </top>
 
     <center>
-        <VBox spacing="6">
-            <HBox fx:id="breadcrumbBar" visible="true" managed="true" spacing="6" alignment="CENTER_LEFT" />
-            <StackPane>
-                <children>
-                    <VBox fx:id="landingPage" alignment="CENTER" spacing="10">
-                        <ImageView preserveRatio="true">
-                            <image>
-                                <Image url="@/images/AppleCommanderLogo.png" />
-                            </image>
-                        </ImageView>
-                        <Label text="No disk image open. Use File &gt; Open to browse for a disk image." />
-                    </VBox>
+        <StackPane>
+            <children>
+                <VBox fx:id="landingPage" alignment="CENTER" spacing="10">
+                    <ImageView preserveRatio="true">
+                        <image>
+                            <Image url="@/images/AppleCommanderLogo.png" />
+                        </image>
+                    </ImageView>
+                    <Label text="No disk image open. Use File &gt; Open to browse for a disk image." />
+                </VBox>
 
-                    <TableView fx:id="fileTable" prefWidth="1100" prefHeight="600">
+                <VBox spacing="6">
+                    <HBox fx:id="breadcrumbBar" visible="true" managed="true" spacing="6" alignment="CENTER_LEFT" />
+                    <TableView fx:id="fileTable">
                         <placeholder>
                             <VBox alignment="CENTER" spacing="10">
                                 <Label text="No files." />
                             </VBox>
                         </placeholder>
                     </TableView>
+                </VBox>
 
-                    <VBox fx:id="diskUsagePane" alignment="TOP_CENTER" spacing="8" visible="false" managed="false">
-                        <Canvas fx:id="diskUsageCanvas" width="800" height="480" />
+                <BorderPane fx:id="diskUsagePane" visible="false" managed="false">
+                    <center>
+                        <CanvasPane fx:id="diskUsageCanvas" />
+                    </center>
+                    <bottom>
                         <HBox fx:id="legendBox" alignment="CENTER" spacing="12" />
-                    </VBox>
-                </children>
-            </StackPane>
-        </VBox>
+                    </bottom>
+                </BorderPane>
+            </children>
+        </StackPane>
     </center>
 
     <bottom>

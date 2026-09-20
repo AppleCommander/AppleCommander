@@ -39,6 +39,7 @@ import javafx.scene.input.KeyCharacterCombination;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -80,8 +81,8 @@ public class FileStoreViewer {
     @FXML private ImageView deletedFilesIcon;
     @FXML private Button switchDiskButton;
     @FXML private HBox breadcrumbBar;
-    @FXML private VBox diskUsagePane;
-    @FXML private Canvas diskUsageCanvas;
+    @FXML private BorderPane diskUsagePane;
+    @FXML private CanvasPane diskUsageCanvas;
     @FXML private HBox legendBox;
 
     private Stage primaryStage;
@@ -159,8 +160,9 @@ public class FileStoreViewer {
         applyDisplayMode(currentDisplayMode);
 
         // Bind canvas size to the table area so the disk usage can reuse available space
-        diskUsageCanvas.widthProperty().bind(fileTable.widthProperty());
-        diskUsageCanvas.heightProperty().bind(fileTable.heightProperty().subtract(60));
+//        diskUsageCanvas.widthProperty().bind(fileTable.widthProperty());
+//        diskUsageCanvas.heightProperty().bind(fileTable.heightProperty().subtract(60));
+        diskUsageCanvas.setRepaint(this::renderDiskUsage);
     }
 
     public void setPrimaryStage(Stage stage) {
@@ -438,7 +440,7 @@ public class FileStoreViewer {
 
             if (currentViewMode == ViewMode.USAGE) {
                 // Render the disk usage map
-                renderDiskUsage(fileStore);
+                renderDiskUsage(diskUsageCanvas.getCanvas());
                 statusLabel.setText(buildDiskStatusText());
                 return;
             }
@@ -459,10 +461,12 @@ public class FileStoreViewer {
         }
     }
 
-    private void renderDiskUsage(FileStore disk) {
-        if (disk == null) return;
-
-        Optional<DiskUsage> opt = disk.get(DiskUsage.class);
+    private void renderDiskUsage(Canvas canvas) {
+        if (selection.isEmpty()) {
+            return;
+        }
+        FileStore fileStore = selection.getSelectedItem();
+        Optional<DiskUsage> opt = fileStore.get(DiskUsage.class);
         if (opt.isEmpty()) {
             // nothing to render
             diskUsagePane.setVisible(false);
@@ -499,9 +503,9 @@ public class FileStoreViewer {
         }
 
         // Draw onto canvas
-        GraphicsContext gc = diskUsageCanvas.getGraphicsContext2D();
-        double w = diskUsageCanvas.getWidth();
-        double h = diskUsageCanvas.getHeight();
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        double w = canvas.getWidth();
+        double h = canvas.getHeight();
         if (w <= 0) w = 800;
         if (h <= 0) h = 480;
 
