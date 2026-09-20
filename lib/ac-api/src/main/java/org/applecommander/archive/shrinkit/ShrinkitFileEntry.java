@@ -19,18 +19,18 @@
  */
 package org.applecommander.archive.shrinkit;
 
-import com.webcodepro.shrinkit.HeaderBlock;
-import com.webcodepro.shrinkit.ThreadKind;
-import com.webcodepro.shrinkit.ThreadRecord;
 import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
+import org.applecommander.shrinkit.HeaderBlock;
+import org.applecommander.shrinkit.ThreadFormat;
+import org.applecommander.shrinkit.ThreadKind;
+import org.applecommander.shrinkit.ThreadRecord;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.FileMagic;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.Date;
 import java.util.Optional;
@@ -101,51 +101,30 @@ public class ShrinkitFileEntry implements FileEntry {
         return headerBlock.getArchiveWhen();
     }
     public String getThreadFormat() {
-        ThreadRecord record = headerBlock.getDataForkThreadRecord();
-        if (record == null) {
-            record = headerBlock.getResourceForkThreadRecord();
-        }
-        if (record == null) {
-            return "?";
-        }
-        return record.getThreadFormat().getName();
+        return headerBlock.getDataForkThreadRecord()
+            .or(headerBlock::getResourceForkThreadRecord)
+            .map(ThreadRecord::getThreadFormat)
+            .map(ThreadFormat::getName)
+            .orElse("?");
     }
     public long getCompressedSize() {
         return headerBlock.getCompressedSize();
     }
     public int getDataForkCrc() {
-        ThreadRecord record = headerBlock.getDataForkThreadRecord();
-        if (record == null) {
-            return 0;
-        }
-        return record.getThreadCrc();
+        return headerBlock.getDataForkThreadRecord()
+            .map(ThreadRecord::getThreadCrc)
+            .orElse(0);
     }
     public int getResourceForkCrc() {
-        ThreadRecord record = headerBlock.getResourceForkThreadRecord();
-        if (record == null) {
-            return 0;
-        }
-        return record.getThreadCrc();
+        return headerBlock.getResourceForkThreadRecord()
+            .map(ThreadRecord::getThreadCrc)
+            .orElse(0);
     }
     public int getFileSysId() {
         return headerBlock.getFileSysId();
     }
-    public String getFileSysIdString() {
-        return switch (getFileSysId()) {
-            case 0x0001 -> "ProDOS/SOS";
-            case 0x0002 -> "DOS 3.3";
-            case 0x0003 -> "DOS 3.2";
-            case 0x0004 -> "Apple II Pascal";
-            case 0x0005 -> "Macintosh HFS";
-            case 0x0006 -> "Macintosh MFS";
-            case 0x0007 -> "Lisa File System";
-            case 0x0008 -> "Apple CP/M";
-            case 0x000A -> "MS-DOS";
-            case 0x000B -> "High Sierra";
-            case 0x000C -> "ISO 9660";
-            case 0x000D -> "AppleShare";
-            default -> String.format("Reserved ($%04X)", getFileSysId());
-        };
+    public String getFileSysIdText() {
+        return headerBlock.getFileSysIdText();
     }
     public int getFileSysInfo() {
         return headerBlock.getFileSysInfo();
@@ -174,12 +153,9 @@ public class ShrinkitFileEntry implements FileEntry {
         return headerBlock.getModWhen();
     }
 
-    private DataBuffer decompress(ThreadRecord record) {
-        if (record == null) {
-            return DataBuffer.create(0);
-        }
-        try (InputStream is = record.getInputStream()) {
-            return DataBuffer.wrap(is.readAllBytes());
+    private byte[] decompress(ThreadRecord record) {
+        try {
+            return record.readThreadData();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -187,21 +163,23 @@ public class ShrinkitFileEntry implements FileEntry {
 
     @Override
     public DataBuffer getDataFork() {
-        return decompress(headerBlock.getDataForkThreadRecord());
+        return headerBlock.getDataForkThreadRecord()
+            .map(this::decompress)
+            .map(DataBuffer::wrap)
+            .orElseGet(() -> DataBuffer.create(0));
     }
 
     @Override
     public Optional<DataBuffer> getResourceFork() {
-        if (headerBlock.getResourceForkThreadRecord() == null) {
-            return Optional.empty();
-        }
-        return Optional.of(decompress(headerBlock.getResourceForkThreadRecord()));
+        return headerBlock.getResourceForkThreadRecord()
+            .map(this::decompress)
+            .map(DataBuffer::wrap);
     }
 
     @Override
     public ContentType getContentType() {
-        ThreadRecord record = headerBlock.getDataForkThreadRecord();
-        if (record != null && record.getThreadKind() == ThreadKind.DISK_IMAGE) {
+        Optional<ThreadRecord> record = headerBlock.getDataForkThreadRecord();
+        if (record.isPresent() && record.get().getThreadKind() == ThreadKind.DISK_IMAGE) {
             return ContentType.DISK_IMAGE;
         }
         return ContentType.UNKNOWN;

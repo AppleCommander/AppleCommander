@@ -23,12 +23,11 @@ import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.StorageBundle;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
-import com.webcodepro.shrinkit.HeaderBlock;
-import com.webcodepro.shrinkit.NuFileArchive;
-import com.webcodepro.shrinkit.ThreadRecord;
-import com.webcodepro.shrinkit.io.LittleEndianByteInputStream;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.device.ProdosOrderedBlockDevice;
+import org.applecommander.shrinkit.HeaderBlock;
+import org.applecommander.shrinkit.NuFileArchive;
+import org.applecommander.shrinkit.ThreadRecord;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 
@@ -94,7 +93,7 @@ public class ShrinkItUtilities
 						dataFork = r;
 						break;
 					case DISK_IMAGE:
-						dmgBuffer = readThread(r);
+						dmgBuffer = r.readThreadData();
 						break;
 					case RESOURCE_FORK:
 						// This is a resource fork - we're talking GSOS FST here
@@ -120,17 +119,17 @@ public class ShrinkItUtilities
 					newFile = (ProdosFileEntry)name.createEntry(pdDisk);
 					if (newFile != null)
 					{
-						if (resourceFork != null)
+						if (dataFork != null && resourceFork != null)
 						{
 							// If we have a resource fork in addition to a data fork,
 							// then we've got a GSOS storage type $5. 
-							newFile.setFileData(readThread(dataFork), readThread(resourceFork));
+							newFile.setFileData(dataFork.readThreadData(), resourceFork.readThreadData());
 							newFile.setStorageType(0x05);
 						}
-						else
+						else if (dataFork != null)
 						{
 							// We have a traditional file, no resource fork.
-							newFile.setFileData(readThread(dataFork));
+							newFile.setFileData(dataFork.readThreadData());
 						}
 						newFile.setFilename(b.getFinalFilename());
 						newFile.setFiletype(b.getFileType());
@@ -154,26 +153,5 @@ public class ShrinkItUtilities
 		}
 		else
 			return source.readAllBytes().asBytes();
-	}
-
-	/**
-	 * readThread
-	 * 
-	 * Reads the data from a thread
-	 * 
-	 * @return byte[] buffer, possibly null
-	 */
-	public static byte[] readThread(ThreadRecord thread) throws IOException
-	{
-		byte[] buffer = null;
-		if (thread != null)
-		{
-			thread.readThreadData(new LittleEndianByteInputStream(thread.getRawInputStream()));
-			InputStream fis = thread.getInputStream();
-			buffer = new byte[(int) (thread.getThreadEof())];
-			fis.read(buffer, 0, buffer.length);
-			fis.close();
-		}
-		return buffer;
 	}
 }

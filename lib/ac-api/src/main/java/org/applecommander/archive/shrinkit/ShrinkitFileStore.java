@@ -19,7 +19,6 @@
  */
 package org.applecommander.archive.shrinkit;
 
-import com.webcodepro.shrinkit.NuFileArchive;
 import org.applecommander.capability.Capability;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.DisplayColumn;
@@ -27,6 +26,7 @@ import org.applecommander.filestore.DisplayColumn.Alignment;
 import org.applecommander.filestore.DisplayColumn.Mode;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
+import org.applecommander.shrinkit.NuFileArchive;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
 
@@ -78,7 +78,7 @@ public class ShrinkitFileStore implements FileStore {
     public List<DisplayColumn> getDisplayColumns() {
         return DisplayColumn.builder(ShrinkitFileEntry.class)
             .addStringField("Name", ShrinkitFileEntry::getName)
-            .addStringField("Sys. Id", ShrinkitFileEntry::getFileSysIdString, Mode.DETAIL)
+            .addStringField("Sys. Id", ShrinkitFileEntry::getFileSysIdText, Mode.DETAIL)
             .addIntField("File Sys. Info", ShrinkitFileEntry::getFileSysInfo, "$%04X", Mode.DETAIL)
             .addStringField("Access", Alignment.CENTER, ShrinkitFileEntry::getAccessString, Mode.DETAIL)
             .addStringField("Kind", ShrinkitFileEntry::getStorageTypeString)

@@ -17,7 +17,7 @@ repositories {
 }
 
 dependencies {
-    implementation "net.sf.applecommander:ShrinkItArchive:$shkVersion"
+    implementation "org.applecommander:ShrinkItArchive:$shkVersion"
     implementation "org.applecommander:acdasm:$acdasmVersion"
     implementation "org.applecommander:bastools-api:$btVersion"
     implementation "org.apache.commons:commons-csv:$commonsCsvVersion"

@@ -15,7 +15,7 @@ repositories {
 
 dependencies {
     implementation project(':lib:ac-api')
-    implementation "net.sf.applecommander:ShrinkItArchive:$shkVersion"
+    implementation "org.applecommander:ShrinkItArchive:$shkVersion"
     implementation "net.sf.applecommander:applesingle-api:$asVersion"
     implementation "org.applecommander:bastools-api:$btVersion"
 

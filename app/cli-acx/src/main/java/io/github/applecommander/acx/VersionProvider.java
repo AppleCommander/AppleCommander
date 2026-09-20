@@ -21,10 +21,10 @@ package io.github.applecommander.acx;
 
 import com.webcodepro.applecommander.ui.AppleCommander;
 
-import com.webcodepro.shrinkit.NuFileArchive;
 import io.github.applecommander.applesingle.AppleSingle;
 import org.applecommander.bastools.api.BasTools;
 import org.applecommander.disassembler.api.Disassembler;
+import org.applecommander.shrinkit.NuFileArchive;
 import picocli.CommandLine.IVersionProvider;
 
 /** Display version information.  Note that this is dependent on the Spring Boot Gradle plugin configuration. */

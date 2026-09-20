@@ -19,8 +19,8 @@
  */
 package org.applecommander.archive.shrinkit;
 
-import com.webcodepro.shrinkit.io.ByteConstants;
 import org.applecommander.filestore.FileStoreFactory;
+import org.applecommander.shrinkit.io.ByteConstants;
 import org.applecommander.util.DataBuffer;
 
 import java.util.Arrays;
