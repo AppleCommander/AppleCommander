@@ -732,7 +732,7 @@ public class DosFormatDisk extends FormattedDisk {
 	 */
 	protected int getFreeMapByte(int track, int sector) {
 		int trackOffset = track * 4;
-		int sectorOffset = 1 - ((sector & 0x8) >> 3);
+		int sectorOffset = (device.getGeometry().sectorsPerTrack() - sector - 1) >> 3;
 		return 0x38 + trackOffset + sectorOffset;
 	}
 	
