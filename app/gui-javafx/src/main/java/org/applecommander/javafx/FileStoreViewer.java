@@ -65,13 +65,11 @@ import java.io.File;
 import java.util.*;
 
 public class FileStoreViewer {
-    private static final int CONTENT_FILES = 0;
-    private static final int CONTENT_DISK_USAGE = 1;
-
     @FXML private Button openFileButton;
     @FXML private Button createFileButton;
     @FXML private Button saveFileButton;
     @FXML private Button saveFileAsButton;
+    @FXML private VBox landingPage;
     @FXML private TableView<FileEntry> fileTable;
     @FXML private Label statusLabel;
     @FXML private ToggleButton filesContentButton;
@@ -89,7 +87,7 @@ public class FileStoreViewer {
     private Stage primaryStage;
     private final SelectionHolder<FileStore> selection = new SelectionHolder<>();
     private final List<Directory> directoryPath = new ArrayList<>();
-    private int currentContentMode = CONTENT_FILES;
+    private ViewMode currentViewMode = ViewMode.LANDING;
     private Mode currentDisplayMode = Mode.NATIVE;
     private boolean showDeletedFiles = false;
 
@@ -157,8 +155,8 @@ public class FileStoreViewer {
         setContentControlsEnabled(false);
         setViewControlsEnabled(false);
         updateSwitchDiskButton();
-        applyContentMode(currentContentMode);
-        applyViewMode(currentDisplayMode);
+        applyViewMode(currentViewMode);
+        applyDisplayMode(currentDisplayMode);
 
         // Bind canvas size to the table area so the disk usage can reuse available space
         diskUsageCanvas.widthProperty().bind(fileTable.widthProperty());
@@ -283,7 +281,7 @@ public class FileStoreViewer {
     private void closeDisk() {
         selection.clear();
         directoryPath.clear();
-        currentContentMode = CONTENT_FILES;
+        currentViewMode = ViewMode.LANDING;
         showDeletedFiles = false;
         fileTable.setItems(FXCollections.emptyObservableList());
         fileTable.getColumns().clear();
@@ -310,40 +308,37 @@ public class FileStoreViewer {
 
     @FXML
     private void selectFilesContent() {
-        applyContentMode(CONTENT_FILES);
+        applyViewMode(ViewMode.FILES);
     }
 
     @FXML
     private void selectDiskUsageContent() {
-        applyContentMode(CONTENT_DISK_USAGE);
+        applyViewMode(ViewMode.USAGE);
     }
 
     @FXML
     private void selectNativeView() {
-        applyViewMode(Mode.NATIVE);
+        applyDisplayMode(Mode.NATIVE);
     }
 
     @FXML
     private void selectDetailView() {
-        applyViewMode(Mode.DETAIL);
+        applyDisplayMode(Mode.DETAIL);
     }
 
     @FXML
     private void toggleDeletedFiles() {
         showDeletedFiles = deletedFilesToggleButton != null && deletedFilesToggleButton.isSelected();
         setDeletedFilesButtonState();
-        if (!selection.isEmpty() && currentContentMode == CONTENT_FILES) {
+        if (!selection.isEmpty() && currentViewMode == ViewMode.FILES) {
             refreshDiskView();
         }
     }
 
-    private void applyContentMode(int contentMode) {
-        this.currentContentMode = contentMode;
+    private void applyViewMode(ViewMode viewMode) {
+        this.currentViewMode = viewMode;
 
-        filesContentButton.setSelected(contentMode == CONTENT_FILES);
-        diskUsageContentButton.setSelected(contentMode == CONTENT_DISK_USAGE);
-
-        boolean filesSelected = contentMode == CONTENT_FILES;
+        boolean filesSelected = viewMode == ViewMode.FILES;
         setViewControlsEnabled(!selection.isEmpty() && filesSelected);
         nativeToolButton.setVisible(filesSelected);
         nativeToolButton.setManaged(filesSelected);
@@ -357,17 +352,19 @@ public class FileStoreViewer {
         breadcrumbBar.setManaged(filesSelected && breadcrumbSupported);
 
         // toggle which content pane is visible
-        fileTable.setVisible(filesSelected);
-        fileTable.setManaged(filesSelected);
-        diskUsagePane.setVisible(!filesSelected);
-        diskUsagePane.setManaged(!filesSelected);
+        landingPage.setVisible(viewMode == ViewMode.LANDING);
+        landingPage.setManaged(viewMode == ViewMode.LANDING);
+        fileTable.setVisible(viewMode == ViewMode.FILES);
+        fileTable.setManaged(viewMode == ViewMode.FILES);
+        diskUsagePane.setVisible(viewMode == ViewMode.USAGE);
+        diskUsagePane.setManaged(viewMode == ViewMode.USAGE);
 
         if (!selection.isEmpty()) {
             refreshDiskView();
         }
     }
 
-    private void applyViewMode(Mode displayMode) {
+    private void applyDisplayMode(Mode displayMode) {
         this.currentDisplayMode = displayMode;
 
         nativeToolButton.setSelected(displayMode == Mode.NATIVE);
@@ -381,7 +378,7 @@ public class FileStoreViewer {
     private void setContentControlsEnabled(boolean enabled) {
         filesContentButton.setDisable(!enabled);
         diskUsageContentButton.setDisable(!enabled);
-        deletedFilesToggleButton.setDisable(!enabled || currentContentMode != CONTENT_FILES);
+        deletedFilesToggleButton.setDisable(!enabled || currentViewMode != ViewMode.FILES);
     }
 
     private void setViewControlsEnabled(boolean enabled) {
@@ -400,12 +397,12 @@ public class FileStoreViewer {
         // Enable disk-usage only if the disk reports support
         boolean supported = fileStore.get(DiskUsage.class).isPresent();
         diskUsageContentButton.setDisable(!supported);
-        if (!supported && currentContentMode == CONTENT_DISK_USAGE) {
+        if (!supported && currentViewMode == ViewMode.USAGE) {
             // fall back to files view
-            currentContentMode = CONTENT_FILES;
+            currentViewMode = ViewMode.FILES;
         }
 
-        setViewControlsEnabled(currentContentMode == CONTENT_FILES);
+        setViewControlsEnabled(currentViewMode == ViewMode.FILES);
         refreshDiskView();
     }
 
@@ -432,14 +429,14 @@ public class FileStoreViewer {
 
         try {
             FileStore fileStore = selection.getSelectedItem();
-            boolean breadcrumbSupported = currentContentMode == CONTENT_FILES && fileStore.can(Capability.SUPPORTS_DIRECTORIES);
+            boolean breadcrumbSupported = currentViewMode == ViewMode.FILES && fileStore.can(Capability.SUPPORTS_DIRECTORIES);
             breadcrumbBar.setVisible(breadcrumbSupported);
             breadcrumbBar.setManaged(breadcrumbSupported);
 
             updateSwitchDiskButton();
             refreshBreadcrumbs();
 
-            if (currentContentMode == CONTENT_DISK_USAGE) {
+            if (currentViewMode == ViewMode.USAGE) {
                 // Render the disk usage map
                 renderDiskUsage(fileStore);
                 statusLabel.setText(buildDiskStatusText());
@@ -731,7 +728,6 @@ public class FileStoreViewer {
     }
 
     private void updateSwitchDiskButton() {
-        selection.nextItem();
         boolean enabled = selection.getSize() > 1;
         switchDiskButton.setDisable(!enabled);
         switchDiskButton.setVisible(enabled);
@@ -756,5 +752,11 @@ public class FileStoreViewer {
         alert.setHeaderText(message);
         alert.setContentText(t.getMessage() == null ? "An unexpected error occurred." : t.getMessage());
         alert.showAndWait();
+    }
+
+    private enum ViewMode {
+        LANDING,
+        FILES,
+        USAGE
     }
 }
