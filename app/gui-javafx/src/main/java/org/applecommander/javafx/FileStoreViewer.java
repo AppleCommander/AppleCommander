@@ -25,6 +25,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
@@ -89,11 +90,10 @@ public class FileStoreViewer {
     @FXML private HBox legendBox;
 
     private Stage primaryStage;
-    private final List<Directory> directoryPath = new ArrayList<>();
-
+    private final FileStoreSelectionModel fileStoreSelection = new FileStoreSelectionModel();
+    private final ObservableList<Directory> directoryPath = FXCollections.observableArrayList();
     private final ObjectProperty<ViewMode> viewMode = new SimpleObjectProperty<>(ViewMode.LANDING);
     private final ObjectProperty<Mode> listingMode = new SimpleObjectProperty<>(Mode.NATIVE);
-    private final FileStoreSelectionModel selection = new FileStoreSelectionModel();
     private final SimpleBooleanProperty supportsDirectories = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty supportsFileDeletion = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty supportsDiskUsage = new SimpleBooleanProperty(false);
@@ -145,10 +145,10 @@ public class FileStoreViewer {
             if (selectedRow == null) {
                 return;
             }
-            selectedRow.get(Directory.class).ifPresentOrElse(this::navigateToDirectory, () -> {
-                // TODO
-                //FileViewer.open(entry, primaryStage);
-            });
+            if (selectedRow.get(Directory.class).isPresent()) {
+                navigateToDirectory(selectedRow.get(Directory.class).get());
+                return;
+            }
             switch (selectedRow.getContentType()) {
                 case DISK_IMAGE, ARCHIVE_IMAGE -> {
                     Optional<Source> opt = Sources.create(selectedRow);
@@ -160,13 +160,10 @@ public class FileStoreViewer {
         });
         updateSwitchDiskButton();
 
-        // Bind canvas size to the table area so the disk usage can reuse available space
-//        diskUsageCanvas.widthProperty().bind(fileTable.widthProperty());
-//        diskUsageCanvas.heightProperty().bind(fileTable.heightProperty().subtract(60));
         diskUsageCanvas.setRepaint(this::renderDiskUsage);
 
-        filesContentButton.disableProperty().bind(selection.selectedItemProperty().isNull());
-        diskUsageContentButton.disableProperty().bind(selection.selectedItemProperty().isNull().or(supportsDiskUsage.not()));
+        filesContentButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull());
+        diskUsageContentButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull().or(supportsDiskUsage.not()));
 
         nativeToolButton.visibleProperty().bind(viewMode.isEqualTo(ViewMode.FILES));
         nativeToolButton.managedProperty().bind(nativeToolButton.visibleProperty());
@@ -186,7 +183,7 @@ public class FileStoreViewer {
         diskUsagePane.visibleProperty().bind(viewMode.isEqualTo(ViewMode.USAGE));
         diskUsagePane.managedProperty().bind(diskUsagePane.visibleProperty());
 
-        selection.selectedItemProperty().addListener((_, _, newValue) -> {
+        fileStoreSelection.selectedItemProperty().addListener((_, _, newValue) -> {
             if (newValue != null) {
                 directoryPath.clear();
                 directoryPath.add(newValue.getRootDirectory());
@@ -214,7 +211,35 @@ public class FileStoreViewer {
                 }
             });
         });
+
         viewMode.addListener((_, _, _) -> populateDiskRows());
+
+        directoryPath.addListener((ListChangeListener<? super Directory>) change -> {
+            breadcrumbBar.getChildren().clear();
+            if (fileStoreSelection.getSelectedItem() == null) {
+                return;
+            }
+            String pathSeparator = fileStoreSelection.getSelectedItem().getPathSeparator();
+
+            Label pathLabel = new Label("Path:");
+            breadcrumbBar.getChildren().add(pathLabel);
+
+            for (int i = 0; i < directoryPath.size(); i++) {
+                Directory dir = directoryPath.get(i);
+                // FIXME this is because ProdosFormatDisk uses "/DISK.NAME/"
+                Button crumb = new Button(dir.getName().replace("/", ""));
+                final int index = i;
+                crumb.setOnAction(event -> {
+                    List<Directory> newPath = new ArrayList<>(directoryPath.subList(0, index + 1));
+                    directoryPath.clear();
+                    directoryPath.addAll(newPath);
+                    populateDiskRows();
+                });
+                Label separator = new Label(pathSeparator);
+                breadcrumbBar.getChildren().add(separator);
+                breadcrumbBar.getChildren().add(crumb);
+            }
+        });
     }
 
     public void setPrimaryStage(Stage stage) {
@@ -268,7 +293,7 @@ public class FileStoreViewer {
 
     public void openImage(Source source, boolean promptForWindow) {
         Objects.requireNonNull(source);
-        if (promptForWindow && !selection.isEmpty()) {
+        if (promptForWindow && !fileStoreSelection.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.initOwner(primaryStage);
             alert.setTitle("Open image");
@@ -293,8 +318,8 @@ public class FileStoreViewer {
 
         try {
             var inspected = FileStores.inspect(source);
-            selection.changeFileStores(inspected.fileStores);
-            if (selection.isEmpty()) {
+            fileStoreSelection.changeFileStores(inspected.fileStores);
+            if (fileStoreSelection.isEmpty()) {
                 closeDisk();
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Unable to open image");
@@ -328,15 +353,15 @@ public class FileStoreViewer {
 
     @FXML
     private void switchDisk() {
-        selection.selectNext();
+        fileStoreSelection.selectNext();
         displayDisk();
-        Optional<Source> source = selection.getSelectedItem().get(Source.class);
+        Optional<Source> source = fileStoreSelection.getSelectedItem().get(Source.class);
         primaryStage.setTitle(AppleCommanderFX.buildTitle(source.map(Source::getName).orElse("Unknown")));
     }
 
     @FXML
     private void closeDisk() {
-        selection.clearFileStores();
+        fileStoreSelection.clearFileStores();
         directoryPath.clear();
         viewMode.setValue(ViewMode.LANDING);
         listingMode.setValue(Mode.NATIVE);
@@ -377,13 +402,13 @@ public class FileStoreViewer {
 
     @FXML
     private void toggleDeletedFiles() {
-        if (!selection.isEmpty() && viewMode.isEqualTo(ViewMode.FILES).get()) {
+        if (!fileStoreSelection.isEmpty() && viewMode.isEqualTo(ViewMode.FILES).get()) {
             refreshDiskView();
         }
     }
 
     private void displayDisk() {
-        FileStore fileStore = selection.getSelectedItem();
+        FileStore fileStore = fileStoreSelection.getSelectedItem();
         directoryPath.clear();
         directoryPath.add(fileStore.getRootDirectory());
         updateSwitchDiskButton();
@@ -413,13 +438,12 @@ public class FileStoreViewer {
     }
 
     private void refreshDiskView() {
-        if (selection.isEmpty()) {
+        if (fileStoreSelection.isEmpty()) {
             return;
         }
 
         try {
             updateSwitchDiskButton();
-            refreshBreadcrumbs();
 
             if (viewMode.isEqualTo(ViewMode.USAGE).get()) {
                 // Render the disk usage map
@@ -439,10 +463,10 @@ public class FileStoreViewer {
     }
 
     private void renderDiskUsage(Canvas canvas) {
-        if (selection.isEmpty()) {
+        if (fileStoreSelection.isEmpty()) {
             return;
         }
-        FileStore fileStore = selection.getSelectedItem();
+        FileStore fileStore = fileStoreSelection.getSelectedItem();
         Optional<DiskUsage> opt = fileStore.get(DiskUsage.class);
         if (opt.isEmpty()) {
             // nothing to render
@@ -662,50 +686,21 @@ public class FileStoreViewer {
         detailToolButton.setSelected(listingMode.get() == Mode.DETAIL);
     }
 
-    private void refreshBreadcrumbs() {
-        breadcrumbBar.getChildren().clear();
-        FileStore fileStore = selection.getSelectedItem();
-        if (!fileStore.can(Capability.SUPPORTS_DIRECTORIES)) {
-            return;
-        }
-
-        Label pathLabel = new Label("Path:");
-        breadcrumbBar.getChildren().add(pathLabel);
-        if (directoryPath.isEmpty()) {
-            return;
-        }
-
-        for (int i = 0; i < directoryPath.size(); i++) {
-            Directory dir = directoryPath.get(i);
-            Button crumb = new Button(dir.getName().replace("/", ""));
-            final int index = i;
-            crumb.setOnAction(event -> {
-                List<Directory> newPath = new ArrayList<>(directoryPath.subList(0, index + 1));
-                directoryPath.clear();
-                directoryPath.addAll(newPath);
-                refreshDiskView();
-            });
-            Label separator = new Label("/");
-            breadcrumbBar.getChildren().add(separator);
-            breadcrumbBar.getChildren().add(crumb);
-        }
-    }
-
     private void updateSwitchDiskButton() {
-        boolean enabled = selection.getItemCount() > 1;
+        boolean enabled = fileStoreSelection.getItemCount() > 1;
         switchDiskButton.setDisable(!enabled);
         switchDiskButton.setVisible(enabled);
         switchDiskButton.setManaged(enabled);
     }
 
     private String buildDiskStatusText() {
-        if (selection.isEmpty()) {
+        if (fileStoreSelection.isEmpty()) {
             return "No disk image opened.";
         }
-        FileStore currentDisk = selection.getSelectedItem();
-        if (selection.getItemCount() > 1) {
-            return String.format("Current disk (%d of %d): %s", selection.getSelectedIndex()+1,
-                    selection.getItemCount(), currentDisk.getLabel());
+        FileStore currentDisk = fileStoreSelection.getSelectedItem();
+        if (fileStoreSelection.getItemCount() > 1) {
+            return String.format("Current disk (%d of %d): %s", fileStoreSelection.getSelectedIndex()+1,
+                    fileStoreSelection.getItemCount(), currentDisk.getLabel());
         }
         return "Current disk: " + currentDisk.getLabel();
     }
