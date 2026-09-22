@@ -1,3 +1,22 @@
+/*
+ * AppleCommander - An Apple ][ image utility.
+ * Copyright (C) 2026 by Robert Greene and others
+ * robgreene at users.sourceforge.net
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 package org.applecommander.javafx;
 
 import javafx.event.ActionEvent;
@@ -13,7 +32,7 @@ import javafx.scene.layout.VBox;
 import java.util.Locale;
 import java.util.Objects;
 
-public class Utility {
+public class FxUtils {
     public static Button createButton(String url, String text, EventHandler<ActionEvent> eventHandler) {
         ImageView imageView = new ImageView(imageUrl(url));
         imageView.setFitHeight(24);
@@ -64,7 +83,7 @@ public class Utility {
     }
 
     public static String imageUrl(String imageName) {
-        return Objects.requireNonNull(Utility.class.getResource("/images/" + imageName)).toExternalForm();
+        return Objects.requireNonNull(FxUtils.class.getResource("/images/" + imageName)).toExternalForm();
     }
 
     public static void applyShortcutToButton(Scene scene, ButtonBase button, String tooltipText, KeyCombination keyCombination, Runnable runnable) {

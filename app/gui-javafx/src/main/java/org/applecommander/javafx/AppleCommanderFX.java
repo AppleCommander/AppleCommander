@@ -41,7 +41,7 @@ public class AppleCommanderFX extends Application {
         // Based on user selection, use that theme.
         getThemeSelection().orElse(ThemeSelection.MODENA).urls.forEach(Application::setUserAgentStylesheet);
 
-        FileStoreViewer.createWindow(stage);
+        FileStoreWindow.createWindow(stage);
     }
 
     static void main(String[] args) {

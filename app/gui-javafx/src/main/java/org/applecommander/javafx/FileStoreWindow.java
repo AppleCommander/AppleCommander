@@ -50,9 +50,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.applecommander.javafx.Utility.*;
+import static org.applecommander.javafx.FxUtils.*;
 
-public class FileStoreViewer {
+public class FileStoreWindow {
     private final BorderPane window;
 
     // Primary toolbar
@@ -69,10 +69,10 @@ public class FileStoreViewer {
     private final VBox landingPage;
     private final Button switchDiskButton;
     private final Label statusLabel;
-    private final FilePane filePane;
-    private final DiskUsagePane diskUsagePane;
+    private final FileView fileView;
+    private final DiskUsageView diskUsageView;
 
-    private Stage primaryStage;
+    private final Stage primaryStage;
     private final FileStoreSelectionModel fileStoreSelection = new FileStoreSelectionModel();
     private final ObjectProperty<ViewMode> viewMode = new SimpleObjectProperty<>(ViewMode.LANDING);
     private final SimpleBooleanProperty supportsDiskUsage = new SimpleBooleanProperty(false);
@@ -91,7 +91,7 @@ public class FileStoreViewer {
         Objects.requireNonNull(source);
         Stage stage = new Stage();
         try {
-            FileStoreViewer controller = createWindow(stage);
+            FileStoreWindow controller = createWindow(stage);
             controller.openImage(source, false);
             stage.toFront();
             stage.requestFocus();
@@ -100,8 +100,8 @@ public class FileStoreViewer {
         }
     }
 
-    public static FileStoreViewer createWindow(Stage stage) throws Exception {
-        FileStoreViewer controller = new FileStoreViewer(stage);
+    public static FileStoreWindow createWindow(Stage stage) throws Exception {
+        FileStoreWindow controller = new FileStoreWindow(stage);
         Scene scene = new Scene(controller.window, 1200, 700);
         stage.setTitle(AppleCommanderFX.buildTitle());
         stage.setScene(scene);
@@ -109,7 +109,7 @@ public class FileStoreViewer {
         // Bind keyboard shortcuts in controller
         try {
             controller.bindScene(scene);
-            controller.filePane.bindScene(scene);
+            controller.fileView.bindScene(scene);
         } catch (Exception ignored) {
         }
 
@@ -117,7 +117,7 @@ public class FileStoreViewer {
         return controller;
     }
 
-    public FileStoreViewer(Stage stage) {
+    public FileStoreWindow(Stage stage) {
         this.primaryStage = stage;
 
         openFileButton = createButton("open-file.png", "Open", _ -> openFile());
@@ -145,9 +145,9 @@ public class FileStoreViewer {
         Label label = new Label("No disk image open. Use open to browse for a disk image.");
         landingPage = new VBox(logo, label);
         landingPage.setAlignment(Pos.CENTER);
-        filePane = new FilePane(this, toolBar);
-        diskUsagePane = new DiskUsagePane(this);
-        contentPane = new StackPane(landingPage, filePane, diskUsagePane);
+        fileView = new FileView(this, toolBar);
+        diskUsageView = new DiskUsageView(this);
+        contentPane = new StackPane(landingPage, fileView, diskUsageView);
 
         ImageView imageView = new ImageView(imageUrl("switch-disks.png"));
         imageView.setFitHeight(16);
@@ -288,7 +288,7 @@ public class FileStoreViewer {
     private void closeDisk() {
         fileStoreSelection.clearFileStores();
         viewMode.setValue(ViewMode.LANDING);
-        filePane.clear();
+        fileView.clear();
         statusLabel.setText("No disk image opened.");
         if (primaryStage != null) {
             primaryStage.setTitle(AppleCommanderFX.buildTitle());
@@ -341,7 +341,7 @@ public class FileStoreViewer {
             statusLabel.setText(buildDiskStatusText());
         } catch (Throwable t) {
             showErrorDialog("Could not read files from disk image", t);
-            filePane.clear();
+            fileView.clear();
             statusLabel.setText("No disk image opened.");
         }
     }

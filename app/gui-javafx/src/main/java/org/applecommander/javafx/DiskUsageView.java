@@ -1,3 +1,22 @@
+/*
+ * AppleCommander - An Apple ][ image utility.
+ * Copyright (C) 2026 by Robert Greene and others
+ * robgreene at users.sourceforge.net
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 package org.applecommander.javafx;
 
 import javafx.geometry.Bounds;
@@ -20,13 +39,13 @@ import org.applecommander.usage.SectorUsage;
 
 import java.util.Optional;
 
-public class DiskUsagePane extends BorderPane {
-    private final FileStoreViewer fileStoreViewer;
+public class DiskUsageView extends BorderPane {
+    private final FileStoreWindow fileStoreWindow;
     private final CanvasPane diskUsageCanvas;
     private final HBox legendBox;
 
-    public DiskUsagePane(FileStoreViewer fileStoreViewer) {
-        this.fileStoreViewer = fileStoreViewer;
+    public DiskUsageView(FileStoreWindow fileStoreWindow) {
+        this.fileStoreWindow = fileStoreWindow;
         diskUsageCanvas = new CanvasPane();
         legendBox = new HBox();
         legendBox.setSpacing(12);
@@ -37,15 +56,15 @@ public class DiskUsagePane extends BorderPane {
         setCenter(diskUsageCanvas);
         setBottom(legendBox);
 
-        visibleProperty().bind(fileStoreViewer.viewModeProperty().isEqualTo(ViewMode.USAGE));
+        visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE));
         managedProperty().bind(visibleProperty());
     }
 
     private void renderDiskUsage(Canvas canvas) {
-        if (fileStoreViewer.fileStoreSelection().isEmpty()) {
+        if (fileStoreWindow.fileStoreSelection().isEmpty()) {
             return;
         }
-        FileStore fileStore = fileStoreViewer.fileStoreSelection().getSelectedItem();
+        FileStore fileStore = fileStoreWindow.fileStoreSelection().getSelectedItem();
         Optional<DiskUsage> opt = fileStore.get(DiskUsage.class);
         if (opt.isEmpty()) {
             // nothing to render

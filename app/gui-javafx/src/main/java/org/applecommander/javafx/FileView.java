@@ -1,3 +1,22 @@
+/*
+ * AppleCommander - An Apple ][ image utility.
+ * Copyright (C) 2026 by Robert Greene and others
+ * robgreene at users.sourceforge.net
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 package org.applecommander.javafx;
 
 import javafx.beans.property.ObjectProperty;
@@ -28,24 +47,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.applecommander.javafx.Utility.*;
+import static org.applecommander.javafx.FxUtils.*;
 
-public class FilePane extends BorderPane {
-    private final FileStoreViewer fileStoreViewer;
+public class FileView extends BorderPane {
+    private final FileStoreWindow fileStoreWindow;
     private final HBox breadcrumbBar;
     private final TableView<FileEntry> fileTable;
     private ToggleButton nativeToolButton;
     private ToggleButton detailToolButton;
     private ToggleButton deletedFilesToggleButton;
-    private ImageView deletedFilesIcon;
 
     private final ObservableList<Directory> directoryPath = FXCollections.observableArrayList();
     private final ObjectProperty<DisplayColumn.Mode> listingMode = new SimpleObjectProperty<>(DisplayColumn.Mode.NATIVE);
     private final SimpleBooleanProperty supportsDirectories = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty supportsFileDeletion = new SimpleBooleanProperty(false);
 
-    public FilePane(FileStoreViewer fileStoreViewer, ToolBar toolBar) {
-        this.fileStoreViewer = fileStoreViewer;
+    public FileView(FileStoreWindow fileStoreWindow, ToolBar toolBar) {
+        this.fileStoreWindow = fileStoreWindow;
 
         ToggleGroup listingModeGroup = new ToggleGroup();
         nativeToolButton = createToggleButton("file-native-view.png", "Native", listingModeGroup, _ -> selectNativeView());
@@ -86,27 +104,27 @@ public class FilePane extends BorderPane {
                 case DISK_IMAGE, ARCHIVE_IMAGE -> {
                     Optional<Source> opt = Sources.create(selectedRow);
                     Source source = opt.orElseThrow();  // we don't expect this to fail!
-                    FileStoreViewer.openNewWindow(source);
+                    FileStoreWindow.openNewWindow(source);
                 }
                 case UNKNOWN -> { /* Do Nothing */ }
             }
         });
 
-        nativeToolButton.visibleProperty().bind(fileStoreViewer.viewModeProperty().isEqualTo(ViewMode.FILES));
+        nativeToolButton.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
         nativeToolButton.managedProperty().bind(nativeToolButton.visibleProperty());
-        detailToolButton.visibleProperty().bind(fileStoreViewer.viewModeProperty().isEqualTo(ViewMode.FILES));
+        detailToolButton.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
         detailToolButton.managedProperty().bind(detailToolButton.visibleProperty());
         deletedFilesToggleButton.visibleProperty().bind(fileTable.visibleProperty());
         deletedFilesToggleButton.managedProperty().bind(deletedFilesToggleButton.visibleProperty());
         deletedFilesToggleButton.disableProperty().bind(supportsFileDeletion.not());
 
-        breadcrumbBar.visibleProperty().bind(fileStoreViewer.viewModeProperty().isEqualTo(ViewMode.FILES).and(supportsDirectories));
+        breadcrumbBar.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES).and(supportsDirectories));
         breadcrumbBar.managedProperty().bind(breadcrumbBar.visibleProperty());
 
-        fileTable.visibleProperty().bind(fileStoreViewer.viewModeProperty().isEqualTo(ViewMode.FILES));
+        fileTable.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
         fileTable.managedProperty().bind(fileTable.visibleProperty());
 
-        fileStoreViewer.fileStoreSelection().selectedItemProperty().addListener((_, _, newValue) -> {
+        fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((_, _, newValue) -> {
             if (newValue != null) {
                 directoryPath.clear();
                 directoryPath.add(newValue.getRootDirectory());
@@ -116,7 +134,7 @@ public class FilePane extends BorderPane {
             }
         });
 
-        fileStoreViewer.viewModeProperty().addListener((_, _, _) -> populateDiskRows());
+        fileStoreWindow.viewModeProperty().addListener((_, _, _) -> populateDiskRows());
 
         listingMode.addListener((_, _, newValue) -> {
             fileTable.getColumns().forEach(column -> {
@@ -130,10 +148,10 @@ public class FilePane extends BorderPane {
 
         directoryPath.addListener((ListChangeListener<? super Directory>) change -> {
             breadcrumbBar.getChildren().clear();
-            if (fileStoreViewer.fileStoreSelection().getSelectedItem() == null) {
+            if (fileStoreWindow.fileStoreSelection().getSelectedItem() == null) {
                 return;
             }
-            String pathSeparator = fileStoreViewer.fileStoreSelection().getSelectedItem().getPathSeparator();
+            String pathSeparator = fileStoreWindow.fileStoreSelection().getSelectedItem().getPathSeparator();
 
             Label pathLabel = new Label("Path:");
             breadcrumbBar.getChildren().add(pathLabel);
@@ -235,8 +253,8 @@ public class FilePane extends BorderPane {
     }
 
     private void toggleDeletedFiles() {
-        if (!fileStoreViewer.fileStoreSelection().isEmpty() &&
-                fileStoreViewer.viewModeProperty().isEqualTo(ViewMode.FILES).get()) {
+        if (!fileStoreWindow.fileStoreSelection().isEmpty() &&
+                fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES).get()) {
             populateDiskRows();
         }
     }
