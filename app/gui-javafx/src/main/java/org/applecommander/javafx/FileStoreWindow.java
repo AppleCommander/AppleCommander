@@ -60,8 +60,8 @@ public class FileStoreWindow {
     private final Button createFileButton;
     private final Button saveFileButton;
     private final Button saveFileAsButton;
-    private final ToggleButton filesContentButton;
-    private final ToggleButton diskUsageContentButton;
+    private final ToggleButton filesViewButton;
+    private final ToggleButton diskUsageViewButton;
     private final ToggleButton informationViewButton;
 
     // Content components
@@ -126,10 +126,10 @@ public class FileStoreWindow {
         saveFileAsButton = createButton("save-as-file.png", "Save As...", _ -> saveFileAs());
 
         ToggleGroup viewModeGroup = new ToggleGroup();
-        filesContentButton = createToggleButton("image-file-view.png", "Files", viewModeGroup, _ -> selectFilesContent());
-        diskUsageContentButton = createToggleButton("image-usage-view.png", "Usage", viewModeGroup, _ -> selectDiskUsageContent());
+        filesViewButton = createToggleButton("image-file-view.png", "Files", viewModeGroup, _ -> selectFilesContent());
+        diskUsageViewButton = createToggleButton("image-usage-view.png", "Usage", viewModeGroup, _ -> selectDiskUsageContent());
         informationViewButton = createToggleButton("image-information-view.png", "Information", viewModeGroup, _ -> selectInformationView());
-        HBox viewModeBox = new HBox(filesContentButton, diskUsageContentButton, informationViewButton);
+        HBox viewModeBox = new HBox(filesViewButton, diskUsageViewButton, informationViewButton);
 
         ToolBar toolBar = new ToolBar(
             openFileButton, createFileButton, saveFileButton, saveFileAsButton,
@@ -163,13 +163,13 @@ public class FileStoreWindow {
         window.setCenter(contentPane);
         window.setBottom(footer);
 
-        filesContentButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull());
-        diskUsageContentButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull().or(supportsDiskUsage.not()));
+        filesViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull());
+        diskUsageViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull().or(supportsDiskUsage.not()));
 
         // Cannot bind buttons, so we have a listener!
         viewMode.addListener((_, _, newValue) -> {
-            filesContentButton.setSelected(newValue == ViewMode.FILES);
-            diskUsageContentButton.setSelected(newValue == ViewMode.USAGE);
+            filesViewButton.setSelected(newValue == ViewMode.FILES);
+            diskUsageViewButton.setSelected(newValue == ViewMode.USAGE);
             informationViewButton.setSelected(newValue == ViewMode.INFORMATION);
         });
 
@@ -199,9 +199,9 @@ public class FileStoreWindow {
                 new KeyCharacterCombination("o", KeyCombination.SHORTCUT_DOWN), this::openFile);
 
         // Shortcut+1 etc for information panes
-        applyShortcutToButton(scene, filesContentButton, "View File Listing",
+        applyShortcutToButton(scene, filesViewButton, "View File Listing",
                 new KeyCharacterCombination("1", KeyCombination.SHORTCUT_DOWN), this::selectFilesContent);
-        applyShortcutToButton(scene, diskUsageContentButton, "Disk Usage",
+        applyShortcutToButton(scene, diskUsageViewButton, "Disk Usage",
                 new KeyCharacterCombination("2", KeyCombination.SHORTCUT_DOWN), this::selectDiskUsageContent);
         applyShortcutToButton(scene, informationViewButton, "Information",
                 new KeyCharacterCombination("3", KeyCombination.SHORTCUT_DOWN), this::selectInformationView);

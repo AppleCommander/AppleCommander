@@ -30,7 +30,6 @@ import javafx.collections.transformation.SortedList;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.layout.BorderPane;
@@ -58,6 +57,7 @@ public class FileView extends BorderPane {
     private ToggleButton deletedFilesToggleButton;
 
     private final ObservableList<Directory> directoryPath = FXCollections.observableArrayList();
+    private final ObjectProperty<Directory> selectedDirectory = new SimpleObjectProperty<>();
     private final ObjectProperty<DisplayColumn.Mode> listingMode = new SimpleObjectProperty<>(DisplayColumn.Mode.NATIVE);
     private final SimpleBooleanProperty supportsDirectories = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty supportsFileDeletion = new SimpleBooleanProperty(false);
@@ -97,7 +97,7 @@ public class FileView extends BorderPane {
                 return;
             }
             if (selectedRow.get(Directory.class).isPresent()) {
-                navigateToDirectory(selectedRow.get(Directory.class).get());
+                directoryPath.add(selectedRow.get(Directory.class).get());
                 return;
             }
             switch (selectedRow.getContentType()) {
@@ -171,8 +171,11 @@ public class FileView extends BorderPane {
                 breadcrumbBar.getChildren().add(separator);
                 breadcrumbBar.getChildren().add(crumb);
             }
+            selectedDirectory.set(directoryPath.isEmpty() ? null : directoryPath.getLast());
+        });
 
-            populateDiskRows();
+        selectedDirectory.addListener((_, _, newValue) -> {
+           populateDiskRows();
         });
     }
 
@@ -186,6 +189,7 @@ public class FileView extends BorderPane {
 
     public void clear() {
         directoryPath.clear();
+        selectedDirectory.set(null);
         listingMode.setValue(DisplayColumn.Mode.NATIVE);
         deletedFilesToggleButton.setSelected(false);
         fileTable.setItems(FXCollections.emptyObservableList());
@@ -201,27 +205,14 @@ public class FileView extends BorderPane {
         listingMode.set(DisplayColumn.Mode.DETAIL);
     }
 
-    private void navigateToDirectory(Directory directory) {
-        if (directory == null) {
-            return;
-        }
-        if (directoryPath.contains(directory)) {
-            while (directoryPath.size() > 1 && !directoryPath.getLast().equals(directory)) {
-                directoryPath.removeLast();
-            }
-        } else {
-            directoryPath.add(directory);
-        }
-    }
-
     private void populateDiskRows() {
         fileTable.getColumns().clear();
-        if (directoryPath.isEmpty()) {
+        if (selectedDirectory.isNull().get()) {
             // No directories, leave a cleared list. Likely in transition.
             return;
         }
 
-        Directory directory = directoryPath.getLast();
+        Directory directory = selectedDirectory.get();
         List<DisplayColumn> displayColumns = directory.getFileStore().getDisplayColumns();
 
         for (final DisplayColumn displayColumn : displayColumns) {
