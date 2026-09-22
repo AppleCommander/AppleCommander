@@ -27,6 +27,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -76,6 +77,7 @@ public class FileView extends BorderPane {
 
         breadcrumbBar = new HBox();
         breadcrumbBar.setSpacing(6);
+        breadcrumbBar.setPadding(new Insets(6));
         breadcrumbBar.setAlignment(Pos.CENTER_LEFT);
         setTop(breadcrumbBar);
 
