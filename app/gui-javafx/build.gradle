@@ -20,7 +20,7 @@ dependencies {
 
 javafx {
     version = '25.0.4'
-    modules = ['javafx.controls', 'javafx.graphics', 'javafx.fxml']
+    modules = ['javafx.controls', 'javafx.graphics']
 }
 
 application {

@@ -22,15 +22,12 @@ package org.applecommander.javafx;
 import atlantafx.base.theme.*;
 import com.webcodepro.applecommander.ui.AppleCommander;
 import javafx.application.Application;
-import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.prefs.Preferences;
@@ -63,27 +60,6 @@ public class AppleCommanderFX extends Application {
             }
         }
         return sw.toString();
-    }
-
-    /**
-     * The purpose of this method is to be certain ALL fields tagged as an FXML element
-     * were populated. The intent is to prevent null-checking fields and catching stupid
-     * typos early in the development cycle. An optional improvement may be to have
-     * a development/debug setting to prevent this from running in a production build.
-     */
-    public static void enforceFxmlTagsArePopulated(Object controller) throws IllegalAccessException {
-        List<String> unpopulatedTags = new ArrayList<>();
-        for (Field field : controller.getClass().getDeclaredFields()) {
-            field.setAccessible(true);
-            if (field.getAnnotation(FXML.class) != null) {
-                if (field.get(controller) == null) {
-                    unpopulatedTags.add(field.getName());
-                }
-            }
-        }
-        if (!unpopulatedTags.isEmpty()) {
-            throw new RuntimeException("FXML tags are not populated for: " + unpopulatedTags);
-        }
     }
 
     public static void showErrorDialog(String message, Throwable t) {
