@@ -39,7 +39,7 @@ public class AppleCommanderFX extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         // Based on user selection, use that theme.
-        getThemeSelection().orElse(ThemeSelection.MODENA).urls.forEach(Application::setUserAgentStylesheet);
+        getThemeSelection().orElse(ThemeSelection.MODENA).apply();
 
         FileStoreWindow.createWindow(stage);
     }
@@ -99,15 +99,20 @@ public class AppleCommanderFX extends Application {
 
     public enum ThemeSelection {
         MODENA(Application.STYLESHEET_MODENA),
+        CASPIAN(Application.STYLESHEET_CASPIAN),
         PRIMER(new PrimerLight().getUserAgentStylesheet(), new PrimerDark().getUserAgentStylesheet()),
         NORD(new NordLight().getUserAgentStylesheet(), new NordDark().getUserAgentStylesheet()),
         CUPERTINO(new CupertinoLight().getUserAgentStylesheet(), new CupertinoDark().getUserAgentStylesheet()),
         DRACULA(new Dracula().getUserAgentStylesheet());
 
-        public final List<String> urls;
+        private final List<String> urls;
 
         ThemeSelection(String... urls) {
             this.urls = List.of(urls);
+        }
+
+        public void apply() {
+            urls.forEach(Application::setUserAgentStylesheet);
         }
 
         public boolean includesDarkMode() {
