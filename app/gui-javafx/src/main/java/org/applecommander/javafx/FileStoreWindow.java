@@ -128,7 +128,7 @@ public class FileStoreWindow {
         ToggleGroup viewModeGroup = new ToggleGroup();
         filesContentButton = createToggleButton("image-file-view.png", "Files", viewModeGroup, _ -> selectFilesContent());
         diskUsageContentButton = createToggleButton("image-usage-view.png", "Usage", viewModeGroup, _ -> selectDiskUsageContent());
-        informationViewButton = createToggleButton("image-information-view.png", "Information", viewModeGroup, _ -> selectInformationVIew());
+        informationViewButton = createToggleButton("image-information-view.png", "Information", viewModeGroup, _ -> selectInformationView());
         HBox viewModeBox = new HBox(filesContentButton, diskUsageContentButton, informationViewButton);
 
         ToolBar toolBar = new ToolBar(
@@ -166,6 +166,13 @@ public class FileStoreWindow {
         filesContentButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull());
         diskUsageContentButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull().or(supportsDiskUsage.not()));
 
+        // Cannot bind buttons, so we have a listener!
+        viewMode.addListener((_, _, newValue) -> {
+            filesContentButton.setSelected(newValue == ViewMode.FILES);
+            diskUsageContentButton.setSelected(newValue == ViewMode.USAGE);
+            informationViewButton.setSelected(newValue == ViewMode.INFORMATION);
+        });
+
         landingPage.visibleProperty().bind(viewMode.isEqualTo(ViewMode.LANDING));
         landingPage.managedProperty().bind(landingPage.visibleProperty());
 
@@ -196,6 +203,8 @@ public class FileStoreWindow {
                 new KeyCharacterCombination("1", KeyCombination.SHORTCUT_DOWN), this::selectFilesContent);
         applyShortcutToButton(scene, diskUsageContentButton, "Disk Usage",
                 new KeyCharacterCombination("2", KeyCombination.SHORTCUT_DOWN), this::selectDiskUsageContent);
+        applyShortcutToButton(scene, informationViewButton, "Information",
+                new KeyCharacterCombination("3", KeyCombination.SHORTCUT_DOWN), this::selectInformationView);
 
         // Shortcut+Esc to switch disks
         applyShortcutToButton(scene, switchDiskButton, "Switch Disks",
@@ -303,7 +312,7 @@ public class FileStoreWindow {
         viewMode.setValue(ViewMode.FILES);
     }
 
-    private void selectInformationVIew() {
+    private void selectInformationView() {
         viewMode.setValue(ViewMode.INFORMATION);
     }
 
