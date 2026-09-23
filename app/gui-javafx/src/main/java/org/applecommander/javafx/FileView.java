@@ -116,15 +116,15 @@ public class FileView extends BorderPane {
         nativeToolButton.managedProperty().bind(nativeToolButton.visibleProperty());
         detailToolButton.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
         detailToolButton.managedProperty().bind(detailToolButton.visibleProperty());
-        deletedFilesToggleButton.visibleProperty().bind(fileTable.visibleProperty());
+        deletedFilesToggleButton.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
         deletedFilesToggleButton.managedProperty().bind(deletedFilesToggleButton.visibleProperty());
         deletedFilesToggleButton.disableProperty().bind(supportsFileDeletion.not());
 
         breadcrumbBar.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES).and(supportsDirectories));
         breadcrumbBar.managedProperty().bind(breadcrumbBar.visibleProperty());
 
-        fileTable.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
-        fileTable.managedProperty().bind(fileTable.visibleProperty());
+        visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
+        managedProperty().bind(fileTable.visibleProperty());
 
         fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((_, _, newValue) -> {
             if (newValue != null) {
