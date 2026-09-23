@@ -24,7 +24,8 @@ import com.webcodepro.applecommander.storage.FormattedDisk.DiskInformation;
 import com.webcodepro.applecommander.ui.UiBundle;
 import com.webcodepro.applecommander.util.TextBundle;
 import org.applecommander.source.Source;
-import org.applecommander.util.Information;
+import org.applecommander.util.InformationGroup;
+import org.applecommander.util.InformationItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -123,9 +124,13 @@ public class DiskInfoTab {
 			item.setText(new String[] { diskinfo.getLabel(), diskinfo.getValue() });
 		}
 		disk.getSource().get(Source.class).ifPresent(source -> {
-			for (Information info : source.information()) {
-				TableItem item = new TableItem(table, SWT.NULL);
-				item.setText(new String[] { info.label(), info.value() });
+			for (InformationGroup group : source.information()) {
+				TableItem header = new TableItem(table, SWT.NULL);
+				header.setText(group.title());
+				for (InformationItem info : group.items()) {
+					TableItem item = new TableItem(table, SWT.NULL);
+					item.setText(new String[]{info.label(), info.value()});
+				}
 			}
 		});
 	}

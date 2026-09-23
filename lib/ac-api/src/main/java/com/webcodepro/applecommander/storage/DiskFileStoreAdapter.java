@@ -29,6 +29,7 @@ import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import org.applecommander.capability.Capability;
+import org.applecommander.device.Device;
 import org.applecommander.filestore.*;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.usage.BlockUsage;
@@ -37,6 +38,7 @@ import org.applecommander.usage.SectorUsage;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.FileMagic;
+import org.applecommander.util.InformationGroup;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -169,6 +171,17 @@ public class DiskFileStoreAdapter implements FileStore {
             }
         }
         return columns;
+    }
+
+    @Override
+    public List<InformationGroup> information() {
+        InformationGroup.Builder builder = InformationGroup.builder("File Store Adapter");
+        // Transformation
+        for (FormattedDisk.DiskInformation info : disk.getDiskInformation()) {
+            builder.item(info.getLabel()).value(info.getValue());
+        }
+        // All of these have a Device, so share it as well
+        return builder.get(disk.get(Device.class).orElseThrow());
     }
 
     /**

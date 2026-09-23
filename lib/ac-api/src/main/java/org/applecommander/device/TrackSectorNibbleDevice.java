@@ -27,9 +27,12 @@ import org.applecommander.device.nibble.NibbleTrackReaderWriter;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
-import org.applecommander.util.Information;
+import org.applecommander.util.InformationGroup;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.applecommander.device.nibble.NibbleUtil.decodeOddEven;
 import static org.applecommander.device.nibble.NibbleUtil.encodeOddEven;
@@ -155,26 +158,25 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         return geometry;
     }
 
-    // Temporary shim. This likely should be added into all devices.
-    public List<Information> information() {
-        List<Information> list = new ArrayList<>();
-        list.add(Information.builder("Device").value("Nibble Device"));
-        list.add(Information.builder("Geometry").value("%d tracks, %d sectors", geometry.tracksOnDisk(),
-                geometry.sectorsPerTrack()));
-        list.add(Information.builder("Total Sectors").value(geometry.sectorsPerDisk()));
+    public List<InformationGroup> information() {
+        InformationGroup.Builder builder =  InformationGroup.builder("Track/Sector Nibble Device")
+            .item("Device").value("Nibble Device")
+            .item("Geometry").value("%d tracks, %d sectors", geometry.tracksOnDisk(),
+                geometry.sectorsPerTrack())
+            .item("Total Sectors").value(geometry.sectorsPerDisk());
         if (diskMarkers.length == 1) {
-            list.add(Information.builder("Prolog/Epilog Bytes").value("%s/%s (%d sectors on track)",
-                    formatBytes(diskMarkers[0].addressProlog()), formatBytes(diskMarkers[0].dataProlog()),
-                    diskMarkers[0].sectorsOnTrack()));
+            builder.item("Prolog/Epilog Bytes").value("%s/%s (%d sectors on track)",
+                formatBytes(diskMarkers[0].addressProlog()), formatBytes(diskMarkers[0].dataProlog()),
+                diskMarkers[0].sectorsOnTrack());
         }
         else {
             for (int t=0; t<geometry.tracksOnDisk(); t++) {
-                list.add(Information.builder("Prolog/Epilog Bytes (T%02d)", t).value("%s/%s (%d sectors on track)",
-                        formatBytes(diskMarkers[t].addressProlog()), formatBytes(diskMarkers[t].dataProlog()),
-                        diskMarkers[t].sectorsOnTrack()));
+                builder.item("Prolog/Epilog Bytes (T%02d)", t).value("%s/%s (%d sectors on track)",
+                    formatBytes(diskMarkers[t].addressProlog()), formatBytes(diskMarkers[t].dataProlog()),
+                    diskMarkers[t].sectorsOnTrack());
             }
         }
-        return list;
+        return builder.get(geometry);
     }
     private String formatBytes(int... bytes) {
         StringBuilder sb = new StringBuilder();

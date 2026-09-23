@@ -23,7 +23,7 @@ import org.applecommander.hint.Hint;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
-import org.applecommander.util.Information;
+import org.applecommander.util.InformationGroup;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -61,8 +61,10 @@ public class ShrinkitSourceFactory implements Source.Factory {
                     byte[] imageData = unpackSHKFile(source.getName(), source, requestedBlockSize);
                     Source shkSource = DataBufferSource.create(imageData, source.getName() + ".po")
                             .hints(Hint.PRODOS_BLOCK_ORDER, Hint.ORIGIN_SHRINKIT)
-                            .information(Information.builder("Original name").value(source.getName()),
-                                         Information.builder("Original type").value(bxy ? "Binary II" : "Shrinkit"))
+                            .information(InformationGroup.builder("Source")
+                                    .item("Original name").value(source.getName())
+                                    .item("Original type").value(bxy ? "Binary II" : "Shrinkit")
+                                    .get())
                             .changed(true)
                             .get();
                     return Optional.of(shkSource);

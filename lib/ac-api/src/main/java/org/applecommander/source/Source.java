@@ -23,9 +23,8 @@ import org.applecommander.capability.CapabilityProvider;
 import org.applecommander.hint.HintProvider;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
-import org.applecommander.util.Information;
+import org.applecommander.util.InformationProvider;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -42,7 +41,7 @@ import java.util.Optional;
  *    throw new RuntimeException("Unable to create image source");
  *}
  */
-public interface Source extends CapabilityProvider, HintProvider, Container {
+public interface Source extends CapabilityProvider, HintProvider, Container, InformationProvider {
     int getSize();
     String getName();
     DataBuffer readAllBytes();
@@ -50,7 +49,6 @@ public interface Source extends CapabilityProvider, HintProvider, Container {
     void writeBytes(int offset, DataBuffer data);
     boolean hasChanged();
     void clearChanges();
-    List<Information> information();
 
     /**
      * Indicates if the source image is approximately equal to this size

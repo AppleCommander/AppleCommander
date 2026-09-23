@@ -22,15 +22,16 @@ package io.github.applecommander.acx.command;
 import com.webcodepro.applecommander.storage.FormattedDisk;
 import com.webcodepro.applecommander.storage.FormattedDisk.DiskInformation;
 import io.github.applecommander.acx.base.ReadOnlyDiskContextCommandOptions;
+import org.applecommander.device.Device;
 import org.applecommander.device.TrackSectorDevice;
-import org.applecommander.device.TrackSectorNibbleDevice;
 import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
-import org.applecommander.util.Information;
+import org.applecommander.util.InformationGroup;
+import org.applecommander.util.InformationItem;
+import org.applecommander.util.InformationProvider;
 import picocli.CommandLine.Command;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Logger;
 
 @Command(name = "info", description = "Show information on a disk image(s).",
@@ -42,19 +43,13 @@ public class InfoCommand extends ReadOnlyDiskContextCommandOptions {
     public int handleCommand() {
         LOG.info(() -> "Path: " + context().source.getName());
         if (selectedDisks().isEmpty()) {
-            for (Information info : context().source.information()) {
-                System.out.printf("%s: %s\n", info.label(), info.value());
-            }
+            showInformationGroups(context().source);
             List<TrackSectorDevice> devices = context().trackSectorDevice()
                     .include13Sector()
                     .include16Sector(Hint.DOS_SECTOR_ORDER)
                     .get();
             for (TrackSectorDevice device : devices) {
-                if (device instanceof TrackSectorNibbleDevice nibble) {
-                    for (Information info : nibble.information()) {
-                        System.out.printf("%s: %s\n", info.label(), info.value());
-                    }
-                }
+                showInformationGroups(device);
             }
         }
         else {
@@ -63,20 +58,21 @@ public class InfoCommand extends ReadOnlyDiskContextCommandOptions {
                 for (DiskInformation diskinfo : formattedDisk.getDiskInformation()) {
                     System.out.printf("%s: %s\n", diskinfo.getLabel(), diskinfo.getValue());
                 }
-                Optional<TrackSectorNibbleDevice> opt = formattedDisk.get(TrackSectorNibbleDevice.class);
-                opt.ifPresent(device -> {
-                    for (Information info : device.information()) {
-                        System.out.printf("%s: %s\n", info.label(), info.value());
-                    }
-                });
-                formattedDisk.getSource().get(Source.class).ifPresent(source -> {
-                    for (Information info : source.information()) {
-                        System.out.printf("%s: %s\n", info.label(), info.value());
-                    }
-                });
+                formattedDisk.get(Device.class).ifPresent(this::showInformationGroups);
+                formattedDisk.getSource().get(Source.class).ifPresent(this::showInformationGroups);
                 System.out.println();
             }
         }
         return 0;
+    }
+
+    private void showInformationGroups(InformationProvider provider) {
+        for (InformationGroup group : provider.information()) {
+            System.out.printf("--- %s ---\n", group.title());
+            for (InformationItem info : group.items()) {
+                System.out.printf("%s: %s\n", info.label(), info.value());
+            }
+        }
+
     }
 }

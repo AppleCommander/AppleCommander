@@ -50,7 +50,8 @@ import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.FileSource;
 import org.applecommander.source.Source;
 import org.applecommander.util.BackupStrategy;
-import org.applecommander.util.Information;
+import org.applecommander.util.InformationGroup;
+import org.applecommander.util.InformationItem;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -546,9 +547,12 @@ public class ac {
 				for (DiskInformation diskinfo : formattedDisk.getDiskInformation()) {
 					System.out.println(diskinfo.getLabel() + ": " + diskinfo.getValue());
 				}
-                for (Information info : source.information()) {
-                    System.out.println(info.label() + ": " + info.value());
-                }
+				for (InformationGroup group : source.information()) {
+					System.out.println(group.title());
+					for (InformationItem info : group.items()) {
+						System.out.println("* " + info.label() + ": " + info.value());
+					}
+				}
 			}
 			System.out.println();
 		}

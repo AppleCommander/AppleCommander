@@ -26,9 +26,11 @@ import org.applecommander.filestore.DisplayColumn.Alignment;
 import org.applecommander.filestore.DisplayColumn.Mode;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
+import org.applecommander.shrinkit.MasterHeaderBlock;
 import org.applecommander.shrinkit.NuFileArchive;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
+import org.applecommander.util.InformationGroup;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -103,5 +105,18 @@ public class ShrinkitFileStore implements FileStore {
     @Override
     public <T> Optional<T> get(Class<T> iface) {
         return Container.get(iface, source, archive);
+    }
+
+    @Override
+    public List<InformationGroup> information() {
+        MasterHeaderBlock header = archive.getMasterHeaderBlock();
+        return InformationGroup.builder("ShrinkIt Archive")
+            .item("CRC").value("$%04X (%s)", header.getMasterCrc(), header.isValidCrc() ? "Valid" : "Invalid")
+            .item("Total Records").value("%d", header.getTotalRecords())
+            .item("Date Created").value(header.getArchiveCreateWhen())
+            .item("Date Modified").value(header.getArchiveModWhen())
+            .item("Version").value(header.getMasterVersion())
+            .item("EOF").value("%d", header.getMasterEof())
+            .get(source);
     }
 }

@@ -24,7 +24,7 @@ import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
-import org.applecommander.util.Information;
+import org.applecommander.util.InformationGroup;
 
 import java.util.List;
 import java.util.Objects;
@@ -136,40 +136,39 @@ public class DiskCopyImage implements Source {
     }
 
     @Override
-    public List<Information> information() {
+    public List<InformationGroup> information() {
         BiFunction<Integer,Integer,String> cksumFn = (a, e) -> {
             if (Objects.equals(a, e)) {
                 return String.format("$%08x (verified)", a);
             }
             return String.format("$%08x (expected $%08x)", a, e);
         };
-        List<Information> list = source.information();
+
         Info info = getInfo();
-        list.add(Information.builder("Image Type").value("Disk Copy"));
-        list.add(Information.builder("Disk Name").value(info.diskName()));
-        list.add(Information.builder("Data Size").value(info.dataSize()));
-        list.add(Information.builder("Tag Size").value(info.tagSize()));
-        list.add(Information.builder("Data Checksum")
-                .value(cksumFn.apply(info.dataChecksum(), info.calculatedDataChecksum())));
-        list.add(Information.builder("Tag Checksum")
-                .value(cksumFn.apply(info.tagChecksum(), getInfo().calculatedTagChecksum())));
-        list.add(Information.builder("Disk Format").value("%d (%s)", info.diskFormat(),
+        return InformationGroup.builder("Disk Copy Image")
+            .item("Image Type").value("Disk Copy")
+            .item("Disk Name").value(info.diskName())
+            .item("Data Size").value(info.dataSize())
+            .item("Tag Size").value(info.tagSize())
+            .item("Data Checksum").value(cksumFn.apply(info.dataChecksum(), info.calculatedDataChecksum()))
+            .item("Tag Checksum").value(cksumFn.apply(info.tagChecksum(), getInfo().calculatedTagChecksum()))
+            .item("Disk Format").value("%d (%s)", info.diskFormat(),
                 switch(info.diskFormat()) {
                     case 0 -> "400K - GCR CLV ssdd";
                     case 1 -> "800K - GCR CLV dsdd";
                     case 2 -> "720K - MFM CAV dsdd";
                     case 3 -> "1440K - MFM CAV dshd";
                     default -> "Reserved";
-                }));
-        list.add(Information.builder("Format Byte").value("%02x (%s)", info.formatByte(),
+                })
+            .item("Format Byte").value("%02x (%s)", info.formatByte(),
                 switch(info.formatByte()) {
                     case 0x02 -> "400K Macintosh";
                     case 0x12 -> "400K";
                     case 0x22 -> "800K Macintosh";
                     case 0x24 -> "800K Apple II";
                     default -> "Other";
-                }));
-        return list;
+                })
+            .get(source);
     }
 
     public record Info(String diskName, int dataSize, int tagSize, int dataChecksum, int tagChecksum,

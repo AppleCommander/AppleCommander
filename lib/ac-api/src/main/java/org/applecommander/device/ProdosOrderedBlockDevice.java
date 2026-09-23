@@ -24,7 +24,9 @@ import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+import org.applecommander.util.InformationGroup;
 
+import java.util.List;
 import java.util.Optional;
 
 public class ProdosOrderedBlockDevice implements BlockDevice {
@@ -68,5 +70,11 @@ public class ProdosOrderedBlockDevice implements BlockDevice {
         assert(block < geometry.blocksOnDevice());
         assert(blockData.limit() == geometry.blockSize());
         source.writeBytes(block*geometry.blockSize(), blockData);
+    }
+
+    @Override
+    public List<InformationGroup> information() {
+        return InformationGroup.builder("ProDOS Ordered Block Device")
+            .get(geometry, source);
     }
 }

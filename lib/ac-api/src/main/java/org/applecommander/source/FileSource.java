@@ -23,12 +23,11 @@ import org.applecommander.capability.Capability;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
-import org.applecommander.util.Information;
+import org.applecommander.util.InformationGroup;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.zip.GZIPInputStream;
@@ -120,14 +119,16 @@ public class FileSource implements Source {
     }
 
     @Override
-    public List<Information> information() {
-        List<Information> list = new ArrayList<>();
-        list.add(Information.builder("File Path").value(path.toString()));
+    public List<InformationGroup> information() {
+        InformationGroup.Builder builder = InformationGroup.builder("File Source")
+            .item("File Path").value(filename);
         if (compressedSize != -1) {
-            list.add(Information.builder("Size (*.gz)").value(compressedSize));
+            builder.item("Compressed Size (*.gz)").value(compressedSize);
         }
-        list.add(Information.builder("Size").value(buffer.limit()));
-        return list;
+        return builder
+            .item("Size (Bytes)").value(buffer.limit())
+            .item("Size (KiB)").value("%1.1f", buffer.limit() / 1024f)
+            .get();
     }
 
     public static class Factory implements Source.Factory {

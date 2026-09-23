@@ -25,7 +25,9 @@ import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+import org.applecommander.util.InformationGroup;
 
+import java.util.List;
 import java.util.Optional;
 
 public class DosOrderedTrackSectorDevice implements TrackSectorDevice {
@@ -90,5 +92,12 @@ public class DosOrderedTrackSectorDevice implements TrackSectorDevice {
         assert(track < geometry.tracksOnDisk());
         assert(sector < geometry.sectorsPerTrack());
         return (track * geometry.sectorsPerTrack() + sector) * SECTOR_SIZE;
+    }
+
+    @Override
+    public List<InformationGroup> information() {
+        return InformationGroup.builder("DOS Ordered Track/Sector Device")
+            .item("Ordering Hint").value(orderHint == null ? "None" : orderHint.name())
+            .get(geometry, source);
     }
 }

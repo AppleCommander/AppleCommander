@@ -23,7 +23,7 @@ import org.applecommander.capability.Capability;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
-import org.applecommander.util.Information;
+import org.applecommander.util.InformationGroup;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,16 +35,16 @@ public class DataBufferSource implements Source {
     private final String name;
     private final Set<Capability> capabilities;
     private final Set<Hint> hints;
-    private final List<Information> information;
+    private final List<InformationGroup> informationGroups;
     boolean changed;
 
     private DataBufferSource(DataBuffer dataBuffer, String name, Set<Capability> capabilities, Set<Hint> hints,
-                             List<Information> information, boolean changed) {
+                             List<InformationGroup> informationGroups, boolean changed) {
         this.dataBuffer = dataBuffer;
         this.name = name;
         this.capabilities = capabilities;
         this.hints = hints;
-        this.information = information;
+        this.informationGroups = informationGroups;
         this.changed = changed;
     }
 
@@ -85,8 +85,8 @@ public class DataBufferSource implements Source {
     }
 
     @Override
-    public List<Information> information() {
-        return information;
+    public List<InformationGroup> information() {
+        return informationGroups;
     }
 
     @Override
@@ -119,7 +119,7 @@ public class DataBufferSource implements Source {
         private final String name;
         private Set<Capability> capabilities = Collections.emptySet();
         private Set<Hint> hints = Collections.emptySet();
-        private List<Information> information = Collections.emptyList();
+        private List<InformationGroup> groups = Collections.emptyList();
         private boolean changed = false;
 
         private Builder(DataBuffer dataBuffer, String name) {
@@ -134,8 +134,8 @@ public class DataBufferSource implements Source {
             this.hints = Set.of(hints);
             return this;
         }
-        public Builder information(Information... information) {
-            this.information = List.of(information);
+        public Builder information(List<InformationGroup> groups) {
+            this.groups = groups;
             return this;
         }
         public Builder changed(boolean changed) {
@@ -143,7 +143,7 @@ public class DataBufferSource implements Source {
             return this;
         }
         public DataBufferSource get() {
-            return new DataBufferSource(dataBuffer, name, capabilities, hints, information, changed);
+            return new DataBufferSource(dataBuffer, name, capabilities, hints, groups, changed);
         }
     }
 }

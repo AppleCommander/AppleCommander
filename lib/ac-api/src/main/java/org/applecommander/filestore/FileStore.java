@@ -21,13 +21,14 @@ package org.applecommander.filestore;
 
 import org.applecommander.capability.CapabilityProvider;
 import org.applecommander.util.Container;
+import org.applecommander.util.InformationProvider;
 
 import java.util.List;
 
 /**
  * A FileStore is a generic interface for all archive and filesystem objects.
  */
-public interface FileStore extends CapabilityProvider, Container {
+public interface FileStore extends CapabilityProvider, Container, InformationProvider {
     /**
      * The label is a mechanism to distinguish multiple file stores in a single file.
      * For instance, UniDOS has two file stores in the file, so it would have two

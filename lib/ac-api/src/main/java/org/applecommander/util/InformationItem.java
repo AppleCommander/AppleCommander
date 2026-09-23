@@ -17,16 +17,11 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.applecommander.device;
-
-import org.applecommander.capability.CapabilityProvider;
-import org.applecommander.hint.HintProvider;
-import org.applecommander.util.Container;
-import org.applecommander.util.InformationProvider;
+package org.applecommander.util;
 
 /**
- * This is a marker interface for both the BlockDevice and TrackSectorDevice and should
- * not be implemented directly.
+ * This is a simple record to provide an informational item for various user interfaces.
+ * Use the builder to assist in construction.
  */
-public interface Device extends HintProvider, CapabilityProvider, Container, InformationProvider {
+public record InformationItem(String label, String value) {
 }

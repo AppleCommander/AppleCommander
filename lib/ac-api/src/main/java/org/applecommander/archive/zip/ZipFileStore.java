@@ -26,6 +26,7 @@ import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
+import org.applecommander.util.InformationGroup;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -105,5 +106,12 @@ public class ZipFileStore implements FileStore {
     @Override
     public <T> Optional<T> get(Class<T> iface) {
         return Container.get(iface, source);
+    }
+
+    @Override
+    public List<InformationGroup> information() {
+        return InformationGroup.builder("Zip Archive")
+            .item("File Entries").value(entries.size())
+            .get(source);
     }
 }
