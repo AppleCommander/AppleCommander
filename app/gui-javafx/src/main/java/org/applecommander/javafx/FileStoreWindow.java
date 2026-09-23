@@ -71,6 +71,7 @@ public class FileStoreWindow {
     private final Label statusLabel;
     private final FileView fileView;
     private final DiskUsageView diskUsageView;
+    private final InformationView informationView;
 
     private final Stage primaryStage;
     private final FileStoreSelectionModel fileStoreSelection = new FileStoreSelectionModel();
@@ -139,7 +140,7 @@ public class FileStoreWindow {
         );
 
         // TEMPORARILY DISABLE UNTIL THESE ARE IMPLEMENTED
-        Set.of(createFileButton, saveFileButton, saveFileAsButton, informationViewButton).forEach(b -> b.setDisable(true));
+        Set.of(createFileButton, saveFileButton, saveFileAsButton).forEach(b -> b.setDisable(true));
 
         ImageView logo = new ImageView(imageUrl("AppleCommanderLogo.png"));
         Label label = new Label("No disk image open. Use open to browse for a disk image.");
@@ -147,7 +148,8 @@ public class FileStoreWindow {
         landingPage.setAlignment(Pos.CENTER);
         fileView = new FileView(this, toolBar);
         diskUsageView = new DiskUsageView(this);
-        contentPane = new StackPane(landingPage, fileView, diskUsageView);
+        informationView = new InformationView(this);
+        contentPane = new StackPane(landingPage, fileView, diskUsageView, informationView);
 
         ImageView imageView = new ImageView(imageUrl("switch-disks.png"));
         imageView.setFitHeight(16);
@@ -165,6 +167,7 @@ public class FileStoreWindow {
 
         filesViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull());
         diskUsageViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull().or(supportsDiskUsage.not()));
+        informationViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull());
 
         // Cannot bind buttons, so we have a listener!
         viewMode.addListener((_, _, newValue) -> {
