@@ -139,9 +139,9 @@ public class FileView extends BorderPane {
         fileStoreWindow.viewModeProperty().addListener((_, _, _) -> populateDiskRows());
 
         listingMode.addListener((_, _, newValue) -> {
+            nativeToolButton.setSelected(newValue == DisplayColumn.Mode.NATIVE);
+            detailToolButton.setSelected(newValue == DisplayColumn.Mode.DETAIL);
             fileTable.getColumns().forEach(column -> {
-                nativeToolButton.setSelected(newValue == DisplayColumn.Mode.NATIVE);
-                detailToolButton.setSelected(newValue == DisplayColumn.Mode.DETAIL);
                 if (column.getUserData() instanceof DisplayColumn displayColumn) {
                     column.visibleProperty().setValue(displayColumn.supports(newValue));
                 }

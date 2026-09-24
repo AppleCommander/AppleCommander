@@ -19,15 +19,26 @@
  */
 package org.applecommander.javafx;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
 import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
+import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.chart.PieChart;
 import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.ToolBar;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -39,25 +50,89 @@ import org.applecommander.usage.SectorUsage;
 
 import java.util.Optional;
 
-public class DiskUsageView extends BorderPane {
+import static org.applecommander.javafx.FxUtils.applyShortcutToButton;
+import static org.applecommander.javafx.FxUtils.createToggleButton;
+
+public class DiskUsageView extends StackPane {
     private final FileStoreWindow fileStoreWindow;
+    private final ToggleButton usageGridToggle;
+    private final ToggleButton usagePieChartToggle;
+    private final BorderPane gridView;
     private final CanvasPane diskUsageCanvas;
     private final HBox legendBox;
+    private final PieChart pieChart;
 
-    public DiskUsageView(FileStoreWindow fileStoreWindow) {
+    private final ObjectProperty<Mode> viewMode = new SimpleObjectProperty<>(Mode.GRID_VIEW);
+
+    public DiskUsageView(FileStoreWindow fileStoreWindow, ToolBar toolBar) {
         this.fileStoreWindow = fileStoreWindow;
+
+        ToggleGroup listingModeGroup = new ToggleGroup();
+        usageGridToggle = createToggleButton("usage-grid-view.png", "Native", listingModeGroup, e -> selectGridView());
+        usagePieChartToggle = createToggleButton("usage-chart-view.png", "Detail", listingModeGroup, e -> selectChartView());
+        HBox listingModeBox = new HBox(usageGridToggle, usagePieChartToggle);
+        toolBar.getItems().add(listingModeBox);
+
+        // Grid view
         diskUsageCanvas = new CanvasPane();
         legendBox = new HBox();
         legendBox.setSpacing(12);
         legendBox.setAlignment(Pos.CENTER);
-
         diskUsageCanvas.setRepaint(this::renderDiskUsage);
+        gridView = new BorderPane();
+        gridView.setCenter(diskUsageCanvas);
+        gridView.setBottom(legendBox);
 
-        setCenter(diskUsageCanvas);
-        setBottom(legendBox);
+        // Chart view
+        pieChart = new PieChart();
+        pieChart.getStylesheets().add("/css/pie-chart-custom-colors.css");
+        pieChart.setTitle("Disk Usage");
+        fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                Optional<DiskUsage> opt = newValue.get(DiskUsage.class);
+                if (opt.isEmpty()) {
+                    // nothing to render
+                    return;
+                }
+                DiskUsage usage = opt.get();
+                var free = new PieChart.Data("Free", usage.getFree());
+                var used = new PieChart.Data("Used", usage.getUsed());
+                pieChart.setData(FXCollections.observableArrayList(free, used));
+            }
+        });
 
+        gridView.visibleProperty().bind(viewMode.isEqualTo(Mode.GRID_VIEW));
+        gridView.managedProperty().bind(gridView.visibleProperty());
+        pieChart.visibleProperty().bind(viewMode.isEqualTo(Mode.CHART_VIEW));
+        pieChart.managedProperty().bind(pieChart.visibleProperty());
+
+        usageGridToggle.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE));
+        usageGridToggle.managedProperty().bind(usageGridToggle.visibleProperty());
+        usagePieChartToggle.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE));
+        usagePieChartToggle.managedProperty().bind(usagePieChartToggle.visibleProperty());
+        viewMode.addListener((observable, oldValue, newValue) -> {
+            usageGridToggle.setSelected(newValue == Mode.GRID_VIEW);
+            usagePieChartToggle.setSelected(newValue == Mode.CHART_VIEW);
+        });
+
+        getChildren().addAll(gridView, pieChart);
         visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE));
         managedProperty().bind(visibleProperty());
+    }
+
+    public void bindScene(Scene scene) {
+        // Function keys for view modes
+        applyShortcutToButton(scene, usageGridToggle, "Grid View",
+                new KeyCodeCombination(KeyCode.F2), this::selectGridView);
+        applyShortcutToButton(scene, usagePieChartToggle, "Detail View",
+                new KeyCodeCombination(KeyCode.F3), this::selectChartView);
+    }
+
+    public void selectGridView() {
+        viewMode.set(Mode.GRID_VIEW);
+    }
+    public void selectChartView() {
+        viewMode.set(Mode.CHART_VIEW);
     }
 
     private void renderDiskUsage(Canvas canvas) {
@@ -249,5 +324,10 @@ public class DiskUsageView extends BorderPane {
         usedLegend.getChildren().addAll(usedSwatch, usedLabel);
 
         legendBox.getChildren().addAll(freeLegend, usedLegend);
+    }
+
+    public enum Mode {
+        CHART_VIEW,
+        GRID_VIEW
     }
 }

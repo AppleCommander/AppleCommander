@@ -111,6 +111,7 @@ public class FileStoreWindow {
         try {
             controller.bindScene(scene);
             controller.fileView.bindScene(scene);
+            controller.diskUsageView.bindScene(scene);
         } catch (Exception ignored) {
         }
 
@@ -147,7 +148,7 @@ public class FileStoreWindow {
         landingPage = new VBox(logo, label);
         landingPage.setAlignment(Pos.CENTER);
         fileView = new FileView(this, toolBar);
-        diskUsageView = new DiskUsageView(this);
+        diskUsageView = new DiskUsageView(this, toolBar);
         informationView = new InformationView(this);
         contentPane = new StackPane(landingPage, fileView, diskUsageView, informationView);
 
@@ -169,7 +170,7 @@ public class FileStoreWindow {
         diskUsageViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull().or(supportsDiskUsage.not()));
         informationViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull());
 
-        // Cannot bind buttons, so we have a listener!
+        // Cannot bind button selection, so we have a listener!
         viewMode.addListener((_, _, newValue) -> {
             filesViewButton.setSelected(newValue == ViewMode.FILES);
             diskUsageViewButton.setSelected(newValue == ViewMode.USAGE);
