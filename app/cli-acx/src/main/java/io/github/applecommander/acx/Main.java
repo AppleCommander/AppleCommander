@@ -64,6 +64,7 @@ import java.util.logging.Logger;
             RenameDiskCommand.class,
             RmdirCommand.class,
             ScanCommand.class,
+            SearchCommand.class,
             UnlockCommand.class,
             WriteCommand.class
     })
