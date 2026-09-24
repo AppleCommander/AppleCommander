@@ -29,6 +29,10 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += ['--module-path', classpath.asPath]
+}
+
 test {
     useJUnitPlatform()
 }

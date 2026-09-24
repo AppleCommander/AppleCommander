@@ -18,6 +18,11 @@ dependencies {
     implementation 'org.slf4j:slf4j-jdk14:2.0.19'
 }
 
+tasks.register("copyDependencies", Copy) {
+    from(configurations.runtimeClasspath).into(layout.buildDirectory.dir("jars"))
+}
+build.dependsOn("copyDependencies")
+
 javafx {
     version = '25.0.4'
     modules = ['javafx.controls', 'javafx.graphics']
