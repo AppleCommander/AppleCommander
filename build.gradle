@@ -2,7 +2,7 @@
 
 ext {
     // Dependency versions
-    shkVersion = "2.0"
+    shkVersion = "2.3"
     asVersion = "1.2.2"
     btVersion = "5.0"
     swtVersion = "3.134.0"

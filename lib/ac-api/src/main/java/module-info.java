@@ -7,11 +7,11 @@ module org.applecommander.api {
     requires java.logging;
     requires com.google.gson;
     requires org.apache.commons.csv;
+    requires org.applecommander.shrinkit;
 
     // TODO automatic modules
     requires acdasm;
     requires bastools.api;
-    requires ShrinkItArchive;
 
     // Legacy APIs
     exports com.webcodepro.applecommander.storage;
