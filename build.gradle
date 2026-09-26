@@ -14,7 +14,7 @@ ext {
     gsonVersion = "2.14.0"
     picocliVersion = "4.7.7"
     springBoot = "4.1.1"
-    acdasmVersion = "6.1"
+    acdasmVersion = "6.3"
     graalvmBuildVersion = "1.1.11"
     clthVersion = "2.1"
 }

@@ -8,9 +8,9 @@ module org.applecommander.api {
     requires com.google.gson;
     requires org.apache.commons.csv;
     requires org.applecommander.shrinkit;
+    requires org.applecommander.disassembler;
 
     // TODO automatic modules
-    requires acdasm;
     requires bastools.api;
 
     // Legacy APIs
