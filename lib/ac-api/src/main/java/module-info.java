@@ -9,9 +9,7 @@ module org.applecommander.api {
     requires org.apache.commons.csv;
     requires org.applecommander.shrinkit;
     requires org.applecommander.disassembler;
-
-    // TODO automatic modules
-    requires bastools.api;
+    requires org.applecommander.bastools;
 
     // Legacy APIs
     exports com.webcodepro.applecommander.storage;
