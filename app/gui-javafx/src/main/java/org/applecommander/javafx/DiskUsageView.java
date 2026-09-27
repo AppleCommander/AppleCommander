@@ -48,6 +48,7 @@ import org.applecommander.usage.BlockUsage;
 import org.applecommander.usage.DiskUsage;
 import org.applecommander.usage.SectorUsage;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.applecommander.javafx.FxUtils.applyShortcutToButton;
@@ -85,7 +86,7 @@ public class DiskUsageView extends StackPane {
 
         // Chart view
         pieChart = new PieChart();
-        pieChart.getStylesheets().add("/css/pie-chart-custom-colors.css");
+        pieChart.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/pie-chart-custom-colors.css")).toExternalForm());
         pieChart.setTitle("Disk Usage");
         fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {

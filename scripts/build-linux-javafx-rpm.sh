@@ -7,7 +7,7 @@ YEAR=$(date +%Y)
 MAIN_JAR=$(find ${SUBPROJECT}/build/libs -name "gui-javafx-*.jar")
 ARCH=$(uname -m)
 
-echo "Building AppleCommanderFX DEB for:"
+echo "Building AppleCommanderFX RPM for:"
 echo "  SUBPROJECT=${SUBPROJECT}"
 echo "  VERSION=${VERSION} (from ${version})"
 echo "  YEAR=${YEAR}"
@@ -15,7 +15,7 @@ echo "  MAIN_JAR=${MAIN_JAR}"
 echo "  ARCH=${ARCH}"
 
 jpackage \
-  --type deb \
+  --type rpm \
   --java-options --enable-native-access=javafx.graphics \
   --app-version "${VERSION}" \
   --copyright "Copyright ${YEAR}" \
@@ -33,8 +33,8 @@ jpackage \
 
 # There doesn't appear to be a mechanism to set the output name without
 # changing the application name as well. So we just 'mv' it.
-SRC=$(find . -name "applecommanderfx*.deb")
-DST="AppleCommanderFX-${version}-linux-${ARCH}.deb"
+SRC=$(find . -name "applecommanderfx*.rpm")
+DST="AppleCommanderFX-${version}-linux-${ARCH}.rpm"
 mv -v ${SRC} ${DST}
 
 echo "Done!"

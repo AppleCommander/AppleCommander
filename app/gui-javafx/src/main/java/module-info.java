@@ -5,4 +5,6 @@ module org.applecommander.javafx {
     requires javafx.controls;
     requires javafx.graphics;
     requires org.applecommander.api;
+
+    opens org.applecommander.javafx to javafx.graphics;
 }
