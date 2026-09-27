@@ -21,8 +21,8 @@ package org.applecommander.javafx;
 
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -76,16 +76,12 @@ public class FileStoreWindow {
     private final Stage primaryStage;
     private final FileStoreSelectionModel fileStoreSelection = new FileStoreSelectionModel();
     private final ObjectProperty<ViewMode> viewMode = new SimpleObjectProperty<>(ViewMode.LANDING);
-    private final SimpleBooleanProperty supportsDiskUsage = new SimpleBooleanProperty(false);
 
     public FileStoreSelectionModel fileStoreSelection() {
         return fileStoreSelection;
     }
     public ObjectProperty<ViewMode> viewModeProperty() {
         return viewMode;
-    }
-    public SimpleBooleanProperty  supportsDiskUsageProperty() {
-        return supportsDiskUsage;
     }
 
     public static void openNewWindow(Source source) {
@@ -160,6 +156,9 @@ public class FileStoreWindow {
         switchDiskButton.setGraphic(imageView);
         statusLabel = new Label("No disk image opened.");
         HBox footer = new HBox(switchDiskButton, statusLabel);
+        footer.setSpacing(6);
+        footer.setPadding(new Insets(6));
+        footer.setAlignment(Pos.CENTER_LEFT);
 
         window = new BorderPane();
         window.setTop(toolBar);
@@ -167,7 +166,6 @@ public class FileStoreWindow {
         window.setBottom(footer);
 
         filesViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull());
-        diskUsageViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull().or(supportsDiskUsage.not()));
         informationViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull());
 
         // Cannot bind button selection, so we have a listener!
@@ -183,12 +181,13 @@ public class FileStoreWindow {
         fileStoreSelection.selectedItemProperty().addListener((_, _, newValue) -> {
             if (newValue != null) {
                 viewMode.setValue(ViewMode.FILES);
-                supportsDiskUsage.setValue(newValue.get(DiskUsage.class).isPresent());
                 // There doesn't appear to be a item list changed, so this should work?
                 boolean enabled = fileStoreSelection.getItemCount() > 1;
                 switchDiskButton.setDisable(!enabled);
                 switchDiskButton.setVisible(enabled);
                 switchDiskButton.setManaged(enabled);
+
+                displayDisk();
             }
         });
     }
@@ -271,7 +270,6 @@ public class FileStoreWindow {
                 alert.showAndWait();
                 return;
             }
-            displayDisk();
             viewMode.setValue(ViewMode.FILES);
             primaryStage.setTitle(AppleCommanderFX.buildTitle(source.getName()));
         } catch (Throwable t) {
@@ -292,8 +290,12 @@ public class FileStoreWindow {
     }
 
     private void switchDisk() {
-        fileStoreSelection.selectNext();
-        displayDisk();
+        if (fileStoreSelection.getSelectedIndex()+1 < fileStoreSelection.getItemCount()) {
+            fileStoreSelection.selectNext();
+        }
+        else {
+            fileStoreSelection.selectFirst();
+        }
         Optional<Source> source = fileStoreSelection.getSelectedItem().get(Source.class);
         primaryStage.setTitle(AppleCommanderFX.buildTitle(source.map(Source::getName).orElse("Unknown")));
     }
