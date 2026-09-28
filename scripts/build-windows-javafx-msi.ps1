@@ -12,7 +12,7 @@ $props = ConvertFrom-StringData $processed
 $subProject="app/gui-javafx"
 $version=$props['version'] -replace "-SNAPSHOT", ""
 $year=(Get-Date).Year
-$mainJar=(Get-ChildItem -Path ${subProject}\build\jars -Recurse | Where-Object { $_.Name -like "gui-swt-win32-*-plain.jar" }).Name
+$mainJar=(Get-ChildItem -Path ${subProject}\build\libs -Recurse | Where-Object { $_.Name -like "gui-javafx-*.jar" }).Name
 $arch="x86_64"
 
 Write-Host "Building AppleCommanderFX MSI for:"
