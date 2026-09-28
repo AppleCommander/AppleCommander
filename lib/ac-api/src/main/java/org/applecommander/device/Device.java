@@ -22,10 +22,11 @@ package org.applecommander.device;
 import org.applecommander.capability.CapabilityProvider;
 import org.applecommander.hint.HintProvider;
 import org.applecommander.util.Container;
+import org.applecommander.util.InformationProvider;
 
 /**
  * This is a marker interface for both the BlockDevice and TrackSectorDevice and should
  * not be implemented directly.
  */
-public interface Device extends HintProvider, CapabilityProvider, Container {
+public interface Device extends HintProvider, CapabilityProvider, Container, InformationProvider {
 }

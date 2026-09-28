@@ -34,7 +34,6 @@ import io.github.applecommander.acx.base.ReusableCommandOptions;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.source.Source;
-import org.applecommander.source.Sources;
 
 import java.io.FileReader;
 import java.io.IOException;

@@ -23,8 +23,12 @@ import org.applecommander.capability.Capability;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+import org.applecommander.util.InformationGroup;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * This is an overlay on a TrackSectorDevice to give the proper sector skew to the device.
@@ -143,5 +147,12 @@ public class SkewedTrackSectorDevice implements TrackSectorDevice {
     @Override
     public void format() {
         device.format();
+    }
+
+    @Override
+    public List<InformationGroup> information() {
+        return InformationGroup.builder("Track/Sector Device with Skew")
+            .item("Sector Skew").value(Arrays.stream(sectorSkew).mapToObj(String::valueOf).collect(Collectors.joining(",")))
+            .get(geometry, device);
     }
 }

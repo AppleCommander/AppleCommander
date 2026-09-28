@@ -23,26 +23,25 @@ import org.applecommander.capability.CapabilityProvider;
 import org.applecommander.hint.HintProvider;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
-import org.applecommander.util.Information;
+import org.applecommander.util.InformationProvider;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
  * Source and Factory for an archive or disk in AppleCommander.
  * <p/>
  * Typical usage:
- * {@snippet lang=java:
- *    Optional<Source> sourceOpt = Sources.create(Path.of(filename));
+ * {@snippet lang = java:
+ *    import com.webcodepro.applecommander.storage.Sources;Optional<Source> sourceOpt = Sources.create(Path.of(filename));
  *    if (sourceOpt.isPresent()) {
  *      // do something with sourceOpt.get()
  *      System.out.println(sourceOpt.get().getSize());
-  *    }
+ *   }
  *    // Only happens if the initiating object is not understood
  *    throw new RuntimeException("Unable to create image source");
- * }
+ *}
  */
-public interface Source extends CapabilityProvider, HintProvider, Container {
+public interface Source extends CapabilityProvider, HintProvider, Container, InformationProvider {
     int getSize();
     String getName();
     DataBuffer readAllBytes();
@@ -50,7 +49,6 @@ public interface Source extends CapabilityProvider, HintProvider, Container {
     void writeBytes(int offset, DataBuffer data);
     boolean hasChanged();
     void clearChanges();
-    List<Information> information();
 
     /**
      * Indicates if the source image is approximately equal to this size

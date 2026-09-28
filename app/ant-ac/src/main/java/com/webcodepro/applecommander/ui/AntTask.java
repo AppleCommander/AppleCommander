@@ -34,7 +34,6 @@ import org.apache.tools.ant.Task;
 import org.applecommander.image.DiskCopyImage;
 import org.applecommander.image.UniversalDiskImage;
 import org.applecommander.source.FileSource;
-import org.applecommander.source.Sources;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

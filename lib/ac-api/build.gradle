@@ -17,7 +17,7 @@ repositories {
 }
 
 dependencies {
-    implementation "net.sf.applecommander:ShrinkItArchive:$shkVersion"
+    implementation "org.applecommander:ShrinkItArchive:$shkVersion"
     implementation "org.applecommander:acdasm:$acdasmVersion"
     implementation "org.applecommander:bastools-api:$btVersion"
     implementation "org.apache.commons:commons-csv:$commonsCsvVersion"
@@ -27,6 +27,10 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.junit.jupiter:junit-jupiter-params'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += ['--module-path', classpath.asPath]
 }
 
 test {

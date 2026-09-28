@@ -20,6 +20,10 @@
 package org.applecommander.device;
 
 import org.applecommander.util.DataBuffer;
+import org.applecommander.util.InformationGroup;
+import org.applecommander.util.InformationProvider;
+
+import java.util.List;
 
 public interface TrackSectorDevice extends Device {
     int SECTOR_SIZE = 256;
@@ -49,12 +53,24 @@ public interface TrackSectorDevice extends Device {
         }
     }
 
-    record Geometry(int tracksOnDisk, int sectorsPerTrack) {
+    record Geometry(int tracksOnDisk, int sectorsPerTrack) implements InformationProvider {
         public int sectorsPerDisk() {
             return tracksOnDisk*sectorsPerTrack;
         }
         public int deviceSize() {
             return sectorsPerDisk() * SECTOR_SIZE;
+        }
+
+        @Override
+        public List<InformationGroup> information() {
+            return InformationGroup.builder("Geometry")
+                .item("Type").value("Track/Sector")
+                .item("Tracks on Disk").value(tracksOnDisk())
+                .item("Sectors per Track").value(sectorsPerTrack())
+                .item("Sectors per Disk").value(sectorsPerDisk())
+                .item("Total Size (Bytes)").value(deviceSize())
+                .item("Total Size (KiB)").value("%1.1f", deviceSize()/1024f)
+                .get();
         }
     }
 }

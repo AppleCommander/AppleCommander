@@ -23,7 +23,9 @@ import org.applecommander.capability.Capability;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+import org.applecommander.util.InformationGroup;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -74,6 +76,15 @@ public class TrackSectorToBlockAdapter implements BlockDevice {
     public void writeBlock(int block, DataBuffer blockData) {
         assert blockData.limit() == style.blockSize;
         operate(block, (t,s,o) -> device.writeSector(t, s, blockData.slice(o, TrackSectorDevice.SECTOR_SIZE)));
+    }
+
+    @Override
+    public List<InformationGroup> information() {
+        return InformationGroup.builder("Track/Sector to Block Adapter")
+            .item("Block Style").value(style.name())
+            .item("Block Size (Bytes)").value(style.blockSize)
+            .item("Sectors per Block").value(style.sectorsPerBlock)
+            .get(geometry, device);
     }
 
     private void operate(int block, Operation operation) {

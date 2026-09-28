@@ -37,6 +37,7 @@ import org.applecommander.disassembler.api.switching6502.InstructionSet6502Switc
 import org.applecommander.hint.Hint;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+import org.applecommander.util.InformationGroup;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
@@ -46,9 +47,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.security.MessageDigest;
-import java.security.Provider;
-import java.security.Security;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -118,6 +118,11 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
                         @Override
                         public <T> Optional<T> get(Class<T> iface) {
                             return Container.get(iface, blockDevice);
+                        }
+
+                        @Override
+                        public List<InformationGroup> information() {
+                            return InformationGroup.builder("Block 0 to T0,S0 Device Shim").get(blockDevice);
                         }
                     };
                 }

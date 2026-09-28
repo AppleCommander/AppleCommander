@@ -2,9 +2,9 @@
 
 ext {
     // Dependency versions
-    shkVersion = "1.2.2"
+    shkVersion = "2.3"
     asVersion = "1.2.2"
-    btVersion = "5.0"
+    btVersion = "5.2"
     swtVersion = "3.135.0"
     piSwtVersion = "3.8.2"
     junitVersion = "6.1.3"
@@ -14,7 +14,7 @@ ext {
     gsonVersion = "2.14.0"
     picocliVersion = "4.7.7"
     springBoot = "4.1.1"
-    acdasmVersion = "6.1"
+    acdasmVersion = "6.3"
     graalvmBuildVersion = "1.1.14"
     clthVersion = "2.1"
 }

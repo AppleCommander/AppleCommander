@@ -335,8 +335,6 @@ public class NakedosFormatDisk extends FormattedDisk {
                         FileColumnHeader.ALIGN_RIGHT, "sectors"));
 				list.add(new FileColumnHeader(textBundle.get("DeletedQ"), 7,
                         FileColumnHeader.ALIGN_CENTER, "deleted"));
-				list.add(new FileColumnHeader(textBundle.get("DosFormatDisk.TrackAndSectorList"), 7,
-                        FileColumnHeader.ALIGN_CENTER, "trackAndSectorList"));
 				break;
 			default:	// FILE_DISPLAY_STANDARD
 				list.addAll(super.getFileColumnHeaders(displayMode));

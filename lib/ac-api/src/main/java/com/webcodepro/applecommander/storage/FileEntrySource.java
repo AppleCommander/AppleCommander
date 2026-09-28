@@ -24,11 +24,12 @@ import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
-import org.applecommander.util.Information;
+import org.applecommander.util.InformationGroup;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class FileEntrySource implements Source {
     private final FileEntry fileEntry;
@@ -95,8 +96,12 @@ public class FileEntrySource implements Source {
     }
 
     @Override
-    public List<Information> information() {
-        return List.of();
+    public List<InformationGroup> information() {
+        return InformationGroup.builder("File Entry Source")
+            .item("Name").value(fileEntry.getFilename())
+            .item("Size").value(buffer.limit())
+            .item("Hints").value(hints.stream().map(Hint::toString).collect(Collectors.joining(",")))
+            .get();
     }
 
     public static class Factory implements Source.Factory {

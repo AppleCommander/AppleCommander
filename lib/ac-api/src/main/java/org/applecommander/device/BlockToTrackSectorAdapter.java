@@ -23,7 +23,9 @@ import org.applecommander.capability.Capability;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+import org.applecommander.util.InformationGroup;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -76,5 +78,11 @@ public class BlockToTrackSectorAdapter implements TrackSectorDevice {
         int offset = strategy.computeOffset(track, sector);
         blockData.put(offset, data);
         device.writeBlock(block, blockData);
+    }
+
+    @Override
+    public List<InformationGroup> information() {
+        return InformationGroup.builder("Block-to-Track/Sector Device")
+            .get(geometry, device);
     }
 }

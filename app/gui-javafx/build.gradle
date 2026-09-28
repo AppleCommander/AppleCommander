@@ -1,0 +1,34 @@
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+java {
+    sourceCompatibility = 25
+    targetCompatibility = 25
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':lib:ac-api')
+    implementation 'io.github.mkpaz:atlantafx-base:2.1.0'
+    implementation 'org.slf4j:slf4j-jdk14:2.0.19'
+}
+
+tasks.register("copyDependencies", Copy) {
+    from(configurations.runtimeClasspath).into(layout.buildDirectory.dir("jars"))
+}
+build.dependsOn("copyDependencies")
+
+javafx {
+    version = '25.0.4'
+    modules = ['javafx.controls', 'javafx.graphics']
+}
+
+application {
+    applicationDefaultJvmArgs = ["--enable-native-access=javafx.graphics"]
+    mainClass = 'org.applecommander.javafx.AppleCommanderFX'
+}

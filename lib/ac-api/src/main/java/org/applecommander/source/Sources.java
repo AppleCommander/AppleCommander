@@ -19,6 +19,8 @@
  */
 package org.applecommander.source;
 
+import com.webcodepro.applecommander.storage.ShrinkitSourceFactory;
+
 import java.util.*;
 
 /**
@@ -29,6 +31,9 @@ public class Sources {
     static {
          FACTORIES = new ArrayList<>();
          for (Source.Factory factory : ServiceLoader.load(Source.Factory.class)) {
+             if (factory instanceof ShrinkitSourceFactory) {
+                 continue;
+             }
              FACTORIES.add(factory);
          }
     }

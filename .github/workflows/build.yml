@@ -99,7 +99,7 @@ jobs:
       - name: Look for license phrase
         run: |
           outfile=$(mktemp)
-          find . -name "*.java" -not -name "Sleak.java" | xargs grep -L "GNU General Public License" > ${outfile}
+          find . -name "*.java" -not -name "Sleak.java" -not -name module-info.java | xargs grep -L "GNU General Public License" > ${outfile}
           if [ -s "${outfile}" ]
           then
             echo "License headers missing on the following files:"
@@ -109,8 +109,8 @@ jobs:
             echo "License headers appear to be valid!"
           fi
 
-  build-jpackage:
-    name: jpackage on ${{ matrix.os }}-${{ matrix.arch }}
+  build-swt-jpackage:
+    name: jpackage for SWT on ${{ matrix.os }}-${{ matrix.arch }}
     needs: [build-java, license-check]
     runs-on: ${{ matrix.label }}
     strategy:
@@ -151,7 +151,7 @@ jobs:
         run: ./gradlew build -x test
       - name: Create DMG file (MacOS)
         if: runner.os == 'macOS'
-        run: ./scripts/build-macos-dmg.sh ${{ matrix.path }}
+        run: ./scripts/build-macos-swt-dmg.sh ${{ matrix.path }}
       - name: Create MSI file (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -159,15 +159,15 @@ jobs:
           dotnet tool install --global wix --version 5
           wix extension add -g WixToolset.Util.wixext/5.0.0
           wix extension add -g WixToolset.Ui.wixext/5.0.0
-          .\scripts\build-windows-msi.ps1 ${{ matrix.path }}
+          .\scripts\build-windows-swt-msi.ps1 ${{ matrix.path }}
       - name: Create DEB file (Linux)
         if: runner.os == 'Linux'
-        run: ./scripts/build-linux-deb.sh ${{ matrix.path }}
+        run: ./scripts/build-linux-swt-deb.sh ${{ matrix.path }}
       - name: Create RPM file (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt install -y rpm
-          ./scripts/build-linux-rpm.sh ${{ matrix.path }}
+          ./scripts/build-linux-swt-rpm.sh ${{ matrix.path }}
       - name: Upload DMG
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v7
@@ -197,9 +197,92 @@ jobs:
           archive: false
           if-no-files-found: error
 
+  build-javafx-jpackage:
+    name: jpackage for JavaFX on ${{ matrix.os }}-${{ matrix.arch }}
+    needs: [build-java, license-check]
+    runs-on: ${{ matrix.label }}
+    strategy:
+      matrix:
+        include:
+          - label: ubuntu-latest
+            os: linux
+            arch: x86_64
+          - label: ubuntu-24.04-arm
+            os: linux
+            arch: aarch64
+          - label: windows-latest
+            os: windows
+            arch: x86_64
+          - label: macos-15-intel
+            os: darwin
+            arch: x86_64
+          - label: macos-15
+            os: darwin
+            arch: arm64
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6.0.0
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: Build with Gradle
+        # Skipping all tests. SWT image tests fail in the pipeline and ANT tests fail under Windows.
+        run: ./gradlew build -x test
+      - name: Create DMG file (MacOS)
+        if: runner.os == 'macOS'
+        run: ./scripts/build-macos-javafx-dmg.sh
+      - name: Create MSI file (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          dotnet tool install --global wix --version 5
+          wix extension add -g WixToolset.Util.wixext/5.0.0
+          wix extension add -g WixToolset.Ui.wixext/5.0.0
+          .\scripts\build-windows-javafx-msi.ps1
+      - name: Create DEB file (Linux)
+        if: runner.os == 'Linux'
+        run: ./scripts/build-linux-javafx-deb.sh
+      - name: Create RPM file (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt install -y rpm
+          ./scripts/build-linux-javafx-rpm.sh
+      - name: Upload DMG
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v7
+        with:
+          path: AppleCommanderFX-*.dmg
+          archive: false
+          if-no-files-found: error
+      - name: Upload MSI
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v7
+        with:
+          path: AppleCommanderFX-*.msi
+          archive: false
+          if-no-files-found: error
+      - name: Upload DEB
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v7
+        with:
+          path: AppleCommanderFX-*.deb
+          archive: false
+          if-no-files-found: error
+      - name: Upload RPM
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v7
+        with:
+          path: AppleCommanderFX-*.rpm
+          archive: false
+          if-no-files-found: error
+
   build-native:
     name: ac/acx on ${{ matrix.os }}-${{ matrix.arch }}
-    needs: [build-jpackage]
+    needs: [build-swt-jpackage, build-javafx-jpackage]
     runs-on: ${{ matrix.label }}
     strategy:
       matrix:
@@ -261,7 +344,7 @@ jobs:
   release:
     name: Create draft release
     if: github.ref_type == 'tag'
-    needs: [build-java, build-jpackage, build-native]
+    needs: [build-java, build-swt-jpackage, build-javafx-jpackage, build-native]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -281,18 +364,9 @@ jobs:
   publish:
     name: Publish to Maven Central
     if: github.ref_type == 'tag'
-    needs: [build-java, build-jpackage, build-native]
+    needs: [build-java, build-swt-jpackage, build-javafx-jpackage, build-native]
     runs-on: ubuntu-latest
     steps:
-    - name: Install gpg secret key
-      run: |
-        cat <(echo -e "${{ secrets.OSSRH_GPG_SECRET_KEY }}") | gpg --batch --import
-    - name: Setup .netrc file
-      uses: extractions/netrc@v3
-      with:
-        machine: ossrh-staging-api.central.sonatype.com
-        username: ${{ secrets.OSSRH_USERNAME }}
-        password: ${{ secrets.OSSRH_TOKEN }}
     - name: Checkout code
       uses: actions/checkout@v7
     - name: Set up JDK 25
@@ -303,13 +377,20 @@ jobs:
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v6
     - name: Publish with Gradle
-      run: >
-        ./gradlew 
-        -PossrhUsername="${{ secrets.OSSRH_USERNAME }}"
-        -PossrhPassword="${{ secrets.OSSRH_TOKEN }}"
-        -Psigning.keyId="${{ secrets.GPG_SIGNING_KEY }}"
-        -Psigning.password="${{ secrets.GPG_SIGNING_PASSPHRASE }}"
-        -Psigning.secretKeyRingFile=/home/runner/.gnupg/trustdb.gpg
-        build publish -x test
+      run: |
+        export ORG_GRADLE_PROJECT_signingKey=$(echo "$GPG_SIGNING_KEY_BASE64" | base64 -d)
+        ./gradlew build publish -x test
+      env:
+        ORG_GRADLE_PROJECT_ossrhUsername: ${{ secrets.OSSRH_USERNAME }}
+        ORG_GRADLE_PROJECT_ossrhPassword: ${{ secrets.OSSRH_TOKEN }}
+        ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
+        GPG_SIGNING_KEY_BASE64: ${{ secrets.GPG_SIGNING_KEY_BASE64 }}
+        ORG_GRADLE_PROJECT_signingKeyId: ${{ secrets.GPG_SIGNING_KEY_ID }}
+    - name: Setup .netrc file
+      uses: extractions/netrc@v3
+      with:
+        machine: ossrh-staging-api.central.sonatype.com
+        username: ${{ secrets.OSSRH_USERNAME }}
+        password: ${{ secrets.OSSRH_TOKEN }}
     - name: Finish publishing
       run: ./scripts/finish-publishing.sh

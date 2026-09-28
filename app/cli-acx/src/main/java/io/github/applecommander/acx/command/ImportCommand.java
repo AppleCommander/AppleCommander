@@ -27,9 +27,6 @@ import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TranslatorStream;
 import com.webcodepro.applecommander.util.readerwriter.FileEntryReader;
 import com.webcodepro.applecommander.util.readerwriter.OverrideFileEntryReader;
-import com.webcodepro.shrinkit.HeaderBlock;
-import com.webcodepro.shrinkit.NuFileArchive;
-import com.webcodepro.shrinkit.ThreadRecord;
 import io.github.applecommander.acx.base.ReadWriteDiskCommandOptions;
 import io.github.applecommander.acx.converter.IntegerTypeConverter;
 import io.github.applecommander.acx.fileutil.FileUtils;
@@ -42,6 +39,9 @@ import org.applecommander.bastools.api.Parser;
 import org.applecommander.bastools.api.Visitors;
 import org.applecommander.bastools.api.model.Program;
 import org.applecommander.bastools.api.model.Token;
+import org.applecommander.shrinkit.HeaderBlock;
+import org.applecommander.shrinkit.NuFileArchive;
+import org.applecommander.shrinkit.ThreadRecord;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -337,17 +337,17 @@ public class ImportCommand extends ReadWriteDiskCommandOptions {
                             .creationDate(header.getCreateWhen())
                             .lastModificationDate(header.getModWhen());
                     
-                    ThreadRecord dataFork = header.getDataForkThreadRecord();
-                    ThreadRecord resourceFork = header.getResourceForkThreadRecord();
-                    if (dataFork == null) {
+                    Optional<ThreadRecord> dataFork = header.getDataForkThreadRecord();
+                    Optional<ThreadRecord> resourceFork = header.getResourceForkThreadRecord();
+                    if (dataFork.isEmpty()) {
                         LOG.info(() -> String.format("No data fork for '%s', skipping it.", 
                                 header.getFilename()));
                         continue;
                     }
                     
-                    builder.fileData(dataFork.getBytes());
-                    if (resourceFork != null) {
-                        builder.resourceData(resourceFork.getBytes());
+                    builder.fileData(dataFork.get().readThreadData());
+                    if (resourceFork.isPresent()) {
+                        builder.resourceData(resourceFork.get().readThreadData());
                     }
                     files.add(builder.build());
                 }

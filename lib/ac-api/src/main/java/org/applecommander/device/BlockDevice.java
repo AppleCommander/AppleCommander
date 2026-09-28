@@ -20,6 +20,10 @@
 package org.applecommander.device;
 
 import org.applecommander.util.DataBuffer;
+import org.applecommander.util.InformationGroup;
+import org.applecommander.util.InformationProvider;
+
+import java.util.List;
 
 /**
  * Represents block devices in the Apple II world. These devices should be
@@ -53,9 +57,20 @@ public interface BlockDevice extends Device {
         }
     }
 
-    record Geometry(int blockSize, int blocksOnDevice) {
+    record Geometry(int blockSize, int blocksOnDevice) implements InformationProvider {
         public int deviceSize() {
             return blocksOnDevice * blockSize;
+        }
+
+        @Override
+        public List<InformationGroup> information() {
+            return InformationGroup.builder("Geometry")
+                .item("Type").value("Block")
+                .item("Blocks on Device").value(blocksOnDevice())
+                .item("Block Size").value(blockSize())
+                .item("Total Size (Bytes)").value(deviceSize())
+                .item("Total Size (KiB)").value("%1.1f", deviceSize()/1024f)
+                .get();
         }
     }
 }
