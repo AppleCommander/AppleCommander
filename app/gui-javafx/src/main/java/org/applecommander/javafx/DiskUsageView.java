@@ -25,6 +25,8 @@ import javafx.collections.FXCollections;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.VPos;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
@@ -42,7 +44,6 @@ import org.applecommander.usage.SectorUsage;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiFunction;
 
 import static org.applecommander.javafx.FxUtils.applyShortcutToButton;
 import static org.applecommander.javafx.FxUtils.createToggleButton;
@@ -54,7 +55,7 @@ public class DiskUsageView extends StackPane {
     private final HBox legendBox;
     private final PieChart pieChart;
 
-    private final ObjectProperty<Mode> viewMode = new SimpleObjectProperty<>(Mode.GRID_VIEW);
+    private final ObjectProperty<Mode> viewMode = new SimpleObjectProperty<>();
 
     public DiskUsageView(FileStoreWindow fileStoreWindow, ToolBar toolBar) {
         ToggleGroup listingModeGroup = new ToggleGroup();
@@ -109,6 +110,7 @@ public class DiskUsageView extends StackPane {
         getChildren().addAll(gridView, pieChart);
         visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE));
         managedProperty().bind(visibleProperty());
+        viewMode.set(Mode.GRID_VIEW);
     }
 
     public void bindScene(Scene scene) {
@@ -138,12 +140,6 @@ public class DiskUsageView extends StackPane {
 
         final Color freeColor = Color.LIGHTGREEN;
         final Color usedColor = Color.LIGHTCORAL;
-        final BiFunction<Color, Integer, Rectangle> makeSwatch = (background, size) -> {
-            Rectangle swatch = new Rectangle(size, size);
-            swatch.fillProperty().set(background);
-            swatch.strokeProperty().set(Color.BLACK);
-            return swatch;
-        };
 
         // Iterate DiskUsage based on type
         diskUsageGrid.setHgap(5);
@@ -151,24 +147,51 @@ public class DiskUsageView extends StackPane {
         diskUsageGrid.setPadding(new Insets(10));
         diskUsageGrid.alignmentProperty().setValue(Pos.CENTER);
         diskUsageGrid.getChildren().clear();
+        int size = 24;
         if (usage instanceof BlockUsage blockUsage) {
-            int size = 24;
+            int numberOfColumns = 32;
             if (blockUsage.getTotal() > 8000) {
                 size = 10;
+                numberOfColumns = 128;
+                diskUsageGrid.setHgap(1);
+                diskUsageGrid.setVgap(1);
             }
             else if (blockUsage.getTotal() > 1600) {
                 size = 15;
+                numberOfColumns = 64;
+                diskUsageGrid.setHgap(2);
+                diskUsageGrid.setVgap(2);
             }
             else if (blockUsage.getTotal() > 300) {
                 size = 20;
+                numberOfColumns = 48;
+                diskUsageGrid.setHgap(3);
+                diskUsageGrid.setVgap(3);
             }
+            int numberOfRows = blockUsage.getTotal() / numberOfColumns;
+
+            Label label = new Label();
+            diskUsageGrid.add(label, 0, 0);
+
+            label = new Label("--- BLOCKS ---");
+            diskUsageGrid.add(label, 1, 0);
+            GridPane.setColumnSpan(label, numberOfColumns);
+            GridPane.setHalignment(label, HPos.CENTER);
+
+            label = new Label("--- BLOCKS ---");
+            label.setRotate(270.0);
+            Group group = new Group(label);
+            diskUsageGrid.add(group, 0, 1);
+            GridPane.setRowSpan(group, numberOfRows);
+            GridPane.setValignment(group, VPos.CENTER);
+
             int row = 0;
             int col = 0;
             for (int b=0; b<blockUsage.getTotal(); b++) {
-                diskUsageGrid.add(blockUsage.isUsed(b) ? makeSwatch.apply(usedColor, size)
-                                                         : makeSwatch.apply(freeColor, size), col, row);
+                diskUsageGrid.add(blockUsage.isUsed(b) ? makeSwatch(usedColor, size)
+                                                       : makeSwatch(freeColor, size), col+1, row+1);
                 col++;
-                if (col > 32) { // Arbitrary
+                if (col >= numberOfColumns) {
                     col = 0;
                     row++;
                 }
@@ -198,8 +221,8 @@ public class DiskUsageView extends StackPane {
             }
             for (int t=0; t<sectorUsage.getTotalTracks(); t++) {
                 for (int s=0; s< sectorUsage.getTotalSectors(); s++) {
-                    diskUsageGrid.add(sectorUsage.isUsed(t,s) ? makeSwatch.apply(usedColor, 24)
-                                                                : makeSwatch.apply(freeColor, 24), t+1, s+1);
+                    diskUsageGrid.add(sectorUsage.isUsed(t,s) ? makeSwatch(usedColor, size)
+                                                              : makeSwatch(freeColor, size), t+1, s+1);
                 }
             }
         }
@@ -207,15 +230,18 @@ public class DiskUsageView extends StackPane {
         // Legend
         legendBox.getChildren().clear();
 
-        HBox freeLegend = new HBox(6);
-        Label freeLabel = new Label("Free");
-        freeLegend.getChildren().addAll(makeSwatch.apply(freeColor, 24), freeLabel);
-
-        HBox usedLegend = new HBox(6);
-        Label usedLabel = new Label("Used");
-        usedLegend.getChildren().addAll(makeSwatch.apply(usedColor, 24), usedLabel);
-
-        legendBox.getChildren().addAll(freeLegend, usedLegend);
+        legendBox.getChildren().addAll(
+                new Label("Free"), makeSwatch(freeColor, size),
+                new Label("Used"), makeSwatch(usedColor, size));
+        legendBox.setAlignment(Pos.CENTER);
+    }
+    private Rectangle makeSwatch(Color background, int size) {
+        Rectangle swatch = new Rectangle(size, size);
+        swatch.fillProperty().set(background);
+        if (size > 10) {
+            swatch.strokeProperty().set(Color.BLACK);
+        }
+        return swatch;
     }
 
     public enum Mode {
