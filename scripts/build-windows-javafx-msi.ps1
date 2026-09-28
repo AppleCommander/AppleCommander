@@ -30,7 +30,7 @@ jpackage `
   --copyright "Copyright ${year}" `
   --description "AppleCommanderFX is a tool that manipulates Apple ][ disk images. Files may be imported, exported, viewed, or printed with various file filters." `
   --name "AppleCommanderFX" `
-  --module-path "${MAIN_JAR};${SUBPROJECT}/build/jars" `
+  --module-path "${subProject}\build\libs\${MAIN_JAR};${subProject}\build\jars" `
   --module org.applecommander.javafx/org.applecommander.javafx.AppleCommanderFX `
   --about-url "https://applecommander.org" `
   --license-file LICENSE `
