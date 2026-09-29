@@ -22,7 +22,9 @@ package org.applecommander.os.gamedos;
 import org.applecommander.capability.Capability;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.DisplayColumn;
+import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
+import org.applecommander.usage.SectorUsage;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.InformationGroup;
@@ -36,10 +38,36 @@ import static org.applecommander.filestore.DisplayColumn.Mode;
 public class GamedosFileStore implements FileStore {
     private final TrackSectorDevice device;
     private final GamedosDirectory rootDirectory;
+    private final SectorUsage usage;
 
     public GamedosFileStore(TrackSectorDevice device) {
         this.device = device;
         this.rootDirectory = new GamedosDirectory(this);
+        this.usage = new SectorUsage(() -> 0, () -> 0, (track,sector) -> {
+            // FIXME REALLY SLOW? But a bitmap is static...
+            // USED types: BOOT, SYSTEM, DIRECTORY, FILE.
+            if (track == 0) return true;
+            for (FileEntry file : getRootDirectory().getFiles()) {
+                GamedosFileEntry entry = (GamedosFileEntry) file;
+                int n = entry.getSectorCount();
+                int t = entry.getFirstTrack();
+                int s = entry.getFirstSector();
+                while (n > 0) {
+                    if (t == track && s == sector) {
+                        return true;
+                    }
+                    n--;
+                    s++;
+                    if (s >= device.getGeometry().sectorsPerTrack()) {
+                        s = 0;
+                        t++;
+                    }
+                    // Went right past it!
+                    if (track < t) break;
+                }
+            }
+            return false;
+        }, device.getGeometry().tracksOnDisk(), device.getGeometry().sectorsPerTrack());
     }
 
     @Override
@@ -89,7 +117,7 @@ public class GamedosFileStore implements FileStore {
 
     @Override
     public <T> Optional<T> get(Class<T> iface) {
-        return Container.get(iface, device);
+        return Container.get(iface, device, usage);
     }
 
     @Override
