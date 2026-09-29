@@ -75,7 +75,7 @@ public class FileStoreWindow {
 
     private final Stage primaryStage;
     private final FileStoreSelectionModel fileStoreSelection = new FileStoreSelectionModel();
-    private final ObjectProperty<ViewMode> viewMode = new SimpleObjectProperty<>(ViewMode.LANDING);
+    private final ObjectProperty<ViewMode> viewMode = new SimpleObjectProperty<>();
 
     public FileStoreSelectionModel fileStoreSelection() {
         return fileStoreSelection;
@@ -166,6 +166,7 @@ public class FileStoreWindow {
         window.setBottom(footer);
 
         filesViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull());
+        diskUsageViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull());
         informationViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull());
 
         // Cannot bind button selection, so we have a listener!
@@ -190,6 +191,8 @@ public class FileStoreWindow {
                 displayDisk();
             }
         });
+
+        viewMode.set(ViewMode.LANDING);
     }
 
     public Stage getPrimaryStage() {
