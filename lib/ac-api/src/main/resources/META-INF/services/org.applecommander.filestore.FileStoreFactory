@@ -1,5 +1,6 @@
 org.applecommander.archive.shrinkit.ShrinkitFileStoreFactory
 org.applecommander.archive.zip.ZipFileStoreFactory
+org.applecommander.os.gamedos.GamedosFileStoreFactory
 
 # Legacy shim
 com.webcodepro.applecommander.storage.DiskFileStoreFactory

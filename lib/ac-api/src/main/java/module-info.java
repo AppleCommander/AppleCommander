@@ -58,7 +58,8 @@ module org.applecommander.api {
     // FileStore discovery mechanisms
     uses FileStoreFactory;
     provides org.applecommander.filestore.FileStoreFactory
-        with org.applecommander.archive.shrinkit.ShrinkitFileStoreFactory,
+        with org.applecommander.os.gamedos.GamedosFileStoreFactory,
+             org.applecommander.archive.shrinkit.ShrinkitFileStoreFactory,
              org.applecommander.archive.zip.ZipFileStoreFactory,
              // Legacy shim
              com.webcodepro.applecommander.storage.DiskFileStoreFactory;
