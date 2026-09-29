@@ -93,10 +93,10 @@ public abstract class FileStoreTestHelper {
                 System.out.println();
             }
             case SectorUsage sectorUsage -> {
-                System.out.printf("---> TRACK USAGE 0 TO %d --->\n", sectorUsage.getTotalTracks()-1);
-                System.out.printf("v--- SECTOR USAGE 0 TO %d ---v\n", sectorUsage.getTotalSectors()-1);
-                for (int s=sectorUsage.getTotalSectors()-1; s>=0; s--) {
-                    for (int t=0; t<sectorUsage.getTotalTracks(); t++) {
+                System.out.printf("---> TRACK USAGE 0 TO %d --->\n", sectorUsage.getTracksOnDisk()-1);
+                System.out.printf("v--- SECTOR USAGE 0 TO %d ---v\n", sectorUsage.getSectorsPerTrack()-1);
+                for (int s = sectorUsage.getSectorsPerTrack()-1; s>=0; s--) {
+                    for (int t = 0; t<sectorUsage.getTracksOnDisk(); t++) {
                         System.out.print(sectorUsage.isUsed(t,s) ? "U" : ".");
                     }
                     System.out.println();

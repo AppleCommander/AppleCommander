@@ -67,7 +67,7 @@ public class GamedosFileStore implements FileStore {
                 }
             }
             return false;
-        }, device.getGeometry().tracksOnDisk(), device.getGeometry().sectorsPerTrack());
+        }, device.getGeometry());
     }
 
     @Override

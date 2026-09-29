@@ -199,8 +199,8 @@ public class DiskUsageView extends StackPane {
         }
         else if (usage instanceof SectorUsage sectorUsage) {
             diskUsageGrid.add(new Label(), 0, 0);
-            for (int t=0; t<sectorUsage.getTotalTracks(); t++) {
-                if ( t % 5 == 0 || t == sectorUsage.getTotalTracks()-1) {
+            for (int t = 0; t<sectorUsage.getTracksOnDisk(); t++) {
+                if ( t % 5 == 0 || t == sectorUsage.getTracksOnDisk()-1) {
                     Label label = new Label(String.format("T%02d", t));
                     diskUsageGrid.add(label, t+1, 0);
                     GridPane.setHalignment(label, HPos.CENTER);
@@ -209,8 +209,8 @@ public class DiskUsageView extends StackPane {
                     diskUsageGrid.add(new Label(), t+1, 0);
                 }
             }
-            for (int s=0; s<sectorUsage.getTotalSectors(); s++) {
-                if ( s % 5 == 0 || s == sectorUsage.getTotalSectors()-1 ) {
+            for (int s = 0; s<sectorUsage.getSectorsPerTrack(); s++) {
+                if ( s % 5 == 0 || s == sectorUsage.getSectorsPerTrack()-1 ) {
                     Label label = new Label(String.format("S%02d", s));
                     diskUsageGrid.add(label, 0, s+1);
                     GridPane.setHalignment(label, HPos.RIGHT);
@@ -219,8 +219,8 @@ public class DiskUsageView extends StackPane {
                     diskUsageGrid.add(new Label(), 0, s+1);
                 }
             }
-            for (int t=0; t<sectorUsage.getTotalTracks(); t++) {
-                for (int s=0; s< sectorUsage.getTotalSectors(); s++) {
+            for (int t = 0; t<sectorUsage.getTracksOnDisk(); t++) {
+                for (int s = 0; s< sectorUsage.getSectorsPerTrack(); s++) {
                     diskUsageGrid.add(sectorUsage.isUsed(t,s) ? makeSwatch(usedColor, size)
                                                               : makeSwatch(freeColor, size), t+1, s+1);
                 }

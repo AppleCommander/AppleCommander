@@ -30,6 +30,7 @@ import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import org.applecommander.capability.Capability;
 import org.applecommander.device.Device;
+import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.*;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.usage.BlockUsage;
@@ -57,12 +58,13 @@ public class DiskFileStoreAdapter implements FileStore {
     public DiskFileStoreAdapter(FormattedDisk disk) {
         this.disk = disk;
         // Prep the DiskUsage shims
+        final Optional<TrackSectorDevice> device = disk.get(TrackSectorDevice.class);
         this.usage = switch (disk) {
             case DosFormatDisk dos -> {
                 final byte[] vtoc = dos.readVtoc();
                 yield new SectorUsage(dos::getUsedSectors, dos::getFreeSectors,
                         (t,s) -> dos.isSectorUsed(t, s, vtoc),
-                        dos.getTracks(), dos.getSectors());
+                        device.orElseThrow().getGeometry());
             }
             case ProdosFormatDisk prodos -> {
                 final byte[] bitmap = prodos.readVolumeBitMap();
@@ -72,10 +74,10 @@ public class DiskFileStoreAdapter implements FileStore {
             // Current implementation of GutenbergFormatDisk and NakedosFormatDisk simply marks everything as used.
             case GutenbergFormatDisk gutenberg -> new SectorUsage(gutenberg::getUsedSectors,
                     gutenberg::getFreeSectors, (_,_) -> true,
-                    gutenberg.getTracks(), gutenberg.getSectors());
+                    device.orElseThrow().getGeometry());
             case NakedosFormatDisk nakedos -> new SectorUsage(nakedos::getUsedSectors,
                     nakedos::getFreeSectors, (_,_) -> true,
-                    nakedos.getTracks(), nakedos.getSectors());
+                    device.orElseThrow().getGeometry());
             // CP/M, Pascal, and RDOS all synthesize the bitmap. So we do too!
             case CpmFormatDisk cpm -> new BlockUsage(CpmFormatDisk.CPM_BLOCKSIZE, cpm::getBlocksUsed, cpm::getBlocksFree,
                     synthesizeBitmap(cpm));
