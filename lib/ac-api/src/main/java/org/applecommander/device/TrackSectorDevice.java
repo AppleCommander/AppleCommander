@@ -30,6 +30,21 @@ public interface TrackSectorDevice extends Device {
 
     Geometry getGeometry();
     DataBuffer readSector(int track, int sector);
+    default DataBuffer readRange(int track, int sector, int totalSectors) {
+        DataBuffer rangeData = DataBuffer.create(totalSectors * SECTOR_SIZE);
+        int offset = 0;
+        while (totalSectors > 0) {
+            rangeData.put(offset, readSector(track,sector));
+            totalSectors--;
+            offset += SECTOR_SIZE;
+            sector++;
+            if (sector >= getGeometry().sectorsPerTrack()) {
+                sector= 0;
+                track++;
+            }
+        }
+        return rangeData;
+    }
     void writeSector(int track, int sector, DataBuffer data);
     /**
      * Format a disk. For most disks, this is simply a wipe to all zeros. If this
