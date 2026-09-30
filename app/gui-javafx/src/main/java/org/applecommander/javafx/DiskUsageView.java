@@ -75,7 +75,6 @@ public class DiskUsageView extends StackPane {
 
         // Chart view
         pieChart = new PieChart();
-        pieChart.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/pie-chart-custom-colors.css")).toExternalForm());
         pieChart.setTitle("Disk Usage");
         fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
@@ -132,7 +131,9 @@ public class DiskUsageView extends StackPane {
         List<PieChart.Data> data = new ArrayList<>();
         for (UsageType usageType : UsageType.values()) {
             int value = counts.getOrDefault(usageType, 0);
-            data.add(new PieChart.Data(usageType.name(), value));
+            if (usageType == UsageType.FREE || value > 0) {
+                data.add(new PieChart.Data(usageType.name(), value));
+            }
         }
         pieChart.setData(FXCollections.observableArrayList(data));
     }
@@ -149,6 +150,8 @@ public class DiskUsageView extends StackPane {
             UsageType.DIRECTORY, Color.MEDIUMORCHID,
             UsageType.FILE, Color.GOLDENROD
         );
+        // Summing this independently since we have to loop through all sectors/blocks anyway.
+        final Map<UsageType,Integer> counts = new HashMap<>();
 
         // Iterate DiskUsage based on type
         diskUsageGrid.setHgap(5);
@@ -197,7 +200,9 @@ public class DiskUsageView extends StackPane {
             int row = 0;
             int col = 0;
             for (int b=0; b<blockUsage.getTotal(); b++) {
-                diskUsageGrid.add(makeSwatch(colors.get(blockUsage.getUsage(b)), size), col+1, row+1);
+                UsageType usageType = blockUsage.getUsage(b);
+                counts.compute(usageType, (k, v) -> v == null ? 0 : v + 1);
+                diskUsageGrid.add(makeSwatch(colors.get(usageType), size), col+1, row+1);
                 col++;
                 if (col >= numberOfColumns) {
                     col = 0;
@@ -229,7 +234,9 @@ public class DiskUsageView extends StackPane {
             }
             for (int t = 0; t<sectorUsage.getTracksOnDisk(); t++) {
                 for (int s = 0; s< sectorUsage.getSectorsPerTrack(); s++) {
-                    diskUsageGrid.add(makeSwatch(colors.get(sectorUsage.getUsage(t,s)), size), t+1, s+1);
+                    UsageType usageType = sectorUsage.getUsage(t,s);
+                    counts.compute(usageType, (k, v) -> v == null ? 0 : v + 1);
+                    diskUsageGrid.add(makeSwatch(colors.get(usageType), size), t+1, s+1);
                 }
             }
         }
@@ -237,9 +244,11 @@ public class DiskUsageView extends StackPane {
         // Legend - note that we work the colors in the same order as the pie chart for consistency!
         legendBox.getChildren().clear();
         for (UsageType usageType : UsageType.values()) {
-            legendBox.getChildren().addAll(makeSwatch(colors.get(usageType), size), new Label(usageType.name()));
-            if (usageType == UsageType.FREE) {
-                legendBox.getChildren().add(new Separator(Orientation.VERTICAL));
+            if (usageType == UsageType.FREE || counts.getOrDefault(usageType, 0) > 0) {
+                legendBox.getChildren().addAll(makeSwatch(colors.get(usageType), size), new Label(usageType.name()));
+                if (usageType == UsageType.FREE) {
+                    legendBox.getChildren().add(new Separator(Orientation.VERTICAL));
+                }
             }
         }
         legendBox.setAlignment(Pos.CENTER);

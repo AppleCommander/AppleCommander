@@ -1,7 +1,0 @@
-.default-color0.chart-pie { -fx-pie-color: lightgreen; }    /* FREE      */
-.default-color1.chart-pie { -fx-pie-color: lightcoral; }    /* USED      */
-.default-color2.chart-pie { -fx-pie-color: teal; }          /* BOOT      */
-.default-color3.chart-pie { -fx-pie-color: steelblue; }     /* BITMAP    */
-.default-color4.chart-pie { -fx-pie-color: palegoldenrod; } /* SYSTEM    */
-.default-color5.chart-pie { -fx-pie-color: mediumorchid; }  /* DIRECTORY */
-.default-color6.chart-pie { -fx-pie-color: goldenrod; }     /* FILE      */
