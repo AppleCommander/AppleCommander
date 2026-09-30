@@ -29,12 +29,14 @@ import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import org.applecommander.capability.Capability;
+import org.applecommander.device.BlockDevice;
 import org.applecommander.device.Device;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.*;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.usage.BlockUsage;
 import org.applecommander.usage.DiskUsage;
+import org.applecommander.usage.DiskUsage.UsageType;
 import org.applecommander.usage.SectorUsage;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
@@ -58,33 +60,28 @@ public class DiskFileStoreAdapter implements FileStore {
     public DiskFileStoreAdapter(FormattedDisk disk) {
         this.disk = disk;
         // Prep the DiskUsage shims
-        final Optional<TrackSectorDevice> device = disk.get(TrackSectorDevice.class);
+        final Optional<TrackSectorDevice> trackSectorDevice = disk.get(TrackSectorDevice.class);
+        final Optional<BlockDevice> blockDevice = disk.get(BlockDevice.class);
         this.usage = switch (disk) {
             case DosFormatDisk dos -> {
                 final byte[] vtoc = dos.readVtoc();
-                yield new SectorUsage(dos::getUsedSectors, dos::getFreeSectors,
-                        (t,s) -> dos.isSectorUsed(t, s, vtoc),
-                        device.orElseThrow().getGeometry());
+                yield new SectorUsage(trackSectorDevice.orElseThrow().getGeometry(),
+                        (t,s) -> dos.isSectorUsed(t, s, vtoc) ? UsageType.USED : UsageType.FREE);
             }
             case ProdosFormatDisk prodos -> {
                 final byte[] bitmap = prodos.readVolumeBitMap();
-                yield new BlockUsage(DiskConstants.BLOCK_SIZE, prodos::getUsedBlocks,
-                        prodos::getFreeBlocks, (b) -> prodos.isBlockUsed(bitmap, b));
+                yield new BlockUsage(blockDevice.orElseThrow().getGeometry(),
+                        b -> prodos.isBlockUsed(bitmap, b) ? UsageType.USED : UsageType.FREE);
             }
             // Current implementation of GutenbergFormatDisk and NakedosFormatDisk simply marks everything as used.
-            case GutenbergFormatDisk gutenberg -> new SectorUsage(gutenberg::getUsedSectors,
-                    gutenberg::getFreeSectors, (_,_) -> true,
-                    device.orElseThrow().getGeometry());
-            case NakedosFormatDisk nakedos -> new SectorUsage(nakedos::getUsedSectors,
-                    nakedos::getFreeSectors, (_,_) -> true,
-                    device.orElseThrow().getGeometry());
+            case GutenbergFormatDisk gutenberg -> new SectorUsage(trackSectorDevice.orElseThrow().getGeometry(),
+                    (_,_) -> UsageType.USED);
+            case NakedosFormatDisk nakedos -> new SectorUsage(trackSectorDevice.orElseThrow().getGeometry(),
+                    (_,_) -> UsageType.USED);
             // CP/M, Pascal, and RDOS all synthesize the bitmap. So we do too!
-            case CpmFormatDisk cpm -> new BlockUsage(CpmFormatDisk.CPM_BLOCKSIZE, cpm::getBlocksUsed, cpm::getBlocksFree,
-                    synthesizeBitmap(cpm));
-            case PascalFormatDisk pascal -> new BlockUsage(DiskConstants.BLOCK_SIZE, pascal::getUsedBlocks,
-                    pascal::getFreeBlocks, synthesizeBitmap(pascal));
-            case RdosFormatDisk rdos -> new BlockUsage(DiskConstants.SECTOR_SIZE, rdos::getUsedBlocks, rdos::getFreeBlocks,
-                    synthesizeBitmap(rdos));
+            case CpmFormatDisk cpm -> new BlockUsage(blockDevice.orElseThrow().getGeometry(), synthesizeBitmap(cpm));
+            case PascalFormatDisk pascal -> new BlockUsage(blockDevice.orElseThrow().getGeometry(), synthesizeBitmap(pascal));
+            case RdosFormatDisk rdos -> new BlockUsage(blockDevice.orElseThrow().getGeometry(), synthesizeBitmap(rdos));
             default -> throw new IllegalArgumentException("Unsupported format disk");
         };
     }
@@ -92,7 +89,7 @@ public class DiskFileStoreAdapter implements FileStore {
     /**
      * This is a helper method to make a copy of the legacy DiskUsage into a BitSet for the shim.
      */
-    private Function<Integer,Boolean> synthesizeBitmap(FormattedDisk formattedDisk) {
+    private Function<Integer,UsageType> synthesizeBitmap(FormattedDisk formattedDisk) {
         final BitSet used = new BitSet(formattedDisk.getBitmapLength());
         int block = 0;
         FormattedDisk.DiskUsage diskUsage = formattedDisk.getDiskUsage();
@@ -101,7 +98,7 @@ public class DiskFileStoreAdapter implements FileStore {
             used.set(block++, diskUsage.isUsed());
         }
         assert(block == disk.getBitmapLength());
-        return used::get;
+        return b -> used.get(b) ? UsageType.USED : UsageType.FREE;
     }
 
     @Override

@@ -24,6 +24,7 @@ import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.DisplayColumn;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
+import org.applecommander.usage.DiskUsage.UsageType;
 import org.applecommander.usage.SectorUsage;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
@@ -43,31 +44,39 @@ public class GamedosFileStore implements FileStore {
     public GamedosFileStore(TrackSectorDevice device) {
         this.device = device;
         this.rootDirectory = new GamedosDirectory(this);
-        this.usage = new SectorUsage(() -> 0, () -> 0, (track,sector) -> {
-            // FIXME REALLY SLOW? But a bitmap is static...
-            // USED types: BOOT, SYSTEM, DIRECTORY, FILE.
-            if (track == 0) return true;
-            for (FileEntry file : getRootDirectory().getFiles()) {
-                GamedosFileEntry entry = (GamedosFileEntry) file;
-                int n = entry.getSectorCount();
-                int t = entry.getFirstTrack();
-                int s = entry.getFirstSector();
-                while (n > 0) {
-                    if (t == track && s == sector) {
-                        return true;
+        this.usage = new SectorUsage(device.getGeometry(), (track,sector) -> {
+            if (track == 0 && sector == 0) {
+                return UsageType.BOOT;
+            }
+            else if (track == 0 && sector < GamedosDirectory.DIRECTORY_SECTOR) {
+                return UsageType.SYSTEM;
+            }
+            else if (track == 0) {
+                return UsageType.DIRECTORY;
+            }
+            else {
+                for (FileEntry file : getRootDirectory().getFiles()) {
+                    GamedosFileEntry entry = (GamedosFileEntry) file;
+                    int n = entry.getSectorCount();
+                    int t = entry.getFirstTrack();
+                    int s = entry.getFirstSector();
+                    while (n > 0) {
+                        if (t == track && s == sector) {
+                            return UsageType.FILE;
+                        }
+                        n--;
+                        s++;
+                        if (s >= device.getGeometry().sectorsPerTrack()) {
+                            s = 0;
+                            t++;
+                        }
+                        // Went right past it!
+                        if (track < t) break;
                     }
-                    n--;
-                    s++;
-                    if (s >= device.getGeometry().sectorsPerTrack()) {
-                        s = 0;
-                        t++;
-                    }
-                    // Went right past it!
-                    if (track < t) break;
                 }
             }
-            return false;
-        }, device.getGeometry());
+            return UsageType.FREE;
+        });
     }
 
     @Override

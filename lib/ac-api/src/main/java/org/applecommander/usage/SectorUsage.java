@@ -21,27 +21,42 @@ package org.applecommander.usage;
 
 import org.applecommander.device.TrackSectorDevice;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
-import java.util.function.IntSupplier;
 
 /// Provides sector level usage information. Sectors are always the same size in all contexts,
 /// so it is hard-coded.
 public class SectorUsage extends DiskUsage {
-    private final BiFunction<Integer,Integer,Boolean> usedFn;
+    private final BiFunction<Integer,Integer,UsageType> usageFn;
     private final TrackSectorDevice.Geometry geometry;
 
-    // TODO this probably can be reduced to the usedFn and TrackSectorGeometry.
-    public SectorUsage(IntSupplier used, IntSupplier free, BiFunction<Integer,Integer,Boolean> usedFn,
-                       TrackSectorDevice.Geometry geometry) {
-        super(TrackSectorDevice.SECTOR_SIZE, used, free);
-        Objects.requireNonNull(usedFn);
-        this.usedFn = usedFn;
+    public SectorUsage(TrackSectorDevice.Geometry geometry,
+                       BiFunction<Integer,Integer,UsageType> usageFn) {
+        super(TrackSectorDevice.SECTOR_SIZE);
+        Objects.requireNonNull(geometry);
+        Objects.requireNonNull(usageFn);
+        this.usageFn = usageFn;
         this.geometry = geometry;
     }
 
-    public boolean isUsed(int track, int sector) {
-        return usedFn.apply(track, sector);
+    @Override
+    public Map<UsageType, Integer> getUsageCounts() {
+        Map<UsageType,Integer> counts = new HashMap<>();
+        for (int t=0; t<getTracksOnDisk(); t++) {
+            for (int s=0; s<getSectorsPerTrack(); s++) {
+                counts.compute(getUsage(t,s), (u, v) -> v == null ? 1 : v + 1);
+            }
+        }
+        return counts;
+    }
+    public UsageType getUsage(int track, int sector) {
+        return usageFn.apply(track, sector);
+    }
+    @Override
+    public int getTotal() {
+        return geometry.sectorsPerDisk();
     }
     public int getTracksOnDisk() {
         return geometry.tracksOnDisk();

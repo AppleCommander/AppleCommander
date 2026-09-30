@@ -22,10 +22,7 @@ package org.applecommander.javafx;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
-import javafx.geometry.HPos;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.geometry.VPos;
+import javafx.geometry.*;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
@@ -40,10 +37,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import org.applecommander.usage.BlockUsage;
 import org.applecommander.usage.DiskUsage;
+import org.applecommander.usage.DiskUsage.UsageType;
 import org.applecommander.usage.SectorUsage;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static org.applecommander.javafx.FxUtils.applyShortcutToButton;
 import static org.applecommander.javafx.FxUtils.createToggleButton;
@@ -130,16 +127,28 @@ public class DiskUsageView extends StackPane {
 
     private void updateChartView(DiskUsage usage) {
         Objects.requireNonNull(usage);
-        var free = new PieChart.Data("Free", usage.getFree());
-        var used = new PieChart.Data("Used", usage.getUsed());
-        pieChart.setData(FXCollections.observableArrayList(free, used));
+        Map<UsageType,Integer> counts = usage.getUsageCounts();
+        // Need to pull these out in order to make the colors line up!
+        List<PieChart.Data> data = new ArrayList<>();
+        for (UsageType usageType : UsageType.values()) {
+            int value = counts.getOrDefault(usageType, 0);
+            data.add(new PieChart.Data(usageType.name(), value));
+        }
+        pieChart.setData(FXCollections.observableArrayList(data));
     }
 
     private void updateGridView(DiskUsage usage) {
         Objects.requireNonNull(usage);
 
-        final Color freeColor = Color.LIGHTGREEN;
-        final Color usedColor = Color.LIGHTCORAL;
+        final Map<UsageType,Color> colors = Map.of(
+            UsageType.FREE, Color.LIGHTGREEN,
+            UsageType.USED, Color.LIGHTCORAL,
+            UsageType.BOOT, Color.TEAL,
+            UsageType.BITMAP, Color.STEELBLUE,
+            UsageType.SYSTEM, Color.PALEGOLDENROD,
+            UsageType.DIRECTORY, Color.MEDIUMORCHID,
+            UsageType.FILE, Color.GOLDENROD
+        );
 
         // Iterate DiskUsage based on type
         diskUsageGrid.setHgap(5);
@@ -188,8 +197,7 @@ public class DiskUsageView extends StackPane {
             int row = 0;
             int col = 0;
             for (int b=0; b<blockUsage.getTotal(); b++) {
-                diskUsageGrid.add(blockUsage.isUsed(b) ? makeSwatch(usedColor, size)
-                                                       : makeSwatch(freeColor, size), col+1, row+1);
+                diskUsageGrid.add(makeSwatch(colors.get(blockUsage.getUsage(b)), size), col+1, row+1);
                 col++;
                 if (col >= numberOfColumns) {
                     col = 0;
@@ -221,18 +229,19 @@ public class DiskUsageView extends StackPane {
             }
             for (int t = 0; t<sectorUsage.getTracksOnDisk(); t++) {
                 for (int s = 0; s< sectorUsage.getSectorsPerTrack(); s++) {
-                    diskUsageGrid.add(sectorUsage.isUsed(t,s) ? makeSwatch(usedColor, size)
-                                                              : makeSwatch(freeColor, size), t+1, s+1);
+                    diskUsageGrid.add(makeSwatch(colors.get(sectorUsage.getUsage(t,s)), size), t+1, s+1);
                 }
             }
         }
 
-        // Legend
+        // Legend - note that we work the colors in the same order as the pie chart for consistency!
         legendBox.getChildren().clear();
-
-        legendBox.getChildren().addAll(
-                new Label("Free"), makeSwatch(freeColor, size),
-                new Label("Used"), makeSwatch(usedColor, size));
+        for (UsageType usageType : UsageType.values()) {
+            legendBox.getChildren().addAll(makeSwatch(colors.get(usageType), size), new Label(usageType.name()));
+            if (usageType == UsageType.FREE) {
+                legendBox.getChildren().add(new Separator(Orientation.VERTICAL));
+            }
+        }
         legendBox.setAlignment(Pos.CENTER);
     }
     private Rectangle makeSwatch(Color background, int size) {
