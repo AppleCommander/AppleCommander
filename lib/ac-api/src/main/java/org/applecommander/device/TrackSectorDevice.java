@@ -22,6 +22,7 @@ package org.applecommander.device;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.InformationGroup;
 import org.applecommander.util.InformationProvider;
+import org.applecommander.util.TriIntConsumer;
 
 import java.util.List;
 
@@ -32,20 +33,26 @@ public interface TrackSectorDevice extends Device {
     DataBuffer readSector(int track, int sector);
     default DataBuffer readRange(int track, int sector, int totalSectors) {
         DataBuffer rangeData = DataBuffer.create(totalSectors * SECTOR_SIZE);
+        performRange(track, sector, totalSectors, (t,s,o) -> rangeData.put(o, readSector(t,s)));
+        return rangeData;
+    }
+    void writeSector(int track, int sector, DataBuffer data);
+    default void writeRange(int track, int sector, int totalSectors, DataBuffer data) {
+        performRange(track, sector, totalSectors, (t,s,o) -> writeSector(t, s, data.slice(o, SECTOR_SIZE)));
+    }
+    default void performRange(int track, int sector, int totalSectors, TriIntConsumer actionFn) {
         int offset = 0;
         while (totalSectors > 0) {
-            rangeData.put(offset, readSector(track,sector));
+            actionFn.accept(track, sector, offset);
             totalSectors--;
             offset += SECTOR_SIZE;
             sector++;
             if (sector >= getGeometry().sectorsPerTrack()) {
-                sector= 0;
+                sector = 0;
                 track++;
             }
         }
-        return rangeData;
     }
-    void writeSector(int track, int sector, DataBuffer data);
     /**
      * Format a disk. For most disks, this is simply a wipe to all zeros. If this
      * disk has extended format (such as nibble formats), this is the opportunity
