@@ -28,16 +28,7 @@ import org.applecommander.util.DataBuffer;
 
 import java.util.Optional;
 
-public class GamedosFileEntry implements FileEntry {
-    public static final int ENTRY_SIZE = 32;
-    public static final int ENTRY_TYPE_OFFSET = 0;
-    public static final int ENTRY_TRACK_OFFSET = 1;
-    public static final int ENTRY_SECTOR_OFFSET = 2;
-    public static final int ENTRY_META_OFFSET = 3;
-    public static final int ENTRY_NAME_OFFSET = 5;
-    public static final int ENTRY_NAME_LENGTH = 26;
-    public static final int ENTRY_SECTORS_OFFSET = 31;
-
+public class GamedosFileEntry implements FileEntry, GamedosConstants {
     private final GamedosDirectory directory;
     private final TrackSectorDevice device;
     private final int sector;

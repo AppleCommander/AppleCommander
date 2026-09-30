@@ -29,11 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class GamedosDirectory implements Directory {
-    public static final int DIRECTORY_TRACK = 0;
-    public static final int DIRECTORY_SECTOR = 14;
-    public static final int DIRECTORY_SIZE = 2;
-
+public class GamedosDirectory implements Directory, GamedosConstants {
     private final GamedosFileStore fileStore;
     private final TrackSectorDevice device;
 

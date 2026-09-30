@@ -24,10 +24,9 @@ import org.applecommander.filestore.FileStoreFactory;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-public class GamedosFileStoreFactory implements FileStoreFactory {
+public class GamedosFileStoreFactory implements FileStoreFactory,GamedosConstants {
     @Override
     public void inspect(Context ctx) {
         ctx.trackSectorDevice()
@@ -42,17 +41,16 @@ public class GamedosFileStoreFactory implements FileStoreFactory {
 
     public boolean check(TrackSectorDevice device) {
         if (device.getGeometry().sectorsPerDisk() == 560) {
-            DataBuffer track0 = device.readRange(GamedosDirectory.DIRECTORY_TRACK, 0, GamedosDirectory.DIRECTORY_SECTOR);
-            Optional<Integer> opt = track0.scan("GAMEDOS".getBytes(StandardCharsets.UTF_8), 0);
+            DataBuffer track0 = device.readRange(DIRECTORY_TRACK, 0, DIRECTORY_SECTOR);
+            Optional<Integer> opt = track0.scan(MARKER, 0);
             if (opt.isPresent()) {
-                DataBuffer directory = device.readRange(GamedosDirectory.DIRECTORY_TRACK, GamedosDirectory.DIRECTORY_SECTOR,
-                        GamedosDirectory.DIRECTORY_SIZE);
-                for (int i=0; i<directory.limit(); i+=GamedosFileEntry.ENTRY_SIZE) {
-                    // Test each entry for validity. Note that the entry TYPE has everny defined type even thought not implemented.
-                    boolean validType = directory.testUnsignedByte(GamedosFileEntry.ENTRY_TYPE_OFFSET, 0, 'A', 'B', 'T', 'S', 'P', 'I');
-                    boolean validTrack = directory.getUnsignedByte(GamedosFileEntry.ENTRY_TRACK_OFFSET) < device.getGeometry().tracksOnDisk();
-                    boolean validSector = directory.getUnsignedByte(GamedosFileEntry.ENTRY_SECTOR_OFFSET) < device.getGeometry().sectorsPerTrack();
-                    boolean validName = directory.testForFixedLengthString(GamedosFileEntry.ENTRY_NAME_OFFSET,  GamedosFileEntry.ENTRY_NAME_LENGTH);
+                DataBuffer directory = device.readRange(DIRECTORY_TRACK, DIRECTORY_SECTOR, DIRECTORY_SIZE);
+                for (int i=0; i<directory.limit(); i+=ENTRY_SIZE) {
+                    // Test each entry for validity. Note that the entry TYPE has every defined type even though not implemented.
+                    boolean validType = directory.testUnsignedByte(ENTRY_TYPE_OFFSET, 0, 'A', 'B', 'T', 'S', 'P', 'I');
+                    boolean validTrack = directory.getUnsignedByte(ENTRY_TRACK_OFFSET) < device.getGeometry().tracksOnDisk();
+                    boolean validSector = directory.getUnsignedByte(ENTRY_SECTOR_OFFSET) < device.getGeometry().sectorsPerTrack();
+                    boolean validName = directory.testForFixedLengthString(ENTRY_NAME_OFFSET, ENTRY_NAME_LENGTH);
                     if (!validType || !validTrack || !validSector || !validName) {
                         return false;
                     }

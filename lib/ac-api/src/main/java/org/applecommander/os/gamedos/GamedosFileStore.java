@@ -30,13 +30,12 @@ import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.InformationGroup;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
 import static org.applecommander.filestore.DisplayColumn.Mode;
 
-public class GamedosFileStore implements FileStore {
+public class GamedosFileStore implements FileStore, GamedosConstants {
     private final TrackSectorDevice device;
     private final GamedosDirectory rootDirectory;
     private final SectorUsage usage;
@@ -48,7 +47,7 @@ public class GamedosFileStore implements FileStore {
             if (track == 0 && sector == 0) {
                 return UsageType.BOOT;
             }
-            else if (track == 0 && sector < GamedosDirectory.DIRECTORY_SECTOR) {
+            else if (track == 0 && sector < DIRECTORY_SECTOR) {
                 return UsageType.SYSTEM;
             }
             else if (track == 0) {
@@ -82,9 +81,9 @@ public class GamedosFileStore implements FileStore {
     @Override
     public String getLabel() {
         DataBuffer track0 = device.readRange(0, 0, 14);
-        Optional<Integer> opt = track0.scan("GAMEDOS".getBytes(StandardCharsets.UTF_8),0);
+        Optional<Integer> opt = track0.scan(MARKER,0);
         if (opt.isPresent()) {
-            int pos = opt.get() + 8;    // Go past "GAMEDOS "
+            int pos = opt.get() + MARKER.length;
             int ch;
             // Search for the "V9.9"
             do {
