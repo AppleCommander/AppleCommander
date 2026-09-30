@@ -201,7 +201,7 @@ public class DiskUsageView extends StackPane {
             int col = 0;
             for (int b=0; b<blockUsage.getTotal(); b++) {
                 UsageType usageType = blockUsage.getUsage(b);
-                counts.compute(usageType, (k, v) -> v == null ? 0 : v + 1);
+                counts.compute(usageType, (k, v) -> v == null ? 1 : v + 1);
                 diskUsageGrid.add(makeSwatch(colors.get(usageType), size), col+1, row+1);
                 col++;
                 if (col >= numberOfColumns) {
@@ -235,7 +235,7 @@ public class DiskUsageView extends StackPane {
             for (int t = 0; t<sectorUsage.getTracksOnDisk(); t++) {
                 for (int s = 0; s< sectorUsage.getSectorsPerTrack(); s++) {
                     UsageType usageType = sectorUsage.getUsage(t,s);
-                    counts.compute(usageType, (k, v) -> v == null ? 0 : v + 1);
+                    counts.compute(usageType, (k, v) -> v == null ? 1 : v + 1);
                     diskUsageGrid.add(makeSwatch(colors.get(usageType), size), t+1, s+1);
                 }
             }
