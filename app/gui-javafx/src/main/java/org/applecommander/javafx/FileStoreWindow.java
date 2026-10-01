@@ -137,7 +137,7 @@ public class FileStoreWindow {
         );
 
         // TEMPORARILY DISABLE UNTIL THESE ARE IMPLEMENTED
-        Set.of(createFileButton, saveFileButton, saveFileAsButton).forEach(b -> b.setDisable(true));
+        Set.of(saveFileButton, saveFileAsButton).forEach(b -> b.setDisable(true));
 
         ImageView logo = new ImageView(imageUrl("AppleCommanderLogo.png"));
         Label label = new Label("No disk image open. Use open to browse for a disk image.");
@@ -281,7 +281,9 @@ public class FileStoreWindow {
     }
 
     public void createFile() {
-        // TODO
+        CreateFileStoreWizard wizard = new CreateFileStoreWizard();
+        Optional<Source> source = wizard.showAndWait(primaryStage);
+        source.ifPresent(value -> openImage(value, true));
     }
 
     public void saveFile() {
