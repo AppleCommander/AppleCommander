@@ -71,7 +71,7 @@ public class GamedosFileStoreFactory implements FileStoreFactory,GamedosConstant
             throw new RuntimeException("GameDOS requires a 560 sector disk.");
         }
         device.format();
-        try (InputStream inputStream = GamedosFileStoreFactory.class.getResourceAsStream("/gamedos/gamedos.bin")) {
+        try (InputStream inputStream = GamedosFileStoreFactory.class.getResourceAsStream("/files/gamedos-track0.bin")) {
             Objects.requireNonNull(inputStream);
             byte[] track0 = inputStream.readAllBytes();
             device.writeRange(0, 0, 16, DataBuffer.wrap(track0));
