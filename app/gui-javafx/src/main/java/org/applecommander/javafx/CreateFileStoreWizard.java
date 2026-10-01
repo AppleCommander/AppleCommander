@@ -19,6 +19,7 @@
  */
 package org.applecommander.javafx;
 
+import com.webcodepro.applecommander.storage.DiskConstants;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -26,6 +27,11 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import org.applecommander.device.DosOrderedTrackSectorDevice;
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.os.gamedos.GamedosFileStoreFactory;
+import org.applecommander.source.DataBufferSource;
+import org.applecommander.source.Source;
 
 import java.util.Map;
 
@@ -37,6 +43,13 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
     public CreateFileStoreWizard() {
         super();
         initializeWizard("/images/DiskImageWizardLogo.png", WizardPage.FILESTORE, WizardPage.SUMMARY);
+    }
+
+    public Source getSource() {
+        Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "BLANK.DISK").get();
+        TrackSectorDevice device = new DosOrderedTrackSectorDevice(source);
+        GamedosFileStoreFactory.create(device);
+        return source;
     }
 
     public BooleanBinding createNextPageBinding() {
@@ -65,8 +78,6 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
         );
     }
 
-    // FIXME: Currently called from constructor and the properties are null since neither class has completed initialization.
-    // Maybe instead have a static launcher method in the CreateFileStoreWizard and use "lifecycle" method/s to configure (initDialog?).
     private Node createSummaryPage() {
         GridPane summaryPage = new GridPane();
         summaryPage.setHgap(10);

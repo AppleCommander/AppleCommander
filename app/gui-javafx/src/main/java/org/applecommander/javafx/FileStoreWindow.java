@@ -282,8 +282,10 @@ public class FileStoreWindow {
 
     public void createFile() {
         CreateFileStoreWizard wizard = new CreateFileStoreWizard();
-        Optional<Source> source = wizard.showAndWait(primaryStage);
-        source.ifPresent(value -> openImage(value, true));
+        if (wizard.showAndWait(primaryStage)) {
+            Source source = wizard.getSource();
+            openImage(source, true);
+        }
     }
 
     public void saveFile() {

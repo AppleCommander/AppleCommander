@@ -19,7 +19,6 @@
  */
 package org.applecommander.javafx;
 
-import com.webcodepro.applecommander.storage.DiskConstants;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -35,14 +34,12 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import org.applecommander.device.DosOrderedTrackSectorDevice;
-import org.applecommander.device.TrackSectorDevice;
-import org.applecommander.os.gamedos.GamedosFileStoreFactory;
-import org.applecommander.source.DataBufferSource;
-import org.applecommander.source.Source;
 
 import java.net.URL;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Stack;
 import java.util.function.Function;
 
 public abstract class WizardDialog<T extends Enum<?>> {
@@ -124,7 +121,7 @@ public abstract class WizardDialog<T extends Enum<?>> {
         return currentPage;
     }
 
-    public Optional<Source> showAndWait(Stage parent) {
+    public boolean showAndWait(Stage parent) {
         Objects.requireNonNull(parent);
 
         Scene scene = new Scene(window);
@@ -151,14 +148,7 @@ public abstract class WizardDialog<T extends Enum<?>> {
         stage.requestFocus();
         stage.showAndWait();
 
-        if (result.isEqualTo(ButtonBar.ButtonData.FINISH).get()) {
-            // FAKING IT!
-            Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "BLANK.DISK").get();
-            TrackSectorDevice device = new DosOrderedTrackSectorDevice(source);
-            GamedosFileStoreFactory.create(device);
-            return Optional.of(source);
-        }
-        return Optional.empty();
+        return result.isEqualTo(ButtonBar.ButtonData.FINISH).get();
     }
 
     public <E extends Enum<?>> Node createGenericSelectionPage(String prompt, E[] enumerations,
