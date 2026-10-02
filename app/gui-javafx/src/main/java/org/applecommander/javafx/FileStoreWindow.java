@@ -34,6 +34,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
@@ -141,8 +143,19 @@ public class FileStoreWindow {
 
         ImageView logo = new ImageView(imageUrl("AppleCommanderLogo.png"));
         Label label = new Label("No disk image open. Use open to browse for a disk image.");
-        landingPage = new VBox(logo, label);
+        Rectangle border = new Rectangle();
+        border.setWidth(logo.getImage().getWidth() + 50);
+        border.setHeight(logo.getImage().getHeight() + 50);
+        border.setArcHeight(20);
+        border.setArcWidth(20);
+        border.setFill(Color.BEIGE);
+        border.setStroke(Color.BLACK);
+        VBox logoBox = new VBox(logo, label);
+        logoBox.setAlignment(Pos.CENTER);
+        StackPane stackPane = new StackPane(border, logoBox);
+        landingPage = new VBox(stackPane);
         landingPage.setAlignment(Pos.CENTER);
+
         fileView = new FileView(this, toolBar);
         diskUsageView = new DiskUsageView(this, toolBar);
         informationView = new InformationView(this);
