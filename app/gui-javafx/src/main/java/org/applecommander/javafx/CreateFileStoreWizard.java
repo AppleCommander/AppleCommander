@@ -34,6 +34,7 @@ import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 
 import java.util.Map;
+import static org.applecommander.javafx.FxUtils.createGenericSelectionPage;
 
 public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.WizardPage> {
     private final ObjectProperty<FileStoreSelection> fileStoreSelectionProperty = new SimpleObjectProperty<>();

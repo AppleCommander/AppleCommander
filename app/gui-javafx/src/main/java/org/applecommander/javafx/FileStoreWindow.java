@@ -62,6 +62,7 @@ public class FileStoreWindow {
     private final Button createFileButton;
     private final Button saveFileButton;
     private final Button saveFileAsButton;
+    private final Button settingsButton;
     private final ToggleButton filesViewButton;
     private final ToggleButton diskUsageViewButton;
     private final ToggleButton informationViewButton;
@@ -124,6 +125,7 @@ public class FileStoreWindow {
         createFileButton = createButton("new-file.png", "Create", _ -> createFile());
         saveFileButton = createButton("save-file.png", "Save", _ -> saveFile());
         saveFileAsButton = createButton("save-as-file.png", "Save As...", _ -> saveFileAs());
+        settingsButton = createButton("settings.png", "Settings", _ -> settings());
 
         ToggleGroup viewModeGroup = new ToggleGroup();
         filesViewButton = createToggleButton("image-file-view.png", "Files", viewModeGroup, _ -> selectFilesContent());
@@ -132,7 +134,7 @@ public class FileStoreWindow {
         HBox viewModeBox = new HBox(filesViewButton, diskUsageViewButton, informationViewButton);
 
         ToolBar toolBar = new ToolBar(
-            openFileButton, createFileButton, saveFileButton, saveFileAsButton,
+            openFileButton, createFileButton, saveFileButton, saveFileAsButton, settingsButton,
             new Separator(Orientation.VERTICAL),
             viewModeBox,
             new Separator(Orientation.VERTICAL)
@@ -307,6 +309,11 @@ public class FileStoreWindow {
 
     public void saveFileAs() {
         // TODO
+    }
+
+    public void settings() {
+        SettingsDialog dialog = new SettingsDialog();
+        dialog.showAndWait(primaryStage);
     }
 
     private void switchDisk() {

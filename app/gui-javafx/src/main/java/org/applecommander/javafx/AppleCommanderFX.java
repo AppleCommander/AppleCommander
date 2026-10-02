@@ -98,17 +98,23 @@ public class AppleCommanderFX extends Application {
     }
 
     public enum ThemeSelection {
-        MODENA(Application.STYLESHEET_MODENA),
-        CASPIAN(Application.STYLESHEET_CASPIAN),
-        PRIMER(new PrimerLight().getUserAgentStylesheet(), new PrimerDark().getUserAgentStylesheet()),
-        NORD(new NordLight().getUserAgentStylesheet(), new NordDark().getUserAgentStylesheet()),
-        CUPERTINO(new CupertinoLight().getUserAgentStylesheet(), new CupertinoDark().getUserAgentStylesheet()),
-        DRACULA(new Dracula().getUserAgentStylesheet());
+        MODENA("Modena (JavaFX default)", Application.STYLESHEET_MODENA),
+        CASPIAN("Caspian (JavaFX legacy)", Application.STYLESHEET_CASPIAN),
+        PRIMER("Primer (AtlantaFX)", new PrimerLight().getUserAgentStylesheet(), new PrimerDark().getUserAgentStylesheet()),
+        NORD("Nord (AtlantaFX)", new NordLight().getUserAgentStylesheet(), new NordDark().getUserAgentStylesheet()),
+        CUPERTINO("Cupertino (AtlantaFX)", new CupertinoLight().getUserAgentStylesheet(), new CupertinoDark().getUserAgentStylesheet()),
+        DRACULA("Dracula (AtlantaFX)", new Dracula().getUserAgentStylesheet());
 
+        private final String description;
         private final List<String> urls;
 
-        ThemeSelection(String... urls) {
+        ThemeSelection(String description, String... urls) {
+            this.description = description;
             this.urls = List.of(urls);
+        }
+
+        public String getDescription() {
+            return description;
         }
 
         public void apply() {

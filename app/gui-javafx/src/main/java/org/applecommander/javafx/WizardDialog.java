@@ -22,12 +22,12 @@ package org.applecommander.javafx;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
@@ -40,7 +40,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Stack;
-import java.util.function.Function;
 
 public abstract class WizardDialog<T extends Enum<?>> {
     private final BorderPane window;
@@ -68,9 +67,7 @@ public abstract class WizardDialog<T extends Enum<?>> {
         imagePane.setAlignment(Pos.CENTER);
 
         wizardPages.putAll(createWizardPages());
-
         content.getChildren().addAll(wizardPages.values());
-        content.setPadding(new Insets(10));
 
         Button nextButton = new Button("Next >");
         ButtonBar.setButtonData(nextButton, ButtonBar.ButtonData.NEXT_FORWARD);
@@ -149,22 +146,6 @@ public abstract class WizardDialog<T extends Enum<?>> {
         stage.showAndWait();
 
         return result.isEqualTo(ButtonBar.ButtonData.FINISH).get();
-    }
-
-    public <E extends Enum<?>> Node createGenericSelectionPage(String prompt, E[] enumerations,
-                                              Function<E,String> textFn, ObjectProperty<E> property) {
-        VBox selectionPage = new VBox();
-        selectionPage.setSpacing(10);
-        Label chooseLabel = new Label(prompt);
-        selectionPage.getChildren().add(chooseLabel);
-        ToggleGroup selection = new ToggleGroup();
-        for (E value : enumerations) {
-            RadioButton radioButton = new RadioButton(textFn.apply(value));
-            radioButton.setToggleGroup(selection);
-            radioButton.addEventHandler(ActionEvent.ACTION, _ -> property.set(value));
-            selectionPage.getChildren().add(radioButton);
-        }
-        return selectionPage;
     }
 
     public abstract T nextPage();
