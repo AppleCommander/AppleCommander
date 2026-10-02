@@ -31,8 +31,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -43,6 +42,12 @@ import org.applecommander.filestore.FileEntry;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -50,6 +55,8 @@ import java.util.Optional;
 import static org.applecommander.javafx.FxUtils.*;
 
 public class FileView extends BorderPane {
+    private static final String TEMP_DIRECTORY = System.getProperty("java.io.tmpdir");
+
     private final FileStoreWindow fileStoreWindow;
     private final HBox breadcrumbBar;
     private final TableView<FileEntry> fileTable;
@@ -90,6 +97,7 @@ public class FileView extends BorderPane {
 
         fileTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         fileTable.setItems(FXCollections.emptyObservableList());
+        fileTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         fileTable.setOnMouseClicked(event -> {
             if (event.getClickCount() != 2) {
                 return;
@@ -110,6 +118,31 @@ public class FileView extends BorderPane {
                 }
                 case UNKNOWN -> { /* Do Nothing */ }
             }
+        });
+        // See: https://stackoverflow.com/questions/32534113/javafx-drag-and-drop-a-file-into-a-program
+        fileTable.setOnDragDetected(event -> {
+            if (!fileTable.getSelectionModel().getSelectedItems().isEmpty()) {
+                try {
+                    Path tempDir = Files.createTempDirectory("AppleCommander-drag-");
+                    tempDir.toFile().deleteOnExit();
+                    List<File> files = new ArrayList<>();
+                    // TODO this should be configured by a setting
+                    for (FileEntry fileEntry : fileTable.getSelectionModel().getSelectedItems()) {
+                        Path path = Path.of(TEMP_DIRECTORY, fileEntry.getName());
+                        Files.write(path, fileEntry.getDataFork().asBytes(), StandardOpenOption.CREATE);
+                        File file = path.toFile();
+                        file.deleteOnExit();
+                        files.add(file);
+                    }
+                    ClipboardContent content = new ClipboardContent();
+                    content.putFiles(files);
+                    Dragboard db = fileTable.startDragAndDrop(TransferMode.COPY_OR_MOVE);
+                    db.setContent(content);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
+            event.consume();
         });
 
         nativeToolButton.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
