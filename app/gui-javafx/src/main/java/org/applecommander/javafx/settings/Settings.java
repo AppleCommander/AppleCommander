@@ -60,13 +60,13 @@ public abstract class Settings {
         prefs.put(THEME_SELECTION, themeSelection.name());
     }
 
-    public static Optional<ExportOption> getExportOption() {
+    public static ExportOption getExportOption() {
         Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
         String exportName = prefs.get(EXPORT_OPTION, null);
         if (exportName == null || exportName.isBlank()) {
-            return Optional.of(ExportOption.RAW_BINARY);
+            return ExportOption.RAW_BINARY;
         }
-        return Optional.of(ExportOption.valueOf(exportName));
+        return ExportOption.valueOf(exportName);
     }
 
     public static void setExportOption(ExportOption exportOption) {

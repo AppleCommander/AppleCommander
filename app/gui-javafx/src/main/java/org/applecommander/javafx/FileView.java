@@ -39,6 +39,8 @@ import org.applecommander.capability.Capability;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.DisplayColumn;
 import org.applecommander.filestore.FileEntry;
+import org.applecommander.javafx.settings.ExportOption;
+import org.applecommander.javafx.settings.Settings;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 
@@ -47,7 +49,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -123,16 +124,17 @@ public class FileView extends BorderPane {
         fileTable.setOnDragDetected(event -> {
             if (!fileTable.getSelectionModel().getSelectedItems().isEmpty()) {
                 try {
+                    ExportOption exportOption = Settings.getExportOption();
                     Path tempDir = Files.createTempDirectory("AppleCommander-drag-");
                     tempDir.toFile().deleteOnExit();
                     List<File> files = new ArrayList<>();
-                    // TODO this should be configured by a setting
                     for (FileEntry fileEntry : fileTable.getSelectionModel().getSelectedItems()) {
-                        Path path = Path.of(TEMP_DIRECTORY, fileEntry.getName());
-                        Files.write(path, fileEntry.getDataFork().asBytes(), StandardOpenOption.CREATE);
-                        File file = path.toFile();
-                        file.deleteOnExit();
-                        files.add(file);
+                        // We may write two files, so copyToPath gives us ALL the names we care about
+                        for (Path path : exportOption.copyToPath(fileEntry, Path.of(TEMP_DIRECTORY, fileEntry.getName()))) {
+                            File file = path.toFile();
+                            file.deleteOnExit();
+                            files.add(file);
+                        }
                     }
                     ClipboardContent content = new ClipboardContent();
                     content.putFiles(files);

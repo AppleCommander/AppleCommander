@@ -74,7 +74,7 @@ public class SettingsDialog {
         Objects.requireNonNull(parent);
 
         Settings.getThemeSelection().ifPresent(themeSelection::set);
-        Settings.getExportOption().ifPresent(exportOption::set);
+        exportOption.set(Settings.getExportOption());
 
         Window window = dialog.getDialogPane().getScene().getWindow();
 

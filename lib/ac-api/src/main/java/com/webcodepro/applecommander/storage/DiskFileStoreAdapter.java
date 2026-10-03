@@ -222,10 +222,6 @@ public class DiskFileStoreAdapter implements FileStore {
             return DataBuffer.wrap(fileEntry.getFileData());
         }
         @Override
-        public Optional<DataBuffer> getResourceFork() {
-            throw new RuntimeException("Not supported by the legacy AppleCommander.");
-        }
-        @Override
         public void setDataFork(DataBuffer fileData) {
             try {
                 fileEntry.setFileData(fileData.asBytes());
