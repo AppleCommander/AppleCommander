@@ -41,6 +41,9 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.FileStores;
+import org.applecommander.javafx.settings.Settings;
+import org.applecommander.javafx.settings.SettingsDialog;
+import org.applecommander.javafx.wizard.CreateFileStoreWizard;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 import org.applecommander.usage.DiskUsage;
@@ -235,7 +238,7 @@ public class FileStoreWindow {
     private void openFile() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Apple II disk image");
-        AppleCommanderFX.getLastOpenedDirectory().ifPresent(fileChooser::setInitialDirectory);
+        Settings.getLastOpenedDirectory().ifPresent(fileChooser::setInitialDirectory);
         for (FileExtension extension : FileExtensions.FILE_FILTERS) {
             fileChooser.getExtensionFilters().add(new ExtensionFilter(extension.description(), extension.extensions()));
         }
@@ -244,7 +247,7 @@ public class FileStoreWindow {
         if (selectedFile == null) {
             return;
         }
-        AppleCommanderFX.setLastOpenedDirectory(selectedFile.getParentFile());
+        Settings.setLastOpenedDirectory(selectedFile.getParentFile());
         Optional<Source> source = Sources.create(selectedFile);
         openImage(source.orElseThrow(), true);
     }
