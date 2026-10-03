@@ -14,7 +14,7 @@ repositories {
 
 dependencies {
     implementation project(':lib:ac-api')
-    implementation 'io.github.mkpaz:atlantafx-base:2.1.0'
+    implementation 'io.github.mkpaz:atlantafx-base:3.0.0'
     implementation 'org.slf4j:slf4j-jdk14:2.0.20'
 }
 
