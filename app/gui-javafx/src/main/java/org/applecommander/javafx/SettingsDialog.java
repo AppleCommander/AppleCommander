@@ -14,10 +14,11 @@ import javafx.stage.Window;
 import java.util.Objects;
 import java.util.Optional;
 
+import static org.applecommander.javafx.AppleCommanderFX.*;
 import static org.applecommander.javafx.FxUtils.createGenericSelectionPage;
 
 public class SettingsDialog {
-    private final ObjectProperty<AppleCommanderFX.ThemeSelection> themeSelection = new SimpleObjectProperty<>();
+    private final ObjectProperty<ThemeSelection> themeSelection = new SimpleObjectProperty<>();
     private final ObjectProperty<ExportOption> exportOption = new SimpleObjectProperty<>();
 
     private final Dialog<ButtonType> dialog;
@@ -25,8 +26,8 @@ public class SettingsDialog {
     public SettingsDialog() {
         Tab themeTab = new Tab("Theme");
         themeTab.setClosable(false);
-        themeTab.setContent(createGenericSelectionPage("Please choose a theme:", AppleCommanderFX.ThemeSelection.values(),
-                AppleCommanderFX.ThemeSelection::getDescription, themeSelection));
+        themeTab.setContent(createGenericSelectionPage("Please choose a theme:", ThemeSelection.values(),
+                ThemeSelection::getDescription, themeSelection));
 
         Tab exportTab = new Tab("Export");
         exportTab.setClosable(false);
@@ -39,15 +40,23 @@ public class SettingsDialog {
 
         dialog = new Dialog<>();
         dialog.setTitle("Settings");
-        dialog.setHeaderText("AppleCommanderFX Settings");
+        dialog.setHeaderText("Settings");
         dialog.getDialogPane().setContent(tabPane);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE, ButtonType.APPLY);
+
+        themeSelection.addListener((_, _, newValue) -> {
+            // This gives users a preview when clicking the radio buttons
+            if (newValue != null) {
+                newValue.apply();
+            }
+        });
     }
 
     public void showAndWait(Stage parent) {
         Objects.requireNonNull(parent);
 
-        AppleCommanderFX.getThemeSelection().ifPresent(themeSelection::set);
+        getThemeSelection().ifPresent(themeSelection::set);
+        getExportOption().ifPresent(exportOption::set);
 
         Window window = dialog.getDialogPane().getScene().getWindow();
 
@@ -70,26 +79,15 @@ public class SettingsDialog {
         Optional<ButtonType> button = dialog.showAndWait();
         button.ifPresent(result -> {
             if (result == ButtonType.APPLY) {
-                AppleCommanderFX.ThemeSelection theme = themeSelection.get();
-                AppleCommanderFX.setThemeSelection(theme);
-                theme.apply();
+                if (themeSelection.isNotNull().get()) {
+                    setThemeSelection(themeSelection.get());
+                }
+                if (exportOption.isNotNull().get()) {
+                    setExportOption(exportOption.get());
+                }
             }
         });
-    }
-
-    enum ExportOption {
-        RAW_BINARY("Raw Binary (filename)"),
-        APPLE_SINGLE("AppleSingle (filename.as)"),
-        ATTRIBUTE_PRESERVATION("ProDOS Attribute Preservation (filename#TTAAAA)");
-
-        private final String description;
-
-        ExportOption(String description) {
-            this.description = description;
-        }
-
-        public String getDescription() {
-            return description;
-        }
+        // Always go back to what we've set
+        getThemeSelection().ifPresent(ThemeSelection::apply);
     }
 }

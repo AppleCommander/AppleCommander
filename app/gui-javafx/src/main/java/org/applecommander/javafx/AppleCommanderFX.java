@@ -35,6 +35,7 @@ import java.util.prefs.Preferences;
 public class AppleCommanderFX extends Application {
     private static final String IMAGE_DIRECTORY_KEY = "image_directory";
     private static final String THEME_SELECTION = "theme_selection";
+    private static final String EXPORT_OPTION = "export_option";
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -97,6 +98,19 @@ public class AppleCommanderFX extends Application {
         prefs.put(THEME_SELECTION, themeSelection.name());
     }
 
+    public static Optional<ExportOption> getExportOption() {
+        Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
+        String exportName = prefs.get(EXPORT_OPTION, null);
+        if (exportName == null || exportName.isBlank()) {
+            return Optional.of(ExportOption.RAW_BINARY);
+        }
+        return Optional.of(ExportOption.valueOf(exportName));
+    }
+    public static void setExportOption(ExportOption exportOption) {
+        Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
+        prefs.put(EXPORT_OPTION, exportOption.name());
+    }
+
     public enum ThemeSelection {
         MODENA("Modena (JavaFX default)", Application.STYLESHEET_MODENA),
         CASPIAN("Caspian (JavaFX legacy)", Application.STYLESHEET_CASPIAN),
@@ -126,6 +140,22 @@ public class AppleCommanderFX extends Application {
         }
         public boolean includesLightMode() {
             return this != DRACULA;
+        }
+    }
+
+    public enum ExportOption {
+        RAW_BINARY("Raw Binary (filename)"),
+        APPLE_SINGLE("AppleSingle (filename.as)"),
+        ATTRIBUTE_PRESERVATION("ProDOS Attribute Preservation (filename#TTAAAA)");
+
+        private final String description;
+
+        ExportOption(String description) {
+            this.description = description;
+        }
+
+        public String getDescription() {
+            return description;
         }
     }
 }
