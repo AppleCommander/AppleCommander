@@ -43,7 +43,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.Host;
 import com.webcodepro.applecommander.util.StreamUtil;
 import com.webcodepro.applecommander.util.TextBundle;
-import io.github.applecommander.applesingle.AppleSingle;
+import org.applecommander.applesingle.AppleSingle;
 import org.applecommander.device.*;
 import org.applecommander.device.Device;
 import org.applecommander.hint.Hint;
