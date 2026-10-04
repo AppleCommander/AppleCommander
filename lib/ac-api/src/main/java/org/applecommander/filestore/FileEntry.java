@@ -25,6 +25,7 @@ import org.applecommander.util.DataBuffer;
 import java.util.Optional;
 
 /// A `FileEntry` represents a single file in a file store.
+/// The generic interface is intentionally spare to keep useless methods to a minimum.
 public interface FileEntry extends Container {
 
     /// The parent `Directory`, if applicable. Can return `null` if this is the root directory.
@@ -44,10 +45,6 @@ public interface FileEntry extends Container {
     /// Returns the size, in bytes, of this item.
     /// It may be approximate (based off a sector count, for instance).
     long getSize();
-
-    /// Return the textual representation of the file type, such as "BAS" or "A" for Applesoft.
-    // TODO file type is not always a concept, maybe take this out of the general interface? (CP/M, Zip files for instance)
-    String getFiletype();
 
     /// Return the file's data.
     /// This does not include any metadata that may be embedded with the file.

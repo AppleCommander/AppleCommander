@@ -104,7 +104,8 @@ public enum ExportOption {
         try {
             List<Path> paths = new ArrayList<>();
             String name = fileEntry.getName();
-            String ext = fileEntry.getFiletype().toLowerCase();
+            // TODO FIXME
+            String ext = ""; //fileEntry.getFiletype().toLowerCase();
             int idx = name.lastIndexOf('.');
             if (idx > -1) {
                 ext = name.substring(idx + 1).toLowerCase();

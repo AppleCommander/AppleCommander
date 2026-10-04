@@ -70,11 +70,9 @@ public class GamedosFileEntry implements FileEntry, GamedosConstants {
         return (long) getSectorCount() * TrackSectorDevice.SECTOR_SIZE;
     }
 
-    @Override
     public String getFiletype() {
         return readEntry().getFixedLengthString(ENTRY_TYPE_OFFSET,1);
     }
-
     public int getFirstTrack() {
         return readEntry().getUnsignedByte(ENTRY_TRACK_OFFSET);
     }

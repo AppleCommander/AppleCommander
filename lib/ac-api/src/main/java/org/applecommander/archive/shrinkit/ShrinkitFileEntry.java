@@ -69,8 +69,7 @@ public class ShrinkitFileEntry implements FileEntry {
         return headerBlock.getUncompressedSize();
     }
 
-    @Override
-    public String getFiletype() {
+    public String getFiletypeText() {
         if (headerBlock.getFileSysId() == 1) {
             return FileMagic.getProdosFileTypeText((int) headerBlock.getFileType(), (int) headerBlock.getExtraType());
         }
@@ -81,7 +80,7 @@ public class ShrinkitFileEntry implements FileEntry {
     public int getStorageType() {
         return headerBlock.getStorageType();
     }
-    public String getStorageTypeString() {
+    public String getStorageTypeText() {
         return switch (getStorageType()) {
             case 0x1 -> "Seedling";
             case 0x2 -> "Sapling";
@@ -100,7 +99,7 @@ public class ShrinkitFileEntry implements FileEntry {
     public Date getArchiveWhen() {
         return headerBlock.getArchiveWhen();
     }
-    public String getThreadFormat() {
+    public String getThreadFormatText() {
         return headerBlock.getDataForkThreadRecord()
             .or(headerBlock::getResourceForkThreadRecord)
             .map(ThreadRecord::getThreadFormat)
@@ -132,7 +131,7 @@ public class ShrinkitFileEntry implements FileEntry {
     public long getAccess() {
         return headerBlock.getAccess();
     }
-    public String getAccessString() {
+    public String getAccessText() {
         StringBuilder sb = new StringBuilder();
         String flags = "RWI--BRD";  // string index is bit value
         for (int i=0; i<flags.length(); i++) {

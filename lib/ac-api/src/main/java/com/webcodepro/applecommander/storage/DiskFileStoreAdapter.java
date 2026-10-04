@@ -250,10 +250,6 @@ public class DiskFileStoreAdapter implements FileStore {
             return fileEntry.getSize();
         }
         @Override
-        public String getFiletype() {
-            return fileEntry.getFiletype();
-        }
-        @Override
         public ContentType getContentType() {
             if (fileEntry instanceof ProdosFileEntry prodosFileEntry) {
                 return FileMagic.getProdosContentType(prodosFileEntry.getFiletypeByte(),

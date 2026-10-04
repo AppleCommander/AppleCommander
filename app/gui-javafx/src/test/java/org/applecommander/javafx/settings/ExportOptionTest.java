@@ -160,11 +160,6 @@ public class ExportOptionTest {
         }
 
         @Override
-        public String getFiletype() {
-            return filetype;
-        }
-
-        @Override
         public DataBuffer getDataFork() {
             return dataFork;
         }

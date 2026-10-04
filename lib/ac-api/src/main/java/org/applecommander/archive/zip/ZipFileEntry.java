@@ -73,15 +73,6 @@ public class ZipFileEntry implements FileEntry {
         return entry.getSize();
     }
 
-    @Override
-    public String getFiletype() {
-        int pos = entry.getName().lastIndexOf('.');
-        if (pos > 0) {
-            return entry.getName().substring(pos + 1);
-        }
-        return "?";
-    }
-
     public FileTime getLastModifiedTime() {
         return entry.getLastModifiedTime();
     }
