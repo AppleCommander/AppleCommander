@@ -72,8 +72,10 @@ public enum ExportOption {
             paths.add(destination);
             Files.write(destination, fileEntry.getDataFork().asBytes(), StandardOpenOption.CREATE);
             if (fileEntry.getResourceFork().isPresent()) {
-                Files.write(addToFilename(destination, "-rsrc"), fileEntry.getResourceFork().get().asBytes(),
+                destination = addToFilename(destination, "-rsrc");
+                Files.write(destination, fileEntry.getResourceFork().get().asBytes(),
                         StandardOpenOption.CREATE);
+                paths.add(destination);
             }
             return paths;
         } catch (IOException ex) {
@@ -102,17 +104,19 @@ public enum ExportOption {
         try {
             List<Path> paths = new ArrayList<>();
             String name = fileEntry.getName();
-            String ext = fileEntry.getFiletype();
+            String ext = fileEntry.getFiletype().toLowerCase();
             int idx = name.lastIndexOf('.');
             if (idx > -1) {
-                ext = name.substring(idx + 1);
+                ext = name.substring(idx + 1).toLowerCase();
                 name = name.substring(0, idx);
             }
             Path dataForkPath = directory.resolve(String.format("%s#TTAAAA.%s", name, ext));
             Files.write(dataForkPath, fileEntry.getDataFork().asBytes(), StandardOpenOption.CREATE);
+            paths.add(dataForkPath);
             if (fileEntry.getResourceFork().isPresent()) {
                 Path resourceForkPath = directory.resolve(String.format("%s_rsrc_#TTAAAA.%s", name, ext));
                 Files.write(resourceForkPath, fileEntry.getResourceFork().get().asBytes(), StandardOpenOption.CREATE);
+                paths.add(resourceForkPath);
             }
             return paths;
         } catch (IOException ex) {
