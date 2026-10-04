@@ -20,7 +20,9 @@
 package org.applecommander.javafx;
 
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -82,6 +84,7 @@ public class FileStoreWindow {
     private final Stage primaryStage;
     private final FileStoreSelectionModel fileStoreSelection = new FileStoreSelectionModel();
     private final ObjectProperty<ViewMode> viewMode = new SimpleObjectProperty<>();
+    private final BooleanProperty supportsDiskUsage = new SimpleBooleanProperty();
 
     public FileStoreSelectionModel fileStoreSelection() {
         return fileStoreSelection;
@@ -184,7 +187,7 @@ public class FileStoreWindow {
         window.setBottom(footer);
 
         filesViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull());
-        diskUsageViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull());
+        diskUsageViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull().or(supportsDiskUsage.not()));
         informationViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull());
 
         // Cannot bind button selection, so we have a listener!
@@ -200,6 +203,7 @@ public class FileStoreWindow {
         fileStoreSelection.selectedItemProperty().addListener((_, _, newValue) -> {
             if (newValue != null) {
                 viewMode.setValue(ViewMode.FILES);
+                supportsDiskUsage.setValue(newValue.get(DiskUsage.class).isPresent());
                 // There doesn't appear to be a item list changed, so this should work?
                 boolean enabled = fileStoreSelection.getItemCount() > 1;
                 switchDiskButton.setDisable(!enabled);
