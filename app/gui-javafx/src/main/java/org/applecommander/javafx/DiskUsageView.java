@@ -19,7 +19,9 @@
  */
 package org.applecommander.javafx;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.*;
@@ -29,10 +31,10 @@ import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import org.applecommander.usage.BlockUsage;
@@ -48,11 +50,13 @@ import static org.applecommander.javafx.FxUtils.createToggleButton;
 public class DiskUsageView extends StackPane {
     private final ToggleButton usageGridToggle;
     private final ToggleButton usagePieChartToggle;
+    private final VBox gridView;
     private final GridPane diskUsageGrid;
     private final HBox legendBox;
-    private final PieChart pieChart;
+    private final PieChart pieChartView;
 
     private final ObjectProperty<Mode> viewMode = new SimpleObjectProperty<>();
+    private final BooleanProperty largeDisk = new SimpleBooleanProperty();
 
     public DiskUsageView(FileStoreWindow fileStoreWindow, ToolBar toolBar) {
         ToggleGroup listingModeGroup = new ToggleGroup();
@@ -67,15 +71,14 @@ public class DiskUsageView extends StackPane {
         legendBox.setSpacing(12);
         legendBox.setPadding(new Insets(5));
         legendBox.setAlignment(Pos.CENTER);
-        ScrollPane scrollPane = new ScrollPane(diskUsageGrid);
-        scrollPane.setFitToWidth(true);
-        BorderPane gridView = new BorderPane();
-        gridView.setCenter(scrollPane);
-        gridView.setBottom(legendBox);
+        gridView = new VBox(diskUsageGrid, legendBox);
+        gridView.setAlignment(Pos.CENTER);
+        gridView.setPadding(new Insets(5));
+        gridView.setSpacing(5);
 
         // Chart view
-        pieChart = new PieChart();
-        pieChart.setTitle("Disk Usage");
+        pieChartView = new PieChart();
+        pieChartView.setTitle("Disk Usage");
         fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 Optional<DiskUsage> opt = newValue.get(DiskUsage.class);
@@ -84,26 +87,34 @@ public class DiskUsageView extends StackPane {
                     return;
                 }
                 DiskUsage usage = opt.get();
-                updateGridView(usage);
+                // Somewhat arbitrary, but the grid view really lags in HDD's; even with the drawing deferred.
+                largeDisk.set(usage.getTotal() > 2000);
+                if (!largeDisk.get()) {
+                    updateGridView(usage);
+                    viewMode.set(Mode.GRID_VIEW);
+                }
+                else {
+                    viewMode.set(Mode.CHART_VIEW);
+                }
                 updateChartView(usage);
             }
         });
 
         gridView.visibleProperty().bind(viewMode.isEqualTo(Mode.GRID_VIEW));
         gridView.managedProperty().bind(gridView.visibleProperty());
-        pieChart.visibleProperty().bind(viewMode.isEqualTo(Mode.CHART_VIEW));
-        pieChart.managedProperty().bind(pieChart.visibleProperty());
+        pieChartView.visibleProperty().bind(viewMode.isEqualTo(Mode.CHART_VIEW));
+        pieChartView.managedProperty().bind(pieChartView.visibleProperty());
 
-        usageGridToggle.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE));
+        usageGridToggle.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE).and(largeDisk.not()));
         usageGridToggle.managedProperty().bind(usageGridToggle.visibleProperty());
-        usagePieChartToggle.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE));
+        usagePieChartToggle.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE).and(largeDisk.not()));
         usagePieChartToggle.managedProperty().bind(usagePieChartToggle.visibleProperty());
         viewMode.addListener((observable, oldValue, newValue) -> {
             usageGridToggle.setSelected(newValue == Mode.GRID_VIEW);
             usagePieChartToggle.setSelected(newValue == Mode.CHART_VIEW);
         });
 
-        getChildren().addAll(gridView, pieChart);
+        getChildren().addAll(gridView, pieChartView);
         visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE));
         managedProperty().bind(visibleProperty());
         viewMode.set(Mode.GRID_VIEW);
@@ -135,7 +146,7 @@ public class DiskUsageView extends StackPane {
                 data.add(new PieChart.Data(usageType.name(), value));
             }
         }
-        pieChart.setData(FXCollections.observableArrayList(data));
+        pieChartView.setData(FXCollections.observableArrayList(data));
     }
 
     private void updateGridView(DiskUsage usage) {
