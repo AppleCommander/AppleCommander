@@ -38,9 +38,9 @@ public enum ExportOption {
     ATTRIBUTE_PRESERVATION("ProDOS Attribute Preservation (filename#TTAAAA.ext)", ExportOption::copyWithAttributePreservation);
 
     private final String description;
-    private final BiFunction<FileEntry,Path,List<Path>> copyFn;
+    private final BiFunction<Path,FileEntry,List<Path>> copyFn;
 
-    ExportOption(String description, BiFunction<FileEntry,Path,List<Path>> copyFn) {
+    ExportOption(String description, BiFunction<Path,FileEntry,List<Path>> copyFn) {
         Objects.requireNonNull(description, "description cannot be null");
         Objects.requireNonNull(copyFn, "copyFn cannot be null");
         this.description = description;
@@ -51,8 +51,8 @@ public enum ExportOption {
         return description;
     }
 
-    public List<Path> copyToPath(FileEntry fileEntry, Path destination) {
-        return copyFn.apply(fileEntry, destination);
+    public List<Path> copyToPath(Path directory, FileEntry fileEntry) {
+        return copyFn.apply(directory, fileEntry);
     }
 
     public static Path addToFilename(Path path, String suffix) {
@@ -65,9 +65,10 @@ public enum ExportOption {
         return path.resolve(name);
     }
 
-    public static List<Path> copyToRawBinary(FileEntry fileEntry, Path destination) {
+    public static List<Path> copyToRawBinary(Path directory, FileEntry fileEntry) {
         try {
             List<Path> paths = new ArrayList<>();
+            Path destination = directory.resolve(fileEntry.getName());
             paths.add(destination);
             Files.write(destination, fileEntry.getDataFork().asBytes(), StandardOpenOption.CREATE);
             if (fileEntry.getResourceFork().isPresent()) {
@@ -80,10 +81,10 @@ public enum ExportOption {
         }
     }
 
-    public static List<Path> copyToAppleSingle(FileEntry fileEntry, Path destination) {
+    public static List<Path> copyToAppleSingle(Path directory, FileEntry fileEntry) {
         try {
             List<Path> paths = new ArrayList<>();
-            destination = destination.resolveSibling(destination.getFileName() + ".as");
+            Path destination = directory.resolve(fileEntry.getName() + ".as");
             paths.add(destination);
             // TODO need to get ProDOS-ified file type + some mechanism for access bits + dates. Maybe it fits in FileStore??
             AppleSingle.Builder builder = AppleSingle.builder()
@@ -97,7 +98,7 @@ public enum ExportOption {
         }
     }
 
-    public static List<Path> copyWithAttributePreservation(FileEntry fileEntry, Path destination) {
+    public static List<Path> copyWithAttributePreservation(Path directory, FileEntry fileEntry) {
         try {
             List<Path> paths = new ArrayList<>();
             String name = fileEntry.getName();
@@ -107,10 +108,10 @@ public enum ExportOption {
                 ext = name.substring(idx + 1);
                 name = name.substring(0, idx);
             }
-            Path dataForkPath = destination.resolveSibling(String.format("%s#TTAAAA.%s", name, ext));
+            Path dataForkPath = directory.resolve(String.format("%s#TTAAAA.%s", name, ext));
             Files.write(dataForkPath, fileEntry.getDataFork().asBytes(), StandardOpenOption.CREATE);
             if (fileEntry.getResourceFork().isPresent()) {
-                Path resourceForkPath = destination.resolve(String.format("%s#TTAAAA_rsrc_.%s", name, ext));
+                Path resourceForkPath = directory.resolve(String.format("%s_rsrc_#TTAAAA.%s", name, ext));
                 Files.write(resourceForkPath, fileEntry.getResourceFork().get().asBytes(), StandardOpenOption.CREATE);
             }
             return paths;

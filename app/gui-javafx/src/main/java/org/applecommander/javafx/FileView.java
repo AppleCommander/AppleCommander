@@ -56,8 +56,6 @@ import java.util.Optional;
 import static org.applecommander.javafx.FxUtils.*;
 
 public class FileView extends BorderPane {
-    private static final String TEMP_DIRECTORY = System.getProperty("java.io.tmpdir");
-
     private final FileStoreWindow fileStoreWindow;
     private final HBox breadcrumbBar;
     private final TableView<FileEntry> fileTable;
@@ -130,7 +128,7 @@ public class FileView extends BorderPane {
                     List<File> files = new ArrayList<>();
                     for (FileEntry fileEntry : fileTable.getSelectionModel().getSelectedItems()) {
                         // We may write two files, so copyToPath gives us ALL the names we care about
-                        for (Path path : exportOption.copyToPath(fileEntry, Path.of(TEMP_DIRECTORY, fileEntry.getName()))) {
+                        for (Path path : exportOption.copyToPath(tempDir, fileEntry)) {
                             File file = path.toFile();
                             file.deleteOnExit();
                             files.add(file);
