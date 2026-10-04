@@ -19,62 +19,48 @@
  */
 package org.applecommander.filestore;
 
-import org.applecommander.capability.Capability;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
 import java.util.Optional;
 
-/**
- * A FileEntry represents a single file on disk.
- */
+/// A `FileEntry` represents a single file in a file store.
 public interface FileEntry extends Container {
-    /**
-     * The parent <code>DirectoryEntry</code>, if applicable. Can return <code>null</code>.
-     */
+
+    /// The parent `Directory`, if applicable. Can return `null` if this is the root directory.
     Directory getParent();
-    /**
-     * Indicates if this <code>Entry</code> is deleted.
-     */
-    // TODO should deletion be a general interface field?
+
+    /// Indicates if this `FileEntry` is deleted.
     boolean isDeleted();
-    /**
-     * Returns the <code>FileStore</code> that this <code>Entry</code> originates from.
-     */
+
+    /// Returns the `FileStore` that this `Entry` originates from.
     FileStore getFileStore();
-    /**
-     * Returns the name of this entry: either a directory name or a file name.
-     * This does not contain any directory components -- strictly the name of this entry.
-     * Note that depending on context, this may be a computed field.
-     */
+
+    /// Returns the name of this entry: either a directory name or a file name.
+    /// This does not contain any directory components -- strictly the name of this entry.
+    /// Note that depending on context, this may be a computed field.
     String getName();
-    /**
-     * Returns the size, in bytes, of this item.
-     * It may be approximate (based off a sector count, for instance).
-     */
+
+    /// Returns the size, in bytes, of this item.
+    /// It may be approximate (based off a sector count, for instance).
     long getSize();
-    /**
-     * Return the textual representation of the file type, such as "BAS" or "A" for Applesoft.
-     */
+
+    /// Return the textual representation of the file type, such as "BAS" or "A" for Applesoft.
     // TODO file type is not always a concept, maybe take this out of the general interface? (CP/M, Zip files for instance)
     String getFiletype();
-    /**
-     * Return the file's data.
-     * This does not include any metadata that may be embedded with the file.
-     */
+
+    /// Return the file's data.
+    /// This does not include any metadata that may be embedded with the file.
     DataBuffer getDataFork();
-    /**
-     * Return the resource fork data.
-     * This may not be supported and may throw an exception.
-     * @see Capability
-     */
+
+    /// Return the resource fork data. If there is no resource fork (or a resource fork is not supported),
+    /// then this returns an empty `Optional`.
     default Optional<DataBuffer> getResourceFork() {
         return Optional.empty();
     }
-    /**
-     * Return the type of content, if known. It should never return null; use UNKNOWN if not known.
-     * @see ContentType
-     */
+
+    /// Return the type of content, if known. It should never return null; use UNKNOWN if not known.
+    /// @see ContentType
     default ContentType getContentType() {
         return ContentType.UNKNOWN;
     }
