@@ -22,6 +22,7 @@ package org.applecommander.archive.shrinkit;
 import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
+import org.applecommander.filestore.ProdosAttributes;
 import org.applecommander.shrinkit.HeaderBlock;
 import org.applecommander.shrinkit.ThreadFormat;
 import org.applecommander.shrinkit.ThreadKind;
@@ -166,6 +167,19 @@ public class ShrinkitFileEntry implements FileEntry {
             .map(this::decompress)
             .map(DataBuffer::wrap)
             .orElseGet(() -> DataBuffer.create(0));
+    }
+
+    @Override
+    public ProdosAttributes getProdosAttributes() {
+        return ProdosAttributes.builder()
+                .name(getName())
+                .size(getSize())
+                .access((int)getAccess())
+                .auxType((int)getExtraType())
+                .fileType((int)headerBlock.getFileType())
+                .creation(getCreateWhen())
+                .modification(getModWhen())
+                .build();
     }
 
     @Override

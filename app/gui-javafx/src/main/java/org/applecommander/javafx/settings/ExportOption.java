@@ -21,6 +21,7 @@ package org.applecommander.javafx.settings;
 
 import org.applecommander.applesingle.AppleSingle;
 import org.applecommander.filestore.FileEntry;
+import org.applecommander.filestore.ProdosAttributes;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -88,9 +89,12 @@ public enum ExportOption {
             List<Path> paths = new ArrayList<>();
             Path destination = directory.resolve(fileEntry.getName() + ".as");
             paths.add(destination);
-            // TODO need to get ProDOS-ified file type + some mechanism for access bits + dates. Maybe it fits in FileStore??
+            ProdosAttributes attributes = fileEntry.getProdosAttributes();
             AppleSingle.Builder builder = AppleSingle.builder()
                     .realName(fileEntry.getName())
+                    .access(attributes.access())
+                    .auxType(attributes.auxType())
+                    .fileType(attributes.fileType())
                     .dataFork(fileEntry.getDataFork().asBytes());
             fileEntry.getResourceFork().ifPresent(resourceFork -> builder.resourceFork(resourceFork.asBytes()));
             builder.build().save(destination);
@@ -103,19 +107,21 @@ public enum ExportOption {
     public static List<Path> copyWithAttributePreservation(Path directory, FileEntry fileEntry) {
         try {
             List<Path> paths = new ArrayList<>();
+            ProdosAttributes attributes = fileEntry.getProdosAttributes();
             String name = fileEntry.getName();
-            // TODO FIXME
-            String ext = ""; //fileEntry.getFiletype().toLowerCase();
+            String ext = attributes.fileTypeText().toLowerCase();
             int idx = name.lastIndexOf('.');
             if (idx > -1) {
                 ext = name.substring(idx + 1).toLowerCase();
                 name = name.substring(0, idx);
             }
-            Path dataForkPath = directory.resolve(String.format("%s#TTAAAA.%s", name, ext));
+            Path dataForkPath = directory.resolve(String.format("%s#%02x%04x.%s", name, attributes.fileType(),
+                    attributes.auxType(), ext));
             Files.write(dataForkPath, fileEntry.getDataFork().asBytes(), StandardOpenOption.CREATE);
             paths.add(dataForkPath);
             if (fileEntry.getResourceFork().isPresent()) {
-                Path resourceForkPath = directory.resolve(String.format("%s_rsrc_#TTAAAA.%s", name, ext));
+                Path resourceForkPath = directory.resolve(String.format("%s#%02x%04xr.%s", name, attributes.fileType(),
+                        attributes.auxType(), ext));
                 Files.write(resourceForkPath, fileEntry.getResourceFork().get().asBytes(), StandardOpenOption.CREATE);
                 paths.add(resourceForkPath);
             }

@@ -19,14 +19,20 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import com.webcodepro.applecommander.storage.os.cpm.CpmFileEntry;
 import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
+import com.webcodepro.applecommander.storage.os.dos33.DosFileEntry;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
+import com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFileEntry;
 import com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk;
+import com.webcodepro.applecommander.storage.os.nakedos.NakedosFileEntry;
 import com.webcodepro.applecommander.storage.os.nakedos.NakedosFormatDisk;
+import com.webcodepro.applecommander.storage.os.pascal.PascalFileEntry;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosDirectoryEntry;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
+import com.webcodepro.applecommander.storage.os.rdos.RdosFileEntry;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import org.applecommander.capability.Capability;
 import org.applecommander.device.BlockDevice;
@@ -220,6 +226,60 @@ public class DiskFileStoreAdapter implements FileStore {
         @Override
         public DataBuffer getDataFork() {
             return DataBuffer.wrap(fileEntry.getFileData());
+        }
+        @Override
+        public ProdosAttributes getProdosAttributes() {
+            ProdosAttributes.Builder builder = ProdosAttributes.builder()
+                    .name(fileEntry.getFilename())
+                    .size(fileEntry.getSize())
+                    .locked(fileEntry.isLocked());
+            switch (fileEntry) {
+                case CpmFileEntry cpm -> {
+                    if (CpmFileEntry.TEXT_FILETYPES.contains(cpm.getFiletype())) {
+                        builder.TXT();
+                    }
+                    else {
+                        builder.BIN(cpm.getAddress());
+                    }
+                }
+                case DosFileEntry dos -> {
+                    switch (dos.getFiletype()) {
+                        case "B" -> builder.BIN(dos.getAddress());
+                        case "A" -> builder.BAS().auxType(0x0801);
+                        case "I" -> builder.INT().auxType(0x0c00);
+                        case "T" -> builder.TXT();
+                        case "R" -> builder.REL();
+                        case "S","a","b" -> builder.BIN(0x0000);
+                    }
+                }
+                case GutenbergFileEntry _ -> builder.TXT();
+                case NakedosFileEntry nakedos -> builder.BIN(nakedos.getAddress());
+                case PascalFileEntry pascal -> {
+                    if (pascal.getFiletype().equals("text")) {
+                        builder.TXT();
+                    }
+                    else {
+                        builder.BIN(pascal.getAddress());
+                    }
+                }
+                case ProdosFileEntry prodos -> {
+                    builder.fileType(prodos.getFiletypeByte())
+                           .auxType(prodos.getAuxiliaryType())
+                           .access(prodos.getAccessByte())
+                           .creation(prodos.getCreationDate())
+                           .modification(prodos.getLastModificationDate());
+                }
+                case RdosFileEntry rdos -> {
+                    switch (rdos.getFiletype()) {
+                        case "S" -> builder.BIN(0x0000);
+                        case "A" -> builder.BAS();
+                        case "B" -> builder.BIN(rdos.getAddress());
+                        case "T" -> builder.TXT();
+                    }
+                }
+                default -> throw new IllegalStateException("Unexpected file entry: " + fileEntry.getClass().getName());
+            }
+            return builder.build();
         }
         @Override
         public void setDataFork(DataBuffer fileData) {

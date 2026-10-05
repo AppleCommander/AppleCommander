@@ -23,6 +23,7 @@ import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
+import org.applecommander.filestore.ProdosAttributes;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
@@ -89,6 +90,23 @@ public class GamedosFileEntry implements FileEntry, GamedosConstants {
     @Override
     public DataBuffer getDataFork() {
         return device.readRange(getFirstTrack(), getFirstSector(), getSectorCount());
+    }
+
+    @Override
+    public ProdosAttributes getProdosAttributes() {
+        ProdosAttributes.Builder builder = ProdosAttributes.builder()
+                .name(getName())
+                .unlocked()
+                .size(getSize());
+        switch (getFiletype()) {
+            case "A" -> builder.BAS();
+            case "B" -> builder.BIN(getMeta());
+            case "T" -> builder.TXT();
+            case "S" -> builder.BIN(0x0600);
+            case "P" -> builder.BIN(0x2000);
+            case "I" -> builder.INT();
+        }
+        return builder.build();
     }
 
     @Override

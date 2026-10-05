@@ -1,9 +1,29 @@
+/*
+ * AppleCommander - An Apple ][ image utility.
+ * Copyright (C) 2026 by Robert Greene and others
+ * robgreene at users.sourceforge.net
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 package org.applecommander.javafx.settings;
 
 import com.google.common.primitives.Bytes;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
+import org.applecommander.filestore.ProdosAttributes;
 import org.applecommander.util.DataBuffer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -46,13 +66,13 @@ public class ExportOptionTest {
     @Test
     public void testAttributePreservationDataForkOnly() throws IOException {
         exerciseExportOption(ExportOption.ATTRIBUTE_PRESERVATION, Assertions::assertArrayEquals,
-                "TESTFILE", List.of("TESTFILE#TTAAAA.txt"));
+                "TESTFILE", List.of("TESTFILE#040000.txt"));
     }
 
     @Test
     public void testAttributePreservationWithResourceFork() throws IOException {
         exerciseExportOption(ExportOption.ATTRIBUTE_PRESERVATION, Assertions::assertArrayEquals,
-                "TESTFILE", List.of("TESTFILE#TTAAAA.txt", "TESTFILE_rsrc_#TTAAAA.txt"));
+                "TESTFILE", List.of("TESTFILE#040000.txt", "TESTFILE#040000r.txt"));
     }
 
     public void assertArrayContains(final byte[] expected, final byte[] actual) {
@@ -81,6 +101,11 @@ public class ExportOptionTest {
         if (expectedFilenames.size() > 1) {
             builder.resourceFork(expectedResourceFork);
         }
+        builder.attributes(ProdosAttributes.builder()
+                .unlocked()
+                .TXT()
+                .name(baseFilename)
+                .build());
         FileEntry fileEntry = builder.get();
 
         List<Path> results = exportOption.copyToPath(directory, fileEntry);
@@ -112,22 +137,22 @@ public class ExportOptionTest {
         private final boolean deleted;
         private final FileStore fileStore;
         private final String name;
-        private final String filetype;
         private final DataBuffer dataFork;
         private final DataBuffer resourceFork;
+        private final ProdosAttributes attributes;
 
-        private TestFileEntry(Directory parent, boolean deleted, FileStore fileStore, String name, String filetype,
-                              DataBuffer dataFork, DataBuffer resourceFork) {
+        private TestFileEntry(Directory parent, boolean deleted, FileStore fileStore, String name,
+                              DataBuffer dataFork, DataBuffer resourceFork, ProdosAttributes attributes) {
             Objects.requireNonNull(name);
-            Objects.requireNonNull(filetype);
             Objects.requireNonNull(dataFork);
+            Objects.requireNonNull(attributes);
             this.parent = parent;
             this.deleted = deleted;
             this.fileStore = fileStore;
             this.name = name;
-            this.filetype = filetype;
             this.dataFork = dataFork;
             this.resourceFork = resourceFork;
+            this.attributes = attributes;
         }
 
         @Override
@@ -165,6 +190,11 @@ public class ExportOptionTest {
         }
 
         @Override
+        public ProdosAttributes getProdosAttributes() {
+            return attributes;
+        }
+
+        @Override
         public Optional<DataBuffer> getResourceFork() {
             return Optional.ofNullable(resourceFork);
         }
@@ -183,9 +213,9 @@ public class ExportOptionTest {
             private boolean deleted;
             private FileStore fileStore;
             private String name = "TESTFILE";
-            private String filetype = "TXT";
             private DataBuffer dataFork = DataBuffer.wrap("THIS IS A TEST FILE".getBytes());
             private DataBuffer resourceFork;
+            private ProdosAttributes attributes;
 
             public Builder parent(Directory parent) {
                 Objects.requireNonNull(parent);
@@ -206,11 +236,6 @@ public class ExportOptionTest {
                 this.name = name;
                 return this;
             }
-            public Builder filetype(String filetype) {
-                Objects.requireNonNull(filetype);
-                this.filetype = filetype;
-                return this;
-            }
             public Builder dataFork(byte[] dataFork) {
                 Objects.requireNonNull(dataFork);
                 return dataFork(DataBuffer.wrap(dataFork));
@@ -229,8 +254,13 @@ public class ExportOptionTest {
                 this.resourceFork = resourceFork;
                 return this;
             }
+            public Builder attributes(ProdosAttributes attributes) {
+                Objects.requireNonNull(attributes);
+                this.attributes = attributes;
+                return this;
+            }
             public TestFileEntry get() {
-                return new TestFileEntry(parent, deleted, fileStore, name, filetype, dataFork, resourceFork);
+                return new TestFileEntry(parent, deleted, fileStore, name, dataFork, resourceFork, attributes);
             }
         }
     }

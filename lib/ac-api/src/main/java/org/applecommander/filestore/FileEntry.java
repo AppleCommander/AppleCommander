@@ -50,6 +50,11 @@ public interface FileEntry extends Container {
     /// This does not include any metadata that may be embedded with the file.
     DataBuffer getDataFork();
 
+    /// Interpret the `FileEntry` as if it were on a ProDOS volume.
+    /// The intention is that ProDOS ended up being the common denominator in many tools and formats,
+    /// so this allows each file store to manage the interpretation itself.
+    ProdosAttributes getProdosAttributes();
+
     /// Return the resource fork data. If there is no resource fork (or a resource fork is not supported),
     /// then this returns an empty `Optional`.
     default Optional<DataBuffer> getResourceFork() {

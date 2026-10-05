@@ -19,10 +19,7 @@
  */
 package org.applecommander.archive.zip;
 
-import org.applecommander.filestore.ContentType;
-import org.applecommander.filestore.Directory;
-import org.applecommander.filestore.FileEntry;
-import org.applecommander.filestore.FileStore;
+import org.applecommander.filestore.*;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.FileMagic;
@@ -30,6 +27,7 @@ import org.applecommander.util.FileMagic;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.attribute.FileTime;
+import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.zip.ZipEntry;
@@ -119,6 +117,18 @@ public class ZipFileEntry implements FileEntry {
         catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
+    }
+
+    @Override
+    public ProdosAttributes getProdosAttributes() {
+        return ProdosAttributes.builder()
+                .name(getName())
+                .unlocked()
+                .size(getSize())
+                .BIN(0x0000)
+                .creation(new Date(getCreationTime().toMillis()))
+                .modification(new Date(getLastModifiedTime().toMillis()))
+                .build();
     }
 
     @Override
