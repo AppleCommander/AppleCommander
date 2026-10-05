@@ -32,6 +32,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.VBox;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Function;
@@ -114,5 +116,18 @@ public class FxUtils {
             selectionPage.getChildren().add(radioButton);
         }
         return selectionPage;
+    }
+
+    public static void showErrorDialog(String title, Throwable t) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(t.getMessage() == null ? "An unexpected error occurred." : t.getMessage());
+        // Generate the stack trace
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        t.printStackTrace(pw);
+        alert.setContentText(sw.toString());
+
+        alert.showAndWait();
     }
 }

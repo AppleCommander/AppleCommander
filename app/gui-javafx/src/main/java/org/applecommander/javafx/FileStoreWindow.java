@@ -41,6 +41,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
+import org.applecommander.capability.Capability;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.FileStores;
 import org.applecommander.javafx.settings.Settings;
@@ -53,9 +54,10 @@ import org.applecommander.util.FileExtensions;
 import org.applecommander.util.FileExtensions.FileExtension;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.applecommander.javafx.FxUtils.*;
 
@@ -85,6 +87,8 @@ public class FileStoreWindow {
     private final FileStoreSelectionModel fileStoreSelection = new FileStoreSelectionModel();
     private final ObjectProperty<ViewMode> viewMode = new SimpleObjectProperty<>();
     private final BooleanProperty supportsDiskUsage = new SimpleBooleanProperty();
+    private final BooleanProperty hasChanged = new SimpleBooleanProperty();
+    private final BooleanProperty canSave = new SimpleBooleanProperty();
 
     public FileStoreSelectionModel fileStoreSelection() {
         return fileStoreSelection;
@@ -146,8 +150,7 @@ public class FileStoreWindow {
             new Separator(Orientation.VERTICAL)
         );
 
-        // TEMPORARILY DISABLE UNTIL THESE ARE IMPLEMENTED
-        Set.of(saveFileButton, saveFileAsButton).forEach(b -> b.setDisable(true));
+        saveFileButton.disableProperty().bind(hasChanged.not().or(canSave.not()));
 
         ImageView logo = new ImageView(imageUrl("AppleCommanderLogo.png"));
         Label label = new Label("No disk image open. Use open to browse for a disk image.");
@@ -204,6 +207,12 @@ public class FileStoreWindow {
             if (newValue != null) {
                 viewMode.setValue(ViewMode.FILES);
                 supportsDiskUsage.setValue(newValue.get(DiskUsage.class).isPresent());
+
+                // Making the save button state to be properties. The only one we should modify elsewhere is hasChanged.
+                Source source = newValue.get(Source.class).orElseThrow();
+                hasChanged.setValue(source.hasChanged());
+                canSave.setValue(source.can(Capability.SAVE_SOURCE));
+
                 // There doesn't appear to be a item list changed, so this should work?
                 boolean enabled = fileStoreSelection.getItemCount() > 1;
                 switchDiskButton.setDisable(!enabled);
@@ -311,11 +320,38 @@ public class FileStoreWindow {
     }
 
     public void saveFile() {
-        // TODO
+        try {
+            FileStore fileStore = fileStoreSelection.getSelectedItem();
+            Source source = fileStore.get(Source.class).orElseThrow();
+            source.save();
+        } catch (Throwable t) {
+            showErrorDialog("Could not save file", t);
+        }
     }
 
     public void saveFileAs() {
-        // TODO
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Apple II disk image");
+        Settings.getLastOpenedDirectory().ifPresent(fileChooser::setInitialDirectory);
+        for (FileExtension extension : FileExtensions.FILE_FILTERS) {
+            fileChooser.getExtensionFilters().add(new ExtensionFilter(extension.description(), extension.extensions()));
+        }
+
+        File selectedFile = fileChooser.showSaveDialog(primaryStage);
+        if (selectedFile == null) {
+            return;
+        }
+        Settings.setLastOpenedDirectory(selectedFile.getParentFile());
+
+        try {
+            FileStore fileStore = fileStoreSelection.getSelectedItem();
+            Source source = fileStore.get(Source.class).orElseThrow();
+            Files.write(selectedFile.toPath(), source.readAllBytes().asBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Optional<Source> newSource = Sources.create(selectedFile);
+            openImage(newSource.orElseThrow(), false);
+        } catch (Throwable t) {
+            showErrorDialog("Could not save file", t);
+        }
     }
 
     public void settings() {
