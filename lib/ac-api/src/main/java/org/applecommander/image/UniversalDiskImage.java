@@ -26,6 +26,7 @@ import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.InformationGroup;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -87,8 +88,7 @@ public class UniversalDiskImage implements Source {
 
     @Override
     public boolean can(Capability capability) {
-        // TODO we haven't defined any yet
-        return false;
+        return source.can(capability);
     }
 
     @Override
@@ -134,6 +134,11 @@ public class UniversalDiskImage implements Source {
     @Override
     public void clearChanges() {
         source.clearChanges();
+    }
+
+    @Override
+    public void save() throws IOException {
+        source.save();
     }
 
     @Override

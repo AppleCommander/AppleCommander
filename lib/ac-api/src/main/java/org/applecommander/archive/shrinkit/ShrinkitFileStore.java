@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class ShrinkitFileStore implements FileStore {
@@ -45,6 +46,7 @@ public class ShrinkitFileStore implements FileStore {
     private final List<FileEntry> files = new ArrayList<>();
 
     public ShrinkitFileStore(Source source) {
+        Objects.requireNonNull(source);
         this.source = source;
         try {
             this.archive = new NuFileArchive(new ByteArrayInputStream(source.readAllBytes().asBytes()));

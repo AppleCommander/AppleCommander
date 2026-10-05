@@ -28,6 +28,7 @@ import org.applecommander.util.InformationGroup;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Optional;
 import java.util.zip.GZIPInputStream;
@@ -67,7 +68,9 @@ public class FileSource implements Source {
 
     @Override
     public boolean can(Capability capability) {
-        // TODO - we haven't actually identified save yet!
+        if (path.toFile().canWrite()) {
+            return capability == Capability.SAVE_SOURCE;
+        }
         return false;
     }
 
@@ -115,6 +118,12 @@ public class FileSource implements Source {
 
     @Override
     public void clearChanges() {
+        changed = false;
+    }
+
+    @Override
+    public void save() throws IOException {
+        Files.write(path, buffer.asBytes(), StandardOpenOption.TRUNCATE_EXISTING);
         changed = false;
     }
 

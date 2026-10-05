@@ -26,6 +26,7 @@ import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.InformationGroup;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -82,8 +83,7 @@ public class DiskCopyImage implements Source {
 
     @Override
     public boolean can(Capability capability) {
-        // TODO - not definted yet
-        return false;
+        return source.can(capability);
     }
 
     @Override
@@ -133,6 +133,11 @@ public class DiskCopyImage implements Source {
     @Override
     public void clearChanges() {
         source.clearChanges();
+    }
+
+    @Override
+    public void save() throws IOException {
+        source.save();
     }
 
     @Override
