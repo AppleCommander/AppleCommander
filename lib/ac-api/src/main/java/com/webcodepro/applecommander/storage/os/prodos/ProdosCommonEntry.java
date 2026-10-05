@@ -259,6 +259,10 @@ public class ProdosCommonEntry {
 		return readFileEntry()[0x1e];
 	}
 
+	public int getAccessByte() {
+		return Byte.toUnsignedInt(getAccess());
+	}
+
 	/**
 	 * Set the access byte.
 	 */
