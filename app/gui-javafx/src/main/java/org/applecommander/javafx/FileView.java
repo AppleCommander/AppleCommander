@@ -260,6 +260,8 @@ public class FileView extends BorderPane {
                 column.setStyle("-fx-alignment: CENTER-RIGHT;");
             } else if (displayColumn.alignment() == DisplayColumn.Alignment.CENTER) {
                 column.setStyle("-fx-alignment: CENTER;");
+            } else {
+                column.setStyle("-fx-alignment: CENTER-LEFT;");
             }
             fileTable.getColumns().add(column);
         }
