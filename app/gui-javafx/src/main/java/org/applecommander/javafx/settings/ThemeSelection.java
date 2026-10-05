@@ -21,38 +21,74 @@ package org.applecommander.javafx.settings;
 
 import atlantafx.base.theme.*;
 import javafx.application.Application;
+import javafx.application.Platform;
 
-import java.util.List;
-
+/// ThemeSelection encapsulates all the themes available as well as the logic to apply them.
 public enum ThemeSelection {
     MODENA("Modena (JavaFX default)", Application.STYLESHEET_MODENA),
     CASPIAN("Caspian (JavaFX legacy)", Application.STYLESHEET_CASPIAN),
-    PRIMER("Primer (AtlantaFX)", new PrimerLight().getUserAgentStylesheet(), new PrimerDark().getUserAgentStylesheet()),
-    NORD("Nord (AtlantaFX)", new NordLight().getUserAgentStylesheet(), new NordDark().getUserAgentStylesheet()),
-    CUPERTINO("Cupertino (AtlantaFX)", new CupertinoLight().getUserAgentStylesheet(), new CupertinoDark().getUserAgentStylesheet()),
-    DRACULA("Dracula (AtlantaFX)", new Dracula().getUserAgentStylesheet());
+    PRIMER("Primer (AtlantaFX)", new PrimerLight(), new PrimerDark()),
+    NORD("Nord (AtlantaFX)", new NordLight(), new NordDark()),
+    CUPERTINO("Cupertino (AtlantaFX)", new CupertinoLight(), new CupertinoDark()),
+    DRACULA("Dracula (AtlantaFX)", new Dracula());
 
     private final String description;
-    private final List<String> urls;
+    private final String lightModeUrl;
+    private final String darkModeUrl;
 
-    ThemeSelection(String description, String... urls) {
+    /// This constructor is for JavaFX supplied themes. They are (apparently?) always a light mode theme.
+    ThemeSelection(String description, String lightModeUrl) {
+        assert description != null;
+        assert lightModeUrl != null;
         this.description = description;
-        this.urls = List.of(urls);
+        this.lightModeUrl = lightModeUrl;
+        this.darkModeUrl = null;
+    }
+    /// This constructor is for AtlantaFX supplied themes. They mostly have light and dark mode themes.
+    ThemeSelection(String description, Theme... themes) {
+        assert description != null;
+        assert themes != null;
+        assert themes.length >= 1 && themes.length <= 2;
+        this.description = description;
+        String lightModeUrl = null;
+        String darkModeUrl = null;
+        for (Theme theme : themes) {
+            if (theme.isDarkMode()) {
+                darkModeUrl = theme.getUserAgentStylesheet();
+            }
+            else {
+                lightModeUrl = theme.getUserAgentStylesheet();
+            }
+        }
+        this.lightModeUrl = lightModeUrl;
+        this.darkModeUrl = darkModeUrl;
     }
 
     public String getDescription() {
         return description;
     }
 
+    /// Apply the appropriate theme. Note that we don't always have the theme to match the system color scheme,
+    /// so we fall back to the alternate theme in that case.
     public void apply() {
-        urls.forEach(Application::setUserAgentStylesheet);
+        String url = switch (Platform.getPreferences().getColorScheme()) {
+            case LIGHT -> {
+                if (includesLightMode()) yield lightModeUrl;
+                else yield darkModeUrl;
+            }
+            case DARK -> {
+                if (includesDarkMode()) yield darkModeUrl;
+                else yield lightModeUrl;
+            }
+        };
+        Application.setUserAgentStylesheet(url);
     }
 
     public boolean includesDarkMode() {
-        return this != MODENA;
+        return darkModeUrl != null;
     }
 
     public boolean includesLightMode() {
-        return this != DRACULA;
+        return lightModeUrl != null;
     }
 }

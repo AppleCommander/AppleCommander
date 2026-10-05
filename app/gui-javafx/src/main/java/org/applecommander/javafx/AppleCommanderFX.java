@@ -21,6 +21,7 @@ package org.applecommander.javafx;
 
 import com.webcodepro.applecommander.ui.AppleCommander;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.stage.Stage;
 import org.applecommander.javafx.settings.Settings;
 import org.applecommander.javafx.settings.ThemeSelection;
@@ -34,6 +35,9 @@ public class AppleCommanderFX extends Application {
     public void start(Stage stage) throws Exception {
         // Based on user selection, use that theme.
         Settings.getThemeSelection().orElse(ThemeSelection.MODENA).apply();
+        Platform.getPreferences().colorSchemeProperty().addListener((_, _, _) -> {
+            Settings.getThemeSelection().orElse(ThemeSelection.MODENA).apply();
+        });
 
         FileStoreWindow.createWindow(stage);
     }
