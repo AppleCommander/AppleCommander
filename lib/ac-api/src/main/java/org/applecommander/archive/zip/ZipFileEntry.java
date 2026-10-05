@@ -73,6 +73,10 @@ public class ZipFileEntry implements FileEntry {
         return entry.getSize();
     }
 
+    public FileTime getCreationTime() {
+        return entry.getCreationTime();
+    }
+
     public FileTime getLastModifiedTime() {
         return entry.getLastModifiedTime();
     }
