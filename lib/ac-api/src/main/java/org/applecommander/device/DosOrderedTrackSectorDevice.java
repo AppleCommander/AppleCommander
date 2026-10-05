@@ -35,7 +35,7 @@ public class DosOrderedTrackSectorDevice implements TrackSectorDevice {
     private final Geometry geometry;
     private final Hint orderHint;
 
-    // TODO FIXME do we still need an "unknown" ordered disk? If so, name kinda suchs. :-)
+    // TODO FIXME do we still need an "unknown" ordered disk? If so, name kinda sucks. :-)
     public DosOrderedTrackSectorDevice(Source source) {
         this.source = source;
         this.geometry = calculateGeometry(source);
