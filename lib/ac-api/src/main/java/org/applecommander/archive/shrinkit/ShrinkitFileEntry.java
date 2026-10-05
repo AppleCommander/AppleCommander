@@ -69,7 +69,7 @@ public class ShrinkitFileEntry implements FileEntry {
         return headerBlock.getUncompressedSize();
     }
 
-    public String getFiletypeText() {
+    public String getFileTypeText() {
         if (headerBlock.getFileSysId() == 1) {
             return FileMagic.getProdosFileTypeText((int) headerBlock.getFileType(), (int) headerBlock.getExtraType());
         }

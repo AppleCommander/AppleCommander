@@ -84,7 +84,7 @@ public class ShrinkitFileStore implements FileStore {
             .addIntField("File Sys. Info", ShrinkitFileEntry::getFileSysInfo, "$%04X", Mode.DETAIL)
             .addStringField("Access", Alignment.CENTER, ShrinkitFileEntry::getAccessText, Mode.DETAIL)
             .addStringField("Kind", ShrinkitFileEntry::getStorageTypeText)
-            .addStringField("Type", Alignment.CENTER, ShrinkitFileEntry::getFiletypeText)
+            .addStringField("Type", Alignment.CENTER, ShrinkitFileEntry::getFileTypeText)
             .addLongField("Aux. Type", ShrinkitFileEntry::getExtraType, "$%04X")
             .addDateField("Archived", ShrinkitFileEntry::getArchiveWhen)
             .addDateField("Created", ShrinkitFileEntry::getCreateWhen, Mode.DETAIL)
