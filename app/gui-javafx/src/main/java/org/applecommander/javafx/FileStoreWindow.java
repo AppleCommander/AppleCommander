@@ -157,6 +157,7 @@ public class FileStoreWindow {
 
         ImageView logo = new ImageView(imageUrl("AppleCommanderLogo.png"));
         Label label = new Label("No disk image open. Use open to browse for a disk image.");
+        label.setTextFill(Color.BLACK);
         Rectangle border = new Rectangle();
         border.setWidth(logo.getImage().getWidth() + 50);
         border.setHeight(logo.getImage().getHeight() + 50);
