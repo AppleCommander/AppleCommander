@@ -120,7 +120,7 @@ public class GamedosFileStore implements FileStore, GamedosConstants {
 
     @Override
     public boolean can(Capability capability) {
-        return false;
+        return CAPABILITIES.contains(capability);
     }
 
     @Override

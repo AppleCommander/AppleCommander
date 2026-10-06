@@ -19,7 +19,10 @@
  */
 package org.applecommander.os.gamedos;
 
+import org.applecommander.capability.Capability;
+
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 
 public interface GamedosConstants {
     byte[] MARKER = "GAMEDOS ".getBytes(StandardCharsets.UTF_8);
@@ -36,4 +39,7 @@ public interface GamedosConstants {
     int ENTRY_NAME_OFFSET = 5;
     int ENTRY_NAME_LENGTH = 26;
     int ENTRY_SECTORS_OFFSET = 31;
+
+    Set<Capability> CAPABILITIES = Set.of(Capability.WRITE_FILES, Capability.CREATE_FILES, Capability.DELETE_FILES);
+
 }

@@ -19,11 +19,14 @@
  */
 package org.applecommander.os.gamedos;
 
+import org.applecommander.device.Coordinate.TrackAndSectorCoordinate;
 import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.exception.DiskFullException;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.ProdosAttributes;
 import org.applecommander.filestore.WritableFileEntry;
+import org.applecommander.os.SequentialAllocator;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
@@ -123,12 +126,27 @@ public class GamedosFileEntry implements WritableFileEntry, GamedosConstants {
 
     @Override
     public void setDataFork(DataBuffer data) {
-        int requiredSectors = device.calculateRequiredSectors(data.limit());
-        if (getSectorCount() <= requiredSectors) {
-            device.writeRange(getFirstTrack(), getFirstSector(), data);
+        final int requiredSectors = device.calculateRequiredSectors(data.limit());
+        TrackSectorDevice.Geometry geometry = device.getGeometry();
+        SequentialAllocator allocator = new SequentialAllocator(geometry.sectorsPerDisk());
+        allocator.addUsedByLength(0, geometry.sectorsPerTrack());   // Track 0
+        getParent().getFiles().forEach(file -> {
+            GamedosFileEntry entry = (GamedosFileEntry) file;
+            if (entry.sector != this.sector || entry.offset != this.offset) {
+                int sectorOffset = geometry.calculateSectorOffset(entry.getFirstTrack(), entry.getFirstSector());
+                allocator.addUsedByLength(sectorOffset, entry.getSectorCount());
+            }
+        });
+        int sectorOffset = allocator.find(requiredSectors);
+        if (sectorOffset != -1) {
+            TrackAndSectorCoordinate coordinate = geometry.sectorOffsetToCoordinate(sectorOffset);
+            device.writeRange(coordinate.track(), coordinate.sector(), data);
+            setFirstTrack(coordinate.track());
+            setFirstSector(coordinate.sector());
+            setSectorCount(requiredSectors);
         }
         else {
-            throw new UnsupportedOperationException("TODO! can only write same size or smaller files");
+            throw new DiskFullException("Unable to allocate %d sectors on disk", requiredSectors);
         }
     }
 

@@ -21,18 +21,15 @@ package org.applecommander.os.gamedos;
 
 import org.applecommander.capability.Capability;
 import org.applecommander.device.TrackSectorDevice;
-import org.applecommander.filestore.Directory;
-import org.applecommander.filestore.FileEntry;
-import org.applecommander.filestore.FileStore;
+import org.applecommander.exception.DirectoryFullException;
+import org.applecommander.filestore.*;
 import org.applecommander.util.DataBuffer;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-public class GamedosDirectory implements Directory, GamedosConstants {
-    private static final Set<Capability> CAPABILITIES = Set.of(Capability.WRITE_FILES, Capability.CREATE_FILES);
+public class GamedosDirectory implements WritableDirectory, GamedosConstants {
     private final GamedosFileStore fileStore;
     private final TrackSectorDevice device;
 
@@ -73,5 +70,27 @@ public class GamedosDirectory implements Directory, GamedosConstants {
             }
         }
         return files;
+    }
+
+    /// Create a file. By definition, any file created is a `WritableFileEntry`.
+    @Override
+    public WritableFileEntry createFile(String fileName) {
+        for (int i=0; i<DIRECTORY_SIZE; i++) {
+            DataBuffer data = device.readSector(DIRECTORY_TRACK, DIRECTORY_SECTOR+i);
+            for (int offset=0; offset<data.limit(); offset+= GamedosFileEntry.ENTRY_SIZE) {
+                if (data.getUnsignedByte(offset) == 0) {
+                    return new GamedosFileEntry(this, DIRECTORY_SECTOR+i, offset);
+                }
+            }
+        }
+        throw new DirectoryFullException("there are no more directory entries available on this disk");
+    }
+
+    /// Delete a file.
+    @Override
+    public void deleteFile(FileEntry fileEntry) {
+        GamedosFileEntry file = (GamedosFileEntry) fileEntry;
+        // Just need to reset the file type to $00.
+        file.modifyEntry(data -> data.putByte(0,0));
     }
 }
