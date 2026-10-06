@@ -318,11 +318,11 @@ public class DiskFileStoreAdapter implements FileStore {
             return ContentType.UNKNOWN;
         }
     }
-    /**
-     * The DiskDirectoryEntryAdapter is a shim that allows a FormattedDisk or DirectoryEntry to be mapped into the
-     * new/evolving DirectoryEntry interface(s).
-     */
-    public static class DiskDirectoryAdapter implements Directory {
+    /// The `DiskDirectoryEntryAdapter` is a shim that allows a `FormattedDisk` or `DirectoryEntry` to be mapped into the
+    /// new/evolving `Directory` / `WritableDirectory` and associated interface(s).
+    /// @see DirectoryEntry
+    /// @see Directory
+    public static class DiskDirectoryAdapter implements WritableDirectory {
         private final DiskFileStoreAdapter adapter;
         private final DiskDirectoryAdapter parent;
         private final com.webcodepro.applecommander.storage.DirectoryEntry directoryEntry;
@@ -332,6 +332,14 @@ public class DiskFileStoreAdapter implements FileStore {
             this.adapter = adapter;
             this.parent = parent;
             this.directoryEntry = directoryEntry;
+        }
+        @Override
+        public boolean can(Capability capability) {
+            return switch (capability) {
+                case CREATE_DIRECTORIES -> directoryEntry.canCreateDirectories();
+                case CREATE_FILES -> directoryEntry.canCreateFile();
+                default -> false;
+            };
         }
         @Override
         public Optional<Directory> getParent() {
@@ -356,6 +364,33 @@ public class DiskFileStoreAdapter implements FileStore {
         @Override
         public String getName() {
             return directoryEntry.getDirname();
+        }
+        @Override
+        public WritableDirectory createDirectory(String directoryName) {
+            try {
+                com.webcodepro.applecommander.storage.DirectoryEntry newDirectory = directoryEntry.createDirectory(directoryName);
+                return new DiskDirectoryAdapter(adapter, this, newDirectory);
+            } catch (DiskException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        @Override
+        public WritableFileEntry createFile(String fileName) {
+            try {
+                com.webcodepro.applecommander.storage.FileEntry fileEntry = directoryEntry.createFile();
+                fileEntry.setFilename(fileName);
+                return new DiskFileEntryAdapter(adapter, this, fileEntry);
+            } catch (DiskException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        @Override
+        public void deleteFile(FileEntry fileEntry) {
+            if (fileEntry instanceof DiskFileEntryAdapter fileAdapter) {
+                fileAdapter.fileEntry.delete();
+            } else {
+                throw new RuntimeException("unexpected file entry type: " + fileEntry);
+            }
         }
     }
 }
