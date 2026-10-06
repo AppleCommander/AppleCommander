@@ -34,7 +34,7 @@ jpackage `
   --module org.applecommander.javafx/org.applecommander.javafx.AppleCommanderFX `
   --about-url "https://applecommander.org" `
   --license-file LICENSE `
-  --icon lib/ac-swt-common/src/main/resources/windows/AppleCommander.ico `
+  --icon app/gui-javafx/src/main/resources/images/AppleCommanderIcon.ico `
   --win-menu `
   --win-shortcut `
   --win-upgrade-uuid 4ea8ae7d-f155-4c10-af96-467cda0b343f

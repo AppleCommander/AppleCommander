@@ -27,7 +27,7 @@ jpackage \
   --license-file LICENSE \
   --mac-package-identifier AppleCommanderFX \
   --mac-package-name AppleCommanderFX \
-  --icon lib/ac-swt-common/src/main/resources/mac/AppleCommander.icns
+  --icon app/gui-javafx/src/main/resources/images/AppleCommanderIcon.icns
 
 # There doesn't appear to be a mechanism to set the output name without
 # changing the application name as well. So we just 'mv' it.
