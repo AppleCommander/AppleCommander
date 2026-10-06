@@ -74,7 +74,7 @@ public class GamedosFileStoreFactory implements FileStoreFactory,GamedosConstant
         try (InputStream inputStream = GamedosFileStoreFactory.class.getResourceAsStream("/files/gamedos-track0.bin")) {
             Objects.requireNonNull(inputStream);
             byte[] track0 = inputStream.readAllBytes();
-            device.writeRange(0, 0, 16, DataBuffer.wrap(track0));
+            device.writeRange(0, 0, DataBuffer.wrap(track0));
             return new GamedosFileStore(device);
         }
         catch (IOException ex) {

@@ -26,20 +26,36 @@ import org.applecommander.util.TriIntConsumer;
 
 import java.util.List;
 
+/// A `TrackSectorDevice` is any type of device that supports track and sector
+/// geometry. Most of the time, this is a physical 5.25" floppy, but that can
+/// be virtualized through various mechanisms, such as UniDOS.
 public interface TrackSectorDevice extends Device {
     int SECTOR_SIZE = 256;
 
+    /// Get information that describes the disk geometry.
     Geometry getGeometry();
+
+    /// Read a single sector from the disk.
     DataBuffer readSector(int track, int sector);
+
+    /// Read a range of sectors.
     default DataBuffer readRange(int track, int sector, int totalSectors) {
         DataBuffer rangeData = DataBuffer.create(totalSectors * SECTOR_SIZE);
         performRange(track, sector, totalSectors, (t,s,o) -> rangeData.put(o, readSector(t,s)));
         return rangeData;
     }
+
+    /// Write a single sector to the disk.
     void writeSector(int track, int sector, DataBuffer data);
-    default void writeRange(int track, int sector, int totalSectors, DataBuffer data) {
+
+    /// write a range of sectors to the disk.
+    default void writeRange(int track, int sector, DataBuffer data) {
+        int totalSectors = calculateRequiredSectors(data.limit());
         performRange(track, sector, totalSectors, (t,s,o) -> writeSector(t, s, data.slice(o, SECTOR_SIZE)));
     }
+
+    /// A utility method that performs an operation across a range of sectors. Mostly reusable code for the
+    /// `readRange` and `writeRange` operations.
     default void performRange(int track, int sector, int totalSectors, TriIntConsumer actionFn) {
         int offset = 0;
         while (totalSectors > 0) {
@@ -53,19 +69,23 @@ public interface TrackSectorDevice extends Device {
             }
         }
     }
-    /**
-     * Format a disk. For most disks, this is simply a wipe to all zeros. If this
-     * disk has extended format (such as nibble formats), this is the opportunity
-     * to write out that format.
-     * <p/>
-     * NOTE: Adapter type devices have to be cautious about what device is responsible
-     * about formatting. For example, a UniDOS disk is 2x400K volumes on an 800K
-     * block device -- if they defer formatting to the 800K block device, a format on
-     * one volume also wipes out the other (in this case, do not defer to the "parent").
-     * However, if the block adapter contains a nibble-based TrackSectorDevice, the
-     * actual formatting needs to get to the nibble device so it can lay down sector
-     * markers and the rest of the track structure.
-     */
+
+    /// A handy/common function to calculate the number of sectors needed for the given size.
+    default int calculateRequiredSectors(int size) {
+        return (size + SECTOR_SIZE - 1) / SECTOR_SIZE;
+    }
+
+    /// Format a disk. For most disks, this is simply a wipe to all zeros. If this
+    /// disk has extended format (such as nibble formats), this is the opportunity
+    /// to write out that format.
+    ///
+    /// NOTE: Adapter type devices have to be cautious about what device is responsible
+    /// about formatting. For example, a UniDOS disk is 2x400K volumes on an 800K
+    /// block device -- if they defer formatting to the 800K block device, a format on
+    /// one volume also wipes out the other (in this case, do not defer to the "parent").
+    /// However, if the block adapter contains a nibble-based `TrackSectorDevice`, the
+    /// actual formatting needs to get to the nibble device so it can lay down sector
+    /// markers and the rest of the track structure.
     default void format() {
         DataBuffer sectorData = DataBuffer.create(SECTOR_SIZE);
         for (int track = 0; track < getGeometry().tracksOnDisk(); track++) {
