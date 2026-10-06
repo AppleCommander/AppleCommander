@@ -17,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.applecommander.os;
+package org.applecommander.device;
 
 /// A simplistic set of Coordinates. Note that block only matches to block while track and sector have
 /// two forms that match against each other.

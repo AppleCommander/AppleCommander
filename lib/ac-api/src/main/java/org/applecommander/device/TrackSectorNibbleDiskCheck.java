@@ -21,7 +21,6 @@ package org.applecommander.device;
 
 import com.webcodepro.applecommander.util.Range;
 import org.applecommander.capability.Capability;
-import org.applecommander.os.Coordinate;
 import org.applecommander.os.DiskCheck;
 import org.applecommander.util.DataBuffer;
 

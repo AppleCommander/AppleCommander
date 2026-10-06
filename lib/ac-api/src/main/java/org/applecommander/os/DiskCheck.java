@@ -19,6 +19,8 @@
  */
 package org.applecommander.os;
 
+import org.applecommander.device.Coordinate;
+
 import java.util.List;
 import java.util.Optional;
 

@@ -20,7 +20,6 @@
 package io.github.applecommander.acx.command;
 
 import com.webcodepro.applecommander.util.AppleUtil;
-import com.webcodepro.applecommander.util.Range;
 import io.github.applecommander.acx.base.ReadOnlyDiskContextCommandOptions;
 import io.github.applecommander.acx.converter.IntegerTypeConverter;
 import io.github.applecommander.acx.converter.RangeTypeConverter;
@@ -38,6 +37,7 @@ import org.applecommander.hint.Hint;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.InformationGroup;
+import org.applecommander.util.Range;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
@@ -379,7 +379,7 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
         private Range sectors;
 
         public boolean isBootSector() {
-            return tracks.getFirst() == 0 && tracks.getLast() == 0 && sectors.getFirst() == 0 && sectors.getLast() == 0;
+            return tracks.first() == 0 && tracks.last() == 0 && sectors.first() == 0 && sectors.last() == 0;
         }
     }
     public static class NibbleTrackRangeSelection {
