@@ -31,6 +31,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -217,9 +218,9 @@ public class FileView extends BorderPane {
     public void bindScene(Scene scene) {
         // Function keys for view modes
         applyShortcutToButton(scene, nativeToolButton, "Native View",
-                new KeyCodeCombination(KeyCode.F2), this::selectNativeView);
+                new KeyCodeCombination(KeyCode.F5), this::selectNativeView);
         applyShortcutToButton(scene, detailToolButton, "Detail View",
-                new KeyCodeCombination(KeyCode.F3), this::selectDetailView);
+                new KeyCodeCombination(KeyCode.F6), this::selectDetailView);
     }
 
     public void clear() {
@@ -253,8 +254,21 @@ public class FileView extends BorderPane {
         for (final DisplayColumn displayColumn : displayColumns) {
             TableColumn<FileEntry,String> column = new TableColumn<>(displayColumn.headerText());
             column.setUserData(displayColumn);
-            column.setCellValueFactory(cell ->
-                    new SimpleStringProperty(displayColumn.formatAsText(cell.getValue())));
+            if (displayColumn.editInline()) {
+                column.setCellFactory(TextFieldTableCell.forTableColumn());
+                column.setEditable(true);
+                column.setCellValueFactory(cell -> {
+                    SimpleStringProperty property = new SimpleStringProperty(displayColumn.formatAsText(cell.getValue()));
+                    property.addListener((_, _, newValue) -> {
+                        displayColumn.setValueFn().accept(cell.getValue(), newValue);
+                        fileStoreWindow.hasChangedProperty().set(true);
+                    });
+                    return property;
+                });
+            } else {
+                column.setCellValueFactory(cell ->
+                        new SimpleStringProperty(displayColumn.formatAsText(cell.getValue())));
+            }
             column.visibleProperty().setValue(displayColumn.supports(listingMode.get()));
             if (displayColumn.alignment() == DisplayColumn.Alignment.RIGHT) {
                 column.setStyle("-fx-alignment: CENTER-RIGHT;");
@@ -265,6 +279,16 @@ public class FileView extends BorderPane {
             }
             fileTable.getColumns().add(column);
         }
+        fileTable.setEditable(true);
+        fileTable.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.F2) {
+                TableView.TableViewFocusModel<FileEntry> focusModel = fileTable.getFocusModel();
+                @SuppressWarnings("unchecked")
+                final TablePosition<FileEntry,?> pos = focusModel.getFocusedCell();
+                fileTable.edit(pos.getRow(), pos.getTableColumn());
+                event.consume();
+            }
+        });
 
         List<? extends FileEntry> rows = directory.getFiles().stream()
                 .filter(fileEntry -> deletedFilesToggleButton.isSelected() || !fileEntry.isDeleted())

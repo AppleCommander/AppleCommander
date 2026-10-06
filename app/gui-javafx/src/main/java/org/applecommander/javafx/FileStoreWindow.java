@@ -96,6 +96,9 @@ public class FileStoreWindow {
     public ObjectProperty<ViewMode> viewModeProperty() {
         return viewMode;
     }
+    public BooleanProperty hasChangedProperty() {
+        return hasChanged;
+    }
 
     public static void openNewWindow(Source source) {
         Objects.requireNonNull(source);
