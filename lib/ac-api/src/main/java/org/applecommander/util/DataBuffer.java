@@ -19,6 +19,8 @@
  */
 package org.applecommander.util;
 
+import com.google.common.base.Strings;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
@@ -198,6 +200,10 @@ public class DataBuffer {
         byte[] s = new byte[length];
         this.buffer.get(index, s);
         return new String(s);
+    }
+    public void putFixedLengthString(int index, int length, String value) {
+        value = Strings.padEnd(value, length, ' ');
+        this.buffer.put(index, value.getBytes(), 0, length);
     }
     public void put(int offset, DataBuffer data) {
         this.buffer.put(offset, data.buffer, 0, data.buffer.limit());

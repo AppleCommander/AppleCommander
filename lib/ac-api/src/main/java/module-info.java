@@ -10,6 +10,7 @@ module org.applecommander.api {
     requires org.applecommander.shrinkit;
     requires org.applecommander.disassembler;
     requires org.applecommander.bastools;
+    requires com.google.common;
 
     // Legacy APIs
     exports com.webcodepro.applecommander.storage;

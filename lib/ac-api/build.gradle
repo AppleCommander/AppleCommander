@@ -22,6 +22,7 @@ dependencies {
     implementation "org.applecommander:bastools-api:$btVersion"
     implementation "org.apache.commons:commons-csv:$commonsCsvVersion"
     implementation "com.google.code.gson:gson:$gsonVersion"
+    implementation 'com.google.guava:guava:33.7.1-jre'
 
     testImplementation platform("org.junit:junit-bom:$junitVersion")
     testImplementation 'org.junit.jupiter:junit-jupiter'
