@@ -21,15 +21,16 @@ package org.applecommander.os.gamedos;
 
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.Directory;
-import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.ProdosAttributes;
+import org.applecommander.filestore.WritableFileEntry;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
-public class GamedosFileEntry implements FileEntry, GamedosConstants {
+public class GamedosFileEntry implements WritableFileEntry, GamedosConstants {
     private final GamedosDirectory directory;
     private final TrackSectorDevice device;
     private final int sector;
@@ -43,7 +44,12 @@ public class GamedosFileEntry implements FileEntry, GamedosConstants {
     }
 
     public DataBuffer readEntry() {
-        return device.readSector(GamedosDirectory.DIRECTORY_TRACK, sector).slice(offset, ENTRY_SIZE);
+        return device.readSector(DIRECTORY_TRACK, sector).slice(offset, ENTRY_SIZE);
+    }
+    public void modifyEntry(Consumer<DataBuffer> consumer) {
+        DataBuffer data = device.readSector(GamedosDirectory.DIRECTORY_TRACK, sector);
+        consumer.accept(data);
+        device.writeSector(DIRECTORY_TRACK, sector, data);
     }
 
     @Override
@@ -65,6 +71,10 @@ public class GamedosFileEntry implements FileEntry, GamedosConstants {
     public String getName() {
         return readEntry().getFixedLengthString(ENTRY_NAME_OFFSET, ENTRY_NAME_LENGTH).trim();
     }
+    @Override
+    public void setName(String name) {
+        modifyEntry(data -> data.putFixedLengthString(ENTRY_NAME_OFFSET, ENTRY_NAME_LENGTH, name));
+    }
 
     @Override
     public long getSize() {
@@ -74,22 +84,52 @@ public class GamedosFileEntry implements FileEntry, GamedosConstants {
     public String getFiletype() {
         return readEntry().getFixedLengthString(ENTRY_TYPE_OFFSET,1);
     }
+    public void setFiletype(String filetype) {
+        modifyEntry(data -> data.putFixedLengthString(ENTRY_TYPE_OFFSET, 1, filetype));
+    }
+
     public int getFirstTrack() {
         return readEntry().getUnsignedByte(ENTRY_TRACK_OFFSET);
     }
+    public void setFirstTrack(int track) {
+        modifyEntry(data -> data.putByte(ENTRY_TRACK_OFFSET, track));
+    }
+
     public int getFirstSector() {
         return readEntry().getUnsignedByte(ENTRY_SECTOR_OFFSET);
     }
+    public void setFirstSector(int sector) {
+        modifyEntry(data -> data.putByte(ENTRY_SECTOR_OFFSET, sector));
+    }
+
     public int getMeta() {
         return readEntry().getUnsignedShort(ENTRY_META_OFFSET);
     }
+    public void setMeta(int meta) {
+        modifyEntry(data -> data.putShort(ENTRY_META_OFFSET, (short)meta));
+    }
+
     public int getSectorCount() {
         return readEntry().getUnsignedByte(ENTRY_SECTORS_OFFSET);
+    }
+    public void setSectorCount(int sectorCount) {
+        modifyEntry(data -> data.putByte(ENTRY_SECTORS_OFFSET, sectorCount));
     }
 
     @Override
     public DataBuffer getDataFork() {
         return device.readRange(getFirstTrack(), getFirstSector(), getSectorCount());
+    }
+
+    @Override
+    public void setDataFork(DataBuffer data) {
+        int requiredSectors = device.calculateRequiredSectors(data.limit());
+        if (getSectorCount() <= requiredSectors) {
+            device.writeRange(getFirstTrack(), getFirstSector(), data);
+        }
+        else {
+            throw new UnsupportedOperationException("TODO! can only write same size or smaller files");
+        }
     }
 
     @Override

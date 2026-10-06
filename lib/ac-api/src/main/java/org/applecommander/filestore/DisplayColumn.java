@@ -27,38 +27,34 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-/**
- * A DisplayColumn supports formatted output from various FileStores in a 
- * dynamic fashion. The intent is to provide a flexible display interface
- * that does not rely on hard-coded implementations.
- */
-public record DisplayColumn(String headerText, Alignment alignment, Function<FileEntry,Object> valueFn, String fmt, Mode... modes) {
-	/**
-	 * Indicates if this DisplayColumn supports the mode. In this manner, the columns
-	 * can be filtered out. Or it can be ignored to display everything.
-	 */
+/// A DisplayColumn supports formatted output from various FileStores in a
+/// dynamic fashion. The intent is to provide a flexible display interface
+/// that does not rely on hard-coded implementations.
+public record DisplayColumn(String headerText, Alignment alignment,
+							Function<FileEntry,Object> getValueFn, BiConsumer<FileEntry,Object> setValueFn,
+							boolean editInline, String fmt, Mode... modes) {
+
+	/// Indicates if this DisplayColumn supports the mode. In this manner, the columns
+	/// can be filtered out. Or it can be ignored to display everything.
 	public boolean supports(Mode mode) {
 		return Set.of(modes).contains(mode);
 	}
-	/**
-	 * Helper method to convert the column into a formatted string for display.
-	 */
+
+	/// Helper method to convert the column into a formatted string for display.
 	public String formatAsText(FileEntry fileEntry) {
-		return String.format(fmt, valueFn.apply(fileEntry));
+		return String.format(fmt, getValueFn.apply(fileEntry));
 	}
 
-	/**
-	 * Indicates the display mode to help filter columns to users' preference.
-	 */
+	/// Indicates the display mode to help filter columns to users' preference.
 	public enum Mode {
 		NATIVE,
 		DETAIL
 	}
-	/**
-	 * Indicates how this column should be aligned.
-	 */
+
+	/// Indicates how this column should be aligned.
 	public enum Alignment {
 		LEFT,
 		CENTER,
@@ -81,15 +77,19 @@ public record DisplayColumn(String headerText, Alignment alignment, Function<Fil
 			return columns;
 		}
 
-		/**
-		 * A helper method that allows a short-cut of 0 modes meaning ALL modes.
-		 */
-		private Builder<T> add(String name, Alignment alignment, Function<FileEntry,Object> valueFn, String fmt, Mode ...modes) {
+		/// A helper method that allows a short-cut of 0 modes meaning ALL modes.
+		private Builder<T> add(String name, Alignment alignment,
+							   Function<FileEntry,Object> getValueFn, BiConsumer<FileEntry,Object> setValueFn,
+							   boolean editInline, String fmt, Mode... modes) {
 			if (modes.length == 0) {
 				modes = new Mode[] { Mode.NATIVE, Mode.DETAIL };
 			}
-			columns.add(new DisplayColumn(name, alignment, valueFn, fmt, modes));
+			columns.add(new DisplayColumn(name, alignment, getValueFn, setValueFn, editInline, fmt, modes));
 			return this;
+		}
+		private Builder<T> add(String name, Alignment alignment, Function<FileEntry,Object> getValueFn,
+							   String fmt, Mode... modes) {
+			return add(name, alignment, getValueFn, null, false, fmt, modes);
 		}
 
 		public Builder<T> addIntField(String name, Function<T,Integer> valueFn, Mode ...modes) {
@@ -97,6 +97,12 @@ public record DisplayColumn(String headerText, Alignment alignment, Function<Fil
 		}
 		public Builder<T> addIntField(String name, Function<T,Integer> valueFn, String fmt, Mode ...modes) {
 			return add(name, Alignment.RIGHT, entry -> convert(entry, valueFn), fmt, modes);
+		}
+		public Builder<T> addStringField(String name, Function<T,String> getValueFn, BiConsumer<T,String> setValueFn,
+										 boolean editInline, Mode ...modes) {
+			return add(name, Alignment.LEFT, entry -> convert(entry, getValueFn),
+					(entry,value) -> convert(entry, setValueFn, String.class, value),
+					editInline, "%s", modes);
 		}
 		public Builder<T> addStringField(String name, Function<T,String> valueFn, Mode ...modes) {
 			return add(name, Alignment.LEFT, entry -> convert(entry, valueFn), "%s", modes);
@@ -123,6 +129,11 @@ public record DisplayColumn(String headerText, Alignment alignment, Function<Fil
 		private <S> S convert(FileEntry fileEntry, Function<T,S> valueFn) {
 			T typedFileEntry = clazz.cast(fileEntry);
 			return valueFn.apply(typedFileEntry);
+		}
+		private <S> void convert(FileEntry fileEntry, BiConsumer<T,S> setValueFn, Class<S> valueClass, Object value) {
+			T typedFileEntry = clazz.cast(fileEntry);
+			S typedValue = valueClass.cast(value);
+			setValueFn.accept(typedFileEntry, typedValue);
 		}
 		private double percentage(FileEntry fileEntry, Function<T,Number> numeratorFn, Function<T,Number> denominatorFn) {
 			T typedFileEntry = clazz.cast(fileEntry);
