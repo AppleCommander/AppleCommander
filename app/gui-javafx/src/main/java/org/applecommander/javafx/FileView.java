@@ -34,9 +34,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.applecommander.capability.Capability;
-import org.applecommander.filestore.Directory;
-import org.applecommander.filestore.DisplayColumn;
-import org.applecommander.filestore.FileEntry;
+import org.applecommander.filestore.*;
 import org.applecommander.javafx.settings.ExportOption;
 import org.applecommander.javafx.settings.Settings;
 import org.applecommander.source.Source;
@@ -74,6 +72,7 @@ public class FileView extends BorderPane {
     private final ObjectProperty<DisplayColumn.Mode> listingMode = new SimpleObjectProperty<>(DisplayColumn.Mode.NATIVE);
     private final SimpleBooleanProperty supportsDirectories = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty supportsFileDeletion = new SimpleBooleanProperty(false);
+    private final ObservableList<FileEntry> fileEntries = FXCollections.observableArrayList();
 
     public FileView(FileStoreWindow fileStoreWindow, ToolBar toolBar) {
         this.fileStoreWindow = fileStoreWindow;
@@ -339,14 +338,24 @@ public class FileView extends BorderPane {
                 fileTable.edit(pos.getRow(), pos.getTableColumn());
                 event.consume();
             }
+            else if (event.getCode() == KeyCode.DELETE && fileTable.getSelectionModel().getSelectedItem() != null) {
+                FileEntry entry = fileTable.getSelectionModel().getSelectedItem();
+                FileStore fileStore = entry.getFileStore();
+                if (fileStore.can(Capability.DELETE_FILES)) {
+                    WritableDirectory writableDirectory = (WritableDirectory) fileStore.getRootDirectory();
+                    writableDirectory.deleteFile(entry);
+                    fileEntries.remove(entry);
+                    fileStoreWindow.hasChangedProperty().set(true);
+                }
+            }
         });
 
         List<? extends FileEntry> rows = directory.getFiles().stream()
                 .filter(fileEntry -> deletedFilesToggleButton.isSelected() || !fileEntry.isDeleted())
                 .toList();
-
-        ObservableList<FileEntry> rowList = FXCollections.observableArrayList(rows);
-        SortedList<FileEntry> sortedRows = new SortedList<>(rowList);
+        fileEntries.clear();
+        fileEntries.addAll(rows);
+        SortedList<FileEntry> sortedRows = new SortedList<>(fileEntries);
         fileTable.getSortOrder().clear();
         fileTable.setItems(sortedRows);
         fileTable.getColumns().addAll(tableColumns);
