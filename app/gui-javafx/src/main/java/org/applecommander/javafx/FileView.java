@@ -19,10 +19,7 @@
  */
 package org.applecommander.javafx;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -59,10 +56,18 @@ import static org.applecommander.javafx.FxUtils.*;
 public class FileView extends BorderPane {
     private final FileStoreWindow fileStoreWindow;
     private final HBox breadcrumbBar;
-    private final TableView<FileEntry> fileTable;
-    private ToggleButton nativeToolButton;
-    private ToggleButton detailToolButton;
-    private ToggleButton deletedFilesToggleButton;
+    private final ToggleButton nativeToolButton;
+    private final ToggleButton detailToolButton;
+    private final ToggleButton deletedFilesToggleButton;
+
+    // Note that the TableView has a lingering data issue that I couldn't resolve.
+    // Therefore, it gets tossed and recreated as needed. The primary issue is that
+    // it hangs on to the old items and tries to access values with the new item
+    // converters. So if GameDOS was loaded and then a Zip was loaded into the table,
+    // a sort caused an exception because something tried to render a GameDOS file
+    // entry with the Zip renderer. But only when a sort was applied. Clearing out
+    // every property didn't seem to help. Thus this extreme solution. Please fix!
+    private TableView<FileEntry> fileTable;
 
     private final ObservableList<Directory> directoryPath = FXCollections.observableArrayList();
     private final ObjectProperty<Directory> selectedDirectory = new SimpleObjectProperty<>();
@@ -87,6 +92,81 @@ public class FileView extends BorderPane {
         breadcrumbBar.setPadding(new Insets(6));
         breadcrumbBar.setAlignment(Pos.CENTER_LEFT);
         setTop(breadcrumbBar);
+
+        createNewFileTable();
+
+        nativeToolButton.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
+        nativeToolButton.managedProperty().bind(nativeToolButton.visibleProperty());
+        detailToolButton.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
+        detailToolButton.managedProperty().bind(detailToolButton.visibleProperty());
+        deletedFilesToggleButton.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
+        deletedFilesToggleButton.managedProperty().bind(deletedFilesToggleButton.visibleProperty());
+        deletedFilesToggleButton.disableProperty().bind(supportsFileDeletion.not());
+
+        breadcrumbBar.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES).and(supportsDirectories));
+        breadcrumbBar.managedProperty().bind(breadcrumbBar.visibleProperty());
+
+        visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
+
+        fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((_, _, newValue) -> {
+            if (newValue != null) {
+                directoryPath.clear();
+                directoryPath.add(newValue.getRootDirectory());
+                listingMode.setValue(DisplayColumn.Mode.NATIVE);
+                supportsDirectories.setValue(newValue.can(Capability.SUPPORTS_DIRECTORIES));
+                supportsFileDeletion.setValue(newValue.can(Capability.DELETE_FILES));
+            }
+        });
+
+        fileStoreWindow.viewModeProperty().addListener((_, _, _) -> populateDiskRows());
+
+        listingMode.addListener((_, _, newValue) -> {
+            nativeToolButton.setSelected(newValue == DisplayColumn.Mode.NATIVE);
+            detailToolButton.setSelected(newValue == DisplayColumn.Mode.DETAIL);
+            fileTable.getColumns().forEach(column -> {
+                if (column.getUserData() instanceof DisplayColumn displayColumn) {
+                    column.visibleProperty().setValue(displayColumn.supports(newValue));
+                }
+            });
+        });
+
+        directoryPath.addListener((ListChangeListener<? super Directory>) change -> {
+            breadcrumbBar.getChildren().clear();
+            if (fileStoreWindow.fileStoreSelection().getSelectedItem() == null) {
+                return;
+            }
+            String pathSeparator = fileStoreWindow.fileStoreSelection().getSelectedItem().getPathSeparator();
+
+            Label pathLabel = new Label("Path:");
+            breadcrumbBar.getChildren().add(pathLabel);
+
+            for (int i = 0; i < directoryPath.size(); i++) {
+                Directory dir = directoryPath.get(i);
+                // FIXME this is because ProdosFormatDisk uses "/DISK.NAME/"
+                Button crumb = new Button(dir.getName().replace("/", ""));
+                final int index = i;
+                crumb.setOnAction(event -> {
+                    List<Directory> newPath = new ArrayList<>(directoryPath.subList(0, index + 1));
+                    directoryPath.clear();
+                    directoryPath.addAll(newPath);
+                    populateDiskRows();
+                });
+                Label separator = new Label(pathSeparator);
+                breadcrumbBar.getChildren().add(separator);
+                breadcrumbBar.getChildren().add(crumb);
+            }
+            selectedDirectory.set(directoryPath.isEmpty() ? null : directoryPath.getLast());
+        });
+
+        selectedDirectory.addListener((_, _, newValue) -> {
+           populateDiskRows();
+        });
+    }
+
+    public void createNewFileTable() {
+        if (fileTable != null) {
+            fileTable.visibleProperty().unbind();
+        }
 
         fileTable = new TableView<>();
         VBox placeholder = new VBox(new Label("This image has no files."));
@@ -146,73 +226,7 @@ public class FileView extends BorderPane {
             event.consume();
         });
 
-        nativeToolButton.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
-        nativeToolButton.managedProperty().bind(nativeToolButton.visibleProperty());
-        detailToolButton.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
-        detailToolButton.managedProperty().bind(detailToolButton.visibleProperty());
-        deletedFilesToggleButton.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
-        deletedFilesToggleButton.managedProperty().bind(deletedFilesToggleButton.visibleProperty());
-        deletedFilesToggleButton.disableProperty().bind(supportsFileDeletion.not());
-
-        breadcrumbBar.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES).and(supportsDirectories));
-        breadcrumbBar.managedProperty().bind(breadcrumbBar.visibleProperty());
-
-        visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
         managedProperty().bind(fileTable.visibleProperty());
-
-        fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((_, _, newValue) -> {
-            if (newValue != null) {
-                directoryPath.clear();
-                directoryPath.add(newValue.getRootDirectory());
-                listingMode.setValue(DisplayColumn.Mode.NATIVE);
-                supportsDirectories.setValue(newValue.can(Capability.SUPPORTS_DIRECTORIES));
-                supportsFileDeletion.setValue(newValue.can(Capability.DELETE_FILES));
-            }
-        });
-
-        fileStoreWindow.viewModeProperty().addListener((_, _, _) -> populateDiskRows());
-
-        listingMode.addListener((_, _, newValue) -> {
-            nativeToolButton.setSelected(newValue == DisplayColumn.Mode.NATIVE);
-            detailToolButton.setSelected(newValue == DisplayColumn.Mode.DETAIL);
-            fileTable.getColumns().forEach(column -> {
-                if (column.getUserData() instanceof DisplayColumn displayColumn) {
-                    column.visibleProperty().setValue(displayColumn.supports(newValue));
-                }
-            });
-        });
-
-        directoryPath.addListener((ListChangeListener<? super Directory>) change -> {
-            breadcrumbBar.getChildren().clear();
-            if (fileStoreWindow.fileStoreSelection().getSelectedItem() == null) {
-                return;
-            }
-            String pathSeparator = fileStoreWindow.fileStoreSelection().getSelectedItem().getPathSeparator();
-
-            Label pathLabel = new Label("Path:");
-            breadcrumbBar.getChildren().add(pathLabel);
-
-            for (int i = 0; i < directoryPath.size(); i++) {
-                Directory dir = directoryPath.get(i);
-                // FIXME this is because ProdosFormatDisk uses "/DISK.NAME/"
-                Button crumb = new Button(dir.getName().replace("/", ""));
-                final int index = i;
-                crumb.setOnAction(event -> {
-                    List<Directory> newPath = new ArrayList<>(directoryPath.subList(0, index + 1));
-                    directoryPath.clear();
-                    directoryPath.addAll(newPath);
-                    populateDiskRows();
-                });
-                Label separator = new Label(pathSeparator);
-                breadcrumbBar.getChildren().add(separator);
-                breadcrumbBar.getChildren().add(crumb);
-            }
-            selectedDirectory.set(directoryPath.isEmpty() ? null : directoryPath.getLast());
-        });
-
-        selectedDirectory.addListener((_, _, newValue) -> {
-           populateDiskRows();
-        });
     }
 
     public void bindScene(Scene scene) {
@@ -228,10 +242,10 @@ public class FileView extends BorderPane {
         selectedDirectory.set(null);
         listingMode.setValue(DisplayColumn.Mode.NATIVE);
         deletedFilesToggleButton.setSelected(false);
+        createNewFileTable();
         fileTable.setItems(FXCollections.emptyObservableList());
         fileTable.getColumns().clear();
     }
-
 
     private void selectNativeView() {
         listingMode.set(DisplayColumn.Mode.NATIVE);
@@ -242,33 +256,70 @@ public class FileView extends BorderPane {
     }
 
     private void populateDiskRows() {
-        fileTable.getColumns().clear();
         if (selectedDirectory.isNull().get()) {
             // No directories, leave a cleared list. Likely in transition.
             return;
         }
 
+        createNewFileTable();
         Directory directory = selectedDirectory.get();
         List<DisplayColumn> displayColumns = directory.getFileStore().getDisplayColumns();
 
+        boolean editable = false;
+        List<TableColumn<FileEntry,?>> tableColumns = new ArrayList<>();
         for (final DisplayColumn displayColumn : displayColumns) {
-            TableColumn<FileEntry,String> column = new TableColumn<>(displayColumn.headerText());
-            column.setUserData(displayColumn);
-            if (displayColumn.editInline()) {
-                column.setCellFactory(TextFieldTableCell.forTableColumn());
-                column.setEditable(true);
-                column.setCellValueFactory(cell -> {
-                    SimpleStringProperty property = new SimpleStringProperty(displayColumn.formatAsText(cell.getValue()));
-                    property.addListener((_, _, newValue) -> {
-                        displayColumn.setValueFn().accept(cell.getValue(), newValue);
-                        fileStoreWindow.hasChangedProperty().set(true);
+            TableColumn<FileEntry,?> column = switch (displayColumn.dataType()) {
+                case STRING -> {
+                    TableColumn<FileEntry,String> stringColumn = new TableColumn<>(displayColumn.headerText());
+                    if (displayColumn.editInline()) {
+                        stringColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+                        stringColumn.setEditable(true);
+                        stringColumn.setCellValueFactory(cell -> {
+                            SimpleStringProperty property = new SimpleStringProperty(displayColumn.formatAsText(cell.getValue()));
+                            property.addListener((_, _, newValue) -> {
+                                displayColumn.setValueFn().accept(cell.getValue(), newValue);
+                                fileStoreWindow.hasChangedProperty().set(true);
+                            });
+                            return property;
+                        });
+                        editable = true;
+                    } else {
+                        stringColumn.setCellValueFactory(cell ->
+                                new SimpleStringProperty(displayColumn.formatAsText(cell.getValue())));
+                    }
+                    yield stringColumn;
+                }
+                case INTEGER,LONG,DOUBLE -> {
+                    TableColumn<FileEntry,Number> numberColumn = new TableColumn<>(displayColumn.headerText());
+                    numberColumn.setCellFactory(c -> new TableCell<>() {
+                        @Override
+                        protected void updateItem(Number item, boolean empty) {
+                            super.updateItem(item, empty);
+                            if (empty || item == null) {
+                                setText(null);
+                            } else {
+                                setText(String.format(displayColumn.fmt(), item));
+                            }
+                        }
                     });
-                    return property;
-                });
-            } else {
-                column.setCellValueFactory(cell ->
-                        new SimpleStringProperty(displayColumn.formatAsText(cell.getValue())));
-            }
+                    switch (displayColumn.dataType()) {
+                        case INTEGER:
+                            numberColumn.setCellValueFactory(cell ->
+                                    new SimpleIntegerProperty((Integer)displayColumn.getValueFn().apply(cell.getValue())));
+                            break;
+                        case LONG:
+                            numberColumn.setCellValueFactory(cell ->
+                                    new SimpleLongProperty((Long)displayColumn.getValueFn().apply(cell.getValue())));
+                            break;
+                        case DOUBLE:
+                            numberColumn.setCellValueFactory(cell ->
+                                    new SimpleDoubleProperty((Double)displayColumn.getValueFn().apply(cell.getValue())));
+                            break;
+                    }
+                    yield numberColumn;
+                }
+            };
+            column.setUserData(displayColumn);
             column.visibleProperty().setValue(displayColumn.supports(listingMode.get()));
             if (displayColumn.alignment() == DisplayColumn.Alignment.RIGHT) {
                 column.setStyle("-fx-alignment: CENTER-RIGHT;");
@@ -277,9 +328,9 @@ public class FileView extends BorderPane {
             } else {
                 column.setStyle("-fx-alignment: CENTER-LEFT;");
             }
-            fileTable.getColumns().add(column);
+            tableColumns.add(column);
         }
-        fileTable.setEditable(true);
+        fileTable.setEditable(editable);
         fileTable.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.F2) {
                 TableView.TableViewFocusModel<FileEntry> focusModel = fileTable.getFocusModel();
@@ -296,9 +347,10 @@ public class FileView extends BorderPane {
 
         ObservableList<FileEntry> rowList = FXCollections.observableArrayList(rows);
         SortedList<FileEntry> sortedRows = new SortedList<>(rowList);
-        sortedRows.comparatorProperty().bind(fileTable.comparatorProperty());
-        fileTable.setItems(sortedRows);
         fileTable.getSortOrder().clear();
+        fileTable.setItems(sortedRows);
+        fileTable.getColumns().addAll(tableColumns);
+        sortedRows.comparatorProperty().bind(fileTable.comparatorProperty());
         // If selection is bound, the ToolButton crashes and burns, so need to manage it manually.
         nativeToolButton.setSelected(listingMode.get() == DisplayColumn.Mode.NATIVE);
         detailToolButton.setSelected(listingMode.get() == DisplayColumn.Mode.DETAIL);

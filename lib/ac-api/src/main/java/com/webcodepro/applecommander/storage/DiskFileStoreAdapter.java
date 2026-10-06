@@ -168,7 +168,7 @@ public class DiskFileStoreAdapter implements FileStore {
                     throw new RuntimeException("Unexpected file entry type: " + entry.getClass().getName());
                 };
                 DisplayColumn displayColumn = new DisplayColumn(header.getTitle(),
-                        alignment, mappingFn::apply, null, false, "%s", mode);
+                        alignment, DisplayColumn.DataType.STRING, mappingFn::apply, null, false, "%s", mode);
                 columns.add(displayColumn);
             }
         }

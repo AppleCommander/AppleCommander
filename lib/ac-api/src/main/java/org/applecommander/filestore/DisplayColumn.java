@@ -33,7 +33,7 @@ import java.util.function.Function;
 /// A DisplayColumn supports formatted output from various FileStores in a
 /// dynamic fashion. The intent is to provide a flexible display interface
 /// that does not rely on hard-coded implementations.
-public record DisplayColumn(String headerText, Alignment alignment,
+public record DisplayColumn(String headerText, Alignment alignment, DataType dataType,
 							Function<FileEntry,Object> getValueFn, BiConsumer<FileEntry,Object> setValueFn,
 							boolean editInline, String fmt, Mode... modes) {
 
@@ -61,6 +61,16 @@ public record DisplayColumn(String headerText, Alignment alignment,
 		RIGHT
 	}
 
+	/// Indicates the data type to help with user interfaces.
+	/// (Handling this via typing got too twisty to follow, and it was abandoned.)
+	/// Note that Date and FileTime are currently converted to Strings.
+	public enum DataType {
+		STRING,
+		INTEGER,
+		LONG,
+		DOUBLE
+	}
+
 	public static <T extends FileEntry> Builder<T> builder(Class<T> clazz) {
 		return new Builder<>(clazz);
 	}
@@ -78,52 +88,52 @@ public record DisplayColumn(String headerText, Alignment alignment,
 		}
 
 		/// A helper method that allows a short-cut of 0 modes meaning ALL modes.
-		private Builder<T> add(String name, Alignment alignment,
+		private Builder<T> add(String name, Alignment alignment, DataType dataType,
 							   Function<FileEntry,Object> getValueFn, BiConsumer<FileEntry,Object> setValueFn,
 							   boolean editInline, String fmt, Mode... modes) {
 			if (modes.length == 0) {
 				modes = new Mode[] { Mode.NATIVE, Mode.DETAIL };
 			}
-			columns.add(new DisplayColumn(name, alignment, getValueFn, setValueFn, editInline, fmt, modes));
+			columns.add(new DisplayColumn(name, alignment, dataType, getValueFn, setValueFn, editInline, fmt, modes));
 			return this;
 		}
-		private Builder<T> add(String name, Alignment alignment, Function<FileEntry,Object> getValueFn,
+		private Builder<T> add(String name, Alignment alignment, DataType dataType, Function<FileEntry,Object> getValueFn,
 							   String fmt, Mode... modes) {
-			return add(name, alignment, getValueFn, null, false, fmt, modes);
+			return add(name, alignment, dataType, getValueFn, null, false, fmt, modes);
 		}
 
 		public Builder<T> addIntField(String name, Function<T,Integer> valueFn, Mode ...modes) {
 			return addIntField(name, valueFn, "%d", modes);
 		}
 		public Builder<T> addIntField(String name, Function<T,Integer> valueFn, String fmt, Mode ...modes) {
-			return add(name, Alignment.RIGHT, entry -> convert(entry, valueFn), fmt, modes);
+			return add(name, Alignment.RIGHT, DataType.INTEGER, entry -> convert(entry, valueFn), fmt, modes);
 		}
 		public Builder<T> addStringField(String name, Function<T,String> getValueFn, BiConsumer<T,String> setValueFn,
 										 boolean editInline, Mode ...modes) {
-			return add(name, Alignment.LEFT, entry -> convert(entry, getValueFn),
+			return add(name, Alignment.LEFT, DataType.STRING, entry -> convert(entry, getValueFn),
 					(entry,value) -> convert(entry, setValueFn, String.class, value),
 					editInline, "%s", modes);
 		}
 		public Builder<T> addStringField(String name, Function<T,String> valueFn, Mode ...modes) {
-			return add(name, Alignment.LEFT, entry -> convert(entry, valueFn), "%s", modes);
+			return add(name, Alignment.LEFT, DataType.STRING, entry -> convert(entry, valueFn), "%s", modes);
 		}
 		public Builder<T> addStringField(String name, Alignment alignment, Function<T,String> valueFn, Mode ...modes) {
-			return add(name, alignment, entry -> convert(entry, valueFn), "%s", modes);
+			return add(name, alignment, DataType.STRING, entry -> convert(entry, valueFn), "%s", modes);
 		}
 		public Builder<T> addPercentField(String name, Function<T,Number> numeratorFn, Function<T,Number> denominatorFn, String fmt, Mode ...modes) {
-			return add(name, Alignment.RIGHT, entry -> percentage(entry, numeratorFn, denominatorFn), fmt, modes);
+			return add(name, Alignment.RIGHT, DataType.DOUBLE, entry -> percentage(entry, numeratorFn, denominatorFn), fmt, modes);
 		}
 		public Builder<T> addFileTimeField(String name, Function<T,FileTime> valueFn, Mode ...modes) {
-			return add(name, Alignment.CENTER, entry -> formatFileTime(entry, valueFn), "%s", modes);
+			return add(name, Alignment.CENTER, DataType.STRING, entry -> formatFileTime(entry, valueFn), "%s", modes);
 		}
 		public Builder<T> addLongField(String name, Function<T,Long> valueFn, Mode ...modes) {
 			return addLongField(name, valueFn, "%d", modes);
 		}
 		public Builder<T> addLongField(String name, Function<T,Long> valueFn, String fmt, Mode ...modes) {
-			return add(name, Alignment.RIGHT, entry -> convert(entry, valueFn), fmt, modes);
+			return add(name, Alignment.RIGHT, DataType.LONG, entry -> convert(entry, valueFn), fmt, modes);
 		}
 		public Builder<T> addDateField(String name, Function<T,Date> valueFn, Mode ...modes) {
-			return add(name, Alignment.CENTER, entry -> formatDate(entry, valueFn), "%s", modes);
+			return add(name, Alignment.CENTER, DataType.STRING, entry -> formatDate(entry, valueFn), "%s", modes);
 		}
 
 		private <S> S convert(FileEntry fileEntry, Function<T,S> valueFn) {
