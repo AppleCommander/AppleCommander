@@ -55,10 +55,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-/**
- * The DiskFileStoreAdapter is a shim that allows FormattedDisk to be mapped into the
- * new/evolving FileStore interface(s).
- */
+/// The `DiskFileStoreAdapter` is a shim that allows `FormattedDisk` to be mapped into the
+/// new/evolving `FileStore` and associated interface(s).
+/// The intent is that this is a short-term strategy.
+/// @see FileStore
+/// @see FormattedDisk
 public class DiskFileStoreAdapter implements FileStore {
     private final FormattedDisk disk;
     private final DiskUsage usage;
@@ -92,9 +93,7 @@ public class DiskFileStoreAdapter implements FileStore {
         };
     }
 
-    /**
-     * This is a helper method to make a copy of the legacy DiskUsage into a BitSet for the shim.
-     */
+    /// This is a helper method to make a copy of the legacy `DiskUsage` into a `BitSet` for the shim.
     private Function<Integer,UsageType> synthesizeBitmap(FormattedDisk formattedDisk) {
         final BitSet used = new BitSet(formattedDisk.getBitmapLength());
         int block = 0;
@@ -139,12 +138,10 @@ public class DiskFileStoreAdapter implements FileStore {
         };
     }
 
-    /**
-     * Translate the "legacy" FormattedDisk FileColumnHeader to the new DisplayColumn structure.
-     * Note that we need to track what has been seen as well as where it comes from and the index
-     * values in order to replicate most of the capability. This does not solve for type since the
-     * old API pre-formats everything as a String.
-     */
+    /// Translate the "legacy" `FormattedDisk` `FileColumnHeader` to the new `DisplayColumn` structure.
+    /// Note that we need to track what has been seen as well as where it comes from and the index
+    /// values in order to replicate most of the capability. This does not solve for type since the
+    /// old API pre-formats everything as a String.
     @Override
     public List<DisplayColumn> getDisplayColumns() {
         List<DisplayColumn> columns = new ArrayList<>();
@@ -171,7 +168,7 @@ public class DiskFileStoreAdapter implements FileStore {
                     throw new RuntimeException("Unexpected file entry type: " + entry.getClass().getName());
                 };
                 DisplayColumn displayColumn = new DisplayColumn(header.getTitle(),
-                        alignment, mappingFn::apply, "%s", mode);
+                        alignment, mappingFn::apply, null, false, "%s", mode);
                 columns.add(displayColumn);
             }
         }
@@ -189,10 +186,10 @@ public class DiskFileStoreAdapter implements FileStore {
         return builder.get(disk.get(Device.class).orElseThrow());
     }
 
-    /**
-     * The DiskFileEntryAdapter is a shim that allows a FileEntry to be mapped into the
-     * new/evolving FileEntry interface(s).
-     */
+    /// The `DiskFileEntryAdapter` is a shim that allows a `com.webcodepro.applecommander.storage.FileEntry`
+    /// to be mapped into the new/evolving `FileEntry` / `WritableFileEntry` and associated interface(s).
+    /// @see com.webcodepro.applecommander.storage.FileEntry
+    /// @see FileEntry
     public static class DiskFileEntryAdapter implements WritableFileEntry {
         private final DiskFileStoreAdapter adapter;
         private final DiskDirectoryAdapter parent;
