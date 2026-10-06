@@ -19,6 +19,7 @@
  */
 package org.applecommander.os.gamedos;
 
+import org.applecommander.capability.Capability;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
@@ -28,14 +29,21 @@ import org.applecommander.util.DataBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class GamedosDirectory implements Directory, GamedosConstants {
+    private static final Set<Capability> CAPABILITIES = Set.of(Capability.WRITE_FILES, Capability.CREATE_FILES);
     private final GamedosFileStore fileStore;
     private final TrackSectorDevice device;
 
     public GamedosDirectory(GamedosFileStore fileStore) {
         this.fileStore = fileStore;
         this.device = fileStore.get(TrackSectorDevice.class).orElseThrow();
+    }
+
+    @Override
+    public boolean can(Capability capability) {
+        return CAPABILITIES.contains(capability);
     }
 
     @Override

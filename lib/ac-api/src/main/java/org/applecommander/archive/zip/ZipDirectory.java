@@ -19,6 +19,7 @@
  */
 package org.applecommander.archive.zip;
 
+import org.applecommander.capability.Capability;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
@@ -37,6 +38,11 @@ public class ZipDirectory implements Directory {
         Objects.requireNonNull(entries);
         this.fileStore = fileStore;
         this.entries = entries;
+    }
+
+    @Override
+    public boolean can(Capability capability) {
+        return false;
     }
 
     @Override
