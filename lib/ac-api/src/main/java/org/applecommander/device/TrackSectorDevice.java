@@ -19,6 +19,7 @@
  */
 package org.applecommander.device;
 
+import org.applecommander.device.Coordinate.TrackAndSectorCoordinate;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.InformationGroup;
 import org.applecommander.util.InformationProvider;
@@ -101,6 +102,12 @@ public interface TrackSectorDevice extends Device {
         }
         public int deviceSize() {
             return sectorsPerDisk() * SECTOR_SIZE;
+        }
+        public int calculateSectorOffset(int track, int sector) {
+            return track * sectorsPerTrack + sector;
+        }
+        public TrackAndSectorCoordinate sectorOffsetToCoordinate(int sectorOffset) {
+            return new TrackAndSectorCoordinate(sectorOffset / sectorsPerTrack, sectorOffset % sectorsPerTrack);
         }
 
         @Override
