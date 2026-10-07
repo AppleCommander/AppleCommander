@@ -328,6 +328,7 @@ public class FileStoreWindow {
             FileStore fileStore = fileStoreSelection.getSelectedItem();
             Source source = fileStore.get(Source.class).orElseThrow();
             source.save();
+            hasChanged.set(false);
         } catch (Throwable t) {
             showErrorDialog("Could not save file", t);
         }
