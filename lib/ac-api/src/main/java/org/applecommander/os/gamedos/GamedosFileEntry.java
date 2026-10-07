@@ -50,9 +50,10 @@ public class GamedosFileEntry implements WritableFileEntry, GamedosConstants {
         return device.readSector(DIRECTORY_TRACK, sector).slice(offset, ENTRY_SIZE);
     }
     public void modifyEntry(Consumer<DataBuffer> consumer) {
-        DataBuffer data = device.readSector(GamedosDirectory.DIRECTORY_TRACK, sector);
-        consumer.accept(data);
-        device.writeSector(DIRECTORY_TRACK, sector, data);
+        DataBuffer sectorData = device.readSector(GamedosDirectory.DIRECTORY_TRACK, sector);
+        DataBuffer entryData = sectorData.slice(offset, ENTRY_SIZE);
+        consumer.accept(entryData);
+        device.writeSector(DIRECTORY_TRACK, sector, sectorData);
     }
 
     @Override
