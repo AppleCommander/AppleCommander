@@ -26,7 +26,6 @@ import org.applecommander.exception.FileExistsException;
 import org.applecommander.filestore.*;
 import org.applecommander.util.DataBuffer;
 
-import java.nio.file.FileAlreadyExistsException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -76,7 +75,7 @@ public class GamedosDirectory implements WritableDirectory, GamedosConstants {
 
     /// Create a file. By definition, any file created is a `WritableFileEntry`.
     @Override
-    public WritableFileEntry createFile(String fileName) {
+    public GamedosFileEntry createFile(String fileName) {
         for (int i=0; i<DIRECTORY_SIZE; i++) {
             DataBuffer data = device.readSector(DIRECTORY_TRACK, DIRECTORY_SECTOR+i);
             for (int offset=0; offset<data.limit(); offset+= GamedosFileEntry.ENTRY_SIZE) {
@@ -91,6 +90,23 @@ public class GamedosDirectory implements WritableDirectory, GamedosConstants {
             }
         }
         throw new DirectoryFullException("there are no more directory entries available on this disk");
+    }
+
+    /// Create a file given the supplied ProDOS attributes. This is expected to handle
+    /// setting all appropriate `FileEntry` attributes that align. File type should be
+    /// converted, dates applied, etc.
+    @Override
+    public WritableFileEntry createFrom(ProdosAttributes prodosAttributes) {
+        GamedosFileEntry fileEntry = createFile(prodosAttributes.name());
+        fileEntry.setMeta(prodosAttributes.auxType());
+        String fileType = switch (prodosAttributes.fileType()) {
+            case ProdosAttributes.BAS -> "A";
+            case ProdosAttributes.TXT -> "T";
+            case ProdosAttributes.INT -> "I";
+            default -> "B";
+        };
+        fileEntry.setFiletype(fileType);
+        return fileEntry;
     }
 
     /// Delete a file.

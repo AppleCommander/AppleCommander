@@ -32,6 +32,14 @@ public interface WritableDirectory extends Directory {
         throw new UnsupportedOperationException("unable to create files");
     }
 
+    /// Create a file given the supplied ProDOS attributes. This is expected to handle
+    /// setting all appropriate `FileEntry` attributes that align. File type should be
+    /// converted, dates applied, etc.
+    /// @see Capability#CREATE_FILES
+    default WritableFileEntry createFrom(ProdosAttributes prodosAttributes) {
+        throw new UnsupportedOperationException("unable to create files from ProDOS attributes");
+    }
+
     /// Create a directory. By definition, any directory create is a `WritableDirectory`.
     /// @see Capability#CREATE_DIRECTORIES
     default WritableDirectory createDirectory(String directoryName) {

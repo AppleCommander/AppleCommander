@@ -25,6 +25,12 @@ import java.util.Date;
 import java.util.Optional;
 
 public record ProdosAttributes(String name, int access, int fileType, int auxType, long size, Date creation, Date modified) {
+    public static final int TXT = 0x04;
+    public static final int BIN = 0x06;
+    public static final int INT = 0xfa;
+    public static final int BAS = 0xfc;
+    public static final int REL = 0xfe;
+
     public String fileTypeText() {
         Optional<FileMagic.FileTypeSummary> summary = FileMagic.findProdosFileType(fileType, auxType);
         if (summary.isPresent()) {
@@ -38,12 +44,6 @@ public record ProdosAttributes(String name, int access, int fileType, int auxTyp
     }
 
     public static class Builder {
-        private static final int TXT = 0x04;
-        private static final int BIN = 0x06;
-        private static final int INT = 0xfa;
-        private static final int BAS = 0xfc;
-        private static final int REL = 0xfe;
-
         private String name;
         private int access;
         private int fileType;
