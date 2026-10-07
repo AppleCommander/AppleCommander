@@ -22,9 +22,11 @@ package org.applecommander.os.gamedos;
 import org.applecommander.capability.Capability;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.exception.DirectoryFullException;
+import org.applecommander.exception.FileExistsException;
 import org.applecommander.filestore.*;
 import org.applecommander.util.DataBuffer;
 
+import java.nio.file.FileAlreadyExistsException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -78,8 +80,13 @@ public class GamedosDirectory implements WritableDirectory, GamedosConstants {
         for (int i=0; i<DIRECTORY_SIZE; i++) {
             DataBuffer data = device.readSector(DIRECTORY_TRACK, DIRECTORY_SECTOR+i);
             for (int offset=0; offset<data.limit(); offset+= GamedosFileEntry.ENTRY_SIZE) {
+                GamedosFileEntry fileEntry = new GamedosFileEntry(this, DIRECTORY_SECTOR+i, offset);
                 if (data.getUnsignedByte(offset) == 0) {
-                    return new GamedosFileEntry(this, DIRECTORY_SECTOR+i, offset);
+                    fileEntry.setName(fileName);
+                    return fileEntry;
+                }
+                else if (fileName.equalsIgnoreCase(fileEntry.getName())) {
+                    throw new FileExistsException("file '%s' already exists", fileName);
                 }
             }
         }

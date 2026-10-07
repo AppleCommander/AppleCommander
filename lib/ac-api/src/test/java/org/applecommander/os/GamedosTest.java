@@ -88,26 +88,48 @@ public class GamedosTest {
         assertNotNull(directory);
         assertEquals(0, directory.getFiles().size());
 
-        // Create our file
-        GamedosFileEntry fileEntry = (GamedosFileEntry) directory.createFile("This is a text file.");
-        assertNotNull(fileEntry);
-        final String textContents = "THIS IS A THE FILE DATA.";
-        DataBuffer fileData = DataBuffer.wrap(textContents.getBytes());
-        fileEntry.setFiletype("T");
-        fileEntry.setDataFork(fileData);
+        // Create and verify the first file.
+        final byte[] textContents = "THIS IS A THE FILE DATA.".getBytes();
+        final String firstFileName = "This is the FIRST file.";
+        GamedosFileEntry firstFile = createFile(directory, firstFileName, "T", textContents);
+        verifyFile(firstFile, firstFileName, "T", 1, 0, 1, textContents);
 
-        // Verify the file went where we expected it to
-        assertEquals("T", fileEntry.getFiletype());
-        assertEquals(1, fileEntry.getFirstTrack());
-        assertEquals(0, fileEntry.getFirstSector());
-        assertEquals(1, fileEntry.getSectorCount());
-        assertEquals(textContents, fileEntry.getDataFork().getFixedLengthString(0, textContents.length()));
+        // Create and verify a second file.
+        final byte[] binaryContents = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        final String secondFileName = "This is the SECOND file.";
+        GamedosFileEntry secondFile = createFile(directory, secondFileName, "B", binaryContents);
+        verifyFile(secondFile, secondFileName, "B", 1, 1, 1, binaryContents);
 
-        // Read back to file entry from the directory and then delete it.
-        assertEquals(1, directory.getFiles().size());
+        // Read back the first file entry from the directory and then delete it.
+        assertEquals(2, directory.getFiles().size());
         GamedosFileEntry firstFileEntry = (GamedosFileEntry) directory.getFiles().getFirst();
         assertNotNull(firstFileEntry);
         directory.deleteFile(firstFileEntry);
-        assertEquals(0, directory.getFiles().size());
+        assertEquals(1, directory.getFiles().size());
+
+        // Finally, create a 3rd file and expect it to be placed where the FIRST file was.
+        final byte[] thirdFile = "THIS IS THE THIRD FILE.".getBytes();
+        final String thirdFileName = "This is the THIRD file.";
+        GamedosFileEntry thirdFileEntry = createFile(directory, thirdFileName, "T", thirdFile);
+        verifyFile(thirdFileEntry, thirdFileName, "T", 1, 0, 1, thirdFile);
+    }
+
+    public GamedosFileEntry createFile(GamedosDirectory directory, String fileName, String fileType, byte[] dataFork) {
+        GamedosFileEntry fileEntry = (GamedosFileEntry) directory.createFile(fileName);
+        assertNotNull(fileEntry);
+        fileEntry.setFiletype(fileType);
+        fileEntry.setDataFork(DataBuffer.wrap(dataFork));
+        return fileEntry;
+    }
+
+    public void verifyFile(GamedosFileEntry fileEntry, String expectedFileName, String expectedFileType,
+                           int expectedFirstTrack, int expectedFirstSector, int expectedSectorCount, byte[] expectedDataFork) {
+        assertEquals(expectedFileName, fileEntry.getName());
+        assertEquals(expectedFileType, fileEntry.getFiletype());
+        assertEquals(expectedFirstTrack, fileEntry.getFirstTrack());
+        assertEquals(expectedFirstSector, fileEntry.getFirstSector());
+        assertEquals(expectedSectorCount, fileEntry.getSectorCount());
+        assertArrayEquals(expectedDataFork,
+                fileEntry.getDataFork().getFixedLengthString(0, expectedDataFork.length).getBytes());
     }
 }
