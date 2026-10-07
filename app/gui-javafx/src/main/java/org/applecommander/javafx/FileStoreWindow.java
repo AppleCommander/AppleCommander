@@ -20,10 +20,7 @@
 package org.applecommander.javafx;
 
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -87,7 +84,7 @@ public class FileStoreWindow {
     private final FileStoreSelectionModel fileStoreSelection = new FileStoreSelectionModel();
     private final ObjectProperty<ViewMode> viewMode = new SimpleObjectProperty<>();
     private final BooleanProperty supportsDiskUsage = new SimpleBooleanProperty();
-    private final BooleanProperty hasChanged = new SimpleBooleanProperty();
+    private final IntegerProperty changeCount = new SimpleIntegerProperty();
     private final BooleanProperty canSave = new SimpleBooleanProperty();
 
     public FileStoreSelectionModel fileStoreSelection() {
@@ -96,8 +93,11 @@ public class FileStoreWindow {
     public ObjectProperty<ViewMode> viewModeProperty() {
         return viewMode;
     }
-    public BooleanProperty hasChangedProperty() {
-        return hasChanged;
+    public IntegerProperty changeCountProperty() {
+        return changeCount;
+    }
+    public void addChange() {
+        changeCount.setValue(changeCount.getValue() + 1);
     }
 
     public static void openNewWindow(Source source) {
@@ -153,7 +153,7 @@ public class FileStoreWindow {
             new Separator(Orientation.VERTICAL)
         );
 
-        saveFileButton.disableProperty().bind(hasChanged.not().or(canSave.not()));
+        saveFileButton.disableProperty().bind(changeCount.isEqualTo(0).or(canSave.not()));
 
         ImageView logo = new ImageView(imageUrl("AppleCommanderLogo.png"));
         Label label = new Label("No disk image open. Use open to browse for a disk image.");
@@ -214,7 +214,7 @@ public class FileStoreWindow {
 
                 // Making the save button state to be properties. The only one we should modify elsewhere is hasChanged.
                 Source source = newValue.get(Source.class).orElseThrow();
-                hasChanged.setValue(source.hasChanged());
+                changeCount.setValue(source.hasChanged() ? 1 : 0);
                 canSave.setValue(source.can(Capability.SAVE_SOURCE));
 
                 // There doesn't appear to be a item list changed, so this should work?
@@ -328,7 +328,7 @@ public class FileStoreWindow {
             FileStore fileStore = fileStoreSelection.getSelectedItem();
             Source source = fileStore.get(Source.class).orElseThrow();
             source.save();
-            hasChanged.set(false);
+            changeCount.setValue(0);
         } catch (Throwable t) {
             showErrorDialog("Could not save file", t);
         }

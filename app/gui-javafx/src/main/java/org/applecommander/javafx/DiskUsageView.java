@@ -85,8 +85,8 @@ public class DiskUsageView extends StackPane {
         fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((_, _, newFileStore) -> {
             updateDisplay(newFileStore);
         });
-        fileStoreWindow.hasChangedProperty().addListener((_, _, hasChanged) -> {
-            if (hasChanged) {
+        fileStoreWindow.changeCountProperty().addListener((_, _, changeCount) -> {
+            if (changeCount != null && changeCount.intValue() > 0) {
                 updateDisplay(fileStoreWindow.fileStoreSelection().getSelectedItem());
             }
         });

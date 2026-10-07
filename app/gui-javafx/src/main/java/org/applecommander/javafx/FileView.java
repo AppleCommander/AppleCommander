@@ -170,8 +170,10 @@ public class FileView extends BorderPane {
         selectedDirectory.addListener((_, _, _) -> {
            populateDiskRows();
         });
-        fileStoreWindow.hasChangedProperty().addListener((_, _, _) -> {
-            populateDiskRows();
+        fileStoreWindow.changeCountProperty().addListener((_, _, newValue) -> {
+            if (newValue != null && newValue.intValue() > 0) {
+                populateDiskRows();
+            }
         });
     }
 
@@ -310,7 +312,7 @@ public class FileView extends BorderPane {
             if (resourceFork != null) {
                 fileEntry.setResourceFork(DataBuffer.wrap(resourceFork));
             }
-            fileStoreWindow.hasChangedProperty().set(true);
+            fileStoreWindow.addChange();
         }
         else {
             throw new RuntimeException("This is not a writable directory");
@@ -366,7 +368,7 @@ public class FileView extends BorderPane {
                             SimpleStringProperty property = new SimpleStringProperty(displayColumn.formatAsText(cell.getValue()));
                             property.addListener((_, _, newValue) -> {
                                 displayColumn.setValueFn().accept(cell.getValue(), newValue);
-                                fileStoreWindow.hasChangedProperty().set(true);
+                                fileStoreWindow.addChange();
                             });
                             return property;
                         });
@@ -434,7 +436,7 @@ public class FileView extends BorderPane {
                     WritableDirectory writableDirectory = (WritableDirectory) fileStore.getRootDirectory();
                     writableDirectory.deleteFile(entry);
                     fileEntries.remove(entry);
-                    fileStoreWindow.hasChangedProperty().set(true);
+                    fileStoreWindow.addChange();
                 }
             }
         });
