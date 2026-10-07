@@ -31,6 +31,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -127,7 +128,19 @@ public class FxUtils {
         PrintWriter pw = new PrintWriter(sw);
         t.printStackTrace(pw);
         alert.setContentText(sw.toString());
-
         alert.showAndWait();
+    }
+
+    public static boolean showYesNoDialog(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO);
+        alert.setTitle(title);
+        alert.setHeaderText(title);
+
+        // See https://stackoverflow.com/questions/38799220/javafx-how-to-bring-dialog-alert-to-the-front-of-the-screen#43007782
+        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+        stage.setAlwaysOnTop(true);
+        stage.toFront();
+
+        return alert.showAndWait().map(ButtonType.YES::equals).orElse(false);
     }
 }

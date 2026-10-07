@@ -19,7 +19,6 @@
  */
 package org.applecommander.javafx;
 
-import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -133,6 +132,14 @@ public class FileStoreWindow {
 
     public FileStoreWindow(Stage stage) {
         this.primaryStage = stage;
+        stage.setOnCloseRequest(event -> {
+            if (changeCount.getValue() > 0) {
+                if (!showYesNoDialog("Unsaved Data",
+                        "This image has changes and has not been saved. Exit anyway?")) {
+                    event.consume();
+                }
+            }
+        });
 
         openFileButton = createButton("open-file.png", "Open", _ -> openFile());
         createFileButton = createButton("new-file.png", "Create", _ -> createFile());
@@ -320,6 +327,7 @@ public class FileStoreWindow {
         if (wizard.showAndWait(primaryStage)) {
             Source source = wizard.getSource();
             openImage(source, true);
+            changeCount.set(1);
         }
     }
 
@@ -383,10 +391,6 @@ public class FileStoreWindow {
         if (primaryStage != null) {
             primaryStage.setTitle(AppleCommanderFX.buildTitle());
         }
-    }
-
-    private void exitApplication() {
-        Platform.exit();
     }
 
     private void selectFilesContent() {
