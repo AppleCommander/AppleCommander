@@ -36,6 +36,12 @@ import javafx.scene.layout.VBox;
 import org.applecommander.applesingle.AppleSingle;
 import org.applecommander.applesingle.FileDatesInfo;
 import org.applecommander.applesingle.ProdosFileInfo;
+import org.applecommander.bastools.api.Configuration;
+import org.applecommander.bastools.api.ModernTokenReader;
+import org.applecommander.bastools.api.Parser;
+import org.applecommander.bastools.api.Visitors;
+import org.applecommander.bastools.api.model.Program;
+import org.applecommander.bastools.api.model.Token;
 import org.applecommander.capability.Capability;
 import org.applecommander.filestore.*;
 import org.applecommander.javafx.settings.ExportOption;
@@ -51,10 +57,7 @@ import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.applecommander.javafx.FxUtils.*;
 
@@ -238,7 +241,7 @@ public class FileView extends BorderPane {
                     appleSingle.save(baos);
                     content.put(APPLESINGLE_MIME, ByteBuffer.wrap(baos.toByteArray()));
                     // Now we're ready, so allow it to proceed:
-                    Dragboard db = fileTable.startDragAndDrop(TransferMode.COPY_OR_MOVE);
+                    Dragboard db = fileTable.startDragAndDrop(TransferMode.ANY);
                     db.setContent(content);
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
@@ -271,8 +274,40 @@ public class FileView extends BorderPane {
                     success = true;
                 } else if (db.hasFiles()) {
                     // From the file system.
-                    System.out.println("DROPPED");
-                    System.out.println(db.getFiles());
+                    List<File> files = db.getFiles();
+                    while (!files.isEmpty()) {
+                        File file = files.getFirst();
+                        files.remove(file);
+                        if (file.getName().contains("#")) {
+                            // TODO attribute preservation - may be 1 or 2 entries!
+                        }
+                        else if (AppleSingle.test(file)) {
+                            AppleSingle appleSingle = AppleSingle.read(file);
+                            ProdosAttributes prodosAttributes = createProdosAttributes(appleSingle);
+                            createFile(prodosAttributes, appleSingle.getDataFork(), appleSingle.getResourceFork());
+                        }
+                        else {
+                            byte[] data = Files.readAllBytes(file.toPath());
+                            ProdosAttributes.Builder builder = ProdosAttributes.builder()
+                                    .BIN(0x0000).name(file.getName());
+                            String alternateName = file.getName();
+                            if (alternateName.lastIndexOf('.') != -1) {
+                                alternateName = alternateName.substring(0, alternateName.lastIndexOf('.'));
+                            }
+                            if (file.getName().endsWith(".bas")) {
+                                Configuration config = Configuration.builder().sourceFile(file).build();
+                                Queue<Token> tokens = ModernTokenReader.tokenize(file);
+                                Parser parser = new Parser(tokens);
+                                Program program = parser.parse();
+                                data = Visitors.byteVisitor(config).dump(program);
+                                builder.BAS().auxType(data.length).name(alternateName);
+                            }
+                            else if (file.getName().endsWith(".txt")) {
+                                builder.TXT().name(alternateName);
+                            }
+                            createFile(builder.build(), data, null);
+                        }
+                    }
                     success = true;
                 }
             } catch (IOException e) {

@@ -6,6 +6,7 @@ module org.applecommander.javafx {
     requires javafx.graphics;
     requires org.applecommander.api;
     requires org.applecommander.applesingle;
+    requires org.applecommander.bastools;
 
     opens org.applecommander.javafx to javafx.graphics;
     opens org.applecommander.javafx.settings to javafx.graphics;

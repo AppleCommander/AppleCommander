@@ -17,6 +17,7 @@ dependencies {
     implementation 'io.github.mkpaz:atlantafx-base:2.1.0'
     implementation "org.applecommander:ShrinkItArchive:$shkVersion"
     implementation "org.applecommander:applesingle-api:$asVersion"
+    implementation "org.applecommander:bastools-api:$btVersion"
     implementation 'org.slf4j:slf4j-jdk14:2.0.19'
 
     testImplementation platform("org.junit:junit-bom:$junitVersion")
