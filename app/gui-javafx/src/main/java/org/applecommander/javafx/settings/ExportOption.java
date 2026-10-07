@@ -84,20 +84,24 @@ public enum ExportOption {
         }
     }
 
+    public static AppleSingle createAppleSingle(FileEntry fileEntry) {
+        ProdosAttributes attributes = fileEntry.getProdosAttributes();
+        AppleSingle.Builder builder = AppleSingle.builder()
+                .realName(fileEntry.getName())
+                .access(attributes.access())
+                .auxType(attributes.auxType())
+                .fileType(attributes.fileType())
+                .dataFork(fileEntry.getDataFork().asBytes());
+        fileEntry.getResourceFork().ifPresent(resourceFork -> builder.resourceFork(resourceFork.asBytes()));
+        return builder.build();
+    }
+
     public static List<Path> copyToAppleSingle(Path directory, FileEntry fileEntry) {
         try {
             List<Path> paths = new ArrayList<>();
             Path destination = directory.resolve(fileEntry.getName() + ".as");
             paths.add(destination);
-            ProdosAttributes attributes = fileEntry.getProdosAttributes();
-            AppleSingle.Builder builder = AppleSingle.builder()
-                    .realName(fileEntry.getName())
-                    .access(attributes.access())
-                    .auxType(attributes.auxType())
-                    .fileType(attributes.fileType())
-                    .dataFork(fileEntry.getDataFork().asBytes());
-            fileEntry.getResourceFork().ifPresent(resourceFork -> builder.resourceFork(resourceFork.asBytes()));
-            builder.build().save(destination);
+            createAppleSingle(fileEntry).save(destination);
             return paths;
         } catch (IOException ex) {
             throw new UncheckedIOException(ex);

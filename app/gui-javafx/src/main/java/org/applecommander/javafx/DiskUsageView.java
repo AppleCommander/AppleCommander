@@ -37,6 +37,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import org.applecommander.filestore.FileStore;
 import org.applecommander.usage.BlockUsage;
 import org.applecommander.usage.DiskUsage;
 import org.applecommander.usage.DiskUsage.UsageType;
@@ -79,24 +80,14 @@ public class DiskUsageView extends StackPane {
         // Chart view
         pieChartView = new PieChart();
         pieChartView.setTitle("Disk Usage");
-        fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                Optional<DiskUsage> opt = newValue.get(DiskUsage.class);
-                if (opt.isEmpty()) {
-                    // nothing to view
-                    return;
-                }
-                DiskUsage usage = opt.get();
-                // Somewhat arbitrary, but the grid view really lags in HDD's; even with the drawing deferred.
-                largeDisk.set(usage.getTotal() > 2000);
-                if (!largeDisk.get()) {
-                    updateGridView(usage);
-                    viewMode.set(Mode.GRID_VIEW);
-                }
-                else {
-                    viewMode.set(Mode.CHART_VIEW);
-                }
-                updateChartView(usage);
+
+        // Refresh on updates
+        fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((_, _, newFileStore) -> {
+            updateDisplay(newFileStore);
+        });
+        fileStoreWindow.hasChangedProperty().addListener((_, _, hasChanged) -> {
+            if (hasChanged) {
+                updateDisplay(fileStoreWindow.fileStoreSelection().getSelectedItem());
             }
         });
 
@@ -118,6 +109,24 @@ public class DiskUsageView extends StackPane {
         visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE));
         managedProperty().bind(visibleProperty());
         viewMode.set(Mode.GRID_VIEW);
+    }
+
+    public void updateDisplay(FileStore fileStore) {
+        if (fileStore == null) return;
+        Optional<DiskUsage> opt = fileStore.get(DiskUsage.class);
+        if (opt.isEmpty()) {
+            return;
+        }
+        DiskUsage usage = opt.get();
+        largeDisk.set(usage.getTotal() > 2000);
+        if (!largeDisk.get()) {
+            updateGridView(usage);
+            viewMode.set(Mode.GRID_VIEW);
+        }
+        else {
+            viewMode.set(Mode.CHART_VIEW);
+        }
+        updateChartView(usage);
     }
 
     public void bindScene(Scene scene) {
