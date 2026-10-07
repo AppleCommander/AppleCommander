@@ -19,6 +19,9 @@
  */
 package org.applecommander.os;
 
+import com.webcodepro.applecommander.storage.DiskConstants;
+import org.applecommander.device.DosOrderedTrackSectorDevice;
+import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.FileStoreFactory;
@@ -26,6 +29,8 @@ import org.applecommander.filestore.FileStores;
 import org.applecommander.os.gamedos.GamedosDirectory;
 import org.applecommander.os.gamedos.GamedosFileEntry;
 import org.applecommander.os.gamedos.GamedosFileStore;
+import org.applecommander.os.gamedos.GamedosFileStoreFactory;
+import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 import org.applecommander.util.DataBuffer;
@@ -68,5 +73,41 @@ public class GamedosTest {
         else {
             fail("Expecting a GamedosFileStore!");
         }
+    }
+
+    @Test
+    public void testCreateAndWrite() {
+        // Create a disk
+        Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "GAMEDOS-TEST").get();
+        TrackSectorDevice device = new DosOrderedTrackSectorDevice(source);
+        GamedosFileStore fileStore = GamedosFileStoreFactory.create(device);
+        assertNotNull(fileStore);
+
+        // Get the root directory and verify there are no files
+        GamedosDirectory directory = fileStore.getRootDirectory();
+        assertNotNull(directory);
+        assertEquals(0, directory.getFiles().size());
+
+        // Create our file
+        GamedosFileEntry fileEntry = (GamedosFileEntry) directory.createFile("This is a text file.");
+        assertNotNull(fileEntry);
+        final String textContents = "THIS IS A THE FILE DATA.";
+        DataBuffer fileData = DataBuffer.wrap(textContents.getBytes());
+        fileEntry.setFiletype("T");
+        fileEntry.setDataFork(fileData);
+
+        // Verify the file went where we expected it to
+        assertEquals("T", fileEntry.getFiletype());
+        assertEquals(1, fileEntry.getFirstTrack());
+        assertEquals(0, fileEntry.getFirstSector());
+        assertEquals(1, fileEntry.getSectorCount());
+        assertEquals(textContents, fileEntry.getDataFork().getFixedLengthString(0, textContents.length()));
+
+        // Read back to file entry from the directory and then delete it.
+        assertEquals(1, directory.getFiles().size());
+        GamedosFileEntry firstFileEntry = (GamedosFileEntry) directory.getFiles().getFirst();
+        assertNotNull(firstFileEntry);
+        directory.deleteFile(firstFileEntry);
+        assertEquals(0, directory.getFiles().size());
     }
 }

@@ -49,10 +49,19 @@ public interface TrackSectorDevice extends Device {
     /// Write a single sector to the disk.
     void writeSector(int track, int sector, DataBuffer data);
 
-    /// write a range of sectors to the disk.
+    /// Write a range of sectors to the disk. Note that the data buffer is
+    /// modified to be a multiple of sector size.
     default void writeRange(int track, int sector, DataBuffer data) {
         int totalSectors = calculateRequiredSectors(data.limit());
-        performRange(track, sector, totalSectors, (t,s,o) -> writeSector(t, s, data.slice(o, SECTOR_SIZE)));
+        performRange(track, sector, totalSectors, (t,s,o) -> {
+            if (data.limit() < totalSectors * SECTOR_SIZE) {
+                DataBuffer newData = DataBuffer.create(totalSectors * SECTOR_SIZE);
+                newData.put(0, data);
+                writeSector(t, s, newData.slice(o, SECTOR_SIZE));
+            } else {
+                writeSector(t, s, data.slice(o, SECTOR_SIZE));
+            }
+        });
     }
 
     /// A utility method that performs an operation across a range of sectors. Mostly reusable code for the
