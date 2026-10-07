@@ -32,6 +32,7 @@ import javafx.stage.Window;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static org.applecommander.javafx.FxUtils.createGenericSelectionPage;
 
@@ -66,6 +67,8 @@ public class SettingsDialog {
             // This gives users a preview when clicking the radio buttons
             if (newValue != null) {
                 newValue.apply();
+                dialog.getDialogPane().layout();
+                dialog.getDialogPane().getScene().getWindow().sizeToScene();
             }
         });
     }
