@@ -48,7 +48,8 @@ import org.applecommander.javafx.settings.ExportOption;
 import org.applecommander.javafx.settings.Settings;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
-import org.applecommander.util.DataBuffer;
+import org.applecommander.transfer.ProdosAttributePreservation;
+import org.applecommander.transfer.ProdosAttributes;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -194,7 +195,6 @@ public class FileView extends BorderPane {
 
         fileTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         fileTable.setItems(FXCollections.emptyObservableList());
-        fileTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         fileTable.setOnMouseClicked(event -> {
             if (event.getClickCount() != 2) {
                 return;
@@ -270,7 +270,7 @@ public class FileView extends BorderPane {
                     ByteBuffer data = (ByteBuffer) db.getContent(APPLESINGLE_MIME);
                     AppleSingle appleSingle = AppleSingle.read(data.array());
                     ProdosAttributes prodosAttributes = createProdosAttributes(appleSingle);
-                    createFile(prodosAttributes, appleSingle.getDataFork(), appleSingle.getResourceFork());
+                    createFile(prodosAttributes);
                     success = true;
                 } else if (db.hasFiles()) {
                     // From the file system.
@@ -278,18 +278,20 @@ public class FileView extends BorderPane {
                     while (!files.isEmpty()) {
                         File file = files.getFirst();
                         files.remove(file);
-                        if (file.getName().contains("#")) {
-                            // TODO attribute preservation - may be 1 or 2 entries!
+                        if (ProdosAttributePreservation.test(file.toPath())) {
+                            ProdosAttributePreservation attrs = ProdosAttributePreservation.parse(file.toPath());
+                            createFile(attrs.toProdosAttributes());
                         }
                         else if (AppleSingle.test(file)) {
                             AppleSingle appleSingle = AppleSingle.read(file);
                             ProdosAttributes prodosAttributes = createProdosAttributes(appleSingle);
-                            createFile(prodosAttributes, appleSingle.getDataFork(), appleSingle.getResourceFork());
+                            createFile(prodosAttributes);
                         }
                         else {
                             byte[] data = Files.readAllBytes(file.toPath());
                             ProdosAttributes.Builder builder = ProdosAttributes.builder()
-                                    .BIN(0x0000).name(file.getName());
+                                    .BIN(0x0000).name(file.getName())
+                                    .dataFork(data);
                             String alternateName = file.getName();
                             if (alternateName.lastIndexOf('.') != -1) {
                                 alternateName = alternateName.substring(0, alternateName.lastIndexOf('.'));
@@ -300,12 +302,12 @@ public class FileView extends BorderPane {
                                 Parser parser = new Parser(tokens);
                                 Program program = parser.parse();
                                 data = Visitors.byteVisitor(config).dump(program);
-                                builder.BAS().auxType(data.length).name(alternateName);
+                                builder.BAS().auxType(config.startAddress).name(alternateName).dataFork(data);
                             }
                             else if (file.getName().endsWith(".txt")) {
                                 builder.TXT().name(alternateName);
                             }
-                            createFile(builder.build(), data, null);
+                            createFile(builder.get());
                         }
                     }
                     success = true;
@@ -336,17 +338,20 @@ public class FileView extends BorderPane {
             builder.fileType(prodosFileInfo.getFileType());
             builder.locked((prodosFileInfo.getAccess() & 0xe3) == 0xe3);
         }
-        return builder.build();
+        if (appleSingle.getDataFork() != null) {
+            builder.dataFork(appleSingle.getDataFork());
+        }
+        if (appleSingle.getResourceFork() != null) {
+            builder.resourceFork(appleSingle.getResourceFork());
+        }
+        return builder.get();
     }
 
-    public void createFile(ProdosAttributes prodosAttributes, byte[] dataFork, byte[] resourceFork) {
+    public void createFile(ProdosAttributes prodosAttributes) {
         Directory directory = selectedDirectory.get();
         if (directory instanceof WritableDirectory writableDirectory) {
-            WritableFileEntry fileEntry = writableDirectory.createFrom(prodosAttributes);
-            fileEntry.setDataFork(DataBuffer.wrap(dataFork));
-            if (resourceFork != null) {
-                fileEntry.setResourceFork(DataBuffer.wrap(resourceFork));
-            }
+            // Note that we expect ProdosAttributes to be fully populated (including data/resource forks)
+            writableDirectory.createFrom(prodosAttributes);
             fileStoreWindow.addChange();
         }
         else {
