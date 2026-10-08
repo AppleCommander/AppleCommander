@@ -29,12 +29,10 @@ import javafx.scene.control.TabPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import org.applecommander.javafx.FXControls;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
-import static org.applecommander.javafx.FxUtils.createGenericSelectionPage;
 
 public class SettingsDialog {
     private final ObjectProperty<ThemeSelection> themeSelection = new SimpleObjectProperty<>();
@@ -45,13 +43,19 @@ public class SettingsDialog {
     public SettingsDialog() {
         Tab themeTab = new Tab("Theme");
         themeTab.setClosable(false);
-        themeTab.setContent(createGenericSelectionPage("Please choose a theme:", ThemeSelection.values(),
-                ThemeSelection::getDescription, themeSelection));
+        themeTab.setContent(FXControls.builder()
+                .label("Please choose a theme:")
+                .radioButton(ThemeSelection.values(), ThemeSelection::getDescription, themeSelection)
+                .get());
 
         Tab exportTab = new Tab("Export");
         exportTab.setClosable(false);
         exportTab.setContent(createGenericSelectionPage("Please select the export type:", ExportOption.values(),
                 ExportOption::getDescription, exportOption));
+        exportTab.setContent(FXControls.builder()
+                .label("Please select the export type:")
+                .radioButton(ExportOption.values(), ExportOption::getDescription, exportOption)
+                .get());
 
         TabPane tabPane = new TabPane();
         tabPane.getTabs().addAll(themeTab, exportTab);

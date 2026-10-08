@@ -19,12 +19,9 @@
  */
 package org.applecommander.javafx;
 
-import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -37,7 +34,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.function.Function;
 
 public class FxUtils {
     public static Button createButton(String url, String text, EventHandler<ActionEvent> eventHandler) {
@@ -97,26 +93,6 @@ public class FxUtils {
         scene.getAccelerators().put(keyCombination, runnable);
         button.setOnAction(e -> runnable.run());
         button.setTooltip(new Tooltip(String.format("%s (%s)", tooltipText, keyCombination.getDisplayText().toUpperCase(Locale.ROOT))));
-    }
-
-    public static <E extends Enum<?>> Node createGenericSelectionPage(String prompt, E[] enumerations,
-                                                               Function<E,String> textFn, ObjectProperty<E> property) {
-        VBox selectionPage = new VBox();
-        selectionPage.setSpacing(10);
-        selectionPage.setPadding(new Insets(10));
-        Label chooseLabel = new Label(prompt);
-        selectionPage.getChildren().add(chooseLabel);
-        ToggleGroup selection = new ToggleGroup();
-        for (E value : enumerations) {
-            RadioButton radioButton = new RadioButton(textFn.apply(value));
-            radioButton.setToggleGroup(selection);
-            property.addListener((_, _, newValue) -> {
-                radioButton.setSelected(newValue.equals(value));
-            });
-            radioButton.addEventHandler(ActionEvent.ACTION, _ -> property.set(value));
-            selectionPage.getChildren().add(radioButton);
-        }
-        return selectionPage;
     }
 
     public static void showErrorDialog(String title, Throwable t) {

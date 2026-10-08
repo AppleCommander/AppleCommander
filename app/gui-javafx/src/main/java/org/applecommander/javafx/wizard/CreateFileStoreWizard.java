@@ -29,12 +29,12 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import org.applecommander.device.DosOrderedTrackSectorDevice;
 import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.javafx.FXControls;
 import org.applecommander.os.gamedos.GamedosFileStoreFactory;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 
 import java.util.Map;
-import static org.applecommander.javafx.FxUtils.createGenericSelectionPage;
 
 public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.WizardPage> {
     private final ObjectProperty<FileStoreSelection> fileStoreSelectionProperty = new SimpleObjectProperty<>();
@@ -69,12 +69,18 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
     @Override
     public Map<WizardPage, Node> createWizardPages() {
         return Map.of(
-                WizardPage.FILESTORE, createGenericSelectionPage("Choose an image type to create:",
-                        FileStoreSelection.values(), FileStoreSelection::getText, fileStoreSelectionProperty),
-                WizardPage.SIZE, createGenericSelectionPage("Choose an image size to create:",
-                        ImageSizeSelection.values(), ImageSizeSelection::getText, imageSizeSelectionProperty),
-                WizardPage.SECTOR, createGenericSelectionPage("Choose a sector ordering for this image:",
-                        SectorOrderSelection.values(), SectorOrderSelection::getText, sectorOrderSelectionProperty),
+                WizardPage.FILESTORE, FXControls.builder()
+                        .label("Choose an image type to create:")
+                        .radioButton(FileStoreSelection.values(), FileStoreSelection::getText, fileStoreSelectionProperty)
+                        .get(),
+                WizardPage.SIZE, FXControls.builder()
+                        .label("Choose an image size to create:")
+                        .radioButton(ImageSizeSelection.values(), ImageSizeSelection::getText, imageSizeSelectionProperty)
+                        .get(),
+                WizardPage.SECTOR, FXControls.builder()
+                        .label("Choose a sector ordering for this image:")
+                        .radioButton(SectorOrderSelection.values(), SectorOrderSelection::getText, sectorOrderSelectionProperty)
+                        .get(),
                 WizardPage.SUMMARY, createSummaryPage()
         );
     }
