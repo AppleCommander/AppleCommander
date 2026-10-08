@@ -56,6 +56,7 @@ module org.applecommander.api {
     exports org.applecommander.usage;
     exports org.applecommander.util;
     exports org.applecommander.os.gamedos;
+    exports org.applecommander.transfer;
 
     // FileStore discovery mechanisms
     uses FileStoreFactory;
