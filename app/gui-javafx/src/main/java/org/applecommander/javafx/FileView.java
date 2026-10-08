@@ -282,7 +282,7 @@ public class FileView extends BorderPane {
                             ProdosAttributePreservation attrs = ProdosAttributePreservation.parse(file.toPath());
                             createFile(attrs.toProdosAttributes());
                         }
-                        else if (AppleSingle.test(file)) {
+                        else if (AppleSingle.test(file) && Settings.isImportDecodeAppleSingle()) {
                             AppleSingle appleSingle = AppleSingle.read(file);
                             ProdosAttributes prodosAttributes = createProdosAttributes(appleSingle);
                             createFile(prodosAttributes);
@@ -296,7 +296,7 @@ public class FileView extends BorderPane {
                             if (alternateName.lastIndexOf('.') != -1) {
                                 alternateName = alternateName.substring(0, alternateName.lastIndexOf('.'));
                             }
-                            if (file.getName().endsWith(".bas")) {
+                            if (file.getName().endsWith(".bas") && Settings.isImportTokenizeApplesoft()) {
                                 Configuration config = Configuration.builder().sourceFile(file).build();
                                 Queue<Token> tokens = ModernTokenReader.tokenize(file);
                                 Parser parser = new Parser(tokens);

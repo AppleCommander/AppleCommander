@@ -29,6 +29,8 @@ public abstract class Settings {
     private static final String IMAGE_DIRECTORY_KEY = "image_directory";
     private static final String THEME_SELECTION = "theme_selection";
     private static final String EXPORT_OPTION = "export_option";
+    private static final String IMPORT_DECODE_APPLESINGLE = "import_decode_applesingle";
+    private static final String IMPORT_TOKENIZE_APPLESOFT = "import_tokenize_applesoft";
 
     public static Optional<File> getLastOpenedDirectory() {
         Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
@@ -72,5 +74,25 @@ public abstract class Settings {
     public static void setExportOption(ExportOption exportOption) {
         Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
         prefs.put(EXPORT_OPTION, exportOption.name());
+    }
+
+    public static boolean isImportDecodeAppleSingle() {
+        Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
+        return prefs.getBoolean(IMPORT_DECODE_APPLESINGLE, true);
+    }
+
+    public static void setImportDecodeAppleSingle(boolean importDecodeApplesingle) {
+        Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
+        prefs.putBoolean(IMPORT_DECODE_APPLESINGLE, importDecodeApplesingle);
+    }
+
+    public static boolean isImportTokenizeApplesoft() {
+        Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
+        return prefs.getBoolean(IMPORT_TOKENIZE_APPLESOFT, true);
+    }
+
+    public static void setImportTokenizeApplesoft(boolean importTokenizeApplesoft) {
+        Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
+        prefs.putBoolean(IMPORT_TOKENIZE_APPLESOFT, importTokenizeApplesoft);
     }
 }

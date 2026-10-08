@@ -19,7 +19,9 @@
  */
 package org.applecommander.javafx.settings;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Insets;
 import javafx.scene.control.ButtonType;
@@ -37,6 +39,8 @@ import java.util.Optional;
 public class SettingsDialog {
     private final ObjectProperty<ThemeSelection> themeSelection = new SimpleObjectProperty<>();
     private final ObjectProperty<ExportOption> exportOption = new SimpleObjectProperty<>();
+    private final BooleanProperty importDecodeAppleSingle = new SimpleBooleanProperty(true);
+    private final BooleanProperty importTokenizeApplesoft = new SimpleBooleanProperty(true);
 
     private final Dialog<ButtonType> dialog;
 
@@ -50,15 +54,20 @@ public class SettingsDialog {
 
         Tab exportTab = new Tab("Export");
         exportTab.setClosable(false);
-        exportTab.setContent(createGenericSelectionPage("Please select the export type:", ExportOption.values(),
-                ExportOption::getDescription, exportOption));
         exportTab.setContent(FXControls.builder()
                 .label("Please select the export type:")
                 .radioButton(ExportOption.values(), ExportOption::getDescription, exportOption)
                 .get());
 
+        Tab importTab = new Tab("Import");
+        importTab.setClosable(false);
+        importTab.setContent(FXControls.builder()
+                .checkBox("Do you want to decode AppleSingle files on import?", importDecodeAppleSingle)
+                .checkBox("Do you want to automatically tokenize .bas files as Applesoft?", importTokenizeApplesoft)
+                .get());
+
         TabPane tabPane = new TabPane();
-        tabPane.getTabs().addAll(themeTab, exportTab);
+        tabPane.getTabs().addAll(themeTab, exportTab, importTab);
         tabPane.setPadding(new Insets(10));
 
         dialog = new Dialog<>();
@@ -82,6 +91,8 @@ public class SettingsDialog {
 
         Settings.getThemeSelection().ifPresent(themeSelection::set);
         exportOption.set(Settings.getExportOption());
+        importDecodeAppleSingle.set(Settings.isImportDecodeAppleSingle());
+        importTokenizeApplesoft.set(Settings.isImportTokenizeApplesoft());
 
         Window window = dialog.getDialogPane().getScene().getWindow();
 
@@ -110,6 +121,8 @@ public class SettingsDialog {
                 if (exportOption.isNotNull().get()) {
                     Settings.setExportOption(exportOption.get());
                 }
+                Settings.setImportDecodeAppleSingle(importDecodeAppleSingle.get());
+                Settings.setImportTokenizeApplesoft(importTokenizeApplesoft.get());
             }
         });
         // Always go back to what we've set
