@@ -19,12 +19,16 @@
  */
 package org.applecommander.transfer;
 
+import org.applecommander.util.DataBuffer;
 import org.applecommander.util.FileMagic;
 
 import java.util.Date;
 import java.util.Optional;
 
-public record ProdosAttributes(String name, int access, int fileType, int auxType, long size, Date creation, Date modified) {
+/// Capture all relevant ProDOS attributes since they are the most common set of attributes.
+/// Note that the data fork and resource fork are optional and may or may not be included.
+public record ProdosAttributes(String name, int access, int fileType, int auxType, long size, Date creation, Date modified,
+                               Optional<DataBuffer> dataFork, Optional<DataBuffer> resourceFork) {
     public static final int TXT = 0x04;
     public static final int BIN = 0x06;
     public static final int INT = 0xfa;
@@ -51,6 +55,8 @@ public record ProdosAttributes(String name, int access, int fileType, int auxTyp
         private long size;
         private Date creation;
         private Date modified;
+        private DataBuffer dataFork;
+        private DataBuffer resourceFork;
 
         public Builder name(String name) {
             this.name = name;
@@ -104,8 +110,23 @@ public record ProdosAttributes(String name, int access, int fileType, int auxTyp
             this.modified = modified;
             return this;
         }
-        public ProdosAttributes build() {
-            return new ProdosAttributes(name, access, fileType, auxType, size, creation, modified);
+        public Builder dataFork(byte[] dataFork) {
+            return dataFork(DataBuffer.wrap(dataFork));
+        }
+        public Builder dataFork(DataBuffer dataFork) {
+            this.dataFork = dataFork;
+            return this;
+        }
+        public Builder resourceFork(byte[] resourceFork) {
+            return resourceFork(DataBuffer.wrap(resourceFork));
+        }
+        public Builder resourceFork(DataBuffer resourceFork) {
+            this.resourceFork = resourceFork;
+            return this;
+        }
+        public ProdosAttributes get() {
+            return new ProdosAttributes(name, access, fileType, auxType, size, creation, modified,
+                    Optional.ofNullable(dataFork), Optional.ofNullable(resourceFork));
         }
     }
 }

@@ -101,12 +101,18 @@ public class GamedosDirectory implements WritableDirectory, GamedosConstants {
         GamedosFileEntry fileEntry = createFile(prodosAttributes.name());
         fileEntry.setMeta(prodosAttributes.auxType());
         String fileType = switch (prodosAttributes.fileType()) {
-            case ProdosAttributes.BAS -> "A";
+            case ProdosAttributes.BAS -> {
+                // Meta = end of code addr for Applesoft
+                prodosAttributes.dataFork().ifPresent(dataFork -> fileEntry.setMeta(dataFork.limit()));
+                yield "A";
+            }
             case ProdosAttributes.TXT -> "T";
             case ProdosAttributes.INT -> "I";
             default -> "B";
         };
         fileEntry.setFiletype(fileType);
+        prodosAttributes.dataFork().ifPresent(fileEntry::setDataFork);
+        prodosAttributes.resourceFork().ifPresent(fileEntry::setResourceFork);
         return fileEntry;
     }
 
