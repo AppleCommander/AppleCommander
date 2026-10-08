@@ -72,7 +72,10 @@ public class DiskUsageView extends StackPane {
         legendBox.setSpacing(12);
         legendBox.setPadding(new Insets(5));
         legendBox.setAlignment(Pos.CENTER);
-        gridView = new VBox(diskUsageGrid, legendBox);
+        ScrollPane diskUsageScroll = new ScrollPane(diskUsageGrid);
+        diskUsageScroll.setFitToWidth(true);
+        diskUsageScroll.setFitToHeight(true);
+        gridView = new VBox(diskUsageScroll, legendBox);
         gridView.setAlignment(Pos.CENTER);
         gridView.setPadding(new Insets(5));
         gridView.setSpacing(5);
