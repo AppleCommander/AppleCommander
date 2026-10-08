@@ -19,6 +19,7 @@
  */
 package org.applecommander.filestore;
 
+import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 

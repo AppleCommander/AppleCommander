@@ -19,7 +19,11 @@
  */
 package org.applecommander.archive.zip;
 
-import org.applecommander.filestore.*;
+import org.applecommander.filestore.ContentType;
+import org.applecommander.filestore.Directory;
+import org.applecommander.filestore.FileEntry;
+import org.applecommander.filestore.FileStore;
+import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.FileMagic;
@@ -128,7 +132,7 @@ public class ZipFileEntry implements FileEntry {
                 .BIN(0x0000)
                 .creation(new Date(getCreationTime().toMillis()))
                 .modification(new Date(getLastModifiedTime().toMillis()))
-                .build();
+                .get();
     }
 
     @Override

@@ -40,6 +40,7 @@ import org.applecommander.device.Device;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.*;
 import org.applecommander.filestore.FileEntry;
+import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.usage.BlockUsage;
 import org.applecommander.usage.DiskUsage;
 import org.applecommander.usage.DiskUsage.UsageType;
@@ -276,7 +277,7 @@ public class DiskFileStoreAdapter implements FileStore {
                 }
                 default -> throw new IllegalStateException("Unexpected file entry: " + fileEntry.getClass().getName());
             }
-            return builder.build();
+            return builder.get();
         }
         @Override
         public void setDataFork(DataBuffer fileData) {

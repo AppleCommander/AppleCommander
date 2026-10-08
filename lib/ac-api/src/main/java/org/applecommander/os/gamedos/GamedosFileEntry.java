@@ -24,9 +24,9 @@ import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.exception.DiskFullException;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileStore;
-import org.applecommander.filestore.ProdosAttributes;
 import org.applecommander.filestore.WritableFileEntry;
 import org.applecommander.os.SequentialAllocator;
+import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
@@ -165,7 +165,7 @@ public class GamedosFileEntry implements WritableFileEntry, GamedosConstants {
             case "P" -> builder.BIN(0x2000);
             case "I" -> builder.INT();
         }
-        return builder.build();
+        return builder.get();
     }
 
     @Override

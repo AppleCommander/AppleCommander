@@ -23,7 +23,7 @@ import com.google.common.primitives.Bytes;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
-import org.applecommander.filestore.ProdosAttributes;
+import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.DataBuffer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -105,7 +105,7 @@ public class ExportOptionTest {
                 .unlocked()
                 .TXT()
                 .name(baseFilename)
-                .build());
+                .get());
         FileEntry fileEntry = builder.get();
 
         List<Path> results = exportOption.copyToPath(directory, fileEntry);

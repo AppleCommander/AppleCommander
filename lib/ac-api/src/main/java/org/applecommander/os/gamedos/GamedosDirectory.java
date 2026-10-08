@@ -24,6 +24,7 @@ import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.exception.DirectoryFullException;
 import org.applecommander.exception.FileExistsException;
 import org.applecommander.filestore.*;
+import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.DataBuffer;
 
 import java.util.ArrayList;

@@ -21,7 +21,7 @@ package org.applecommander.javafx.settings;
 
 import org.applecommander.applesingle.AppleSingle;
 import org.applecommander.filestore.FileEntry;
-import org.applecommander.filestore.ProdosAttributes;
+import org.applecommander.transfer.ProdosAttributes;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

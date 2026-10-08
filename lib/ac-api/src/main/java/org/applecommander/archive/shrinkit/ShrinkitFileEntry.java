@@ -22,11 +22,11 @@ package org.applecommander.archive.shrinkit;
 import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
-import org.applecommander.filestore.ProdosAttributes;
 import org.applecommander.shrinkit.HeaderBlock;
 import org.applecommander.shrinkit.ThreadFormat;
 import org.applecommander.shrinkit.ThreadKind;
 import org.applecommander.shrinkit.ThreadRecord;
+import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.FileMagic;
@@ -179,7 +179,7 @@ public class ShrinkitFileEntry implements FileEntry {
                 .fileType((int)headerBlock.getFileType())
                 .creation(getCreateWhen())
                 .modification(getModWhen())
-                .build();
+                .get();
     }
 
     @Override

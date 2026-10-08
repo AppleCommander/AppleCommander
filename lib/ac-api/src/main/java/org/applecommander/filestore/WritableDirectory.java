@@ -20,6 +20,7 @@
 package org.applecommander.filestore;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.transfer.ProdosAttributes;
 
 /// A WritableDirectory is a Directory that allows general directory modification.
 /// Since not all directories can perform all tasks, check the capability first,
