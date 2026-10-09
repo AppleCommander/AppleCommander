@@ -47,21 +47,21 @@ public class SettingsDialog {
     public SettingsDialog() {
         Tab themeTab = new Tab("Theme");
         themeTab.setClosable(false);
-        themeTab.setContent(FXControls.builder()
+        themeTab.setContent(FXControls.vertical()
                 .label("Please choose a theme:")
                 .radioButton(ThemeSelection.values(), ThemeSelection::getDescription, themeSelection)
                 .get());
 
         Tab exportTab = new Tab("Export");
         exportTab.setClosable(false);
-        exportTab.setContent(FXControls.builder()
+        exportTab.setContent(FXControls.vertical()
                 .label("Please select the export type:")
                 .radioButton(ExportOption.values(), ExportOption::getDescription, exportOption)
                 .get());
 
         Tab importTab = new Tab("Import");
         importTab.setClosable(false);
-        importTab.setContent(FXControls.builder()
+        importTab.setContent(FXControls.vertical()
                 .checkBox("Do you want to decode AppleSingle files on import?", importDecodeAppleSingle)
                 .checkBox("Do you want to automatically tokenize .bas files as Applesoft?", importTokenizeApplesoft)
                 .get());

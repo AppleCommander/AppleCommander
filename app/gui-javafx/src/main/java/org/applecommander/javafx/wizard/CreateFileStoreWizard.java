@@ -69,15 +69,15 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
     @Override
     public Map<WizardPage, Node> createWizardPages() {
         return Map.of(
-                WizardPage.FILESTORE, FXControls.builder()
+                WizardPage.FILESTORE, FXControls.vertical()
                         .label("Choose an image type to create:")
                         .radioButton(FileStoreSelection.values(), FileStoreSelection::getText, fileStoreSelectionProperty)
                         .get(),
-                WizardPage.SIZE, FXControls.builder()
+                WizardPage.SIZE, FXControls.vertical()
                         .label("Choose an image size to create:")
                         .radioButton(ImageSizeSelection.values(), ImageSizeSelection::getText, imageSizeSelectionProperty)
                         .get(),
-                WizardPage.SECTOR, FXControls.builder()
+                WizardPage.SECTOR, FXControls.vertical()
                         .label("Choose a sector ordering for this image:")
                         .radioButton(SectorOrderSelection.values(), SectorOrderSelection::getText, sectorOrderSelectionProperty)
                         .get(),

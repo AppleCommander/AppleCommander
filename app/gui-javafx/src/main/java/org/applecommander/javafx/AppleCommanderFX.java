@@ -30,9 +30,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 public class AppleCommanderFX extends Application {
+    private static AppleCommanderFX application;
 
     @Override
     public void start(Stage stage) throws Exception {
+        // This is really stupid the hoops just to launch the browser.
+        application = this;
         // Based on user selection, use that theme.
         Settings.getThemeSelection().orElse(ThemeSelection.MODENA).apply();
         Platform.getPreferences().colorSchemeProperty().addListener((_, _, _) -> {
@@ -44,6 +47,10 @@ public class AppleCommanderFX extends Application {
 
     static void main(String[] args) {
         launch(args);
+    }
+
+    public static AppleCommanderFX getApplication() {
+        return application;
     }
 
     public static String buildTitle(String... args) {

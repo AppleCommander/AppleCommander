@@ -19,6 +19,7 @@
  */
 package org.applecommander.javafx;
 
+import com.webcodepro.applecommander.ui.AppleCommander;
 import javafx.beans.property.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -37,12 +38,15 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
+import org.applecommander.applesingle.AppleSingle;
+import org.applecommander.bastools.api.BasTools;
 import org.applecommander.capability.Capability;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.FileStores;
 import org.applecommander.javafx.settings.Settings;
 import org.applecommander.javafx.settings.SettingsDialog;
 import org.applecommander.javafx.wizard.CreateFileStoreWizard;
+import org.applecommander.shrinkit.NuFileArchive;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 import org.applecommander.usage.DiskUsage;
@@ -50,6 +54,7 @@ import org.applecommander.util.FileExtensions;
 import org.applecommander.util.FileExtensions.FileExtension;
 
 import java.io.File;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Objects;
@@ -66,6 +71,7 @@ public class FileStoreWindow {
     private final Button saveFileButton;
     private final Button saveFileAsButton;
     private final Button settingsButton;
+    private final Button aboutButton;
     private final ToggleButton filesViewButton;
     private final ToggleButton diskUsageViewButton;
     private final ToggleButton informationViewButton;
@@ -146,6 +152,7 @@ public class FileStoreWindow {
         saveFileButton = createButton("save-file.png", "Save", _ -> saveFile());
         saveFileAsButton = createButton("save-as-file.png", "Save As...", _ -> saveFileAs());
         settingsButton = createButton("settings.png", "Settings", _ -> settings());
+        aboutButton = createButton("about.png", "About", _ -> about());
 
         ToggleGroup viewModeGroup = new ToggleGroup();
         filesViewButton = createToggleButton("image-file-view.png", "Files", viewModeGroup, _ -> selectFilesContent());
@@ -154,7 +161,7 @@ public class FileStoreWindow {
         HBox viewModeBox = new HBox(filesViewButton, diskUsageViewButton, informationViewButton);
 
         ToolBar toolBar = new ToolBar(
-            openFileButton, createFileButton, saveFileButton, saveFileAsButton, settingsButton,
+            openFileButton, createFileButton, saveFileButton, saveFileAsButton, settingsButton, aboutButton,
             new Separator(Orientation.VERTICAL),
             viewModeBox,
             new Separator(Orientation.VERTICAL)
@@ -162,7 +169,7 @@ public class FileStoreWindow {
 
         saveFileButton.disableProperty().bind(changeCount.isEqualTo(0).or(canSave.not()));
 
-        ImageView logo = new ImageView(imageUrl("AppleCommanderLogo.png"));
+        ImageView logo = new ImageView(imageUrl("AppleCommanderLogoLarge.png"));
         Label label = new Label("No disk image open. Use open to browse for a disk image.");
         label.setTextFill(Color.BLACK);
         Rectangle border = new Rectangle();
@@ -370,6 +377,40 @@ public class FileStoreWindow {
     public void settings() {
         SettingsDialog dialog = new SettingsDialog();
         dialog.showAndWait(primaryStage);
+    }
+
+    public void about() {
+        Dialog<ButtonBar.ButtonData> dialog = new Dialog<>();
+        dialog.setTitle("About AppleCommanderFX");
+
+        URL imageURL = getClass().getResource("/images/AppleCommanderLogoSmall.png");
+        Objects.requireNonNull(imageURL);
+        ImageView imageView = new ImageView(imageURL.toExternalForm());
+        VBox imagePane = new VBox(imageView);
+        imagePane.setPadding(new Insets(0, 0, 10, 0));
+        imagePane.setStyle("-fx-background-color: white;");
+        imagePane.setAlignment(Pos.CENTER);
+
+        dialog.getDialogPane().setHeader(imagePane);
+        dialog.getDialogPane().setContent(FXControls.vertical()
+                .alignment(Pos.CENTER)
+                .spacing(5)
+                .largeBold("AppleCommanderFX")
+                .label("Version %s", AppleCommander.VERSION)
+                .node(FXControls.horizontal()
+                        .alignment(Pos.CENTER)
+                        .spacing(5)
+                        .label("Visit:")
+                        .link("website", "https://applecommander.github.io/")
+                        .link("github", "https://github.com/AppleCommander/AppleCommander")
+                        .get())
+                .table(2,
+                        "AppleSingle:", AppleSingle.VERSION,
+                        "ShrinkIt:", NuFileArchive.VERSION,
+                        "BASIC Tools:", BasTools.VERSION)
+                .get());
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK);
+        dialog.showAndWait();
     }
 
     private void switchDisk() {
