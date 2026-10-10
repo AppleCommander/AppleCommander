@@ -19,8 +19,7 @@
  */
 package org.applecommander.usage;
 
-import java.util.Objects;
-import java.util.function.IntSupplier;
+import java.util.Map;
 
 /// Provides a generic DiskUsage interface. Note that the assumption of free and used applies
 /// only to disks. Each disk image will supply a more specific usage subclass. Additionally,
@@ -32,25 +31,18 @@ import java.util.function.IntSupplier;
 /// @see SectorUsage
 public abstract class DiskUsage {
     private final int unitSize;
-    private final IntSupplier used;
-    private final IntSupplier free;
 
-    protected DiskUsage(int unitSize, IntSupplier used, IntSupplier free) {
-        Objects.requireNonNull(used);
-        Objects.requireNonNull(free);
+    protected DiskUsage(int unitSize) {
         this.unitSize = unitSize;
-        this.used = used;
-        this.free = free;
     }
 
-    public int getTotal() {
-        return getUsed() + getFree();
-    }
+    public abstract Map<UsageType,Integer> getUsageCounts();
+    public abstract int getTotal();
     public int getUsed() {
-        return used.getAsInt();
+        return getTotal() - getFree();
     }
     public int getFree() {
-        return free.getAsInt();
+        return getUsageCounts().getOrDefault(UsageType.FREE, 0);
     }
     public int getTotalBytes() {
         return getTotal() * unitSize;
@@ -60,5 +52,11 @@ public abstract class DiskUsage {
     }
     public int getBytesFree() {
         return getFree() * unitSize;
+    }
+
+    /// Identifies usage type on this disk. Note that some devices may have generic used
+    /// instead of a specific type.
+    public enum UsageType {
+        FREE, USED, BOOT, BITMAP, SYSTEM, DIRECTORY, FILE
     }
 }

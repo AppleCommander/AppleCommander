@@ -19,14 +19,14 @@
  */
 package org.applecommander.javafx;
 
-import javafx.application.Platform;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import com.webcodepro.applecommander.ui.AppleCommander;
+import javafx.beans.property.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCharacterCombination;
 import javafx.scene.input.KeyCombination;
@@ -34,11 +34,20 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
+import org.applecommander.applesingle.AppleSingle;
+import org.applecommander.bastools.api.BasTools;
+import org.applecommander.capability.Capability;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.FileStores;
+import org.applecommander.javafx.settings.Settings;
+import org.applecommander.javafx.settings.SettingsDialog;
+import org.applecommander.javafx.wizard.CreateFileStoreWizard;
+import org.applecommander.shrinkit.NuFileArchive;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 import org.applecommander.usage.DiskUsage;
@@ -46,9 +55,11 @@ import org.applecommander.util.FileExtensions;
 import org.applecommander.util.FileExtensions.FileExtension;
 
 import java.io.File;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.applecommander.javafx.FxUtils.*;
 
@@ -60,6 +71,8 @@ public class FileStoreWindow {
     private final Button createFileButton;
     private final Button saveFileButton;
     private final Button saveFileAsButton;
+    private final Button settingsButton;
+    private final Button aboutButton;
     private final ToggleButton filesViewButton;
     private final ToggleButton diskUsageViewButton;
     private final ToggleButton informationViewButton;
@@ -75,13 +88,22 @@ public class FileStoreWindow {
 
     private final Stage primaryStage;
     private final FileStoreSelectionModel fileStoreSelection = new FileStoreSelectionModel();
-    private final ObjectProperty<ViewMode> viewMode = new SimpleObjectProperty<>(ViewMode.LANDING);
+    private final ObjectProperty<ViewMode> viewMode = new SimpleObjectProperty<>();
+    private final BooleanProperty supportsDiskUsage = new SimpleBooleanProperty();
+    private final IntegerProperty changeCount = new SimpleIntegerProperty();
+    private final BooleanProperty canSave = new SimpleBooleanProperty();
 
     public FileStoreSelectionModel fileStoreSelection() {
         return fileStoreSelection;
     }
     public ObjectProperty<ViewMode> viewModeProperty() {
         return viewMode;
+    }
+    public IntegerProperty changeCountProperty() {
+        return changeCount;
+    }
+    public void addChange() {
+        changeCount.setValue(changeCount.getValue() + 1);
     }
 
     public static void openNewWindow(Source source) {
@@ -102,6 +124,12 @@ public class FileStoreWindow {
         Scene scene = new Scene(controller.window, 1200, 700);
         stage.setTitle(AppleCommanderFX.buildTitle());
         stage.setScene(scene);
+        stage.getIcons().addAll(
+                new Image(imageUrl("AppleCommanderIcon-16x16.png")),
+                new Image(imageUrl("AppleCommanderIcon-32x32.png")),
+                new Image(imageUrl("AppleCommanderIcon-48x48.png")),
+                new Image(imageUrl("AppleCommanderIcon-64x64.png"))
+        );
 
         // Bind keyboard shortcuts in controller
         try {
@@ -117,11 +145,21 @@ public class FileStoreWindow {
 
     public FileStoreWindow(Stage stage) {
         this.primaryStage = stage;
+        stage.setOnCloseRequest(event -> {
+            if (changeCount.getValue() > 0) {
+                if (!showYesNoDialog("Unsaved Data",
+                        "This image has changes and has not been saved. Exit anyway?")) {
+                    event.consume();
+                }
+            }
+        });
 
         openFileButton = createButton("open-file.png", "Open", _ -> openFile());
         createFileButton = createButton("new-file.png", "Create", _ -> createFile());
         saveFileButton = createButton("save-file.png", "Save", _ -> saveFile());
         saveFileAsButton = createButton("save-as-file.png", "Save As...", _ -> saveFileAs());
+        settingsButton = createButton("settings.png", "Settings", _ -> settings());
+        aboutButton = createButton("about.png", "About", _ -> about());
 
         ToggleGroup viewModeGroup = new ToggleGroup();
         filesViewButton = createToggleButton("image-file-view.png", "Files", viewModeGroup, _ -> selectFilesContent());
@@ -130,19 +168,30 @@ public class FileStoreWindow {
         HBox viewModeBox = new HBox(filesViewButton, diskUsageViewButton, informationViewButton);
 
         ToolBar toolBar = new ToolBar(
-            openFileButton, createFileButton, saveFileButton, saveFileAsButton,
+            openFileButton, createFileButton, saveFileButton, saveFileAsButton, settingsButton, aboutButton,
             new Separator(Orientation.VERTICAL),
             viewModeBox,
             new Separator(Orientation.VERTICAL)
         );
 
-        // TEMPORARILY DISABLE UNTIL THESE ARE IMPLEMENTED
-        Set.of(createFileButton, saveFileButton, saveFileAsButton).forEach(b -> b.setDisable(true));
+        saveFileButton.disableProperty().bind(changeCount.isEqualTo(0).or(canSave.not()));
 
-        ImageView logo = new ImageView(imageUrl("AppleCommanderLogo.png"));
+        ImageView logo = new ImageView(imageUrl("AppleCommanderLogoLarge.png"));
         Label label = new Label("No disk image open. Use open to browse for a disk image.");
-        landingPage = new VBox(logo, label);
+        label.setTextFill(Color.BLACK);
+        Rectangle border = new Rectangle();
+        border.setWidth(logo.getImage().getWidth() + 50);
+        border.setHeight(logo.getImage().getHeight() + 50);
+        border.setArcHeight(20);
+        border.setArcWidth(20);
+        border.setFill(Color.BEIGE);
+        border.setStroke(Color.BLACK);
+        VBox logoBox = new VBox(logo, label);
+        logoBox.setAlignment(Pos.CENTER);
+        StackPane stackPane = new StackPane(border, logoBox);
+        landingPage = new VBox(stackPane);
         landingPage.setAlignment(Pos.CENTER);
+
         fileView = new FileView(this, toolBar);
         diskUsageView = new DiskUsageView(this, toolBar);
         informationView = new InformationView(this);
@@ -166,6 +215,7 @@ public class FileStoreWindow {
         window.setBottom(footer);
 
         filesViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull());
+        diskUsageViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull().or(supportsDiskUsage.not()));
         informationViewButton.disableProperty().bind(fileStoreSelection.selectedItemProperty().isNull());
 
         // Cannot bind button selection, so we have a listener!
@@ -181,6 +231,13 @@ public class FileStoreWindow {
         fileStoreSelection.selectedItemProperty().addListener((_, _, newValue) -> {
             if (newValue != null) {
                 viewMode.setValue(ViewMode.FILES);
+                supportsDiskUsage.setValue(newValue.get(DiskUsage.class).isPresent());
+
+                // Making the save button state to be properties. The only one we should modify elsewhere is hasChanged.
+                Source source = newValue.get(Source.class).orElseThrow();
+                changeCount.setValue(source.hasChanged() ? 1 : 0);
+                canSave.setValue(source.can(Capability.SAVE_SOURCE));
+
                 // There doesn't appear to be a item list changed, so this should work?
                 boolean enabled = fileStoreSelection.getItemCount() > 1;
                 switchDiskButton.setDisable(!enabled);
@@ -190,6 +247,8 @@ public class FileStoreWindow {
                 displayDisk();
             }
         });
+
+        viewMode.set(ViewMode.LANDING);
     }
 
     public Stage getPrimaryStage() {
@@ -217,7 +276,7 @@ public class FileStoreWindow {
     private void openFile() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Apple II disk image");
-        AppleCommanderFX.getLastOpenedDirectory().ifPresent(fileChooser::setInitialDirectory);
+        Settings.getLastOpenedDirectory().ifPresent(fileChooser::setInitialDirectory);
         for (FileExtension extension : FileExtensions.FILE_FILTERS) {
             fileChooser.getExtensionFilters().add(new ExtensionFilter(extension.description(), extension.extensions()));
         }
@@ -226,7 +285,7 @@ public class FileStoreWindow {
         if (selectedFile == null) {
             return;
         }
-        AppleCommanderFX.setLastOpenedDirectory(selectedFile.getParentFile());
+        Settings.setLastOpenedDirectory(selectedFile.getParentFile());
         Optional<Source> source = Sources.create(selectedFile);
         openImage(source.orElseThrow(), true);
     }
@@ -278,15 +337,88 @@ public class FileStoreWindow {
     }
 
     public void createFile() {
-        // TODO
+        CreateFileStoreWizard wizard = new CreateFileStoreWizard();
+        if (wizard.showAndWait(primaryStage)) {
+            Source source = wizard.getSource();
+            openImage(source, true);
+            changeCount.set(1);
+        }
     }
 
     public void saveFile() {
-        // TODO
+        try {
+            FileStore fileStore = fileStoreSelection.getSelectedItem();
+            Source source = fileStore.get(Source.class).orElseThrow();
+            source.save();
+            changeCount.setValue(0);
+        } catch (Throwable t) {
+            showErrorDialog("Could not save file", t);
+        }
     }
 
     public void saveFileAs() {
-        // TODO
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Apple II disk image");
+        Settings.getLastOpenedDirectory().ifPresent(fileChooser::setInitialDirectory);
+        for (FileExtension extension : FileExtensions.FILE_FILTERS) {
+            fileChooser.getExtensionFilters().add(new ExtensionFilter(extension.description(), extension.extensions()));
+        }
+
+        FileStore fileStore = fileStoreSelection.getSelectedItem();
+        Source source = fileStore.get(Source.class).orElseThrow();
+        fileChooser.setInitialFileName(source.getName());
+        File selectedFile = fileChooser.showSaveDialog(primaryStage);
+        if (selectedFile == null) {
+            return;
+        }
+        Settings.setLastOpenedDirectory(selectedFile.getParentFile());
+
+        try {
+            Files.write(selectedFile.toPath(), source.readAllBytes().asBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Optional<Source> newSource = Sources.create(selectedFile);
+            openImage(newSource.orElseThrow(), false);
+        } catch (Throwable t) {
+            showErrorDialog("Could not save file", t);
+        }
+    }
+
+    public void settings() {
+        SettingsDialog dialog = new SettingsDialog();
+        dialog.showAndWait(primaryStage);
+    }
+
+    public void about() {
+        Dialog<ButtonBar.ButtonData> dialog = new Dialog<>();
+        dialog.setTitle("About AppleCommanderFX");
+
+        URL imageURL = getClass().getResource("/images/AppleCommanderLogoSmall.png");
+        Objects.requireNonNull(imageURL);
+        ImageView imageView = new ImageView(imageURL.toExternalForm());
+        VBox imagePane = new VBox(imageView);
+        imagePane.setPadding(new Insets(0, 0, 10, 0));
+        imagePane.setStyle("-fx-background-color: white;");
+        imagePane.setAlignment(Pos.CENTER);
+
+        dialog.getDialogPane().setHeader(imagePane);
+        dialog.getDialogPane().setContent(FXControls.vertical()
+                .alignment(Pos.CENTER)
+                .spacing(5)
+                .largeBold("AppleCommanderFX")
+                .label("Version %s", AppleCommander.VERSION)
+                .node(FXControls.horizontal()
+                        .alignment(Pos.CENTER)
+                        .spacing(5)
+                        .label("Visit:")
+                        .link("website", "https://applecommander.github.io/")
+                        .link("github", "https://github.com/AppleCommander/AppleCommander")
+                        .get())
+                .table(2,
+                        "AppleSingle:", AppleSingle.VERSION,
+                        "ShrinkIt:", NuFileArchive.VERSION,
+                        "BASIC Tools:", BasTools.VERSION)
+                .get());
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK);
+        dialog.showAndWait();
     }
 
     private void switchDisk() {
@@ -308,10 +440,6 @@ public class FileStoreWindow {
         if (primaryStage != null) {
             primaryStage.setTitle(AppleCommanderFX.buildTitle());
         }
-    }
-
-    private void exitApplication() {
-        Platform.exit();
     }
 
     private void selectFilesContent() {

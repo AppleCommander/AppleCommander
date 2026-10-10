@@ -5,6 +5,11 @@ module org.applecommander.javafx {
     requires javafx.controls;
     requires javafx.graphics;
     requires org.applecommander.api;
+    requires org.applecommander.applesingle;
+    requires org.applecommander.bastools;
+    requires org.applecommander.shrinkit;
 
     opens org.applecommander.javafx to javafx.graphics;
+    opens org.applecommander.javafx.settings to javafx.graphics;
+    opens org.applecommander.javafx.wizard to javafx.graphics;
 }

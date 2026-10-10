@@ -19,7 +19,7 @@
  */
 package io.github.applecommander.acx.converter;
 
-import com.webcodepro.applecommander.util.Range;
+import org.applecommander.util.Range;
 
 import static picocli.CommandLine.ITypeConverter;
 

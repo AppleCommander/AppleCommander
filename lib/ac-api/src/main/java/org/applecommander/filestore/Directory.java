@@ -19,35 +19,30 @@
  */
 package org.applecommander.filestore;
 
+import org.applecommander.capability.CapabilityProvider;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * A Directory represents a directory in a FileStore.  Note that even
- * FileStores that don't naturally support a directory do contain a root directory,
- * so there will be a directory associated to each FileStore.
- */
-public interface Directory {
-    /**
-     * Get the parent directory. If this is the root directory, it returns empty.
-     */
+/// A `Directory` represents a directory in a `FileStore`.  Note that even
+/// file stores that don't naturally support a directory do contain a root directory,
+/// so there will be a directory associated to each `FileStore`.
+public interface Directory extends CapabilityProvider {
+
+    /// Get the parent directory. If this is the root directory, it returns empty.
     Optional<Directory> getParent();
-    /**
-     * Returns the FileStore that this Directory belongs to.
-     */
+
+    /// Returns the FileStore that this Directory belongs to.
     FileStore getFileStore();
-    /**
-     * Returns the name of this directory.
-     */
+
+    /// Returns the name of this directory.
     String getName();
-    /**
-     * Return all entries that are stored in this directory.
-     */
+
+    /// Return all entries that are stored in this directory.
     List<FileEntry> getFiles();
-    /**
-     * Filter out the <code>DirectoryEntry</code> entries in this directory.
-     */
+
+    /// Filter out the `DirectoryEntry` entries in this directory.
     default List<Directory> getDirectories() {
         return getFiles().stream()
                 .map(fileEntry -> fileEntry.get(Directory.class))
@@ -55,9 +50,8 @@ public interface Directory {
                 .map(Optional::get)
                 .collect(Collectors.toList());
     }
-    /**
-     * Locate a given file of the given name recursively on the disk.
-     */
+
+    /// Locate a given file of the given name recursively on the disk.
     default Optional<FileEntry> findFile(String name) {
         for (FileEntry fileEntry : getFiles()) {
             if (name.equalsIgnoreCase(fileEntry.getName())) {

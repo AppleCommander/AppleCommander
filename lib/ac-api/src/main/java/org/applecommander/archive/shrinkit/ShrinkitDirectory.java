@@ -19,6 +19,7 @@
  */
 package org.applecommander.archive.shrinkit;
 
+import org.applecommander.capability.Capability;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
 
@@ -32,6 +33,11 @@ public class ShrinkitDirectory implements Directory {
     public ShrinkitDirectory(ShrinkitFileStore fileStore, List<FileEntry> files) {
         this.fileStore = fileStore;
         this.files = files;
+    }
+
+    @Override
+    public boolean can(Capability capability) {
+        return false;
     }
 
     @Override

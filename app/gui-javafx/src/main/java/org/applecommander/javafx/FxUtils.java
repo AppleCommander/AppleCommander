@@ -28,7 +28,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -90,5 +93,30 @@ public class FxUtils {
         scene.getAccelerators().put(keyCombination, runnable);
         button.setOnAction(e -> runnable.run());
         button.setTooltip(new Tooltip(String.format("%s (%s)", tooltipText, keyCombination.getDisplayText().toUpperCase(Locale.ROOT))));
+    }
+
+    public static void showErrorDialog(String title, Throwable t) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(t.getMessage() == null ? "An unexpected error occurred." : t.getMessage());
+        // Generate the stack trace
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        t.printStackTrace(pw);
+        alert.setContentText(sw.toString());
+        alert.showAndWait();
+    }
+
+    public static boolean showYesNoDialog(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO);
+        alert.setTitle(title);
+        alert.setHeaderText(title);
+
+        // See https://stackoverflow.com/questions/38799220/javafx-how-to-bring-dialog-alert-to-the-front-of-the-screen#43007782
+        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+        stage.setAlwaysOnTop(true);
+        stage.toFront();
+
+        return alert.showAndWait().map(ButtonType.YES::equals).orElse(false);
     }
 }

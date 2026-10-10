@@ -22,8 +22,8 @@ package com.webcodepro.applecommander.storage.os.dos33;
 import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.util.AppleUtil;
+import org.applecommander.device.Coordinate;
 import org.applecommander.device.TrackSectorDevice;
-import org.applecommander.os.Coordinate;
 import org.applecommander.os.DiskCheck;
 import org.applecommander.util.DataBuffer;
 

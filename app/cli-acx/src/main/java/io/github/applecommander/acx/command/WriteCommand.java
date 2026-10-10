@@ -20,7 +20,7 @@
 package io.github.applecommander.acx.command;
 
 import io.github.applecommander.acx.arggroup.CoordinateSelection;
-import io.github.applecommander.acx.base.ReadOnlyDiskImageCommandOptions;
+import io.github.applecommander.acx.base.ReadWriteDiskCommandOptions;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -32,7 +32,7 @@ import java.nio.file.Path;
 import java.util.function.Supplier;
 
 @Command(name = "write", description = "Write a block or sector.")
-public class WriteCommand extends ReadOnlyDiskImageCommandOptions {
+public class WriteCommand extends ReadWriteDiskCommandOptions {
     @ArgGroup(multiplicity = "1", heading = "%nCoordinate Selection:%n")
     private CoordinateSelection coordinate = new CoordinateSelection();
     

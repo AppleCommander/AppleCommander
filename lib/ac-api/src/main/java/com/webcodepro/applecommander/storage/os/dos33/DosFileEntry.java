@@ -23,7 +23,7 @@ import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.storage.filters.*;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
-import org.applecommander.os.Coordinate;
+import org.applecommander.device.Coordinate;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;

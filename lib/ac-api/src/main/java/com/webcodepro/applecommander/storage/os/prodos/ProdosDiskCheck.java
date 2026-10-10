@@ -22,7 +22,7 @@ package com.webcodepro.applecommander.storage.os.prodos;
 import com.webcodepro.applecommander.storage.DirectoryEntry;
 import com.webcodepro.applecommander.storage.DiskException;
 import org.applecommander.device.BlockDevice;
-import org.applecommander.os.Coordinate;
+import org.applecommander.device.Coordinate;
 import org.applecommander.os.DiskCheck;
 import org.applecommander.util.DataBuffer;
 

@@ -19,10 +19,7 @@
  */
 package org.applecommander.javafx;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -31,37 +28,65 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import org.applecommander.applesingle.AppleSingle;
+import org.applecommander.applesingle.FileDatesInfo;
+import org.applecommander.applesingle.ProdosFileInfo;
+import org.applecommander.bastools.api.Configuration;
+import org.applecommander.bastools.api.ModernTokenReader;
+import org.applecommander.bastools.api.Parser;
+import org.applecommander.bastools.api.Visitors;
+import org.applecommander.bastools.api.model.Program;
+import org.applecommander.bastools.api.model.Token;
 import org.applecommander.capability.Capability;
-import org.applecommander.filestore.Directory;
-import org.applecommander.filestore.DisplayColumn;
-import org.applecommander.filestore.FileEntry;
+import org.applecommander.filestore.*;
+import org.applecommander.javafx.settings.ExportOption;
+import org.applecommander.javafx.settings.Settings;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
+import org.applecommander.transfer.ProdosAttributePreservation;
+import org.applecommander.transfer.ProdosAttributes;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
 import static org.applecommander.javafx.FxUtils.*;
 
 public class FileView extends BorderPane {
+    // See https://en.wikipedia.org/wiki/AppleSingle_and_AppleDouble_formats
+    public static final DataFormat APPLESINGLE_MIME = new DataFormat("application/applefile");
+
     private final FileStoreWindow fileStoreWindow;
     private final HBox breadcrumbBar;
-    private final TableView<FileEntry> fileTable;
-    private ToggleButton nativeToolButton;
-    private ToggleButton detailToolButton;
-    private ToggleButton deletedFilesToggleButton;
+    private final ToggleButton nativeToolButton;
+    private final ToggleButton detailToolButton;
+    private final ToggleButton deletedFilesToggleButton;
+
+    // Note that the TableView has a lingering data issue that I couldn't resolve.
+    // Therefore, it gets tossed and recreated as needed. The primary issue is that
+    // it hangs on to the old items and tries to access values with the new item
+    // converters. So if GameDOS was loaded and then a Zip was loaded into the table,
+    // a sort caused an exception because something tried to render a GameDOS file
+    // entry with the Zip renderer. But only when a sort was applied. Clearing out
+    // every property didn't seem to help. Thus this extreme solution. Please fix!
+    private TableView<FileEntry> fileTable;
 
     private final ObservableList<Directory> directoryPath = FXCollections.observableArrayList();
     private final ObjectProperty<Directory> selectedDirectory = new SimpleObjectProperty<>();
     private final ObjectProperty<DisplayColumn.Mode> listingMode = new SimpleObjectProperty<>(DisplayColumn.Mode.NATIVE);
     private final SimpleBooleanProperty supportsDirectories = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty supportsFileDeletion = new SimpleBooleanProperty(false);
+    private final ObservableList<FileEntry> fileEntries = FXCollections.observableArrayList();
 
     public FileView(FileStoreWindow fileStoreWindow, ToolBar toolBar) {
         this.fileStoreWindow = fileStoreWindow;
@@ -81,36 +106,7 @@ public class FileView extends BorderPane {
         breadcrumbBar.setAlignment(Pos.CENTER_LEFT);
         setTop(breadcrumbBar);
 
-        fileTable = new TableView<>();
-        VBox placeholder = new VBox(new Label("This image has no files."));
-        placeholder.setAlignment(Pos.CENTER);
-        placeholder.setSpacing(10);
-        fileTable.setPlaceholder(placeholder);
-        setCenter(fileTable);
-
-        fileTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
-        fileTable.setItems(FXCollections.emptyObservableList());
-        fileTable.setOnMouseClicked(event -> {
-            if (event.getClickCount() != 2) {
-                return;
-            }
-            FileEntry selectedRow = fileTable.getSelectionModel().getSelectedItem();
-            if (selectedRow == null) {
-                return;
-            }
-            if (selectedRow.get(Directory.class).isPresent()) {
-                directoryPath.add(selectedRow.get(Directory.class).get());
-                return;
-            }
-            switch (selectedRow.getContentType()) {
-                case DISK_IMAGE, ARCHIVE_IMAGE -> {
-                    Optional<Source> opt = Sources.create(selectedRow);
-                    Source source = opt.orElseThrow();  // we don't expect this to fail!
-                    FileStoreWindow.openNewWindow(source);
-                }
-                case UNKNOWN -> { /* Do Nothing */ }
-            }
-        });
+        createNewFileTable();
 
         nativeToolButton.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
         nativeToolButton.managedProperty().bind(nativeToolButton.visibleProperty());
@@ -124,7 +120,6 @@ public class FileView extends BorderPane {
         breadcrumbBar.managedProperty().bind(breadcrumbBar.visibleProperty());
 
         visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
-        managedProperty().bind(fileTable.visibleProperty());
 
         fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((_, _, newValue) -> {
             if (newValue != null) {
@@ -176,17 +171,200 @@ public class FileView extends BorderPane {
             selectedDirectory.set(directoryPath.isEmpty() ? null : directoryPath.getLast());
         });
 
-        selectedDirectory.addListener((_, _, newValue) -> {
+        selectedDirectory.addListener((_, _, _) -> {
            populateDiskRows();
         });
+        fileStoreWindow.changeCountProperty().addListener((_, _, newValue) -> {
+            if (newValue != null && newValue.intValue() > 0) {
+                populateDiskRows();
+            }
+        });
+    }
+
+    public void createNewFileTable() {
+        if (fileTable != null) {
+            fileTable.visibleProperty().unbind();
+        }
+
+        fileTable = new TableView<>();
+        VBox placeholder = new VBox(new Label("This image has no files."));
+        placeholder.setAlignment(Pos.CENTER);
+        placeholder.setSpacing(10);
+        fileTable.setPlaceholder(placeholder);
+        setCenter(fileTable);
+
+        fileTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+        fileTable.setItems(FXCollections.emptyObservableList());
+        fileTable.setOnMouseClicked(event -> {
+            if (event.getClickCount() != 2) {
+                return;
+            }
+            FileEntry selectedRow = fileTable.getSelectionModel().getSelectedItem();
+            if (selectedRow == null) {
+                return;
+            }
+            if (selectedRow.get(Directory.class).isPresent()) {
+                directoryPath.add(selectedRow.get(Directory.class).get());
+                return;
+            }
+            switch (selectedRow.getContentType()) {
+                case DISK_IMAGE, ARCHIVE_IMAGE -> {
+                    Optional<Source> opt = Sources.create(selectedRow);
+                    Source source = opt.orElseThrow();  // we don't expect this to fail!
+                    FileStoreWindow.openNewWindow(source);
+                }
+                case UNKNOWN -> { /* Do Nothing */ }
+            }
+        });
+        // See: https://stackoverflow.com/questions/32534113/javafx-drag-and-drop-a-file-into-a-program
+        fileTable.setOnDragDetected(event -> {
+            if (!fileTable.getSelectionModel().getSelectedItems().isEmpty()) {
+                try {
+                    // If we are dragging OUT of AppleCommander, we need to create working files:
+                    ExportOption exportOption = Settings.getExportOption();
+                    Path tempDir = Files.createTempDirectory("AppleCommander-drag-");
+                    tempDir.toFile().deleteOnExit();
+                    List<File> files = new ArrayList<>();
+                    for (FileEntry fileEntry : fileTable.getSelectionModel().getSelectedItems()) {
+                        // We may write two files, so copyToPath gives us ALL the names we care about
+                        for (Path path : exportOption.copyToPath(tempDir, fileEntry)) {
+                            File file = path.toFile();
+                            file.deleteOnExit();
+                            files.add(file);
+                        }
+                    }
+                    ClipboardContent content = new ClipboardContent();
+                    content.putFiles(files);
+                    // Internal drag format is AppleSingle, and one file at a time:
+                    AppleSingle appleSingle = ExportOption.createAppleSingle(fileTable.getSelectionModel().getSelectedItem());
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    appleSingle.save(baos);
+                    content.put(APPLESINGLE_MIME, ByteBuffer.wrap(baos.toByteArray()));
+                    // Now we're ready, so allow it to proceed:
+                    Dragboard db = fileTable.startDragAndDrop(TransferMode.ANY);
+                    db.setContent(content);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
+            event.consume();
+        });
+        fileTable.setOnDragOver(event -> {
+            FileStore fileStore = fileStoreWindow.fileStoreSelection().getSelectedItem();
+            Directory directory = selectedDirectory.get();
+            Dragboard db = event.getDragboard();
+            boolean internalDrag = db.hasContent(APPLESINGLE_MIME);
+            boolean externalDrag = db.hasFiles();
+            boolean canCreateFiles = fileStore != null && fileStore.can(Capability.CREATE_FILES) && directory instanceof WritableDirectory;
+            if ((internalDrag || externalDrag) && canCreateFiles) {
+                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+            }
+            event.consume();
+        });
+        fileTable.setOnDragDropped(event -> {
+            Dragboard db = event.getDragboard();
+            boolean success = false;
+            try {
+                if (db.hasContent(APPLESINGLE_MIME)) {
+                    // Give preference to internal dragging.
+                    ByteBuffer data = (ByteBuffer) db.getContent(APPLESINGLE_MIME);
+                    AppleSingle appleSingle = AppleSingle.read(data.array());
+                    ProdosAttributes prodosAttributes = createProdosAttributes(appleSingle);
+                    createFile(prodosAttributes);
+                    success = true;
+                } else if (db.hasFiles()) {
+                    // From the file system.
+                    List<File> files = db.getFiles();
+                    while (!files.isEmpty()) {
+                        File file = files.getFirst();
+                        files.remove(file);
+                        if (ProdosAttributePreservation.test(file.toPath())) {
+                            ProdosAttributePreservation attrs = ProdosAttributePreservation.parse(file.toPath());
+                            createFile(attrs.toProdosAttributes());
+                        }
+                        else if (AppleSingle.test(file) && Settings.isImportDecodeAppleSingle()) {
+                            AppleSingle appleSingle = AppleSingle.read(file);
+                            ProdosAttributes prodosAttributes = createProdosAttributes(appleSingle);
+                            createFile(prodosAttributes);
+                        }
+                        else {
+                            byte[] data = Files.readAllBytes(file.toPath());
+                            ProdosAttributes.Builder builder = ProdosAttributes.builder()
+                                    .BIN(0x0000).name(file.getName())
+                                    .dataFork(data);
+                            String alternateName = file.getName();
+                            if (alternateName.lastIndexOf('.') != -1) {
+                                alternateName = alternateName.substring(0, alternateName.lastIndexOf('.'));
+                            }
+                            if (file.getName().endsWith(".bas") && Settings.isImportTokenizeApplesoft()) {
+                                Configuration config = Configuration.builder().sourceFile(file).build();
+                                Queue<Token> tokens = ModernTokenReader.tokenize(file);
+                                Parser parser = new Parser(tokens);
+                                Program program = parser.parse();
+                                data = Visitors.byteVisitor(config).dump(program);
+                                builder.BAS().auxType(config.startAddress).name(alternateName).dataFork(data);
+                            }
+                            else if (file.getName().endsWith(".txt")) {
+                                builder.TXT().name(alternateName);
+                            }
+                            createFile(builder.get());
+                        }
+                    }
+                    success = true;
+                }
+            } catch (IOException e) {
+                FxUtils.showErrorDialog("Unable to drop files", e);
+            }
+            event.setDropCompleted(success);
+            event.consume();
+        });
+
+        managedProperty().bind(fileTable.visibleProperty());
+    }
+
+    public ProdosAttributes createProdosAttributes(AppleSingle appleSingle) {
+        ProdosAttributes.Builder builder = ProdosAttributes.builder().name("NEWFILE").BIN(0x0000);
+        if (appleSingle.getRealName() != null) {
+            builder.name(appleSingle.getRealName());
+        }
+        if (appleSingle.getFileDatesInfo() != null) {
+            FileDatesInfo fileDatesInfo = appleSingle.getFileDatesInfo();
+            builder.creation(Date.from(fileDatesInfo.getCreationInstant()));
+            builder.modification(Date.from(fileDatesInfo.getModificationInstant()));
+        }
+        if (appleSingle.getProdosFileInfo() != null) {
+            ProdosFileInfo prodosFileInfo = appleSingle.getProdosFileInfo();
+            builder.auxType(prodosFileInfo.getAuxType());
+            builder.fileType(prodosFileInfo.getFileType());
+            builder.locked((prodosFileInfo.getAccess() & 0xe3) == 0xe3);
+        }
+        if (appleSingle.getDataFork() != null) {
+            builder.dataFork(appleSingle.getDataFork());
+        }
+        if (appleSingle.getResourceFork() != null) {
+            builder.resourceFork(appleSingle.getResourceFork());
+        }
+        return builder.get();
+    }
+
+    public void createFile(ProdosAttributes prodosAttributes) {
+        Directory directory = selectedDirectory.get();
+        if (directory instanceof WritableDirectory writableDirectory) {
+            // Note that we expect ProdosAttributes to be fully populated (including data/resource forks)
+            writableDirectory.createFrom(prodosAttributes);
+            fileStoreWindow.addChange();
+        }
+        else {
+            throw new RuntimeException("This is not a writable directory");
+        }
     }
 
     public void bindScene(Scene scene) {
         // Function keys for view modes
         applyShortcutToButton(scene, nativeToolButton, "Native View",
-                new KeyCodeCombination(KeyCode.F2), this::selectNativeView);
+                new KeyCodeCombination(KeyCode.F5), this::selectNativeView);
         applyShortcutToButton(scene, detailToolButton, "Detail View",
-                new KeyCodeCombination(KeyCode.F3), this::selectDetailView);
+                new KeyCodeCombination(KeyCode.F6), this::selectDetailView);
     }
 
     public void clear() {
@@ -194,10 +372,10 @@ public class FileView extends BorderPane {
         selectedDirectory.set(null);
         listingMode.setValue(DisplayColumn.Mode.NATIVE);
         deletedFilesToggleButton.setSelected(false);
+        createNewFileTable();
         fileTable.setItems(FXCollections.emptyObservableList());
         fileTable.getColumns().clear();
     }
-
 
     private void selectNativeView() {
         listingMode.set(DisplayColumn.Mode.NATIVE);
@@ -208,38 +386,111 @@ public class FileView extends BorderPane {
     }
 
     private void populateDiskRows() {
-        fileTable.getColumns().clear();
         if (selectedDirectory.isNull().get()) {
             // No directories, leave a cleared list. Likely in transition.
             return;
         }
 
+        createNewFileTable();
         Directory directory = selectedDirectory.get();
         List<DisplayColumn> displayColumns = directory.getFileStore().getDisplayColumns();
 
+        boolean editable = false;
+        List<TableColumn<FileEntry,?>> tableColumns = new ArrayList<>();
         for (final DisplayColumn displayColumn : displayColumns) {
-            TableColumn<FileEntry,String> column = new TableColumn<>(displayColumn.headerText());
+            TableColumn<FileEntry,?> column = switch (displayColumn.dataType()) {
+                case STRING -> {
+                    TableColumn<FileEntry,String> stringColumn = new TableColumn<>(displayColumn.headerText());
+                    if (displayColumn.editInline()) {
+                        stringColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+                        stringColumn.setEditable(true);
+                        stringColumn.setCellValueFactory(cell -> {
+                            SimpleStringProperty property = new SimpleStringProperty(displayColumn.formatAsText(cell.getValue()));
+                            property.addListener((_, _, newValue) -> {
+                                displayColumn.setValueFn().accept(cell.getValue(), newValue);
+                                fileStoreWindow.addChange();
+                            });
+                            return property;
+                        });
+                        editable = true;
+                    } else {
+                        stringColumn.setCellValueFactory(cell ->
+                                new SimpleStringProperty(displayColumn.formatAsText(cell.getValue())));
+                    }
+                    yield stringColumn;
+                }
+                case INTEGER,LONG,DOUBLE -> {
+                    TableColumn<FileEntry,Number> numberColumn = new TableColumn<>(displayColumn.headerText());
+                    numberColumn.setCellFactory(c -> new TableCell<>() {
+                        @Override
+                        protected void updateItem(Number item, boolean empty) {
+                            super.updateItem(item, empty);
+                            if (empty || item == null) {
+                                setText(null);
+                            } else {
+                                setText(String.format(displayColumn.fmt(), item));
+                            }
+                        }
+                    });
+                    switch (displayColumn.dataType()) {
+                        case INTEGER:
+                            numberColumn.setCellValueFactory(cell ->
+                                    new SimpleIntegerProperty((Integer)displayColumn.getValueFn().apply(cell.getValue())));
+                            break;
+                        case LONG:
+                            numberColumn.setCellValueFactory(cell ->
+                                    new SimpleLongProperty((Long)displayColumn.getValueFn().apply(cell.getValue())));
+                            break;
+                        case DOUBLE:
+                            numberColumn.setCellValueFactory(cell ->
+                                    new SimpleDoubleProperty((Double)displayColumn.getValueFn().apply(cell.getValue())));
+                            break;
+                    }
+                    yield numberColumn;
+                }
+            };
             column.setUserData(displayColumn);
-            column.setCellValueFactory(cell ->
-                    new SimpleStringProperty(displayColumn.formatAsText(cell.getValue())));
             column.visibleProperty().setValue(displayColumn.supports(listingMode.get()));
             if (displayColumn.alignment() == DisplayColumn.Alignment.RIGHT) {
                 column.setStyle("-fx-alignment: CENTER-RIGHT;");
             } else if (displayColumn.alignment() == DisplayColumn.Alignment.CENTER) {
                 column.setStyle("-fx-alignment: CENTER;");
+            } else {
+                column.setStyle("-fx-alignment: CENTER-LEFT;");
             }
-            fileTable.getColumns().add(column);
+            tableColumns.add(column);
         }
+        fileTable.setEditable(editable);
+        fileTable.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.F2) {
+                TableView.TableViewFocusModel<FileEntry> focusModel = fileTable.getFocusModel();
+                @SuppressWarnings("unchecked")
+                final TablePosition<FileEntry,?> pos = focusModel.getFocusedCell();
+                fileTable.edit(pos.getRow(), pos.getTableColumn());
+                event.consume();
+            }
+            else if (event.getCode() == KeyCode.DELETE && fileTable.getSelectionModel().getSelectedItem() != null) {
+                FileEntry entry = fileTable.getSelectionModel().getSelectedItem();
+                FileStore fileStore = entry.getFileStore();
+                if (fileStore.can(Capability.DELETE_FILES)) {
+                    WritableDirectory writableDirectory = (WritableDirectory) fileStore.getRootDirectory();
+                    writableDirectory.deleteFile(entry);
+                    fileEntries.remove(entry);
+                    fileStoreWindow.addChange();
+                }
+            }
+        });
 
         List<? extends FileEntry> rows = directory.getFiles().stream()
                 .filter(fileEntry -> deletedFilesToggleButton.isSelected() || !fileEntry.isDeleted())
                 .toList();
-
-        ObservableList<FileEntry> rowList = FXCollections.observableArrayList(rows);
-        SortedList<FileEntry> sortedRows = new SortedList<>(rowList);
-        sortedRows.comparatorProperty().bind(fileTable.comparatorProperty());
-        fileTable.setItems(sortedRows);
+        fileEntries.clear();
+        fileEntries.addAll(rows);
+        SortedList<FileEntry> sortedRows = new SortedList<>(fileEntries);
         fileTable.getSortOrder().clear();
+        fileTable.setItems(sortedRows);
+        fileTable.getColumns().addAll(tableColumns);
+        sortedRows.comparatorProperty().bind(fileTable.comparatorProperty());
         // If selection is bound, the ToolButton crashes and burns, so need to manage it manually.
         nativeToolButton.setSelected(listingMode.get() == DisplayColumn.Mode.NATIVE);
         detailToolButton.setSelected(listingMode.get() == DisplayColumn.Mode.DETAIL);

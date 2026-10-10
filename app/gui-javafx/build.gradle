@@ -14,8 +14,21 @@ repositories {
 
 dependencies {
     implementation project(':lib:ac-api')
-    implementation 'io.github.mkpaz:atlantafx-base:2.1.0'
+    implementation 'io.github.mkpaz:atlantafx-base:3.0.0'
+    implementation "org.applecommander:ShrinkItArchive:$shkVersion"
+    implementation "org.applecommander:applesingle-api:$asVersion"
+    implementation "org.applecommander:bastools-api:$btVersion"
     implementation 'org.slf4j:slf4j-jdk14:2.0.20'
+
+    testImplementation platform("org.junit:junit-bom:$junitVersion")
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'com.google.guava:guava:33.7.1-jre'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 tasks.register("copyDependencies", Copy) {

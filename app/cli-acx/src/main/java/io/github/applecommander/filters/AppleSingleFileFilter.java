@@ -23,7 +23,7 @@ import com.webcodepro.applecommander.storage.FileEntry;
 import com.webcodepro.applecommander.storage.FileFilter;
 import com.webcodepro.applecommander.storage.os.dos33.DosFileEntry;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFileEntry;
-import io.github.applecommander.applesingle.AppleSingle;
+import org.applecommander.applesingle.AppleSingle;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

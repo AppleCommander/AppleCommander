@@ -92,6 +92,7 @@ public class ZipFileStore implements FileStore {
             .addStringField("Method", ZipFileEntry::getMethodName, Mode.DETAIL)
             .addLongField("Size", ZipFileEntry::getCompressedSize, Mode.DETAIL)
             .addPercentField("Ratio", ZipFileEntry::getCompressedSize, ZipFileEntry::getSize, "%2.0f%%", Mode.DETAIL)
+            .addFileTimeField("Creation", ZipFileEntry::getCreationTime)
             .addFileTimeField("Last Modified", ZipFileEntry::getLastModifiedTime)
             .addLongField("CRC-32", ZipFileEntry::getCrc, "%08x", Mode.DETAIL)
             .addStringField("Name", FileEntry::getName)

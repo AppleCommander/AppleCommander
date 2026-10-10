@@ -29,6 +29,15 @@ public class AppleCommander {
 	public static final String VERSION;
 	
 	static {
-		VERSION = AppleCommander.class.getPackage().getImplementationVersion();
+		String version = AppleCommander.class.getPackage().getImplementationVersion();
+		if (version == null) {
+			// When run under the Java Module system (JPMS) we need to get it a different way.
+			version = AppleCommander.class.getModule()
+				.getDescriptor()
+				.version()
+				.map(Object::toString)
+				.orElse("Development Build");
+		}
+		VERSION = version;
 	}
 }

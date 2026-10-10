@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class ShrinkitFileStore implements FileStore {
@@ -45,6 +46,7 @@ public class ShrinkitFileStore implements FileStore {
     private final List<FileEntry> files = new ArrayList<>();
 
     public ShrinkitFileStore(Source source) {
+        Objects.requireNonNull(source);
         this.source = source;
         try {
             this.archive = new NuFileArchive(new ByteArrayInputStream(source.readAllBytes().asBytes()));
@@ -82,14 +84,14 @@ public class ShrinkitFileStore implements FileStore {
             .addStringField("Name", ShrinkitFileEntry::getName)
             .addStringField("Sys. Id", ShrinkitFileEntry::getFileSysIdText, Mode.DETAIL)
             .addIntField("File Sys. Info", ShrinkitFileEntry::getFileSysInfo, "$%04X", Mode.DETAIL)
-            .addStringField("Access", Alignment.CENTER, ShrinkitFileEntry::getAccessString, Mode.DETAIL)
-            .addStringField("Kind", ShrinkitFileEntry::getStorageTypeString)
-            .addStringField("Type", Alignment.CENTER, ShrinkitFileEntry::getFiletype)
+            .addStringField("Access", Alignment.CENTER, ShrinkitFileEntry::getAccessText, Mode.DETAIL)
+            .addStringField("Kind", ShrinkitFileEntry::getStorageTypeText)
+            .addStringField("Type", Alignment.CENTER, ShrinkitFileEntry::getFileTypeText)
             .addLongField("Aux. Type", ShrinkitFileEntry::getExtraType, "$%04X")
             .addDateField("Archived", ShrinkitFileEntry::getArchiveWhen)
             .addDateField("Created", ShrinkitFileEntry::getCreateWhen, Mode.DETAIL)
             .addDateField("Modified", ShrinkitFileEntry::getModWhen, Mode.DETAIL)
-            .addStringField("Format", ShrinkitFileEntry::getThreadFormat)
+            .addStringField("Format", ShrinkitFileEntry::getThreadFormatText)
             .addPercentField("Size", ShrinkitFileEntry::getCompressedSize, ShrinkitFileEntry::getSize, "%2.0f%%")
             .addLongField("Un-Length", ShrinkitFileEntry::getSize)
             .addIntField("Data CRC", ShrinkitFileEntry::getDataForkCrc, "$%04X", Mode.DETAIL)

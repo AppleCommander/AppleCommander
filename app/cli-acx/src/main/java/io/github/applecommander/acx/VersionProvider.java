@@ -21,7 +21,7 @@ package io.github.applecommander.acx;
 
 import com.webcodepro.applecommander.ui.AppleCommander;
 
-import io.github.applecommander.applesingle.AppleSingle;
+import org.applecommander.applesingle.AppleSingle;
 import org.applecommander.bastools.api.BasTools;
 import org.applecommander.disassembler.api.Disassembler;
 import org.applecommander.shrinkit.NuFileArchive;

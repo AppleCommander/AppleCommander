@@ -10,6 +10,7 @@ module org.applecommander.api {
     requires org.applecommander.shrinkit;
     requires org.applecommander.disassembler;
     requires org.applecommander.bastools;
+    requires com.google.common;
 
     // Legacy APIs
     exports com.webcodepro.applecommander.storage;
@@ -54,11 +55,14 @@ module org.applecommander.api {
     exports org.applecommander.source;
     exports org.applecommander.usage;
     exports org.applecommander.util;
+    exports org.applecommander.os.gamedos;
+    exports org.applecommander.transfer;
 
     // FileStore discovery mechanisms
     uses FileStoreFactory;
     provides org.applecommander.filestore.FileStoreFactory
-        with org.applecommander.archive.shrinkit.ShrinkitFileStoreFactory,
+        with org.applecommander.os.gamedos.GamedosFileStoreFactory,
+             org.applecommander.archive.shrinkit.ShrinkitFileStoreFactory,
              org.applecommander.archive.zip.ZipFileStoreFactory,
              // Legacy shim
              com.webcodepro.applecommander.storage.DiskFileStoreFactory;

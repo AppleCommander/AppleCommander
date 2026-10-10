@@ -19,7 +19,6 @@
  */
 package org.applecommander.javafx;
 
-import javafx.beans.value.ObservableValue;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
@@ -34,7 +33,14 @@ public class InformationView extends ScrollPane {
     private final TilePane tilePane;
 
     public InformationView(FileStoreWindow fileStoreWindow) {
-        fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener(this::selectedFileStoreChanged);
+        fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((_, _, newValue) -> {
+            updateInformationPanes(newValue);
+        });
+        fileStoreWindow.changeCountProperty().addListener((_, _, changeCount) -> {
+            if (changeCount != null && changeCount.intValue() > 0) {
+                updateInformationPanes(fileStoreWindow.fileStoreSelection().getSelectedItem());
+            }
+        });
 
         tilePane = new TilePane();
         tilePane.setHgap(10);
@@ -50,10 +56,10 @@ public class InformationView extends ScrollPane {
         managedProperty().bind(visibleProperty());
     }
 
-    public void selectedFileStoreChanged(ObservableValue<? extends FileStore> observable, FileStore oldValue, FileStore newValue) {
+    public void updateInformationPanes(FileStore fileStore) {
         tilePane.getChildren().clear();
-        if (newValue != null) {
-            newValue.information().forEach(group -> {
+        if (fileStore != null) {
+            fileStore.information().forEach(group -> {
                 GridPane gridPane = new GridPane(5,5);
                 gridPane.setPadding(new Insets(10,10,10,10));
                 Label title = new Label("--- " + group.title() + " ---");

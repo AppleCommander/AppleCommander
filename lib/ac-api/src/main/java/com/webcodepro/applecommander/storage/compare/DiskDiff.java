@@ -22,7 +22,6 @@ package com.webcodepro.applecommander.storage.compare;
 import com.webcodepro.applecommander.storage.BlockDeviceAdapter;
 import com.webcodepro.applecommander.storage.DiskGeometry;
 import com.webcodepro.applecommander.storage.FormattedDisk;
-import com.webcodepro.applecommander.util.Range;
 import com.webcodepro.applecommander.util.filestreamer.FileStreamer;
 import com.webcodepro.applecommander.util.filestreamer.FileTuple;
 import com.webcodepro.applecommander.util.filestreamer.TypeOfFile;
@@ -30,6 +29,7 @@ import com.webcodepro.applecommander.util.readerwriter.FileEntryReader;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.util.DataBuffer;
+import org.applecommander.util.Range;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;

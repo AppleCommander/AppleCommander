@@ -25,21 +25,21 @@ import org.applecommander.util.InformationProvider;
 
 import java.util.List;
 
-/**
- * A FileStore is a generic interface for all archive and filesystem objects.
- */
+/// A FileStore is a generic interface for all archive and filesystem objects.
 public interface FileStore extends CapabilityProvider, Container, InformationProvider {
-    /**
-     * The label is a mechanism to distinguish multiple file stores in a single file.
-     * For instance, UniDOS has two file stores in the file, so it would have two
-     * different labels such as "Disk 1" and "Disk 2".
-     */
+
+    /// The label is a mechanism to distinguish multiple file stores in a single file.
+    /// For instance, UniDOS has two file stores in the file, so it would have two
+    /// different labels such as "Disk 1" and "Disk 2".
     String getLabel();
-    /** All FileStores support a "root" directory that references all files. */
+
+    /// All FileStores support a "root" directory that references all files.
     Directory getRootDirectory();
-    /** This is the path separator character. */
+
+    /// This is the path separator character.
     // TODO there has to be a better / dynamic way to do this (applies to ProDOS, ShrinkIt only?)
     String getPathSeparator();
-    /** Yields a list of columns to be used in this display mode. */
+
+    /// Yields a list of columns to be used in this display mode.
     List<DisplayColumn> getDisplayColumns();
 }

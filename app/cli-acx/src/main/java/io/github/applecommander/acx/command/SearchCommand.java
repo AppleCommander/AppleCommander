@@ -33,15 +33,25 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 import static picocli.CommandLine.*;
 
 @Command(name = "search", description = { "Search archives for a file.", "", """
             This is akin to the Unix 'find' command but twisted to support the Apple II.
-            Note that all options are ANDed. The all options default to equals but can be
-            prefixed with comparisons ('<', '<=', '>', '>=', '<>', '!=').
+            Note that all options are ANDed. All options default to equals but can be
+            prefixed with comparisons ('<', '<=', '>', '>=', '<>', '!=').  For example:
+                --size='>=8184' --size='<=8192' --type=BIN
+            will (essentially) search for likely HGR candidates. Note that size is the only
+            optional allowed to repeat due to ANDing of the criteria.
+            
+            For filename comparisons, the '%%' can be used similar to the SQL 'LIKE' operator.
+            There is no keyword and it is implicitly case insensitive. An example using this is:
+                --name='%%myname%%'
+            which will match 'MYNAME', 'myname.txt', and 'Zmyname'.
+            
             Number value support allows the '$' or '0x' prefix for hex numbers.
-            Warning: Shell quoting will mess up the '$'. Double check that!
+            Warning: Shell quoting will mess up the '$'. Double check!
             """ })
 public class SearchCommand extends ReusableCommandOptions {
     private static final IntegerTypeConverter integerConverter = new IntegerTypeConverter();
@@ -54,7 +64,14 @@ public class SearchCommand extends ReusableCommandOptions {
     @Option(names = "--name", description = "Filename (case insensitive).", paramLabel = "FILENAME")
     private void applyNameFilter(String filename) {
         Objects.requireNonNull(filename);
-        addCriteria(String.CASE_INSENSITIVE_ORDER, filename, s -> s, FileEntry::getFilename);
+        if (filename.contains("%")) {
+            // This is a one-off for the LIKE operation
+            Pattern pattern = Pattern.compile("(?i)" + filename.replace("%", ".*"));
+            criteria = criteria.and(fileEntry -> pattern.matcher(fileEntry.getFilename()).matches());
+        }
+        else {
+            addCriteria(String.CASE_INSENSITIVE_ORDER, filename, s -> s, FileEntry::getFilename);
+        }
     }
     @Option(names = "--size", description = "File size.", paramLabel = "SIZE")
     private void applySizeFilter(String[] filesizes) {
@@ -213,17 +230,17 @@ public class SearchCommand extends ReusableCommandOptions {
                             auxOrAddr = "Aux";
                         }
                         System.out.printf("  %-30s %-5s %-8s %-5s\n", "Filename", "Type", "Size", auxOrAddr);
-                        System.out.println("  =============== ===== ======== =====");
+                        System.out.println("  ============================== ===== ======== =====");
                     }
                     if (file instanceof ProdosFileEntry prodosFile) {
                         if (firstFileInDirectory) {
                             System.out.println(fullDirectoryName);
                         }
-                        System.out.printf("* %-30s %-5s %8d $%04X\n", file.getFilename(), file.getFiletype(),
+                        System.out.printf("* %-30s %-5s %,8d $%04X\n", file.getFilename(), file.getFiletype(),
                                 file.getSize(), prodosFile.getAuxiliaryType());
                     }
                     else {
-                        System.out.printf("* %-30s %-5s %8d $%04X\n", file.getFilename(), file.getFiletype(),
+                        System.out.printf("* %-30s %-5s %,8d $%04X\n", file.getFilename(), file.getFiletype(),
                                 file.getSize(), file.getAddress());
                     }
                     firstFileInDirectory = false;

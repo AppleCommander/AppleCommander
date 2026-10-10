@@ -17,50 +17,38 @@
  * with this program; if not, write to the Free Software Foundation, Inc., 
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package com.webcodepro.applecommander.util;
+package org.applecommander.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
-/**
- *  Represents a range of numbers with helper methods to put them together. 
- */
-public class Range {
-    private final int first;
-    private final int last;
-    
+/// Represents a range of numbers with helper methods to put them together.
+public record Range(int first, int last) {
     public Range(int first, int last) {
         if (first < last) {
             this.first = first;
             this.last = last;
-        }
-        else {
+        } else {
             this.first = last;
             this.last = first;
         }
     }
-    
-    public int getFirst() {
-        return first;
-    }
-    public int getLast() {
-        return last;
-    }
+
     public int size() {
         return last - first + 1;
     }
+
     public IntStream stream() {
-        return IntStream.range(first, last+1);
+        return IntStream.range(first, last + 1);
     }
-    
+
     @Override
     public String toString() {
         if (first == last) {
             return String.format("%d", first);
-        }
-        else {
+        } else {
             return String.format("%d-%d", first, last);
         }
     }
@@ -68,17 +56,15 @@ public class Range {
     public static List<Range> from(List<Integer> numbers) {
         List<Range> ranges = new ArrayList<>();
         Collections.sort(numbers);
-        
+
         int first = -1;
         int last = -1;
         for (int number : numbers) {
             if (first == -1) {
                 first = last = number;
-            }
-            else if (number == last+1) {
+            } else if (number == last + 1) {
                 last = number;
-            }
-            else {
+            } else {
                 ranges.add(new Range(first, last));
                 first = last = number;
             }
@@ -87,7 +73,7 @@ public class Range {
         if (first != -1) {
             ranges.add(new Range(first, last));
         }
-        
+
         return ranges;
     }
 }

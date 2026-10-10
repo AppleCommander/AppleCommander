@@ -23,7 +23,7 @@ import com.webcodepro.applecommander.storage.*;
 import com.webcodepro.applecommander.util.AppleUtil;
 import com.webcodepro.applecommander.util.TextBundle;
 import org.applecommander.device.BlockDevice;
-import org.applecommander.os.Coordinate;
+import org.applecommander.device.Coordinate;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;

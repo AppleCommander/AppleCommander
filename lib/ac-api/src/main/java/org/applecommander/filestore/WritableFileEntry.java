@@ -23,24 +23,21 @@ import org.applecommander.capability.Capability;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
-/**
- * A WritableFileEntry represents a single, writable file on disk.
- */
+/// A `WritableFileEntry` represents a single, writable file on disk.
 public interface WritableFileEntry extends FileEntry, Container {
-    /**
-     * Allows the name of this entry to be changed (depending on the {@link Capability}
-     * allowed by the underlying {@link FileStore}).
-     */
+
+    /// Allows the name of this entry to be changed (depending on the [Capability]
+    /// allowed by the underlying [FileStore]).
     void setName(String name);
-    /**
-     * Store the file's data.
-     * This does not include any metadata that may be embedded with the file.
-     */
+
+    /// Store the file's data.
+    /// This does not include any metadata that may be embedded with the file.
     void setDataFork(DataBuffer data);
-    /**
-     * Store the resource fork data.
-     * This may not be supported and may throw an exception.
-     * @see Capability
-     */
-    void setResourceFork(DataBuffer data);
+
+    /// Store the resource fork data.
+    /// This may not be supported and may throw an exception.
+    /// @see Capability
+    default void setResourceFork(DataBuffer data) {
+        throw new UnsupportedOperationException("resource fork not supported");
+    }
 }

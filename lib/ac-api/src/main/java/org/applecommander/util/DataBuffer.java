@@ -19,9 +19,13 @@
  */
 package org.applecommander.util;
 
+import com.google.common.base.Strings;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * A DataBuffer is a bunch of bytes with Apple II knowledge.
@@ -101,6 +105,65 @@ public class DataBuffer {
         }
     }
 
+    /**
+     * Search a sequence of bytes and locate the starting position of a search sequence.
+     */
+    public Optional<Integer> scan(final byte[] marker, final int start) {
+        Objects.requireNonNull(marker);
+        State state = State.SEARCHING;
+        int mark = -1;
+        int offset = -1;
+        for (int pos = start; pos < limit() + marker.length; pos++) {
+            byte b = this.buffer.get(pos % limit());
+            switch (state) {
+                case SEARCHING:
+                    if (b == marker[0]) {
+                        state = State.SCANNING;
+                        mark = pos;
+                        offset = 1;
+                    }
+                    break;
+                case SCANNING:
+                    if (b == marker[offset]) {
+                        offset++;
+                    } else {
+                        state = State.SEARCHING;
+                        pos = mark;	// reset to old position
+                        mark = offset = -1;
+                    }
+            }
+            if (offset > 0 && offset == marker.length) {
+                return Optional.of(mark);
+            }
+        }
+        return Optional.empty();
+    }
+    /** Internal enum utilized by the scan method. */
+    private enum State {
+        SEARCHING, SCANNING
+    }
+
+    // TESTING FUNCTIONS
+
+    public boolean testUnsignedByte(final int index, final int... expecteds) {
+        int actual = getUnsignedByte(index);
+        for (int expected : expecteds) {
+            if (actual == expected) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean testForFixedLengthString(final int index, final int length) {
+        for (int i=0; i<length; i++) {
+            int ch = getUnsignedByte(index+i);
+            if (ch < ' ' || ch > 0x7f) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     // GET/PUT RELATED FUNCTIONS
 
     public int getUnsignedByte(int index) {
@@ -137,6 +200,10 @@ public class DataBuffer {
         byte[] s = new byte[length];
         this.buffer.get(index, s);
         return new String(s);
+    }
+    public void putFixedLengthString(int index, int length, String value) {
+        value = Strings.padEnd(value, length, ' ');
+        this.buffer.put(index, value.getBytes(), 0, length);
     }
     public void put(int offset, DataBuffer data) {
         this.buffer.put(offset, data.buffer, 0, data.buffer.limit());

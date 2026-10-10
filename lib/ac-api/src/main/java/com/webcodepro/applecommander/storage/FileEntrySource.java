@@ -26,6 +26,7 @@ import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.InformationGroup;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -45,7 +46,9 @@ public class FileEntrySource implements Source {
 
     @Override
     public boolean can(Capability capability) {
-        // TODO?
+        if (fileEntry.getFormattedDisk().canWriteFileData()) {
+            return capability == Capability.SAVE_SOURCE;
+        }
         return false;
     }
 
@@ -67,6 +70,16 @@ public class FileEntrySource implements Source {
     @Override
     public String getName() {
         return fileEntry.getFilename();
+    }
+
+    @Override
+    public void save() throws IOException {
+        try {
+            fileEntry.setFileData(buffer.asBytes());
+            changed = false;
+        } catch (DiskException ex) {
+            throw new IOException(ex);
+        }
     }
 
     @Override

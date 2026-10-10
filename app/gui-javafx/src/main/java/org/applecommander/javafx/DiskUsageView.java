@@ -19,31 +19,31 @@
  */
 package org.applecommander.javafx;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
-import javafx.geometry.HPos;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.geometry.VPos;
+import javafx.geometry.*;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import org.applecommander.filestore.FileStore;
 import org.applecommander.usage.BlockUsage;
 import org.applecommander.usage.DiskUsage;
+import org.applecommander.usage.DiskUsage.UsageType;
 import org.applecommander.usage.SectorUsage;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static org.applecommander.javafx.FxUtils.applyShortcutToButton;
 import static org.applecommander.javafx.FxUtils.createToggleButton;
@@ -51,11 +51,13 @@ import static org.applecommander.javafx.FxUtils.createToggleButton;
 public class DiskUsageView extends StackPane {
     private final ToggleButton usageGridToggle;
     private final ToggleButton usagePieChartToggle;
+    private final VBox gridView;
     private final GridPane diskUsageGrid;
     private final HBox legendBox;
-    private final PieChart pieChart;
+    private final PieChart pieChartView;
 
     private final ObjectProperty<Mode> viewMode = new SimpleObjectProperty<>();
+    private final BooleanProperty largeDisk = new SimpleBooleanProperty();
 
     public DiskUsageView(FileStoreWindow fileStoreWindow, ToolBar toolBar) {
         ToggleGroup listingModeGroup = new ToggleGroup();
@@ -70,47 +72,64 @@ public class DiskUsageView extends StackPane {
         legendBox.setSpacing(12);
         legendBox.setPadding(new Insets(5));
         legendBox.setAlignment(Pos.CENTER);
-        ScrollPane scrollPane = new ScrollPane(diskUsageGrid);
-        scrollPane.setFitToWidth(true);
-        BorderPane gridView = new BorderPane();
-        gridView.setCenter(scrollPane);
-        gridView.setBottom(legendBox);
+        ScrollPane diskUsageScroll = new ScrollPane(diskUsageGrid);
+        diskUsageScroll.setFitToWidth(true);
+        diskUsageScroll.setFitToHeight(true);
+        gridView = new VBox(diskUsageScroll, legendBox);
+        gridView.setAlignment(Pos.CENTER);
+        gridView.setPadding(new Insets(5));
+        gridView.setSpacing(5);
 
         // Chart view
-        pieChart = new PieChart();
-        pieChart.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/pie-chart-custom-colors.css")).toExternalForm());
-        pieChart.setTitle("Disk Usage");
-        fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                Optional<DiskUsage> opt = newValue.get(DiskUsage.class);
-                if (opt.isEmpty()) {
-                    // nothing to view
-                    return;
-                }
-                DiskUsage usage = opt.get();
-                updateGridView(usage);
-                updateChartView(usage);
+        pieChartView = new PieChart();
+        pieChartView.setTitle("Disk Usage");
+
+        // Refresh on updates
+        fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((_, _, newFileStore) -> {
+            updateDisplay(newFileStore);
+        });
+        fileStoreWindow.changeCountProperty().addListener((_, _, changeCount) -> {
+            if (changeCount != null && changeCount.intValue() > 0) {
+                updateDisplay(fileStoreWindow.fileStoreSelection().getSelectedItem());
             }
         });
 
         gridView.visibleProperty().bind(viewMode.isEqualTo(Mode.GRID_VIEW));
         gridView.managedProperty().bind(gridView.visibleProperty());
-        pieChart.visibleProperty().bind(viewMode.isEqualTo(Mode.CHART_VIEW));
-        pieChart.managedProperty().bind(pieChart.visibleProperty());
+        pieChartView.visibleProperty().bind(viewMode.isEqualTo(Mode.CHART_VIEW));
+        pieChartView.managedProperty().bind(pieChartView.visibleProperty());
 
-        usageGridToggle.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE));
+        usageGridToggle.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE).and(largeDisk.not()));
         usageGridToggle.managedProperty().bind(usageGridToggle.visibleProperty());
-        usagePieChartToggle.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE));
+        usagePieChartToggle.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE).and(largeDisk.not()));
         usagePieChartToggle.managedProperty().bind(usagePieChartToggle.visibleProperty());
         viewMode.addListener((observable, oldValue, newValue) -> {
             usageGridToggle.setSelected(newValue == Mode.GRID_VIEW);
             usagePieChartToggle.setSelected(newValue == Mode.CHART_VIEW);
         });
 
-        getChildren().addAll(gridView, pieChart);
+        getChildren().addAll(gridView, pieChartView);
         visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE));
         managedProperty().bind(visibleProperty());
         viewMode.set(Mode.GRID_VIEW);
+    }
+
+    public void updateDisplay(FileStore fileStore) {
+        if (fileStore == null) return;
+        Optional<DiskUsage> opt = fileStore.get(DiskUsage.class);
+        if (opt.isEmpty()) {
+            return;
+        }
+        DiskUsage usage = opt.get();
+        largeDisk.set(usage.getTotal() > 2000);
+        if (!largeDisk.get()) {
+            updateGridView(usage);
+            viewMode.set(Mode.GRID_VIEW);
+        }
+        else {
+            viewMode.set(Mode.CHART_VIEW);
+        }
+        updateChartView(usage);
     }
 
     public void bindScene(Scene scene) {
@@ -130,16 +149,32 @@ public class DiskUsageView extends StackPane {
 
     private void updateChartView(DiskUsage usage) {
         Objects.requireNonNull(usage);
-        var free = new PieChart.Data("Free", usage.getFree());
-        var used = new PieChart.Data("Used", usage.getUsed());
-        pieChart.setData(FXCollections.observableArrayList(free, used));
+        Map<UsageType,Integer> counts = usage.getUsageCounts();
+        // Need to pull these out in order to make the colors line up!
+        List<PieChart.Data> data = new ArrayList<>();
+        for (UsageType usageType : UsageType.values()) {
+            int value = counts.getOrDefault(usageType, 0);
+            if (usageType == UsageType.FREE || value > 0) {
+                data.add(new PieChart.Data(usageType.name(), value));
+            }
+        }
+        pieChartView.setData(FXCollections.observableArrayList(data));
     }
 
     private void updateGridView(DiskUsage usage) {
         Objects.requireNonNull(usage);
 
-        final Color freeColor = Color.LIGHTGREEN;
-        final Color usedColor = Color.LIGHTCORAL;
+        final Map<UsageType,Color> colors = Map.of(
+            UsageType.FREE, Color.LIGHTGREEN,
+            UsageType.USED, Color.LIGHTCORAL,
+            UsageType.BOOT, Color.TEAL,
+            UsageType.BITMAP, Color.STEELBLUE,
+            UsageType.SYSTEM, Color.PALEGOLDENROD,
+            UsageType.DIRECTORY, Color.MEDIUMORCHID,
+            UsageType.FILE, Color.GOLDENROD
+        );
+        // Summing this independently since we have to loop through all sectors/blocks anyway.
+        final Map<UsageType,Integer> counts = new HashMap<>();
 
         // Iterate DiskUsage based on type
         diskUsageGrid.setHgap(5);
@@ -188,8 +223,9 @@ public class DiskUsageView extends StackPane {
             int row = 0;
             int col = 0;
             for (int b=0; b<blockUsage.getTotal(); b++) {
-                diskUsageGrid.add(blockUsage.isUsed(b) ? makeSwatch(usedColor, size)
-                                                       : makeSwatch(freeColor, size), col+1, row+1);
+                UsageType usageType = blockUsage.getUsage(b);
+                counts.compute(usageType, (k, v) -> v == null ? 1 : v + 1);
+                diskUsageGrid.add(makeSwatch(colors.get(usageType), size), col+1, row+1);
                 col++;
                 if (col >= numberOfColumns) {
                     col = 0;
@@ -199,8 +235,8 @@ public class DiskUsageView extends StackPane {
         }
         else if (usage instanceof SectorUsage sectorUsage) {
             diskUsageGrid.add(new Label(), 0, 0);
-            for (int t=0; t<sectorUsage.getTotalTracks(); t++) {
-                if ( t % 5 == 0 || t == sectorUsage.getTotalTracks()-1) {
+            for (int t = 0; t<sectorUsage.getTracksOnDisk(); t++) {
+                if ( t % 5 == 0 || t == sectorUsage.getTracksOnDisk()-1) {
                     Label label = new Label(String.format("T%02d", t));
                     diskUsageGrid.add(label, t+1, 0);
                     GridPane.setHalignment(label, HPos.CENTER);
@@ -209,8 +245,8 @@ public class DiskUsageView extends StackPane {
                     diskUsageGrid.add(new Label(), t+1, 0);
                 }
             }
-            for (int s=0; s<sectorUsage.getTotalSectors(); s++) {
-                if ( s % 5 == 0 || s == sectorUsage.getTotalSectors()-1 ) {
+            for (int s = 0; s<sectorUsage.getSectorsPerTrack(); s++) {
+                if ( s % 5 == 0 || s == sectorUsage.getSectorsPerTrack()-1 ) {
                     Label label = new Label(String.format("S%02d", s));
                     diskUsageGrid.add(label, 0, s+1);
                     GridPane.setHalignment(label, HPos.RIGHT);
@@ -219,20 +255,25 @@ public class DiskUsageView extends StackPane {
                     diskUsageGrid.add(new Label(), 0, s+1);
                 }
             }
-            for (int t=0; t<sectorUsage.getTotalTracks(); t++) {
-                for (int s=0; s< sectorUsage.getTotalSectors(); s++) {
-                    diskUsageGrid.add(sectorUsage.isUsed(t,s) ? makeSwatch(usedColor, size)
-                                                              : makeSwatch(freeColor, size), t+1, s+1);
+            for (int t = 0; t<sectorUsage.getTracksOnDisk(); t++) {
+                for (int s = 0; s< sectorUsage.getSectorsPerTrack(); s++) {
+                    UsageType usageType = sectorUsage.getUsage(t,s);
+                    counts.compute(usageType, (k, v) -> v == null ? 1 : v + 1);
+                    diskUsageGrid.add(makeSwatch(colors.get(usageType), size), t+1, s+1);
                 }
             }
         }
 
-        // Legend
+        // Legend - note that we work the colors in the same order as the pie chart for consistency!
         legendBox.getChildren().clear();
-
-        legendBox.getChildren().addAll(
-                new Label("Free"), makeSwatch(freeColor, size),
-                new Label("Used"), makeSwatch(usedColor, size));
+        for (UsageType usageType : UsageType.values()) {
+            if (usageType == UsageType.FREE || counts.getOrDefault(usageType, 0) > 0) {
+                legendBox.getChildren().addAll(makeSwatch(colors.get(usageType), size), new Label(usageType.name()));
+                if (usageType == UsageType.FREE) {
+                    legendBox.getChildren().add(new Separator(Orientation.VERTICAL));
+                }
+            }
+        }
         legendBox.setAlignment(Pos.CENTER);
     }
     private Rectangle makeSwatch(Color background, int size) {

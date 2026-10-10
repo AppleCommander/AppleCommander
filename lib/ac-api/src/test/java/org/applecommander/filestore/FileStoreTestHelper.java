@@ -23,6 +23,7 @@ import org.applecommander.capability.Capability;
 import org.applecommander.source.Source;
 import org.applecommander.usage.BlockUsage;
 import org.applecommander.usage.DiskUsage;
+import org.applecommander.usage.DiskUsage.UsageType;
 import org.applecommander.usage.SectorUsage;
 
 import java.util.List;
@@ -88,16 +89,16 @@ public abstract class FileStoreTestHelper {
                 System.out.printf("--- BLOCK USAGE 0 TO %d ---\n", blockUsage.getTotal()-1);
                 for (int block=0; block<blockUsage.getTotal(); block++) {
                     if (block > 0 && block % 80 == 0) System.out.println();
-                    System.out.print(blockUsage.isUsed(block) ? "U" : ".");
+                    System.out.print(blockUsage.getUsage(block) == UsageType.FREE ? "." : "U");
                 }
                 System.out.println();
             }
             case SectorUsage sectorUsage -> {
-                System.out.printf("---> TRACK USAGE 0 TO %d --->\n", sectorUsage.getTotalTracks()-1);
-                System.out.printf("v--- SECTOR USAGE 0 TO %d ---v\n", sectorUsage.getTotalSectors()-1);
-                for (int s=sectorUsage.getTotalSectors()-1; s>=0; s--) {
-                    for (int t=0; t<sectorUsage.getTotalTracks(); t++) {
-                        System.out.print(sectorUsage.isUsed(t,s) ? "U" : ".");
+                System.out.printf("---> TRACK USAGE 0 TO %d --->\n", sectorUsage.getTracksOnDisk()-1);
+                System.out.printf("v--- SECTOR USAGE 0 TO %d ---v\n", sectorUsage.getSectorsPerTrack()-1);
+                for (int s = sectorUsage.getSectorsPerTrack()-1; s>=0; s--) {
+                    for (int t = 0; t<sectorUsage.getTracksOnDisk(); t++) {
+                        System.out.print(sectorUsage.getUsage(t,s) == UsageType.FREE ? "." : "U");
                     }
                     System.out.println();
                 }

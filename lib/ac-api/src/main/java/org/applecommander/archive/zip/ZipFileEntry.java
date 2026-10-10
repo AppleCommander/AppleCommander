@@ -23,6 +23,7 @@ import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
+import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.FileMagic;
@@ -30,6 +31,7 @@ import org.applecommander.util.FileMagic;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.attribute.FileTime;
+import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.zip.ZipEntry;
@@ -73,13 +75,8 @@ public class ZipFileEntry implements FileEntry {
         return entry.getSize();
     }
 
-    @Override
-    public String getFiletype() {
-        int pos = entry.getName().lastIndexOf('.');
-        if (pos > 0) {
-            return entry.getName().substring(pos + 1);
-        }
-        return "?";
+    public FileTime getCreationTime() {
+        return entry.getCreationTime();
     }
 
     public FileTime getLastModifiedTime() {
@@ -124,6 +121,18 @@ public class ZipFileEntry implements FileEntry {
         catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
+    }
+
+    @Override
+    public ProdosAttributes getProdosAttributes() {
+        return ProdosAttributes.builder()
+                .name(getName())
+                .unlocked()
+                .size(getSize())
+                .BIN(0x0000)
+                .creation(new Date(getCreationTime().toMillis()))
+                .modification(new Date(getLastModifiedTime().toMillis()))
+                .get();
     }
 
     @Override

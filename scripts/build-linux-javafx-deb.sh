@@ -25,7 +25,7 @@ jpackage \
   --module org.applecommander.javafx/org.applecommander.javafx.AppleCommanderFX \
   --about-url "https://applecommander.org" \
   --license-file LICENSE \
-  --icon lib/ac-swt-common/src/main/resources/linux/AppleCommander-128x128.png \
+  --icon app/gui-javafx/src/main/resources/images/AppleCommanderIcon.png \
   --linux-deb-maintainer "robgreene@gmail.com" \
   --linux-menu-group Utility \
   --linux-rpm-license-type "GPL-2.0-or-later" \
