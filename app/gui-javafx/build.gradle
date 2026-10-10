@@ -18,7 +18,7 @@ dependencies {
     implementation "org.applecommander:ShrinkItArchive:$shkVersion"
     implementation "org.applecommander:applesingle-api:$asVersion"
     implementation "org.applecommander:bastools-api:$btVersion"
-    implementation 'org.slf4j:slf4j-jdk14:2.0.19'
+    implementation 'org.slf4j:slf4j-jdk14:2.0.20'
 
     testImplementation platform("org.junit:junit-bom:$junitVersion")
     testImplementation 'org.junit.jupiter:junit-jupiter'
