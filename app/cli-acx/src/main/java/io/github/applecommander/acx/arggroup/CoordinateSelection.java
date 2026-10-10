@@ -54,8 +54,10 @@ public class CoordinateSelection {
         else if (blockCoordinate != null) {
             blockCoordinate.write(disk, data);
         }
-        TrackSectorDevice device = TrackSectorDeviceAdapter.from(disk);
-        device.writeSector(0, 0, DataBuffer.wrap(data));
+        else {
+            TrackSectorDevice device = TrackSectorDeviceAdapter.from(disk);
+            device.writeSector(0, 0, DataBuffer.wrap(data));
+        }
     }
 
     public static class SectorCoordinateSelection {
