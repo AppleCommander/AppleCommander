@@ -359,6 +359,9 @@ public class FileStoreWindow {
             fileChooser.getExtensionFilters().add(new ExtensionFilter(extension.description(), extension.extensions()));
         }
 
+        FileStore fileStore = fileStoreSelection.getSelectedItem();
+        Source source = fileStore.get(Source.class).orElseThrow();
+        fileChooser.setInitialFileName(source.getName());
         File selectedFile = fileChooser.showSaveDialog(primaryStage);
         if (selectedFile == null) {
             return;
@@ -366,8 +369,6 @@ public class FileStoreWindow {
         Settings.setLastOpenedDirectory(selectedFile.getParentFile());
 
         try {
-            FileStore fileStore = fileStoreSelection.getSelectedItem();
-            Source source = fileStore.get(Source.class).orElseThrow();
             Files.write(selectedFile.toPath(), source.readAllBytes().asBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             Optional<Source> newSource = Sources.create(selectedFile);
             openImage(newSource.orElseThrow(), false);

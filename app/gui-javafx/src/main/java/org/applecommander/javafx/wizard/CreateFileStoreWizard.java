@@ -27,14 +27,15 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
-import org.applecommander.device.DosOrderedTrackSectorDevice;
-import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.device.*;
+import org.applecommander.image.NibbleImage;
 import org.applecommander.javafx.FXControls;
 import org.applecommander.os.gamedos.GamedosFileStoreFactory;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.WizardPage> {
     private final ObjectProperty<FileStoreSelection> fileStoreSelectionProperty = new SimpleObjectProperty<>();
@@ -47,10 +48,37 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
     }
 
     public Source getSource() {
-        Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "BLANK.DISK").get();
-        TrackSectorDevice device = new DosOrderedTrackSectorDevice(source);
-        GamedosFileStoreFactory.create(device);
+        // Generate a starting filename:
+        String fileName = String.format("New Disk.%s",
+                imageSizeSelectionProperty.get().getAlternateFileExtension().orElse(
+                        sectorOrderSelectionProperty.get().getFileExtension()));
+
+        // Adjust image size if we picked nibble order, otherwise use the size selected:
+        int imageSize = sectorOrderSelectionProperty.get().getAlternateSize()
+                .orElse(imageSizeSelectionProperty.get().getSize());
+        Source source = DataBufferSource.create(imageSize, fileName).get();
+
+        // For now, the file store is _transitory_ and it just formats the source.
+        switch (fileStoreSelectionProperty.get().getDeviceType()) {
+            case DeviceType.BLOCK -> {
+                // TODO
+            }
+            case SECTOR -> {
+                TrackSectorDevice device = createTrackSectorDevice(source);
+                GamedosFileStoreFactory.create(device);
+            }
+        }
         return source;
+    }
+
+    public TrackSectorDevice createTrackSectorDevice(Source source) {
+        return switch (sectorOrderSelectionProperty.get()) {
+            case DOS -> new DosOrderedTrackSectorDevice(source);
+            case PRODOS -> new BlockToTrackSectorAdapter(new ProdosOrderedBlockDevice(source,
+                    BlockDevice.STANDARD_BLOCK_SIZE), new ProdosBlockToTrackSectorAdapterStrategy());
+            case NIBBLE -> SkewedTrackSectorDevice.physicalToDosSkew(
+                    TrackSectorNibbleDevice.create(new NibbleImage(source), 16));
+        };
     }
 
     public BooleanBinding createNextPageBinding() {
@@ -131,52 +159,96 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
         };
     }
 
+    /// All possible pages in the new file store wizard.
     public enum WizardPage {
         FILESTORE, SIZE, SECTOR, SUMMARY
     }
+
+    /// Possible device types. Using an enum since there are a number of subclasses.
+    /// This limits the options to just two: sector or block.
+    public enum DeviceType {
+        SECTOR, BLOCK
+    }
+
+    /// Filestore selection options.
     public enum FileStoreSelection {
-        GAMEDOS("GameDOS");
+        GAMEDOS("GameDOS", DeviceType.SECTOR);
 
         private final String text;
+        private final DeviceType deviceType;
 
-        FileStoreSelection(String text) {
+        FileStoreSelection(String text, DeviceType deviceType) {
             this.text = text;
+            this.deviceType = deviceType;
         }
+
         public String getText() {
             return text;
         }
+        public DeviceType getDeviceType() {
+            return deviceType;
+        }
     }
+
+    /// Image size selection options. Includes the expected image size.
+    /// Note that 140KB can be altered based on sector order choice.
     public enum ImageSizeSelection {
-        DISK_140K("140KiB 5.25\" Floppy"),
-        DISK_800K("800KiB 3.5\" Floppy"),
-        HDD_5M("5MiB Hard Disk"),
-        HDD_10M("10MiB Hard Disk"),
-        HDD_20M("20MiB Hard Disk"),
-        HDD_32M("32MiB Hard Disk");
+        DISK_140K("140KiB 5.25\" Floppy", DiskConstants.APPLE_140KB_DISK, null),
+        DISK_800K("800KiB 3.5\" Floppy", DiskConstants.APPLE_800KB_DISK, null),
+        HDD_5M("5MiB Hard Disk", DiskConstants.APPLE_5MB_HARDDISK, "hdv"),
+        HDD_10M("10MiB Hard Disk", DiskConstants.APPLE_10MB_HARDDISK, "hdv"),
+        HDD_20M("20MiB Hard Disk", DiskConstants.APPLE_20MB_HARDDISK, "hdv"),
+        HDD_32M("32MiB Hard Disk", DiskConstants.APPLE_32MB_HARDDISK, "hdv");
 
         private final String text;
+        private final int size;
+        private final String alternateFileExtension;
 
-        ImageSizeSelection(String text) {
+        ImageSizeSelection(String text, int size, String alternateFileExtension) {
             this.text = text;
+            this.size = size;
+            this.alternateFileExtension = alternateFileExtension;
         }
 
         public String getText() {
             return text;
+        }
+        public int getSize() {
+            return size;
+        }
+        public Optional<String> getAlternateFileExtension() {
+            return Optional.ofNullable(alternateFileExtension);
         }
     }
+
+    /// Sector ordering selection. Note that this enum allows an override on the size of the disk;
+    /// specifically for nibble based images.
     public enum SectorOrderSelection {
-        DOS("DOS Ordered"),
-        PRODOS("ProDOS/Pascal Ordered"),
-        NIBBLE("Nibble Image");
+        DOS("DOS Ordered", -1, "do"),
+        PRODOS("ProDOS/Pascal Ordered", -1, "po"),
+        NIBBLE("Nibble Image", DiskConstants.APPLE_140KB_NIBBLE_DISK, "nib");
 
         private final String text;
+        private final int alternateSize;
+        private final String fileExtension;
 
-        SectorOrderSelection(String text) {
+        SectorOrderSelection(String text, int alternateSize, String fileExtension) {
             this.text = text;
+            this.alternateSize = alternateSize;
+            this.fileExtension = fileExtension;
         }
 
         public String getText() {
             return text;
+        }
+        public Optional<Integer> getAlternateSize() {
+            if (alternateSize != -1) {
+                return Optional.of(alternateSize);
+            }
+            return Optional.empty();
+        }
+        public String getFileExtension() {
+            return fileExtension;
         }
     }
 }
