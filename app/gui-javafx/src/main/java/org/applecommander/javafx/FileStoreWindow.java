@@ -124,7 +124,12 @@ public class FileStoreWindow {
         Scene scene = new Scene(controller.window, 1200, 700);
         stage.setTitle(AppleCommanderFX.buildTitle());
         stage.setScene(scene);
-        stage.getIcons().add(new Image(imageUrl("AppleCommanderIcon.png")));
+        stage.getIcons().addAll(
+                new Image(imageUrl("AppleCommanderIcon-16x16.png")),
+                new Image(imageUrl("AppleCommanderIcon-32x32.png")),
+                new Image(imageUrl("AppleCommanderIcon-48x48.png")),
+                new Image(imageUrl("AppleCommanderIcon-64x64.png"))
+        );
 
         // Bind keyboard shortcuts in controller
         try {
