@@ -382,6 +382,30 @@ public class DiskFileStoreAdapter implements FileStore {
                 throw new RuntimeException(e);
             }
         }
+
+        @Override
+        public WritableFileEntry createFrom(ProdosAttributes prodosAttributes) {
+            if (directoryEntry.canCreateFile()) {
+                try {
+                    FormattedDisk disk = directoryEntry.getFormattedDisk();
+                    com.webcodepro.applecommander.storage.FileEntry fileEntry = directoryEntry.createFile();
+                    fileEntry.setFilename(disk.getSuggestedFilename(prodosAttributes.name()));
+                    fileEntry.setFiletype(disk.toNativeFiletype(prodosAttributes.fileTypeText()));
+                    fileEntry.setAddress(prodosAttributes.auxType());
+                    fileEntry.setLocked(prodosAttributes.access() != 0xe3);
+                    if (prodosAttributes.dataFork().isPresent()) {
+                        fileEntry.setFileData(prodosAttributes.dataFork().get().asBytes());
+                    }
+                    return new DiskFileEntryAdapter(adapter, this, fileEntry);
+                } catch (DiskException ex) {
+                    throw new RuntimeException(ex);
+                }
+            } else {
+                // Generic error
+                return WritableDirectory.super.createFrom(prodosAttributes);
+            }
+        }
+
         @Override
         public void deleteFile(FileEntry fileEntry) {
             if (fileEntry instanceof DiskFileEntryAdapter fileAdapter) {
