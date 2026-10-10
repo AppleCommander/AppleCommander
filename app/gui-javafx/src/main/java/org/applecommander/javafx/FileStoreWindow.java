@@ -26,6 +26,7 @@ import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCharacterCombination;
 import javafx.scene.input.KeyCombination;
@@ -123,6 +124,7 @@ public class FileStoreWindow {
         Scene scene = new Scene(controller.window, 1200, 700);
         stage.setTitle(AppleCommanderFX.buildTitle());
         stage.setScene(scene);
+        stage.getIcons().add(new Image(imageUrl("AppleCommanderIcon.png")));
 
         // Bind keyboard shortcuts in controller
         try {
