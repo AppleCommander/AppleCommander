@@ -20,7 +20,7 @@
 package com.webcodepro.applecommander.util.filestreamer;
 
 import com.webcodepro.applecommander.storage.*;
-import com.webcodepro.applecommander.util.GlobGenerator;
+import org.applecommander.util.GlobGenerator;
 import org.applecommander.source.Source;
 
 import java.io.File;
@@ -140,7 +140,7 @@ public class FileStreamer {
         String filePath = tuple.fileEntry.getFilename();
         String fullPath = tuple.fullPath();
         for (String glob : this.globs) {
-            String regex = GlobGenerator.globToRegex(glob, tuple.formattedDisk);
+            String regex = GlobGenerator.globToRegex(glob, tuple.formattedDisk.canHaveDirectories());
             if (filePath.matches(regex) || fullPath.matches(regex)) return true;
         }
         return false;
