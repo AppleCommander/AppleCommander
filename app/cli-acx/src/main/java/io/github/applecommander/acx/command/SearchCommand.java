@@ -25,6 +25,7 @@ import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
 import io.github.applecommander.acx.converter.IntegerTypeConverter;
 import org.applecommander.source.Source;
+import org.applecommander.util.GlobGenerator;
 
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -45,9 +46,9 @@ import static picocli.CommandLine.*;
             will (essentially) search for likely HGR candidates. Note that size is the only
             optional allowed to repeat due to ANDing of the criteria.
             
-            For filename comparisons, the '%%' can be used similar to the SQL 'LIKE' operator.
+            For filename comparisons, simple 'glob' patterns are allowed of '*' or '?'.
             There is no keyword and it is implicitly case insensitive. An example using this is:
-                --name='%%myname%%'
+                --name='*myname*'
             which will match 'MYNAME', 'myname.txt', and 'Zmyname'.
             
             Number value support allows the '$' or '0x' prefix for hex numbers.
@@ -64,14 +65,8 @@ public class SearchCommand extends ReusableCommandOptions {
     @Option(names = "--name", description = "Filename (case insensitive).", paramLabel = "FILENAME")
     private void applyNameFilter(String filename) {
         Objects.requireNonNull(filename);
-        if (filename.contains("%")) {
-            // This is a one-off for the LIKE operation
-            Pattern pattern = Pattern.compile("(?i)" + filename.replace("%", ".*"));
-            criteria = criteria.and(fileEntry -> pattern.matcher(fileEntry.getFilename()).matches());
-        }
-        else {
-            addCriteria(String.CASE_INSENSITIVE_ORDER, filename, s -> s, FileEntry::getFilename);
-        }
+        Pattern pattern = Pattern.compile(GlobGenerator.globToRegex(filename, false));
+        criteria = criteria.and(fileEntry -> pattern.matcher(fileEntry.getFilename()).matches());
     }
     @Option(names = "--size", description = "File size.", paramLabel = "SIZE")
     private void applySizeFilter(String[] filesizes) {

@@ -27,14 +27,18 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
-/**
- * A DataBuffer is a bunch of bytes with Apple II knowledge.
- * This shares the technical details as well as the actual image data
- * across all components in the application. There are two sets of
- * accessors get/put the index the buffer and read/write that
- * navigate via position. Note that read and write can overrun
- * the buffer and generate an error.
- */
+/// A `DataBuffer` is a bunch of bytes with Apple II knowledge.
+/// This shares the technical details as well as the actual image data
+/// across all components in the application.
+///
+/// There are two sets of accessors:
+///
+/// * `get`/`put` access the buffer via an index (explicit positioning); and
+/// * `read`/`write` that navigate via position. Note that read and write
+///   can overrun the buffer and generate an error.
+///
+/// Creational patterns are via the `wrap` methods for existing data
+/// or via the `create` method.
 public class DataBuffer {
     private static final int[] BIT_MASKS = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
 
