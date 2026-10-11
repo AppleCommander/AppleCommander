@@ -23,6 +23,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/// `FileExtensions` is the one place that holds all possible file extensions.
+/// It can be used in a user-interface context by using the description in
+/// conjunction with the glob-pattern file extensions or just by utilizing
+/// all the file extensions.
+///
+/// There are no accessors, just the static variables.
 public class FileExtensions {
     public static final List<FileExtension> FILE_FILTERS;
     public static final List<String> DISK_IMAGE_EXTENSIONS;
