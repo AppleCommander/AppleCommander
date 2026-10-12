@@ -35,10 +35,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -46,6 +43,7 @@ import java.util.zip.ZipOutputStream;
 import static org.applecommander.util.Shorthand.copy;
 
 public class ZipFileStore implements FileStore {
+    private static final Set<Capability> CAPABILITIES = Set.of(Capability.CREATE_FILES, Capability.DELETE_FILES);
     private final Source source;
     private final List<FileEntry> entries = new ArrayList<>();
 
@@ -127,7 +125,7 @@ public class ZipFileStore implements FileStore {
 
     @Override
     public boolean can(Capability capability) {
-        return false;
+        return CAPABILITIES.contains(capability);
     }
 
     @Override

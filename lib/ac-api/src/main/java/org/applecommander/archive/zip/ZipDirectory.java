@@ -23,17 +23,20 @@ import org.applecommander.capability.Capability;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
+import org.applecommander.filestore.WritableDirectory;
 import org.applecommander.source.Source;
+import org.applecommander.transfer.ProdosAttributes;
 
+import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class ZipDirectory implements Directory {
-    private final FileStore fileStore;
+public class ZipDirectory implements WritableDirectory {
+    private final ZipFileStore fileStore;
     private final List<FileEntry> entries;
 
-    public ZipDirectory(FileStore fileStore, List<FileEntry> entries) {
+    public ZipDirectory(ZipFileStore fileStore, List<FileEntry> entries) {
         Objects.requireNonNull(fileStore);
         Objects.requireNonNull(entries);
         this.fileStore = fileStore;
@@ -63,5 +66,31 @@ public class ZipDirectory implements Directory {
     @Override
     public List<FileEntry> getFiles() {
         return entries;
+    }
+
+    @Override
+    public ZipFileEntry createFrom(ProdosAttributes prodosAttributes) {
+        ZipFileEntry fileEntry = createFile(prodosAttributes.name());
+        prodosAttributes.dataFork().ifPresent(fileEntry::setDataFork);
+        if (prodosAttributes.creation() != null) {
+            fileEntry.setCreationTime(FileTime.from(prodosAttributes.creation().toInstant()));
+        }
+        if (prodosAttributes.modified() != null) {
+            fileEntry.setLastModifiedTime(FileTime.from(prodosAttributes.modified().toInstant()));
+        }
+        return fileEntry;
+    }
+
+    @Override
+    public ZipFileEntry createFile(String fileName) {
+        ZipFileEntry fileEntry = new ZipFileEntry(fileStore, fileName);
+        entries.add(fileEntry);
+        return fileEntry;
+
+    }
+
+    @Override
+    public void deleteFile(FileEntry fileEntry) {
+        entries.remove(fileEntry);
     }
 }

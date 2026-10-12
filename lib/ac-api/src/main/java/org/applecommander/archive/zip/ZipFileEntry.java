@@ -21,8 +21,8 @@ package org.applecommander.archive.zip;
 
 import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.Directory;
-import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
+import org.applecommander.filestore.WritableFileEntry;
 import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
@@ -36,17 +36,31 @@ import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class ZipFileEntry implements FileEntry {
+public class ZipFileEntry implements WritableFileEntry {
     private final ZipFileStore fileStore;
     private final int entryNumber;
     private final ZipEntry entry;
+    private String name;
+    private DataBuffer dataFork;
 
+    /// Create a ZipFileEntry that is backed by an existing Zip file and the specific entry involved.
     public ZipFileEntry(ZipFileStore fileStore, int entryNumber, ZipEntry entry) {
         Objects.requireNonNull(fileStore);
         Objects.requireNonNull(entry);
         this.fileStore = fileStore;
         this.entryNumber = entryNumber;
         this.entry = entry;
+        this.name = entry.getName();
+    }
+
+    /// Create a new ZipFileEntry that does NOT exist in the zip file (yet).
+    public ZipFileEntry(ZipFileStore fileStore, String fileName) {
+        Objects.requireNonNull(fileStore);
+        this.fileStore = fileStore;
+        this.entryNumber = -1;
+        this.entry = new ZipEntry(fileName);
+        this.name = fileName;
+        this.dataFork = DataBuffer.wrap(0);
     }
 
     @Override
@@ -66,24 +80,48 @@ public class ZipFileEntry implements FileEntry {
 
     @Override
     public String getName() {
-        return entry.getName();
+        return name;
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
     public long getSize() {
-        return entry.getSize();
+        if (dataFork == null) {
+            return entry.getSize();
+        } else {
+            return dataFork.limit();
+        }
     }
 
     public FileTime getCreationTime() {
         return entry.getCreationTime();
     }
 
+    public void setCreationTime(FileTime creationTime) {
+        Objects.requireNonNull(creationTime);
+        entry.setCreationTime(creationTime);
+    }
+
     public FileTime getLastModifiedTime() {
         return entry.getLastModifiedTime();
     }
 
+    public void setLastModifiedTime(FileTime lastModifiedTime) {
+        Objects.requireNonNull(lastModifiedTime);
+        entry.setLastModifiedTime(lastModifiedTime);
+    }
+
     public FileTime getLastAccessTime() {
         return entry.getLastAccessTime();
+    }
+
+    public void setLastAccessTime(FileTime lastAccessTime) {
+        Objects.requireNonNull(lastAccessTime);
+        entry.setLastAccessTime(lastAccessTime);
     }
 
     public long getCrc() {
@@ -96,6 +134,11 @@ public class ZipFileEntry implements FileEntry {
 
     public String getComment() {
         return entry.getComment();
+    }
+
+    public void setComment(String comment) {
+        Objects.requireNonNull(comment);
+        entry.setComment(comment);
     }
 
     public int getMethod() {
@@ -111,6 +154,9 @@ public class ZipFileEntry implements FileEntry {
 
     @Override
     public DataBuffer getDataFork() {
+        if (dataFork != null) {
+            return dataFork;
+        }
         try (ZipInputStream inputStream = fileStore.getZipInputStream()) {
             int n = 0;
             while (true) {
@@ -128,6 +174,11 @@ public class ZipFileEntry implements FileEntry {
         catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
+    }
+
+    @Override
+    public void setDataFork(DataBuffer data) {
+        this.dataFork = data;
     }
 
     @Override
