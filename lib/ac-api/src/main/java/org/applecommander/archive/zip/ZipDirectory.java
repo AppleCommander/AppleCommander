@@ -85,6 +85,7 @@ public class ZipDirectory implements WritableDirectory {
     public ZipFileEntry createFile(String fileName) {
         ZipFileEntry fileEntry = new ZipFileEntry(fileStore, fileName);
         entries.add(fileEntry);
+        fileStore.get(Source.class).ifPresent(source -> source.hasChanged(true));
         return fileEntry;
 
     }
@@ -92,5 +93,6 @@ public class ZipDirectory implements WritableDirectory {
     @Override
     public void deleteFile(FileEntry fileEntry) {
         entries.remove(fileEntry);
+        fileStore.get(Source.class).ifPresent(source -> source.hasChanged(true));
     }
 }

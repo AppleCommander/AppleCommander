@@ -137,8 +137,8 @@ public class UniversalDiskImage implements Source {
     }
 
     @Override
-    public void clearChanges() {
-        source.clearChanges();
+    public void hasChanged(boolean hasChanged) {
+        source.hasChanged(hasChanged);
     }
 
     @Override

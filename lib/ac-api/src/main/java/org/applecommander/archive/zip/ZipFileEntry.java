@@ -23,6 +23,7 @@ import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.WritableFileEntry;
+import org.applecommander.source.Source;
 import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
@@ -86,6 +87,7 @@ public class ZipFileEntry implements WritableFileEntry {
     @Override
     public void setName(String name) {
         this.name = name;
+        fileStore.get(Source.class).ifPresent(source -> source.hasChanged(true));
     }
 
     @Override
@@ -104,6 +106,7 @@ public class ZipFileEntry implements WritableFileEntry {
     public void setCreationTime(FileTime creationTime) {
         Objects.requireNonNull(creationTime);
         entry.setCreationTime(creationTime);
+        fileStore.get(Source.class).ifPresent(source -> source.hasChanged(true));
     }
 
     public FileTime getLastModifiedTime() {
@@ -113,6 +116,7 @@ public class ZipFileEntry implements WritableFileEntry {
     public void setLastModifiedTime(FileTime lastModifiedTime) {
         Objects.requireNonNull(lastModifiedTime);
         entry.setLastModifiedTime(lastModifiedTime);
+        fileStore.get(Source.class).ifPresent(source -> source.hasChanged(true));
     }
 
     public FileTime getLastAccessTime() {
@@ -122,6 +126,7 @@ public class ZipFileEntry implements WritableFileEntry {
     public void setLastAccessTime(FileTime lastAccessTime) {
         Objects.requireNonNull(lastAccessTime);
         entry.setLastAccessTime(lastAccessTime);
+        fileStore.get(Source.class).ifPresent(source -> source.hasChanged(true));
     }
 
     public long getCrc() {
@@ -139,6 +144,7 @@ public class ZipFileEntry implements WritableFileEntry {
     public void setComment(String comment) {
         Objects.requireNonNull(comment);
         entry.setComment(comment);
+        fileStore.get(Source.class).ifPresent(source -> source.hasChanged(true));
     }
 
     public int getMethod() {
@@ -179,6 +185,7 @@ public class ZipFileEntry implements WritableFileEntry {
     @Override
     public void setDataFork(DataBuffer data) {
         this.dataFork = data;
+        fileStore.get(Source.class).ifPresent(source -> source.hasChanged(true));
     }
 
     @Override

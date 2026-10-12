@@ -123,8 +123,8 @@ public class FileSource implements Source {
     }
 
     @Override
-    public void clearChanges() {
-        changed = false;
+    public void hasChanged(boolean hasChanged) {
+        this.changed = hasChanged;
     }
 
     @Override

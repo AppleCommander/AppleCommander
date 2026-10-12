@@ -387,7 +387,7 @@ public abstract class FormattedDisk implements DirectoryEntry, Container {
         data.get(0, fileData);
         output.write(fileData);
         output.close();
-        getSource().clearChanges();
+        getSource().hasChanged(false);
     }
 
     /**
