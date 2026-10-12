@@ -44,7 +44,7 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
 
     public CreateFileStoreWizard() {
         super();
-        initializeWizard("/images/DiskImageWizardLogo.png", WizardPage.FILESTORE, WizardPage.SUMMARY);
+        initializeWizard("DiskImageWizardLogo.png", WizardPage.FILESTORE, WizardPage.SUMMARY);
     }
 
     public Source getSource() {
