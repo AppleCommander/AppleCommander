@@ -31,7 +31,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public class DataBufferSource implements Source {
-    private final DataBuffer dataBuffer;
+    private DataBuffer dataBuffer;
     private final String name;
     private final Set<Capability> capabilities;
     private final Set<Hint> hints;
@@ -71,6 +71,12 @@ public class DataBufferSource implements Source {
     @Override
     public void writeBytes(int offset, DataBuffer data) {
         dataBuffer.put(offset, data);
+        changed = true;
+    }
+
+    @Override
+    public void replaceAllBytes(DataBuffer data) {
+        dataBuffer = data;
         changed = true;
     }
 

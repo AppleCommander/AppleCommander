@@ -74,6 +74,9 @@ public interface Source extends CapabilityProvider, HintProvider, Container, Inf
     /// Write bytes to this source. Updates the changed status.
     void writeBytes(int offset, DataBuffer data);
 
+    /// Replace ALL bytes in this Source.
+    void replaceAllBytes(DataBuffer data);
+
     /// Indicates if this source has changed.
     boolean hasChanged();
 

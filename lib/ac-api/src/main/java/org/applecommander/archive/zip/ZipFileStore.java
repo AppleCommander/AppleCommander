@@ -26,9 +26,11 @@ import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
+import org.applecommander.util.DataBuffer;
 import org.applecommander.util.InformationGroup;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -39,6 +41,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
+import static org.applecommander.util.Shorthand.copy;
 
 public class ZipFileStore implements FileStore {
     private final Source source;
@@ -93,10 +98,31 @@ public class ZipFileStore implements FileStore {
             .addLongField("Size", ZipFileEntry::getCompressedSize, Mode.DETAIL)
             .addPercentField("Ratio", ZipFileEntry::getCompressedSize, ZipFileEntry::getSize, "%2.0f%%", Mode.DETAIL)
             .addFileTimeField("Creation", ZipFileEntry::getCreationTime)
+            .addFileTimeField("Last Access", ZipFileEntry::getLastAccessTime, Mode.DETAIL)
             .addFileTimeField("Last Modified", ZipFileEntry::getLastModifiedTime)
             .addLongField("CRC-32", ZipFileEntry::getCrc, "%08x", Mode.DETAIL)
             .addStringField("Name", FileEntry::getName)
             .toList();
+    }
+
+    @Override
+    public void flush() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ZipOutputStream zip = new ZipOutputStream(baos)) {
+            for (FileEntry fileEntry : entries) {
+                ZipFileEntry zipFileEntry = (ZipFileEntry) fileEntry;
+                ZipEntry zipEntry = new ZipEntry(zipFileEntry.getName());
+                copy(zipFileEntry::getCreationTime, zipEntry::setCreationTime);
+                copy(zipFileEntry::getLastAccessTime, zipEntry::setLastAccessTime);
+                copy(zipFileEntry::getLastModifiedTime, zipEntry::setLastModifiedTime);
+                copy(zipFileEntry::getComment, zipEntry::setComment);
+                zip.putNextEntry(zipEntry);
+                zip.write(fileEntry.getDataFork().asBytes());
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        source.replaceAllBytes(DataBuffer.wrap(baos.toByteArray()));
     }
 
     @Override

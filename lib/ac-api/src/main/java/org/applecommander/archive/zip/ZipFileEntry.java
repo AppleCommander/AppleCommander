@@ -31,7 +31,6 @@ import org.applecommander.util.FileMagic;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.attribute.FileTime;
-import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.zip.ZipEntry;
@@ -83,12 +82,20 @@ public class ZipFileEntry implements FileEntry {
         return entry.getLastModifiedTime();
     }
 
+    public FileTime getLastAccessTime() {
+        return entry.getLastAccessTime();
+    }
+
     public long getCrc() {
         return entry.getCrc();
     }
 
     public long getCompressedSize() {
         return entry.getCompressedSize();
+    }
+
+    public String getComment() {
+        return entry.getComment();
     }
 
     public int getMethod() {
@@ -130,8 +137,8 @@ public class ZipFileEntry implements FileEntry {
                 .unlocked()
                 .size(getSize())
                 .BIN(0x0000)
-                .creation(new Date(getCreationTime().toMillis()))
-                .modification(new Date(getLastModifiedTime().toMillis()))
+                .creation(getCreationTime())
+                .modification(getLastModifiedTime())
                 .get();
     }
 

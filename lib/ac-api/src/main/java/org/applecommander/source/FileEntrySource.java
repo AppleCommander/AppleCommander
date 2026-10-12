@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 
 public class FileEntrySource implements Source {
     private final FileEntry fileEntry;
-    private final DataBuffer buffer;
+    private DataBuffer buffer;
     private boolean changed;
     private final Set<Hint> hints;
 
@@ -82,6 +82,12 @@ public class FileEntrySource implements Source {
     @Override
     public void writeBytes(int offset, DataBuffer data) {
         buffer.put(offset, data);
+        changed = true;
+    }
+
+    @Override
+    public void replaceAllBytes(DataBuffer data) {
+        buffer = data;
         changed = true;
     }
 

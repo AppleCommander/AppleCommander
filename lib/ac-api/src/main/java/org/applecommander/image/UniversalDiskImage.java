@@ -127,6 +127,11 @@ public class UniversalDiskImage implements Source {
     }
 
     @Override
+    public void replaceAllBytes(DataBuffer data) {
+        source.replaceAllBytes(data);
+    }
+
+    @Override
     public boolean hasChanged() {
         return source.hasChanged();
     }

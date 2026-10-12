@@ -42,4 +42,20 @@ public interface FileStore extends CapabilityProvider, Container, InformationPro
 
     /// Yields a list of columns to be used in this display mode.
     List<DisplayColumn> getDisplayColumns();
+
+    /// Flush any pending writes back to the source. This is intended to handle archives
+    /// as they do not have a fixed structure to write changes. `flush` should be invoked
+    /// before a save.
+    ///
+    /// Example usage:
+    ///
+    /// ```java
+    /// FileStore fileStore = fileStoreSelection.getSelectedItem();
+    /// fileStore.flush();
+    /// Source source = fileStore.get(Source.class).orElseThrow();
+    /// source.save();
+    /// ```
+    default void flush() {
+        // Do Nothing
+    }
 }
