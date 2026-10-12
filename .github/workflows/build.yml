@@ -360,6 +360,7 @@ jobs:
             ac-*
             acx-*
             AppleCommander-*
+            AppleCommanderFX-*
 
   publish:
     name: Publish to Maven Central
