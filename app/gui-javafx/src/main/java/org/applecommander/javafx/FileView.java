@@ -211,7 +211,8 @@ public class FileView extends BorderPane {
                 case DISK_IMAGE, ARCHIVE_IMAGE -> {
                     Optional<Source> opt = Sources.create(selectedRow);
                     Source source = opt.orElseThrow();  // we don't expect this to fail!
-                    FileStoreWindow.openNewWindow(source);
+                    var inspected = FileStores.inspect(source);
+                    FileStoreWindow.openNewWindow(inspected.fileStores);
                 }
                 case UNKNOWN -> { /* Do Nothing */ }
             }
