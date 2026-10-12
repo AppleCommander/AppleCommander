@@ -27,13 +27,17 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import org.applecommander.archive.zip.ZipFileStoreFactory;
 import org.applecommander.device.*;
+import org.applecommander.exception.FileStoreNotRecognizedException;
+import org.applecommander.filestore.FileStore;
 import org.applecommander.image.NibbleImage;
 import org.applecommander.javafx.FXControls;
 import org.applecommander.os.gamedos.GamedosFileStoreFactory;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -47,32 +51,51 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
         initializeWizard("DiskImageWizardLogo.png", WizardPage.FILESTORE, WizardPage.SUMMARY);
     }
 
-    public Source getSource() {
-        // Generate a starting filename:
-        String fileName = String.format("New Disk.%s",
-                imageSizeSelectionProperty.get().getAlternateFileExtension().orElse(
-                        sectorOrderSelectionProperty.get().getFileExtension()));
+    public List<FileStore> getFileStores() {
+        // Archives and Disk image differ:
+        FileStoreSelection fileStoreSelection = fileStoreSelectionProperty.getValue();
+        if (fileStoreSelection.needsDevice()) {
+            ImageSizeSelection imageSizeSelection = imageSizeSelectionProperty.getValue();
+            SectorOrderSelection sectorOrderSelection = sectorOrderSelectionProperty.getValue();
 
-        // Adjust image size if we picked nibble order, otherwise use the size selected:
-        int imageSize = sectorOrderSelectionProperty.get().getAlternateSize()
-                .orElse(imageSizeSelectionProperty.get().getSize());
-        Source source = DataBufferSource.create(imageSize, fileName).get();
+            // Generate a starting filename:
+            String fileName = String.format("new-%s.%s",
+                    fileStoreSelection.getText(),
+                    fileStoreSelection.getAlternateFileExtension().orElse(
+                            imageSizeSelection.getAlternateFileExtension().orElse(
+                                    sectorOrderSelection.getFileExtension())));
 
-        // For now, the file store is _transitory_ and it just formats the source.
-        switch (fileStoreSelectionProperty.get().getDeviceType()) {
-            case DeviceType.BLOCK -> {
-                // TODO
+            // Adjust image size if we picked nibble order, otherwise use the size selected:
+            int imageSize = sectorOrderSelection.getAlternateSize()
+                        .orElse(imageSizeSelection.getSize());
+            Source source = DataBufferSource.create(imageSize, fileName).get();
+
+            // FIXME need a better disk generation algorithm - but need more items to work the details
+            switch (fileStoreSelection.getDeviceType()) {
+                case BLOCK -> {
+                    // TODO
+                }
+                case SECTOR -> {
+                    TrackSectorDevice device = createTrackSectorDevice(source);
+                    return List.of(GamedosFileStoreFactory.create(device));
+                }
             }
-            case SECTOR -> {
-                TrackSectorDevice device = createTrackSectorDevice(source);
-                GamedosFileStoreFactory.create(device);
-            }
+            throw new FileStoreNotRecognizedException("bug! file store %s not recognized", fileStoreSelection);
         }
-        return source;
+        else {
+            // Generate a starting filename:
+            String fileName = String.format("new-%s.%s", fileStoreSelection.getText(),
+                    fileStoreSelection.getAlternateFileExtension().orElseThrow()).toLowerCase();
+
+            // FIXME need a better archive generation algorithm - but need more items to work the details
+            Source source = DataBufferSource.create(0, fileName).get();
+            return List.of(ZipFileStoreFactory.create(source));
+        }
     }
 
     public TrackSectorDevice createTrackSectorDevice(Source source) {
         return switch (sectorOrderSelectionProperty.get()) {
+            case NOT_APPLICABLE -> throw new UnsupportedOperationException();
             case DOS -> new DosOrderedTrackSectorDevice(source);
             case PRODOS -> new BlockToTrackSectorAdapter(new ProdosOrderedBlockDevice(source,
                     BlockDevice.STANDARD_BLOCK_SIZE), new ProdosBlockToTrackSectorAdapterStrategy());
@@ -146,6 +169,12 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
                     imageSizeSelectionProperty.set(ImageSizeSelection.DISK_140K);
                     yield WizardPage.SECTOR;
                 }
+                if (fileStoreSelectionProperty.getValue().getDeviceType() == null) {
+                    // Archives don't require anything else
+                    imageSizeSelectionProperty.set(ImageSizeSelection.NOT_APPLICABLE);
+                    sectorOrderSelectionProperty.set(SectorOrderSelection.NOT_APPLICABLE);
+                    yield WizardPage.SUMMARY;
+                }
                 yield WizardPage.SECTOR;
             }
             case SIZE -> {
@@ -172,14 +201,22 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
 
     /// Filestore selection options.
     public enum FileStoreSelection {
-        GAMEDOS("GameDOS", DeviceType.SECTOR);
+        GAMEDOS("GameDOS", DeviceType.SECTOR),
+        ZIPFILE("Zip", "zip");
 
         private final String text;
+        private final String alternateFileExtension;
         private final DeviceType deviceType;
 
         FileStoreSelection(String text, DeviceType deviceType) {
             this.text = text;
             this.deviceType = deviceType;
+            this.alternateFileExtension = null;
+        }
+        FileStoreSelection(String text, String alternateFileExtension) {
+            this.text = text;
+            this.deviceType = null;
+            this.alternateFileExtension = alternateFileExtension;
         }
 
         public String getText() {
@@ -188,11 +225,18 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
         public DeviceType getDeviceType() {
             return deviceType;
         }
+        public boolean needsDevice() {
+            return deviceType != null;
+        }
+        public Optional<String> getAlternateFileExtension() {
+            return Optional.ofNullable(alternateFileExtension);
+        }
     }
 
     /// Image size selection options. Includes the expected image size.
     /// Note that 140KB can be altered based on sector order choice.
     public enum ImageSizeSelection {
+        NOT_APPLICABLE("Not Applicable", 0, null),
         DISK_140K("140KiB 5.25\" Floppy", DiskConstants.APPLE_140KB_DISK, null),
         DISK_800K("800KiB 3.5\" Floppy", DiskConstants.APPLE_800KB_DISK, null),
         HDD_5M("5MiB Hard Disk", DiskConstants.APPLE_5MB_HARDDISK, "hdv"),
@@ -224,6 +268,7 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
     /// Sector ordering selection. Note that this enum allows an override on the size of the disk;
     /// specifically for nibble based images.
     public enum SectorOrderSelection {
+        NOT_APPLICABLE("Not Applicable", -1, ""),
         DOS("DOS Ordered", -1, "do"),
         PRODOS("ProDOS/Pascal Ordered", -1, "po"),
         NIBBLE("Nibble Image", DiskConstants.APPLE_140KB_NIBBLE_DISK, "nib");
