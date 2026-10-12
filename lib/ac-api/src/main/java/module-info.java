@@ -46,17 +46,18 @@ module org.applecommander.api {
     exports org.applecommander.capability;
     exports org.applecommander.device;
     exports org.applecommander.device.nibble;
+    exports org.applecommander.exception;
     exports org.applecommander.filestore;
     exports org.applecommander.hint;
     exports org.applecommander.image;
     exports org.applecommander.os;
     exports org.applecommander.os.dos;
+    exports org.applecommander.os.gamedos;
     exports org.applecommander.os.pascal;
     exports org.applecommander.source;
+    exports org.applecommander.transfer;
     exports org.applecommander.usage;
     exports org.applecommander.util;
-    exports org.applecommander.os.gamedos;
-    exports org.applecommander.transfer;
 
     // FileStore discovery mechanisms
     uses FileStoreFactory;
