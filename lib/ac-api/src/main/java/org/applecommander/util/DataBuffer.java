@@ -26,6 +26,7 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.IntPredicate;
 
 /// A `DataBuffer` is a bunch of bytes with Apple II knowledge.
 /// This shares the technical details as well as the actual image data
@@ -107,6 +108,21 @@ public class DataBuffer {
         for (int i=0; i<limit(); i++) {
             this.buffer.put(i, (byte)value);
         }
+    }
+
+    /**
+     * Test the entire `ByteBuffer` against the condition.
+     * This can be useful in pulling out a specific slice of data and checking the contents.
+     */
+    public boolean matches(IntPredicate predicate) {
+        Objects.requireNonNull(predicate);
+        for (int i=0; i<limit(); i++) {
+            int b = getUnsignedByte(i);
+            if (!predicate.test(b)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

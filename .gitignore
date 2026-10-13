@@ -26,6 +26,9 @@ reports/
 /*.nib
 /*.dsk.gz
 /*.zip
+/*.aaf
+/*.shk
+/*.sdk
 
 # Ignoring and backups
 *.bak

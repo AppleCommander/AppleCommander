@@ -20,6 +20,7 @@
 package org.applecommander.archive.shrinkit;
 
 import org.applecommander.filestore.ContentType;
+import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.shrinkit.HeaderBlock;
@@ -46,8 +47,8 @@ public class ShrinkitFileEntry implements FileEntry {
     }
 
     @Override
-    public ShrinkitDirectory getParent() {
-        return null;
+    public Directory getParent() {
+        return fileStore.getRootDirectory();
     }
 
     @Override
