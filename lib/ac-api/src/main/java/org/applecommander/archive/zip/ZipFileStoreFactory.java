@@ -20,6 +20,7 @@
 package org.applecommander.archive.zip;
 
 import org.applecommander.filestore.FileStoreFactory;
+import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
 
 public class ZipFileStoreFactory implements FileStoreFactory {
@@ -31,5 +32,9 @@ public class ZipFileStoreFactory implements FileStoreFactory {
         if (signature.getIntBE(0) ==  ZIP_SIGNATURE) {
             ctx.fileStores.add(new ZipFileStore(ctx.source));
         }
+    }
+
+    public static ZipFileStore create(Source source) {
+        return new ZipFileStore(source);
     }
 }

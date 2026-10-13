@@ -58,6 +58,7 @@ import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -106,12 +107,12 @@ public class FileStoreWindow {
         changeCount.setValue(changeCount.getValue() + 1);
     }
 
-    public static void openNewWindow(Source source) {
-        Objects.requireNonNull(source);
+    public static void openNewWindow(List<FileStore> fileStores) {
+        Objects.requireNonNull(fileStores);
         Stage stage = new Stage();
         try {
             FileStoreWindow controller = createWindow(stage);
-            controller.openImage(source, false);
+            controller.openFileStore(fileStores, false);
             stage.toFront();
             stage.requestFocus();
         } catch (Exception ex) {
@@ -287,11 +288,12 @@ public class FileStoreWindow {
         }
         Settings.setLastOpenedDirectory(selectedFile.getParentFile());
         Optional<Source> source = Sources.create(selectedFile);
-        openImage(source.orElseThrow(), true);
+        var inspected = FileStores.inspect(source.orElseThrow());
+        openFileStore(inspected.fileStores, true);
     }
 
-    public void openImage(Source source, boolean promptForWindow) {
-        Objects.requireNonNull(source);
+    public void openFileStore(List<FileStore> fileStores, boolean promptForWindow) {
+        Objects.requireNonNull(fileStores);
         if (promptForWindow && !fileStoreSelection.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.initOwner(primaryStage);
@@ -310,14 +312,13 @@ public class FileStoreWindow {
                 return;
             }
             if (result.get() == newWindow) {
-                openNewWindow(source);
+                openNewWindow(fileStores);
                 return;
             }
         }
 
         try {
-            var inspected = FileStores.inspect(source);
-            fileStoreSelection.changeFileStores(inspected.fileStores);
+            fileStoreSelection.changeFileStores(fileStores);
             if (fileStoreSelection.isEmpty()) {
                 closeDisk();
                 Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -330,7 +331,7 @@ public class FileStoreWindow {
                 return;
             }
             viewMode.setValue(ViewMode.FILES);
-            primaryStage.setTitle(AppleCommanderFX.buildTitle(source.getName()));
+            primaryStage.setTitle(AppleCommanderFX.buildTitle(fileStores.getFirst().get(Source.class).orElseThrow().getName()));
         } catch (Throwable t) {
             showErrorDialog("Could not open disk image", t);
         }
@@ -339,15 +340,16 @@ public class FileStoreWindow {
     public void createFile() {
         CreateFileStoreWizard wizard = new CreateFileStoreWizard();
         if (wizard.showAndWait(primaryStage)) {
-            Source source = wizard.getSource();
-            openImage(source, true);
-            changeCount.set(1);
+            List<FileStore> fileStores = wizard.getFileStores();
+            openFileStore(fileStores, true);
+            changeCount.set(changeCount.get() + 1);
         }
     }
 
     public void saveFile() {
         try {
             FileStore fileStore = fileStoreSelection.getSelectedItem();
+            fileStore.flush();
             Source source = fileStore.get(Source.class).orElseThrow();
             source.save();
             changeCount.setValue(0);
@@ -374,9 +376,11 @@ public class FileStoreWindow {
         Settings.setLastOpenedDirectory(selectedFile.getParentFile());
 
         try {
+            fileStore.flush();
             Files.write(selectedFile.toPath(), source.readAllBytes().asBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             Optional<Source> newSource = Sources.create(selectedFile);
-            openImage(newSource.orElseThrow(), false);
+            var inspected = FileStores.inspect(newSource.get());
+            openFileStore(inspected.fileStores, false);
         } catch (Throwable t) {
             showErrorDialog("Could not save file", t);
         }

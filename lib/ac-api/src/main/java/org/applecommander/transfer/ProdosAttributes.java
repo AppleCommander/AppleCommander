@@ -22,6 +22,7 @@ package org.applecommander.transfer;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.FileMagic;
 
+import java.nio.file.attribute.FileTime;
 import java.util.Date;
 import java.util.Optional;
 
@@ -102,8 +103,20 @@ public record ProdosAttributes(String name, int access, int fileType, int auxTyp
             this.size = size;
             return this;
         }
+        public Builder creation(FileTime creation) {
+            if (creation != null) {
+                this.creation = new Date(creation.toMillis());
+            }
+            return this;
+        }
         public Builder creation(Date creation) {
             this.creation = creation;
+            return this;
+        }
+        public Builder modification(FileTime modified) {
+            if (modified != null) {
+                this.modified = new Date(modified.toMillis());
+            }
             return this;
         }
         public Builder modification(Date modified) {

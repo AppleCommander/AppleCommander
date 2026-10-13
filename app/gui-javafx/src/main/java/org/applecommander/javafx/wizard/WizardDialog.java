@@ -34,8 +34,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.applecommander.javafx.FxUtils;
 
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -57,10 +57,7 @@ public abstract class WizardDialog<T extends Enum<?>> {
     }
 
     protected void initializeWizard(String imageName, T initialPage, T finalPage) {
-        URL imageURL = getClass().getResource(imageName);
-        Objects.requireNonNull(imageURL);
-
-        ImageView imageView = new ImageView(imageURL.toExternalForm());
+        ImageView imageView = new ImageView(FxUtils.imageUrl(imageName));
         VBox imagePane = new VBox(imageView);
         imagePane.setPadding(new Insets(0, 0, 10, 0));
         imagePane.setStyle("-fx-background-color: white;");

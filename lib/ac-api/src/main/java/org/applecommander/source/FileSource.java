@@ -112,13 +112,19 @@ public class FileSource implements Source {
     }
 
     @Override
+    public void replaceAllBytes(DataBuffer data) {
+        buffer = data;
+        changed = true;
+    }
+
+    @Override
     public boolean hasChanged() {
         return changed;
     }
 
     @Override
-    public void clearChanges() {
-        changed = false;
+    public void hasChanged(boolean hasChanged) {
+        this.changed = hasChanged;
     }
 
     @Override

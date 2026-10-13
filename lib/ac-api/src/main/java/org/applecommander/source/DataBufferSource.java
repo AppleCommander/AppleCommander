@@ -31,7 +31,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public class DataBufferSource implements Source {
-    private final DataBuffer dataBuffer;
+    private DataBuffer dataBuffer;
     private final String name;
     private final Set<Capability> capabilities;
     private final Set<Hint> hints;
@@ -75,13 +75,19 @@ public class DataBufferSource implements Source {
     }
 
     @Override
+    public void replaceAllBytes(DataBuffer data) {
+        dataBuffer = data;
+        changed = true;
+    }
+
+    @Override
     public boolean hasChanged() {
         return changed;
     }
 
     @Override
-    public void clearChanges() {
-        changed = false;
+    public void hasChanged(boolean hasChanged) {
+        this.changed = hasChanged;
     }
 
     @Override

@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 
 public class FileEntrySource implements Source {
     private final FileEntry fileEntry;
-    private final DataBuffer buffer;
+    private DataBuffer buffer;
     private boolean changed;
     private final Set<Hint> hints;
 
@@ -86,13 +86,19 @@ public class FileEntrySource implements Source {
     }
 
     @Override
+    public void replaceAllBytes(DataBuffer data) {
+        buffer = data;
+        changed = true;
+    }
+
+    @Override
     public boolean hasChanged() {
         return changed;
     }
 
     @Override
-    public void clearChanges() {
-        changed = false;
+    public void hasChanged(boolean hasChanged) {
+        this.changed = hasChanged;
     }
 
     @Override

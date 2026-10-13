@@ -74,11 +74,14 @@ public interface Source extends CapabilityProvider, HintProvider, Container, Inf
     /// Write bytes to this source. Updates the changed status.
     void writeBytes(int offset, DataBuffer data);
 
+    /// Replace ALL bytes in this Source.
+    void replaceAllBytes(DataBuffer data);
+
     /// Indicates if this source has changed.
     boolean hasChanged();
 
-    /// Clears the changed indicator.
-    void clearChanges();
+    /// Sets the changed indicator.
+    void hasChanged(boolean hasChanged);
 
     /// Save the image back to the origin. Note that this could conceivably save back to the
     /// OS file system, or back to a file store. Use the `CapabilityProvider#can` to see if
