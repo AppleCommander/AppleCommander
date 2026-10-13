@@ -20,12 +20,9 @@
 package org.applecommander.archive.shrinkit;
 
 import org.applecommander.capability.Capability;
-import org.applecommander.filestore.Directory;
-import org.applecommander.filestore.DisplayColumn;
+import org.applecommander.filestore.*;
 import org.applecommander.filestore.DisplayColumn.Alignment;
 import org.applecommander.filestore.DisplayColumn.Mode;
-import org.applecommander.filestore.FileEntry;
-import org.applecommander.filestore.FileStore;
 import org.applecommander.shrinkit.MasterHeaderBlock;
 import org.applecommander.shrinkit.NuFileArchive;
 import org.applecommander.source.Source;
@@ -65,7 +62,7 @@ public class ShrinkitFileStore implements FileStore {
 
     @Override
     public Directory getRootDirectory() {
-        return new ShrinkitDirectory(this, files);
+        return new GenericDirectory<>(this, files);
     }
 
     @Override
