@@ -1,0 +1,14 @@
+From: random@foobar.com
+To: freeworld
+Subject: First program.
+		R.
+=helloworld.c
+-main()
+-{
+-       printf("Hello World\n");
+-}
+=Read.Me
+-Test out a C compiler; just compile and execute.
++ All done.
+J. Random Hacker
+random@foobar.com

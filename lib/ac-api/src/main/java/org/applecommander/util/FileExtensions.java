@@ -68,8 +68,9 @@ public class FileExtensions {
             diskExtensions.addAll(combinedExtensions);
         });
         // Archive formats generally do not have compression
-        List.of("Zip Archives:zip",
-                "ShrinkIt Archives:shk,sdk")
+        List.of("Apple Archive Format:aaf",
+                "ShrinkIt Archives:shk,sdk",
+                "Zip Archives:zip")
         .forEach(extension -> {
             String[] parts = extension.split(":");
             List<String> extensions = new ArrayList<>();

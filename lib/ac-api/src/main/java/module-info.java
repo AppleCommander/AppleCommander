@@ -1,7 +1,5 @@
-import com.webcodepro.applecommander.storage.DiskFactory;
-import org.applecommander.filestore.FileStoreFactory;
-import org.applecommander.source.Source;
-
+// NOTE: In an effort to keep the module consistent, all the class names should be fully qualified and no imports.
+//       (There are some duplicative names at this time, so this keeps it consistent.)
 module org.applecommander.api {
     requires java.desktop;
     requires java.logging;
@@ -30,7 +28,7 @@ module org.applecommander.api {
     exports com.webcodepro.applecommander.util.filestreamer;
 
     // FormattedDisk discovery mechanisms
-    uses DiskFactory;
+    uses com.webcodepro.applecommander.storage.DiskFactory;
     provides com.webcodepro.applecommander.storage.DiskFactory
         with com.webcodepro.applecommander.storage.os.cpm.CpmDiskFactory,
              com.webcodepro.applecommander.storage.os.dos33.DosDiskFactory,
@@ -41,6 +39,7 @@ module org.applecommander.api {
              com.webcodepro.applecommander.storage.os.rdos.RdosDiskFactory;
 
     // Revised APIs
+    exports org.applecommander.archive.aaf;
     exports org.applecommander.archive.shrinkit;
     exports org.applecommander.archive.zip;
     exports org.applecommander.capability;
@@ -60,16 +59,17 @@ module org.applecommander.api {
     exports org.applecommander.util;
 
     // FileStore discovery mechanisms
-    uses FileStoreFactory;
+    uses org.applecommander.filestore.FileStoreFactory;
     provides org.applecommander.filestore.FileStoreFactory
-        with org.applecommander.os.gamedos.GamedosFileStoreFactory,
+        with org.applecommander.archive.aaf.AppleArchiveFormatFileStoreFactory,
              org.applecommander.archive.shrinkit.ShrinkitFileStoreFactory,
              org.applecommander.archive.zip.ZipFileStoreFactory,
+             org.applecommander.os.gamedos.GamedosFileStoreFactory,
              // Legacy shim
              com.webcodepro.applecommander.storage.DiskFileStoreFactory;
 
     // Source discovery mechanisms
-    uses Source.Factory;
+    uses org.applecommander.source.Source.Factory;
     provides org.applecommander.source.Source.Factory
              // These are "fromObject" sources
         with org.applecommander.source.FileSource.Factory,
