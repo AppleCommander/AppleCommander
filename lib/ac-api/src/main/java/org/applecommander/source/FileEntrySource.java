@@ -45,7 +45,9 @@ public class FileEntrySource implements Source {
 
     @Override
     public boolean can(Capability capability) {
-        // TODO?
+        if (fileEntry.getFileStore().can(Capability.WRITE_FILES)) {
+            return capability == Capability.SAVE_SOURCE;
+        }
         return false;
     }
 
