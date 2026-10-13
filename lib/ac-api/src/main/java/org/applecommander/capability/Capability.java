@@ -19,17 +19,42 @@
  */
 package org.applecommander.capability;
 
+/// An enumeration of capabilities that may be available in various components.
 public enum Capability {
+
+    /// Indicates if a nibble device can encode data.
     ENCODE,
+
+    /// Indicates if a nibble device can write a track.
     WRITE_TRACK,
+
+    /// Indicates if a nibble device can format a track (write out markers, for example).
     FORMAT_TRACK,
+
+    /// Indicates if this device can write a sector.
     WRITE_SECTOR,
+
+    /// Indicates if this device can write a block.
     WRITE_BLOCK,
+
+    /// Indicates if a `Source` can be saved. This can be impacted by how it was created or loaded.
     SAVE_SOURCE,
+
+    /// Indicates if a `FileStore` can create files.
     CREATE_FILES,
+
+    /// Indicates if a `FileStore` can delete files.
     DELETE_FILES,
+
+    /// Indicates if a `FileStore` can write files.
     WRITE_FILES,
+
+    /// Indicates if a `FileStore` supports (sub-)directories.
     SUPPORTS_DIRECTORIES,
+
+    /// Indicates if a `FileStore` can create (sub-)directories.
     CREATE_DIRECTORIES,
+
+    /// Indicates if this `FileStore` supports resource forks.
     SUPPORTS_RESOURCE_FORKS
 }

@@ -19,6 +19,13 @@
  */
 package org.applecommander.capability;
 
+/// Provides insight into the capabilities of a component.
+/// The general intent is to quit having multiple methods or bitfields
+/// to indicate capability and instead have a more generic interface.
+/// Note that the capabilities are whatever has been needed and are not
+/// intended for all components.
 public interface CapabilityProvider {
+
+    /// Helps identify capabilities of the existing component.
     boolean can(Capability capability);
 }
