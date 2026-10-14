@@ -144,31 +144,7 @@ public class FileView extends BorderPane {
         });
 
         directoryPath.addListener((ListChangeListener<? super Directory>) change -> {
-            breadcrumbBar.getChildren().clear();
-            if (fileStoreWindow.fileStoreSelection().getSelectedItem() == null) {
-                return;
-            }
-            String pathSeparator = fileStoreWindow.fileStoreSelection().getSelectedItem().getPathSeparator();
-
-            Label pathLabel = new Label("Path:");
-            breadcrumbBar.getChildren().add(pathLabel);
-
-            for (int i = 0; i < directoryPath.size(); i++) {
-                Directory dir = directoryPath.get(i);
-                // FIXME this is because ProdosFormatDisk uses "/DISK.NAME/"
-                Button crumb = new Button(dir.getName().replace("/", ""));
-                final int index = i;
-                crumb.setOnAction(event -> {
-                    List<Directory> newPath = new ArrayList<>(directoryPath.subList(0, index + 1));
-                    directoryPath.clear();
-                    directoryPath.addAll(newPath);
-                    populateDiskRows();
-                });
-                Label separator = new Label(pathSeparator);
-                breadcrumbBar.getChildren().add(separator);
-                breadcrumbBar.getChildren().add(crumb);
-            }
-            selectedDirectory.set(directoryPath.isEmpty() ? null : directoryPath.getLast());
+            populateBreadCrumbBar(fileStoreWindow);
         });
 
         selectedDirectory.addListener((_, _, _) -> {
@@ -179,6 +155,34 @@ public class FileView extends BorderPane {
                 populateDiskRows();
             }
         });
+    }
+
+    private void populateBreadCrumbBar(FileStoreWindow fileStoreWindow) {
+        breadcrumbBar.getChildren().clear();
+        if (fileStoreWindow.fileStoreSelection().getSelectedItem() == null) {
+            return;
+        }
+        String pathSeparator = fileStoreWindow.fileStoreSelection().getSelectedItem().getPathSeparator();
+
+        Label pathLabel = new Label("Path:");
+        breadcrumbBar.getChildren().add(pathLabel);
+
+        for (int i = 0; i < directoryPath.size(); i++) {
+            Directory dir = directoryPath.get(i);
+            // FIXME this is because ProdosFormatDisk uses "/DISK.NAME/"
+            Button crumb = new Button(dir.getName().replace("/", ""));
+            final int index = i;
+            crumb.setOnAction(event -> {
+                List<Directory> newPath = new ArrayList<>(directoryPath.subList(0, index + 1));
+                directoryPath.clear();
+                directoryPath.addAll(newPath);
+                populateDiskRows();
+            });
+            Label separator = new Label(pathSeparator);
+            breadcrumbBar.getChildren().add(separator);
+            breadcrumbBar.getChildren().add(crumb);
+        }
+        selectedDirectory.set(directoryPath.isEmpty() ? null : directoryPath.getLast());
     }
 
     public void createNewFileTable() {
@@ -195,132 +199,140 @@ public class FileView extends BorderPane {
 
         fileTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         fileTable.setItems(FXCollections.emptyObservableList());
-        fileTable.setOnMouseClicked(event -> {
-            if (event.getClickCount() != 2) {
-                return;
-            }
-            FileEntry selectedRow = fileTable.getSelectionModel().getSelectedItem();
-            if (selectedRow == null) {
-                return;
-            }
-            if (selectedRow.get(Directory.class).isPresent()) {
-                directoryPath.add(selectedRow.get(Directory.class).get());
-                return;
-            }
-            switch (selectedRow.getContentType()) {
-                case DISK_IMAGE, ARCHIVE_IMAGE -> {
-                    Optional<Source> opt = Sources.create(selectedRow);
-                    Source source = opt.orElseThrow();  // we don't expect this to fail!
-                    var inspected = FileStores.inspect(source);
-                    FileStoreWindow.openNewWindow(inspected.fileStores);
-                }
-                case UNKNOWN -> { /* Do Nothing */ }
-            }
-        });
-        // See: https://stackoverflow.com/questions/32534113/javafx-drag-and-drop-a-file-into-a-program
-        fileTable.setOnDragDetected(event -> {
-            if (!fileTable.getSelectionModel().getSelectedItems().isEmpty()) {
-                try {
-                    // If we are dragging OUT of AppleCommander, we need to create working files:
-                    ExportOption exportOption = Settings.getExportOption();
-                    Path tempDir = Files.createTempDirectory("AppleCommander-drag-");
-                    tempDir.toFile().deleteOnExit();
-                    List<File> files = new ArrayList<>();
-                    for (FileEntry fileEntry : fileTable.getSelectionModel().getSelectedItems()) {
-                        // We may write two files, so copyToPath gives us ALL the names we care about
-                        for (Path path : exportOption.copyToPath(tempDir, fileEntry)) {
-                            File file = path.toFile();
-                            file.deleteOnExit();
-                            files.add(file);
-                        }
-                    }
-                    ClipboardContent content = new ClipboardContent();
-                    content.putFiles(files);
-                    // Internal drag format is AppleSingle, and one file at a time:
-                    AppleSingle appleSingle = ExportOption.createAppleSingle(fileTable.getSelectionModel().getSelectedItem());
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    appleSingle.save(baos);
-                    content.put(APPLESINGLE_MIME, ByteBuffer.wrap(baos.toByteArray()));
-                    // Now we're ready, so allow it to proceed:
-                    Dragboard db = fileTable.startDragAndDrop(TransferMode.ANY);
-                    db.setContent(content);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            }
-            event.consume();
-        });
-        fileTable.setOnDragOver(event -> {
-            FileStore fileStore = fileStoreWindow.fileStoreSelection().getSelectedItem();
-            Directory directory = selectedDirectory.get();
-            Dragboard db = event.getDragboard();
-            boolean internalDrag = db.hasContent(APPLESINGLE_MIME);
-            boolean externalDrag = db.hasFiles();
-            boolean canCreateFiles = fileStore != null && fileStore.can(Capability.CREATE_FILES) && directory instanceof WritableDirectory;
-            if ((internalDrag || externalDrag) && canCreateFiles) {
-                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-            }
-            event.consume();
-        });
-        fileTable.setOnDragDropped(event -> {
-            Dragboard db = event.getDragboard();
-            boolean success = false;
-            try {
-                if (db.hasContent(APPLESINGLE_MIME)) {
-                    // Give preference to internal dragging.
-                    ByteBuffer data = (ByteBuffer) db.getContent(APPLESINGLE_MIME);
-                    AppleSingle appleSingle = AppleSingle.read(data.array());
-                    ProdosAttributes prodosAttributes = createProdosAttributes(appleSingle);
-                    createFile(prodosAttributes);
-                    success = true;
-                } else if (db.hasFiles()) {
-                    // From the file system.
-                    List<File> files = db.getFiles();
-                    while (!files.isEmpty()) {
-                        File file = files.getFirst();
-                        files.remove(file);
-                        if (ProdosAttributePreservation.test(file.toPath())) {
-                            ProdosAttributePreservation attrs = ProdosAttributePreservation.parse(file.toPath());
-                            createFile(attrs.toProdosAttributes());
-                        }
-                        else if (AppleSingle.test(file) && Settings.isImportDecodeAppleSingle()) {
-                            AppleSingle appleSingle = AppleSingle.read(file);
-                            ProdosAttributes prodosAttributes = createProdosAttributes(appleSingle);
-                            createFile(prodosAttributes);
-                        }
-                        else {
-                            byte[] data = Files.readAllBytes(file.toPath());
-                            ProdosAttributes.Builder builder = ProdosAttributes.builder()
-                                    .BIN(0x0000).name(file.getName())
-                                    .dataFork(data);
-                            String alternateName = file.getName();
-                            if (alternateName.lastIndexOf('.') != -1) {
-                                alternateName = alternateName.substring(0, alternateName.lastIndexOf('.'));
-                            }
-                            if (file.getName().endsWith(".bas") && Settings.isImportTokenizeApplesoft()) {
-                                Configuration config = Configuration.builder().sourceFile(file).build();
-                                Queue<Token> tokens = ModernTokenReader.tokenize(file);
-                                Parser parser = new Parser(tokens);
-                                Program program = parser.parse();
-                                data = Visitors.byteVisitor(config).dump(program);
-                                builder.BAS().auxType(config.startAddress).name(alternateName).dataFork(data);
-                            }
-                            else if (file.getName().endsWith(".txt")) {
-                                builder.TXT().name(alternateName);
-                            }
-                            createFile(builder.get());
-                        }
-                    }
-                    success = true;
-                }
-            } catch (IOException e) {
-                FxUtils.showErrorDialog("Unable to drop files", e);
-            }
-            event.setDropCompleted(success);
-            event.consume();
-        });
+        fileTable.setOnMouseClicked(this::onMouseClickedHandler);
+        fileTable.setOnDragDetected(this::onDragDetectedHandler);
+        fileTable.setOnDragOver(this::onDragOverHandler);
+        fileTable.setOnDragDropped(this::onDragDroppedHandler);
 
         managedProperty().bind(fileTable.visibleProperty());
+    }
+
+    private void onDragDroppedHandler(DragEvent event) {
+        Dragboard db = event.getDragboard();
+        boolean success = false;
+        try {
+            if (db.hasContent(APPLESINGLE_MIME)) {
+                // Give preference to internal dragging.
+                ByteBuffer data = (ByteBuffer) db.getContent(APPLESINGLE_MIME);
+                AppleSingle appleSingle = AppleSingle.read(data.array());
+                ProdosAttributes prodosAttributes = createProdosAttributes(appleSingle);
+                createFile(prodosAttributes);
+                success = true;
+            } else if (db.hasFiles()) {
+                // From the file system.
+                List<File> files = db.getFiles();
+                while (!files.isEmpty()) {
+                    File file = files.getFirst();
+                    files.remove(file);
+                    if (ProdosAttributePreservation.test(file.toPath())) {
+                        ProdosAttributePreservation attrs = ProdosAttributePreservation.parse(file.toPath());
+                        createFile(attrs.toProdosAttributes());
+                    }
+                    else if (AppleSingle.test(file) && Settings.isImportDecodeAppleSingle()) {
+                        AppleSingle appleSingle = AppleSingle.read(file);
+                        ProdosAttributes prodosAttributes = createProdosAttributes(appleSingle);
+                        createFile(prodosAttributes);
+                    }
+                    else {
+                        byte[] data = Files.readAllBytes(file.toPath());
+                        ProdosAttributes.Builder builder = ProdosAttributes.builder()
+                                .BIN(0x0000).name(file.getName())
+                                .dataFork(data);
+                        String alternateName = file.getName();
+                        if (alternateName.lastIndexOf('.') != -1) {
+                            alternateName = alternateName.substring(0, alternateName.lastIndexOf('.'));
+                        }
+                        if (file.getName().endsWith(".bas") && Settings.isImportTokenizeApplesoft()) {
+                            Configuration config = Configuration.builder().sourceFile(file).build();
+                            Queue<Token> tokens = ModernTokenReader.tokenize(file);
+                            Parser parser = new Parser(tokens);
+                            Program program = parser.parse();
+                            data = Visitors.byteVisitor(config).dump(program);
+                            builder.BAS().auxType(config.startAddress).name(alternateName).dataFork(data);
+                        }
+                        else if (file.getName().endsWith(".txt")) {
+                            builder.TXT().name(alternateName);
+                        }
+                        createFile(builder.get());
+                    }
+                }
+                success = true;
+            }
+        } catch (IOException e) {
+            FxUtils.showErrorDialog("Unable to drop files", e);
+        }
+        event.setDropCompleted(success);
+        event.consume();
+    }
+
+    private void onDragOverHandler(DragEvent event) {
+        FileStore fileStore = fileStoreWindow.fileStoreSelection().getSelectedItem();
+        Directory directory = selectedDirectory.get();
+        Dragboard db = event.getDragboard();
+        boolean internalDrag = db.hasContent(APPLESINGLE_MIME);
+        boolean externalDrag = db.hasFiles();
+        boolean canCreateFiles = fileStore != null && fileStore.can(Capability.CREATE_FILES) && directory instanceof WritableDirectory;
+        if ((internalDrag || externalDrag) && canCreateFiles) {
+            event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+        }
+        event.consume();
+    }
+
+    private void onDragDetectedHandler(MouseEvent event) {
+        // See: https://stackoverflow.com/questions/32534113/javafx-drag-and-drop-a-file-into-a-program
+        if (!fileTable.getSelectionModel().getSelectedItems().isEmpty()) {
+            try {
+                // If we are dragging OUT of AppleCommander, we need to create working files:
+                ExportOption exportOption = Settings.getExportOption();
+                Path tempDir = Files.createTempDirectory("AppleCommander-drag-");
+                tempDir.toFile().deleteOnExit();
+                List<File> files = new ArrayList<>();
+                for (FileEntry fileEntry : fileTable.getSelectionModel().getSelectedItems()) {
+                    // We may write two files, so copyToPath gives us ALL the names we care about
+                    for (Path path : exportOption.copyToPath(tempDir, fileEntry)) {
+                        File file = path.toFile();
+                        file.deleteOnExit();
+                        files.add(file);
+                    }
+                }
+                ClipboardContent content = new ClipboardContent();
+                content.putFiles(files);
+                // Internal drag format is AppleSingle, and one file at a time:
+                AppleSingle appleSingle = ExportOption.createAppleSingle(fileTable.getSelectionModel().getSelectedItem());
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                appleSingle.save(baos);
+                content.put(APPLESINGLE_MIME, ByteBuffer.wrap(baos.toByteArray()));
+                // Now we're ready, so allow it to proceed:
+                Dragboard db = fileTable.startDragAndDrop(TransferMode.ANY);
+                db.setContent(content);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+        event.consume();
+    }
+
+    private void onMouseClickedHandler(MouseEvent event) {
+        if (event.getClickCount() != 2) {
+            return;
+        }
+        FileEntry selectedRow = fileTable.getSelectionModel().getSelectedItem();
+        if (selectedRow == null) {
+            return;
+        }
+        if (selectedRow.get(Directory.class).isPresent()) {
+            directoryPath.add(selectedRow.get(Directory.class).get());
+            return;
+        }
+        switch (selectedRow.getContentType()) {
+            case DISK_IMAGE, ARCHIVE_IMAGE -> {
+                Optional<Source> opt = Sources.create(selectedRow);
+                Source source = opt.orElseThrow();  // we don't expect this to fail!
+                var inspected = FileStores.inspect(source);
+                FileStoreWindow.openNewWindow(inspected.fileStores);
+            }
+            case UNKNOWN -> { /* Do Nothing */ }
+        }
     }
 
     public ProdosAttributes createProdosAttributes(AppleSingle appleSingle) {
@@ -373,7 +385,8 @@ public class FileView extends BorderPane {
         selectedDirectory.set(null);
         listingMode.setValue(DisplayColumn.Mode.NATIVE);
         deletedFilesToggleButton.setSelected(false);
-        createNewFileTable();
+        //createNewFileTable();
+        fileTable.getSelectionModel().clearSelection();
         fileTable.setItems(FXCollections.emptyObservableList());
         fileTable.getColumns().clear();
     }
@@ -392,7 +405,11 @@ public class FileView extends BorderPane {
             return;
         }
 
-        createNewFileTable();
+        //createNewFileTable();
+        fileTable.getSelectionModel().clearSelection();
+        fileTable.setItems(FXCollections.emptyObservableList());
+        fileTable.getColumns().clear();
+
         Directory directory = selectedDirectory.get();
         List<DisplayColumn> displayColumns = directory.getFileStore().getDisplayColumns();
 
