@@ -20,12 +20,15 @@
 package org.applecommander.archive.shrinkit;
 
 import org.applecommander.capability.Capability;
-import org.applecommander.filestore.*;
-import org.applecommander.filestore.DisplayColumn.Alignment;
-import org.applecommander.filestore.DisplayColumn.Mode;
+import org.applecommander.filestore.Directory;
+import org.applecommander.filestore.FileEntry;
+import org.applecommander.filestore.FileStore;
+import org.applecommander.filestore.GenericDirectory;
 import org.applecommander.shrinkit.MasterHeaderBlock;
 import org.applecommander.shrinkit.NuFileArchive;
 import org.applecommander.source.Source;
+import org.applecommander.ui.DisplayColumn;
+import org.applecommander.ui.DisplayMode;
 import org.applecommander.util.Container;
 import org.applecommander.util.InformationGroup;
 
@@ -78,21 +81,21 @@ public class ShrinkitFileStore implements FileStore {
     @Override
     public List<DisplayColumn> getDisplayColumns() {
         return DisplayColumn.builder(ShrinkitFileEntry.class)
-            .addStringField("Name", ShrinkitFileEntry::getName)
-            .addStringField("Sys. Id", ShrinkitFileEntry::getFileSysIdText, Mode.DETAIL)
-            .addIntField("File Sys. Info", ShrinkitFileEntry::getFileSysInfo, "$%04X", Mode.DETAIL)
-            .addStringField("Access", Alignment.CENTER, ShrinkitFileEntry::getAccessText, Mode.DETAIL)
-            .addStringField("Kind", ShrinkitFileEntry::getStorageTypeText)
-            .addStringField("Type", Alignment.CENTER, ShrinkitFileEntry::getFileTypeText)
-            .addLongField("Aux. Type", ShrinkitFileEntry::getExtraType, "$%04X")
-            .addDateField("Archived", ShrinkitFileEntry::getArchiveWhen)
-            .addDateField("Created", ShrinkitFileEntry::getCreateWhen, Mode.DETAIL)
-            .addDateField("Modified", ShrinkitFileEntry::getModWhen, Mode.DETAIL)
-            .addStringField("Format", ShrinkitFileEntry::getThreadFormatText)
-            .addPercentField("Size", ShrinkitFileEntry::getCompressedSize, ShrinkitFileEntry::getSize, "%2.0f%%")
-            .addLongField("Un-Length", ShrinkitFileEntry::getSize)
-            .addIntField("Data CRC", ShrinkitFileEntry::getDataForkCrc, "$%04X", Mode.DETAIL)
-            .addIntField("Resource CRC", ShrinkitFileEntry::getResourceForkCrc, "$%04X", Mode.DETAIL)
+            .leftString("Name", ShrinkitFileEntry::getName)
+            .leftString("Sys. Id", ShrinkitFileEntry::getFileSysIdText, DisplayMode.DETAIL)
+            .rightNumber("File Sys. Info", ShrinkitFileEntry::getFileSysInfo, "$%04X", DisplayMode.DETAIL)
+            .centerString("Access", ShrinkitFileEntry::getAccessText, DisplayMode.DETAIL)
+            .leftString("Kind", ShrinkitFileEntry::getStorageTypeText)
+            .centerString("Type", ShrinkitFileEntry::getFileTypeText)
+            .rightNumber("Aux. Type", ShrinkitFileEntry::getExtraType, "$%04X")
+            .centerDate("Archived", ShrinkitFileEntry::getArchiveWhen)
+            .centerDate("Created", ShrinkitFileEntry::getCreateWhen, DisplayMode.DETAIL)
+            .centerDate("Modified", ShrinkitFileEntry::getModWhen, DisplayMode.DETAIL)
+            .leftString("Format", ShrinkitFileEntry::getThreadFormatText)
+            .rightPercent("Size", ShrinkitFileEntry::getCompressedSize, ShrinkitFileEntry::getSize, "%2.0f%%")
+            .rightNumber("Un-Length", ShrinkitFileEntry::getSize, "%,d")
+            .rightNumber("Data CRC", ShrinkitFileEntry::getDataForkCrc, "$%04X", DisplayMode.DETAIL)
+            .rightNumber("Resource CRC", ShrinkitFileEntry::getResourceForkCrc, "$%04X", DisplayMode.DETAIL)
             .toList();
     }
 

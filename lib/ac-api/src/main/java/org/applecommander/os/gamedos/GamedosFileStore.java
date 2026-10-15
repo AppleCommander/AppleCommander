@@ -21,9 +21,10 @@ package org.applecommander.os.gamedos;
 
 import org.applecommander.capability.Capability;
 import org.applecommander.device.TrackSectorDevice;
-import org.applecommander.filestore.DisplayColumn;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
+import org.applecommander.ui.DisplayColumn;
+import org.applecommander.ui.DisplayMode;
 import org.applecommander.usage.DiskUsage.UsageType;
 import org.applecommander.usage.SectorUsage;
 import org.applecommander.util.Container;
@@ -32,8 +33,6 @@ import org.applecommander.util.InformationGroup;
 
 import java.util.List;
 import java.util.Optional;
-
-import static org.applecommander.filestore.DisplayColumn.Mode;
 
 public class GamedosFileStore implements FileStore, GamedosConstants {
     private final TrackSectorDevice device;
@@ -108,13 +107,13 @@ public class GamedosFileStore implements FileStore, GamedosConstants {
     @Override
     public List<DisplayColumn> getDisplayColumns() {
         return DisplayColumn.builder(GamedosFileEntry.class)
-            .addStringField("Type", GamedosFileEntry::getFiletype, GamedosFileEntry::setFiletype, false)
-            .addStringField("Name", GamedosFileEntry::getName, GamedosFileEntry::setName, true)
-            .addIntField("Meta", GamedosFileEntry::getMeta, "$%04X")
-            .addIntField("First Track", GamedosFileEntry::getFirstTrack, Mode.DETAIL)
-            .addIntField("First Sector", GamedosFileEntry::getFirstSector, Mode.DETAIL)
-            .addIntField("Sector Count", GamedosFileEntry::getSectorCount, Mode.DETAIL)
-            .addLongField("Size", GamedosFileEntry::getSize)
+            .leftString("Type", GamedosFileEntry::getFiletype)
+            .leftString("Name", GamedosFileEntry::getName)
+            .rightNumber("Meta", GamedosFileEntry::getMeta, "$%04X")
+            .rightNumber("First Track", GamedosFileEntry::getFirstTrack, "%d", DisplayMode.DETAIL)
+            .rightNumber("First Sector", GamedosFileEntry::getFirstSector, "%d", DisplayMode.DETAIL)
+            .rightNumber("Sector Count", GamedosFileEntry::getSectorCount, "%d", DisplayMode.DETAIL)
+            .rightNumber("Size", GamedosFileEntry::getSize, "%,d")
             .toList();
     }
 

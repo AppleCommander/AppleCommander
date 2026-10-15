@@ -55,6 +55,7 @@ module org.applecommander.api {
     exports org.applecommander.os.pascal;
     exports org.applecommander.source;
     exports org.applecommander.transfer;
+    exports org.applecommander.ui;
     exports org.applecommander.usage;
     exports org.applecommander.util;
 

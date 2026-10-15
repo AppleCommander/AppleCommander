@@ -20,8 +20,12 @@
 package org.applecommander.archive.aaf;
 
 import org.applecommander.capability.Capability;
-import org.applecommander.filestore.*;
+import org.applecommander.filestore.Directory;
+import org.applecommander.filestore.FileEntry;
+import org.applecommander.filestore.FileStore;
+import org.applecommander.filestore.GenericDirectory;
 import org.applecommander.source.Source;
+import org.applecommander.ui.DisplayColumn;
 import org.applecommander.util.Container;
 import org.applecommander.util.InformationGroup;
 
@@ -94,8 +98,8 @@ public class AppleArchiveFormatFileStore implements FileStore {
     @Override
     public List<DisplayColumn> getDisplayColumns() {
         return DisplayColumn.builder(AppleArchiveFormatFileEntry.class)
-                .addStringField("Name", AppleArchiveFormatFileEntry::getName)
-                .addLongField("Size", AppleArchiveFormatFileEntry::getSize)
+                .leftString("Name", AppleArchiveFormatFileEntry::getName)
+                .rightNumber("Size", AppleArchiveFormatFileEntry::getSize, "%,d")
                 .toList();
     }
 

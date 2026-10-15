@@ -20,6 +20,7 @@
 package org.applecommander.filestore;
 
 import org.applecommander.capability.CapabilityProvider;
+import org.applecommander.ui.DisplayColumn;
 import org.applecommander.util.Container;
 import org.applecommander.util.InformationProvider;
 

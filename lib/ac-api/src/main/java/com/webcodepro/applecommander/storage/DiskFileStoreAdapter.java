@@ -41,6 +41,8 @@ import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.*;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.transfer.ProdosAttributes;
+import org.applecommander.ui.DisplayColumn;
+import org.applecommander.ui.DisplayMode;
 import org.applecommander.usage.BlockUsage;
 import org.applecommander.usage.DiskUsage;
 import org.applecommander.usage.DiskUsage.UsageType;
@@ -145,35 +147,31 @@ public class DiskFileStoreAdapter implements FileStore {
     /// old API pre-formats everything as a String.
     @Override
     public List<DisplayColumn> getDisplayColumns() {
-        List<DisplayColumn> columns = new ArrayList<>();
+        DisplayColumn.Builder<DiskFileEntryAdapter> builder = DisplayColumn.builder(DiskFileEntryAdapter.class);
         for (int displayMode : List.of(FormattedDisk.FILE_DISPLAY_NATIVE,
                                        FormattedDisk.FILE_DISPLAY_DETAIL)) {
             List<FormattedDisk.FileColumnHeader> headers = disk.getFileColumnHeaders(displayMode);
-            DisplayColumn.Mode mode = DisplayColumn.Mode.DETAIL;
+            DisplayMode mode = DisplayMode.DETAIL;
             if (displayMode == FormattedDisk.FILE_DISPLAY_NATIVE) {
-                mode = DisplayColumn.Mode.NATIVE;
-            };
+                mode = DisplayMode.NATIVE;
+            }
             for (int i = 0; i<headers.size(); i++) {
                 var header = headers.get(i);
-                DisplayColumn.Alignment alignment = switch(header.getAlignment()) {
-                    case FormattedDisk.FileColumnHeader.ALIGN_CENTER -> DisplayColumn.Alignment.CENTER;
-                    case FormattedDisk.FileColumnHeader.ALIGN_RIGHT -> DisplayColumn.Alignment.RIGHT;
-                    default -> DisplayColumn.Alignment.LEFT;
-                };
+                String title = header.getTitle();
+                if (title == null || title.trim().isEmpty()) {
+                    title = "Locked?";
+                }
                 final int headerIndex = i;
-                Function<FileEntry,String> mappingFn = entry -> {
-                    // TODO investigate to see if generics work across these interfaces
-                    if (entry instanceof DiskFileEntryAdapter fileEntryAdapter) {
-                        return fileEntryAdapter.fileEntry.getFileColumnData(displayMode).get(headerIndex);
-                    }
-                    throw new RuntimeException("Unexpected file entry type: " + entry.getClass().getName());
-                };
-                DisplayColumn displayColumn = new DisplayColumn(header.getTitle(),
-                        alignment, DisplayColumn.DataType.STRING, mappingFn::apply, null, false, "%s", mode);
-                columns.add(displayColumn);
+                Function<DiskFileEntryAdapter,String> getValueFn = entry ->
+                        entry.fileEntry.getFileColumnData(displayMode).get(headerIndex);
+                switch (header.getAlignment()) {
+                    case FormattedDisk.FileColumnHeader.ALIGN_CENTER -> builder.centerString(title, getValueFn, mode);
+                    case FormattedDisk.FileColumnHeader.ALIGN_RIGHT -> builder.rightString(title, getValueFn, mode);
+                    default -> builder.leftString(title, getValueFn, mode);
+                }
             }
         }
-        return columns;
+        return builder.toList();
     }
 
     @Override

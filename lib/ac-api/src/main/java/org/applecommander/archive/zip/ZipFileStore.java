@@ -20,11 +20,11 @@
 package org.applecommander.archive.zip;
 
 import org.applecommander.capability.Capability;
-import org.applecommander.filestore.DisplayColumn;
-import org.applecommander.filestore.DisplayColumn.Mode;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.source.Source;
+import org.applecommander.ui.DisplayColumn;
+import org.applecommander.ui.DisplayMode;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.InformationGroup;
@@ -91,15 +91,15 @@ public class ZipFileStore implements FileStore {
     @Override
     public List<DisplayColumn> getDisplayColumns() {
         return DisplayColumn.builder(ZipFileEntry.class)
-            .addLongField("Length", FileEntry::getSize)
-            .addStringField("Method", ZipFileEntry::getMethodName, Mode.DETAIL)
-            .addLongField("Size", ZipFileEntry::getCompressedSize, Mode.DETAIL)
-            .addPercentField("Ratio", ZipFileEntry::getCompressedSize, ZipFileEntry::getSize, "%2.0f%%", Mode.DETAIL)
-            .addFileTimeField("Creation", ZipFileEntry::getCreationTime)
-            .addFileTimeField("Last Access", ZipFileEntry::getLastAccessTime, Mode.DETAIL)
-            .addFileTimeField("Last Modified", ZipFileEntry::getLastModifiedTime)
-            .addLongField("CRC-32", ZipFileEntry::getCrc, "%08x", Mode.DETAIL)
-            .addStringField("Name", FileEntry::getName)
+            .rightNumber("Length", FileEntry::getSize, "%,d")
+            .leftString("Method", ZipFileEntry::getMethodName, DisplayMode.DETAIL)
+            .rightNumber("Size", ZipFileEntry::getCompressedSize, "%,d", DisplayMode.DETAIL)
+            .rightPercent("Ratio", ZipFileEntry::getCompressedSize, ZipFileEntry::getSize, "%2.0f%%", DisplayMode.DETAIL)
+            .centerFileTime("Creation", ZipFileEntry::getCreationTime)
+            .centerFileTime("Last Access", ZipFileEntry::getLastAccessTime, DisplayMode.DETAIL)
+            .centerFileTime("Last Modified", ZipFileEntry::getLastModifiedTime)
+            .rightNumber("CRC-32", ZipFileEntry::getCrc, "%08x", DisplayMode.DETAIL)
+            .leftString("Name", FileEntry::getName)
             .toList();
     }
 
