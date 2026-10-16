@@ -19,21 +19,33 @@ public class DisplayColumn {
     private final ColumnDataType columnDataType;
     private final Function<FileEntry,Object> getValueFn;
     private final Function<Object,String> formatFn;
+    private final boolean editInLine;
+    private final int maxLength;
+    private final List<ColumnOption> options;
 
-    protected DisplayColumn(String title, ColumnAlignment alignment, Set<DisplayMode> modes, ColumnDataType columnDataType,
-                            Function<FileEntry,Object> getValueFn, Function<Object,String> formatFn) {
+    private DisplayColumn(String title, ColumnAlignment alignment, Set<DisplayMode> modes, ColumnDataType columnDataType,
+                          Function<FileEntry,Object> getValueFn, Function<Object,String> formatFn, boolean editInLine,
+                          int maxLength, List<ColumnOption> options) {
         Objects.requireNonNull(title);
         Objects.requireNonNull(alignment);
         Objects.requireNonNull(modes);
         Objects.requireNonNull(columnDataType);
         Objects.requireNonNull(getValueFn);
         Objects.requireNonNull(formatFn);
+        Objects.requireNonNull(options);
         this.title = title;
         this.alignment = alignment;
         this.modes = modes;
         this.columnDataType = columnDataType;
         this.getValueFn = getValueFn;
         this.formatFn = formatFn;
+        this.editInLine = editInLine;
+        this.maxLength = maxLength;
+        this.options = Collections.unmodifiableList(options);
+    }
+
+    public boolean isEditable() {
+        return editInLine || maxLength > 0 || !options.isEmpty();
     }
 
     /// The column title.
@@ -64,6 +76,14 @@ public class DisplayColumn {
     /// Explicitly format the object. This, for instance, is used by JavaFX when it is managing the data types.
     public String formatObject(Object object) {
         return formatFn.apply(object);
+    }
+    /// Indicates this column can be edited directly in the file viewer. Typically just the name.
+    public boolean canEditInLine() {
+        return editInLine;
+    }
+    /// Get list of options (if any) when editing.
+    public List<ColumnOption> getOptions() {
+        return options;
     }
 
     public static <T extends FileEntry> Builder<T> builder(Class<T> fileEntryType) {
@@ -107,6 +127,9 @@ public class DisplayColumn {
         private Function<T, ?> getValueFn;
         private Function<Object, String> formatFn;
         private DisplayMode[] modes;
+        private boolean editInLine = false;
+        private int maxLength = -1;
+        private final List<ColumnOption> options = new ArrayList<>();
 
         private ColumnBuilder(Builder<T> builder, ColumnAlignment alignment, String title) {
             Objects.requireNonNull(builder);
@@ -167,6 +190,20 @@ public class DisplayColumn {
             this.modes = modes;
             return this;
         }
+        public ColumnBuilder<T> editInLine() {
+            this.editInLine = true;
+            return this;
+        }
+        public ColumnBuilder<T> maxLength(int maxLength) {
+            this.maxLength = maxLength;
+            return this;
+        }
+        public ColumnBuilder<T> option(String value, String description) {
+            Objects.requireNonNull(value);
+            Objects.requireNonNull(description);
+            this.options.add(new ColumnOption(value, description));
+            return this;
+        }
 
         public Builder<T> done() {
             // A helper that allows a short-cut of 0 modes meaning ALL modes.
@@ -176,7 +213,8 @@ public class DisplayColumn {
             // This is where generics get sticky. Either the entirety of the API is fully generic, making a bunch
             // of awkward usages with FileStore<?> etc. Or we do magic stuff like this to keep is simple.
             Function<FileEntry, Object> convertedFn = f -> getValueFn.apply(builder.fileEntryType.cast(f));
-            builder.columns.add(new DisplayColumn(title, alignment, Set.of(modes), columnDataType, convertedFn, formatFn));
+            builder.columns.add(new DisplayColumn(title, alignment, Set.of(modes), columnDataType, convertedFn, formatFn,
+                                                  editInLine, maxLength, options));
             return builder;
         }
 

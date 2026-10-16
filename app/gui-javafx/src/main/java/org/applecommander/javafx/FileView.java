@@ -30,8 +30,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
 import org.applecommander.applesingle.AppleSingle;
 import org.applecommander.applesingle.FileDatesInfo;
 import org.applecommander.applesingle.ProdosFileInfo;
@@ -50,6 +52,7 @@ import org.applecommander.source.Sources;
 import org.applecommander.transfer.ProdosAttributePreservation;
 import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.ui.ColumnDataType;
+import org.applecommander.ui.ColumnOption;
 import org.applecommander.ui.DisplayColumn;
 import org.applecommander.ui.DisplayMode;
 
@@ -82,6 +85,8 @@ public class FileView extends BorderPane {
     // entry with the Zip renderer. But only when a sort was applied. Clearing out
     // every property didn't seem to help. Thus this extreme solution. Please fix!
     private TableView<FileEntry> fileTable;
+    // And the detail grid follows the file table!
+    private GridPane fileDetailGrid;
 
     private final ObservableList<Directory> directoryPath = FXCollections.observableArrayList();
     private final ObjectProperty<Directory> selectedDirectory = new SimpleObjectProperty<>();
@@ -199,6 +204,26 @@ public class FileView extends BorderPane {
         fileTable.setPlaceholder(placeholder);
         setCenter(fileTable);
 
+        BooleanProperty showingDetailProperty = new SimpleBooleanProperty(false);
+        Button detailToggle = FxUtils.createSmallToggleButton("pane-right.png", "pane-left.png", showingDetailProperty);
+        detailToggle.disableProperty().bind(fileTable.getSelectionModel().selectedItemProperty().isNull());
+        fileDetailGrid = new GridPane();
+        fileDetailGrid.visibleProperty().bind(showingDetailProperty);
+        fileDetailGrid.managedProperty().bind(showingDetailProperty);
+        VBox detailPane = new VBox(detailToggle, fileDetailGrid);
+        detailPane.setAlignment(Pos.TOP_LEFT);
+        detailPane.setSpacing(5);
+        detailPane.setPadding(new Insets(5));
+        setRight(detailPane);
+        fileTable.getSelectionModel().selectedItemProperty().addListener((_, _, newFileEntry) -> {
+            if (newFileEntry != null) {
+                populateFileDetailGrid(newFileEntry);
+            }
+        });
+        fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((_, _, _) -> {
+            showingDetailProperty.set(false);
+        });
+
         fileTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         fileTable.setItems(FXCollections.emptyObservableList());
         fileTable.setOnMouseClicked(this::onMouseClickedHandler);
@@ -207,6 +232,49 @@ public class FileView extends BorderPane {
         fileTable.setOnDragDropped(this::onDragDroppedHandler);
 
         managedProperty().bind(fileTable.visibleProperty());
+    }
+
+    private void populateFileDetailGrid(FileEntry fileEntry) {
+        fileDetailGrid.getChildren().clear();
+        fileDetailGrid.setAlignment(Pos.CENTER_LEFT);
+        fileDetailGrid.setHgap(10);
+        fileDetailGrid.setVgap(10);
+        int row = 0;
+        for (DisplayColumn displayColumn : fileEntry.getFileStore().getDisplayColumns()) {
+            if (!displayColumn.supports(DisplayMode.DETAIL)) continue;
+            String text = displayColumn.getTitle();
+            if (!text.endsWith(":")) text += ":";
+            Label label = new Label(text);
+            label.setStyle("-fx-font-weight: bold;");
+            if (displayColumn.isEditable()) {
+                if (displayColumn.getOptions().isEmpty()) {
+                    TextField field = new TextField(displayColumn.getDisplayText(fileEntry));
+                    fileDetailGrid.addRow(row++, label, field);
+                }
+                else {
+                    ComboBox<ColumnOption> combobox = new ComboBox<>();
+                    combobox.getItems().addAll(displayColumn.getOptions());
+                    combobox.getSelectionModel().select(displayColumn.getOptions().stream()
+                            .filter(o -> Objects.equals(o.value(), displayColumn.getValue(fileEntry)))
+                            .findAny().orElse(displayColumn.getOptions().getFirst()));
+                    combobox.setConverter(new StringConverter<>() {
+                        @Override
+                        public String toString(ColumnOption option) {
+                            return String.format("%s - %s", option.value(), option.description());
+                        }
+
+                        @Override
+                        public ColumnOption fromString(String string) {
+                            return null;
+                        }
+                    });
+                    fileDetailGrid.addRow(row++, label, combobox);
+                }
+            }
+            else {
+                fileDetailGrid.addRow(row++, label, new Label(displayColumn.getDisplayText(fileEntry)));
+            }
+        }
     }
 
     private void onDragDroppedHandler(DragEvent event) {

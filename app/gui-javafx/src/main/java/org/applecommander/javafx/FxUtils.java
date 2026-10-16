@@ -19,6 +19,7 @@
  */
 package org.applecommander.javafx;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
@@ -80,6 +81,23 @@ public class FxUtils {
         button.setOnAction(eventHandler);
         button.selectedProperty().addListener((_, _, _) -> {
             String imageUrl = button.isSelected()  ? urlOn : urlOff;
+            imageView.setImage(new Image(imageUrl(imageUrl)));
+        });
+        return button;
+    }
+
+    public static Button createSmallToggleButton(String urlOff, String urlOn, BooleanProperty toggleState) {
+        toggleState.setValue(false);
+        ImageView imageView = new ImageView(imageUrl(urlOff));
+        imageView.setFitHeight(16);
+        imageView.setFitWidth(16);
+        imageView.setPreserveRatio(true);
+        Button button = new Button();
+        button.setFocusTraversable(false);
+        button.setGraphic(imageView);
+        button.setOnAction(event -> {
+            toggleState.setValue(!toggleState.getValue());
+            String imageUrl = toggleState.get() ? urlOn : urlOff;
             imageView.setImage(new Image(imageUrl(imageUrl)));
         });
         return button;

@@ -100,7 +100,7 @@ public class ZipFileStore implements FileStore {
             .center("Last Access").fileTime(ZipFileEntry::getLastAccessTime).mode(DisplayMode.DETAIL).done()
             .center("Last Modified").fileTime(ZipFileEntry::getLastModifiedTime).done()
             .right("CRC-32").integer(ZipFileEntry::getCrc, "%08x").mode(DisplayMode.DETAIL).done()
-            .left("Name").string(FileEntry::getName).done()
+            .left("Name").string(FileEntry::getName).editInLine().done()
             .toList();
     }
 
