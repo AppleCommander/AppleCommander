@@ -7,7 +7,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /// A DisplayColumn supports formatted output from various FileStores in a
 /// dynamic fashion. The intent is to provide a flexible display interface
@@ -19,33 +21,39 @@ public class DisplayColumn {
     private final ColumnDataType columnDataType;
     private final Function<FileEntry,Object> getValueFn;
     private final Function<Object,String> formatFn;
+    // These are all editable attributes
+    private final BiConsumer<FileEntry,String> setValueFn;
+    private final boolean editable;
     private final boolean editInLine;
     private final int maxLength;
     private final List<ColumnOption> options;
+    private final Pattern validInputPattern;
 
     private DisplayColumn(String title, ColumnAlignment alignment, Set<DisplayMode> modes, ColumnDataType columnDataType,
-                          Function<FileEntry,Object> getValueFn, Function<Object,String> formatFn, boolean editInLine,
-                          int maxLength, List<ColumnOption> options) {
+                          Function<FileEntry,Object> getValueFn, Function<Object,String> formatFn, BiConsumer<FileEntry,String> setValueFn,
+                          boolean editInLine, int maxLength, List<ColumnOption> options, Pattern validInputPattern) {
         Objects.requireNonNull(title);
         Objects.requireNonNull(alignment);
         Objects.requireNonNull(modes);
         Objects.requireNonNull(columnDataType);
         Objects.requireNonNull(getValueFn);
+        // setValueFn is null when not editable
         Objects.requireNonNull(formatFn);
         Objects.requireNonNull(options);
+        // validInputPattern is null when not used
         this.title = title;
         this.alignment = alignment;
         this.modes = modes;
         this.columnDataType = columnDataType;
         this.getValueFn = getValueFn;
         this.formatFn = formatFn;
+
+        this.editable = setValueFn != null || editInLine || maxLength > 0 || !options.isEmpty() || validInputPattern != null;
+        this.setValueFn = setValueFn;
         this.editInLine = editInLine;
         this.maxLength = maxLength;
         this.options = Collections.unmodifiableList(options);
-    }
-
-    public boolean isEditable() {
-        return editInLine || maxLength > 0 || !options.isEmpty();
+        this.validInputPattern = validInputPattern;
     }
 
     /// The column title.
@@ -77,13 +85,30 @@ public class DisplayColumn {
     public String formatObject(Object object) {
         return formatFn.apply(object);
     }
+    public void setValue(FileEntry fileEntry, String value) {
+        setValueFn.accept(fileEntry, value);
+    }
+
+    /// Indicates if this field is editable
+    public boolean isEditable() {
+        return editable;
+    }
     /// Indicates this column can be edited directly in the file viewer. Typically just the name.
     public boolean canEditInLine() {
         return editInLine;
     }
+    /// Indicates the maximum length for the input. 0 means not applicable.
+    public int getMaxLength() {
+        return maxLength;
+    }
     /// Get list of options (if any) when editing.
     public List<ColumnOption> getOptions() {
         return options;
+    }
+    /// Get the valid input regex. If input does not match this regex, it will be ignored.
+    /// The intent is to be able to limit to numbers, or the valid filename characters.
+    public Pattern getValidInputPattern() {
+        return validInputPattern;
     }
 
     public static <T extends FileEntry> Builder<T> builder(Class<T> fileEntryType) {
@@ -118,18 +143,21 @@ public class DisplayColumn {
     }
 
     public static class ColumnBuilder<T extends FileEntry> {
-        private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
+        public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
+        public static final Pattern VALID_HEX_NUMBER = Pattern.compile("^(?i)0x[0-9a-f]*|[$][0-9a-f]*|[0-9a-f]*H?$");
 
         private final Builder<T> builder;
         private final ColumnAlignment alignment;
         private final String title;
         private ColumnDataType columnDataType;
         private Function<T, ?> getValueFn;
-        private Function<Object, String> formatFn;
+        private BiConsumer<FileEntry,String> setValueFn;
+        private Function<Object,String> formatFn;
         private DisplayMode[] modes;
         private boolean editInLine = false;
-        private int maxLength = -1;
+        private int maxLength = 0;
         private final List<ColumnOption> options = new ArrayList<>();
+        private Pattern validInputPattern;
 
         private ColumnBuilder(Builder<T> builder, ColumnAlignment alignment, String title) {
             Objects.requireNonNull(builder);
@@ -140,14 +168,20 @@ public class DisplayColumn {
             this.title = title;
         }
 
-        public ColumnBuilder<T> string(Function<T, String> getValueFn) {
+        public ColumnBuilder<T> string(Function<T,String> getValueFn) {
             Objects.requireNonNull(getValueFn);
             this.columnDataType = ColumnDataType.STRING;
             this.getValueFn = getValueFn;
             this.formatFn = s -> String.format("%s", s);
             return this;
         }
-        public ColumnBuilder<T> integer(Function<T, Number> getValueFn, String fmt) {
+        public ColumnBuilder<T> string(Function<T,String> getValueFn, BiConsumer<T,String> setValueFn) {
+            Objects.requireNonNull(getValueFn);
+            Objects.requireNonNull(setValueFn);
+            this.setValueFn = (e,t) -> setValueFn.accept(builder.fileEntryType.cast(e), t);
+            return string(getValueFn);
+        }
+        public ColumnBuilder<T> integer(Function<T,Number> getValueFn, String fmt) {
             Objects.requireNonNull(getValueFn);
             Objects.requireNonNull(fmt);
             this.columnDataType = ColumnDataType.INTEGER;
@@ -155,7 +189,14 @@ public class DisplayColumn {
             this.formatFn = n -> String.format(fmt, n);
             return this;
         }
-        public ColumnBuilder<T> real(Function<T, Number> getValueFn, String fmt) {
+        public ColumnBuilder<T> integer(Function<T,Number> getValueFn, String fmt, BiConsumer<T,Integer> setValueFn) {
+            Objects.requireNonNull(getValueFn);
+            Objects.requireNonNull(fmt);
+            Objects.requireNonNull(setValueFn);
+            this.setValueFn = (e,t) -> setInteger(e, t, setValueFn);
+            return integer(getValueFn, fmt);
+        }
+        public ColumnBuilder<T> real(Function<T,Number> getValueFn, String fmt) {
             Objects.requireNonNull(getValueFn);
             Objects.requireNonNull(fmt);
             this.columnDataType = ColumnDataType.REAL;
@@ -163,7 +204,7 @@ public class DisplayColumn {
             this.formatFn = n -> String.format(fmt, n);
             return this;
         }
-        public ColumnBuilder<T> date(Function<T, Date> getValueFn) {
+        public ColumnBuilder<T> date(Function<T,Date> getValueFn) {
             Objects.requireNonNull(getValueFn);
             this.columnDataType = ColumnDataType.STRING;
             this.getValueFn = getValueFn;
@@ -204,6 +245,10 @@ public class DisplayColumn {
             this.options.add(new ColumnOption(value, description));
             return this;
         }
+        public ColumnBuilder<T> restrictToHexValues() {
+            this.validInputPattern = VALID_HEX_NUMBER;
+            return this;
+        }
 
         public Builder<T> done() {
             // A helper that allows a short-cut of 0 modes meaning ALL modes.
@@ -214,7 +259,7 @@ public class DisplayColumn {
             // of awkward usages with FileStore<?> etc. Or we do magic stuff like this to keep is simple.
             Function<FileEntry, Object> convertedFn = f -> getValueFn.apply(builder.fileEntryType.cast(f));
             builder.columns.add(new DisplayColumn(title, alignment, Set.of(modes), columnDataType, convertedFn, formatFn,
-                                                  editInLine, maxLength, options));
+                                                  setValueFn, editInLine, maxLength, options, validInputPattern));
             return builder;
         }
 
@@ -244,6 +289,29 @@ public class DisplayColumn {
             Number denominator = denominatorFn.apply(typedFileEntry);
             if (denominator == null || denominator.doubleValue() == 0) return 0;
             return (1.0 - numerator.doubleValue() / denominator.doubleValue()) * 100.0;
+        }
+
+        private void setInteger(FileEntry fileEntry, String text, BiConsumer<T,Integer> setter) {
+            T typedFileEntry = builder.fileEntryType.cast(fileEntry);
+            int value = 0;
+            if (text.startsWith("0x") || text.startsWith("0X")) {
+                value = Integer.parseInt(text.substring(2), 16);
+            }
+            else if (text.startsWith("$")) {
+                value = Integer.parseInt(text.substring(1), 8);
+            }
+            else if (text.endsWith("h") || text.endsWith("H")) {
+                value = Integer.parseInt(text.substring(0, text.length()-1), 16);
+            }
+            else {
+                try {
+                    // We may not be able to distinguish base 10 from base 16. Try the more restrictive one first!
+                    value = Integer.parseInt(text);
+                } catch (NumberFormatException e) {
+                    value = Integer.parseInt(text, 16);
+                }
+            }
+            setter.accept(typedFileEntry, value);
         }
     }
 }

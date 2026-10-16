@@ -19,6 +19,8 @@
  */
 package org.applecommander.javafx;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -26,6 +28,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
@@ -45,6 +48,9 @@ import org.applecommander.bastools.api.model.Program;
 import org.applecommander.bastools.api.model.Token;
 import org.applecommander.capability.Capability;
 import org.applecommander.filestore.*;
+import org.applecommander.javafx.filter.CharacterRestrictionFilter;
+import org.applecommander.javafx.filter.CompositeFilter;
+import org.applecommander.javafx.filter.FixedLengthFilter;
 import org.applecommander.javafx.settings.ExportOption;
 import org.applecommander.javafx.settings.Settings;
 import org.applecommander.source.Source;
@@ -64,6 +70,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 import static org.applecommander.javafx.FxUtils.*;
 
@@ -208,9 +215,12 @@ public class FileView extends BorderPane {
         Button detailToggle = FxUtils.createSmallToggleButton("pane-right.png", "pane-left.png", showingDetailProperty);
         detailToggle.disableProperty().bind(fileTable.getSelectionModel().selectedItemProperty().isNull());
         fileDetailGrid = new GridPane();
-        fileDetailGrid.visibleProperty().bind(showingDetailProperty);
-        fileDetailGrid.managedProperty().bind(showingDetailProperty);
-        VBox detailPane = new VBox(detailToggle, fileDetailGrid);
+        ScrollPane scrollPane = new ScrollPane(fileDetailGrid);
+        scrollPane.setFitToHeight(true);
+        scrollPane.setStyle("-fx-background-color: transparent;");
+        scrollPane.visibleProperty().bind(showingDetailProperty);
+        scrollPane.managedProperty().bind(showingDetailProperty);
+        VBox detailPane = new VBox(detailToggle, scrollPane);
         detailPane.setAlignment(Pos.TOP_LEFT);
         detailPane.setSpacing(5);
         detailPane.setPadding(new Insets(5));
@@ -240,6 +250,8 @@ public class FileView extends BorderPane {
         fileDetailGrid.setHgap(10);
         fileDetailGrid.setVgap(10);
         int row = 0;
+        SimpleListProperty<Node> editableFields = new SimpleListProperty<>(FXCollections.observableArrayList());
+        Button applyButton = new Button("Apply");
         for (DisplayColumn displayColumn : fileEntry.getFileStore().getDisplayColumns()) {
             if (!displayColumn.supports(DisplayMode.DETAIL)) continue;
             String text = displayColumn.getTitle();
@@ -249,10 +261,21 @@ public class FileView extends BorderPane {
             if (displayColumn.isEditable()) {
                 if (displayColumn.getOptions().isEmpty()) {
                     TextField field = new TextField(displayColumn.getDisplayText(fileEntry));
+                    List<UnaryOperator<TextFormatter.Change>> filters = new ArrayList<>();
+                    if (displayColumn.getMaxLength() > 0) {
+                        filters.add(new FixedLengthFilter(displayColumn.getMaxLength()));
+                    }
+                    if (displayColumn.getValidInputPattern() != null) {
+                        filters.add(new CharacterRestrictionFilter(displayColumn.getValidInputPattern()));
+                    }
+                    field.setTextFormatter(new TextFormatter<>(new CompositeFilter(filters)));
+                    field.setUserData(displayColumn);
                     fileDetailGrid.addRow(row++, label, field);
+                    editableFields.add(field);
                 }
                 else {
                     ComboBox<ColumnOption> combobox = new ComboBox<>();
+                    combobox.setUserData(displayColumn);
                     combobox.getItems().addAll(displayColumn.getOptions());
                     combobox.getSelectionModel().select(displayColumn.getOptions().stream()
                             .filter(o -> Objects.equals(o.value(), displayColumn.getValue(fileEntry)))
@@ -260,6 +283,7 @@ public class FileView extends BorderPane {
                     combobox.setConverter(new StringConverter<>() {
                         @Override
                         public String toString(ColumnOption option) {
+                            if (option == null) return "";
                             return String.format("%s - %s", option.value(), option.description());
                         }
 
@@ -269,11 +293,39 @@ public class FileView extends BorderPane {
                         }
                     });
                     fileDetailGrid.addRow(row++, label, combobox);
+                    editableFields.add(combobox);
                 }
             }
             else {
                 fileDetailGrid.addRow(row++, label, new Label(displayColumn.getDisplayText(fileEntry)));
             }
+        }
+        if (!editableFields.isEmpty()) {
+            // Calculate if it's valid and then negate it. This makes one invalid disable the button.
+            // We have to handle every control created, however. :shrug:
+            applyButton.disableProperty().bind(
+                editableFields.stream().map(node -> switch (node) {
+                    case TextField textField -> textField.textProperty().isNotEmpty();
+                    case ComboBox<?> comboBox -> comboBox.getSelectionModel().selectedItemProperty().isNotNull();
+                    default -> throw new IllegalStateException("Unexpected value: " + node);
+                }).reduce(Bindings::and).map(BooleanBinding::not).orElseThrow());
+            applyButton.setOnAction(event -> {
+                for (Node node : editableFields) {
+                    DisplayColumn column = (DisplayColumn) node.getUserData();
+                    switch (node) {
+                        case TextField textField -> {
+                            column.setValue(fileEntry, textField.getText());
+                        }
+                        case ComboBox<?> comboBox -> {
+                            ColumnOption option = (ColumnOption) comboBox.getSelectionModel().getSelectedItem();
+                            column.setValue(fileEntry, option.value());
+                        }
+                        default -> { /* do nothing */ }
+                    }
+                }
+                fileStoreWindow.addChange();
+            });
+            fileDetailGrid.addRow(row++, applyButton);
         }
     }
 
