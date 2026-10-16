@@ -98,8 +98,8 @@ public class AppleArchiveFormatFileStore implements FileStore {
     @Override
     public List<DisplayColumn> getDisplayColumns() {
         return DisplayColumn.builder(AppleArchiveFormatFileEntry.class)
-                .leftString("Name", AppleArchiveFormatFileEntry::getName)
-                .rightNumber("Size", AppleArchiveFormatFileEntry::getSize, "%,d")
+                .left("Name").string(AppleArchiveFormatFileEntry::getName).done()
+                .right("Size").integer(AppleArchiveFormatFileEntry::getSize, "%,d").done()
                 .toList();
     }
 

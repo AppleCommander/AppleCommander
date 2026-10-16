@@ -164,11 +164,12 @@ public class DiskFileStoreAdapter implements FileStore {
                 final int headerIndex = i;
                 Function<DiskFileEntryAdapter,String> getValueFn = entry ->
                         entry.fileEntry.getFileColumnData(displayMode).get(headerIndex);
-                switch (header.getAlignment()) {
-                    case FormattedDisk.FileColumnHeader.ALIGN_CENTER -> builder.centerString(title, getValueFn, mode);
-                    case FormattedDisk.FileColumnHeader.ALIGN_RIGHT -> builder.rightString(title, getValueFn, mode);
-                    default -> builder.leftString(title, getValueFn, mode);
-                }
+                DisplayColumn.ColumnBuilder<DiskFileEntryAdapter> column = switch (header.getAlignment()) {
+                    case FormattedDisk.FileColumnHeader.ALIGN_CENTER -> builder.center(title);
+                    case FormattedDisk.FileColumnHeader.ALIGN_RIGHT -> builder.right(title);
+                    default -> builder.left(title);
+                };
+                column.string(getValueFn).mode(mode).done();
             }
         }
         return builder.toList();

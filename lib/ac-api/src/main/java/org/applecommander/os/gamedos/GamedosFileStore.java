@@ -107,13 +107,13 @@ public class GamedosFileStore implements FileStore, GamedosConstants {
     @Override
     public List<DisplayColumn> getDisplayColumns() {
         return DisplayColumn.builder(GamedosFileEntry.class)
-            .leftString("Type", GamedosFileEntry::getFiletype)
-            .leftString("Name", GamedosFileEntry::getName)
-            .rightNumber("Meta", GamedosFileEntry::getMeta, "$%04X")
-            .rightNumber("First Track", GamedosFileEntry::getFirstTrack, "%d", DisplayMode.DETAIL)
-            .rightNumber("First Sector", GamedosFileEntry::getFirstSector, "%d", DisplayMode.DETAIL)
-            .rightNumber("Sector Count", GamedosFileEntry::getSectorCount, "%d", DisplayMode.DETAIL)
-            .rightNumber("Size", GamedosFileEntry::getSize, "%,d")
+            .left("Type").string(GamedosFileEntry::getFiletype).done()
+            .left("Name").string(GamedosFileEntry::getName).done()
+            .right("Meta").integer(GamedosFileEntry::getMeta, "$%04X").done()
+            .right("First Track").integer(GamedosFileEntry::getFirstTrack, "%d").mode(DisplayMode.DETAIL).done()
+            .right("First Sector").integer(GamedosFileEntry::getFirstSector, "%d").mode(DisplayMode.DETAIL).done()
+            .right("Sector Count").integer(GamedosFileEntry::getSectorCount, "%d").mode(DisplayMode.DETAIL).done()
+            .right("Size").integer(GamedosFileEntry::getSize, "%,d").done()
             .toList();
     }
 

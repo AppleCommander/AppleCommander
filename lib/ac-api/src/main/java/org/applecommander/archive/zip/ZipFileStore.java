@@ -40,6 +40,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import static org.applecommander.ui.DisplayColumn.builder;
 import static org.applecommander.util.Shorthand.copy;
 
 public class ZipFileStore implements FileStore {
@@ -90,16 +91,16 @@ public class ZipFileStore implements FileStore {
 
     @Override
     public List<DisplayColumn> getDisplayColumns() {
-        return DisplayColumn.builder(ZipFileEntry.class)
-            .rightNumber("Length", FileEntry::getSize, "%,d")
-            .leftString("Method", ZipFileEntry::getMethodName, DisplayMode.DETAIL)
-            .rightNumber("Size", ZipFileEntry::getCompressedSize, "%,d", DisplayMode.DETAIL)
-            .rightPercent("Ratio", ZipFileEntry::getCompressedSize, ZipFileEntry::getSize, "%2.0f%%", DisplayMode.DETAIL)
-            .centerFileTime("Creation", ZipFileEntry::getCreationTime)
-            .centerFileTime("Last Access", ZipFileEntry::getLastAccessTime, DisplayMode.DETAIL)
-            .centerFileTime("Last Modified", ZipFileEntry::getLastModifiedTime)
-            .rightNumber("CRC-32", ZipFileEntry::getCrc, "%08x", DisplayMode.DETAIL)
-            .leftString("Name", FileEntry::getName)
+        return builder(ZipFileEntry.class)
+            .right("Length").integer(FileEntry::getSize, "%,d").done()
+            .left("Method").string(ZipFileEntry::getMethodName).mode(DisplayMode.DETAIL).done()
+            .right("Size").integer(ZipFileEntry::getCompressedSize, "%,d").mode(DisplayMode.DETAIL).done()
+            .right("Ratio").percent(ZipFileEntry::getCompressedSize, ZipFileEntry::getSize, "%2.0f%%").mode(DisplayMode.DETAIL).done()
+            .center("Creation").fileTime(ZipFileEntry::getCreationTime).done()
+            .center("Last Access").fileTime(ZipFileEntry::getLastAccessTime).mode(DisplayMode.DETAIL).done()
+            .center("Last Modified").fileTime(ZipFileEntry::getLastModifiedTime).done()
+            .right("CRC-32").integer(ZipFileEntry::getCrc, "%08x").mode(DisplayMode.DETAIL).done()
+            .left("Name").string(FileEntry::getName).done()
             .toList();
     }
 

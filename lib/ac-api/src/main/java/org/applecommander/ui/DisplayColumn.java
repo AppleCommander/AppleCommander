@@ -20,9 +20,8 @@ public class DisplayColumn {
     private final Function<FileEntry,Object> getValueFn;
     private final Function<Object,String> formatFn;
 
-    private DisplayColumn(String title, ColumnAlignment alignment, Set<DisplayMode> modes, ColumnDataType columnDataType,
-                          Function<FileEntry,Object> getValueFn,
-                          Function<Object,String> formatFn) {
+    protected DisplayColumn(String title, ColumnAlignment alignment, Set<DisplayMode> modes, ColumnDataType columnDataType,
+                            Function<FileEntry,Object> getValueFn, Function<Object,String> formatFn) {
         Objects.requireNonNull(title);
         Objects.requireNonNull(alignment);
         Objects.requireNonNull(modes);
@@ -72,63 +71,113 @@ public class DisplayColumn {
     }
 
     public static class Builder<T extends FileEntry> {
-        private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
-
         private final Class<T> fileEntryType;
         private final List<DisplayColumn> columns = new ArrayList<>();
 
         private Builder(Class<T> fileEntryType) {
+            Objects.requireNonNull(fileEntryType);
             this.fileEntryType = fileEntryType;
         }
 
-        /// A helper method that allows a short-cut of 0 modes meaning ALL modes.
-        private Builder<T> add(String name, ColumnAlignment alignment, ColumnDataType columnDataType,
-                               Function<T,?> getValueFn, Function<Object,String> formatFn, DisplayMode... modes) {
-            if (modes.length == 0) {
-                modes = new DisplayMode[] { DisplayMode.NATIVE, DisplayMode.DETAIL };
-            }
-            // This is where generics get sticky. Either the entirety of the API is fully generic, making a bunch
-            // of awkward usages with FileStore<?> etc. Or we do magic stuff like this to keep is simple.
-            Function<FileEntry,Object> convertedFn = f -> getValueFn.apply(fileEntryType.cast(f));
-            columns.add(new DisplayColumn(name, alignment, Set.of(modes), columnDataType, convertedFn, formatFn));
-            return this;
+        public ColumnBuilder<T> left(String title) {
+            Objects.requireNonNull(title);
+            return new ColumnBuilder<>(this, ColumnAlignment.LEFT, title);
         }
-
-        /// Add a left-aligned string field.
-        public Builder<T> leftString(String name, Function<T,String> getValueFn, DisplayMode... modes) {
-            return add(name, ColumnAlignment.LEFT, ColumnDataType.STRING, getValueFn, s -> String.format("%s",s), modes);
+        public ColumnBuilder<T> center(String title) {
+            Objects.requireNonNull(title);
+            return new ColumnBuilder<>(this, ColumnAlignment.CENTER, title);
         }
-        /// Add a centered string field.
-        public Builder<T> centerString(String name, Function<T,String> getValueFn, DisplayMode... modes) {
-            return add(name, ColumnAlignment.CENTER, ColumnDataType.STRING, getValueFn, s -> String.format("%s",s), modes);
-        }
-        /// Add a right-aligned string field.
-        public Builder<T> rightString(String name, Function<T, String> getValueFn, DisplayMode... modes) {
-            return add(name, ColumnAlignment.RIGHT, ColumnDataType.STRING, getValueFn, s -> String.format("%s",s), modes);
-        }
-        /// Add a right-aligned integer field. Mathematical definition of this includes "whole numbers and their negatives".
-        /// It covers `byte`, `short`, `int`, `long` and their respective objects.
-        public Builder<T> rightNumber(String name, Function<T,Number> getValueFn, String fmt, DisplayMode... modes) {
-            return add(name, ColumnAlignment.RIGHT, ColumnDataType.INTEGER, getValueFn, n -> String.format(fmt,n), modes);
-        }
-        /// Add a centered Date field.
-        public Builder<T> centerDate(String name, Function<T,Date> getValueFn, DisplayMode... modes) {
-            return add(name, ColumnAlignment.CENTER, ColumnDataType.STRING, getValueFn, this::formatDate, modes);
-        }
-        /// Add a centered FileTime field.
-        public Builder<T> centerFileTime(String name, Function<T, FileTime> getValueFn, DisplayMode... modes) {
-            return add(name, ColumnAlignment.CENTER, ColumnDataType.STRING, getValueFn, this::formatDate, modes);
-        }
-        /// Add a right-aligned percent field.
-        public Builder<T> rightPercent(String name, Function<T,Number> numeratorFn, Function<T,Number> denominatorFn,
-                                       String fmt, DisplayMode... modes) {
-            return add(name, ColumnAlignment.RIGHT, ColumnDataType.REAL,
-                    t -> percentage(t,numeratorFn,denominatorFn),
-                    d -> String.format(fmt, d), modes);
+        public ColumnBuilder<T> right(String title) {
+            Objects.requireNonNull(title);
+            return new ColumnBuilder<>(this, ColumnAlignment.RIGHT, title);
         }
 
         public List<DisplayColumn> toList() {
             return columns;
+        }
+    }
+
+    public static class ColumnBuilder<T extends FileEntry> {
+        private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
+
+        private final Builder<T> builder;
+        private final ColumnAlignment alignment;
+        private final String title;
+        private ColumnDataType columnDataType;
+        private Function<T, ?> getValueFn;
+        private Function<Object, String> formatFn;
+        private DisplayMode[] modes;
+
+        private ColumnBuilder(Builder<T> builder, ColumnAlignment alignment, String title) {
+            Objects.requireNonNull(builder);
+            Objects.requireNonNull(alignment);
+            Objects.requireNonNull(title);
+            this.builder = builder;
+            this.alignment = alignment;
+            this.title = title;
+        }
+
+        public ColumnBuilder<T> string(Function<T, String> getValueFn) {
+            Objects.requireNonNull(getValueFn);
+            this.columnDataType = ColumnDataType.STRING;
+            this.getValueFn = getValueFn;
+            this.formatFn = s -> String.format("%s", s);
+            return this;
+        }
+        public ColumnBuilder<T> integer(Function<T, Number> getValueFn, String fmt) {
+            Objects.requireNonNull(getValueFn);
+            Objects.requireNonNull(fmt);
+            this.columnDataType = ColumnDataType.INTEGER;
+            this.getValueFn = getValueFn;
+            this.formatFn = n -> String.format(fmt, n);
+            return this;
+        }
+        public ColumnBuilder<T> real(Function<T, Number> getValueFn, String fmt) {
+            Objects.requireNonNull(getValueFn);
+            Objects.requireNonNull(fmt);
+            this.columnDataType = ColumnDataType.REAL;
+            this.getValueFn = getValueFn;
+            this.formatFn = n -> String.format(fmt, n);
+            return this;
+        }
+        public ColumnBuilder<T> date(Function<T, Date> getValueFn) {
+            Objects.requireNonNull(getValueFn);
+            this.columnDataType = ColumnDataType.STRING;
+            this.getValueFn = getValueFn;
+            this.formatFn = this::formatDate;
+            return this;
+        }
+        public ColumnBuilder<T> fileTime(Function<T, FileTime> getValueFn) {
+            Objects.requireNonNull(getValueFn);
+            this.columnDataType = ColumnDataType.STRING;
+            this.getValueFn = getValueFn;
+            this.formatFn = this::formatDate;
+            return this;
+        }
+        public ColumnBuilder<T> percent(Function<T, Number> numeratorFn, Function<T, Number> denominatorFn, String fmt) {
+            Objects.requireNonNull(numeratorFn);
+            Objects.requireNonNull(denominatorFn);
+            Objects.requireNonNull(fmt);
+            this.columnDataType = ColumnDataType.REAL;
+            this.getValueFn = t -> percentage(t, numeratorFn, denominatorFn);
+            this.formatFn = d -> String.format(fmt, d);
+            return this;
+        }
+        public ColumnBuilder<T> mode(DisplayMode... modes) {
+            this.modes = modes;
+            return this;
+        }
+
+        public Builder<T> done() {
+            // A helper that allows a short-cut of 0 modes meaning ALL modes.
+            if (modes == null || modes.length == 0) {
+                modes = new DisplayMode[] { DisplayMode.NATIVE, DisplayMode.DETAIL };
+            }
+            // This is where generics get sticky. Either the entirety of the API is fully generic, making a bunch
+            // of awkward usages with FileStore<?> etc. Or we do magic stuff like this to keep is simple.
+            Function<FileEntry, Object> convertedFn = f -> getValueFn.apply(builder.fileEntryType.cast(f));
+            builder.columns.add(new DisplayColumn(title, alignment, Set.of(modes), columnDataType, convertedFn, formatFn));
+            return builder;
         }
 
         /// This is a helper function to format date objects.
@@ -149,9 +198,10 @@ public class DisplayColumn {
                 default -> "(Unknown Date)";
             };
         }
+
         /// This is a helper function to help compute percentages.
-        private double percentage(FileEntry fileEntry, Function<T,Number> numeratorFn, Function<T,Number> denominatorFn) {
-            T typedFileEntry = fileEntryType.cast(fileEntry);
+        private double percentage(FileEntry fileEntry, Function<T, Number> numeratorFn, Function<T, Number> denominatorFn) {
+            T typedFileEntry = builder.fileEntryType.cast(fileEntry);
             Number numerator = numeratorFn.apply(typedFileEntry);
             Number denominator = denominatorFn.apply(typedFileEntry);
             if (denominator == null || denominator.doubleValue() == 0) return 0;
