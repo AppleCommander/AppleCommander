@@ -49,6 +49,7 @@ public class FxUtils {
         Button button = new Button();
         button.setGraphic(vbox);
         button.setOnAction(eventHandler);
+        button.setFocusTraversable(false);
         return button;
     }
 
@@ -65,6 +66,7 @@ public class FxUtils {
         button.setGraphic(vbox);
         button.setOnAction(eventHandler);
         button.setToggleGroup(toggleGroup);
+        button.setFocusTraversable(false);
         return button;
     }
 
@@ -79,6 +81,7 @@ public class FxUtils {
         ToggleButton button = new ToggleButton();
         button.setGraphic(vbox);
         button.setOnAction(eventHandler);
+        button.setFocusTraversable(false);
         button.selectedProperty().addListener((_, _, _) -> {
             String imageUrl = button.isSelected()  ? urlOn : urlOff;
             imageView.setImage(new Image(imageUrl(imageUrl)));
@@ -121,7 +124,9 @@ public class FxUtils {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         t.printStackTrace(pw);
-        alert.setContentText(sw.toString());
+        TextArea textArea = new TextArea(sw.toString());
+        textArea.setEditable(false);
+        alert.getDialogPane().setExpandableContent(textArea);
         alert.showAndWait();
     }
 

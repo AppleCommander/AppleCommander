@@ -380,7 +380,7 @@ public class FileView extends BorderPane {
                 }
                 success = true;
             }
-        } catch (IOException e) {
+        } catch (Throwable e) {
             FxUtils.showErrorDialog("Unable to drop files", e);
         }
         event.setDropCompleted(success);
