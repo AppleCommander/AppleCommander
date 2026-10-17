@@ -101,6 +101,7 @@ public class FileView extends BorderPane {
     private final SimpleBooleanProperty supportsDirectories = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty supportsFileDeletion = new SimpleBooleanProperty(false);
     private final ObservableList<FileEntry> fileEntries = FXCollections.observableArrayList();
+    private final BooleanProperty showingDetailProperty = new SimpleBooleanProperty(false);
 
     public FileView(FileStoreWindow fileStoreWindow, ToolBar toolBar) {
         this.fileStoreWindow = fileStoreWindow;
@@ -211,7 +212,6 @@ public class FileView extends BorderPane {
         fileTable.setPlaceholder(placeholder);
         setCenter(fileTable);
 
-        BooleanProperty showingDetailProperty = new SimpleBooleanProperty(false);
         Button detailToggle = FxUtils.createSmallToggleButton("pane-right.png", "pane-left.png", showingDetailProperty);
         detailToggle.disableProperty().bind(fileTable.getSelectionModel().selectedItemProperty().isNull());
         fileDetailGrid = new GridPane();
@@ -615,6 +615,9 @@ public class FileView extends BorderPane {
                     fileEntries.remove(entry);
                     fileStoreWindow.addChange();
                 }
+            }
+            else if (event.isShortcutDown() && event.getCode() == KeyCode.I) {
+                showingDetailProperty.set(!showingDetailProperty.get());
             }
         });
 
