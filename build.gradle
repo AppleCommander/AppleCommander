@@ -5,7 +5,7 @@ ext {
     shkVersion = "2.4"
     asVersion = "2.1"
     btVersion = "5.3"
-    swtVersion = "3.134.0"
+    swtVersion = "3.135.0"
     piSwtVersion = "3.8.2"
     junitVersion = "6.1.3"
     antVersion = "1.10.18"
