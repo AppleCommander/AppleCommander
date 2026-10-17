@@ -100,6 +100,8 @@ public class FxUtils {
         button.setGraphic(imageView);
         button.setOnAction(event -> {
             toggleState.setValue(!toggleState.getValue());
+        });
+        toggleState.addListener((_, _, _) -> {
             String imageUrl = toggleState.get() ? urlOn : urlOff;
             imageView.setImage(new Image(imageUrl(imageUrl)));
         });
