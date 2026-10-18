@@ -20,6 +20,7 @@
 package org.applecommander.javafx;
 
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.control.SingleSelectionModel;
 import org.applecommander.filestore.FileStore;
@@ -62,7 +63,7 @@ public class FileStoreSelectionModel extends SingleSelectionModel<FileStore> {
         return fileStores.size();
     }
 
-    public IntegerProperty sizeProperty() {
-        return sizeProperty;
+    public ReadOnlyIntegerProperty sizeProperty() {
+        return ReadOnlyIntegerProperty.readOnlyIntegerProperty(sizeProperty);
     }
 }
