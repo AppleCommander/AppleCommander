@@ -204,6 +204,7 @@ public class FileStoreWindow {
         imageView.setPreserveRatio(true);
         switchDiskButton = new Button();
         switchDiskButton.setGraphic(imageView);
+        switchDiskButton.setFocusTraversable(false);
         statusLabel = new Label("No disk image opened.");
         HBox footer = new HBox(switchDiskButton, statusLabel);
         footer.setSpacing(6);
@@ -229,6 +230,10 @@ public class FileStoreWindow {
         landingPage.visibleProperty().bind(viewMode.isEqualTo(ViewMode.LANDING));
         landingPage.managedProperty().bind(landingPage.visibleProperty());
 
+        switchDiskButton.disableProperty().bind(fileStoreSelection.sizeProperty().lessThan(2));
+        switchDiskButton.visibleProperty().bind(switchDiskButton.disabledProperty().not());
+        switchDiskButton.managedProperty().bind(switchDiskButton.disabledProperty().not());
+
         fileStoreSelection.selectedItemProperty().addListener((_, _, newValue) -> {
             if (newValue != null) {
                 viewMode.setValue(ViewMode.FILES);
@@ -238,12 +243,6 @@ public class FileStoreWindow {
                 Source source = newValue.get(Source.class).orElseThrow();
                 changeCount.setValue(source.hasChanged() ? 1 : 0);
                 canSave.setValue(source.can(Capability.SAVE_SOURCE));
-
-                // There doesn't appear to be a item list changed, so this should work?
-                boolean enabled = fileStoreSelection.getItemCount() > 1;
-                switchDiskButton.setDisable(!enabled);
-                switchDiskButton.setVisible(enabled);
-                switchDiskButton.setManaged(enabled);
 
                 displayDisk();
             }

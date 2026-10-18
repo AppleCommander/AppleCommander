@@ -19,6 +19,8 @@
  */
 package org.applecommander.javafx;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.control.SingleSelectionModel;
 import org.applecommander.filestore.FileStore;
 
@@ -30,6 +32,7 @@ import java.util.List;
 /// reactive JavaFX application.
 public class FileStoreSelectionModel extends SingleSelectionModel<FileStore> {
     private final List<FileStore> fileStores = new ArrayList<>();
+    private final IntegerProperty sizeProperty = new SimpleIntegerProperty();
 
     public void changeFileStores(List<FileStore> fileStores) {
         this.fileStores.clear();
@@ -37,11 +40,13 @@ public class FileStoreSelectionModel extends SingleSelectionModel<FileStore> {
         if (!this.fileStores.isEmpty()) {
             selectFirst();
         }
+        this.sizeProperty.set(fileStores.size());
     }
 
     public void clearFileStores() {
         this.clearSelection();
         this.fileStores.clear();
+        this.sizeProperty.set(fileStores.size());
     }
 
     @Override
@@ -55,5 +60,9 @@ public class FileStoreSelectionModel extends SingleSelectionModel<FileStore> {
     @Override
     protected int getItemCount() {
         return fileStores.size();
+    }
+
+    public IntegerProperty sizeProperty() {
+        return sizeProperty;
     }
 }
