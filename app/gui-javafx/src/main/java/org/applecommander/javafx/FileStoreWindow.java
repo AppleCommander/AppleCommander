@@ -51,12 +51,14 @@ import org.applecommander.shrinkit.NuFileArchive;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 import org.applecommander.usage.DiskUsage;
+import org.applecommander.util.BackupStrategy;
 import org.applecommander.util.FileExtensions;
 import org.applecommander.util.FileExtensions.FileExtension;
 
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Objects;
@@ -350,8 +352,16 @@ public class FileStoreWindow {
             FileStore fileStore = fileStoreSelection.getSelectedItem();
             fileStore.flush();
             Source source = fileStore.get(Source.class).orElseThrow();
-            source.save();
-            changeCount.setValue(0);
+            if (source.hasChanged()) {
+                // A source is not always backed by a file, so only backup if we have a Path
+                Optional<Path> opt = fileStore.get(Path.class);
+                if (opt.isPresent()) {
+                    BackupStrategy backupStrategy = Settings.getBackupStrategy();
+                    backupStrategy.backup(opt.get().toString());
+                }
+                source.save();
+                changeCount.setValue(0);
+            }
         } catch (Throwable t) {
             showErrorDialog("Could not save file", t);
         }

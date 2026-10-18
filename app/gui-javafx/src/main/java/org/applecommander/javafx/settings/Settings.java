@@ -20,8 +20,12 @@
 package org.applecommander.javafx.settings;
 
 import org.applecommander.javafx.AppleCommanderFX;
+import org.applecommander.util.BackupStrategy;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.prefs.Preferences;
 
@@ -31,6 +35,8 @@ public abstract class Settings {
     private static final String EXPORT_OPTION = "export_option";
     private static final String IMPORT_DECODE_APPLESINGLE = "import_decode_applesingle";
     private static final String IMPORT_TOKENIZE_APPLESOFT = "import_tokenize_applesoft";
+    private static final String BACKUP_STRATEGY_SELECTION = "backup_strategy";
+    private static final String BACKUP_STRATEGY_DIRECTORY = "backup_directory";
 
     public static Optional<File> getLastOpenedDirectory() {
         Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
@@ -42,7 +48,8 @@ public abstract class Settings {
     }
 
     public static void setLastOpenedDirectory(File directory) {
-        if (directory != null && directory.isDirectory()) {
+        Objects.requireNonNull(directory);
+        if (directory.isDirectory()) {
             Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
             prefs.put(IMAGE_DIRECTORY_KEY, directory.getAbsolutePath());
         }
@@ -58,6 +65,7 @@ public abstract class Settings {
     }
 
     public static void setThemeSelection(ThemeSelection themeSelection) {
+        Objects.requireNonNull(themeSelection);
         Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
         prefs.put(THEME_SELECTION, themeSelection.name());
     }
@@ -72,6 +80,7 @@ public abstract class Settings {
     }
 
     public static void setExportOption(ExportOption exportOption) {
+        Objects.requireNonNull(exportOption);
         Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
         prefs.put(EXPORT_OPTION, exportOption.name());
     }
@@ -94,5 +103,37 @@ public abstract class Settings {
     public static void setImportTokenizeApplesoft(boolean importTokenizeApplesoft) {
         Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
         prefs.putBoolean(IMPORT_TOKENIZE_APPLESOFT, importTokenizeApplesoft);
+    }
+
+    public static BackupStrategyOption getBackupStrategyOption() {
+        Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
+        return BackupStrategyOption.valueOf(prefs.get(BACKUP_STRATEGY_SELECTION, BackupStrategyOption.DISABLED.name()));
+    }
+
+    public static Path getBackupStrategyDirectory() {
+        Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
+        String directoryPath = prefs.get(BACKUP_STRATEGY_DIRECTORY, System.getProperty("user.dir"));
+        return Paths.get(directoryPath);
+    }
+
+    public static BackupStrategy getBackupStrategy() {
+        return switch (getBackupStrategyOption()) {
+            case DISABLED -> BackupStrategy.none();
+            case APPEND_BAK -> BackupStrategy.create("bak");
+            case TO_DIRECTORY ->  BackupStrategy.create(getBackupStrategyDirectory().toString());
+        };
+    }
+
+    public static void setBackupStrategyOption(BackupStrategyOption backupStrategyOption) {
+        Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
+        prefs.put(BACKUP_STRATEGY_SELECTION, backupStrategyOption.name());
+    }
+
+    public static void setBackupStrategyDirectory(Path path) {
+        Objects.requireNonNull(path);
+        if (path.toFile().isDirectory()) {
+            Preferences prefs = Preferences.userNodeForPackage(AppleCommanderFX.class);
+            prefs.put(BACKUP_STRATEGY_DIRECTORY, path.toString());
+        }
     }
 }
