@@ -19,8 +19,10 @@
  */
 package org.applecommander.javafx;
 
+import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -31,7 +33,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.DirectoryChooser;
 
+import java.io.File;
 import java.util.function.Function;
 
 /// This is a simple control builder for JavaFX components. It is intended to include bindings
@@ -162,6 +166,26 @@ public class FXControls {
             }
         }
         pane.getChildren().add(grid);
+        return this;
+    }
+
+    public FXControls directoryBrowse(SimpleStringProperty directoryProperty, BooleanExpression disableExpression) {
+        TextField textField = new TextField();
+        textField.textProperty().bind(directoryProperty);
+        textField.disableProperty().bind(disableExpression);
+        pane.getChildren().add(textField);
+        Button button = new Button("...");
+        button.setOnAction(event -> {
+            DirectoryChooser directoryChooser = new DirectoryChooser();
+            directoryChooser.setTitle("Choose Directory");
+            directoryChooser.setInitialDirectory(new File(textField.getText()));
+            File file = directoryChooser.showDialog(button.getScene().getWindow());
+            if (file != null) {
+                textField.setText(file.getAbsolutePath());
+            }
+        });
+        button.disableProperty().bind(disableExpression);
+        pane.getChildren().add(button);
         return this;
     }
 }

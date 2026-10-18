@@ -19,10 +19,7 @@
  */
 package org.applecommander.javafx.settings;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import javafx.geometry.Insets;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
@@ -33,6 +30,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.applecommander.javafx.FXControls;
 
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -41,6 +39,8 @@ public class SettingsDialog {
     private final ObjectProperty<ExportOption> exportOption = new SimpleObjectProperty<>();
     private final BooleanProperty importDecodeAppleSingle = new SimpleBooleanProperty(true);
     private final BooleanProperty importTokenizeApplesoft = new SimpleBooleanProperty(true);
+    private final ObjectProperty<BackupStrategyOption> backupCodeProperty = new SimpleObjectProperty<>();
+    private final SimpleStringProperty backupDirectoryProperty = new SimpleStringProperty();
 
     private final Dialog<ButtonType> dialog;
 
@@ -66,8 +66,15 @@ public class SettingsDialog {
                 .checkBox("Do you want to automatically tokenize .bas files as Applesoft?", importTokenizeApplesoft)
                 .get());
 
+        Tab backupTab = new Tab("Backup");
+        backupTab.setClosable(false);
+        backupTab.setContent(FXControls.vertical()
+                .radioButton(BackupStrategyOption.values(), BackupStrategyOption::getText, backupCodeProperty)
+                .directoryBrowse(backupDirectoryProperty, backupCodeProperty.isNotEqualTo(BackupStrategyOption.TO_DIRECTORY))
+                .get());
+
         TabPane tabPane = new TabPane();
-        tabPane.getTabs().addAll(themeTab, exportTab, importTab);
+        tabPane.getTabs().addAll(themeTab, exportTab, importTab, backupTab);
         tabPane.setPadding(new Insets(10));
 
         dialog = new Dialog<>();
@@ -93,6 +100,8 @@ public class SettingsDialog {
         exportOption.set(Settings.getExportOption());
         importDecodeAppleSingle.set(Settings.isImportDecodeAppleSingle());
         importTokenizeApplesoft.set(Settings.isImportTokenizeApplesoft());
+        backupCodeProperty.set(Settings.getBackupStrategyOption());
+        backupDirectoryProperty.set(Settings.getBackupStrategyDirectory().toString());
 
         Window window = dialog.getDialogPane().getScene().getWindow();
 
@@ -123,6 +132,8 @@ public class SettingsDialog {
                 }
                 Settings.setImportDecodeAppleSingle(importDecodeAppleSingle.get());
                 Settings.setImportTokenizeApplesoft(importTokenizeApplesoft.get());
+                Settings.setBackupStrategyOption(backupCodeProperty.get());
+                Settings.setBackupStrategyDirectory(Path.of(backupDirectoryProperty.get()));
             }
         });
         // Always go back to what we've set
