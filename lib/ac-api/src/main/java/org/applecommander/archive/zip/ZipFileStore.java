@@ -20,11 +20,11 @@
 package org.applecommander.archive.zip;
 
 import org.applecommander.capability.Capability;
-import org.applecommander.filestore.DisplayColumn;
-import org.applecommander.filestore.DisplayColumn.Mode;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.source.Source;
+import org.applecommander.ui.DisplayColumn;
+import org.applecommander.ui.DisplayMode;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.InformationGroup;
@@ -40,6 +40,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import static org.applecommander.ui.DisplayColumn.builder;
 import static org.applecommander.util.Shorthand.copy;
 
 public class ZipFileStore implements FileStore {
@@ -90,16 +91,16 @@ public class ZipFileStore implements FileStore {
 
     @Override
     public List<DisplayColumn> getDisplayColumns() {
-        return DisplayColumn.builder(ZipFileEntry.class)
-            .addLongField("Length", FileEntry::getSize)
-            .addStringField("Method", ZipFileEntry::getMethodName, Mode.DETAIL)
-            .addLongField("Size", ZipFileEntry::getCompressedSize, Mode.DETAIL)
-            .addPercentField("Ratio", ZipFileEntry::getCompressedSize, ZipFileEntry::getSize, "%2.0f%%", Mode.DETAIL)
-            .addFileTimeField("Creation", ZipFileEntry::getCreationTime)
-            .addFileTimeField("Last Access", ZipFileEntry::getLastAccessTime, Mode.DETAIL)
-            .addFileTimeField("Last Modified", ZipFileEntry::getLastModifiedTime)
-            .addLongField("CRC-32", ZipFileEntry::getCrc, "%08x", Mode.DETAIL)
-            .addStringField("Name", FileEntry::getName)
+        return builder(ZipFileEntry.class)
+            .right("Length").integer(FileEntry::getSize, "%,d").done()
+            .left("Method").string(ZipFileEntry::getMethodName).mode(DisplayMode.DETAIL).done()
+            .right("Size").integer(ZipFileEntry::getCompressedSize, "%,d").mode(DisplayMode.DETAIL).done()
+            .right("Ratio").percent(ZipFileEntry::getCompressedSize, ZipFileEntry::getSize, "%2.0f%%").mode(DisplayMode.DETAIL).done()
+            .center("Creation").fileTime(ZipFileEntry::getCreationTime).done()
+            .center("Last Access").fileTime(ZipFileEntry::getLastAccessTime).mode(DisplayMode.DETAIL).done()
+            .center("Last Modified").fileTime(ZipFileEntry::getLastModifiedTime).done()
+            .right("CRC-32").integer(ZipFileEntry::getCrc, "%08x").mode(DisplayMode.DETAIL).done()
+            .left("Name").string(FileEntry::getName).editInLine().done()
             .toList();
     }
 

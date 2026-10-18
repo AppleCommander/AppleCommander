@@ -12,4 +12,5 @@ module org.applecommander.javafx {
     opens org.applecommander.javafx to javafx.graphics;
     opens org.applecommander.javafx.settings to javafx.graphics;
     opens org.applecommander.javafx.wizard to javafx.graphics;
+    opens org.applecommander.javafx.filter to javafx.graphics;
 }

@@ -21,9 +21,10 @@ package org.applecommander.os.gamedos;
 
 import org.applecommander.capability.Capability;
 import org.applecommander.device.TrackSectorDevice;
-import org.applecommander.filestore.DisplayColumn;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
+import org.applecommander.ui.DisplayColumn;
+import org.applecommander.ui.DisplayMode;
 import org.applecommander.usage.DiskUsage.UsageType;
 import org.applecommander.usage.SectorUsage;
 import org.applecommander.util.Container;
@@ -32,8 +33,6 @@ import org.applecommander.util.InformationGroup;
 
 import java.util.List;
 import java.util.Optional;
-
-import static org.applecommander.filestore.DisplayColumn.Mode;
 
 public class GamedosFileStore implements FileStore, GamedosConstants {
     private final TrackSectorDevice device;
@@ -108,13 +107,22 @@ public class GamedosFileStore implements FileStore, GamedosConstants {
     @Override
     public List<DisplayColumn> getDisplayColumns() {
         return DisplayColumn.builder(GamedosFileEntry.class)
-            .addStringField("Type", GamedosFileEntry::getFiletype, GamedosFileEntry::setFiletype, false)
-            .addStringField("Name", GamedosFileEntry::getName, GamedosFileEntry::setName, true)
-            .addIntField("Meta", GamedosFileEntry::getMeta, "$%04X")
-            .addIntField("First Track", GamedosFileEntry::getFirstTrack, Mode.DETAIL)
-            .addIntField("First Sector", GamedosFileEntry::getFirstSector, Mode.DETAIL)
-            .addIntField("Sector Count", GamedosFileEntry::getSectorCount, Mode.DETAIL)
-            .addLongField("Size", GamedosFileEntry::getSize)
+            .left("Type").string(GamedosFileEntry::getFiletype, GamedosFileEntry::setFiletype)
+                .option("A", "Applesoft BASIC")
+                .option("B", "Binary")
+                .option("I", "Integer BASIC")
+                .option("P", "Picture")
+                .option("S", "System")
+                .option("T", "Text")
+                .done()
+            .left("Name").string(GamedosFileEntry::getName, GamedosFileEntry::setName)
+                .editInLine().maxLength(26).done()
+            .right("Meta").integer(GamedosFileEntry::getMeta, "$%04X", GamedosFileEntry::setMeta)
+                .restrictToHexValues().done()
+            .right("First Track").integer(GamedosFileEntry::getFirstTrack, "%d").mode(DisplayMode.DETAIL).done()
+            .right("First Sector").integer(GamedosFileEntry::getFirstSector, "%d").mode(DisplayMode.DETAIL).done()
+            .right("Sector Count").integer(GamedosFileEntry::getSectorCount, "%d").mode(DisplayMode.DETAIL).done()
+            .right("Size").integer(GamedosFileEntry::getSize, "%,d").done()
             .toList();
     }
 

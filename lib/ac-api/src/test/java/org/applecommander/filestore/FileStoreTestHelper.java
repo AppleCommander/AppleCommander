@@ -21,6 +21,8 @@ package org.applecommander.filestore;
 
 import org.applecommander.capability.Capability;
 import org.applecommander.source.Source;
+import org.applecommander.ui.DisplayColumn;
+import org.applecommander.ui.DisplayMode;
 import org.applecommander.usage.BlockUsage;
 import org.applecommander.usage.DiskUsage;
 import org.applecommander.usage.DiskUsage.UsageType;
@@ -57,13 +59,13 @@ public abstract class FileStoreTestHelper {
     public static void showFiles(Directory parent, String indent) {
         FileStore fileStore = parent.getFileStore();
         List<DisplayColumn> displayColumns = fileStore.getDisplayColumns().stream()
-                .filter(entry -> entry.supports(DisplayColumn.Mode.DETAIL))
+                .filter(entry -> entry.supports(DisplayMode.DETAIL))
                 .toList();
         if (parent.getParent().isEmpty()) {
             // Print columns only at the top
             System.out.print(indent);
             displayColumns.forEach(column -> {
-                System.out.print(column.headerText());
+                System.out.print(column.getTitle());
                 System.out.print(" ");
             });
             System.out.println();
@@ -72,7 +74,7 @@ public abstract class FileStoreTestHelper {
             if (!file.isDeleted()) {
                 System.out.print(indent);
                 displayColumns.forEach(column -> {
-                    System.out.print(column.formatAsText(file));
+                    System.out.print(column.formatObject(file));
                     System.out.print(" ");
                 });
                 System.out.println();

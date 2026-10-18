@@ -19,6 +19,8 @@
  */
 package org.applecommander.javafx;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -26,13 +28,16 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.*;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
 import org.applecommander.applesingle.AppleSingle;
 import org.applecommander.applesingle.FileDatesInfo;
 import org.applecommander.applesingle.ProdosFileInfo;
@@ -44,12 +49,19 @@ import org.applecommander.bastools.api.model.Program;
 import org.applecommander.bastools.api.model.Token;
 import org.applecommander.capability.Capability;
 import org.applecommander.filestore.*;
+import org.applecommander.javafx.filter.CharacterRestrictionFilter;
+import org.applecommander.javafx.filter.CompositeFilter;
+import org.applecommander.javafx.filter.FixedLengthFilter;
 import org.applecommander.javafx.settings.ExportOption;
 import org.applecommander.javafx.settings.Settings;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 import org.applecommander.transfer.ProdosAttributePreservation;
 import org.applecommander.transfer.ProdosAttributes;
+import org.applecommander.ui.ColumnDataType;
+import org.applecommander.ui.ColumnOption;
+import org.applecommander.ui.DisplayColumn;
+import org.applecommander.ui.DisplayMode;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -59,6 +71,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 import static org.applecommander.javafx.FxUtils.*;
 
@@ -80,13 +93,16 @@ public class FileView extends BorderPane {
     // entry with the Zip renderer. But only when a sort was applied. Clearing out
     // every property didn't seem to help. Thus this extreme solution. Please fix!
     private TableView<FileEntry> fileTable;
+    // And the detail grid follows the file table!
+    private GridPane fileDetailGrid;
 
     private final ObservableList<Directory> directoryPath = FXCollections.observableArrayList();
     private final ObjectProperty<Directory> selectedDirectory = new SimpleObjectProperty<>();
-    private final ObjectProperty<DisplayColumn.Mode> listingMode = new SimpleObjectProperty<>(DisplayColumn.Mode.NATIVE);
+    private final ObjectProperty<DisplayMode> listingMode = new SimpleObjectProperty<>(DisplayMode.NATIVE);
     private final SimpleBooleanProperty supportsDirectories = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty supportsFileDeletion = new SimpleBooleanProperty(false);
     private final ObservableList<FileEntry> fileEntries = FXCollections.observableArrayList();
+    private final BooleanProperty showingDetailProperty = new SimpleBooleanProperty(false);
 
     public FileView(FileStoreWindow fileStoreWindow, ToolBar toolBar) {
         this.fileStoreWindow = fileStoreWindow;
@@ -125,7 +141,7 @@ public class FileView extends BorderPane {
             if (newValue != null) {
                 directoryPath.clear();
                 directoryPath.add(newValue.getRootDirectory());
-                listingMode.setValue(DisplayColumn.Mode.NATIVE);
+                listingMode.setValue(DisplayMode.NATIVE);
                 supportsDirectories.setValue(newValue.can(Capability.SUPPORTS_DIRECTORIES));
                 supportsFileDeletion.setValue(newValue.can(Capability.DELETE_FILES));
             }
@@ -134,8 +150,8 @@ public class FileView extends BorderPane {
         fileStoreWindow.viewModeProperty().addListener((_, _, _) -> populateDiskRows());
 
         listingMode.addListener((_, _, newValue) -> {
-            nativeToolButton.setSelected(newValue == DisplayColumn.Mode.NATIVE);
-            detailToolButton.setSelected(newValue == DisplayColumn.Mode.DETAIL);
+            nativeToolButton.setSelected(newValue == DisplayMode.NATIVE);
+            detailToolButton.setSelected(newValue == DisplayMode.DETAIL);
             fileTable.getColumns().forEach(column -> {
                 if (column.getUserData() instanceof DisplayColumn displayColumn) {
                     column.visibleProperty().setValue(displayColumn.supports(newValue));
@@ -197,6 +213,28 @@ public class FileView extends BorderPane {
         fileTable.setPlaceholder(placeholder);
         setCenter(fileTable);
 
+        Button detailToggle = FxUtils.createSmallToggleButton("pane-right.png", "pane-left.png", showingDetailProperty);
+        detailToggle.disableProperty().bind(fileTable.getSelectionModel().selectedItemProperty().isNull());
+        fileDetailGrid = new GridPane();
+        ScrollPane scrollPane = new ScrollPane(fileDetailGrid);
+        scrollPane.setFitToHeight(true);
+        scrollPane.setStyle("-fx-background-color: transparent;");
+        scrollPane.visibleProperty().bind(showingDetailProperty);
+        scrollPane.managedProperty().bind(showingDetailProperty);
+        VBox detailPane = new VBox(detailToggle, scrollPane);
+        detailPane.setAlignment(Pos.TOP_LEFT);
+        detailPane.setSpacing(5);
+        detailPane.setPadding(new Insets(5));
+        setRight(detailPane);
+        fileTable.getSelectionModel().selectedItemProperty().addListener((_, _, newFileEntry) -> {
+            if (newFileEntry != null) {
+                populateFileDetailGrid(newFileEntry);
+            }
+        });
+        fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((_, _, _) -> {
+            showingDetailProperty.set(false);
+        });
+
         fileTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         fileTable.setItems(FXCollections.emptyObservableList());
         fileTable.setOnMouseClicked(this::onMouseClickedHandler);
@@ -205,6 +243,106 @@ public class FileView extends BorderPane {
         fileTable.setOnDragDropped(this::onDragDroppedHandler);
 
         managedProperty().bind(fileTable.visibleProperty());
+    }
+
+    private void populateFileDetailGrid(FileEntry fileEntry) {
+        fileDetailGrid.getChildren().clear();
+        fileDetailGrid.setAlignment(Pos.CENTER_LEFT);
+        fileDetailGrid.setHgap(10);
+        fileDetailGrid.setVgap(10);
+        int row = 0;
+        SimpleListProperty<Node> editableFields = new SimpleListProperty<>(FXCollections.observableArrayList());
+        Button applyButton = new Button("Apply");
+        for (DisplayColumn displayColumn : fileEntry.getFileStore().getDisplayColumns()) {
+            if (!displayColumn.supports(DisplayMode.DETAIL)) continue;
+            String text = displayColumn.getTitle();
+            if (!text.endsWith(":")) text += ":";
+            Label label = new Label(text);
+            label.setStyle("-fx-font-weight: bold;");
+            if (displayColumn.isEditable()) {
+                if (displayColumn.getOptions().isEmpty()) {
+                    TextField field = new TextField(displayColumn.getDisplayText(fileEntry));
+                    List<UnaryOperator<TextFormatter.Change>> filters = new ArrayList<>();
+                    if (displayColumn.getMaxLength() > 0) {
+                        filters.add(new FixedLengthFilter(displayColumn.getMaxLength()));
+                    }
+                    if (displayColumn.getValidInputPattern() != null) {
+                        filters.add(new CharacterRestrictionFilter(displayColumn.getValidCharacters()));
+                    }
+                    field.setTextFormatter(new TextFormatter<>(new CompositeFilter(filters)));
+                    field.textProperty().addListener((_, _, newText) -> {
+                        if (displayColumn.getValidInputPattern() != null
+                                && !displayColumn.getValidInputPattern().matcher(newText).matches()) {
+                            field.setStyle("-fx-border-color: red;");
+                        }
+                        else {
+                            field.setStyle("");
+                        }
+                    });
+                    field.setUserData(displayColumn);
+                    fileDetailGrid.addRow(row++, label, field);
+                    editableFields.add(field);
+                }
+                else {
+                    ComboBox<ColumnOption> combobox = new ComboBox<>();
+                    combobox.setUserData(displayColumn);
+                    combobox.getItems().addAll(displayColumn.getOptions());
+                    combobox.getSelectionModel().select(displayColumn.getOptions().stream()
+                            .filter(o -> Objects.equals(o.value(), displayColumn.getValue(fileEntry)))
+                            .findAny().orElse(displayColumn.getOptions().getFirst()));
+                    combobox.valueProperty().addListener((_, _, newValue) -> {
+                        combobox.setStyle(newValue == null ? "-fx-border-color: red;" : "");
+                    });
+                    combobox.setConverter(new StringConverter<>() {
+                        @Override
+                        public String toString(ColumnOption option) {
+                            if (option == null) return "";
+                            return String.format("%s - %s", option.value(), option.description());
+                        }
+
+                        @Override
+                        public ColumnOption fromString(String string) {
+                            return null;
+                        }
+                    });
+                    fileDetailGrid.addRow(row++, label, combobox);
+                    editableFields.add(combobox);
+                }
+            }
+            else {
+                fileDetailGrid.addRow(row++, label, new Label(displayColumn.getDisplayText(fileEntry)));
+            }
+        }
+        if (!editableFields.isEmpty()) {
+            // Calculate if it's valid and then negate it. This makes one invalid disable the button.
+            // We have to handle every control created, however. :shrug:
+            applyButton.disableProperty().bind(
+                editableFields.stream().map(node -> switch (node) {
+                    // These define the VALID state
+                    case TextField textField -> textField.textProperty().isNotEmpty()
+                            .and(textField.styleProperty().isEmpty());
+                    case ComboBox<?> comboBox -> comboBox.getSelectionModel().selectedItemProperty().isNotNull()
+                            .and(comboBox.styleProperty().isEmpty());
+                    default -> throw new IllegalStateException("Unexpected value: " + node);
+                }).reduce(Bindings::and).map(BooleanBinding::not).orElseThrow());
+            applyButton.setOnAction(event -> {
+                for (Node node : editableFields) {
+                    DisplayColumn column = (DisplayColumn) node.getUserData();
+                    switch (node) {
+                        case TextField textField -> {
+                            column.setValue(fileEntry, textField.getText());
+                        }
+                        case ComboBox<?> comboBox -> {
+                            ColumnOption option = (ColumnOption) comboBox.getSelectionModel().getSelectedItem();
+                            column.setValue(fileEntry, option.value());
+                        }
+                        default -> { /* do nothing */ }
+                    }
+                }
+                fileStoreWindow.addChange();
+            });
+            fileDetailGrid.addRow(row++, applyButton);
+        }
     }
 
     private void onDragDroppedHandler(DragEvent event) {
@@ -258,7 +396,7 @@ public class FileView extends BorderPane {
                 }
                 success = true;
             }
-        } catch (IOException e) {
+        } catch (Throwable e) {
             FxUtils.showErrorDialog("Unable to drop files", e);
         }
         event.setDropCompleted(success);
@@ -383,7 +521,7 @@ public class FileView extends BorderPane {
     public void clear() {
         directoryPath.clear();
         selectedDirectory.set(null);
-        listingMode.setValue(DisplayColumn.Mode.NATIVE);
+        listingMode.setValue(DisplayMode.NATIVE);
         deletedFilesToggleButton.setSelected(false);
         //createNewFileTable();
         fileTable.getSelectionModel().clearSelection();
@@ -392,11 +530,11 @@ public class FileView extends BorderPane {
     }
 
     private void selectNativeView() {
-        listingMode.set(DisplayColumn.Mode.NATIVE);
+        listingMode.set(DisplayMode.NATIVE);
     }
 
     private void selectDetailView() {
-        listingMode.set(DisplayColumn.Mode.DETAIL);
+        listingMode.set(DisplayMode.DETAIL);
     }
 
     private void populateDiskRows() {
@@ -416,29 +554,42 @@ public class FileView extends BorderPane {
         boolean editable = false;
         List<TableColumn<FileEntry,?>> tableColumns = new ArrayList<>();
         for (final DisplayColumn displayColumn : displayColumns) {
-            TableColumn<FileEntry,?> column = switch (displayColumn.dataType()) {
+            TableColumn<FileEntry,?> column = switch (displayColumn.getDataType()) {
                 case STRING -> {
-                    TableColumn<FileEntry,String> stringColumn = new TableColumn<>(displayColumn.headerText());
-                    if (displayColumn.editInline()) {
-                        stringColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+                    TableColumn<FileEntry,String> stringColumn = new TableColumn<>(displayColumn.getTitle());
+                    stringColumn.setCellValueFactory(cell ->
+                            new SimpleStringProperty(displayColumn.getDisplayText(cell.getValue())));
+                    if (displayColumn.canEditInLine()) {
+                        stringColumn.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<>() {
+                            @Override
+                            public String toString(String object) {
+                                if (object == null) {
+                                    return "";
+                                }
+                                if (displayColumn.getValidCharacters() != null) {
+                                    object = displayColumn.getValidCharacters().map(object);
+                                }
+                                if (displayColumn.getMaxLength() > 0 && object.length() > displayColumn.getMaxLength()) {
+                                    object = object.substring(0, displayColumn.getMaxLength());
+                                }
+                                return object;
+                            }
+
+                            @Override
+                            public String fromString(String string) {
+                                return string;
+                            }
+                        }));
                         stringColumn.setEditable(true);
-                        stringColumn.setCellValueFactory(cell -> {
-                            SimpleStringProperty property = new SimpleStringProperty(displayColumn.formatAsText(cell.getValue()));
-                            property.addListener((_, _, newValue) -> {
-                                displayColumn.setValueFn().accept(cell.getValue(), newValue);
-                                fileStoreWindow.addChange();
-                            });
-                            return property;
+                        stringColumn.setOnEditCommit(event -> {
+                            displayColumn.setValue(event.getRowValue(), event.getNewValue());
                         });
                         editable = true;
-                    } else {
-                        stringColumn.setCellValueFactory(cell ->
-                                new SimpleStringProperty(displayColumn.formatAsText(cell.getValue())));
                     }
                     yield stringColumn;
                 }
-                case INTEGER,LONG,DOUBLE -> {
-                    TableColumn<FileEntry,Number> numberColumn = new TableColumn<>(displayColumn.headerText());
+                case INTEGER,REAL -> {
+                    TableColumn<FileEntry,Number> numberColumn = new TableColumn<>(displayColumn.getTitle());
                     numberColumn.setCellFactory(c -> new TableCell<>() {
                         @Override
                         protected void updateItem(Number item, boolean empty) {
@@ -446,35 +597,31 @@ public class FileView extends BorderPane {
                             if (empty || item == null) {
                                 setText(null);
                             } else {
-                                setText(String.format(displayColumn.fmt(), item));
+                                setText(displayColumn.formatObject(item));
                             }
                         }
                     });
-                    switch (displayColumn.dataType()) {
-                        case INTEGER:
-                            numberColumn.setCellValueFactory(cell ->
-                                    new SimpleIntegerProperty((Integer)displayColumn.getValueFn().apply(cell.getValue())));
-                            break;
-                        case LONG:
-                            numberColumn.setCellValueFactory(cell ->
-                                    new SimpleLongProperty((Long)displayColumn.getValueFn().apply(cell.getValue())));
-                            break;
-                        case DOUBLE:
-                            numberColumn.setCellValueFactory(cell ->
-                                    new SimpleDoubleProperty((Double)displayColumn.getValueFn().apply(cell.getValue())));
-                            break;
+                    if (displayColumn.getDataType() == ColumnDataType.REAL) {
+                        numberColumn.setCellValueFactory(cell -> {
+                            Number number = (Number) displayColumn.getValue(cell.getValue());
+                            return new SimpleDoubleProperty(number.doubleValue());
+                        });
+                    }
+                    else {
+                        numberColumn.setCellValueFactory(cell -> {
+                            Number number = (Number) displayColumn.getValue(cell.getValue());
+                            return new SimpleLongProperty(number.longValue());
+                        });
                     }
                     yield numberColumn;
                 }
             };
             column.setUserData(displayColumn);
             column.visibleProperty().setValue(displayColumn.supports(listingMode.get()));
-            if (displayColumn.alignment() == DisplayColumn.Alignment.RIGHT) {
-                column.setStyle("-fx-alignment: CENTER-RIGHT;");
-            } else if (displayColumn.alignment() == DisplayColumn.Alignment.CENTER) {
-                column.setStyle("-fx-alignment: CENTER;");
-            } else {
-                column.setStyle("-fx-alignment: CENTER-LEFT;");
+            switch (displayColumn.getAlignment()) {
+                case RIGHT -> column.setStyle("-fx-alignment: CENTER-RIGHT;");
+                case CENTER -> column.setStyle("-fx-alignment: CENTER;");
+                case LEFT -> column.setStyle("-fx-alignment: CENTER-LEFT;");
             }
             tableColumns.add(column);
         }
@@ -497,6 +644,9 @@ public class FileView extends BorderPane {
                     fileStoreWindow.addChange();
                 }
             }
+            else if (event.isShortcutDown() && event.getCode() == KeyCode.I) {
+                showingDetailProperty.set(!showingDetailProperty.get());
+            }
         });
 
         List<? extends FileEntry> rows = directory.getFiles().stream()
@@ -510,8 +660,8 @@ public class FileView extends BorderPane {
         fileTable.getColumns().addAll(tableColumns);
         sortedRows.comparatorProperty().bind(fileTable.comparatorProperty());
         // If selection is bound, the ToolButton crashes and burns, so need to manage it manually.
-        nativeToolButton.setSelected(listingMode.get() == DisplayColumn.Mode.NATIVE);
-        detailToolButton.setSelected(listingMode.get() == DisplayColumn.Mode.DETAIL);
+        nativeToolButton.setSelected(listingMode.get() == DisplayMode.NATIVE);
+        detailToolButton.setSelected(listingMode.get() == DisplayMode.DETAIL);
     }
 
     private void toggleDeletedFiles() {
