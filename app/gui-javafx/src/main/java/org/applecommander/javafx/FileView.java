@@ -583,6 +583,7 @@ public class FileView extends BorderPane {
                         stringColumn.setEditable(true);
                         stringColumn.setOnEditCommit(event -> {
                             displayColumn.setValue(event.getRowValue(), event.getNewValue());
+                            fileStoreWindow.addChange();
                         });
                         editable = true;
                     }
