@@ -31,6 +31,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -556,23 +557,35 @@ public class FileView extends BorderPane {
             TableColumn<FileEntry,?> column = switch (displayColumn.getDataType()) {
                 case STRING -> {
                     TableColumn<FileEntry,String> stringColumn = new TableColumn<>(displayColumn.getTitle());
-// TODO
-//                    if (displayColumn.editInline()) {
-//                        stringColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-//                        stringColumn.setEditable(true);
-//                        stringColumn.setCellValueFactory(cell -> {
-//                            SimpleStringProperty property = new SimpleStringProperty(displayColumn.getDisplayText(cell.getValue()));
-//                            property.addListener((_, _, newValue) -> {
-//                                displayColumn.setValueFn().accept(cell.getValue(), newValue);
-//                                fileStoreWindow.addChange();
-//                            });
-//                            return property;
-//                        });
-//                        editable = true;
-//                    } else {
-                        stringColumn.setCellValueFactory(cell ->
-                                new SimpleStringProperty(displayColumn.getDisplayText(cell.getValue())));
-//                    }
+                    stringColumn.setCellValueFactory(cell ->
+                            new SimpleStringProperty(displayColumn.getDisplayText(cell.getValue())));
+                    if (displayColumn.canEditInLine()) {
+                        stringColumn.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<>() {
+                            @Override
+                            public String toString(String object) {
+                                if (object == null) {
+                                    return "";
+                                }
+                                if (displayColumn.getValidCharacters() != null) {
+                                    object = displayColumn.getValidCharacters().map(object);
+                                }
+                                if (displayColumn.getMaxLength() > 0 && object.length() > displayColumn.getMaxLength()) {
+                                    object = object.substring(0, displayColumn.getMaxLength());
+                                }
+                                return object;
+                            }
+
+                            @Override
+                            public String fromString(String string) {
+                                return string;
+                            }
+                        }));
+                        stringColumn.setEditable(true);
+                        stringColumn.setOnEditCommit(event -> {
+                            displayColumn.setValue(event.getRowValue(), event.getNewValue());
+                        });
+                        editable = true;
+                    }
                     yield stringColumn;
                 }
                 case INTEGER,REAL -> {
