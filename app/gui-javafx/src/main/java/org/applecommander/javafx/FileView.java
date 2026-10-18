@@ -266,9 +266,18 @@ public class FileView extends BorderPane {
                         filters.add(new FixedLengthFilter(displayColumn.getMaxLength()));
                     }
                     if (displayColumn.getValidInputPattern() != null) {
-                        filters.add(new CharacterRestrictionFilter(displayColumn.getValidInputPattern()));
+                        filters.add(new CharacterRestrictionFilter(displayColumn.getValidCharacters()));
                     }
                     field.setTextFormatter(new TextFormatter<>(new CompositeFilter(filters)));
+                    field.textProperty().addListener((_, _, newText) -> {
+                        if (displayColumn.getValidInputPattern() != null
+                                && !displayColumn.getValidInputPattern().matcher(newText).matches()) {
+                            field.setStyle("-fx-border-color: red;");
+                        }
+                        else {
+                            field.setStyle("");
+                        }
+                    });
                     field.setUserData(displayColumn);
                     fileDetailGrid.addRow(row++, label, field);
                     editableFields.add(field);
@@ -280,6 +289,9 @@ public class FileView extends BorderPane {
                     combobox.getSelectionModel().select(displayColumn.getOptions().stream()
                             .filter(o -> Objects.equals(o.value(), displayColumn.getValue(fileEntry)))
                             .findAny().orElse(displayColumn.getOptions().getFirst()));
+                    combobox.valueProperty().addListener((_, _, newValue) -> {
+                        combobox.setStyle(newValue == null ? "-fx-border-color: red;" : "");
+                    });
                     combobox.setConverter(new StringConverter<>() {
                         @Override
                         public String toString(ColumnOption option) {
@@ -305,8 +317,11 @@ public class FileView extends BorderPane {
             // We have to handle every control created, however. :shrug:
             applyButton.disableProperty().bind(
                 editableFields.stream().map(node -> switch (node) {
-                    case TextField textField -> textField.textProperty().isNotEmpty();
-                    case ComboBox<?> comboBox -> comboBox.getSelectionModel().selectedItemProperty().isNotNull();
+                    // These define the VALID state
+                    case TextField textField -> textField.textProperty().isNotEmpty()
+                            .and(textField.styleProperty().isEmpty());
+                    case ComboBox<?> comboBox -> comboBox.getSelectionModel().selectedItemProperty().isNotNull()
+                            .and(comboBox.styleProperty().isEmpty());
                     default -> throw new IllegalStateException("Unexpected value: " + node);
                 }).reduce(Bindings::and).map(BooleanBinding::not).orElseThrow());
             applyButton.setOnAction(event -> {

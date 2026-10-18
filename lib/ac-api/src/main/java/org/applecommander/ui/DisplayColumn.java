@@ -30,9 +30,30 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-/// A DisplayColumn supports formatted output from various FileStores in a
+/// A `DisplayColumn` supports formatted output from various `FileStore`s in a
 /// dynamic fashion. The intent is to provide a flexible display interface
 /// across interfaces that does not rely on hard-coded implementations.
+///
+/// The `Builder` should be utilized to construct the `DisplayColumn`.
+///
+/// The read-only settings include:
+/// * `title` is the column title
+/// * `alignment` is the alignment of the column data
+/// * `mode` is the display mode that the column applies to (native, detail, or both)
+/// * `columnDataType` is the (simplified) data type
+/// * `getValueFn` is the method reference to get the column's value
+/// * `formatFn` is the function that takes the column's value and prepares it for display
+///
+/// The editable attributes are:
+/// * `setValueFn` is the method reference to set the value; note that the builder wraps
+///   the actual setter with a conversion function
+/// * `editInLine` indicates if this specific cell can be edited in a grid; at this time
+///   this is only used for the name field
+/// * `maxLength` is the maximum length of the input
+/// * `options` are the options available for selection
+/// * `validCharacters` is a `CharacterMapper` to transform input text
+/// * `validInputPattern` is a `Pattern` used to validate the input
+///
 public class DisplayColumn {
     private final String title;
     private final ColumnAlignment alignment;
@@ -46,11 +67,13 @@ public class DisplayColumn {
     private final boolean editInLine;
     private final int maxLength;
     private final List<ColumnOption> options;
+    private final CharacterMapper validCharacters;
     private final Pattern validInputPattern;
 
     private DisplayColumn(String title, ColumnAlignment alignment, Set<DisplayMode> modes, ColumnDataType columnDataType,
                           Function<FileEntry,Object> getValueFn, Function<Object,String> formatFn, BiConsumer<FileEntry,String> setValueFn,
-                          boolean editInLine, int maxLength, List<ColumnOption> options, Pattern validInputPattern) {
+                          boolean editInLine, int maxLength, List<ColumnOption> options,
+                          CharacterMapper validCharacters, Pattern validInputPattern) {
         Objects.requireNonNull(title);
         Objects.requireNonNull(alignment);
         Objects.requireNonNull(modes);
@@ -59,6 +82,7 @@ public class DisplayColumn {
         // setValueFn is null when not editable
         Objects.requireNonNull(formatFn);
         Objects.requireNonNull(options);
+        Objects.requireNonNull(validCharacters);
         // validInputPattern is null when not used
         this.title = title;
         this.alignment = alignment;
@@ -72,6 +96,7 @@ public class DisplayColumn {
         this.editInLine = editInLine;
         this.maxLength = maxLength;
         this.options = Collections.unmodifiableList(options);
+        this.validCharacters = validCharacters;
         this.validInputPattern = validInputPattern;
     }
 
@@ -124,6 +149,10 @@ public class DisplayColumn {
     public List<ColumnOption> getOptions() {
         return options;
     }
+    /// Get the CharacterMapper that maps the input string into the valid set of characters.
+    public CharacterMapper getValidCharacters() {
+        return validCharacters;
+    }
     /// Get the valid input regex. If input does not match this regex, it will be ignored.
     /// The intent is to be able to limit to numbers, or the valid filename characters.
     public Pattern getValidInputPattern() {
@@ -163,7 +192,7 @@ public class DisplayColumn {
 
     public static class ColumnBuilder<T extends FileEntry> {
         public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
-        public static final Pattern VALID_HEX_NUMBER = Pattern.compile("^(?i)0x[0-9a-f]*|[$][0-9a-f]*|[0-9a-f]*H?$");
+        public static final Pattern VALID_HEX_NUMBER = Pattern.compile("^(?i)0x[0-9a-f]+|[$][0-9a-f]+|[0-9a-f]+H?$");
 
         private final Builder<T> builder;
         private final ColumnAlignment alignment;
@@ -176,6 +205,7 @@ public class DisplayColumn {
         private boolean editInLine = false;
         private int maxLength = 0;
         private final List<ColumnOption> options = new ArrayList<>();
+        private CharacterMapper validCharacters;
         private Pattern validInputPattern;
 
         private ColumnBuilder(Builder<T> builder, ColumnAlignment alignment, String title) {
@@ -265,6 +295,16 @@ public class DisplayColumn {
             return this;
         }
         public ColumnBuilder<T> restrictToHexValues() {
+            this.validCharacters = CharacterMapper.builder()
+                    .mapRange('a', 'f', false)
+                    .mapRange('A', 'F', false)
+                    .mapRange('0', '9', false)
+                    .map('$', '$')  // $1234 format
+                    .map('x', 'x')  // 0x1234 format
+                    .map('X', 'X')  // 0X1234 format
+                    .map('h', 'h')  // 1234h format
+                    .map('H', 'H')  // 1234H format
+                    .build();
             this.validInputPattern = VALID_HEX_NUMBER;
             return this;
         }
@@ -274,11 +314,16 @@ public class DisplayColumn {
             if (modes == null || modes.length == 0) {
                 modes = new DisplayMode[] { DisplayMode.NATIVE, DisplayMode.DETAIL };
             }
+            // Give a default map everything character mapper
+            if (validCharacters == null) {
+                validCharacters = CharacterMapper.builder().build();
+            }
             // This is where generics get sticky. Either the entirety of the API is fully generic, making a bunch
             // of awkward usages with FileStore<?> etc. Or we do magic stuff like this to keep is simple.
             Function<FileEntry, Object> convertedFn = f -> getValueFn.apply(builder.fileEntryType.cast(f));
             builder.columns.add(new DisplayColumn(title, alignment, Set.of(modes), columnDataType, convertedFn, formatFn,
-                                                  setValueFn, editInLine, maxLength, options, validInputPattern));
+                                                  setValueFn, editInLine, maxLength, options,
+                                                  validCharacters, validInputPattern));
             return builder;
         }
 
@@ -317,7 +362,7 @@ public class DisplayColumn {
                 value = Integer.parseInt(text.substring(2), 16);
             }
             else if (text.startsWith("$")) {
-                value = Integer.parseInt(text.substring(1), 8);
+                value = Integer.parseInt(text.substring(1), 16);
             }
             else if (text.endsWith("h") || text.endsWith("H")) {
                 value = Integer.parseInt(text.substring(0, text.length()-1), 16);

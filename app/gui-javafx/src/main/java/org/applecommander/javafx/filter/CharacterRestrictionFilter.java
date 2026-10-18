@@ -20,22 +20,22 @@
 package org.applecommander.javafx.filter;
 
 import javafx.scene.control.TextFormatter;
+import org.applecommander.ui.CharacterMapper;
 
 import java.util.function.UnaryOperator;
-import java.util.regex.Pattern;
 
 public class CharacterRestrictionFilter implements UnaryOperator<TextFormatter.Change> {
-    private final Pattern pattern;
+    private final CharacterMapper characterMapper;
 
-    public CharacterRestrictionFilter(Pattern pattern) {
-        this.pattern = pattern;
+    public CharacterRestrictionFilter(CharacterMapper characterMapper) {
+        this.characterMapper = characterMapper;
     }
 
     @Override
     public TextFormatter.Change apply(TextFormatter.Change change) {
-        if (pattern.matcher(change.getControlNewText()).matches()) {
-            return change;
+        if (change.isAdded()) {
+            change.setText(characterMapper.map(change.getText()));
         }
-        return null;
+        return change;
     }
 }
