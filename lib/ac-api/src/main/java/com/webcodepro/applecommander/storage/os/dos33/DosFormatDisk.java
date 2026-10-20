@@ -574,6 +574,7 @@ public class DosFormatDisk extends FormattedDisk {
 		int offset = 0;
 		int trackSectorOffset = 0x0c;
 		int totalSectors = 0;
+		int dataSectorCount = 0;
 		int t=1;	// initial search for space
 		int s=0;
 		while (offset < data.length) {
@@ -595,6 +596,7 @@ public class DosFormatDisk extends FormattedDisk {
 				trackSectorList[0x02] = (byte) s;
 				writeSector(track, sector, trackSectorList);
 				trackSectorList = new byte[SECTOR_SIZE];
+				AppleUtil.setWordValue(trackSectorList, 0x05, dataSectorCount);
 				trackSectorOffset = 0x0c;
 				track = t;
 				sector = s;
@@ -608,6 +610,7 @@ public class DosFormatDisk extends FormattedDisk {
 				System.arraycopy(data, offset, sectorData, 0, length);
 				writeSector(t,s,sectorData);
 				offset+= SECTOR_SIZE;
+				dataSectorCount++;
 			}
 			totalSectors++;
 		}

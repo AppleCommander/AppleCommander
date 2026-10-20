@@ -20,6 +20,8 @@
 package com.webcodepro.applecommander.storage.os.dos33;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
+import com.webcodepro.applecommander.storage.DiskFullException;
+import com.webcodepro.applecommander.util.AppleUtil;
 import org.applecommander.device.DosOrderedTrackSectorDevice;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.hint.Hint;
@@ -27,7 +29,10 @@ import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DosFormatDiskTest {
     @Test
@@ -42,5 +47,35 @@ public class DosFormatDiskTest {
         assertEquals("A..", disk.getSuggestedFilename(".."));
         assertEquals("THE FILE NAME", disk.getSuggestedFilename("The File Name"));
         assertEquals("A\t HIDDEN TAB", disk.getSuggestedFilename("\t hidden tab"));
+    }
+
+    @Test
+    public void testLargeFiles_ticket331() throws DiskFullException {
+        Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-image").get();
+        TrackSectorDevice device = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+        DosFormatDisk[] disks = DosFormatDisk.create("deleteme.do", device);
+        DosFormatDisk disk = disks[0];
+
+        // Eack T/S list holds 122*256 = 31232 bytes (less the first 4 bytes)
+        final byte[] data = new byte[70000];
+        Arrays.fill(data, (byte)0xaa);
+        DosFileEntry fileEntry = disk.createFile();
+        fileEntry.setFilename("TEST FILE");
+        fileEntry.setFiletype("B");
+        fileEntry.setAddress(0x800);
+        fileEntry.setFileData(data);
+
+        // First track/sector list
+        byte[] sectorData = disk.readSector(fileEntry.getTrack(), fileEntry.getSector());
+        assertTrue(sectorData[0x01] != 0);
+        assertEquals(0, AppleUtil.getWordValue(sectorData, 0x05));
+        // Second track/sector list
+        sectorData = disk.readSector(Byte.toUnsignedInt(sectorData[0x01]), Byte.toUnsignedInt(sectorData[0x02]));
+        assertTrue(sectorData[0x01] != 0);
+        assertEquals(122, AppleUtil.getWordValue(sectorData, 0x05));
+        // Third track/sector list
+        sectorData = disk.readSector(Byte.toUnsignedInt(sectorData[0x01]), Byte.toUnsignedInt(sectorData[0x02]));
+        assertTrue(sectorData[0x01] == 0);
+        assertEquals(244, AppleUtil.getWordValue(sectorData, 0x05));
     }
 }
