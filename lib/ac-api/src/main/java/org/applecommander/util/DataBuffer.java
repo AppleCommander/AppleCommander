@@ -23,9 +23,7 @@ import com.google.common.base.Strings;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.IntPredicate;
 
 /// A `DataBuffer` is a bunch of bytes with Apple II knowledge.
@@ -64,6 +62,16 @@ public class DataBuffer {
     public static DataBuffer create(int size) {
         byte[] data = new byte[size];
         return wrap(data);
+    }
+    public static DataBuffer resize(DataBuffer source, int newSize) {
+        DataBuffer dbuf = create(newSize);
+        if (source.limit() > newSize) {
+            dbuf.put(0, source.slice(0, newSize));
+        }
+        else {
+            dbuf.put(0, source);
+        }
+        return dbuf;
     }
 
     private DataBuffer() {
@@ -193,9 +201,9 @@ public class DataBuffer {
     public int getUnsignedShort(int index) {
         return Short.toUnsignedInt(this.buffer.getShort(index));
     }
-    /** Retrieve a 3 byte number (as in ProDOS EOF values). */
+    /// Retrieve a 3 byte number (as in ProDOS EOF values). Bytes are little endian.
     public int getUnsignedShort3(int index) {
-        return getUnsignedByte(index)<<16 | getUnsignedShort(index+1);
+        return getUnsignedByte(index) | getUnsignedByte(index+1)<<8 | getUnsignedByte(index+2)<<16;
     }
     public int getUnsignedShortBE(int index) {
         this.buffer.order(ByteOrder.BIG_ENDIAN);
@@ -247,6 +255,24 @@ public class DataBuffer {
      */
     public boolean isBitSet(int index, int bit) {
         return (getUnsignedByte(index) & BIT_MASKS[bit]) != 0;
+    }
+    /// Decode a ProDOS formatted date. This can return null if the date is all `$0000 0000`.
+    public Date getProdosDate(int offset) {
+        int ymd = getUnsignedShort(offset);
+        if (ymd == 0) return null;
+        int hm = getUnsignedShort(offset+2);
+
+        int day = ymd & 0x001f;				    // bits 0-4
+        int month = ((ymd & 0x01e0) >> 5) - 1;	// bits 5-8
+        int year = (ymd & 0xfe00) >> 9;		    // bits 9-15
+        int minute = hm & 0x003f;				// bits 0-5
+        int hour = (hm & 0x1f00) >> 8;			// bits 8-12
+
+        if (year < 50) year+= 2000;
+        if (year < 100) year+= 1900;
+
+        GregorianCalendar gc = new GregorianCalendar(year, month, day, hour, minute);
+        return gc.getTime();
     }
 
     // READ/WRITE RELATED METHODS

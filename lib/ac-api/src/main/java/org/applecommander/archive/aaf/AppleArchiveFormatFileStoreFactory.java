@@ -27,7 +27,11 @@ public class AppleArchiveFormatFileStoreFactory implements FileStoreFactory {
     public void inspect(Context ctx) {
         DataBuffer data = ctx.source.readAllBytes();
         if (data.matches(ch -> (Character.isWhitespace(ch) || (ch >= 0x20 && ch <= 0x7f)))) {
-            ctx.fileStores.add(new AppleArchiveFormatFileStore(ctx.source));
+            // It sort of looks like one; process the file and see if we catch any files!
+            AppleArchiveFormatFileStore aaf = new AppleArchiveFormatFileStore(ctx.source);
+            if (!aaf.getRootDirectory().getFiles().isEmpty()) {
+                ctx.fileStores.add(aaf);
+            }
         }
     }
 }

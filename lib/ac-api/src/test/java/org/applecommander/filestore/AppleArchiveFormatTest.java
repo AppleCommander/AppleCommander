@@ -64,9 +64,6 @@ public class AppleArchiveFormatTest {
                     Test out a C compiler; just compile and execute.
                     """,
                     new String(data));
-
-            Source archive = DataBufferSource.create(data, fileEntry.getName()).get();
-            FileStoreTestHelper.showDirectory(archive);
         }
         else {
             fail("Expecting a AppleArchiveFormatFileStore!");

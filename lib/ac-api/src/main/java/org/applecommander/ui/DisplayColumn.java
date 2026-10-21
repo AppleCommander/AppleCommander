@@ -276,6 +276,13 @@ public class DisplayColumn {
             this.formatFn = d -> String.format(fmt, d);
             return this;
         }
+        public ColumnBuilder<T> yesNo(Function<T,Boolean> getValueFn) {
+            Objects.requireNonNull(getValueFn);
+            this.columnDataType = ColumnDataType.STRING;
+            this.getValueFn = getValueFn;
+            this.formatFn = this::formatBoolean;
+            return this;
+        }
         public ColumnBuilder<T> mode(DisplayMode... modes) {
             this.modes = modes;
             return this;
@@ -344,6 +351,13 @@ public class DisplayColumn {
                 }
                 default -> "(Unknown Date)";
             };
+        }
+
+        private String formatBoolean(Object value) {
+            if (value instanceof Boolean bool) {
+                return bool ? "Yes" : "No";
+            }
+            return "???";
         }
 
         /// This is a helper function to help compute percentages.

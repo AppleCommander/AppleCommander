@@ -1,0 +1,114 @@
+BINSCII(5)                FILE FORMATS                 BINSCII(5)
+
+
+
+NAME
+     bsc - format of a BinSCII file
+
+CAVEAT
+     The information below is based almost  entirely  on  my  own
+     analysis  of  Marcel J. E. Mol's sciibin source code.  I can
+     make no guarantees about its  accuracy.   Use  at  your  own
+     risk.
+
+DESCRIPTION
+     Files encoded in the BinSCII  format  are  broken  into  12K
+     (12288-byte)   segments,   and   each   segment  is  encoded
+     separately.  All segments except the last are 12K long;  the
+     final  segment  may be shorter than 12K if the length of the
+     original file was not an exact multiple of 12K.
+
+     Each segment of a BinSCII-encoded  file  contains  3  parts:
+     the header, the body, and the checksum.
+
+     The header consists of three lines.  The  first  line  is  a
+     "sentinal" line used to locate the start of the segment.  It
+     consists of the following text:
+
+          FiLeStArTfIlEsTaRt
+
+     The second line is the alphabet used in  the  encoding.   In
+     all current incarnations of BinSCII, it looks like this:
+
+     ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789()
+
+     The third line contains the file name  and  characteristics,
+     and  information  that  tells the decoder which piece of the
+     file this segment represents.  The first 16  characters  are
+     the  ProDOS  filename  -  the  first character indicates the
+     length of the  filename  (A=1,  B=2,  C=3,  etc.),  and  the
+     remaining  15  characters are the actual filename, padded on
+     the right with blanks.  The final 36 chracters of the  third
+     line  are  an  encoded  representation of the following data
+     structure:
+
+          struct binscii header {
+                        -
+               byte filesize[3]; /* Total size of original file */
+               byte segstart[3]; /* Offset into original file of start of this seg */
+               byte acmode;      /* ProDOS file access mode */
+               byte filetype;    /* ProDOS file type */
+               byte auxtype[2];  /* ProDOS auxiliary file type */
+               byte storetype;   /* ProDOS file storage type */
+               byte blksize[2];  /* Number of 512-byte blocks in original file */
+               byte credate[2];  /* File creation date, in ProDOS 8 format */
+               byte cretime[2];  /* File creation time, in ProDOS 8 format */
+               byte moddate[2];  /* File modification date */
+               byte modtime[2];  /* File modification time */
+
+
+
+Sun Release 4.1    Last change: Dec. 18, 1992                   1
+
+
+
+
+
+
+BINSCII(5)                FILE FORMATS                 BINSCII(5)
+
+
+
+               byte seglen[3];   /* Length in bytes of this segment */
+               byte crc[2];      /* CRC checksum of preceding fields */
+               byte filler;      /* Unused filler byte */
+          };
+
+     All multibyte fields of this structure are stored  in  Apple
+     II  byte  order  (low-order  byte first).  This structure is
+     encoded in the same manner as the data lines,  as  described
+     below.
+
+     Immediately following the header lines come the data  lines.
+     Each  data  line is exactly 64 characters long, representing
+     48 characters of the original file (if the  file  length  is
+     not  an  exact multiple of 48 bytes, the last line is padded
+     with enough binary zeroes to fill out the line).
+
+     Immediately following the last  data  line  of  the  segment
+     comes  the  checksum.   The  checksum is a 2-byte CRC of the
+     data in the current segment.  It is encoded by  attaching  a
+     binary  zero  to the end to increase the length of the field
+     to three bytes, which are then encoded in the  same  fashion
+     as the data lines.
+
+     The encoding scheme used by BinSCII takes data  three  bytes
+     at  a  time,  and converts them to four 6-bit bytes, each of
+     which is translated into an ASCII character.  If the bits of
+     the three input bytes are as follows,
+
+          abcdefgh ijklmnop qrstuvwx,
+
+     then the four output bytes will be as follows:
+
+          00stuvwx 00mnopqr 00ghijkl 00abcdef.
+
+     Each of these bytes is translated into an ASCII character by
+     indexing into the encoding alphabet (from the second line of
+     the header of the BinSCII segment).
+
+     The CRC checksums in BinSCII are calculated  using  the  CRC
+     polynomial X^16 + X^12 + X^5 + 1.
+
+SEE ALSO
+     bsc(1), uuencode(1), uuencode(5)
