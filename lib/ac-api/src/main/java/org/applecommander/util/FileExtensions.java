@@ -69,6 +69,7 @@ public class FileExtensions {
         });
         // Archive formats generally do not have compression
         List.of("Apple Archive Format:aaf",
+                "BinSCII:bsc",  
                 "ShrinkIt Archives:shk,sdk",
                 "Zip Archives:zip")
         .forEach(extension -> {

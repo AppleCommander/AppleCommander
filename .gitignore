@@ -29,6 +29,7 @@ reports/
 /*.aaf
 /*.shk
 /*.sdk
+/*.bsc
 
 # Ignoring and backups
 *.bak
