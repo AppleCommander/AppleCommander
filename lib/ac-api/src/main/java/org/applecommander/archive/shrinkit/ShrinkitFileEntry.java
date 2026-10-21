@@ -28,9 +28,9 @@ import org.applecommander.shrinkit.ThreadFormat;
 import org.applecommander.shrinkit.ThreadKind;
 import org.applecommander.shrinkit.ThreadRecord;
 import org.applecommander.transfer.ProdosAttributes;
+import org.applecommander.ui.ProdosUtils;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
-import org.applecommander.util.FileMagic;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -73,7 +73,7 @@ public class ShrinkitFileEntry implements FileEntry {
 
     public String getFileTypeText() {
         if (headerBlock.getFileSysId() == 1) {
-            return FileMagic.getProdosFileTypeText((int) headerBlock.getFileType(), (int) headerBlock.getExtraType());
+            return ProdosUtils.getFileTypeText((int) headerBlock.getFileType(), (int) headerBlock.getExtraType());
         }
         // FIXME
         return "?";
@@ -83,17 +83,7 @@ public class ShrinkitFileEntry implements FileEntry {
         return headerBlock.getStorageType();
     }
     public String getStorageTypeText() {
-        return switch (getStorageType()) {
-            case 0x1 -> "Seedling";
-            case 0x2 -> "Sapling";
-            case 0x3 -> "Tree";
-            case 0x4 -> "Pascal";
-            case 0x5 -> "Extended";
-            case 0xd -> "Directory";
-            case 0xe -> "Subdirectory";
-            case 0xf -> "Volume Directory";
-            default -> "?";
-        };
+        return ProdosUtils.getStorageTypeText (getStorageType());
     }
     public long getExtraType() {
         return headerBlock.getExtraType();
@@ -134,18 +124,7 @@ public class ShrinkitFileEntry implements FileEntry {
         return headerBlock.getAccess();
     }
     public String getAccessText() {
-        StringBuilder sb = new StringBuilder();
-        String flags = "RWI--BRD";  // string index is bit value
-        for (int i=0; i<flags.length(); i++) {
-            int bit = i^2;
-            if ((getAccess() & bit) != 0) {
-                sb.append(flags, i, i+1);
-            }
-            else {
-                sb.append("-");
-            }
-        }
-        return sb.toString();
+        return ProdosUtils.getAccessText((int)getAccess());
     }
     public Date getCreateWhen() {
         return headerBlock.getCreateWhen();
