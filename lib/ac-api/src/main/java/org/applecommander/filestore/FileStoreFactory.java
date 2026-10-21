@@ -63,6 +63,7 @@ public interface FileStoreFactory {
         public final Source source;
         public final NibbleTrackReaderWriter nibbleTrackReaderWriter;
         public final List<FileStore> fileStores = new ArrayList<>();
+        public final List<Message> messages = new ArrayList<>();
 
         public Context(Source source) {
             this.source = source;
@@ -214,5 +215,23 @@ public interface FileStoreFactory {
                 return devices;
             }
         }
+    }
+
+    record Message(Level level, String message) {
+        public static Message info(String fmt, Object... args) {
+            return new Message(Level.INFO, String.format(fmt, args));
+        }
+        public static Message warning(String fmt, Object... args) {
+            return new Message(Level.WARNING, String.format(fmt, args));
+        }
+        public static Message error(String fmt, Object... args) {
+            return new Message(Level.ERROR, String.format(fmt, args));
+        }
+    }
+
+    enum Level {
+        INFO,
+        WARNING,
+        ERROR
     }
 }

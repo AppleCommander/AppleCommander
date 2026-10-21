@@ -290,7 +290,32 @@ public class FileStoreWindow {
         Settings.setLastOpenedDirectory(selectedFile.getParentFile());
         Optional<Source> source = Sources.create(selectedFile);
         var inspected = FileStores.inspect(source.orElseThrow());
-        openFileStore(inspected.fileStores, true);
+        if (!inspected.fileStores.isEmpty()) {
+            openFileStore(inspected.fileStores, true);
+        }
+        else if (!inspected.messages.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Unable to open image");
+            alert.setHeaderText("Image format not recognized.");
+            StringBuilder content = new StringBuilder();
+            content.append("Errors occurred while opening image:\n");
+            inspected.messages.forEach(message -> {
+                content.append("* ").append(message.message()).append("\n");
+            });
+            alert.setContentText(content.toString());
+            Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+            stage.setAlwaysOnTop(true);
+            alert.showAndWait();
+        }
+        else {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Unable to open image");
+            alert.setHeaderText("Image format not recognized.");
+            alert.setContentText("The image format was not recognized. No error occurred.");
+            Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+            stage.setAlwaysOnTop(true);
+            alert.showAndWait();
+        }
     }
 
     public void openFileStore(List<FileStore> fileStores, boolean promptForWindow) {

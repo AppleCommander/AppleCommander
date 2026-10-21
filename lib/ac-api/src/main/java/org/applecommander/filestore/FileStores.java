@@ -57,7 +57,11 @@ public class FileStores {
             try {
                 factory.inspect(ctx);
             } catch (Throwable t) {
-                // ignore it
+                // Find the root cause
+                while (t.getCause() != null) {
+                    t = t.getCause();
+                }
+                ctx.messages.add(FileStoreFactory.Message.error(t.getMessage()));
             }
         });
         return ctx;
