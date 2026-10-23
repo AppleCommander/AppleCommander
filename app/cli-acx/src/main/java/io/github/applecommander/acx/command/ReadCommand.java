@@ -35,7 +35,7 @@ import java.util.function.Consumer;
 
 @Command(name = "read", description = "Read a block or sector.")
 public class ReadCommand extends ReadOnlyDiskImageCommandOptions {
-    @ArgGroup(multiplicity = "1", heading = "%nCoordinate Selection:%n")
+    @ArgGroup(multiplicity = "1", heading = "%nCoordinate Selection:%n", exclusive = false)
     private CoordinateSelection coordinate = new CoordinateSelection();
     
     @ArgGroup(heading = "%nOutput Selection:%n")
