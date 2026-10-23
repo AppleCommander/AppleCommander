@@ -21,7 +21,6 @@ package io.github.applecommander.acx.arggroup;
 
 import com.webcodepro.applecommander.storage.BlockDeviceAdapter;
 import com.webcodepro.applecommander.storage.FormattedDisk;
-
 import com.webcodepro.applecommander.storage.TrackSectorDeviceAdapter;
 import io.github.applecommander.acx.converter.IntegerTypeConverter;
 import org.applecommander.device.BlockDevice;
@@ -35,13 +34,15 @@ public class CoordinateSelection {
     private CoordinateSelection.SectorCoordinateSelection sectorCoordinate;
     @ArgGroup(exclusive = false)
     private CoordinateSelection.BlockCoordinateSelection blockCoordinate;
+    @Option(names = { "-n", "--count" }, defaultValue = "1", description = "Number of sectors/blocks to read/write.")
+    private int count = 1;
 
     public byte[] read(FormattedDisk disk) {
         if (sectorCoordinate != null) {
-            return sectorCoordinate.read(disk);
+            return sectorCoordinate.read(disk, count);
         }
         else if (blockCoordinate != null) {
-            return blockCoordinate.read(disk);
+            return blockCoordinate.read(disk, count);
         }
         TrackSectorDevice device = TrackSectorDeviceAdapter.from(disk);
         return device.readSector(0, 0).asBytes();
@@ -49,10 +50,10 @@ public class CoordinateSelection {
 
     public void write(FormattedDisk disk, byte[] data) {
         if (sectorCoordinate != null) {
-            sectorCoordinate.write(disk, data);
+            sectorCoordinate.write(disk, count, data);
         }
         else if (blockCoordinate != null) {
-            blockCoordinate.write(disk, data);
+            blockCoordinate.write(disk, count, data);
         }
         else {
             TrackSectorDevice device = TrackSectorDeviceAdapter.from(disk);
@@ -83,16 +84,23 @@ public class CoordinateSelection {
             }
         }
 
-        public byte[] read(FormattedDisk disk) {
+        public byte[] read(FormattedDisk disk, int count) {
             TrackSectorDevice device = TrackSectorDeviceAdapter.from(disk);
             validateTrackAndSector(device);
-            return device.readSector(track, sector).asBytes();
+            return device.readRange(track, sector, count).asBytes();
         }
 
-        public void write(FormattedDisk disk, byte[] data) {
+        public void write(FormattedDisk disk, int count, byte[] data) {
             TrackSectorDevice device = TrackSectorDeviceAdapter.from(disk);
             validateTrackAndSector(device);
-            device.writeSector(track, sector, DataBuffer.wrap(data));
+            if (data.length < TrackSectorDevice.SECTOR_SIZE) {
+                throw new IllegalArgumentException("The data length smaller than a sector in size.");
+            }
+            else if (data.length % TrackSectorDevice.SECTOR_SIZE != 0) {
+                throw new IllegalArgumentException("The data length is not a multiple of a sector in size.");
+            }
+            DataBuffer dataBuffer = DataBuffer.wrap(data, 0, count * TrackSectorDevice.SECTOR_SIZE);
+            device.writeRange(track, sector, dataBuffer);
         }
     }
     public static class BlockCoordinateSelection {
@@ -108,16 +116,23 @@ public class CoordinateSelection {
             }
         }
 
-        public byte[] read(FormattedDisk disk) {
+        public byte[] read(FormattedDisk disk, int count) {
             BlockDevice device = BlockDeviceAdapter.from(disk);
             validateBlockNum(device);
-            return device.readBlock(block).asBytes();
+            return device.readRange(block, count).asBytes();
         }
 
-        public void write(FormattedDisk disk, byte[] data) {
+        public void write(FormattedDisk disk, int count, byte[] data) {
             BlockDevice device = BlockDeviceAdapter.from(disk);
             validateBlockNum(device);
-            device.writeBlock(block, DataBuffer.wrap(data));
+            if (data.length < device.getGeometry().blockSize()) {
+                throw new IllegalArgumentException("The data length smaller than a block in size.");
+            }
+            else if (data.length % device.getGeometry().blockSize() != 0) {
+                throw new IllegalArgumentException("The data length is not a multiple of a block in size.");
+            }
+            DataBuffer dataBuffer = DataBuffer.wrap(data, 0, count * device.getGeometry().blockSize());
+            device.writeRange(block, dataBuffer);
         }
     }
 }

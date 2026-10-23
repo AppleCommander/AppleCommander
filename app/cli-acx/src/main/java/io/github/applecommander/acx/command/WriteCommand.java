@@ -33,7 +33,7 @@ import java.util.function.Supplier;
 
 @Command(name = "write", description = "Write a block or sector.")
 public class WriteCommand extends ReadWriteDiskCommandOptions {
-    @ArgGroup(multiplicity = "1", heading = "%nCoordinate Selection:%n")
+    @ArgGroup(multiplicity = "1", heading = "%nCoordinate Selection:%n", exclusive = false)
     private CoordinateSelection coordinate = new CoordinateSelection();
     
     @ArgGroup(heading = "%nInput Selection:%n")
