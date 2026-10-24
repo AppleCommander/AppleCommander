@@ -16,6 +16,6 @@ ext {
     picocliVersion = "4.7.7"
     springBoot = "4.1.1"
     acdasmVersion = "6.3"
-    graalvmBuildVersion = "1.1.14"
+    graalvmBuildVersion = "1.1.16"
     clthVersion = "2.1"
 }
