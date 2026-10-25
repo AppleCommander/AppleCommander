@@ -67,6 +67,7 @@ module org.applecommander.api {
              org.applecommander.archive.shrinkit.ShrinkitFileStoreFactory,
              org.applecommander.archive.zip.ZipFileStoreFactory,
              org.applecommander.os.gamedos.GamedosFileStoreFactory,
+             org.applecommander.os.rdos.RDOSFileStoreFactory,
              // Legacy shim
              com.webcodepro.applecommander.storage.DiskFileStoreFactory;
 

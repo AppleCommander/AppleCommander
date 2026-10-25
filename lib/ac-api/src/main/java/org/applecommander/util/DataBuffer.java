@@ -133,26 +133,31 @@ public class DataBuffer {
         return true;
     }
 
-    /**
-     * Search a sequence of bytes and locate the starting position of a search sequence.
-     */
+    /// Search a sequence of bytes and locate the starting position of a search sequence.
     public Optional<Integer> scan(final byte[] marker, final int start) {
+        return scan(marker, 0xff, start);
+    }
+
+    /// Search a sequence of bytes and locate the starting position of a search sequence masking both
+    /// the marker and the buffer. This can be used to look for strings that may (or may not) have the
+    /// high bit on.
+    public Optional<Integer> scan(final byte[] marker, final int mask, final int start) {
         Objects.requireNonNull(marker);
         State state = State.SEARCHING;
         int mark = -1;
         int offset = -1;
         for (int pos = start; pos < limit() + marker.length; pos++) {
-            byte b = this.buffer.get(pos % limit());
+            int b = this.buffer.get(pos % limit()) & mask;
             switch (state) {
                 case SEARCHING:
-                    if (b == marker[0]) {
+                    if (b == (marker[0] & mask)) {
                         state = State.SCANNING;
                         mark = pos;
                         offset = 1;
                     }
                     break;
                 case SCANNING:
-                    if (b == marker[offset]) {
+                    if (b == (marker[offset] & mask)) {
                         offset++;
                     } else {
                         state = State.SEARCHING;
@@ -227,6 +232,9 @@ public class DataBuffer {
     public String getFixedLengthString(int index, int length) {
         byte[] s = new byte[length];
         this.buffer.get(index, s);
+        for (int i=0; i<length; i++) {
+            s[i] = (byte)(s[i] & 0x7f);
+        }
         return new String(s);
     }
     public void putFixedLengthString(int index, int length, String value) {
