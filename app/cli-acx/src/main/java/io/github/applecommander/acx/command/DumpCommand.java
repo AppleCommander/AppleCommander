@@ -25,6 +25,7 @@ import io.github.applecommander.acx.converter.IntegerTypeConverter;
 import io.github.applecommander.acx.converter.RangeTypeConverter;
 import org.applecommander.capability.Capability;
 import org.applecommander.device.BlockDevice;
+import org.applecommander.device.SectorOrder;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.device.nibble.NibbleTrackReaderWriter;
 import org.applecommander.disassembler.api.Disassembler;
@@ -33,7 +34,6 @@ import org.applecommander.disassembler.api.InstructionSet;
 import org.applecommander.disassembler.api.mos6502.InstructionSet6502;
 import org.applecommander.disassembler.api.sweet16.InstructionSetSWEET16;
 import org.applecommander.disassembler.api.switching6502.InstructionSet6502Switching;
-import org.applecommander.hint.Hint;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.InformationGroup;
@@ -86,7 +86,7 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
             TrackSectorDevice device = trackSectorDevice().orElseGet(() -> {
                 if (options.coordinate.trackSectorRangeSelection.isBootSector()) {
                     return new TrackSectorDevice() {
-                        private BlockDevice blockDevice = blockDevice().orElseThrow();
+                        private final BlockDevice blockDevice = blockDevice().orElseThrow();
 
                         @Override
                         public Geometry getGeometry() {
@@ -111,11 +111,6 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
                         }
 
                         @Override
-                        public boolean is(Hint hint) {
-                            return false;
-                        }
-
-                        @Override
                         public <T> Optional<T> get(Class<T> iface) {
                             return Container.get(iface, blockDevice);
                         }
@@ -123,6 +118,11 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
                         @Override
                         public List<InformationGroup> information() {
                             return InformationGroup.builder("Block 0 to T0,S0 Device Shim").get(blockDevice);
+                        }
+
+                        @Override
+                        public SectorOrder getSectorOrder() {
+                            return SectorOrder.PRODOS;
                         }
                     };
                 }

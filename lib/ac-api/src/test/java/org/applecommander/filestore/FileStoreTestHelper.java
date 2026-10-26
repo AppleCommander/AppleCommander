@@ -19,6 +19,7 @@
  */
 package org.applecommander.filestore;
 
+import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import org.applecommander.capability.Capability;
 import org.applecommander.source.Source;
 import org.applecommander.ui.DisplayColumn;
@@ -34,6 +35,10 @@ import java.util.Optional;
 public abstract class FileStoreTestHelper {
     public static List<FileStore> showDirectory(Source source) {
         FileStoreFactory.Context ctx = FileStores.inspect(source);
+
+        // HACK - Let's TOSS OUT the older interfaces, as they get replaced.
+        ctx.fileStores.removeIf(fileStore -> fileStore.get(RdosFormatDisk.class).isPresent());
+
         if (ctx.fileStores.isEmpty()) {
             throw new RuntimeException("no disks discovered for: " + source.getName());
         }
@@ -74,7 +79,7 @@ public abstract class FileStoreTestHelper {
             if (!file.isDeleted()) {
                 System.out.print(indent);
                 displayColumns.forEach(column -> {
-                    System.out.print(column.formatObject(file));
+                    System.out.print(column.getDisplayText(file));
                     System.out.print(" ");
                 });
                 System.out.println();

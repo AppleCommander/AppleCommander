@@ -20,6 +20,7 @@
 package org.applecommander.device;
 
 import org.applecommander.device.Coordinate.TrackAndSectorCoordinate;
+import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.InformationGroup;
 import org.applecommander.util.InformationProvider;
@@ -30,11 +31,38 @@ import java.util.List;
 /// A `TrackSectorDevice` is any type of device that supports track and sector
 /// geometry. Most of the time, this is a physical 5.25" floppy, but that can
 /// be virtualized through various mechanisms, such as UniDOS.
+///
+/// Note that the read and write take logical sectors, and the device handles
+/// the translation (skewing) into physical sectors.
 public interface TrackSectorDevice extends Device {
     int SECTOR_SIZE = 256;
 
     /// Get information that describes the disk geometry.
     Geometry getGeometry();
+
+    /// Get the sector order.
+    SectorOrder getSectorOrder();
+
+    /// Request a track/sector device with the given sector ordering.
+    /// If the current device already supports the requested order, the same device will be returned.
+    /// Otherwise, the correct skew will be identified and a wrapper device will be returned.
+    default TrackSectorDevice request(SectorOrder sectorOrder) {
+        if (getSectorOrder() == sectorOrder) {
+            return this;
+        }
+        return new SkewedTrackSectorDevice(this, sectorOrder);
+    }
+
+    @Override
+    default boolean is(Hint hint) {
+        return switch (hint) {
+            case NIBBLE_SECTOR_ORDER -> getSectorOrder() == SectorOrder.NIBBLE;
+            case DOS_SECTOR_ORDER -> getSectorOrder() == SectorOrder.DOS;
+            case PRODOS_BLOCK_ORDER -> getSectorOrder() == SectorOrder.PRODOS;
+            default -> false;
+        };
+    }
+
 
     /// Read a single sector from the disk.
     DataBuffer readSector(int track, int sector);

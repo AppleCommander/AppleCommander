@@ -61,52 +61,77 @@ import java.util.stream.Collectors;
  */
 public class SkewedTrackSectorDevice implements TrackSectorDevice {
     public static TrackSectorDevice physicalToDosSkew(TrackSectorDevice device) {
-        return new SkewedTrackSectorDevice(device,
+        return new SkewedTrackSectorDevice(device, SectorOrder.DOS,
                 0x0, 0xd, 0xb, 0x9, 0x7, 0x5, 0x3, 0x1,
                 0xe, 0xc, 0xa, 0x8, 0x6, 0x4, 0x2, 0xf);
     }
     public static TrackSectorDevice physicalToPascalSkew(TrackSectorDevice device) {
-        return new SkewedTrackSectorDevice(device,
+        return new SkewedTrackSectorDevice(device, SectorOrder.PRODOS,
                 0x0, 0x2, 0x4, 0x6, 0x8, 0xa, 0xc, 0xe,
                 0x1, 0x3, 0x5, 0x7, 0x9, 0xb, 0xd, 0xf);
     }
     public static TrackSectorDevice pascalToPhysicalSkew(TrackSectorDevice device) {
-        return new SkewedTrackSectorDevice(device,
+        return new SkewedTrackSectorDevice(device, SectorOrder.NIBBLE,
                 0x0, 0x8, 0x1, 0x9, 0x2, 0xa, 0x3, 0xb,
                 0x4, 0xc, 0x5, 0xd, 0x6, 0xe, 0x7, 0xf);
     }
     public static TrackSectorDevice dosToPhysicalSkew(TrackSectorDevice device) {
-        return new SkewedTrackSectorDevice(device,
+        return new SkewedTrackSectorDevice(device, SectorOrder.NIBBLE,
                 0x0, 0x7, 0xe, 0x6, 0xd, 0x5, 0xc, 0x4,
                 0xb, 0x3, 0xa, 0x2, 0x9, 0x1, 0x8, 0xf);
     }
     public static TrackSectorDevice dosToPascalSkew(TrackSectorDevice device) {
-        return new SkewedTrackSectorDevice(device,
+        return new SkewedTrackSectorDevice(device, SectorOrder.PRODOS,
                 0x0, 0xe, 0xd, 0xc, 0xb, 0xa, 0x9, 0x8,
                 0x7, 0x6, 0x5, 0x4, 0x3, 0x2, 0x1, 0xf);
     }
     // CP/M skews are from 'cpmtools'
     public static TrackSectorDevice dosToCpmSkew(TrackSectorDevice device) {
-        return new SkewedTrackSectorDevice(device, 0,6,12,3,9,15,14,5,11,2,8,7,13,4,10,1);
+        return new SkewedTrackSectorDevice(device, SectorOrder.CPM,
+                0,6,12,3,9,15,14,5,11,2,8,7,13,4,10,1);
     }
     public static TrackSectorDevice pascalToCpmSkew(TrackSectorDevice device) {
-        return new SkewedTrackSectorDevice(device, 0,9,3,12,6,15,1,10,4,13,7,8,2,11,5,14);
+        return new SkewedTrackSectorDevice(device, SectorOrder.CPM,
+                0,9,3,12,6,15,1,10,4,13,7,8,2,11,5,14);
     }
     // Special RDOS "skew" for truncation (from 16 sector to 13 sector)
     public static TrackSectorDevice truncate16sectorTo13(TrackSectorDevice device) {
-        return new SkewedTrackSectorDevice(device,
+        return new SkewedTrackSectorDevice(device, device.getSectorOrder(),
                 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
     }
 
     private final TrackSectorDevice device;
+    private final SectorOrder sectorOrder;
     private final int[] sectorSkew;
     private final Geometry geometry;
 
-    private SkewedTrackSectorDevice(TrackSectorDevice device, int... sectorSkew) {
+    private SkewedTrackSectorDevice(TrackSectorDevice device, SectorOrder sectorOrder, int... sectorSkew) {
         assert(sectorSkew.length == 16 || sectorSkew.length == 13);
         this.device = device;
+        this.sectorOrder = sectorOrder;
         this.sectorSkew = sectorSkew;
         this.geometry = new Geometry(device.getGeometry().tracksOnDisk(), sectorSkew.length);
+    }
+    /// Create a sector skew mapping from the devices sector order into the requested sector order.
+    public SkewedTrackSectorDevice(TrackSectorDevice device, SectorOrder sectorOrder) {
+        this.device = device;
+        this.sectorOrder = sectorOrder;
+        this.geometry = device.getGeometry();
+        this.sectorSkew = new int[16];
+        // Build the skew table. Find the original sector number in the new order and keep that mapping
+        for (int i = 0; i < 16; i++) {
+            int target = sectorOrder.physicalSectorOrder[i];
+            for (int j = 0; j < 16; j++) {
+                if (device.getSectorOrder().physicalSectorOrder[j] == target) {
+                    sectorSkew[i] = j;
+                    break;
+                }
+            }
+        }
+    }
+
+    public int[] getSectorSkew() {
+        return sectorSkew;
     }
 
     @Override
@@ -116,7 +141,7 @@ public class SkewedTrackSectorDevice implements TrackSectorDevice {
 
     @Override
     public boolean is(Hint hint) {
-        return device.is(hint);
+        return TrackSectorDevice.super.is(hint);
     }
 
     @Override
@@ -130,6 +155,12 @@ public class SkewedTrackSectorDevice implements TrackSectorDevice {
     @Override
     public Geometry getGeometry() {
         return geometry;
+    }
+
+    /// Get the sector order.
+    @Override
+    public SectorOrder getSectorOrder() {
+        return sectorOrder;
     }
 
     @Override

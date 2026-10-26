@@ -27,7 +27,6 @@ import com.webcodepro.applecommander.storage.compare.DiskDiff;
 import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import org.applecommander.device.*;
-import org.applecommander.hint.Hint;
 import org.applecommander.image.NibbleImage;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
@@ -81,7 +80,7 @@ public class AppleUtilTest {
 	public void testChangeDosImageOrder() throws DiskFullException {
 		// Straight DOS disk in standard DOS order
         Source source1 = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-        TrackSectorDevice device1 = new DosOrderedTrackSectorDevice(source1, Hint.DOS_SECTOR_ORDER);
+        TrackSectorDevice device1 = new OrderedTrackSectorDevice(source1, SectorOrder.DOS);
 		DosFormatDisk dosDiskDosOrder = DosFormatDisk.create("dostemp.dsk", device1)[0];
 		FileEntry fileEntry = dosDiskDosOrder.createFile();
 		fileEntry.setFilename("TESTFILE"); //$NON-NLS-1$

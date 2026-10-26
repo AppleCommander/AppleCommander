@@ -21,30 +21,25 @@ package org.applecommander.device;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
 import org.applecommander.capability.Capability;
-import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.InformationGroup;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-public class DosOrderedTrackSectorDevice implements TrackSectorDevice {
+public class OrderedTrackSectorDevice implements TrackSectorDevice {
     private final Source source;
+    private final SectorOrder sectorOrder;
     private final Geometry geometry;
-    private final Hint orderHint;
 
-    // TODO FIXME do we still need an "unknown" ordered disk? If so, name kinda sucks. :-)
-    public DosOrderedTrackSectorDevice(Source source) {
+    public OrderedTrackSectorDevice(Source source, SectorOrder sectorOrder) {
         this.source = source;
+        this.sectorOrder = sectorOrder;
         this.geometry = calculateGeometry(source);
-        this.orderHint = null;
-    }
-    public DosOrderedTrackSectorDevice(Source source, Hint orderHint) {
-        this.source = source;
-        this.geometry = calculateGeometry(source);
-        this.orderHint = orderHint;
     }
     private static Geometry calculateGeometry(Source source) {
         if (source.isApproxEQ(DiskConstants.APPLE_13SECTOR_DISK)) {
@@ -57,14 +52,10 @@ public class DosOrderedTrackSectorDevice implements TrackSectorDevice {
         }
     }
 
+
     @Override
     public <T> Optional<T> get(Class<T> iface) {
         return Container.get(iface, source);
-    }
-
-    @Override
-    public boolean is(Hint hint) {
-        return hint == orderHint;
     }
 
     @Override
@@ -75,6 +66,12 @@ public class DosOrderedTrackSectorDevice implements TrackSectorDevice {
     @Override
     public Geometry getGeometry() {
         return geometry;
+    }
+
+    /// Get the sector order.
+    @Override
+    public SectorOrder getSectorOrder() {
+        return sectorOrder ;
     }
 
     @Override
@@ -89,15 +86,18 @@ public class DosOrderedTrackSectorDevice implements TrackSectorDevice {
     }
 
     public int calculateOffset(int track, int sector) {
-        assert(track < geometry.tracksOnDisk());
-        assert(sector < geometry.sectorsPerTrack());
+        assert track < geometry.tracksOnDisk();
+        assert sector < geometry.sectorsPerTrack();
         return (track * geometry.sectorsPerTrack() + sector) * SECTOR_SIZE;
     }
 
     @Override
     public List<InformationGroup> information() {
-        return InformationGroup.builder("DOS Ordered Track/Sector Device")
-            .item("Ordering Hint").value(orderHint == null ? "None" : orderHint.name())
+        return InformationGroup.builder("Ordered Track/Sector Device")
+            .item("Order").value(sectorOrder.name())
+            .item("Physical Sector Skew").value(Arrays.stream(sectorOrder.physicalSectorOrder)
+                        .mapToObj(String::valueOf)
+                        .collect(Collectors.joining(",")))
             .get(geometry, source);
     }
 }

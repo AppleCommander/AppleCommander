@@ -62,6 +62,14 @@ public class BlockToTrackSectorAdapter implements TrackSectorDevice {
         return geometry;
     }
 
+    /// Get the sector order.
+    @Override
+    public SectorOrder getSectorOrder() {
+        // TODO: This is a guess. The block strategy handles ordering (I think).
+        // ... Guessing OzDOS and UniDOS are both DOS ordered as well.
+        return SectorOrder.DOS;
+    }
+
     @Override
     public DataBuffer readSector(int track, int sector) {
         int block = strategy.computeBlock(track, sector);

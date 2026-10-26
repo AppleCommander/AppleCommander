@@ -158,6 +158,12 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         return geometry;
     }
 
+    /// Get the sector order.
+    @Override
+    public SectorOrder getSectorOrder() {
+        return SectorOrder.NIBBLE;
+    }
+
     public List<InformationGroup> information() {
         InformationGroup.Builder builder =  InformationGroup.builder("Track/Sector Nibble Device")
             .item("Device").value("Nibble Device")

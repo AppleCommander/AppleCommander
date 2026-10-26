@@ -41,10 +41,7 @@ import org.applecommander.bastools.api.Parser;
 import org.applecommander.bastools.api.Visitors;
 import org.applecommander.bastools.api.model.Program;
 import org.applecommander.bastools.api.model.Token;
-import org.applecommander.device.BlockDevice;
-import org.applecommander.device.DosOrderedTrackSectorDevice;
-import org.applecommander.device.ProdosOrderedBlockDevice;
-import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.device.*;
 import org.applecommander.hint.Hint;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.FileSource;
@@ -613,7 +610,7 @@ public class ac {
 	public static void createDosDisk(String fileName, int imageSize)
 		throws IOException {
 		Source source = DataBufferSource.create(imageSize, fileName).hints(Hint.DOS_SECTOR_ORDER).get();
-        TrackSectorDevice device = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+        TrackSectorDevice device = new OrderedTrackSectorDevice(source, SectorOrder.DOS);
 		FormattedDisk[] disks = DosFormatDisk.create(fileName, device);
 		save(disks[0]);
 	}

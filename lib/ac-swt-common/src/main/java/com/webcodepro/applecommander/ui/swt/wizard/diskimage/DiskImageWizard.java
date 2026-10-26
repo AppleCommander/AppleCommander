@@ -33,7 +33,6 @@ import com.webcodepro.applecommander.ui.swt.wizard.Wizard;
 import com.webcodepro.applecommander.ui.swt.wizard.WizardPane;
 import org.applecommander.device.*;
 import org.applecommander.device.nibble.NibbleTrackReaderWriter;
-import org.applecommander.hint.Hint;
 import org.applecommander.image.NibbleImage;
 import org.applecommander.os.dos.OzdosAdapterStrategy;
 import org.applecommander.os.dos.UnidosAdapterStrategy;
@@ -112,7 +111,7 @@ public class DiskImageWizard extends Wizard<DiskImageWizard.Pages> {
 		TrackSectorDevice sectorDevice = null;
 		switch (getOrder()) {
 			case ORDER_DOS:
-                sectorDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+                sectorDevice = new OrderedTrackSectorDevice(source, SectorOrder.DOS);
                 TrackSectorDevice skewedDevice  = SkewedTrackSectorDevice.dosToPascalSkew(sectorDevice);
 				blockDevice = new TrackSectorToBlockAdapter(skewedDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS);
 				break;
