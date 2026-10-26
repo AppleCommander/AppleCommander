@@ -237,9 +237,15 @@ public class DataBuffer {
         }
         return new String(s);
     }
-    public void putFixedLengthString(int index, int length, String value) {
+    public void putFixedLengthString(int index, int length, String value, boolean setHighBit) {
         value = Strings.padEnd(value, length, ' ');
-        this.buffer.put(index, value.getBytes(), 0, length);
+        byte[] data = value.getBytes();
+        if (setHighBit) {
+            for (int i=0; i<length; i++) {
+                data[i] = (byte)(data[i] | 0x80);
+            }
+        }
+        this.buffer.put(index, data, 0, length);
     }
     public void put(int offset, DataBuffer data) {
         this.buffer.put(offset, data.buffer, 0, data.buffer.limit());
