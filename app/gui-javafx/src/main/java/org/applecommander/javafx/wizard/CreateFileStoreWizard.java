@@ -28,7 +28,10 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import org.applecommander.archive.zip.ZipFileStoreFactory;
-import org.applecommander.device.*;
+import org.applecommander.device.OrderedTrackSectorDevice;
+import org.applecommander.device.SectorOrder;
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.device.TrackSectorNibbleDevice;
 import org.applecommander.exception.FileStoreNotRecognizedException;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.image.NibbleImage;
@@ -104,8 +107,7 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
             case NOT_APPLICABLE -> throw new UnsupportedOperationException();
             case DOS -> new OrderedTrackSectorDevice(source, SectorOrder.DOS);
             case PRODOS -> new OrderedTrackSectorDevice(source, SectorOrder.PRODOS);
-            case NIBBLE -> SkewedTrackSectorDevice.physicalToDosSkew(
-                    TrackSectorNibbleDevice.create(new NibbleImage(source), 16));
+            case NIBBLE -> TrackSectorNibbleDevice.create(new NibbleImage(source), 16);
         };
     }
 

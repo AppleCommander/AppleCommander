@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class RDOSFileStore implements FileStore {
+public class RDOSFileStore implements FileStore, RDOSConstants {
     private final BlockDevice device;
     private final RDOSVersionAdapter adapter;
     private final RDOSDirectory rootDirectory;
@@ -71,12 +71,17 @@ public class RDOSFileStore implements FileStore {
     @Override
     public List<DisplayColumn> getDisplayColumns() {
         return DisplayColumn.builder(RDOSFileEntry.class)
-            .center("Type").string(RDOSFileEntry::getType).done()
+            .center("Type").string(RDOSFileEntry::getType, RDOSFileEntry::setType)
+                .option("A", "Applesoft BASIC")
+                .option("B", "Binary")
+                .option("T", "Text")
+                .done()
             .right("Blocks").integer(RDOSFileEntry::getBlocks, "%03d").done()
-            .left("Name").string(RDOSFileEntry::getName).done()
+            .left("Name").string(RDOSFileEntry::getName, RDOSFileEntry::setName).maxLength(NAME_LENGTH).done()
             .right("Length").integer(RDOSFileEntry::getSize, "%,d").done()
             .right("First Block").integer(RDOSFileEntry::getFirstBlock, "%03d").done()
-            .right("Address").integer(RDOSFileEntry::getAddress, "$%04X").mode(DisplayMode.DETAIL).done()
+            .right("Address").integer(RDOSFileEntry::getAddress, "$%04X", RDOSFileEntry::setAddress)
+                .mode(DisplayMode.DETAIL).restrictToHexValues().done()
             .center("Deleted?").yesNo(RDOSFileEntry::isDeleted).mode(DisplayMode.DETAIL).done()
             .right("Dir. Blk.").integer(RDOSFileEntry::getDirectoryBlock, "%03d").mode(DisplayMode.DETAIL).done()
             .right("Dir. Off.").integer(RDOSFileEntry::getDirectoryOffset, "$%02X").mode(DisplayMode.DETAIL).done()
@@ -86,7 +91,7 @@ public class RDOSFileStore implements FileStore {
     /// Helps identify capabilities of the existing component.
     @Override
     public boolean can(Capability capability) {
-        return false;
+        return CAPABILITIES.contains(capability);
     }
 
     @Override

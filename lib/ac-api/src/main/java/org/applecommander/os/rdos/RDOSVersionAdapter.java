@@ -20,20 +20,23 @@
 package org.applecommander.os.rdos;
 
 public enum RDOSVersionAdapter {
-    RDOS21("RDOS 2.1", 13, 23, 25, 24),
-    RDOS33("RDOS 3.3", 16, 31, 1, 2);
+    RDOS21("RDOS 2.1", 13, 23, 25, 24, 25),
+    RDOS33("RDOS 3.3", 16, 31, 1, 2, 31);
 
     public final String label;
     public final int firstDirectoryBlock;
     public final int lastDirectoryBlock;
     public final int catalogCodeBlock;
     public final int chainCodeBlock;
+    public final int lastSystemBlock;
 
-    RDOSVersionAdapter(String label, int firstDirectoryBlock, int lastDirectoryBlock, int catalogCodeBlock, int chainCodeBlock) {
+    RDOSVersionAdapter(String label, int firstDirectoryBlock, int lastDirectoryBlock, int catalogCodeBlock,
+                       int chainCodeBlock, int lastSystemBlock) {
         this.label = label;
         this.firstDirectoryBlock = firstDirectoryBlock;
         this.lastDirectoryBlock = lastDirectoryBlock;
         this.catalogCodeBlock = catalogCodeBlock;
         this.chainCodeBlock = chainCodeBlock;
+        this.lastSystemBlock = lastSystemBlock;
     }
 }

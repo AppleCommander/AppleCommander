@@ -19,6 +19,10 @@
  */
 package org.applecommander.os.rdos;
 
+import org.applecommander.capability.Capability;
+
+import java.util.Set;
+
 public interface RDOSConstants {
     int ENTRY_LENGTH = 0x20;
     int NAME_OFFSET = 0x00;
@@ -28,4 +32,6 @@ public interface RDOSConstants {
     int ADDRESS_OFFSET = 0x1a;
     int LENGTH_OFFSET = 0x1c;
     int FIRST_BLOCK_OFFSET = 0x1e;
+
+    Set<Capability> CAPABILITIES = Set.of(Capability.WRITE_FILES, Capability.CREATE_FILES, Capability.DELETE_FILES);
 }

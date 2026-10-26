@@ -20,14 +20,14 @@
 package org.applecommander.os.rdos;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
-import org.applecommander.device.BlockDevice;
-import org.applecommander.device.SkewedTrackSectorDevice;
-import org.applecommander.device.TrackSectorDevice;
-import org.applecommander.device.TrackSectorToBlockAdapter;
+import org.applecommander.device.*;
 import org.applecommander.filestore.FileStoreFactory;
-import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -40,51 +40,21 @@ public class RDOSFileStoreFactory implements FileStoreFactory, RDOSConstants {
     public void inspect(Context ctx) {
         ctx.trackSectorDevice()
                 .check13Sector(device -> {
-                    // These are only DOS or nibble/physical ordered
-                    if (!device.is(Hint.NIBBLE_SECTOR_ORDER)) {
-                        device = SkewedTrackSectorDevice.dosToPhysicalSkew(device);
-                    }
-                    // Looking for the marker on block 25 (T1, S12)
-                    DataBuffer sectorData = device.readSector(1, 12);
-                    if (sectorData.scan(CAT_MARKER, 0).isPresent()) {
-                        test(device, RDOSVersionAdapter.RDOS21).ifPresent(ctx.fileStores::add);
-                    }
+                    // These are nibble/physical ordered
+                    test(device.request(SectorOrder.NIBBLE), RDOSVersionAdapter.RDOS21).ifPresent(ctx.fileStores::add);
                 })
                 .check16Sector(device -> {
-                    DataBuffer firstTwoTracks = device.readRange(0, 0, 32);
-                    firstTwoTracks.scan(CAT_MARKER, 0x7f, 0).ifPresent(pos -> {
-                        int sectorNumber = pos >> 8;
-                        System.out.println(sectorNumber);
-                        // We found the marker. Determine where it was located. That should help determine version + geometry.
-                        Optional<RDOSFileStore> fileStore = switch (sectorNumber) {
-
-                            // --- RDOS 3.3 (marker is located on block 1 which is track 0, sector 1) ---
-                            // Pascal/ProDOS sector order
-                            case 0x01 -> test(device, RDOSVersionAdapter.RDOS33);
-                            // Nibble/physical sector order
-                            case 0x02 -> test(SkewedTrackSectorDevice.physicalToPascalSkew(device), RDOSVersionAdapter.RDOS33);
-                            // DOS sector order
-                            case 0x0e -> test(SkewedTrackSectorDevice.dosToPascalSkew(device), RDOSVersionAdapter.RDOS33);
-
-                            // --- RDOS 2.1 (marker is located on block 25 which is track 1 sector 12) ---
-                            //    (note that we have a 13-sector device mapped into a 16-sector device)
-                            // Pascal/ProDOS sector order
-                            case 0x1c -> test(SkewedTrackSectorDevice.truncate16sectorTo13(
-                                    SkewedTrackSectorDevice.pascalToPhysicalSkew(device)), RDOSVersionAdapter.RDOS21);
-                            // Nibble/physical sector order
-                            case 0x16 -> test(SkewedTrackSectorDevice.truncate16sectorTo13(device), RDOSVersionAdapter.RDOS21);
-                            // DOS sector order
-                            case 0x19 -> test(SkewedTrackSectorDevice.truncate16sectorTo13(
-                                    SkewedTrackSectorDevice.dosToPhysicalSkew(device)), RDOSVersionAdapter.RDOS21);
-                            default -> Optional.empty();
-                        };
-                        fileStore.ifPresent(ctx.fileStores::add);
-                    });
+                    test(device.request(SectorOrder.PRODOS), RDOSVersionAdapter.RDOS33).ifPresent(ctx.fileStores::add);
+                    test(SkewedTrackSectorDevice.truncate16sectorTo13(device.request(SectorOrder.NIBBLE)),
+                            RDOSVersionAdapter.RDOS21).ifPresent(ctx.fileStores::add);
                 });
     }
 
     public Optional<RDOSFileStore> test(TrackSectorDevice device, RDOSVersionAdapter adapter) {
         BlockDevice blockDevice = new TrackSectorToBlockAdapter(device, TrackSectorToBlockAdapter.BlockStyle.RDOS);
+        if (blockDevice.readBlock(adapter.catalogCodeBlock).scan(CAT_MARKER, 0x7f, 0).isEmpty()) {
+            return Optional.empty();
+        }
         for (int block = adapter.firstDirectoryBlock; block < adapter.lastDirectoryBlock; block++) {
             DataBuffer blockData = blockDevice.readBlock(block);
             if (!testCatalogSector(blockData, blockDevice.getGeometry().blocksOnDevice())) {
@@ -131,5 +101,40 @@ public class RDOSFileStoreFactory implements FileStoreFactory, RDOSConstants {
             if (!good) return good;
         }
         return good;
+    }
+
+    public static RDOSFileStore create(TrackSectorDevice device) {
+        Objects.requireNonNull(device);
+        if (device.getGeometry().sectorsPerDisk() != 560) {
+            throw new RuntimeException("RDOS requires a 560 sector disk.");
+        }
+        device.format();
+        BlockDevice blockDevice = new TrackSectorToBlockAdapter(device.request(SectorOrder.PRODOS),
+                                                                TrackSectorToBlockAdapter.BlockStyle.RDOS);
+        // The BIN file is in block order, so we can copy the blocks into the device!
+        try (InputStream inputStream = RDOSFileStore.class.getResourceAsStream("/files/rdos33-template.bin")) {
+            Objects.requireNonNull(inputStream);
+            byte[] disk = inputStream.readAllBytes();
+            blockDevice.writeRange(0, DataBuffer.wrap(disk));
+            RDOSFileStore fileStore = new RDOSFileStore(blockDevice, RDOSVersionAdapter.RDOS33);
+            RDOSFileEntry systemboot = fileStore.getRootDirectory().createFile("SYSTEMBOOT");
+            systemboot.setType("T");
+            systemboot.setAddress(0xb100);
+            // FIXME: Text file has to have high bit set.
+            byte[] systembootContent = """
+                    PR#0:IN#0:TEXT:HOME:&CAT:PRINT:PRINT "WELCOME TO RDOS!"
+                    """.getBytes();
+            for (int i = 0; i < systembootContent.length; i++) {
+                if (systembootContent[i] == '\n') {
+                    systembootContent[i] = '\r';
+                }
+                systembootContent[i] = (byte)(systembootContent[i] | 0x80);
+            }
+            systemboot.setDataFork(DataBuffer.wrap(systembootContent));
+            return fileStore;
+        }
+        catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
     }
 }

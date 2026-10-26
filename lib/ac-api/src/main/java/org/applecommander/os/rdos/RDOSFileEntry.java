@@ -20,15 +20,18 @@
 package org.applecommander.os.rdos;
 
 import org.applecommander.device.BlockDevice;
-import org.applecommander.filestore.FileEntry;
-import org.applecommander.filestore.FileStore;
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.exception.DiskFullException;
+import org.applecommander.filestore.WritableFileEntry;
+import org.applecommander.os.SequentialAllocator;
 import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.DataBuffer;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 
-public class RDOSFileEntry implements FileEntry, RDOSConstants {
+public class RDOSFileEntry implements WritableFileEntry, RDOSConstants {
     private final BlockDevice device;
     private final RDOSDirectory parent;
     private final int block;
@@ -38,7 +41,7 @@ public class RDOSFileEntry implements FileEntry, RDOSConstants {
         Objects.requireNonNull(parent);
         RDOSVersionAdapter adapter = parent.getFileStore().getAdapter();
         assert block >= adapter.firstDirectoryBlock && block <= adapter.lastDirectoryBlock;
-        assert offset >= 0 && offset < 8;
+        assert offset >= 0 && offset < TrackSectorDevice.SECTOR_SIZE;
         this.device = parent.getFileStore().get(BlockDevice.class).orElseThrow();
         this.parent = parent;
         this.block = block;
@@ -47,6 +50,12 @@ public class RDOSFileEntry implements FileEntry, RDOSConstants {
 
     public DataBuffer readEntry() {
         return device.readBlock(block).slice(offset, ENTRY_LENGTH);
+    }
+    public void modifyEntry(Consumer<DataBuffer> consumer) {
+        DataBuffer blockData = device.readBlock(block);
+        DataBuffer entryData = blockData.slice(offset, ENTRY_LENGTH);
+        consumer.accept(entryData);
+        device.writeBlock(block, blockData);
     }
 
     public int getDirectoryBlock() {
@@ -71,7 +80,7 @@ public class RDOSFileEntry implements FileEntry, RDOSConstants {
 
     /// Returns the `FileStore` that this `Entry` originates from.
     @Override
-    public FileStore getFileStore() {
+    public RDOSFileStore getFileStore() {
         return parent.getFileStore();
     }
 
@@ -84,27 +93,42 @@ public class RDOSFileEntry implements FileEntry, RDOSConstants {
         if (data.getUnsignedByte(NAME_OFFSET) == 0x80) {
             return "<NOT IN USE>";
         }
-        return data.getFixedLengthString(NAME_OFFSET, NAME_LENGTH);
+        return data.getFixedLengthString(NAME_OFFSET, NAME_LENGTH).trim();
+    }
+    public void setName(String name) {
+        modifyEntry(entry -> entry.putFixedLengthString(NAME_OFFSET, NAME_LENGTH, name, true));
     }
 
     public String getType() {
         DataBuffer data = readEntry();
         return data.getFixedLengthString(TYPE_OFFSET, 1);
     }
+    public void setType(String type) {
+        modifyEntry(entry -> entry.putFixedLengthString(TYPE_OFFSET, 1, type, true));
+    }
 
     public int getBlocks() {
         DataBuffer data = readEntry();
         return data.getUnsignedByte(BLOCKS_OFFSET);
+    }
+    public void setBlocks(int blocks) {
+        modifyEntry(entry -> entry.putUnsignedShort(BLOCKS_OFFSET, blocks));
     }
 
     public int getAddress() {
         DataBuffer data = readEntry();
         return data.getUnsignedShort(ADDRESS_OFFSET);
     }
+    public void setAddress(int addr) {
+        modifyEntry(entry -> entry.putUnsignedShort(ADDRESS_OFFSET, addr));
+    }
 
     public int getFirstBlock() {
         DataBuffer data = readEntry();
         return data.getUnsignedShort(FIRST_BLOCK_OFFSET);
+    }
+    public void setFirstBlock(int firstBlock) {
+        modifyEntry(entry -> entry.putUnsignedShort(FIRST_BLOCK_OFFSET, firstBlock));
     }
 
     /// Returns the size, in bytes, of this item.
@@ -113,6 +137,9 @@ public class RDOSFileEntry implements FileEntry, RDOSConstants {
     public long getSize() {
         DataBuffer data = readEntry();
         return data.getUnsignedShort(LENGTH_OFFSET);
+    }
+    public void setSize(int size) {
+        modifyEntry(entry -> entry.putUnsignedShort(LENGTH_OFFSET, size));
     }
 
     /// Return the file's data.
@@ -133,5 +160,36 @@ public class RDOSFileEntry implements FileEntry, RDOSConstants {
     @Override
     public <T> Optional<T> get(Class<T> iface) {
         return Optional.empty();
+    }
+
+    /// Store the file's data.
+    /// This does not include any metadata that may be embedded with the file.
+    @Override
+    public void setDataFork(DataBuffer data) {
+        final int requiredBlocks = device.calculateRequiredBlocks(data.limit());
+        BlockDevice.Geometry geometry = device.getGeometry();
+        SequentialAllocator allocator = new SequentialAllocator(geometry.blocksOnDevice());
+        getParent().getFiles().forEach(file -> {
+            RDOSFileEntry entry = (RDOSFileEntry) file;
+            if (entry.getDirectoryBlock() != this.getDirectoryBlock() || entry.getDirectoryOffset() != this.getDirectoryOffset()) {
+                allocator.addUsedByLength(entry.getFirstBlock(), entry.getBlocks());
+            }
+        });
+        int firstBlock = allocator.find(requiredBlocks);
+        if (firstBlock != -1) {
+            device.writeRange(firstBlock, data);
+            setFirstBlock(firstBlock);
+            setBlocks(requiredBlocks);
+            if ("T".equals(getType())) {
+                setSize(requiredBlocks * device.getGeometry().blockSize());
+            }
+            else {
+                setSize(data.limit());
+            }
+        }
+        else {
+            throw new DiskFullException("Unable to allocate %d blocks on disk", requiredBlocks);
+        }
+
     }
 }

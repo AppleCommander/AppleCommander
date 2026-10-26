@@ -21,8 +21,12 @@ package org.applecommander.os.rdos;
 
 import org.applecommander.capability.Capability;
 import org.applecommander.device.BlockDevice;
+import org.applecommander.exception.DirectoryFullException;
+import org.applecommander.exception.FileExistsException;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
+import org.applecommander.filestore.WritableDirectory;
+import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.DataBuffer;
 
 import java.util.ArrayList;
@@ -30,7 +34,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class RDOSDirectory implements Directory, RDOSConstants {
+public class RDOSDirectory implements WritableDirectory, RDOSConstants {
     private final RDOSFileStore fileStore;
     private final BlockDevice device;
 
@@ -80,6 +84,55 @@ public class RDOSDirectory implements Directory, RDOSConstants {
     /// Helps identify capabilities of the existing component.
     @Override
     public boolean can(Capability capability) {
-        return false;
+        return CAPABILITIES.contains(capability);
+    }
+
+    /// Create a file. By definition, any file created is a `WritableFileEntry`.
+    @Override
+    public RDOSFileEntry createFile(String fileName) {
+        int firstBlock = fileStore.getAdapter().firstDirectoryBlock;
+        int lastBlock = fileStore.getAdapter().lastDirectoryBlock;
+        for (int block=firstBlock; block<=lastBlock; block++) {
+            DataBuffer data = device.readBlock(block);
+            for (int offset=0; offset<data.limit(); offset+= ENTRY_LENGTH) {
+                RDOSFileEntry fileEntry = new RDOSFileEntry(this, block, offset);
+                if (data.getUnsignedByte(offset) == 0 || data.getUnsignedByte(offset) == 0x80) {
+                    fileEntry.setName(fileName);
+                    return fileEntry;
+                }
+                else if (fileName.equalsIgnoreCase(fileEntry.getName())) {
+                    throw new FileExistsException("file '%s' already exists", fileName);
+                }
+            }
+        }
+        throw new DirectoryFullException("there are no more directory entries available on this disk");
+    }
+
+    /// Create a file given the supplied ProDOS attributes. This is expected to handle
+    /// setting all appropriate `FileEntry` attributes that align. File type should be
+    /// converted, dates applied, etc.
+    @Override
+    public RDOSFileEntry createFrom(ProdosAttributes prodosAttributes) {
+        RDOSFileEntry fileEntry = createFile(prodosAttributes.name());
+        fileEntry.setAddress(prodosAttributes.auxType());
+        String fileType = switch (prodosAttributes.fileType()) {
+            case ProdosAttributes.BAS -> "A";
+            case ProdosAttributes.TXT -> "T";
+            default -> "B";
+        };
+        fileEntry.setType(fileType);
+        prodosAttributes.dataFork().ifPresent(fileEntry::setDataFork);
+        return fileEntry;
+    }
+
+    /// Delete a file.
+    @Override
+    public void deleteFile(FileEntry fileEntry) {
+        RDOSFileEntry file = (RDOSFileEntry) fileEntry;
+        // Set first character to $80 and change the type to $A0 (space).
+        file.modifyEntry(data -> {
+            data.putByte(NAME_OFFSET, 0x80);
+            data.putByte(TYPE_OFFSET, 0xa0);
+        });
     }
 }
