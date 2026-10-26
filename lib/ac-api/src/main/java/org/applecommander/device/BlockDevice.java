@@ -42,7 +42,7 @@ public interface BlockDevice extends Device {
 
     /// Read a range of blocks.
     default DataBuffer readRange(int block, int totalBlocks) {
-        DataBuffer rangeData = DataBuffer.wrap(totalBlocks * getGeometry().blockSize());
+        DataBuffer rangeData = DataBuffer.create(totalBlocks * getGeometry().blockSize());
         int offset = 0;
         while (totalBlocks-- > 0) {
             rangeData.put(offset, readBlock(block));
@@ -56,7 +56,12 @@ public interface BlockDevice extends Device {
 
     /// Write a range of blocks.
     default void writeRange(int block, DataBuffer rangeData) {
-        assert rangeData.limit() % getGeometry().blockSize() == 0;
+        int totalBlocks = calculateRequiredBlocks(rangeData.limit());
+        if (rangeData.limit() < totalBlocks * getGeometry().blockSize()) {
+            DataBuffer newData = DataBuffer.create(totalBlocks * getGeometry().blockSize());
+            newData.put(0, rangeData);
+            rangeData = newData;
+        }
         int offset = 0;
         while (offset < rangeData.limit()) {
             writeBlock(block++, rangeData.slice(offset, getGeometry().blockSize()));
@@ -80,6 +85,11 @@ public interface BlockDevice extends Device {
         for (int block = 0; block < getGeometry().blocksOnDevice(); block++) {
             writeBlock(block, blockData);
         }
+    }
+
+    /// A handy/common function to calculate the number of blocks needed for the given size.
+    default int calculateRequiredBlocks(int size) {
+        return (size + getGeometry().blockSize() - 1) / getGeometry().blockSize();
     }
 
     record Geometry(int blockSize, int blocksOnDevice) implements InformationProvider {
