@@ -112,7 +112,7 @@ public class RDOSFileEntry implements WritableFileEntry, RDOSConstants {
         return data.getUnsignedByte(BLOCKS_OFFSET);
     }
     public void setBlocks(int blocks) {
-        modifyEntry(entry -> entry.putUnsignedShort(BLOCKS_OFFSET, blocks));
+        modifyEntry(entry -> entry.putByte(BLOCKS_OFFSET, blocks));
     }
 
     public int getAddress() {
