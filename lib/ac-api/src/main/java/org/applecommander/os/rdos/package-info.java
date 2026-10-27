@@ -5,10 +5,10 @@
 /// it's 3.3 while track 1 is 2.1. We know what sector the catalog exists on and from that
 /// the sector skew can be interpolated.
 ///
-/// | Version | Directory | `&CAT` | Sectors/Track |
-/// | :--- | :---: | :---: | :---: |
-/// | RDOS 2.1 | 13..23 | 25 | 13 |
-/// | RDOS 3.3 | 16..31 | 1 | 16 |
+/// | Version | Directory | `&CAT` | Sectors/Track | Sector Ordering |
+/// | :--- | :---: | :---: | :---: | :---: |
+/// | RDOS 2.1 | 13..23 | 25 | 13 | Nibble/Physical |
+/// | RDOS 3.3 | 16..31 | 1 | 16 | ProDOS/Pascal |
 ///
 /// References:
 ///
