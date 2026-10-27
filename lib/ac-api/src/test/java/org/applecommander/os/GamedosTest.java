@@ -20,7 +20,8 @@
 package org.applecommander.os;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
-import org.applecommander.device.DosOrderedTrackSectorDevice;
+import org.applecommander.device.OrderedTrackSectorDevice;
+import org.applecommander.device.SectorOrder;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
@@ -79,7 +80,7 @@ public class GamedosTest {
     public void testCreateAndWrite() {
         // Create a disk
         Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "GAMEDOS-TEST").get();
-        TrackSectorDevice device = new DosOrderedTrackSectorDevice(source);
+        TrackSectorDevice device = new OrderedTrackSectorDevice(source, SectorOrder.DOS);
         GamedosFileStore fileStore = GamedosFileStoreFactory.create(device);
         assertNotNull(fileStore);
 
@@ -115,7 +116,7 @@ public class GamedosTest {
     }
 
     public GamedosFileEntry createFile(GamedosDirectory directory, String fileName, String fileType, byte[] dataFork) {
-        GamedosFileEntry fileEntry = (GamedosFileEntry) directory.createFile(fileName);
+        GamedosFileEntry fileEntry = directory.createFile(fileName);
         assertNotNull(fileEntry);
         fileEntry.setFiletype(fileType);
         fileEntry.setDataFork(DataBuffer.wrap(dataFork));

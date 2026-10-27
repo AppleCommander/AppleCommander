@@ -2285,7 +2285,7 @@ public class DiskExplorerTab {
 				if (!device.is(Hint.DOS_SECTOR_ORDER)) {
                     Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-image.do").get();
 					changeImageOrder("dsk",
-                            new DosOrderedTrackSectorDevice(source));
+                            new OrderedTrackSectorDevice(source, SectorOrder.DOS));
 				}
 			}
 		});
@@ -2298,7 +2298,7 @@ public class DiskExplorerTab {
 				if (!device.is(Hint.PRODOS_BLOCK_ORDER)) {
                     Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-image.po").get();
 					changeImageOrder("po",
-                            SkewedTrackSectorDevice.dosToPascalSkew(new DosOrderedTrackSectorDevice(source)));
+                            SkewedTrackSectorDevice.dosToPascalSkew(new OrderedTrackSectorDevice(source, SectorOrder.DOS)));
 				}
 			}
 		});

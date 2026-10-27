@@ -41,5 +41,4 @@ public interface GamedosConstants {
     int ENTRY_SECTORS_OFFSET = 31;
 
     Set<Capability> CAPABILITIES = Set.of(Capability.WRITE_FILES, Capability.CREATE_FILES, Capability.DELETE_FILES);
-
 }

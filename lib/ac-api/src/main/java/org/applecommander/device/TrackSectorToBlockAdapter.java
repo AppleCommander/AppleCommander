@@ -84,7 +84,8 @@ public class TrackSectorToBlockAdapter implements BlockDevice {
             .item("Block Style").value(style.name())
             .item("Block Size (Bytes)").value(style.blockSize)
             .item("Sectors per Block").value(style.sectorsPerBlock)
-            .get(geometry, device);
+            .merge(geometry)
+            .get(device);
     }
 
     private void operate(int block, Operation operation) {

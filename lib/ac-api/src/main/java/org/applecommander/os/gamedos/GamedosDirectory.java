@@ -23,7 +23,10 @@ import org.applecommander.capability.Capability;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.exception.DirectoryFullException;
 import org.applecommander.exception.FileExistsException;
-import org.applecommander.filestore.*;
+import org.applecommander.filestore.Directory;
+import org.applecommander.filestore.FileEntry;
+import org.applecommander.filestore.FileStore;
+import org.applecommander.filestore.WritableDirectory;
 import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.DataBuffer;
 
@@ -97,7 +100,7 @@ public class GamedosDirectory implements WritableDirectory, GamedosConstants {
     /// setting all appropriate `FileEntry` attributes that align. File type should be
     /// converted, dates applied, etc.
     @Override
-    public WritableFileEntry createFrom(ProdosAttributes prodosAttributes) {
+    public GamedosFileEntry createFrom(ProdosAttributes prodosAttributes) {
         GamedosFileEntry fileEntry = createFile(prodosAttributes.name());
         fileEntry.setMeta(prodosAttributes.auxType());
         String fileType = switch (prodosAttributes.fileType()) {

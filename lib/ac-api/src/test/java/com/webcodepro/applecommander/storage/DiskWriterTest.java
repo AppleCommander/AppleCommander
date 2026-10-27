@@ -24,7 +24,6 @@ import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
 import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
 import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import org.applecommander.device.*;
-import org.applecommander.hint.Hint;
 import org.applecommander.image.NibbleImage;
 import org.applecommander.os.dos.OzdosAdapterStrategy;
 import org.applecommander.os.dos.UnidosAdapterStrategy;
@@ -57,7 +56,7 @@ public class DiskWriterTest {
 	@Test
 	public void testWriteToDos33() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-        TrackSectorDevice sectorDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+        TrackSectorDevice sectorDevice = new OrderedTrackSectorDevice(source, SectorOrder.DOS);
 		FormattedDisk[] disks = DosFormatDisk.create("write-test-dos33.dsk", sectorDevice);
 		writeFiles(disks, "B", "T", false);
 		saveDisks(disks);
@@ -107,7 +106,7 @@ public class DiskWriterTest {
 	@Test
 	public void testWriteToProdos140kDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-		TrackSectorDevice trackSectorDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+		TrackSectorDevice trackSectorDevice = new OrderedTrackSectorDevice(source, SectorOrder.DOS);
         TrackSectorDevice skewedDevice = SkewedTrackSectorDevice.dosToPascalSkew(trackSectorDevice);
 		BlockDevice blockDevice = new TrackSectorToBlockAdapter(skewedDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
@@ -148,7 +147,7 @@ public class DiskWriterTest {
 	@Test
 	public void testCreateAndDeleteDos33() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-        TrackSectorDevice sectorDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+        TrackSectorDevice sectorDevice = new OrderedTrackSectorDevice(source, SectorOrder.DOS);
 		FormattedDisk[] disks = DosFormatDisk.create("createanddelete-test-dos33.dsk", sectorDevice);
 		createAndDeleteFiles(disks, "B"); 
 		saveDisks(disks);
@@ -214,7 +213,7 @@ public class DiskWriterTest {
 	@Test
 	public void testCreateAndDeleteProdos140kDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-		TrackSectorDevice trackSectorDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+		TrackSectorDevice trackSectorDevice = new OrderedTrackSectorDevice(source, SectorOrder.DOS);
         TrackSectorDevice skewedDevice = SkewedTrackSectorDevice.dosToPascalSkew(trackSectorDevice);
 		BlockDevice blockDevice = new TrackSectorToBlockAdapter(skewedDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS);
 		FormattedDisk[] disks = ProdosFormatDisk.create(
@@ -245,7 +244,7 @@ public class DiskWriterTest {
 	@Test
 	public void testCreateDeleteCreateDosDisk() throws IOException, DiskException {
 		Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-disk").get();
-        TrackSectorDevice sectorDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+        TrackSectorDevice sectorDevice = new OrderedTrackSectorDevice(source, SectorOrder.DOS);
 		FormattedDisk[] disks = DosFormatDisk.create("createdeletecreate-test-dos-140k.dsk", sectorDevice);
 		createDeleteCreate(disks, "B"); 
 		saveDisks(disks);

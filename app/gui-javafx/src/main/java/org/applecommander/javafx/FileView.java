@@ -636,13 +636,17 @@ public class FileView extends BorderPane {
                 event.consume();
             }
             else if (event.getCode() == KeyCode.DELETE && fileTable.getSelectionModel().getSelectedItem() != null) {
-                FileEntry entry = fileTable.getSelectionModel().getSelectedItem();
-                FileStore fileStore = entry.getFileStore();
-                if (fileStore.can(Capability.DELETE_FILES)) {
-                    WritableDirectory writableDirectory = (WritableDirectory) fileStore.getRootDirectory();
-                    writableDirectory.deleteFile(entry);
-                    fileEntries.remove(entry);
-                    fileStoreWindow.addChange();
+                try {
+                    FileEntry entry = fileTable.getSelectionModel().getSelectedItem();
+                    FileStore fileStore = entry.getFileStore();
+                    if (fileStore.can(Capability.DELETE_FILES)) {
+                        WritableDirectory writableDirectory = (WritableDirectory) fileStore.getRootDirectory();
+                        writableDirectory.deleteFile(entry);
+                        fileEntries.remove(entry);
+                        fileStoreWindow.addChange();
+                    }
+                } catch (Throwable t) {
+                    FxUtils.showErrorDialog("Unable to delete file", t);
                 }
             }
             else if (event.isShortcutDown() && event.getCode() == KeyCode.I) {

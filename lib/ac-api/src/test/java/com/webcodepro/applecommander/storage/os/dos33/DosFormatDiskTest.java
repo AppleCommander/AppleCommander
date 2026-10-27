@@ -22,9 +22,9 @@ package com.webcodepro.applecommander.storage.os.dos33;
 import com.webcodepro.applecommander.storage.DiskConstants;
 import com.webcodepro.applecommander.storage.DiskFullException;
 import com.webcodepro.applecommander.util.AppleUtil;
-import org.applecommander.device.DosOrderedTrackSectorDevice;
+import org.applecommander.device.OrderedTrackSectorDevice;
+import org.applecommander.device.SectorOrder;
 import org.applecommander.device.TrackSectorDevice;
-import org.applecommander.hint.Hint;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ public class DosFormatDiskTest {
     @Test
     public void testSanitizeFilename() {
         Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-image").get();
-        TrackSectorDevice device = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+        TrackSectorDevice device = new OrderedTrackSectorDevice(source, SectorOrder.DOS);
         DosFormatDisk[] disks = DosFormatDisk.create("deleteme.do", device);
         DosFormatDisk disk = disks[0];
          
@@ -52,7 +52,7 @@ public class DosFormatDiskTest {
     @Test
     public void testLargeFiles_ticket331() throws DiskFullException {
         Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "new-image").get();
-        TrackSectorDevice device = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+        TrackSectorDevice device = new OrderedTrackSectorDevice(source, SectorOrder.DOS);
         DosFormatDisk[] disks = DosFormatDisk.create("deleteme.do", device);
         DosFormatDisk disk = disks[0];
 

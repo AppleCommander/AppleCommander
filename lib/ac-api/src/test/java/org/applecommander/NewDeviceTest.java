@@ -22,7 +22,6 @@ package org.applecommander;
 import com.webcodepro.applecommander.testconfig.TestConfig;
 import org.applecommander.device.*;
 import org.applecommander.device.nibble.NibbleTrackReaderWriter;
-import org.applecommander.hint.Hint;
 import org.applecommander.image.DiskCopyImage;
 import org.applecommander.image.NibbleImage;
 import org.applecommander.image.UniversalDiskImage;
@@ -83,7 +82,7 @@ public class NewDeviceTest {
     public void readBlockGalatt() {
         final String filename = "galatt.dsk";
         Source source = sourceDisk(filename);
-        DosOrderedTrackSectorDevice doDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+        TrackSectorDevice doDevice = new OrderedTrackSectorDevice(source, SectorOrder.DOS);
         TrackSectorDevice skewedDevice = SkewedTrackSectorDevice.dosToPascalSkew(doDevice);
         TrackSectorToBlockAdapter blockDevice = new TrackSectorToBlockAdapter(skewedDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS);
         DataBuffer blockData = blockDevice.readBlock(2);
@@ -94,7 +93,7 @@ public class NewDeviceTest {
     public void readDOCavernsOfFreitag() {
         final String filename = "CavernsOfFreitag.dsk";
         Source source = sourceDisk(filename);
-        DosOrderedTrackSectorDevice tsDevice = new DosOrderedTrackSectorDevice(source, Hint.DOS_SECTOR_ORDER);
+        TrackSectorDevice tsDevice = new OrderedTrackSectorDevice(source, SectorOrder.DOS);
         DataBuffer sectorData = tsDevice.readSector(17, 15);
         dumpAsHex(sectorData, filename);
     }
@@ -122,7 +121,7 @@ public class NewDeviceTest {
         // An attempt at discovery
         Object device = null;
         if (info.isDOSOrdered() && info.dataLength() == 143360) {
-            device = new DosOrderedTrackSectorDevice(image, Hint.DOS_SECTOR_ORDER);
+            device = new OrderedTrackSectorDevice(image, SectorOrder.DOS);
         }
         else if (info.isProdosOrdered()) {
             device = new ProdosOrderedBlockDevice(image, BlockDevice.STANDARD_BLOCK_SIZE);

@@ -77,7 +77,7 @@ public class GamedosFileEntry implements WritableFileEntry, GamedosConstants {
     }
     @Override
     public void setName(String name) {
-        modifyEntry(data -> data.putFixedLengthString(ENTRY_NAME_OFFSET, ENTRY_NAME_LENGTH, name));
+        modifyEntry(data -> data.putFixedLengthString(ENTRY_NAME_OFFSET, ENTRY_NAME_LENGTH, name, false));
     }
 
     @Override
@@ -89,7 +89,7 @@ public class GamedosFileEntry implements WritableFileEntry, GamedosConstants {
         return readEntry().getFixedLengthString(ENTRY_TYPE_OFFSET,1);
     }
     public void setFiletype(String filetype) {
-        modifyEntry(data -> data.putFixedLengthString(ENTRY_TYPE_OFFSET, 1, filetype));
+        modifyEntry(data -> data.putFixedLengthString(ENTRY_TYPE_OFFSET, 1, filetype, false));
     }
 
     public int getFirstTrack() {

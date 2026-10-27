@@ -30,6 +30,7 @@ import org.applecommander.source.Source;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /// The FileStoreFactory inspects a given Source to see if it matches any known file store(s).
 /// Invoke via [FileStores#inspect(Source)] which will return a Context. The Context _can be empty_.
@@ -103,7 +104,7 @@ public interface FileStoreFactory {
                 }
                 else if (ctx.source.isApproxBetween(DiskConstants.APPLE_140KB_DISK, DiskConstants.APPLE_160KB_DISK)) {
                     if (ctx.source.is(Hint.DOS_SECTOR_ORDER) || ctx.source.extensionLike("do")) {
-                        TrackSectorDevice doDevice = new DosOrderedTrackSectorDevice(ctx.source, Hint.DOS_SECTOR_ORDER);
+                        TrackSectorDevice doDevice = new OrderedTrackSectorDevice(ctx.source, SectorOrder.DOS);
                         TrackSectorDevice poDevice = SkewedTrackSectorDevice.dosToPascalSkew(doDevice);
                         devices.add(new TrackSectorToBlockAdapter(poDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS));
                     }
@@ -112,7 +113,7 @@ public interface FileStoreFactory {
                     }
                     else {
                         devices.add(new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE));
-                        TrackSectorDevice doDevice = new DosOrderedTrackSectorDevice(ctx.source, Hint.DOS_SECTOR_ORDER);
+                        TrackSectorDevice doDevice = new OrderedTrackSectorDevice(ctx.source, SectorOrder.DOS);
                         TrackSectorDevice poDevice = SkewedTrackSectorDevice.dosToPascalSkew(doDevice);
                         devices.add(new TrackSectorToBlockAdapter(poDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS));
                     }
@@ -146,6 +147,24 @@ public interface FileStoreFactory {
             private TrackSectorDeviceBuilder(Context ctx) {
                 this.ctx = ctx;
             }
+            /// An alternate mechanism to test disks. It builds the device and lets the callback function perform the check.
+            /// There is no additional mapping, that is expected to occur with the callback. Note that the device has
+            /// a hint regarding sector ordering.
+            public TrackSectorDeviceBuilder check13Sector(Consumer<TrackSectorDevice> check) {
+                if (ctx.nibbleTrackReaderWriter != null) {
+                    Optional<TrackSectorDevice> nibble = TrackSectorNibbleDevice.identify(ctx.nibbleTrackReaderWriter);
+                    nibble.ifPresent(device -> {
+                        if (device.getGeometry().sectorsPerTrack() == 13) {
+                            check.accept(device);
+                        }
+                    });
+                }
+                else if (ctx.source.isApproxEQ(DiskConstants.APPLE_13SECTOR_DISK)) {
+                    TrackSectorDevice device = new OrderedTrackSectorDevice(ctx.source, SectorOrder.NIBBLE);
+                    check.accept(device);
+                }
+                return this;
+            }
             public TrackSectorDeviceBuilder include13Sector() {
                 if (ctx.nibbleTrackReaderWriter != null) {
                     Optional<TrackSectorDevice> nibble = TrackSectorNibbleDevice.identify(ctx.nibbleTrackReaderWriter);
@@ -156,7 +175,36 @@ public interface FileStoreFactory {
                     });
                 }
                 else if (ctx.source.isApproxEQ(DiskConstants.APPLE_13SECTOR_DISK)) {
-                    devices.add(new DosOrderedTrackSectorDevice(ctx.source));
+                    devices.add(new OrderedTrackSectorDevice(ctx.source, SectorOrder.NIBBLE));
+                }
+                return this;
+            }
+            /// An alternate mechanism to test disks. It builds the device and lets the callback function perform the check.
+            /// There is no additional mapping, that is expected to occur with the callback. Note that the device has
+            /// a hint regarding sector ordering, if applicable. (`*.dsk` image are _usually_ DOS ordered but are also
+            /// sometimes ProDOS ordered.)
+            public TrackSectorDeviceBuilder check16Sector(Consumer<TrackSectorDevice> check) {
+                if (ctx.nibbleTrackReaderWriter != null) {
+                    Optional<TrackSectorDevice> nibble = TrackSectorNibbleDevice.identify(ctx.nibbleTrackReaderWriter);
+                    nibble.ifPresent(device -> {
+                        if (device.getGeometry().sectorsPerTrack() == 16) {
+                            check.accept(device);
+                        }
+                    });
+                }
+                else if (ctx.source.isApproxBetween(DiskConstants.APPLE_140KB_DISK, DiskConstants.APPLE_160KB_DISK)) {
+                    if (ctx.source.is(Hint.DOS_SECTOR_ORDER) || ctx.source.extensionLike("do")) {
+                        TrackSectorDevice device = new OrderedTrackSectorDevice(ctx.source, SectorOrder.DOS);
+                        check.accept(device);
+                    } else if (ctx.source.is(Hint.PRODOS_BLOCK_ORDER) || ctx.source.extensionLike("po")) {
+                        TrackSectorDevice device = new OrderedTrackSectorDevice(ctx.source, SectorOrder.PRODOS);
+                        check.accept(device);
+                    } else {
+                        TrackSectorDevice doDevice = new OrderedTrackSectorDevice(ctx.source, SectorOrder.DOS);
+                        check.accept(doDevice);
+                        TrackSectorDevice poDevice = new OrderedTrackSectorDevice(ctx.source, SectorOrder.PRODOS);
+                        check.accept(poDevice);
+                    }
                 }
                 return this;
             }
@@ -179,14 +227,14 @@ public interface FileStoreFactory {
                     TrackSectorDevice doDevice = null;
                     TrackSectorDevice poDevice = null;
                     if (ctx.source.is(Hint.DOS_SECTOR_ORDER) || ctx.source.extensionLike("do")) {
-                        doDevice = new DosOrderedTrackSectorDevice(ctx.source, Hint.DOS_SECTOR_ORDER);
+                        doDevice = new OrderedTrackSectorDevice(ctx.source, SectorOrder.DOS);
                     }
                     else if (ctx.source.is(Hint.PRODOS_BLOCK_ORDER) || ctx.source.extensionLike("po")) {
                         BlockDevice blockDevice = new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE);
                         poDevice = new BlockToTrackSectorAdapter(blockDevice, new ProdosBlockToTrackSectorAdapterStrategy());
                     }
                     else {
-                        doDevice = new DosOrderedTrackSectorDevice(ctx.source, Hint.DOS_SECTOR_ORDER);
+                        doDevice = new OrderedTrackSectorDevice(ctx.source, SectorOrder.DOS);
                         BlockDevice blockDevice = new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE);
                         poDevice = new BlockToTrackSectorAdapter(blockDevice, new ProdosBlockToTrackSectorAdapterStrategy());
                     }

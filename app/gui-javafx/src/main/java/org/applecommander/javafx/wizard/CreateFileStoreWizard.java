@@ -28,12 +28,16 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import org.applecommander.archive.zip.ZipFileStoreFactory;
-import org.applecommander.device.*;
+import org.applecommander.device.OrderedTrackSectorDevice;
+import org.applecommander.device.SectorOrder;
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.device.TrackSectorNibbleDevice;
 import org.applecommander.exception.FileStoreNotRecognizedException;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.image.NibbleImage;
 import org.applecommander.javafx.FXControls;
 import org.applecommander.os.gamedos.GamedosFileStoreFactory;
+import org.applecommander.os.rdos.RDOSFileStoreFactory;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 
@@ -77,7 +81,12 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
                 }
                 case SECTOR -> {
                     TrackSectorDevice device = createTrackSectorDevice(source);
-                    return List.of(GamedosFileStoreFactory.create(device));
+                    if (fileStoreSelection == FileStoreSelection.GAMEDOS) {
+                        return List.of(GamedosFileStoreFactory.create(device));
+                    }
+                    else if (fileStoreSelection == FileStoreSelection.RDOS) {
+                        return List.of(RDOSFileStoreFactory.create(device));
+                    }
                 }
             }
             throw new FileStoreNotRecognizedException("bug! file store %s not recognized", fileStoreSelection);
@@ -96,11 +105,9 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
     public TrackSectorDevice createTrackSectorDevice(Source source) {
         return switch (sectorOrderSelectionProperty.get()) {
             case NOT_APPLICABLE -> throw new UnsupportedOperationException();
-            case DOS -> new DosOrderedTrackSectorDevice(source);
-            case PRODOS -> new BlockToTrackSectorAdapter(new ProdosOrderedBlockDevice(source,
-                    BlockDevice.STANDARD_BLOCK_SIZE), new ProdosBlockToTrackSectorAdapterStrategy());
-            case NIBBLE -> SkewedTrackSectorDevice.physicalToDosSkew(
-                    TrackSectorNibbleDevice.create(new NibbleImage(source), 16));
+            case DOS -> new OrderedTrackSectorDevice(source, SectorOrder.DOS);
+            case PRODOS -> new OrderedTrackSectorDevice(source, SectorOrder.PRODOS);
+            case NIBBLE -> TrackSectorNibbleDevice.create(new NibbleImage(source), 16);
         };
     }
 
@@ -165,7 +172,7 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
     public WizardPage nextPage() {
         return switch (currentPageProperty().get()) {
             case FILESTORE -> {
-                if (fileStoreSelectionProperty.getValue() == FileStoreSelection.GAMEDOS) {
+                if (fileStoreSelectionProperty.getValue().getDeviceType() == DeviceType.SECTOR) {
                     imageSizeSelectionProperty.set(ImageSizeSelection.DISK_140K);
                     yield WizardPage.SECTOR;
                 }
@@ -202,6 +209,7 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
     /// Filestore selection options.
     public enum FileStoreSelection {
         GAMEDOS("GameDOS", DeviceType.SECTOR),
+        RDOS("RDOS 3.3", DeviceType.SECTOR),
         ZIPFILE("Zip", "zip");
 
         private final String text;
