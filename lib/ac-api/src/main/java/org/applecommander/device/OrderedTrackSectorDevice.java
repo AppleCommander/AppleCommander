@@ -94,10 +94,11 @@ public class OrderedTrackSectorDevice implements TrackSectorDevice {
     @Override
     public List<InformationGroup> information() {
         return InformationGroup.builder("Ordered Track/Sector Device")
-            .item("Order").value(sectorOrder.name())
-            .item("Physical Sector Skew").value(Arrays.stream(sectorOrder.physicalSectorOrder)
+            .item("Sector Order").value(sectorOrder.name())
+            .item("Sector Organization").value(Arrays.stream(sectorOrder.physicalSectorOrder)
                         .mapToObj(String::valueOf)
                         .collect(Collectors.joining(",")))
-            .get(geometry, source);
+            .merge(geometry)
+            .get(source);
     }
 }

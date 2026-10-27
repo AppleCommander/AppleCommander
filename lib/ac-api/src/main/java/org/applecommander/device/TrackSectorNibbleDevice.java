@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.applecommander.device.nibble.NibbleUtil.decodeOddEven;
 import static org.applecommander.device.nibble.NibbleUtil.encodeOddEven;
@@ -169,7 +170,10 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
             .item("Device").value("Nibble Device")
             .item("Geometry").value("%d tracks, %d sectors", geometry.tracksOnDisk(),
                 geometry.sectorsPerTrack())
-            .item("Total Sectors").value(geometry.sectorsPerDisk());
+            .item("Total Sectors").value(geometry.sectorsPerDisk())
+            .item("Sector Ordering").value(getSectorOrder().name())
+            .item("Sector Layout").value(Arrays.stream(getSectorOrder().physicalSectorOrder)
+                    .mapToObj(String::valueOf).collect(Collectors.joining(",")));
         if (diskMarkers.length == 1) {
             builder.item("Prolog/Epilog Bytes").value("%s/%s (%d sectors on track)",
                 formatBytes(diskMarkers[0].addressProlog()), formatBytes(diskMarkers[0].dataProlog()),
@@ -182,7 +186,7 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
                     diskMarkers[t].sectorsOnTrack());
             }
         }
-        return builder.get(geometry);
+        return builder.merge(geometry).get();
     }
     private String formatBytes(int... bytes) {
         StringBuilder sb = new StringBuilder();

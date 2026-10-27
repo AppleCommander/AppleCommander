@@ -75,6 +75,7 @@ public class ProdosOrderedBlockDevice implements BlockDevice {
     @Override
     public List<InformationGroup> information() {
         return InformationGroup.builder("ProDOS Ordered Block Device")
-            .get(geometry, source);
+            .merge(geometry)
+            .get(source);
     }
 }

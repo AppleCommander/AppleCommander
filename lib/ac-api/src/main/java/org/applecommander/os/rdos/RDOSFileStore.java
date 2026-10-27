@@ -96,7 +96,7 @@ public class RDOSFileStore implements FileStore, RDOSConstants {
 
     @Override
     public <T> Optional<T> get(Class<T> iface) {
-        return Container.get(iface, device);
+        return Container.get(iface, device, usage);
     }
 
     @Override

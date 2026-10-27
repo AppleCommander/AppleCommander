@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This is a simple group of informational items for various user interfaces.
@@ -42,6 +43,12 @@ public record InformationGroup(String title, List<InformationItem> items) {
         }
         public ItemBuilder item(String fmt, Object... args) {
             return new ItemBuilder(this, fmt, args);
+        }
+        public Builder merge(InformationProvider provider) {
+            Objects.requireNonNull(provider);
+            assert provider.information().size() == 1;
+            items.addAll(provider.information().getFirst().items());
+            return this;
         }
         public List<InformationGroup> get(InformationProvider... providers) {
             List<InformationGroup> result = new ArrayList<>();

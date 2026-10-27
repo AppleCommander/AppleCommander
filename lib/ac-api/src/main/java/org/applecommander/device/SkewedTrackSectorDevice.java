@@ -183,7 +183,12 @@ public class SkewedTrackSectorDevice implements TrackSectorDevice {
     @Override
     public List<InformationGroup> information() {
         return InformationGroup.builder("Track/Sector Device with Skew")
-            .item("Sector Skew").value(Arrays.stream(sectorSkew).mapToObj(String::valueOf).collect(Collectors.joining(",")))
-            .get(geometry, device);
+            .item("Sector Ordering").value(sectorOrder.name())
+            .item("Sector Layout").value(Arrays.stream(sectorOrder.physicalSectorOrder)
+                        .mapToObj(String::valueOf).collect(Collectors.joining(",")))
+            .item("Sector Skew").value(Arrays.stream(sectorSkew).mapToObj(String::valueOf)
+                        .collect(Collectors.joining(",")))
+            .merge(geometry)
+            .get(device);
     }
 }

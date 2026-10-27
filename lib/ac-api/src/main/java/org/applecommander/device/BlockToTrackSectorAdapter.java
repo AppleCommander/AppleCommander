@@ -91,6 +91,7 @@ public class BlockToTrackSectorAdapter implements TrackSectorDevice {
     @Override
     public List<InformationGroup> information() {
         return InformationGroup.builder("Block-to-Track/Sector Device")
-            .get(geometry, device);
+            .merge(geometry)
+            .get(device);
     }
 }
