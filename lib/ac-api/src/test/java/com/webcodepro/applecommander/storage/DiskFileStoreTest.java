@@ -26,7 +26,6 @@ import org.applecommander.filestore.FileStoreTestHelper;
 import org.applecommander.source.Source;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  */
 public class DiskFileStoreTest {
     @Test
-    public void testLoadDos33() throws IOException, DiskException {
+    public void testLoadDos33() throws DiskException {
         List<FileStore> fileStores = showDirectory("DOS 3.3.po");
         assertApplesoftFile(fileStores.getFirst(), "HELLO");
         assertIntegerFile(fileStores.getFirst(), "ANIMALS");
@@ -48,19 +47,19 @@ public class DiskFileStoreTest {
     }
 
     @Test
-    public void testLoadMaster() throws IOException, DiskException {
+    public void testLoadMaster() throws DiskException {
         List<FileStore> fileStores = showDirectory("MASTER.DSK");
         assertCanReadFiles(fileStores);
     }
 
     @Test
-    public void testLoadGalacticAttack1() throws IOException, DiskException {
+    public void testLoadGalacticAttack1() throws DiskException {
         List<FileStore> fileStores = showDirectory("galatt.dsk");
         assertCanReadFiles(fileStores);
     }
 
     @Test
-    public void testLoadProdos() throws IOException, DiskException {
+    public void testLoadProdos() throws DiskException {
         List<FileStore> fileStores = showDirectory("Prodos.dsk");
         assertApplesoftFile(fileStores.getFirst(), "COPY.ME");
         assertBinaryFile(fileStores.getFirst(), "SETTINGS");
@@ -69,25 +68,25 @@ public class DiskFileStoreTest {
     }
 
     @Test
-    public void testLoadMarbleMadness() throws IOException, DiskException {
+    public void testLoadMarbleMadness() throws DiskException {
         List<FileStore> fileStores = showDirectory("Marble Madness (1985)(Electronic Arts).2mg");
         assertCanReadFiles(fileStores);
     }
 
     @Test
-    public void testRdosBoot() throws IOException, DiskException {
+    public void testRdosBoot() throws DiskException {
         List<FileStore> fileStores = showDirectory("RDOSboot.dsk");
         assertCanReadFiles(fileStores);
     }
 
     @Test
-    public void testSsiSave() throws IOException, DiskException {
+    public void testSsiSave() throws DiskException {
         List<FileStore> fileStores = showDirectory("SSIsave.dsk");
         assertCanReadFiles(fileStores);
     }
 
     @Test
-    public void testPhanta31() throws IOException, DiskException {
+    public void testPhanta31() throws DiskException {
         List<FileStore> fileStores = showDirectory("PHANTA31.DSK");
         assertApplesoftFile(fileStores.getFirst(), "PHANTASIE III");
         assertBinaryFile(fileStores.getFirst(), "TWN31");
@@ -97,13 +96,13 @@ public class DiskFileStoreTest {
     }
 
     @Test
-    public void testPhanta32() throws IOException, DiskException {
+    public void testPhanta32() throws DiskException {
         List<FileStore> fileStores = showDirectory("PHANTA32.DSK");
         assertCanReadFiles(fileStores);
     }
 
     @Test
-    public void testPhan2d1() throws IOException, DiskException {
+    public void testPhan2d1() throws DiskException {
         List<FileStore> fileStores = showDirectory("phan2d1.dsk");
         assertApplesoftFile(fileStores.getFirst(), "PHANTASIE II");
         assertBinaryFile(fileStores.getFirst(), "TWN21");
@@ -113,44 +112,44 @@ public class DiskFileStoreTest {
     }
 
     @Test
-    public void testPhan2d2() throws IOException, DiskException {
+    public void testPhan2d2() throws DiskException {
         List<FileStore> fileStores = showDirectory("phan2d2.dsk");
         assertCanReadFiles(fileStores);
     }
 
     @Test
-    public void testPhantasie1() throws IOException, DiskException {
+    public void testPhantasie1() throws DiskException {
         List<FileStore> fileStores = showDirectory("Phantasie1.dsk");
         assertCanReadFiles(fileStores);
     }
 
     @Test
-    public void testPhantasie2() throws IOException, DiskException {
+    public void testPhantasie2() throws DiskException {
         List<FileStore> fileStores = showDirectory("Phantasie2.dsk");
         assertCanReadFiles(fileStores);
     }
 
     @Test
-    public void testCavernsOfFreitag() throws IOException, DiskException {
+    public void testCavernsOfFreitag() throws DiskException {
         List<FileStore> fileStores = showDirectory("CavernsOfFreitag.dsk");
         assertGraphicsFile(fileStores.getFirst(), "TITLE.PIC");
         assertCanReadFiles(fileStores);
     }
 
     @Test
-    public void testUniDosD3110() throws IOException, DiskException {
+    public void testUniDosD3110() throws DiskException {
         List<FileStore> fileStores = showDirectory("D3110.dsk");
         assertCanReadFiles(fileStores);
     }
 
     @Test
-    public void testUniDosD3151() throws IOException, DiskException {
+    public void testUniDosD3151() throws DiskException {
         List<FileStore> fileStores = showDirectory("D3151.dsk");
         assertCanReadFiles(fileStores);
     }
 
     @Test
-    public void testLoadDos33SystemMasterWoz1() throws IOException, DiskException {
+    public void testLoadDos33SystemMasterWoz1() throws DiskException {
         List<FileStore> fileStores = showDirectory("DOS 3.3 System Master.woz1");
         assertApplesoftFile(fileStores.getFirst(), "HELLO");
         assertIntegerFile(fileStores.getFirst(), "COPY");
@@ -160,7 +159,7 @@ public class DiskFileStoreTest {
     }
 
     @Test
-    public void testLoadDos33SystemMasterWoz2() throws IOException, DiskException {
+    public void testLoadDos33SystemMasterWoz2() throws DiskException {
         List<FileStore> fileStores = showDirectory("DOS 3.3 System Master.woz2");
         assertApplesoftFile(fileStores.getFirst(), "HELLO");
         assertIntegerFile(fileStores.getFirst(), "COPY");
@@ -170,7 +169,7 @@ public class DiskFileStoreTest {
     }
 
     @Test
-    public void testLoadDos32SystemMasterWoz() throws IOException, DiskException {
+    public void testLoadDos32SystemMasterWoz() throws DiskException {
         List<FileStore> fileStores = showDirectory("DOS 3.2 System Master.woz");
         assertIntegerFile(fileStores.getFirst(), "HELLO");
         assertBinaryFile(fileStores.getFirst(), "UPDATE 3.2");
@@ -179,7 +178,7 @@ public class DiskFileStoreTest {
     }
 
     @Test
-    public void testLoadDos32SystemMasterNib() throws IOException, DiskException {
+    public void testLoadDos32SystemMasterNib() throws DiskException {
         List<FileStore> fileStores = showDirectory("original321sysmaspls.nib");
         assertApplesoftFile(fileStores.getFirst(), "HELLO");
         assertBinaryFile(fileStores.getFirst(), "UPDATE 3.2.1");
@@ -189,38 +188,44 @@ public class DiskFileStoreTest {
     }
 
     @Test
-    public void testLoadNakedosSuperMonDisk() throws DiskException, IOException {
+    public void testLoadNakedosSuperMonDisk() throws DiskException {
         List<FileStore> fileStores = showDirectory("Super-Mon-dev.dsk");
         assertCanReadFiles(fileStores);
     }
 
     @Test
-    public void testLoadGutenbergDisk() throws DiskException, IOException {
+    public void testLoadGutenbergDisk() throws DiskException {
         List<FileStore> fileStores = showDirectory("Gutenberg_side1.DSK");
         assertCanReadFiles(fileStores);
     }
 
     @Test
-    public void testLoad3132Disk() throws DiskException, IOException {
+    public void testLoad3132Disk() throws DiskException {
         List<FileStore> fileStores = showDirectory("3132.DSK.gz");
         assertCanReadFiles(fileStores);
     }
 
     @Test
-    public void testCPMV233Disk() throws DiskException, IOException {
+    public void testCPMV233Disk() throws DiskException {
         List<FileStore> fileStores = showDirectory("CPMV233.DSK");
         assertCanReadFiles(fileStores);
     }
 
     @Test
-    public void testCPAM51BDisk() throws DiskException, IOException {
+    public void testCPAM51BDisk() throws DiskException {
         List<FileStore> fileStores = showDirectory("CPAM51B.dsk");
         assertCanReadFiles(fileStores);
     }
 
     @Test
-    public void testOriginal32SystemMasterStd() throws DiskException, IOException {
+    public void testOriginal32SystemMasterStd() throws DiskException {
         List<FileStore> fileStores = showDirectory("original32sysmasstd.d13");
+        assertCanReadFiles(fileStores);
+    }
+
+    @Test
+    public void testGameDOSExample() throws DiskException {
+        List<FileStore> fileStores = showDirectory("gamedos-example.dsk");
         assertCanReadFiles(fileStores);
     }
 

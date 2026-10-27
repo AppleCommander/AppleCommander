@@ -30,13 +30,14 @@ import org.applecommander.usage.DiskUsage.UsageType;
 import org.applecommander.usage.SectorUsage;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public abstract class FileStoreTestHelper {
     public static List<FileStore> showDirectory(Source source) {
         FileStoreFactory.Context ctx = FileStores.inspect(source);
 
-        // HACK - Let's TOSS OUT the older interfaces, as they get replaced.
+        // HACK - Let's TOSS OUT the older interfaces as they get replaced.
         ctx.fileStores.removeIf(fileStore -> fileStore.get(RdosFormatDisk.class).isPresent());
 
         if (ctx.fileStores.isEmpty()) {
@@ -91,27 +92,53 @@ public abstract class FileStoreTestHelper {
     }
 
     public static void showDiskUsage(DiskUsage usage) {
+        Map<UsageType,String> codes = Map.of(
+                UsageType.FREE, ".",
+                UsageType.USED, "U",
+                UsageType.BOOT, "0",
+                UsageType.BITMAP, "B",
+                UsageType.SYSTEM, "S",
+                UsageType.DIRECTORY, "D",
+                UsageType.FILE, "F"
+        );
         switch (usage) {
             case BlockUsage blockUsage -> {
                 System.out.printf("--- BLOCK USAGE 0 TO %d ---\n", blockUsage.getTotal()-1);
                 for (int block=0; block<blockUsage.getTotal(); block++) {
                     if (block > 0 && block % 80 == 0) System.out.println();
-                    System.out.print(blockUsage.getUsage(block) == UsageType.FREE ? "." : "U");
+                    System.out.print(codes.getOrDefault(blockUsage.getUsage(block), "?"));
                 }
                 System.out.println();
             }
             case SectorUsage sectorUsage -> {
-                System.out.printf("---> TRACK USAGE 0 TO %d --->\n", sectorUsage.getTracksOnDisk()-1);
-                System.out.printf("v--- SECTOR USAGE 0 TO %d ---v\n", sectorUsage.getSectorsPerTrack()-1);
-                for (int s = sectorUsage.getSectorsPerTrack()-1; s>=0; s--) {
+                for (int i = 0 ; i < 3; i++) {
+                    System.out.print(switch (i) {
+                        case 0 ->  "TRK | ";
+                        case 1 ->  "    | ";
+                        default -> "----+-";
+                    });
+                    for (int t = 0; t< sectorUsage.getTracksOnDisk(); t++) {
+                        String trk = String.format("%02X", t);
+                        switch (i) {
+                            case 0 -> System.out.printf("%c", trk.charAt(0));
+                            case 1 -> System.out.printf("%c", trk.charAt(1));
+                            default -> System.out.print("-");
+                        }
+                    }
+                    System.out.println();
+                }
+                final String sectorTitle = "   SECTORS";
+                for (int s = 0; s<sectorUsage.getSectorsPerTrack(); s++) {
+                    char ch = s < sectorTitle.length() ? sectorTitle.charAt(s) : ' ';
+                    System.out.printf("%c %02X| ", ch, s);
                     for (int t = 0; t<sectorUsage.getTracksOnDisk(); t++) {
-                        System.out.print(sectorUsage.getUsage(t,s) == UsageType.FREE ? "." : "U");
+                        System.out.print(codes.getOrDefault(sectorUsage.getUsage(t,s), "?"));
                     }
                     System.out.println();
                 }
             }
             default -> throw new RuntimeException("Unknown disk usage: " + usage);
         }
-        System.out.println("U = used, . = free");
+        System.out.println(codes);
     }
 }

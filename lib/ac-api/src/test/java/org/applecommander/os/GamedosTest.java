@@ -116,7 +116,7 @@ public class GamedosTest {
     }
 
     public GamedosFileEntry createFile(GamedosDirectory directory, String fileName, String fileType, byte[] dataFork) {
-        GamedosFileEntry fileEntry = (GamedosFileEntry) directory.createFile(fileName);
+        GamedosFileEntry fileEntry = directory.createFile(fileName);
         assertNotNull(fileEntry);
         fileEntry.setFiletype(fileType);
         fileEntry.setDataFork(DataBuffer.wrap(dataFork));
