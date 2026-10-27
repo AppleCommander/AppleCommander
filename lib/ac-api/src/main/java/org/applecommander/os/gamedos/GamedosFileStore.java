@@ -43,39 +43,41 @@ public class GamedosFileStore implements FileStore, GamedosConstants {
     public GamedosFileStore(TrackSectorDevice device) {
         this.device = device.request(SectorOrder.DOS);
         this.rootDirectory = new GamedosDirectory(this);
-        this.usage = new SectorUsage(device.getGeometry(), (track,sector) -> {
-            if (track == 0 && sector == 0) {
-                return UsageType.BOOT;
-            }
-            else if (track == 0 && sector < DIRECTORY_SECTOR) {
-                return UsageType.SYSTEM;
-            }
-            else if (track == 0) {
-                return UsageType.DIRECTORY;
-            }
-            else {
-                for (FileEntry file : getRootDirectory().getFiles()) {
-                    GamedosFileEntry entry = (GamedosFileEntry) file;
-                    int n = entry.getSectorCount();
-                    int t = entry.getFirstTrack();
-                    int s = entry.getFirstSector();
-                    while (n > 0) {
-                        if (t == track && s == sector) {
-                            return UsageType.FILE;
-                        }
-                        n--;
-                        s++;
-                        if (s >= device.getGeometry().sectorsPerTrack()) {
-                            s = 0;
-                            t++;
-                        }
-                        // Went right past it!
-                        if (track < t) break;
+        this.usage = new SectorUsage(device.getGeometry(), this::usage);
+    }
+
+    public UsageType usage(int track, int sector) {
+        if (track == 0 && sector == 0) {
+            return UsageType.BOOT;
+        }
+        else if (track == 0 && sector < DIRECTORY_SECTOR) {
+            return UsageType.SYSTEM;
+        }
+        else if (track == 0) {
+            return UsageType.DIRECTORY;
+        }
+        else {
+            for (FileEntry file : getRootDirectory().getFiles()) {
+                GamedosFileEntry entry = (GamedosFileEntry) file;
+                int n = entry.getSectorCount();
+                int t = entry.getFirstTrack();
+                int s = entry.getFirstSector();
+                while (n > 0) {
+                    if (t == track && s == sector) {
+                        return UsageType.FILE;
                     }
+                    n--;
+                    s++;
+                    if (s >= device.getGeometry().sectorsPerTrack()) {
+                        s = 0;
+                        t++;
+                    }
+                    // Went right past it!
+                    if (track < t) break;
                 }
             }
-            return UsageType.FREE;
-        });
+        }
+        return UsageType.FREE;
     }
 
     @Override
