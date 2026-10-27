@@ -21,9 +21,12 @@ package org.applecommander.os.rdos;
 
 import org.applecommander.capability.Capability;
 import org.applecommander.device.BlockDevice;
+import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.ui.DisplayColumn;
 import org.applecommander.ui.DisplayMode;
+import org.applecommander.usage.BlockUsage;
+import org.applecommander.usage.DiskUsage.UsageType;
 import org.applecommander.util.Container;
 import org.applecommander.util.InformationGroup;
 
@@ -35,12 +38,35 @@ public class RDOSFileStore implements FileStore, RDOSConstants {
     private final BlockDevice device;
     private final RDOSVersionAdapter adapter;
     private final RDOSDirectory rootDirectory;
+    private final BlockUsage usage;
 
     public RDOSFileStore(BlockDevice device, RDOSVersionAdapter adapter) {
         Objects.requireNonNull(device);
         this.device = device;
         this.adapter = adapter;
         this.rootDirectory = new RDOSDirectory(this);
+        this.usage = new BlockUsage(device.getGeometry(), this::usage);
+    }
+
+    public UsageType usage(int blockNumber) {
+        if (blockNumber == 0) {
+            return UsageType.BOOT;
+        }
+        else if (blockNumber >= adapter.firstDirectoryBlock && blockNumber <= adapter.lastDirectoryBlock) {
+            return UsageType.DIRECTORY;
+        }
+        else if (blockNumber <= adapter.lastSystemBlock) {
+            return UsageType.SYSTEM;
+        }
+        else {
+            for (FileEntry fileEntry : getRootDirectory().getFiles()) {
+                RDOSFileEntry entry = (RDOSFileEntry) fileEntry;
+                if (blockNumber >= entry.getFirstBlock() && blockNumber <= entry.getFirstBlock() + entry.getBlocks() - 1) {
+                    return UsageType.FILE;
+                }
+            }
+        }
+        return UsageType.FREE;
     }
 
     public RDOSVersionAdapter getAdapter() {
