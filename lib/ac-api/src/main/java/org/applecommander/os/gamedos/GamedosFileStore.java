@@ -20,6 +20,7 @@
 package org.applecommander.os.gamedos;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.device.SectorOrder;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
@@ -40,7 +41,7 @@ public class GamedosFileStore implements FileStore, GamedosConstants {
     private final SectorUsage usage;
 
     public GamedosFileStore(TrackSectorDevice device) {
-        this.device = device;
+        this.device = device.request(SectorOrder.DOS);
         this.rootDirectory = new GamedosDirectory(this);
         this.usage = new SectorUsage(device.getGeometry(), (track,sector) -> {
             if (track == 0 && sector == 0) {
