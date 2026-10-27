@@ -23,6 +23,7 @@ import org.applecommander.capability.Capability;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.exception.DirectoryFullException;
 import org.applecommander.exception.FileExistsException;
+import org.applecommander.exception.UnableToDeleteFileException;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.WritableDirectory;
@@ -129,6 +130,10 @@ public class RDOSDirectory implements WritableDirectory, RDOSConstants {
     @Override
     public void deleteFile(FileEntry fileEntry) {
         RDOSFileEntry file = (RDOSFileEntry) fileEntry;
+        // We cannot delete that first file since it's the first two tracks!
+        if (file.getDirectoryBlock() == getFileStore().getAdapter().firstDirectoryBlock && file.getDirectoryOffset() == 0) {
+            throw new UnableToDeleteFileException("File '%s' is the operating system; cannot delete it", file.getName());
+        }
         // Set first character to $80 and change the type to $A0 (space).
         file.modifyEntry(data -> {
             data.putByte(NAME_OFFSET, 0x80);
