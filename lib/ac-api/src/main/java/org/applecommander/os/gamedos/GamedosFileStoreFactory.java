@@ -23,7 +23,6 @@ import org.applecommander.device.SectorOrder;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.FileStoreFactory;
 import org.applecommander.filestore.FileStoreOrganization;
-import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 
 import java.io.IOException;
@@ -48,9 +47,8 @@ public class GamedosFileStoreFactory implements FileStoreFactory,GamedosConstant
     @Override
     public void inspect(Context ctx) {
         ctx.trackSectorDevice()
-                .include16Sector(Hint.DOS_SECTOR_ORDER)
-                .get()
-                .forEach(device -> {
+                .check16Sector(device -> {
+                    device = device.request(SectorOrder.DOS);
                     if (check(device)) {
                         ctx.fileStores.add(new GamedosFileStore(device));
                     }

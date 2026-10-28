@@ -128,19 +128,6 @@ public interface FileStoreFactory {
                 }
                 return this;
             }
-            public BlockDeviceBuilder include800K() {
-                if (ctx.source.isApproxEQ(DiskConstants.APPLE_800KB_DISK)) {
-                    devices.add(new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE));
-                }
-                return this;
-            }
-            public BlockDeviceBuilder includeHDV() {
-                // Anything not a floppy is included -- but if we have a device, assume it was picked up elsewhere...
-                if (ctx.source.getSize() > DiskConstants.APPLE_140KB_NIBBLE_DISK && devices.isEmpty()) {
-                    devices.add(new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE));
-                }
-                return this;
-            }
             public List<BlockDevice> get() {
                 return devices;
             }
@@ -151,7 +138,6 @@ public interface FileStoreFactory {
         }
         public static class TrackSectorDeviceBuilder {
             private final Context ctx;
-            private final List<TrackSectorDevice> devices = new ArrayList<>();
             private TrackSectorDeviceBuilder(Context ctx) {
                 this.ctx = ctx;
             }
@@ -201,60 +187,6 @@ public interface FileStoreFactory {
                     }
                 }
                 return this;
-            }
-            public TrackSectorDeviceBuilder include16Sector(Hint hint) {
-                assert hint == Hint.DOS_SECTOR_ORDER || hint == Hint.NIBBLE_SECTOR_ORDER;
-                if (ctx.nibbleTrackReaderWriter != null) {
-                    Optional<TrackSectorDevice> nibble = TrackSectorNibbleDevice.identify(ctx.nibbleTrackReaderWriter);
-                    nibble.ifPresent(device -> {
-                        if (device.getGeometry().sectorsPerTrack() == 16) {
-                            TrackSectorDevice converted = switch (hint) {
-                                case DOS_SECTOR_ORDER -> SkewedTrackSectorDevice.physicalToDosSkew(nibble.get());
-                                case NIBBLE_SECTOR_ORDER -> nibble.get();
-                                default -> throw new RuntimeException("wrong hint type: " + hint);
-                            };
-                            devices.add(converted);
-                        }
-                    });
-                }
-                else if (ctx.source.isApproxBetween(DiskConstants.APPLE_140KB_DISK, DiskConstants.APPLE_160KB_DISK)) {
-                    TrackSectorDevice doDevice = null;
-                    TrackSectorDevice poDevice = null;
-                    if (ctx.source.is(Hint.DOS_SECTOR_ORDER) || ctx.source.extensionLike("do")) {
-                        doDevice = new OrderedTrackSectorDevice(ctx.source, SectorOrder.DOS);
-                    }
-                    else if (ctx.source.is(Hint.PRODOS_BLOCK_ORDER) || ctx.source.extensionLike("po")) {
-                        BlockDevice blockDevice = new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE);
-                        poDevice = new BlockToTrackSectorAdapter(blockDevice, new ProdosBlockToTrackSectorAdapterStrategy());
-                    }
-                    else {
-                        doDevice = new OrderedTrackSectorDevice(ctx.source, SectorOrder.DOS);
-                        BlockDevice blockDevice = new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE);
-                        poDevice = new BlockToTrackSectorAdapter(blockDevice, new ProdosBlockToTrackSectorAdapterStrategy());
-                    }
-                    switch (hint) {
-                        case DOS_SECTOR_ORDER -> {
-                            if (doDevice != null) {
-                                devices.add(doDevice);
-                            }
-                            if (poDevice != null) {
-                                devices.add(poDevice);
-                            }
-                        }
-                        case NIBBLE_SECTOR_ORDER -> {
-                            if (doDevice != null) {
-                                devices.add(SkewedTrackSectorDevice.dosToPhysicalSkew(doDevice));
-                            }
-                            if (poDevice != null) {
-                                devices.add(SkewedTrackSectorDevice.dosToPhysicalSkew(poDevice));
-                            }
-                        }
-                    }
-                }
-                return this;
-            }
-            public List<TrackSectorDevice> get() {
-                return devices;
             }
         }
     }
