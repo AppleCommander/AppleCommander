@@ -22,6 +22,7 @@ package org.applecommander.filestore;
 import org.applecommander.source.Source;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
 
@@ -65,5 +66,9 @@ public class FileStores {
             }
         });
         return ctx;
+    }
+
+    public static List<FileStoreFactory> allFactories() {
+        return Collections.unmodifiableList(FACTORIES);
     }
 }
