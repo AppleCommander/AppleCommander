@@ -22,6 +22,7 @@ package org.applecommander.filestore;
 import org.applecommander.source.Source;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
 
@@ -65,5 +66,18 @@ public class FileStores {
             }
         });
         return ctx;
+    }
+
+    public static List<FileStoreFactory> allFactories() {
+        return Collections.unmodifiableList(FACTORIES);
+    }
+
+    public static <F extends FileStoreFactory> F get(Class<F> fileStoreFactoryType) {
+        for (FileStoreFactory factory : FACTORIES) {
+            if (factory.getClass().equals(fileStoreFactoryType)) {
+                return fileStoreFactoryType.cast(factory);
+            }
+        }
+        throw new RuntimeException(String.format("cannot locate factory - '%s'", fileStoreFactoryType.getName()));
     }
 }

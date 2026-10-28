@@ -116,8 +116,8 @@ public class TrackSectorToBlockAdapter implements BlockDevice {
         PRODOS(512),
         CPM(1024);
 
-        final int blockSize;
-        final int sectorsPerBlock;
+        public final int blockSize;
+        public final int sectorsPerBlock;
 
         BlockStyle(int blockSize) {
             assert blockSize % TrackSectorDevice.SECTOR_SIZE == 0;

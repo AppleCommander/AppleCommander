@@ -19,19 +19,11 @@
  */
 package org.applecommander.os;
 
-import com.webcodepro.applecommander.storage.DiskConstants;
-import org.applecommander.device.OrderedTrackSectorDevice;
-import org.applecommander.device.SectorOrder;
-import org.applecommander.device.TrackSectorDevice;
-import org.applecommander.filestore.FileEntry;
-import org.applecommander.filestore.FileStore;
-import org.applecommander.filestore.FileStoreFactory;
-import org.applecommander.filestore.FileStores;
+import org.applecommander.filestore.*;
 import org.applecommander.os.gamedos.GamedosDirectory;
 import org.applecommander.os.gamedos.GamedosFileEntry;
 import org.applecommander.os.gamedos.GamedosFileStore;
 import org.applecommander.os.gamedos.GamedosFileStoreFactory;
-import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
 import org.applecommander.util.DataBuffer;
@@ -79,9 +71,7 @@ public class GamedosTest {
     @Test
     public void testCreateAndWrite() {
         // Create a disk
-        Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "GAMEDOS-TEST").get();
-        TrackSectorDevice device = new OrderedTrackSectorDevice(source, SectorOrder.DOS);
-        GamedosFileStore fileStore = GamedosFileStoreFactory.create(device);
+        GamedosFileStore fileStore = FileStores.get(GamedosFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_DO);
         assertNotNull(fileStore);
 
         // Get the root directory and verify there are no files

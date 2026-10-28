@@ -28,6 +28,7 @@ import org.applecommander.image.WozImage;
 import org.applecommander.source.Source;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -47,7 +48,7 @@ import java.util.function.Consumer;
 /// | Gutenberg | -         | DOS       | -      | -      |
 /// | NakedOS   | -         | Physical  | -      | -      |
 /// | Pascal    | -         | Pascal    | Pascal | Pascal |
-/// | RDOS      | Physical  | DOS       | -      | -      |
+/// | RDOS      | Physical  | Pascal    | -      | -      |
 ///
 /// * 13-sector disks are only track/sector devices. (And RDOS has a unique mapping to 256 byte blocks).
 /// * 16-sector disks have a variety of sector mappings. It can also double as a "standard" 512 byte block,
@@ -58,7 +59,14 @@ import java.util.function.Consumer;
 ///
 /// Note that much of this logic is deferred to the "old" AppleCommander APIs for the time being.
 public interface FileStoreFactory {
+    String getName();
     void inspect(Context ctx);
+    default List<FileStoreOrganization> getFileStoreOrganizations() {
+        return Collections.emptyList();
+    }
+    default FileStore create(FileStoreOrganization fileStoreOrganization) {
+        throw new UnsupportedOperationException();
+    }
 
     class Context {
         public final Source source;
@@ -162,20 +170,6 @@ public interface FileStoreFactory {
                 else if (ctx.source.isApproxEQ(DiskConstants.APPLE_13SECTOR_DISK)) {
                     TrackSectorDevice device = new OrderedTrackSectorDevice(ctx.source, SectorOrder.NIBBLE);
                     check.accept(device);
-                }
-                return this;
-            }
-            public TrackSectorDeviceBuilder include13Sector() {
-                if (ctx.nibbleTrackReaderWriter != null) {
-                    Optional<TrackSectorDevice> nibble = TrackSectorNibbleDevice.identify(ctx.nibbleTrackReaderWriter);
-                    nibble.ifPresent(device -> {
-                        if (device.getGeometry().sectorsPerTrack() == 13) {
-                            devices.add(device);
-                        }
-                    });
-                }
-                else if (ctx.source.isApproxEQ(DiskConstants.APPLE_13SECTOR_DISK)) {
-                    devices.add(new OrderedTrackSectorDevice(ctx.source, SectorOrder.NIBBLE));
                 }
                 return this;
             }

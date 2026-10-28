@@ -36,6 +36,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 
 import java.io.File;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 
 /// This is a simple control builder for JavaFX components. It is intended to include bindings
@@ -56,7 +58,7 @@ public class FXControls {
         pane.setPadding(new Insets(10));
     }
 
-    public Node get() {
+    public Pane get() {
         return pane;
     }
 
@@ -121,16 +123,22 @@ public class FXControls {
     }
 
     /// Add a set of radio buttons with options for all values of the given enumeration.
-    public <E extends Enum<?>> FXControls radioButton(E[] enumerations, Function<E,String> textFn, ObjectProperty<E> property) {
+    @SafeVarargs
+    public final <E> FXControls radioButton(E[] enumerations, Function<E, String> textFn, ObjectProperty<E> property, E... excludes) {
+        final Set<E> exclusions = Set.of(excludes);
         ToggleGroup selection = new ToggleGroup();
         for (E value : enumerations) {
+            if (exclusions.contains(value)) {
+                continue;
+            }
             RadioButton radioButton = new RadioButton(textFn.apply(value));
+            radioButton.setUserData(value);
             radioButton.setToggleGroup(selection);
             property.addListener((_, _, newValue) -> {
-                radioButton.setSelected(newValue.equals(value));
+                radioButton.setSelected(Objects.equals(newValue, value));
             });
             radioButton.addEventHandler(ActionEvent.ACTION, _ -> property.set(value));
-            property.addListener((_, _, newValue) -> radioButton.setSelected(newValue.equals(value)));
+            property.addListener((_, _, newValue) -> radioButton.setSelected(Objects.equals(newValue, value)));
             pane.getChildren().add(radioButton);
         }
         return this;

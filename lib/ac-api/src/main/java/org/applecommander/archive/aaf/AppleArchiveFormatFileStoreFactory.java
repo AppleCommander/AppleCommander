@@ -24,6 +24,11 @@ import org.applecommander.util.DataBuffer;
 
 public class AppleArchiveFormatFileStoreFactory implements FileStoreFactory {
     @Override
+    public String getName() {
+        return "Apple Archive Format (*.aaf)";
+    }
+
+    @Override
     public void inspect(Context ctx) {
         DataBuffer data = ctx.source.readAllBytes();
         if (data.matches(ch -> (Character.isWhitespace(ch) || (ch >= 0x20 && ch <= 0x7f)))) {

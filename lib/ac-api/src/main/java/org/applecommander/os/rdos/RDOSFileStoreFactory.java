@@ -22,11 +22,13 @@ package org.applecommander.os.rdos;
 import com.webcodepro.applecommander.storage.DiskConstants;
 import org.applecommander.device.*;
 import org.applecommander.filestore.FileStoreFactory;
+import org.applecommander.filestore.FileStoreOrganization;
 import org.applecommander.util.DataBuffer;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -34,7 +36,17 @@ import java.util.Set;
 public class RDOSFileStoreFactory implements FileStoreFactory, RDOSConstants {
     /// Simple directory marker to determine sector order
     public static final byte[] CAT_MARKER = "  LEN         -<NAME>-       LENGTH BLK".getBytes();
-    public final static Set<Integer> VALID_FILE_TYPES = Set.of(0xc1 /*A*/, 0xc2 /*B*/, 0xd4 /*T*/, 0xd3 /*S*/);
+    public static final Set<Integer> VALID_FILE_TYPES = Set.of(0xc1 /*A*/, 0xc2 /*B*/, 0xd4 /*T*/, 0xd3 /*S*/);
+    public static final List<FileStoreOrganization> VALID_ORGANIZATIONS = List.of(
+            FileStoreOrganization.DISK_16SECTOR_DO,
+            FileStoreOrganization.DISK_16SECTOR_PO,
+            FileStoreOrganization.DISK_16SECTOR_NIB
+    );
+
+    @Override
+    public String getName() {
+        return "RDOS v3.3";
+    }
 
     @Override
     public void inspect(Context ctx) {
@@ -48,6 +60,44 @@ public class RDOSFileStoreFactory implements FileStoreFactory, RDOSConstants {
                     test(SkewedTrackSectorDevice.truncate16sectorTo13(device.request(SectorOrder.NIBBLE)),
                             RDOSVersionAdapter.RDOS21).ifPresent(ctx.fileStores::add);
                 });
+    }
+
+    @Override
+    public List<FileStoreOrganization> getFileStoreOrganizations() {
+        return VALID_ORGANIZATIONS;
+    }
+
+    @Override
+    public RDOSFileStore create(FileStoreOrganization fileStoreOrganization) {
+        Objects.requireNonNull(fileStoreOrganization);
+        TrackSectorDevice device = fileStoreOrganization.createTrackSectorDevice();
+        BlockDevice blockDevice = new TrackSectorToBlockAdapter(device.request(SectorOrder.PRODOS),
+                TrackSectorToBlockAdapter.BlockStyle.RDOS);
+        // The BIN file is in RDOS block order, so we can copy the blocks directly into the device!
+        try (InputStream inputStream = RDOSFileStore.class.getResourceAsStream("/files/rdos33-template.bin")) {
+            Objects.requireNonNull(inputStream);
+            byte[] disk = inputStream.readAllBytes();
+            blockDevice.writeRange(0, DataBuffer.wrap(disk));
+            RDOSFileStore fileStore = new RDOSFileStore(blockDevice, RDOSVersionAdapter.RDOS33);
+            RDOSFileEntry systemboot = fileStore.getRootDirectory().createFile("SYSTEMBOOT");
+            systemboot.setType("T");
+            systemboot.setAddress(0xb100);
+            // FIXME: Text file has to have high bit set. (Should fit in with the text handling)
+            byte[] systembootContent = """
+                    PR#0:IN#0:TEXT:HOME:&CAT:PRINT:PRINT "WELCOME TO RDOS!"
+                    """.getBytes();
+            for (int i = 0; i < systembootContent.length; i++) {
+                if (systembootContent[i] == '\n') {
+                    systembootContent[i] = '\r';
+                }
+                systembootContent[i] = (byte)(systembootContent[i] | 0x80);
+            }
+            systemboot.setDataFork(DataBuffer.wrap(systembootContent));
+            return fileStore;
+        }
+        catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
     }
 
     public Optional<RDOSFileStore> test(TrackSectorDevice device, RDOSVersionAdapter adapter) {
@@ -101,40 +151,5 @@ public class RDOSFileStoreFactory implements FileStoreFactory, RDOSConstants {
             if (!good) return good;
         }
         return good;
-    }
-
-    public static RDOSFileStore create(TrackSectorDevice device) {
-        Objects.requireNonNull(device);
-        if (device.getGeometry().sectorsPerDisk() != 560) {
-            throw new RuntimeException("RDOS requires a 560 sector disk.");
-        }
-        device.format();
-        BlockDevice blockDevice = new TrackSectorToBlockAdapter(device.request(SectorOrder.PRODOS),
-                                                                TrackSectorToBlockAdapter.BlockStyle.RDOS);
-        // The BIN file is in block order, so we can copy the blocks into the device!
-        try (InputStream inputStream = RDOSFileStore.class.getResourceAsStream("/files/rdos33-template.bin")) {
-            Objects.requireNonNull(inputStream);
-            byte[] disk = inputStream.readAllBytes();
-            blockDevice.writeRange(0, DataBuffer.wrap(disk));
-            RDOSFileStore fileStore = new RDOSFileStore(blockDevice, RDOSVersionAdapter.RDOS33);
-            RDOSFileEntry systemboot = fileStore.getRootDirectory().createFile("SYSTEMBOOT");
-            systemboot.setType("T");
-            systemboot.setAddress(0xb100);
-            // FIXME: Text file has to have high bit set.
-            byte[] systembootContent = """
-                    PR#0:IN#0:TEXT:HOME:&CAT:PRINT:PRINT "WELCOME TO RDOS!"
-                    """.getBytes();
-            for (int i = 0; i < systembootContent.length; i++) {
-                if (systembootContent[i] == '\n') {
-                    systembootContent[i] = '\r';
-                }
-                systembootContent[i] = (byte)(systembootContent[i] | 0x80);
-            }
-            systemboot.setDataFork(DataBuffer.wrap(systembootContent));
-            return fileStore;
-        }
-        catch (IOException ex) {
-            throw new UncheckedIOException(ex);
-        }
     }
 }
