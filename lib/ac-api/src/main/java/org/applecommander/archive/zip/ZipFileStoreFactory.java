@@ -20,20 +20,41 @@
 package org.applecommander.archive.zip;
 
 import org.applecommander.filestore.FileStoreFactory;
+import org.applecommander.filestore.FileStoreOrganization;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
 
+import java.util.List;
+
 public class ZipFileStoreFactory implements FileStoreFactory {
-    private static final int ZIP_SIGNATURE = 0x504b0304;     // "PK.."
+    public static final int ZIP_SIGNATURE = 0x504b0304;     // "PK.."
+    public static final List<FileStoreOrganization> VALID_ORGANIZATIONS = List.of(FileStoreOrganization.ARCHIVE);
+
+    @Override
+    public String getName() {
+        return "Zip Archive (*.zip)";
+    }
 
     @Override
     public void inspect(Context ctx) {
         DataBuffer signature = ctx.source.readBytes(0, 4);
-        if (signature.getIntBE(0) ==  ZIP_SIGNATURE) {
+        if (signature.getIntBE(0) == ZIP_SIGNATURE) {
             ctx.fileStores.add(new ZipFileStore(ctx.source));
         }
     }
 
+    @Override
+    public List<FileStoreOrganization> getFileStoreOrganizations() {
+        return VALID_ORGANIZATIONS;
+    }
+
+    @Override
+    public ZipFileStore create(FileStoreOrganization fileStoreOrganization) {
+        Source source = fileStoreOrganization.createSource("zip");
+        return new ZipFileStore(source);
+    }
+
+    // TODO: - DELETE ME -
     public static ZipFileStore create(Source source) {
         return new ZipFileStore(source);
     }

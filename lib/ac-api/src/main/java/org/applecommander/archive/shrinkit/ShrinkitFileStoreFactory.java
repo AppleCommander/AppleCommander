@@ -27,6 +27,11 @@ import java.util.Arrays;
 
 public class ShrinkitFileStoreFactory implements FileStoreFactory {
     @Override
+    public String getName() {
+        return "ShrinkIt (*.shk, *.sdk)";
+    }
+
+    @Override
     public void inspect(Context ctx) {
         DataBuffer buffer = ctx.source.readBytes(0, 6);
         if (Arrays.equals(ByteConstants.NUFILE_ID, buffer.asBytes())) {

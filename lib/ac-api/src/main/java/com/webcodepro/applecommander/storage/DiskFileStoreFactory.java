@@ -28,6 +28,11 @@ import org.applecommander.filestore.FileStoreFactory;
  */
 public class DiskFileStoreFactory implements FileStoreFactory {
     @Override
+    public String getName() {
+        return "FormattedDisk shim";
+    }
+
+    @Override
     public void inspect(Context ctx) {
         DiskFactory.Context context = Disks.inspect(ctx.source);
         context.disks.forEach(disk -> {

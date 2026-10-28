@@ -23,6 +23,11 @@ import org.applecommander.filestore.FileStoreFactory;
 
 public class BinsciiFileStoreFactory implements FileStoreFactory, BinsciiConstants {
     @Override
+    public String getName() {
+        return "BinSCII (*.bsc)";
+    }
+
+    @Override
     public void inspect(Context ctx) {
         // Verify we have the FiLeStArTfIlEsTaRt (not perfect but good enough)
         if (ctx.source.readAllBytes().scan(SENTINAL.getBytes(), 0).isPresent()) {

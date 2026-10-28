@@ -19,18 +19,32 @@
  */
 package org.applecommander.os.gamedos;
 
+import org.applecommander.device.SectorOrder;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.FileStoreFactory;
+import org.applecommander.filestore.FileStoreOrganization;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 public class GamedosFileStoreFactory implements FileStoreFactory,GamedosConstants {
+    public static final List<FileStoreOrganization> VALID_ORGANIZATIONS = List.of(
+            FileStoreOrganization.DISK_16SECTOR_DO,
+            FileStoreOrganization.DISK_16SECTOR_PO,
+            FileStoreOrganization.DISK_16SECTOR_NIB
+    );
+
+    @Override
+    public String getName() {
+        return "GameDOS v0.8";
+    }
+
     @Override
     public void inspect(Context ctx) {
         ctx.trackSectorDevice()
@@ -41,6 +55,26 @@ public class GamedosFileStoreFactory implements FileStoreFactory,GamedosConstant
                         ctx.fileStores.add(new GamedosFileStore(device));
                     }
                 });
+    }
+
+    @Override
+    public List<FileStoreOrganization> getFileStoreOrganizations() {
+        return VALID_ORGANIZATIONS;
+    }
+
+    @Override
+    public GamedosFileStore create(FileStoreOrganization fileStoreOrganization) {
+        Objects.requireNonNull(fileStoreOrganization);
+        TrackSectorDevice device = fileStoreOrganization.createTrackSectorDevice().request(SectorOrder.DOS);
+        try (InputStream inputStream = GamedosFileStoreFactory.class.getResourceAsStream("/files/gamedos-template.do")) {
+            Objects.requireNonNull(inputStream);
+            byte[] track0 = inputStream.readAllBytes();
+            device.writeRange(0, 0, DataBuffer.wrap(track0));
+            return new GamedosFileStore(device);
+        }
+        catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
     }
 
     public boolean check(TrackSectorDevice device) {
@@ -65,6 +99,7 @@ public class GamedosFileStoreFactory implements FileStoreFactory,GamedosConstant
         return false;
     }
 
+    // TODO - DELETE ME -
     public static GamedosFileStore create(TrackSectorDevice device) {
         Objects.requireNonNull(device);
         if (device.getGeometry().sectorsPerDisk() != 560) {
