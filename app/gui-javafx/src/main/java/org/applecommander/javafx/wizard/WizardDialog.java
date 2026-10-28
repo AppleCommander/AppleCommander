@@ -24,12 +24,12 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
@@ -48,7 +48,7 @@ public abstract class WizardDialog<T extends Enum<?>> {
     private Stage stage;
     private final Stack<T> pageHistory = new Stack<>();
     private final ObjectProperty<T> currentPage = new SimpleObjectProperty<>();
-    private final Map<T,Node> wizardPages = new HashMap<>();
+    private final Map<T,Pane> wizardPages = new HashMap<>();
     private final ObjectProperty<ButtonBar.ButtonData> result = new SimpleObjectProperty<>();
 
     protected WizardDialog() {
@@ -145,8 +145,12 @@ public abstract class WizardDialog<T extends Enum<?>> {
         return result.isEqualTo(ButtonBar.ButtonData.FINISH).get();
     }
 
+    protected Pane getWizardPage(T page) {
+        return wizardPages.get(page);
+    }
+
     public abstract T nextPage();
     public abstract BooleanBinding createNextPageBinding();
     public abstract BooleanBinding completedWizardBinding();
-    public abstract Map<T,Node> createWizardPages();
+    public abstract Map<T,Pane> createWizardPages();
 }

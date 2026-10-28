@@ -22,10 +22,13 @@ package org.applecommander.javafx.wizard;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.FileStoreFactory;
 import org.applecommander.filestore.FileStoreOrganization;
@@ -62,21 +65,8 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
     }
 
     @Override
-    public Map<WizardPage, Node> createWizardPages() {
-        // Auto select if there is only one option; also enables finish page early.
-        fileStoreFactoryProperty.addListener((_, _, newValue) -> {
-            FileStoreFactory factory = fileStoreFactoryProperty.get();
-            if (factory == null) {
-                fileStoreOrganizationProperty.set(null);
-            }
-            else if (factory.getFileStoreOrganizations().size() == 1) {
-                fileStoreOrganizationProperty.set(factory.getFileStoreOrganizations().getFirst());
-            }
-            else if (fileStoreOrganizationProperty.get() != null
-                     && !factory.getFileStoreOrganizations().contains(fileStoreOrganizationProperty.get())) {
-                fileStoreOrganizationProperty.set(null);
-            }
-        });
+    public Map<WizardPage,Pane> createWizardPages() {
+        fileStoreFactoryProperty.addListener(this::fileStoreFactoryListener);
 
         final FileStoreFactory[] factories = FileStores.allFactories().stream()
                 .filter(f -> !f.getFileStoreOrganizations().isEmpty())
@@ -95,7 +85,7 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
         );
     }
 
-    private Node createSummaryPage() {
+    private Pane createSummaryPage() {
         GridPane summaryPage = new GridPane();
         summaryPage.setHgap(10);
         summaryPage.setVgap(10);
@@ -120,12 +110,38 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
         return summaryPage;
     }
 
+    /// Auto select if there is only one option; also enables finish page early.
+    private void fileStoreFactoryListener(ObservableValue<? extends FileStoreFactory> observable, FileStoreFactory oldValue, FileStoreFactory newValue) {
+        FileStoreFactory factory = fileStoreFactoryProperty.get();
+        if (factory == null) {
+            fileStoreOrganizationProperty.set(null);
+        }
+        else if (factory.getFileStoreOrganizations().size() == 1) {
+            fileStoreOrganizationProperty.set(factory.getFileStoreOrganizations().getFirst());
+        }
+        else if (fileStoreOrganizationProperty.get() != null
+                && !factory.getFileStoreOrganizations().contains(fileStoreOrganizationProperty.get())) {
+            fileStoreOrganizationProperty.set(null);
+        }
+    }
+
     public WizardPage nextPage() {
         return switch (currentPageProperty().get()) {
             case FILESTORE -> {
                 FileStoreFactory factory = fileStoreFactoryProperty.get();
                 if (factory.getFileStoreOrganizations().size() == 1) {
                     yield WizardPage.SUMMARY;
+                }
+                // Set up the organization window
+                Pane pane = getWizardPage(WizardPage.ORGANIZATION);
+                for (Node node : pane.getChildren()) {
+                    if (node instanceof RadioButton radio) {
+                        if (radio.getUserData() instanceof FileStoreOrganization organization) {
+                            boolean found = factory.getFileStoreOrganizations().contains(organization);
+                            radio.setVisible(found);
+                            radio.setManaged(found);
+                        }
+                    }
                 }
                 yield WizardPage.ORGANIZATION;
             }

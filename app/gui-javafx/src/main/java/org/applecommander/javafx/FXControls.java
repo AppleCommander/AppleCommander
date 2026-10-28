@@ -58,7 +58,7 @@ public class FXControls {
         pane.setPadding(new Insets(10));
     }
 
-    public Node get() {
+    public Pane get() {
         return pane;
     }
 
@@ -132,6 +132,7 @@ public class FXControls {
                 continue;
             }
             RadioButton radioButton = new RadioButton(textFn.apply(value));
+            radioButton.setUserData(value);
             radioButton.setToggleGroup(selection);
             property.addListener((_, _, newValue) -> {
                 radioButton.setSelected(Objects.equals(newValue, value));
