@@ -71,4 +71,13 @@ public class FileStores {
     public static List<FileStoreFactory> allFactories() {
         return Collections.unmodifiableList(FACTORIES);
     }
+
+    public static <F extends FileStoreFactory> F get(Class<F> fileStoreFactoryType) {
+        for (FileStoreFactory factory : FACTORIES) {
+            if (factory.getClass().equals(fileStoreFactoryType)) {
+                return fileStoreFactoryType.cast(factory);
+            }
+        }
+        throw new RuntimeException(String.format("cannot locate factory - '%s'", fileStoreFactoryType.getName()));
+    }
 }

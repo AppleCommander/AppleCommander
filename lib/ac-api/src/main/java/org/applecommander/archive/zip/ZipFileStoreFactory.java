@@ -53,9 +53,4 @@ public class ZipFileStoreFactory implements FileStoreFactory {
         Source source = fileStoreOrganization.createSource("zip");
         return new ZipFileStore(source);
     }
-
-    // TODO: - DELETE ME -
-    public static ZipFileStore create(Source source) {
-        return new ZipFileStore(source);
-    }
 }

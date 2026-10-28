@@ -19,16 +19,12 @@
  */
 package org.applecommander.os;
 
-import com.webcodepro.applecommander.storage.DiskConstants;
-import org.applecommander.device.OrderedTrackSectorDevice;
-import org.applecommander.device.SectorOrder;
-import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.filestore.FileStoreOrganization;
+import org.applecommander.filestore.FileStores;
 import org.applecommander.os.rdos.RDOSDirectory;
 import org.applecommander.os.rdos.RDOSFileEntry;
 import org.applecommander.os.rdos.RDOSFileStore;
 import org.applecommander.os.rdos.RDOSFileStoreFactory;
-import org.applecommander.source.DataBufferSource;
-import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
 import org.junit.jupiter.api.Test;
 
@@ -38,9 +34,7 @@ public class RDOSTest {
     @Test
     public void testCreateAndWrite() {
         // Create a disk
-        Source source = DataBufferSource.create(DiskConstants.APPLE_140KB_DISK, "RDOS-TEST").get();
-        TrackSectorDevice device = new OrderedTrackSectorDevice(source, SectorOrder.DOS);
-        RDOSFileStore fileStore = RDOSFileStoreFactory.create(device);
+        RDOSFileStore fileStore = FileStores.get(RDOSFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_DO);
         assertNotNull(fileStore);
 
         // Get the root directory and verify there are no files

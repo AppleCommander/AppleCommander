@@ -66,7 +66,7 @@ public class GamedosFileStoreFactory implements FileStoreFactory,GamedosConstant
     public GamedosFileStore create(FileStoreOrganization fileStoreOrganization) {
         Objects.requireNonNull(fileStoreOrganization);
         TrackSectorDevice device = fileStoreOrganization.createTrackSectorDevice().request(SectorOrder.DOS);
-        try (InputStream inputStream = GamedosFileStoreFactory.class.getResourceAsStream("/files/gamedos-template.do")) {
+        try (InputStream inputStream = GamedosFileStoreFactory.class.getResourceAsStream("/files/gamedos-track0.bin")) {
             Objects.requireNonNull(inputStream);
             byte[] track0 = inputStream.readAllBytes();
             device.writeRange(0, 0, DataBuffer.wrap(track0));
@@ -97,23 +97,5 @@ public class GamedosFileStoreFactory implements FileStoreFactory,GamedosConstant
             }
         }
         return false;
-    }
-
-    // TODO - DELETE ME -
-    public static GamedosFileStore create(TrackSectorDevice device) {
-        Objects.requireNonNull(device);
-        if (device.getGeometry().sectorsPerDisk() != 560) {
-            throw new RuntimeException("GameDOS requires a 560 sector disk.");
-        }
-        device.format();
-        try (InputStream inputStream = GamedosFileStoreFactory.class.getResourceAsStream("/files/gamedos-template.do")) {
-            Objects.requireNonNull(inputStream);
-            byte[] track0 = inputStream.readAllBytes();
-            device.writeRange(0, 0, DataBuffer.wrap(track0));
-            return new GamedosFileStore(device);
-        }
-        catch (IOException ex) {
-            throw new UncheckedIOException(ex);
-        }
     }
 }

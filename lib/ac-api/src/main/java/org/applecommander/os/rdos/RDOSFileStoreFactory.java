@@ -152,40 +152,4 @@ public class RDOSFileStoreFactory implements FileStoreFactory, RDOSConstants {
         }
         return good;
     }
-
-    // TODO - DELETE ME -
-    public static RDOSFileStore create(TrackSectorDevice device) {
-        Objects.requireNonNull(device);
-        if (device.getGeometry().sectorsPerDisk() != 560) {
-            throw new RuntimeException("RDOS requires a 560 sector disk.");
-        }
-        device.format();
-        BlockDevice blockDevice = new TrackSectorToBlockAdapter(device.request(SectorOrder.PRODOS),
-                                                                TrackSectorToBlockAdapter.BlockStyle.RDOS);
-        // The BIN file is in block order, so we can copy the blocks into the device!
-        try (InputStream inputStream = RDOSFileStore.class.getResourceAsStream("/files/rdos33-template.bin")) {
-            Objects.requireNonNull(inputStream);
-            byte[] disk = inputStream.readAllBytes();
-            blockDevice.writeRange(0, DataBuffer.wrap(disk));
-            RDOSFileStore fileStore = new RDOSFileStore(blockDevice, RDOSVersionAdapter.RDOS33);
-            RDOSFileEntry systemboot = fileStore.getRootDirectory().createFile("SYSTEMBOOT");
-            systemboot.setType("T");
-            systemboot.setAddress(0xb100);
-            // FIXME: Text file has to have high bit set.
-            byte[] systembootContent = """
-                    PR#0:IN#0:TEXT:HOME:&CAT:PRINT:PRINT "WELCOME TO RDOS!"
-                    """.getBytes();
-            for (int i = 0; i < systembootContent.length; i++) {
-                if (systembootContent[i] == '\n') {
-                    systembootContent[i] = '\r';
-                }
-                systembootContent[i] = (byte)(systembootContent[i] | 0x80);
-            }
-            systemboot.setDataFork(DataBuffer.wrap(systembootContent));
-            return fileStore;
-        }
-        catch (IOException ex) {
-            throw new UncheckedIOException(ex);
-        }
-    }
 }
