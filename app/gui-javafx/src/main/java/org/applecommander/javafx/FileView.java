@@ -144,6 +144,7 @@ public class FileView extends BorderPane {
                 listingMode.setValue(DisplayMode.NATIVE);
                 supportsDirectories.setValue(newValue.can(Capability.SUPPORTS_DIRECTORIES));
                 supportsFileDeletion.setValue(newValue.can(Capability.DELETE_FILES));
+                showingDetailProperty.set(false);
             }
         });
 
@@ -230,9 +231,9 @@ public class FileView extends BorderPane {
             if (newFileEntry != null) {
                 populateFileDetailGrid(newFileEntry);
             }
-        });
-        fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((_, _, _) -> {
-            showingDetailProperty.set(false);
+            else {
+                showingDetailProperty.set(false);
+            }
         });
 
         fileTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
