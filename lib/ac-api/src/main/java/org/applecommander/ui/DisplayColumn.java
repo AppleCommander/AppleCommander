@@ -254,17 +254,18 @@ public class DisplayColumn {
             return this;
         }
         public ColumnBuilder<T> date(Function<T,Date> getValueFn) {
+        public ColumnBuilder<T> dateAndTime(Function<T,Date> getValueFn) {
             Objects.requireNonNull(getValueFn);
             this.columnDataType = ColumnDataType.STRING;
             this.getValueFn = getValueFn;
-            this.formatFn = this::formatDate;
+            this.formatFn = this::formatDateAndTime;
             return this;
         }
         public ColumnBuilder<T> fileTime(Function<T, FileTime> getValueFn) {
             Objects.requireNonNull(getValueFn);
             this.columnDataType = ColumnDataType.STRING;
             this.getValueFn = getValueFn;
-            this.formatFn = this::formatDate;
+            this.formatFn = this::formatDateAndTime;
             return this;
         }
         public ColumnBuilder<T> percent(Function<T, Number> numeratorFn, Function<T, Number> denominatorFn, String fmt) {
@@ -336,6 +337,8 @@ public class DisplayColumn {
 
         /// This is a helper function to format date objects.
         private String formatDate(Object value) {
+        /// This is a helper function to format date and time objects.
+        private String formatDateAndTime(Object value) {
             if (value == null) {
                 return "- No Date -";
             }
