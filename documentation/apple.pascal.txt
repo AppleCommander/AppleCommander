@@ -148,3 +148,53 @@ type
   Directory = array[0 .. 77] of DirEntry;
   
 John B. Matthews
+
+----
+
+From: Apple II Pascal 1.3 (Workbench), pg IV-15 "Reading a Disk Directory"
+
+{First, some general declarations relating to disk directories:}
+
+CONST maxdir = 77;                      {Maximum number of entries in directory}
+      vidleng = 7;                      {Number of characters in volume ID}
+      tidleng = 15;                     {Number of characters in title ID}
+      fblksize = 512;                   {Standard disk block length}
+      dirblk = 2;                       {Directory starts at this disk-block address}
+
+TYPE  daterec = PACKED RECORD           {Volume/file data mark}
+                    month: 0..12;       {0 = meaningless date}
+                    day:   0..31;       {Day of month}
+                    year:  0..100       {100 = dated volume is temporary}
+                END {daterec};
+      vid = STRING [vidleng];           {Volume ID}
+      dirrange = 0..maxdir;             {Possible number of files on disk}
+      tid = STRING [tidleng];           {Title ID}
+      filekind = [untypedfile, xdskfile, codefile, textfile, infofile,
+                  datafile, graffile, fotofile, securedir];
+
+{Now, the actual layout of the directory entry for each file stored on
+the disk, plus the type declaration for the directory as a whole.  Each
+entry is a packed record with a variant part, and the whole directory
+is an array of such records.}
+
+      direntry =
+        PACKED RECORD
+          dfirstblk: integer;           {1st physical disk address}
+          dlastblk: integer;            {Points to block after last used block}
+          CASE dfkind: filekind OF
+            securedir, untypedfile:     {Volume info-only in dir[0]}
+              [filler1:     0..2048;    {Waste 13 bits for compatibility}
+               dvid:        vid;        {Name of disk volume}
+               deovblk:     integer;    {Last block in volume}
+               dnumfiles:   dirrange;   {Number of files in directory}
+               dloadtime:   integer;    {Time of last access}
+               dlastboot:   daterec];   {Most recent date setting}
+            xdskfile, codefile, textfile, infofile, datafile,
+            graffile, fotof ile:        {Regular file info}
+              [filler2:     0..1024;    {Waste 12 bits for compatibility}
+               status:      boolean;    {For filer wildcards}
+               dtid:        tid;        {Name of file}
+               dlastbyte:   1..fblksize; {Num bytes in last file block}
+               daccess:     daterec]    {Date of last modification}
+        END
+      directory = ARRAY [dirrange] OF direntry;
