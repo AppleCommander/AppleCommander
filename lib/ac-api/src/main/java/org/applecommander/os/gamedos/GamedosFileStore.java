@@ -144,10 +144,7 @@ public class GamedosFileStore implements FileStore, GamedosConstants {
         return InformationGroup.builder("GameDOS")
             .item("Label").value(getLabel())
             .item("Files").value(rootDirectory.getFiles().size())
-            .item("Sectors Used").value(usage.getUsed())
-            .item("Sectors Free").value(usage.getFree())
-            .item("Bytes Used").value(usage.getBytesUsed())
-            .item("Bytes Free").value(usage.getBytesFree())
+            .merge(usage)
             .get(device);
     }
 }

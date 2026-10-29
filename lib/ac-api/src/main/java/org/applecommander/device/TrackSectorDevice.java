@@ -154,7 +154,7 @@ public interface TrackSectorDevice extends Device {
                 .item("Tracks on Disk").value(tracksOnDisk())
                 .item("Sectors per Track").value(sectorsPerTrack())
                 .item("Sectors per Disk").value(sectorsPerDisk())
-                .item("Total Size (Bytes)").value(deviceSize())
+                .item("Total Size (Bytes)").value("%,d", deviceSize())
                 .item("Total Size (KiB)").value("%1.1f", deviceSize()/1024f)
                 .get();
         }

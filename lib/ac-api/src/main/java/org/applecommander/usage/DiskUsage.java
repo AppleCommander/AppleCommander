@@ -19,6 +19,10 @@
  */
 package org.applecommander.usage;
 
+import org.applecommander.util.InformationGroup;
+import org.applecommander.util.InformationProvider;
+
+import java.util.List;
 import java.util.Map;
 
 /// Provides a generic DiskUsage interface. Note that the assumption of free and used applies
@@ -29,7 +33,7 @@ import java.util.Map;
 /// construct.
 /// @see BlockUsage
 /// @see SectorUsage
-public abstract class DiskUsage {
+public abstract class DiskUsage implements InformationProvider {
     private final int unitSize;
 
     protected DiskUsage(int unitSize) {
@@ -52,6 +56,22 @@ public abstract class DiskUsage {
     }
     public int getBytesFree() {
         return getFree() * unitSize;
+    }
+
+    @Override
+    public List<InformationGroup> information() {
+        String unitType = "Sectors";
+        if (this instanceof BlockUsage) {
+            unitType = "Blocks";
+        }
+        return InformationGroup.builder("Usage")
+            .item("Free (Bytes)").value("%,d", getBytesFree())
+            .item("Used (Bytes)").value("%,d", getBytesUsed())
+            .item("Total (Bytes)").value("%,d", getTotalBytes())
+            .item("Free (%s)", unitType).value(getFree())
+            .item("Used (%s)", unitType).value(getUsed())
+            .item("Total (%s)", unitType).value(getTotal())
+            .get();
     }
 
     /// Identifies usage type on this disk. Note that some devices may have generic used

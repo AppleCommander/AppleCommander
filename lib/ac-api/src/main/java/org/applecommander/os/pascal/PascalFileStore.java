@@ -118,6 +118,7 @@ public class PascalFileStore implements FileStore, PascalConstants {
             .item("Blocks on Disk").value(rootDirectory.getBlocksOnDisk())
             .item("Files").value(rootDirectory.getFilesOnDisk())
             .item("Most Recent Date").value(rootDirectory.getMostRecentDate())
+            .merge(usage)
             .get(device);
     }
 }

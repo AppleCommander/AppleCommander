@@ -130,6 +130,7 @@ public class RDOSFileStore implements FileStore, RDOSConstants {
         return InformationGroup.builder("RDOS")
             .item("Version").value(adapter.label)
             .item("Files").value(rootDirectory.getFiles().size())
+            .merge(usage)
             .get(device);
     }
 }

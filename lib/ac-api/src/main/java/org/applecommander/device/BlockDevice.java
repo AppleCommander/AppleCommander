@@ -103,7 +103,7 @@ public interface BlockDevice extends Device {
                 .item("Type").value("Block")
                 .item("Blocks on Device").value(blocksOnDevice())
                 .item("Block Size").value(blockSize())
-                .item("Total Size (Bytes)").value(deviceSize())
+                .item("Total Size (Bytes)").value("%,d", deviceSize())
                 .item("Total Size (KiB)").value("%1.1f", deviceSize()/1024f)
                 .get();
         }
