@@ -90,12 +90,19 @@ public class PascalFileStore implements FileStore, PascalConstants {
     public List<DisplayColumn> getDisplayColumns() {
         return DisplayColumn.builder(PascalFileEntry.class)
                 .left("Name").string(PascalFileEntry::getName, PascalFileEntry::setName).done()
+                .left("Type").string(PascalFileEntry::getType, PascalFileEntry::setType).mode(DisplayMode.DETAIL)
+                    .option("CODE", "p-code")
+                    .option("TEXT", "Text")
+                    .option("DATA", "Data")
+                    .option("INFO", "Info")
+                    .option("GRAF", "Graphics")
+                    .option("FOTO", "Photo")
+                    .done()
                 .right("First Block").integer(PascalFileEntry::getFirstBlock, "%d").mode(DisplayMode.DETAIL).done()
                 .right("Last Block").integer(PascalFileEntry::getLastBlock, "%d").mode(DisplayMode.DETAIL).done()
                 .right("Last Bytes").integer(PascalFileEntry::getBytesUsedInLastBlock, "%d").mode(DisplayMode.DETAIL).done()
                 .right("Blocks").integer(PascalFileEntry::getBlocksUsed, "%d").done()
                 .right("Size").integer(PascalFileEntry::getSize, "%,d").mode(DisplayMode.DETAIL).done()
-                .left("Type").string(PascalFileEntry::getType, PascalFileEntry::setType).mode(DisplayMode.DETAIL).done()
                 .center("Modified").dateDDMONYY(PascalFileEntry::getLastModified).done()
                 .toList();
     }
