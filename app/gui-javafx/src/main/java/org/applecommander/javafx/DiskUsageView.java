@@ -57,7 +57,7 @@ public class DiskUsageView extends StackPane {
     private final PieChart pieChartView;
 
     private final ObjectProperty<Mode> viewMode = new SimpleObjectProperty<>();
-    private final BooleanProperty largeDisk = new SimpleBooleanProperty();
+    private final BooleanProperty showPieChartOnlyProperty = new SimpleBooleanProperty();
 
     public DiskUsageView(FileStoreWindow fileStoreWindow, ToolBar toolBar) {
         ToggleGroup listingModeGroup = new ToggleGroup();
@@ -99,9 +99,9 @@ public class DiskUsageView extends StackPane {
         pieChartView.visibleProperty().bind(viewMode.isEqualTo(Mode.CHART_VIEW));
         pieChartView.managedProperty().bind(pieChartView.visibleProperty());
 
-        usageGridToggle.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE).and(largeDisk.not()));
+        usageGridToggle.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE).and(showPieChartOnlyProperty.not()));
         usageGridToggle.managedProperty().bind(usageGridToggle.visibleProperty());
-        usagePieChartToggle.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE).and(largeDisk.not()));
+        usagePieChartToggle.visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.USAGE).and(showPieChartOnlyProperty.not()));
         usagePieChartToggle.managedProperty().bind(usagePieChartToggle.visibleProperty());
         viewMode.addListener((observable, oldValue, newValue) -> {
             usageGridToggle.setSelected(newValue == Mode.GRID_VIEW);
@@ -121,8 +121,8 @@ public class DiskUsageView extends StackPane {
             return;
         }
         DiskUsage usage = opt.get();
-        largeDisk.set(usage.getTotal() > 2000);
-        if (!largeDisk.get()) {
+        showPieChartOnlyProperty.set(usage instanceof BlockUsage);
+        if (!showPieChartOnlyProperty.get()) {
             updateGridView(usage);
             viewMode.set(Mode.GRID_VIEW);
         }
