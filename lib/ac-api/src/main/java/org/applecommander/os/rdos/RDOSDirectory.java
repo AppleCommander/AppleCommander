@@ -24,7 +24,6 @@ import org.applecommander.device.BlockDevice;
 import org.applecommander.exception.DirectoryFullException;
 import org.applecommander.exception.FileExistsException;
 import org.applecommander.exception.UnableToDeleteFileException;
-import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.WritableDirectory;
 import org.applecommander.transfer.ProdosAttributes;
@@ -33,7 +32,6 @@ import org.applecommander.util.DataBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 public class RDOSDirectory implements WritableDirectory, RDOSConstants {
     private final RDOSFileStore fileStore;
@@ -43,12 +41,6 @@ public class RDOSDirectory implements WritableDirectory, RDOSConstants {
         Objects.requireNonNull(fileStore);
         this.fileStore = fileStore;
         this.device = fileStore.get(BlockDevice.class).orElseThrow();
-    }
-
-    /// Get the parent directory. If this is the root directory, it returns empty.
-    @Override
-    public Optional<Directory> getParent() {
-        return Optional.empty();
     }
 
     /// Returns the FileStore that this Directory belongs to.

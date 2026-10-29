@@ -31,7 +31,9 @@ import java.util.stream.Collectors;
 public interface Directory extends CapabilityProvider {
 
     /// Get the parent directory. If this is the root directory, it returns empty.
-    Optional<Directory> getParent();
+    default Optional<Directory> getParent() {
+        return Optional.empty();
+    }
 
     /// Returns the FileStore that this Directory belongs to.
     FileStore getFileStore();

@@ -20,7 +20,6 @@
 package org.applecommander.archive.zip;
 
 import org.applecommander.capability.Capability;
-import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.WritableDirectory;
@@ -30,7 +29,6 @@ import org.applecommander.transfer.ProdosAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 public class ZipDirectory implements WritableDirectory {
     private final ZipFileStore fileStore;
@@ -46,11 +44,6 @@ public class ZipDirectory implements WritableDirectory {
     @Override
     public boolean can(Capability capability) {
         return false;
-    }
-
-    @Override
-    public Optional<Directory> getParent() {
-        return Optional.empty();
     }
 
     @Override
