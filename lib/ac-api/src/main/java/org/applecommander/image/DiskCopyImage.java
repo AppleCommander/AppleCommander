@@ -19,7 +19,6 @@
  */
 package org.applecommander.image;
 
-import com.webcodepro.applecommander.storage.DiskConstants;
 import org.applecommander.capability.Capability;
 import org.applecommander.hint.Hint;
 import org.applecommander.source.Source;
@@ -39,7 +38,7 @@ public class DiskCopyImage implements Source {
 
     private final Source source;
     private final Info info;
-    private final Set<Hint> hints;
+    private final Set<Hint> hints = Set.of(Hint.PRODOS_BLOCK_ORDER, Hint.DISK_COPY_IMAGE);;
 
     public DiskCopyImage(Source source) {
         this.source = source;
@@ -47,14 +46,6 @@ public class DiskCopyImage implements Source {
         DataBuffer header = source.readBytes(0, HEADER_SIZE);
         String diskName = header.readPascalString(64);
         int dataSize = header.readIntBE();
-        if (dataSize == DiskConstants.APPLE_140KB_DISK) {
-            // It appears that 140K disks are (at least sometimes) DOS ordered.
-            // We skip setting that hint as it influences discovery.
-            hints = Set.of(Hint.DISK_COPY_IMAGE);
-        }
-        else {
-            hints = Set.of(Hint.PRODOS_BLOCK_ORDER, Hint.DISK_COPY_IMAGE);
-        }
         int tagSize = header.readIntBE();
         int dataChecksum = header.readIntBE();
         int tagChecksum = header.readIntBE();
