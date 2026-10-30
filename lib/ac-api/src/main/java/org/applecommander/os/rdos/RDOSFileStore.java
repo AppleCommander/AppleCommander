@@ -40,7 +40,7 @@ public class RDOSFileStore implements FileStore, RDOSConstants {
     private final RDOSDirectory rootDirectory;
     private final BlockUsage usage;
 
-    public RDOSFileStore(BlockDevice device, RDOSVersionAdapter adapter) {
+    RDOSFileStore(BlockDevice device, RDOSVersionAdapter adapter) {
         Objects.requireNonNull(device);
         this.device = device;
         this.adapter = adapter;
