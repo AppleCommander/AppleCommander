@@ -19,6 +19,9 @@
  */
 package org.applecommander.ui;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /// `CharacterMapper` utility class that is used to convert an input string into a set of
 /// valid characters. This can handle both lower-case to upper-case mappings and
 /// restricting input characters or doing things like mapping a ' ' to a '.'.
@@ -67,10 +70,17 @@ public class CharacterMapper {
         private final StringBuilder fromChars = new StringBuilder();
         private final StringBuilder toChars =  new StringBuilder();
 
-        /// Add a range of characters
-        public Builder mapRange(char first, char last, boolean forceUppercase) {
+        /// Add a range of characters with (optional) exclusions in the range.
+        public Builder mapRange(char first, char last, boolean forceUppercase, char... excludedChars) {
+            Set<Character> exclusions = new HashSet<>();
+            for (char excludedChar : excludedChars) exclusions.add(excludedChar);
+
             StringBuilder string = new StringBuilder();
-            for (char ch = first; ch <= last; ch++) string.append(ch);
+            for (char ch = first; ch <= last; ch++) {
+                if (!exclusions.contains(ch)) {
+                    string.append(ch);
+                }
+            }
             String alpha = string.toString();
 
             fromChars.append(alpha);

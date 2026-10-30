@@ -88,7 +88,11 @@ public class PascalFileStore implements FileStore, PascalConstants {
     @Override
     public List<DisplayColumn> getDisplayColumns() {
         return DisplayColumn.builder(PascalFileEntry.class)
-            .left("Name").string(PascalFileEntry::getName, PascalFileEntry::setName).done()
+            .left("Name").string(PascalFileEntry::getName, PascalFileEntry::setName)
+                .editInLine()
+                .maxLength(FILE_NAME_LENGTH)
+                .characterRestriction(PascalFileEntry.NAME_MAPPER)
+                .done()
             .right("Offset").integer(PascalFileEntry::getOffset, "%d").mode(DisplayMode.DETAIL).done()
             .left("Type").string(PascalFileEntry::getType, PascalFileEntry::setType).mode(DisplayMode.DETAIL)
                 .option("CODE", "p-code")

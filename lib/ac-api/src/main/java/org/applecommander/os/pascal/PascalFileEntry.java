@@ -26,6 +26,7 @@ import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.WritableFileEntry;
 import org.applecommander.os.SequentialAllocator;
 import org.applecommander.transfer.ProdosAttributes;
+import org.applecommander.ui.CharacterMapper;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
@@ -35,6 +36,16 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 public class PascalFileEntry implements WritableFileEntry, PascalConstants {
+    /// Per the Apple Pascal documentation:
+    ///
+    /// * Lower-case are translated to upper-case.
+    /// * Spaces and non-printing characters are removed from the filename.
+    /// * You should not include dollar sign (`$`), left square bracket (`[`),
+    ///   equals sign (`=`), or question mark (`?`).
+    public static final CharacterMapper NAME_MAPPER = CharacterMapper.builder()
+            .mapRange((char)0x21, (char)0x7e, true, '$', '[', '=', '?')
+            .build();
+
     private final BlockDevice device;
     private final PascalDirectory parent;
     private final int offset;
@@ -85,26 +96,14 @@ public class PascalFileEntry implements WritableFileEntry, PascalConstants {
     public String getName() {
         return readEntry().getPascalString(ENTRY_NAME);
     }
-    /// Sets the name of this file. Per the Apple Pascal documentation:
-    ///
-    /// * Lower-case are translated to upper-case.
-    /// * Spaces and non-printing characters are removed from the filename.
-    /// * You should not include dollar sign (`$`), left square bracket (`[`),
-    ///   equals sign (`=`), or question mark (`?`).
-    ///
+    /// Sets the name of this file. Uses the `NAME_MAPPER` to fix characters.
     /// This method only errors if, after applying the rules, the string is empty.
     public void setName(String name) {
-        StringBuffer sb = new StringBuffer();
-        for (char ch : name.toUpperCase().toCharArray()) {
-            if (ch < ' ' || ch == '$' || ch == '[' || ch == '=' || ch == '?') {
-                continue;
-            }
-            sb.append(ch);
-        }
-        if (sb.isEmpty()) {
+        String fixedName = NAME_MAPPER.map(name);
+        if (fixedName.isEmpty()) {
             throw new IllegalArgumentException("Illegal name '" + name + "'");
         }
-        modifyEntry((buffer) -> buffer.putPascalString(ENTRY_NAME, FILE_NAME_LENGTH, sb.toString(), false));
+        modifyEntry((buffer) -> buffer.putPascalString(ENTRY_NAME, FILE_NAME_LENGTH, fixedName, false));
     }
 
     /// Store the file's data.

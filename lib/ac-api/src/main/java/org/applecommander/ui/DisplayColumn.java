@@ -323,6 +323,10 @@ public class DisplayColumn {
             this.validInputPattern = VALID_HEX_NUMBER;
             return this;
         }
+        public ColumnBuilder<T> characterRestriction(CharacterMapper validCharacters) {
+            this.validCharacters = validCharacters;
+            return this;
+        }
 
         public Builder<T> done() {
             // A helper that allows a short-cut of 0 modes meaning ALL modes.

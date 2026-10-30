@@ -267,7 +267,7 @@ public class FileView extends BorderPane {
                     if (displayColumn.getMaxLength() > 0) {
                         filters.add(new FixedLengthFilter(displayColumn.getMaxLength()));
                     }
-                    if (displayColumn.getValidInputPattern() != null) {
+                    if (displayColumn.getValidCharacters() != null) {
                         filters.add(new CharacterRestrictionFilter(displayColumn.getValidCharacters()));
                     }
                     field.setTextFormatter(new TextFormatter<>(new CompositeFilter(filters)));
