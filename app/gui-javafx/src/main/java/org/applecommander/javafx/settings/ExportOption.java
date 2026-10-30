@@ -93,6 +93,12 @@ public enum ExportOption {
                 .fileType(attributes.fileType())
                 .dataFork(fileEntry.getDataFork().asBytes());
         fileEntry.getResourceFork().ifPresent(resourceFork -> builder.resourceFork(resourceFork.asBytes()));
+        if (attributes.creation() != null) {
+            builder.creationDate(attributes.creation().toInstant());
+        }
+        if (attributes.modified() != null) {
+            builder.modificationDate(attributes.modified().toInstant());
+        }
         return builder.build();
     }
 
