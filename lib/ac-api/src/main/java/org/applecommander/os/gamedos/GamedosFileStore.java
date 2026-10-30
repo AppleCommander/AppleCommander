@@ -40,7 +40,7 @@ public class GamedosFileStore implements FileStore, GamedosConstants {
     private final GamedosDirectory rootDirectory;
     private final SectorUsage usage;
 
-    public GamedosFileStore(TrackSectorDevice device) {
+    GamedosFileStore(TrackSectorDevice device) {
         this.device = device.request(SectorOrder.DOS);
         this.rootDirectory = new GamedosDirectory(this);
         this.usage = new SectorUsage(device.getGeometry(), this::usage);

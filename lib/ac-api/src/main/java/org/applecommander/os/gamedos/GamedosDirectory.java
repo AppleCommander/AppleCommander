@@ -36,7 +36,7 @@ public class GamedosDirectory implements WritableDirectory, GamedosConstants {
     private final GamedosFileStore fileStore;
     private final TrackSectorDevice device;
 
-    public GamedosDirectory(GamedosFileStore fileStore) {
+    GamedosDirectory(GamedosFileStore fileStore) {
         this.fileStore = fileStore;
         this.device = fileStore.get(TrackSectorDevice.class).orElseThrow();
     }

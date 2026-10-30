@@ -39,7 +39,7 @@ public class GamedosFileEntry implements WritableFileEntry, GamedosConstants {
     private final int sector;
     private final int offset;
 
-    public GamedosFileEntry(GamedosDirectory directory, int sector, int offset) {
+    GamedosFileEntry(GamedosDirectory directory, int sector, int offset) {
         this.directory = directory;
         this.sector = sector;
         this.offset = offset;
