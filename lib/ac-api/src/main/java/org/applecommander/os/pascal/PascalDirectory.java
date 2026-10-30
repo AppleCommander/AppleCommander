@@ -140,6 +140,7 @@ public class PascalDirectory implements WritableDirectory, PascalConstants {
 
     /// Create a file. By definition, any file created is a `WritableFileEntry`.
     /// @see Capability#CREATE_FILES
+    @Override
     public PascalFileEntry createFile(String fileName) {
         DataBuffer dir = device.readRange(DIRECTORY_FIRST_BLOCK, DIRECTORY_BLOCKS);
         for (int offset = ENTRY_LENGTH; offset < MAX_DIRECTORY_BYTES; offset += ENTRY_LENGTH) {
@@ -157,6 +158,7 @@ public class PascalDirectory implements WritableDirectory, PascalConstants {
     /// setting all appropriate `FileEntry` attributes that align. File type should be
     /// converted, dates applied, etc.
     /// @see Capability#CREATE_FILES
+    @Override
     public PascalFileEntry createFrom(ProdosAttributes prodosAttributes) {
         PascalFileEntry fileEntry = createFile(prodosAttributes.name());
         fileEntry.setType(switch (prodosAttributes.fileType()) {
@@ -172,11 +174,15 @@ public class PascalDirectory implements WritableDirectory, PascalConstants {
     /// Delete a Pascal file. Pascal does not mark a file as delete, it simply removes the entry.
     /// This logic copies all data _after_ into this position. Note that, regardless, any existing
     /// `PascalFileEntry` objects are invalid since their offset will be incorrect.
-    public void deleteFile(PascalFileEntry fileEntry) {
+    @Override
+    public void deleteFile(FileEntry fileEntry) {
+        PascalFileEntry entry = (PascalFileEntry) fileEntry;
         DataBuffer dir = device.readRange(DIRECTORY_FIRST_BLOCK, DIRECTORY_BLOCKS);
-        int offset = fileEntry.getOffset();
+        int offset = entry.getOffset();
         int nextOffset = offset + ENTRY_LENGTH;
         dir.put(offset, dir.slice(nextOffset, dir.limit() - nextOffset));
+        // Wipe out the last directory entry since it is guaranteed to be unused and we want to be certain it is empty.
+        dir.put((MAX_DIRECTORY_ENTRIES-1)*ENTRY_LENGTH, DataBuffer.create(ENTRY_LENGTH));
         device.writeRange(DIRECTORY_FIRST_BLOCK, dir);
         updateFilesOnDisk();
     }
