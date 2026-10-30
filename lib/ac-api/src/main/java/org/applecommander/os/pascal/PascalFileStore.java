@@ -21,7 +21,6 @@ package org.applecommander.os.pascal;
 
 import org.applecommander.capability.Capability;
 import org.applecommander.device.BlockDevice;
-import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.ui.DisplayColumn;
@@ -40,7 +39,7 @@ public class PascalFileStore implements FileStore, PascalConstants {
     private final PascalDirectory rootDirectory;
     private final BlockUsage usage;
 
-    public PascalFileStore(BlockDevice device) {
+    PascalFileStore(BlockDevice device) {
         Objects.requireNonNull(device);
         this.device = device;
         this.rootDirectory = new PascalDirectory(this);
@@ -75,7 +74,7 @@ public class PascalFileStore implements FileStore, PascalConstants {
 
     /// All FileStores support a "root" directory that references all files.
     @Override
-    public Directory getRootDirectory() {
+    public PascalDirectory getRootDirectory() {
         return rootDirectory;
     }
 
@@ -89,28 +88,29 @@ public class PascalFileStore implements FileStore, PascalConstants {
     @Override
     public List<DisplayColumn> getDisplayColumns() {
         return DisplayColumn.builder(PascalFileEntry.class)
-                .left("Name").string(PascalFileEntry::getName, PascalFileEntry::setName).done()
-                .left("Type").string(PascalFileEntry::getType, PascalFileEntry::setType).mode(DisplayMode.DETAIL)
-                    .option("CODE", "p-code")
-                    .option("TEXT", "Text")
-                    .option("DATA", "Data")
-                    .option("INFO", "Info")
-                    .option("GRAF", "Graphics")
-                    .option("FOTO", "Photo")
-                    .done()
-                .right("First Block").integer(PascalFileEntry::getFirstBlock, "%d").mode(DisplayMode.DETAIL).done()
-                .right("Last Block").integer(PascalFileEntry::getLastBlock, "%d").mode(DisplayMode.DETAIL).done()
-                .right("Last Bytes").integer(PascalFileEntry::getBytesUsedInLastBlock, "%d").mode(DisplayMode.DETAIL).done()
-                .right("Blocks").integer(PascalFileEntry::getBlocksUsed, "%d").done()
-                .right("Size").integer(PascalFileEntry::getSize, "%,d").mode(DisplayMode.DETAIL).done()
-                .center("Modified").dateDDMONYY(PascalFileEntry::getLastModified).done()
-                .toList();
+            .left("Name").string(PascalFileEntry::getName, PascalFileEntry::setName).done()
+            .right("Offset").integer(PascalFileEntry::getOffset, "%d").mode(DisplayMode.DETAIL).done()
+            .left("Type").string(PascalFileEntry::getType, PascalFileEntry::setType).mode(DisplayMode.DETAIL)
+                .option("CODE", "p-code")
+                .option("TEXT", "Text")
+                .option("DATA", "Data")
+                .option("INFO", "Info")
+                .option("GRAF", "Graphics")
+                .option("FOTO", "Photo")
+                .done()
+            .right("First Block").integer(PascalFileEntry::getFirstBlock, "%d").mode(DisplayMode.DETAIL).done()
+            .right("Last Block").integer(PascalFileEntry::getLastBlock, "%d").mode(DisplayMode.DETAIL).done()
+            .right("Last Bytes").integer(PascalFileEntry::getBytesUsedInLastBlock, "%d").mode(DisplayMode.DETAIL).done()
+            .right("Blocks").integer(PascalFileEntry::getBlocksUsed, "%d").done()
+            .right("Size").integer(PascalFileEntry::getSize, "%,d").mode(DisplayMode.DETAIL).done()
+            .center("Modified").dateDDMONYY(PascalFileEntry::getLastModified).done()
+            .toList();
     }
 
     /// Helps identify capabilities of the existing component.
     @Override
     public boolean can(Capability capability) {
-        return false;
+        return CAPABILITIES.contains(capability);
     }
 
     @Override

@@ -20,10 +20,13 @@
 package org.applecommander.os.pascal;
 
 import org.applecommander.device.BlockDevice;
+import org.applecommander.exception.DiskFullException;
 import org.applecommander.filestore.Directory;
-import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
+import org.applecommander.filestore.WritableFileEntry;
+import org.applecommander.os.SequentialAllocator;
 import org.applecommander.transfer.ProdosAttributes;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
 import java.util.Date;
@@ -31,16 +34,20 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class PascalFileEntry implements FileEntry, PascalConstants {
+public class PascalFileEntry implements WritableFileEntry, PascalConstants {
     private final BlockDevice device;
     private final PascalDirectory parent;
     private final int offset;
 
-    public PascalFileEntry(PascalDirectory parent, int offset) {
+    PascalFileEntry(PascalDirectory parent, int offset) {
         Objects.requireNonNull(parent);
         this.device = parent.getFileStore().get(BlockDevice.class).orElseThrow();
         this.parent = parent;
         this.offset = offset;
+    }
+
+    public int getOffset() {
+        return offset;
     }
 
     public DataBuffer readEntry() {
@@ -98,6 +105,34 @@ public class PascalFileEntry implements FileEntry, PascalConstants {
             throw new IllegalArgumentException("Illegal name '" + name + "'");
         }
         modifyEntry((buffer) -> buffer.putPascalString(ENTRY_NAME, FILE_NAME_LENGTH, sb.toString(), false));
+    }
+
+    /// Store the file's data.
+    /// This does not include any metadata that may be embedded with the file.
+    @Override
+    public void setDataFork(DataBuffer data) {
+        final int requiredBlocks = device.calculateRequiredBlocks(data.limit());
+        BlockDevice.Geometry geometry = device.getGeometry();
+        SequentialAllocator allocator = new SequentialAllocator(geometry.blocksOnDevice());
+        allocator.addUsed(0, DIRECTORY_LAST_BLOCK);
+        getParent().getFiles().forEach(file -> {
+            PascalFileEntry entry = (PascalFileEntry) file;
+            if (entry.getOffset() != this.getOffset()) {
+                allocator.addUsedByLength(entry.getFirstBlock(), entry.getBlocksUsed());
+            }
+        });
+        int firstBlock = allocator.find(requiredBlocks);
+        if (firstBlock != -1) {
+            device.writeRange(firstBlock, data);
+            setFirstBlock(firstBlock);
+            setLastBlock(firstBlock + requiredBlocks);
+            int bytesInLastBlock = data.limit() % geometry.blockSize();
+            setBytesUsedInLastBlock(bytesInLastBlock == 0 ? geometry.blockSize() : bytesInLastBlock);
+            setLastModified(new Date());
+        }
+        else {
+            throw new DiskFullException("Unable to allocate %d blocks on disk", requiredBlocks);
+        }
     }
 
     /// Get the block number of the files first block.
@@ -189,11 +224,25 @@ public class PascalFileEntry implements FileEntry, PascalConstants {
     /// so this allows each file store to manage the interpretation itself.
     @Override
     public ProdosAttributes getProdosAttributes() {
-        return null;
+        ProdosAttributes.Builder builder = ProdosAttributes.builder()
+                .name(getName())
+                .unlocked()
+                .size(getSize())
+                .modification(getLastModified());
+        switch (getType()) {
+            case "XDSK" -> builder.fileType(BAD);
+            case "CODE" -> builder.fileType(PCD);
+            case "TEXT" -> builder.fileType(PTX);
+            case "DATA" -> builder.fileType(PDA);
+            // The other types don't have distinct related ProDOS file types.
+            // There ARE instances of INFO, GRAF, and FOTO but their usage varies.
+            default -> builder.BIN(0x0000);
+        }
+        return builder.get();
     }
 
     @Override
     public <T> Optional<T> get(Class<T> iface) {
-        return Optional.empty();
+        return Container.get(iface, device);
     }
 }

@@ -21,8 +21,10 @@ package org.applecommander.os.pascal;
 
 import org.applecommander.capability.Capability;
 import org.applecommander.device.BlockDevice;
-import org.applecommander.filestore.Directory;
+import org.applecommander.exception.DirectoryFullException;
 import org.applecommander.filestore.FileEntry;
+import org.applecommander.filestore.WritableDirectory;
+import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.DataBuffer;
 
 import java.util.ArrayList;
@@ -30,13 +32,26 @@ import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class PascalDirectory implements Directory, PascalConstants {
+public class PascalDirectory implements WritableDirectory, PascalConstants {
     private final PascalFileStore fileStore;
     private final BlockDevice device;
 
-    public PascalDirectory(PascalFileStore fileStore) {
+    PascalDirectory(PascalFileStore fileStore) {
         this.fileStore = fileStore;
         this.device = fileStore.get(BlockDevice.class).orElseThrow();
+    }
+
+    void initVolumeHeader(String volumeName) {
+        modifyEntry(entry -> {
+            entry.putUnsignedShort(ENTRY_FIRST_BLOCK, 0);
+            entry.putUnsignedShort(ENTRY_LAST_BLOCK, 6);
+            entry.putUnsignedShort(ENTRY_TYPE, 0);
+            entry.putUnsignedShort(VOLUME_BLOCKS_ON_DISK, device.getGeometry().blocksOnDevice());
+            entry.putUnsignedShort(VOLUME_FILES_ON_DISK, getFiles().size());
+            entry.putPascalDate(VOLUME_RECENT_DATE, new Date());
+        });
+        // We use the set method since there is special logic around the name.
+        setName(volumeName);
     }
 
     public DataBuffer readEntry() {
@@ -89,7 +104,10 @@ public class PascalDirectory implements Directory, PascalConstants {
         return readEntry().getUnsignedShort(VOLUME_FILES_ON_DISK);
     }
     public void updateFilesOnDisk() {
-        modifyEntry(entry -> entry.putUnsignedShort(VOLUME_FILES_ON_DISK, getFiles().size()));
+        modifyEntry(entry -> {
+            entry.putUnsignedShort(VOLUME_FILES_ON_DISK, getFiles().size());
+            entry.putPascalDate(VOLUME_RECENT_DATE, new Date());
+        });
     }
 
     public Date getMostRecentDate() {
@@ -104,7 +122,7 @@ public class PascalDirectory implements Directory, PascalConstants {
     public List<FileEntry> getFiles() {
         List<FileEntry> entries = new ArrayList<>();
         DataBuffer dir = device.readRange(DIRECTORY_FIRST_BLOCK, DIRECTORY_BLOCKS);
-        for (int offset = ENTRY_LENGTH; offset < dir.limit(); offset += ENTRY_LENGTH) {
+        for (int offset = ENTRY_LENGTH; offset < MAX_DIRECTORY_BYTES; offset += ENTRY_LENGTH) {
             if (dir.getUnsignedByte(offset+ENTRY_NAME) == 0) {
                 // End of directory
                 break;
@@ -117,6 +135,49 @@ public class PascalDirectory implements Directory, PascalConstants {
     /// Helps identify capabilities of the existing component.
     @Override
     public boolean can(Capability capability) {
-        return false;
+        return CAPABILITIES.contains(capability);
+    }
+
+    /// Create a file. By definition, any file created is a `WritableFileEntry`.
+    /// @see Capability#CREATE_FILES
+    public PascalFileEntry createFile(String fileName) {
+        DataBuffer dir = device.readRange(DIRECTORY_FIRST_BLOCK, DIRECTORY_BLOCKS);
+        for (int offset = ENTRY_LENGTH; offset < MAX_DIRECTORY_BYTES; offset += ENTRY_LENGTH) {
+            if (dir.getUnsignedByte(offset + ENTRY_NAME) == 0) {
+                PascalFileEntry fileEntry = new PascalFileEntry(this, offset);
+                fileEntry.setName(fileName);
+                updateFilesOnDisk();
+                return fileEntry;
+            }
+        }
+        throw new DirectoryFullException("there are no more directory entries available on this disk");
+    }
+
+    /// Create a file given the supplied ProDOS attributes. This is expected to handle
+    /// setting all appropriate `FileEntry` attributes that align. File type should be
+    /// converted, dates applied, etc.
+    /// @see Capability#CREATE_FILES
+    public PascalFileEntry createFrom(ProdosAttributes prodosAttributes) {
+        PascalFileEntry fileEntry = createFile(prodosAttributes.name());
+        fileEntry.setType(switch (prodosAttributes.fileType()) {
+            case PCD -> "CODE";
+            case PTX -> "TEXT";
+            default -> "DATA";
+        });
+        prodosAttributes.dataFork().ifPresent(fileEntry::setDataFork);
+        fileEntry.setLastModified(prodosAttributes.modified());
+        return fileEntry;
+    }
+
+    /// Delete a Pascal file. Pascal does not mark a file as delete, it simply removes the entry.
+    /// This logic copies all data _after_ into this position. Note that, regardless, any existing
+    /// `PascalFileEntry` objects are invalid since their offset will be incorrect.
+    public void deleteFile(PascalFileEntry fileEntry) {
+        DataBuffer dir = device.readRange(DIRECTORY_FIRST_BLOCK, DIRECTORY_BLOCKS);
+        int offset = fileEntry.getOffset();
+        int nextOffset = offset + ENTRY_LENGTH;
+        dir.put(offset, dir.slice(nextOffset, dir.limit() - nextOffset));
+        device.writeRange(DIRECTORY_FIRST_BLOCK, dir);
+        updateFilesOnDisk();
     }
 }

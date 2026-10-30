@@ -21,14 +21,25 @@ package org.applecommander.os.pascal;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
 import org.applecommander.device.BlockDevice;
-import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.FileStoreFactory;
 import org.applecommander.filestore.FileStoreOrganization;
 import org.applecommander.util.DataBuffer;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.List;
+import java.util.Objects;
 
 public class PascalFileStoreFactory implements FileStoreFactory, PascalConstants {
+    public static final List<FileStoreOrganization> VALID_ORGANIZATIONS = List.of(
+            FileStoreOrganization.DISK_16SECTOR_DO,
+            FileStoreOrganization.DISK_16SECTOR_PO,
+            FileStoreOrganization.DISK_16SECTOR_NIB,
+            FileStoreOrganization.DISK_800K_PO,
+            FileStoreOrganization.DISK_800K_2IMG
+    );
+
     @Override
     public String getName() {
         return "Apple Pascal";
@@ -51,12 +62,24 @@ public class PascalFileStoreFactory implements FileStoreFactory, PascalConstants
 
     @Override
     public List<FileStoreOrganization> getFileStoreOrganizations() {
-        return FileStoreFactory.super.getFileStoreOrganizations();
+        return VALID_ORGANIZATIONS;
     }
 
     @Override
-    public FileStore create(FileStoreOrganization fileStoreOrganization) {
-        return FileStoreFactory.super.create(fileStoreOrganization);
+    public PascalFileStore create(FileStoreOrganization fileStoreOrganization) {
+        Objects.requireNonNull(fileStoreOrganization);
+        BlockDevice blockDevice = fileStoreOrganization.createBlockDevice();
+        try (InputStream inputStream = PascalFileStoreFactory.class.getResourceAsStream("/files/pascal-1.3-boot.bin")) {
+            Objects.requireNonNull(inputStream);
+            byte[] bootBlocks = inputStream.readAllBytes();
+            blockDevice.writeRange(0, DataBuffer.wrap(bootBlocks));
+            PascalFileStore fileStore = new PascalFileStore(blockDevice);
+            fileStore.getRootDirectory().initVolumeHeader("NEW.DISK");
+            return fileStore;
+        }
+        catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
     }
 
     /** Check for a likely directory structure. Note that we scan all sizes, even though that is overkill. */

@@ -19,12 +19,18 @@
  */
 package org.applecommander.os.pascal;
 
+import org.applecommander.capability.Capability;
+
+import java.util.Set;
+
 public interface PascalConstants {
     int DIRECTORY_FIRST_BLOCK = 2;
     int DIRECTORY_LAST_BLOCK = 5;
     int DIRECTORY_BLOCKS = 4;
+    int MAX_DIRECTORY_ENTRIES = 78;     // includes the volume header
 
     int ENTRY_LENGTH = 26;
+    int MAX_DIRECTORY_BYTES = MAX_DIRECTORY_ENTRIES * ENTRY_LENGTH;
 
     /// The block number of the first block. For the volume header, this is the first directory block
     /// and is always 0.
@@ -61,4 +67,18 @@ public interface PascalConstants {
     int FILE_BYTES_USED_IN_LAST_BLOCK = 22;
     /// Modification date for file.
     int FILE_MODIFICATION_DATE = 24;
+
+    Set<Capability> CAPABILITIES = Set.of(Capability.WRITE_FILES, Capability.CREATE_FILES, Capability.DELETE_FILES);
+
+    /// Bad blocks ProDOS file type.
+    int BAD = 0x01;
+    /// Pascal CODE file type maps into ProDOS PCD (Pascal Code). Even though this is Apple /// related, we
+    /// need something distinct. And, PCD files _are_ p-code.
+    int PCD = 0x02;
+    /// Pascal TEXT file type maps into ProDOS PTX (Pascal Text). Apple /// file type, but same format
+    /// as Apple Pascal uses.
+    int PTX = 0x03;
+    /// Pascal DATA file type maps into ProDOS PDA (Pascal Data).
+    int PDA = 0x05;
+
 }
