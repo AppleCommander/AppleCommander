@@ -2007,6 +2007,7 @@
       },
       {
         "code": "$0130",
+        "abbreviation": "2MG",
         "description": "Universal Disk Image file",
         "contentType": "DISK_IMAGE"
       },
