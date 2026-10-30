@@ -403,4 +403,24 @@ public class DataBuffer {
     public void writeByte(int value) {
         this.buffer.put((byte)value);
     }
+    public void writeShort(int value) {
+        this.buffer.putShort((short)value);
+    }
+    public void writeInt(int value) {
+        this.buffer.putInt(value);
+    }
+    public void writeIntBE(int value) {
+        this.buffer.order(ByteOrder.BIG_ENDIAN);
+        this.buffer.putInt(value);
+        this.buffer.order(ByteOrder.LITTLE_ENDIAN);
+    }
+    public void writeFixedLengthString(String value, int length) {
+        if (value.length() > length) {
+            value = value.substring(0, length);
+        }
+        while (value.length() < length) {
+            value += " ";
+        }
+        this.buffer.put(value.getBytes());
+    }
 }
