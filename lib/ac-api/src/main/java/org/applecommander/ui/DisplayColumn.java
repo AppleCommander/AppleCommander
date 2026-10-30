@@ -192,6 +192,7 @@ public class DisplayColumn {
 
     public static class ColumnBuilder<T extends FileEntry> {
         public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
+        public static final DateTimeFormatter DDMONYY_FORMATTER = DateTimeFormatter.ofPattern("dd-LLL-yy");
         public static final Pattern VALID_HEX_NUMBER = Pattern.compile("^(?i)0x[0-9a-f]+|[$][0-9a-f]+|[0-9a-f]+H?$");
 
         private final Builder<T> builder;
@@ -253,18 +254,25 @@ public class DisplayColumn {
             this.formatFn = n -> String.format(fmt, n);
             return this;
         }
-        public ColumnBuilder<T> date(Function<T,Date> getValueFn) {
+        public ColumnBuilder<T> dateDDMONYY(Function<T,Date> getValueFn) {
             Objects.requireNonNull(getValueFn);
             this.columnDataType = ColumnDataType.STRING;
             this.getValueFn = getValueFn;
-            this.formatFn = this::formatDate;
+            this.formatFn = this::formatDateDDMONYY;
+            return this;
+        }
+        public ColumnBuilder<T> dateAndTime(Function<T,Date> getValueFn) {
+            Objects.requireNonNull(getValueFn);
+            this.columnDataType = ColumnDataType.STRING;
+            this.getValueFn = getValueFn;
+            this.formatFn = this::formatDateAndTime;
             return this;
         }
         public ColumnBuilder<T> fileTime(Function<T, FileTime> getValueFn) {
             Objects.requireNonNull(getValueFn);
             this.columnDataType = ColumnDataType.STRING;
             this.getValueFn = getValueFn;
-            this.formatFn = this::formatDate;
+            this.formatFn = this::formatDateAndTime;
             return this;
         }
         public ColumnBuilder<T> percent(Function<T, Number> numeratorFn, Function<T, Number> denominatorFn, String fmt) {
@@ -315,6 +323,10 @@ public class DisplayColumn {
             this.validInputPattern = VALID_HEX_NUMBER;
             return this;
         }
+        public ColumnBuilder<T> characterRestriction(CharacterMapper validCharacters) {
+            this.validCharacters = validCharacters;
+            return this;
+        }
 
         public Builder<T> done() {
             // A helper that allows a short-cut of 0 modes meaning ALL modes.
@@ -334,8 +346,27 @@ public class DisplayColumn {
             return builder;
         }
 
-        /// This is a helper function to format date objects.
-        private String formatDate(Object value) {
+        /// This is a helper function to format date and time objects.
+        private String formatDateDDMONYY(Object value) {
+            if (value == null) {
+                return "- No Date -";
+            }
+            return switch (value) {
+                case Date date -> {
+                    LocalDateTime localDateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                    yield localDateTime.format(DDMONYY_FORMATTER);
+                }
+                case FileTime fileTime -> {
+                    LocalDateTime localDateTime = fileTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                    yield localDateTime.format(DDMONYY_FORMATTER);
+
+                }
+                default -> "(Unknown)";
+            };
+        }
+
+        /// This is a helper function to format date and time objects.
+        private String formatDateAndTime(Object value) {
             if (value == null) {
                 return "- No Date -";
             }

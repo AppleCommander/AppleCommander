@@ -19,18 +19,20 @@
  */
 package org.applecommander.os;
 
+import org.applecommander.device.BlockDevice;
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.exception.DirectoryFullException;
+import org.applecommander.exception.DiskFullException;
 import org.applecommander.filestore.FileStoreOrganization;
 import org.applecommander.filestore.FileStores;
-import org.applecommander.os.rdos.RDOSDirectory;
-import org.applecommander.os.rdos.RDOSFileEntry;
-import org.applecommander.os.rdos.RDOSFileStore;
-import org.applecommander.os.rdos.RDOSFileStoreFactory;
+import org.applecommander.os.rdos.*;
+import org.applecommander.usage.BlockUsage;
 import org.applecommander.util.DataBuffer;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class RDOSTest {
+public class RDOSTest implements RDOSConstants {
     @Test
     public void testCreateAndWrite() {
         // Create a disk
@@ -92,4 +94,66 @@ public class RDOSTest {
         assertArrayEquals(expectedDataFork, fileEntry.getDataFork().getFixedLengthString(0, expectedDataFork.length).getBytes());
     }
 
+    @Test
+    public void fillDirectoryEntries() {
+        // Create a disk
+        RDOSFileStore fileStore = FileStores.get(RDOSFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_DO);
+        assertNotNull(fileStore);
+
+        // Get the root directory
+        RDOSDirectory directory = fileStore.getRootDirectory();
+        assertNotNull(directory);
+
+        // Generate small files until we've filled the directory. This should not generate an error.
+        // Note that we subtract 1 because we have the "number of files" but the volume entry is also taking
+        // up space.
+        final int maxDirectoryEntries = (RDOSVersionAdapter.RDOS33.lastDirectoryBlock - RDOSVersionAdapter.RDOS33.firstDirectoryBlock + 1)
+                * TrackSectorDevice.SECTOR_SIZE / ENTRY_LENGTH;
+        final byte[] textContents = "THIS IS A THE FILE DATA.".getBytes();
+        int fileNumber = 1;
+        while (directory.getFiles().size() < maxDirectoryEntries) {
+            String fileName = String.format("FILE%d", fileNumber++);
+            createFile(directory, fileName, "TEXT", textContents);
+        }
+        assertEquals(maxDirectoryEntries, directory.getFiles().size());
+
+        // Generate one more file, which should cause an exception
+        assertThrows(DirectoryFullException.class, () -> {
+            createFile(directory, "FAILED-FILE", "TEXT", textContents);
+        });
+
+        // And be certain we don't (accidentally) increment that number.
+        assertEquals(maxDirectoryEntries, directory.getFiles().size());
+    }
+
+    @Test
+    public void fillDisk() {
+        // Create a disk
+        RDOSFileStore fileStore = FileStores.get(RDOSFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_DO);
+        assertNotNull(fileStore);
+
+        // Get the root directory
+        RDOSDirectory directory = fileStore.getRootDirectory();
+        assertNotNull(directory);
+
+        // Get some useful stuff
+        BlockDevice device = fileStore.get(BlockDevice.class).orElseThrow();
+        BlockUsage usage = fileStore.get(BlockUsage.class).orElseThrow();
+
+        // Generate a bunch of large files until we fill the disk
+        final byte[] bigfile = new byte[16000];
+        final int expectedBlocks = device.calculateRequiredBlocks(bigfile.length);
+
+        // Proceed to fill the disk
+        int fileNumber = 1;
+        while (usage.getFree() >= expectedBlocks) {
+            String fileName = String.format("FILE%d", fileNumber++);
+            createFile(directory, fileName, "DATA", bigfile);
+        }
+
+        // Try to write a file that won't fit
+        assertThrows(DiskFullException.class, () -> {
+            createFile(directory, "FAILED-FILE", "DATA", bigfile);
+        });
+    }
 }

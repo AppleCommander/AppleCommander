@@ -19,8 +19,10 @@
  */
 package org.applecommander.image;
 
+import com.webcodepro.applecommander.storage.DiskConstants;
 import org.applecommander.capability.Capability;
 import org.applecommander.hint.Hint;
+import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
@@ -32,6 +34,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public class UniversalDiskImage implements Source {
+    public static final String AC_CREATOR = "~AC~";
     public static final int MAGIC = 0x32494d47;     // "2IMG" marker
     public static final int HEADER_SIZE = 0x40;     // documented header size
     public static final int HEADER_SIZE_ALT = 0x34; // found in KeyWin.2mg
@@ -39,6 +42,31 @@ public class UniversalDiskImage implements Source {
     private final Source source;
     private final Info info;
     private final Set<Hint> hints;
+
+    /// Create a 2IMG ProDOS disk image.
+    public static UniversalDiskImage create(int imageSize, String name) {
+        Source source = DataBufferSource.create(imageSize+HEADER_SIZE, name).get();
+        DataBuffer header = source.readBytes(0, HEADER_SIZE);
+        // 0000: "2IMG"
+        header.writeIntBE(MAGIC);
+        // 0004: creator
+        header.writeFixedLengthString(AC_CREATOR, 4);
+        // 0008: 40 00 (header size)
+        header.writeShort(HEADER_SIZE);
+        // 000A: 01 00 (version)
+        header.writeShort(1);
+        // 000C: nn 00 00 00 (1 = ProDOS)
+        header.writeInt(1);
+        // 0010: flags (don't have to set)
+        header.writeInt(0);
+        // 0014: prodos blocks
+        header.writeInt(imageSize / DiskConstants.BLOCK_SIZE);
+        // 0018: 40 00 00 00 (offset to disk data)
+        header.writeInt(HEADER_SIZE);
+        // 001C: nn nn nn nn (bytes of disk data)
+        header.writeInt(imageSize);
+        return new UniversalDiskImage(source);
+    }
 
     public UniversalDiskImage(Source source) {
         this.source = source;
@@ -154,9 +182,13 @@ public class UniversalDiskImage implements Source {
                 switch(info.creator()) {
                     case "!nfc" -> "ASIMOV2";
                     case "B2TR" -> "Bernie [] the Rescue";
+                    case "CdrP" -> "CiderPress";
+                    case "CPII" -> "CiderPress II";
                     case "CTKG" -> "Catakig";
                     case "ShIm" -> "Shelly's ImageMaker";
                     case "WOOF" -> "Sweet 16";
+                    case "XGS!" -> "XGS";
+                    case AC_CREATOR -> "AppleCommander";
                     default -> "Unknown";
                 })
             .item("Version").value(info.version())

@@ -19,13 +19,14 @@
  */
 package org.applecommander.os;
 
+import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.exception.DirectoryFullException;
+import org.applecommander.exception.DiskFullException;
 import org.applecommander.filestore.*;
-import org.applecommander.os.gamedos.GamedosDirectory;
-import org.applecommander.os.gamedos.GamedosFileEntry;
-import org.applecommander.os.gamedos.GamedosFileStore;
-import org.applecommander.os.gamedos.GamedosFileStoreFactory;
+import org.applecommander.os.gamedos.*;
 import org.applecommander.source.Source;
 import org.applecommander.source.Sources;
+import org.applecommander.usage.SectorUsage;
 import org.applecommander.util.DataBuffer;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +35,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class GamedosTest {
+public class GamedosTest implements GamedosConstants {
     @Test
     public void testGamedosExample() {
         final String fullPath = "src/test/resources/disks/gamedos-example.dsk";
@@ -122,5 +123,67 @@ public class GamedosTest {
         assertEquals(expectedSectorCount, fileEntry.getSectorCount());
         assertArrayEquals(expectedDataFork,
                 fileEntry.getDataFork().getFixedLengthString(0, expectedDataFork.length).getBytes());
+    }
+
+    @Test
+    public void fillDirectoryEntries() {
+        // Create a disk
+        GamedosFileStore fileStore = FileStores.get(GamedosFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_DO);
+        assertNotNull(fileStore);
+
+        // Get the root directory
+        GamedosDirectory directory = fileStore.getRootDirectory();
+        assertNotNull(directory);
+
+        // Generate small files until we've filled the directory. This should not generate an error.
+        // Note that we subtract 1 because we have the "number of files" but the volume entry is also taking
+        // up space.
+        final int maxDirectoryEntries = DIRECTORY_SIZE * TrackSectorDevice.SECTOR_SIZE / ENTRY_SIZE;
+        final byte[] textContents = "THIS IS A THE FILE DATA.".getBytes();
+        int fileNumber = 1;
+        while (directory.getFiles().size() < maxDirectoryEntries) {
+            String fileName = String.format("FILE%d", fileNumber++);
+            createFile(directory, fileName, "TEXT", textContents);
+        }
+        assertEquals(maxDirectoryEntries, directory.getFiles().size());
+
+        // Generate one more file, which should cause an exception
+        assertThrows(DirectoryFullException.class, () -> {
+            createFile(directory, "FAILED-FILE", "TEXT", textContents);
+        });
+
+        // And be certain we don't (accidentally) increment that number.
+        assertEquals(maxDirectoryEntries, directory.getFiles().size());
+    }
+
+    @Test
+    public void fillDisk() {
+        // Create a disk
+        GamedosFileStore fileStore = FileStores.get(GamedosFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_DO);
+        assertNotNull(fileStore);
+
+        // Get the root directory
+        GamedosDirectory directory = fileStore.getRootDirectory();
+        assertNotNull(directory);
+
+        // Get some useful stuff
+        TrackSectorDevice device = fileStore.get(TrackSectorDevice.class).orElseThrow();
+        SectorUsage usage = fileStore.get(SectorUsage.class).orElseThrow();
+
+        // Generate a bunch of large files until we fill the disk
+        final byte[] bigfile = new byte[16000];
+        final int expectedBlocks = device.calculateRequiredSectors(bigfile.length);
+
+        // Proceed to fill the disk
+        int fileNumber = 1;
+        while (usage.getFree() >= expectedBlocks) {
+            String fileName = String.format("FILE%d", fileNumber++);
+            createFile(directory, fileName, "DATA", bigfile);
+        }
+
+        // Try to write a file that won't fit
+        assertThrows(DiskFullException.class, () -> {
+            createFile(directory, "FAILED-FILE", "DATA", bigfile);
+        });
     }
 }

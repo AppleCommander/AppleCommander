@@ -93,56 +93,45 @@ public interface FileStoreFactory {
         }
         public static class BlockDeviceBuilder {
             private final Context ctx;
-            private final List<BlockDevice> devices = new ArrayList<>();
             private BlockDeviceBuilder(Context ctx) {
                 this.ctx = ctx;
             }
-            public BlockDeviceBuilder include16Sector(Hint hint) {
+            public BlockDeviceBuilder check16Sector(Consumer<BlockDevice> check) {
                 if (ctx.nibbleTrackReaderWriter != null) {
                     Optional<TrackSectorDevice> nibble = TrackSectorNibbleDevice.identify(ctx.nibbleTrackReaderWriter);
-                    if (nibble.isPresent()) {
-                        TrackSectorDevice converted = switch (hint) {
-                            case DOS_SECTOR_ORDER -> SkewedTrackSectorDevice.physicalToDosSkew(nibble.get());
-                            case PRODOS_BLOCK_ORDER -> SkewedTrackSectorDevice.physicalToPascalSkew(nibble.get());
-                            case NIBBLE_SECTOR_ORDER -> nibble.get();
-                            default -> throw new RuntimeException("wrong hint type: " + hint);
-                        };
-                        devices.add(new TrackSectorToBlockAdapter(converted, TrackSectorToBlockAdapter.BlockStyle.PRODOS));
-                    }
+                    nibble.ifPresent(trackSectorDevice -> {
+                        if (trackSectorDevice.getGeometry().sectorsPerTrack() == 16) {
+                            BlockDevice device = new TrackSectorToBlockAdapter(trackSectorDevice.request(SectorOrder.PRODOS),
+                                    TrackSectorToBlockAdapter.BlockStyle.PRODOS);
+                            check.accept(device);
+                        }
+                    });
                 }
                 else if (ctx.source.isApproxBetween(DiskConstants.APPLE_140KB_DISK, DiskConstants.APPLE_160KB_DISK)) {
                     if (ctx.source.is(Hint.DOS_SECTOR_ORDER) || ctx.source.extensionLike("do")) {
-                        TrackSectorDevice doDevice = new OrderedTrackSectorDevice(ctx.source, SectorOrder.DOS);
-                        TrackSectorDevice poDevice = SkewedTrackSectorDevice.dosToPascalSkew(doDevice);
-                        devices.add(new TrackSectorToBlockAdapter(poDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS));
-                    }
-                    else if (ctx.source.is(Hint.PRODOS_BLOCK_ORDER) || ctx.source.extensionLike("po")) {
-                        devices.add(new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE));
-                    }
-                    else {
-                        devices.add(new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE));
-                        TrackSectorDevice doDevice = new OrderedTrackSectorDevice(ctx.source, SectorOrder.DOS);
-                        TrackSectorDevice poDevice = SkewedTrackSectorDevice.dosToPascalSkew(doDevice);
-                        devices.add(new TrackSectorToBlockAdapter(poDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS));
+                        TrackSectorDevice trackSectorDevice = new OrderedTrackSectorDevice(ctx.source, SectorOrder.DOS);
+                        BlockDevice device = new TrackSectorToBlockAdapter(trackSectorDevice.request(SectorOrder.PRODOS),
+                                TrackSectorToBlockAdapter.BlockStyle.PRODOS);
+                        check.accept(device);
+                    } else if (ctx.source.is(Hint.PRODOS_BLOCK_ORDER) || ctx.source.extensionLike("po")) {
+                        BlockDevice device = new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE);
+                        check.accept(device);
+                    } else {
+                        TrackSectorDevice trackSectorDevice = new OrderedTrackSectorDevice(ctx.source, SectorOrder.DOS);
+                        BlockDevice doDevice = new TrackSectorToBlockAdapter(trackSectorDevice.request(SectorOrder.PRODOS),
+                                TrackSectorToBlockAdapter.BlockStyle.PRODOS);
+                        check.accept(doDevice);
+                        BlockDevice poDevice = new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE);
+                        check.accept(poDevice);
                     }
                 }
                 return this;
             }
-            public BlockDeviceBuilder include800K() {
+            public BlockDeviceBuilder check800k(Consumer<BlockDevice> check) {
                 if (ctx.source.isApproxEQ(DiskConstants.APPLE_800KB_DISK)) {
-                    devices.add(new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE));
+                    check.accept(new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE));
                 }
                 return this;
-            }
-            public BlockDeviceBuilder includeHDV() {
-                // Anything not a floppy is included -- but if we have a device, assume it was picked up elsewhere...
-                if (ctx.source.getSize() > DiskConstants.APPLE_140KB_NIBBLE_DISK && devices.isEmpty()) {
-                    devices.add(new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE));
-                }
-                return this;
-            }
-            public List<BlockDevice> get() {
-                return devices;
             }
         }
 
@@ -151,7 +140,6 @@ public interface FileStoreFactory {
         }
         public static class TrackSectorDeviceBuilder {
             private final Context ctx;
-            private final List<TrackSectorDevice> devices = new ArrayList<>();
             private TrackSectorDeviceBuilder(Context ctx) {
                 this.ctx = ctx;
             }
@@ -201,60 +189,6 @@ public interface FileStoreFactory {
                     }
                 }
                 return this;
-            }
-            public TrackSectorDeviceBuilder include16Sector(Hint hint) {
-                assert hint == Hint.DOS_SECTOR_ORDER || hint == Hint.NIBBLE_SECTOR_ORDER;
-                if (ctx.nibbleTrackReaderWriter != null) {
-                    Optional<TrackSectorDevice> nibble = TrackSectorNibbleDevice.identify(ctx.nibbleTrackReaderWriter);
-                    nibble.ifPresent(device -> {
-                        if (device.getGeometry().sectorsPerTrack() == 16) {
-                            TrackSectorDevice converted = switch (hint) {
-                                case DOS_SECTOR_ORDER -> SkewedTrackSectorDevice.physicalToDosSkew(nibble.get());
-                                case NIBBLE_SECTOR_ORDER -> nibble.get();
-                                default -> throw new RuntimeException("wrong hint type: " + hint);
-                            };
-                            devices.add(converted);
-                        }
-                    });
-                }
-                else if (ctx.source.isApproxBetween(DiskConstants.APPLE_140KB_DISK, DiskConstants.APPLE_160KB_DISK)) {
-                    TrackSectorDevice doDevice = null;
-                    TrackSectorDevice poDevice = null;
-                    if (ctx.source.is(Hint.DOS_SECTOR_ORDER) || ctx.source.extensionLike("do")) {
-                        doDevice = new OrderedTrackSectorDevice(ctx.source, SectorOrder.DOS);
-                    }
-                    else if (ctx.source.is(Hint.PRODOS_BLOCK_ORDER) || ctx.source.extensionLike("po")) {
-                        BlockDevice blockDevice = new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE);
-                        poDevice = new BlockToTrackSectorAdapter(blockDevice, new ProdosBlockToTrackSectorAdapterStrategy());
-                    }
-                    else {
-                        doDevice = new OrderedTrackSectorDevice(ctx.source, SectorOrder.DOS);
-                        BlockDevice blockDevice = new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE);
-                        poDevice = new BlockToTrackSectorAdapter(blockDevice, new ProdosBlockToTrackSectorAdapterStrategy());
-                    }
-                    switch (hint) {
-                        case DOS_SECTOR_ORDER -> {
-                            if (doDevice != null) {
-                                devices.add(doDevice);
-                            }
-                            if (poDevice != null) {
-                                devices.add(poDevice);
-                            }
-                        }
-                        case NIBBLE_SECTOR_ORDER -> {
-                            if (doDevice != null) {
-                                devices.add(SkewedTrackSectorDevice.dosToPhysicalSkew(doDevice));
-                            }
-                            if (poDevice != null) {
-                                devices.add(SkewedTrackSectorDevice.dosToPhysicalSkew(poDevice));
-                            }
-                        }
-                    }
-                }
-                return this;
-            }
-            public List<TrackSectorDevice> get() {
-                return devices;
             }
         }
     }

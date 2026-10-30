@@ -25,6 +25,7 @@ import org.applecommander.exception.DiskFullException;
 import org.applecommander.filestore.WritableFileEntry;
 import org.applecommander.os.SequentialAllocator;
 import org.applecommander.transfer.ProdosAttributes;
+import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
 import java.util.Objects;
@@ -154,12 +155,22 @@ public class RDOSFileEntry implements WritableFileEntry, RDOSConstants {
     /// so this allows each file store to manage the interpretation itself.
     @Override
     public ProdosAttributes getProdosAttributes() {
-        return null;
+        ProdosAttributes.Builder builder = ProdosAttributes.builder()
+                .name(getName())
+                .unlocked()
+                .size(getSize());
+        switch (getType()) {
+            case "A" -> builder.BAS();
+            case "B" -> builder.BIN(getAddress());
+            case "T" -> builder.TXT();
+        }
+        return builder.get();
+
     }
 
     @Override
     public <T> Optional<T> get(Class<T> iface) {
-        return Optional.empty();
+        return Container.get(iface, device);
     }
 
     /// Store the file's data.
@@ -190,6 +201,5 @@ public class RDOSFileEntry implements WritableFileEntry, RDOSConstants {
         else {
             throw new DiskFullException("Unable to allocate %d blocks on disk", requiredBlocks);
         }
-
     }
 }

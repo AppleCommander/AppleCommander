@@ -40,7 +40,7 @@ public class GamedosFileStore implements FileStore, GamedosConstants {
     private final GamedosDirectory rootDirectory;
     private final SectorUsage usage;
 
-    public GamedosFileStore(TrackSectorDevice device) {
+    GamedosFileStore(TrackSectorDevice device) {
         this.device = device.request(SectorOrder.DOS);
         this.rootDirectory = new GamedosDirectory(this);
         this.usage = new SectorUsage(device.getGeometry(), this::usage);
@@ -144,10 +144,7 @@ public class GamedosFileStore implements FileStore, GamedosConstants {
         return InformationGroup.builder("GameDOS")
             .item("Label").value(getLabel())
             .item("Files").value(rootDirectory.getFiles().size())
-            .item("Sectors Used").value(usage.getUsed())
-            .item("Sectors Free").value(usage.getFree())
-            .item("Bytes Used").value(usage.getBytesUsed())
-            .item("Bytes Free").value(usage.getBytesFree())
+            .merge(usage)
             .get(device);
     }
 }

@@ -22,6 +22,7 @@ package org.applecommander.filestore;
 import com.webcodepro.applecommander.storage.DiskConstants;
 import org.applecommander.device.*;
 import org.applecommander.image.NibbleImage;
+import org.applecommander.image.UniversalDiskImage;
 import org.applecommander.source.DataBufferSource;
 import org.applecommander.source.Source;
 
@@ -73,6 +74,9 @@ public enum FileStoreOrganization {
     /// Expected to be used directly by all archive and indirectly by all disk images.
     public Source createSource(String fileExtension) {
         String fileName = String.format("%s.%s", this == ARCHIVE ? "new-archive" : "new-disk", fileExtension);
+        if (this == DISK_800K_2IMG) {
+            return UniversalDiskImage.create(size, fileName);
+        }
         return DataBufferSource.create(size, fileName).get();
     }
 

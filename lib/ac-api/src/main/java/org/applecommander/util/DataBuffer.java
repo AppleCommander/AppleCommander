@@ -247,6 +247,61 @@ public class DataBuffer {
         }
         this.buffer.put(index, data, 0, length);
     }
+    public String getPascalString(int index) {
+        int length = getUnsignedByte(index);
+        return getFixedLengthString(index+1, length);
+    }
+    public void putPascalString(int index, int maxLength, String value, boolean setHighBit) {
+        if (value.length() > maxLength) {
+            value = value.substring(0, maxLength);
+        }
+        putByte(index, value.length());
+        putBytes(index+1, new int[maxLength]);  // wipe out old value
+        putFixedLengthString(index+1, value.length(), value, setHighBit);
+    }
+    /// Extract a Pascal date. If the date is not set (all zeroes)
+    /// this returns a `null`.
+    ///
+    /// | Bits | Description | Range |
+    /// | :---: | :--- | :---: |
+    /// | 0..3 | Month | 1..12 |
+    /// | 4..8 | Day | 1..31 |
+    /// | 9..15 | Year | 0..99 |
+    public Date getPascalDate(int offset) {
+        int pascalDate = getUnsignedShort(offset);
+        if (pascalDate == 0) {
+            return null;
+        }
+        int month =  pascalDate & 0x000f - 1;
+        int day =   (pascalDate & 0x01f0) >> 4;
+        int year =  (pascalDate & 0xfe00) >> 9;
+        if (year < 50) year+= 2000;
+        if (year < 100) year+= 1900;
+        GregorianCalendar gc = new GregorianCalendar(year, month, day);
+        return gc.getTime();
+    }
+    /// Set a Pascal date. If a `null` date is given, sets a value of `$0000`.
+    ///
+    /// | Bits | Description | Range |
+    /// | :---: | :--- | :---: |
+    /// | 0..3 | Month | 1..12 |
+    /// | 4..8 | Day | 1..31 |
+    /// | 9..15 | Year | 0..99 |
+    public void putPascalDate(int offset, Date date) {
+        if (date == null) {
+            putUnsignedShort(offset, 0);
+            return;
+        }
+        GregorianCalendar gc = new GregorianCalendar();
+        gc.setTime(date);
+        int month = gc.get(Calendar.MONTH) + 1;
+        int day = gc.get(Calendar.DAY_OF_MONTH);
+        int year = gc.get(Calendar.YEAR) % 100;
+        int pascalDate = (month & 0x000f)
+                | ((day << 4) & 0x01f0)
+                | ((year << 9) & 0xfe00);
+        putUnsignedShort(offset, pascalDate);
+    }
     public void put(int offset, DataBuffer data) {
         this.buffer.put(offset, data.buffer, 0, data.buffer.limit());
     }
@@ -347,5 +402,25 @@ public class DataBuffer {
     }
     public void writeByte(int value) {
         this.buffer.put((byte)value);
+    }
+    public void writeShort(int value) {
+        this.buffer.putShort((short)value);
+    }
+    public void writeInt(int value) {
+        this.buffer.putInt(value);
+    }
+    public void writeIntBE(int value) {
+        this.buffer.order(ByteOrder.BIG_ENDIAN);
+        this.buffer.putInt(value);
+        this.buffer.order(ByteOrder.LITTLE_ENDIAN);
+    }
+    public void writeFixedLengthString(String value, int length) {
+        if (value.length() > length) {
+            value = value.substring(0, length);
+        }
+        while (value.length() < length) {
+            value += " ";
+        }
+        this.buffer.put(value.getBytes());
     }
 }

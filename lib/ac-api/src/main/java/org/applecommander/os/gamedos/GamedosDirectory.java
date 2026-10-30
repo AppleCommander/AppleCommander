@@ -23,7 +23,6 @@ import org.applecommander.capability.Capability;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.exception.DirectoryFullException;
 import org.applecommander.exception.FileExistsException;
-import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.WritableDirectory;
@@ -32,13 +31,12 @@ import org.applecommander.util.DataBuffer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class GamedosDirectory implements WritableDirectory, GamedosConstants {
     private final GamedosFileStore fileStore;
     private final TrackSectorDevice device;
 
-    public GamedosDirectory(GamedosFileStore fileStore) {
+    GamedosDirectory(GamedosFileStore fileStore) {
         this.fileStore = fileStore;
         this.device = fileStore.get(TrackSectorDevice.class).orElseThrow();
     }
@@ -46,11 +44,6 @@ public class GamedosDirectory implements WritableDirectory, GamedosConstants {
     @Override
     public boolean can(Capability capability) {
         return CAPABILITIES.contains(capability);
-    }
-
-    @Override
-    public Optional<Directory> getParent() {
-        return Optional.empty();
     }
 
     @Override

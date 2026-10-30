@@ -38,7 +38,7 @@ public class DiskCopyImage implements Source {
 
     private final Source source;
     private final Info info;
-    private final Set<Hint> hints = Set.of(Hint.PRODOS_BLOCK_ORDER, Hint.DISK_COPY_IMAGE);
+    private final Set<Hint> hints = Set.of(Hint.PRODOS_BLOCK_ORDER, Hint.DISK_COPY_IMAGE);;
 
     public DiskCopyImage(Source source) {
         this.source = source;
