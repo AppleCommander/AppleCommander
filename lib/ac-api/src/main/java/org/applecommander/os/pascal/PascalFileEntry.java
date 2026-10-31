@@ -71,7 +71,7 @@ public class PascalFileEntry implements WritableFileEntry, PascalConstants {
         device.writeRange(DIRECTORY_FIRST_BLOCK, directory);
     }
 
-    /// The parent `Directory`, if applicable. Can return `null` if this is the root directory.
+    /// The `Directory` that holds this file.
     @Override
     public Directory getParent() {
         return parent;

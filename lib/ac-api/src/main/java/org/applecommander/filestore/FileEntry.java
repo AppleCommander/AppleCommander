@@ -29,7 +29,7 @@ import java.util.Optional;
 /// The generic interface is intentionally spare to keep useless methods to a minimum.
 public interface FileEntry extends Container {
 
-    /// The parent `Directory`, if applicable. Can return `null` if this is the root directory.
+    /// The `Directory` that holds this file.
     Directory getParent();
 
     /// Indicates if this `FileEntry` is deleted.

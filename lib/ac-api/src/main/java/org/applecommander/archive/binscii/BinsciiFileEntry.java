@@ -55,7 +55,7 @@ public class BinsciiFileEntry implements FileEntry, BinsciiConstants {
         checksumMatches = crc.getValue() == header.getUnsignedShort(OFFSET_CRC);
     }
 
-    /// The parent `Directory`, if applicable. Can return `null` if this is the root directory.
+    /// The `Directory` that holds this file.
     @Override
     public Directory getParent() {
         return fileStore.getRootDirectory();
