@@ -134,7 +134,11 @@ public class BinsciiFileEntry implements FileEntry, BinsciiConstants {
 
     @Override
     public ContentType getContentType() {
-        return FileMagic.getProdosContentType(getFileType(), getAuxType());
+        ContentType contentType = FileMagic.getProdosContentType(getFileType(), getAuxType());
+        if (contentType == ContentType.UNKNOWN) {
+            contentType = FileMagic.identifyContentType(getName());
+        }
+        return contentType;
     }
 
     /// Interpret the `FileEntry` as if it were on a ProDOS volume.
