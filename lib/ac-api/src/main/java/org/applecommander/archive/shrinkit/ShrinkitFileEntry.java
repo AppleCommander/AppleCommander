@@ -31,6 +31,7 @@ import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.ui.ProdosUtils;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
+import org.applecommander.util.FileMagic;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -175,7 +176,11 @@ public class ShrinkitFileEntry implements FileEntry {
         if (record.isPresent() && record.get().getThreadKind() == ThreadKind.DISK_IMAGE) {
             return ContentType.DISK_IMAGE;
         }
-        return ContentType.UNKNOWN;
+        ContentType contentType = FileMagic.getProdosContentType((int) headerBlock.getFileType(), (int) headerBlock.getExtraType());
+        if (contentType == ContentType.UNKNOWN) {
+            contentType = FileMagic.identifyContentType(getName());
+        }
+        return contentType;
     }
 
     @Override

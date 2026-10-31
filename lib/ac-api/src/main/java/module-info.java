@@ -64,6 +64,7 @@ module org.applecommander.api {
     uses org.applecommander.filestore.FileStoreFactory;
     provides org.applecommander.filestore.FileStoreFactory
         with org.applecommander.archive.aaf.AppleArchiveFormatFileStoreFactory,
+             org.applecommander.archive.binaryii.BinaryIIFileStoreFactory,
              org.applecommander.archive.binscii.BinsciiFileStoreFactory,
              org.applecommander.archive.shrinkit.ShrinkitFileStoreFactory,
              org.applecommander.archive.zip.ZipFileStoreFactory,

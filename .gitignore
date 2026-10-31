@@ -16,21 +16,26 @@ AppleCommander.preferences
 reports/
 
 # Ignoring all disk images at root of project
+/*.2img
+/*.2mg
+/*.aaf
+/*.bny
+/*.BNY
+/*.bsc
+/*.bsq
+/*.BQY
+/*.bxy
+/*.do
 /*.dsk
 /*.DSK
-/*.po
-/*.hdv
-/*.do
-/*.2mg
-/*.2img
-/*.nib
 /*.dsk.gz
-/*.zip
-/*.aaf
+/*.hdv
+/*.nib
+/*.po
+/*.sdk
 /*.shk
 /*.SHK
-/*.sdk
-/*.bsc
+/*.zip
 
 # Ignoring and backups
 *.bak

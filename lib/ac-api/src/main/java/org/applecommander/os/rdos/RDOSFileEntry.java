@@ -66,7 +66,7 @@ public class RDOSFileEntry implements WritableFileEntry, RDOSConstants {
         return offset;
     }
 
-    /// The parent `Directory`, if applicable. Can return `null` if this is the root directory.
+    /// The `Directory` that holds this file.
     @Override
     public RDOSDirectory getParent() {
         return parent;

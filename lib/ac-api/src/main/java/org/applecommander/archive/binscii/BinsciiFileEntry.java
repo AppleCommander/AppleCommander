@@ -55,7 +55,7 @@ public class BinsciiFileEntry implements FileEntry, BinsciiConstants {
         checksumMatches = crc.getValue() == header.getUnsignedShort(OFFSET_CRC);
     }
 
-    /// The parent `Directory`, if applicable. Can return `null` if this is the root directory.
+    /// The `Directory` that holds this file.
     @Override
     public Directory getParent() {
         return fileStore.getRootDirectory();
@@ -134,7 +134,11 @@ public class BinsciiFileEntry implements FileEntry, BinsciiConstants {
 
     @Override
     public ContentType getContentType() {
-        return FileMagic.getProdosContentType(getFileType(), getAuxType());
+        ContentType contentType = FileMagic.getProdosContentType(getFileType(), getAuxType());
+        if (contentType == ContentType.UNKNOWN) {
+            contentType = FileMagic.identifyContentType(getName());
+        }
+        return contentType;
     }
 
     /// Interpret the `FileEntry` as if it were on a ProDOS volume.
