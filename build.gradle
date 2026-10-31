@@ -12,7 +12,7 @@ ext {
     antVersion = "1.10.18"
     commonsLang3Version = "3.21.0"
     commonsCsvVersion = "1.14.1"
-    gsonVersion = "2.14.0"
+    gsonVersion = "2.15.0"
     picocliVersion = "4.7.7"
     springBoot = "4.1.1"
     acdasmVersion = "6.3"
