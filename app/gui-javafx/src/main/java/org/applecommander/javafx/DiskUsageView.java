@@ -198,47 +198,36 @@ public class DiskUsageView extends StackPane {
         diskUsageGrid.getChildren().clear();
         final int size = 26;
         diskUsageGrid.add(new Label(), 0, 0);
-        for (int t = 0; t<usage.getTracksOnDisk(); t++) {
-            if ( t % 5 == 0 || t == usage.getTracksOnDisk()-1) {
+        for (int t = 0; t < usage.getTracksOnDisk(); t++) {
+            if (t % 5 == 0 || t == usage.getTracksOnDisk() - 1) {
                 Label label = new Label(String.format("T%02d", t));
                 label.setMinSize(size, size);
-                diskUsageGrid.add(label, t+1, 0);
+                diskUsageGrid.add(label, t + 1, 0);
                 GridPane.setHalignment(label, HPos.CENTER);
-            }
-            else {
-                diskUsageGrid.add(new Label(), t+1, 0);
+            } else {
+                diskUsageGrid.add(new Label(), t + 1, 0);
             }
         }
-        for (int s = 0; s<usage.getSectorsPerTrack(); s++) {
-            if ( s % 5 == 0 || s == usage.getSectorsPerTrack()-1 ) {
+        for (int s = 0; s < usage.getSectorsPerTrack(); s++) {
+            if (s % 5 == 0 || s == usage.getSectorsPerTrack() - 1) {
                 Label label = new Label(String.format("S%02d", s));
                 label.setMinSize(size, size);
-                diskUsageGrid.add(label, 0, s+1);
+                diskUsageGrid.add(label, 0, s + 1);
                 GridPane.setHalignment(label, HPos.RIGHT);
-            }
-            else {
-                diskUsageGrid.add(new Label(), 0, s+1);
+            } else {
+                diskUsageGrid.add(new Label(), 0, s + 1);
             }
         }
-        for (int t = 0; t<usage.getTracksOnDisk(); t++) {
-            for (int s = 0; s< usage.getSectorsPerTrack(); s++) {
-                UsageType usageType = usage.getUsage(t,s);
+        for (int t = 0; t < usage.getTracksOnDisk(); t++) {
+            for (int s = 0; s < usage.getSectorsPerTrack(); s++) {
+                UsageType usageType = usage.getUsage(t, s);
                 counts.compute(usageType, (k, v) -> v == null ? 1 : v + 1);
-                diskUsageGrid.add(makeSwatch(COLORS.get(usageType), size), t+1, s+1);
+                diskUsageGrid.add(makeSwatch(COLORS.get(usageType), size), t + 1, s + 1);
             }
         }
-
-        legendBox.getChildren().clear();
-        for (UsageType usageType : UsageType.values()) {
-            if (usageType == UsageType.FREE || counts.getOrDefault(usageType, 0) > 0) {
-                legendBox.getChildren().addAll(makeSwatch(COLORS.get(usageType), size), new Label(usageType.name()));
-                if (usageType == UsageType.FREE) {
-                    legendBox.getChildren().add(new Separator(Orientation.VERTICAL));
-                }
-            }
-        }
-        legendBox.setAlignment(Pos.CENTER);
+        updateLegendBox(counts);
     }
+
     private void updateBlockUsageGrid(BlockUsage usage) {
         Objects.requireNonNull(usage);
 
@@ -299,7 +288,17 @@ public class DiskUsageView extends StackPane {
                 col++;
             }
         }
+        updateLegendBox(counts);
+    }
 
+    private Rectangle makeSwatch(Color background, int size) {
+        Rectangle swatch = new Rectangle(size, size);
+        swatch.fillProperty().set(background);
+        swatch.strokeProperty().set(Color.BLACK);
+        return swatch;
+    }
+    private void updateLegendBox(Map<UsageType,Integer> counts) {
+        final int size = 24;
         legendBox.getChildren().clear();
         for (UsageType usageType : UsageType.values()) {
             if (usageType == UsageType.FREE || counts.getOrDefault(usageType, 0) > 0) {
@@ -310,12 +309,6 @@ public class DiskUsageView extends StackPane {
             }
         }
         legendBox.setAlignment(Pos.CENTER);
-    }
-    private Rectangle makeSwatch(Color background, int size) {
-        Rectangle swatch = new Rectangle(size, size);
-        swatch.fillProperty().set(background);
-        swatch.strokeProperty().set(Color.BLACK);
-        return swatch;
     }
 
     public enum Mode {
