@@ -19,8 +19,6 @@
  */
 package org.applecommander.filestore;
 
-import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
-import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import org.applecommander.capability.Capability;
 import org.applecommander.source.Source;
 import org.applecommander.ui.DisplayColumn;
@@ -37,11 +35,6 @@ import java.util.Optional;
 public abstract class FileStoreTestHelper {
     public static List<FileStore> showDirectory(Source source) {
         FileStoreFactory.Context ctx = FileStores.inspect(source);
-
-        // HACK - Let's TOSS OUT the older interfaces as they get replaced.
-        ctx.fileStores.removeIf(fileStore -> fileStore.get(RdosFormatDisk.class).isPresent());
-        ctx.fileStores.removeIf(fileStore -> fileStore.get(PascalFormatDisk.class).isPresent());
-
         if (ctx.fileStores.isEmpty()) {
             throw new RuntimeException("no disks discovered for: " + source.getName());
         }
