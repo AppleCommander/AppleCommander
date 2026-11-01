@@ -49,6 +49,17 @@ import static org.applecommander.javafx.FxUtils.applyShortcutToButton;
 import static org.applecommander.javafx.FxUtils.createToggleButton;
 
 public class DiskUsageView extends StackPane {
+    private static final Map<UsageType,Color> COLORS = Map.of(
+        UsageType.FREE, Color.LIGHTGREEN,
+        UsageType.USED, Color.LIGHTCORAL,
+        UsageType.BOOT, Color.TEAL,
+        UsageType.BITMAP, Color.STEELBLUE,
+        UsageType.SYSTEM, Color.PALEGOLDENROD,
+        UsageType.DIRECTORY, Color.MEDIUMORCHID,
+        UsageType.FILE, Color.GOLDENROD
+    );
+
+
     private final ToggleButton usageGridToggle;
     private final ToggleButton usagePieChartToggle;
     private final VBox gridView;
@@ -121,13 +132,26 @@ public class DiskUsageView extends StackPane {
             return;
         }
         DiskUsage usage = opt.get();
-        showPieChartOnlyProperty.set(usage instanceof BlockUsage);
-        if (!showPieChartOnlyProperty.get()) {
-            updateGridView(usage);
+        if (usage instanceof SectorUsage sectorUsage) {
+            showPieChartOnlyProperty.set(false);
+            updateSectorUsageGrid(sectorUsage);
             viewMode.set(Mode.GRID_VIEW);
         }
-        else {
-            viewMode.set(Mode.CHART_VIEW);
+        else if (usage instanceof BlockUsage blockUsage) {
+            boolean showPieChartOnly = switch (blockUsage.getTotal()) {
+                // CP/M, ProDOS/Pascal, RDOS 13 sector, RDOS 16 sector
+                case 140,280,455,560 -> false;
+                // Everything else
+                default -> true;
+            };
+            showPieChartOnlyProperty.set(showPieChartOnly);
+            if (showPieChartOnly) {
+                viewMode.set(Mode.CHART_VIEW);
+            }
+            else {
+                updateBlockUsageGrid(blockUsage);
+                viewMode.set(Mode.GRID_VIEW);
+            }
         }
         updateChartView(usage);
     }
@@ -161,18 +185,9 @@ public class DiskUsageView extends StackPane {
         pieChartView.setData(FXCollections.observableArrayList(data));
     }
 
-    private void updateGridView(DiskUsage usage) {
+    private void updateSectorUsageGrid(SectorUsage usage) {
         Objects.requireNonNull(usage);
 
-        final Map<UsageType,Color> colors = Map.of(
-            UsageType.FREE, Color.LIGHTGREEN,
-            UsageType.USED, Color.LIGHTCORAL,
-            UsageType.BOOT, Color.TEAL,
-            UsageType.BITMAP, Color.STEELBLUE,
-            UsageType.SYSTEM, Color.PALEGOLDENROD,
-            UsageType.DIRECTORY, Color.MEDIUMORCHID,
-            UsageType.FILE, Color.GOLDENROD
-        );
         // Summing this independently since we have to loop through all sectors/blocks anyway.
         final Map<UsageType,Integer> counts = new HashMap<>();
 
@@ -182,85 +197,35 @@ public class DiskUsageView extends StackPane {
         diskUsageGrid.setPadding(new Insets(10));
         diskUsageGrid.alignmentProperty().setValue(Pos.CENTER);
         diskUsageGrid.getChildren().clear();
-        int size = 24;
-        if (usage instanceof BlockUsage blockUsage) {
-            int numberOfColumns = 32;
-            if (blockUsage.getTotal() > 8000) {
-                size = 10;
-                numberOfColumns = 128;
-                diskUsageGrid.setHgap(1);
-                diskUsageGrid.setVgap(1);
+        final int size = 26;
+        diskUsageGrid.add(new Label(), 0, 0);
+        for (int t = 0; t<usage.getTracksOnDisk(); t++) {
+            if ( t % 5 == 0 || t == usage.getTracksOnDisk()-1) {
+                Label label = new Label(String.format("T%02d", t));
+                label.setMinSize(size, size);
+                diskUsageGrid.add(label, t+1, 0);
+                GridPane.setHalignment(label, HPos.CENTER);
             }
-            else if (blockUsage.getTotal() > 1600) {
-                size = 15;
-                numberOfColumns = 64;
-                diskUsageGrid.setHgap(2);
-                diskUsageGrid.setVgap(2);
-            }
-            else if (blockUsage.getTotal() > 300) {
-                size = 20;
-                numberOfColumns = 48;
-                diskUsageGrid.setHgap(3);
-                diskUsageGrid.setVgap(3);
-            }
-            int numberOfRows = blockUsage.getTotal() / numberOfColumns;
-
-            Label label = new Label();
-            diskUsageGrid.add(label, 0, 0);
-
-            label = new Label("--- BLOCKS ---");
-            diskUsageGrid.add(label, 1, 0);
-            GridPane.setColumnSpan(label, numberOfColumns);
-            GridPane.setHalignment(label, HPos.CENTER);
-
-            label = new Label("--- BLOCKS ---");
-            label.setRotate(270.0);
-            Group group = new Group(label);
-            diskUsageGrid.add(group, 0, 1);
-            GridPane.setRowSpan(group, numberOfRows);
-            GridPane.setValignment(group, VPos.CENTER);
-
-            int row = 0;
-            int col = 0;
-            for (int b=0; b<blockUsage.getTotal(); b++) {
-                UsageType usageType = blockUsage.getUsage(b);
-                counts.compute(usageType, (k, v) -> v == null ? 1 : v + 1);
-                diskUsageGrid.add(makeSwatch(colors.get(usageType), size), col+1, row+1);
-                col++;
-                if (col >= numberOfColumns) {
-                    col = 0;
-                    row++;
-                }
+            else {
+                diskUsageGrid.add(new Label(), t+1, 0);
             }
         }
-        else if (usage instanceof SectorUsage sectorUsage) {
-            diskUsageGrid.add(new Label(), 0, 0);
-            for (int t = 0; t<sectorUsage.getTracksOnDisk(); t++) {
-                if ( t % 5 == 0 || t == sectorUsage.getTracksOnDisk()-1) {
-                    Label label = new Label(String.format("T%02d", t));
-                    diskUsageGrid.add(label, t+1, 0);
-                    GridPane.setHalignment(label, HPos.CENTER);
-                }
-                else {
-                    diskUsageGrid.add(new Label(), t+1, 0);
-                }
+        for (int s = 0; s<usage.getSectorsPerTrack(); s++) {
+            if ( s % 5 == 0 || s == usage.getSectorsPerTrack()-1 ) {
+                Label label = new Label(String.format("S%02d", s));
+                label.setMinSize(size, size);
+                diskUsageGrid.add(label, 0, s+1);
+                GridPane.setHalignment(label, HPos.RIGHT);
             }
-            for (int s = 0; s<sectorUsage.getSectorsPerTrack(); s++) {
-                if ( s % 5 == 0 || s == sectorUsage.getSectorsPerTrack()-1 ) {
-                    Label label = new Label(String.format("S%02d", s));
-                    diskUsageGrid.add(label, 0, s+1);
-                    GridPane.setHalignment(label, HPos.RIGHT);
-                }
-                else {
-                    diskUsageGrid.add(new Label(), 0, s+1);
-                }
+            else {
+                diskUsageGrid.add(new Label(), 0, s+1);
             }
-            for (int t = 0; t<sectorUsage.getTracksOnDisk(); t++) {
-                for (int s = 0; s< sectorUsage.getSectorsPerTrack(); s++) {
-                    UsageType usageType = sectorUsage.getUsage(t,s);
-                    counts.compute(usageType, (k, v) -> v == null ? 1 : v + 1);
-                    diskUsageGrid.add(makeSwatch(colors.get(usageType), size), t+1, s+1);
-                }
+        }
+        for (int t = 0; t<usage.getTracksOnDisk(); t++) {
+            for (int s = 0; s< usage.getSectorsPerTrack(); s++) {
+                UsageType usageType = usage.getUsage(t,s);
+                counts.compute(usageType, (k, v) -> v == null ? 1 : v + 1);
+                diskUsageGrid.add(makeSwatch(COLORS.get(usageType), size, size), t+1, s+1);
             }
         }
 
@@ -268,7 +233,7 @@ public class DiskUsageView extends StackPane {
         legendBox.getChildren().clear();
         for (UsageType usageType : UsageType.values()) {
             if (usageType == UsageType.FREE || counts.getOrDefault(usageType, 0) > 0) {
-                legendBox.getChildren().addAll(makeSwatch(colors.get(usageType), size), new Label(usageType.name()));
+                legendBox.getChildren().addAll(makeSwatch(COLORS.get(usageType), size, size), new Label(usageType.name()));
                 if (usageType == UsageType.FREE) {
                     legendBox.getChildren().add(new Separator(Orientation.VERTICAL));
                 }
@@ -276,12 +241,81 @@ public class DiskUsageView extends StackPane {
         }
         legendBox.setAlignment(Pos.CENTER);
     }
-    private Rectangle makeSwatch(Color background, int size) {
-        Rectangle swatch = new Rectangle(size, size);
-        swatch.fillProperty().set(background);
-        if (size > 10) {
-            swatch.strokeProperty().set(Color.BLACK);
+    private void updateBlockUsageGrid(BlockUsage usage) {
+        Objects.requireNonNull(usage);
+
+        // Summing this independently since we have to loop through all sectors/blocks anyway.
+        final Map<UsageType,Integer> counts = new HashMap<>();
+
+        // Iterate DiskUsage based on type
+        diskUsageGrid.setHgap(5);
+        diskUsageGrid.setVgap(5);
+        diskUsageGrid.setPadding(new Insets(10));
+        diskUsageGrid.alignmentProperty().setValue(Pos.CENTER);
+        diskUsageGrid.getChildren().clear();
+        final int size = 24;
+        final int sectorsPerSwatch = switch (usage.getTotal()) {
+            // RDOS, 13 sector
+            case 455 -> 1;
+            // RDOS; 16 sector
+            case 560 -> 1;
+            // ProDOS or Pascal; 16 sector
+            case 280 -> 2;
+            // CP/M; 16 sector
+            case 140 -> 4;
+            // Unknown
+            default -> 1;
+        };
+        final int sectorsPerTrack = usage.getTotal() == 455 ? 13 : 16;
+        final int tracks = 35;  // total assumption based on selection
+
+        Label label = new Label();
+        diskUsageGrid.add(label, 0, 0);
+
+        label = new Label("--- BLOCKS ---");
+        diskUsageGrid.add(label, 1, 0);
+        GridPane.setColumnSpan(label, tracks + 1);
+        GridPane.setHalignment(label, HPos.CENTER);
+
+        label = new Label("--- BLOCKS ---");
+        label.setRotate(270.0);
+        Group group = new Group(label);
+        diskUsageGrid.add(group, 0, 1);
+        GridPane.setRowSpan(group, sectorsPerTrack + 1);
+        GridPane.setValignment(group, VPos.CENTER);
+
+        int row = 0;
+        int col = 0;
+        for (int b=0; b<usage.getTotal(); b++) {
+            UsageType usageType = usage.getUsage(b);
+            counts.compute(usageType, (k, v) -> v == null ? 1 : v + 1);
+            Rectangle swatch = makeSwatch(COLORS.get(usageType), size, size*sectorsPerSwatch);
+            diskUsageGrid.add(swatch, col+1, row+1);
+            GridPane.setRowSpan(swatch, sectorsPerSwatch);
+            row+= sectorsPerSwatch;
+            if (row >= sectorsPerTrack) {
+                row = 0;
+                col++;
+            }
         }
+
+        // Legend - note that we work the colors in the same order as the pie chart for consistency!
+        legendBox.getChildren().clear();
+        for (UsageType usageType : UsageType.values()) {
+            if (usageType == UsageType.FREE || counts.getOrDefault(usageType, 0) > 0) {
+                legendBox.getChildren().addAll(makeSwatch(COLORS.get(usageType), size,
+                    size), new Label(usageType.name()));
+                if (usageType == UsageType.FREE) {
+                    legendBox.getChildren().add(new Separator(Orientation.VERTICAL));
+                }
+            }
+        }
+        legendBox.setAlignment(Pos.CENTER);
+    }
+    private Rectangle makeSwatch(Color background, int width, int height) {
+        Rectangle swatch = new Rectangle(width, height);
+        swatch.fillProperty().set(background);
+        swatch.strokeProperty().set(Color.BLACK);
         return swatch;
     }
 
