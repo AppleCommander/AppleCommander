@@ -19,7 +19,6 @@
  */
 package org.applecommander.os.rdos;
 
-import org.applecommander.capability.Capability;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.exception.DirectoryFullException;
 import org.applecommander.exception.FileExistsException;
@@ -72,12 +71,6 @@ public class RDOSDirectory implements WritableDirectory, RDOSConstants {
             }
         }
         return entries;
-    }
-
-    /// Helps identify capabilities of the existing component.
-    @Override
-    public boolean can(Capability capability) {
-        return CAPABILITIES.contains(capability);
     }
 
     /// Create a file. By definition, any file created is a `WritableFileEntry`.

@@ -19,8 +19,6 @@
  */
 package org.applecommander.filestore;
 
-import org.applecommander.capability.Capability;
-
 import java.util.List;
 
 /// Provides a generic `Directory` structure for simple `FileStore`s.
@@ -49,10 +47,5 @@ public class GenericDirectory<FS extends FileStore> implements Directory {
     @Override
     public List<FileEntry> getFiles() {
         return files;
-    }
-
-    @Override
-    public boolean can(Capability capability) {
-        return false;
     }
 }

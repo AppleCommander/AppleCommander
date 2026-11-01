@@ -331,14 +331,6 @@ public class DiskFileStoreAdapter implements FileStore {
             this.directoryEntry = directoryEntry;
         }
         @Override
-        public boolean can(Capability capability) {
-            return switch (capability) {
-                case CREATE_DIRECTORIES -> directoryEntry.canCreateDirectories();
-                case CREATE_FILES -> directoryEntry.canCreateFile();
-                default -> false;
-            };
-        }
-        @Override
         public Optional<Directory> getParent() {
             return Optional.ofNullable(parent);
         }

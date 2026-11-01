@@ -132,12 +132,6 @@ public class PascalDirectory implements WritableDirectory, PascalConstants {
         return entries;
     }
 
-    /// Helps identify capabilities of the existing component.
-    @Override
-    public boolean can(Capability capability) {
-        return CAPABILITIES.contains(capability);
-    }
-
     /// Create a file. By definition, any file created is a `WritableFileEntry`.
     /// @see Capability#CREATE_FILES
     @Override
