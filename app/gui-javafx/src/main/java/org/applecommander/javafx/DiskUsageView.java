@@ -71,7 +71,7 @@ public class DiskUsageView extends StackPane {
 
     public DiskUsageView(FileStoreWindow fileStoreWindow, ToolBar toolBar) {
         ToggleGroup listingModeGroup = new ToggleGroup();
-        usageGridToggle = createToggleButton("usage-grid-view.png", "Native", listingModeGroup, e -> selectGridView());
+        usageGridToggle = createToggleButton("usage-grid-view.png", "Grid", listingModeGroup, e -> selectGridView());
         usagePieChartToggle = createToggleButton("usage-chart-view.png", "Detail", listingModeGroup, e -> selectChartView());
         HBox listingModeBox = new HBox(usageGridToggle, usagePieChartToggle);
         toolBar.getItems().add(listingModeBox);
@@ -190,39 +190,38 @@ public class DiskUsageView extends StackPane {
         // Summing this independently since we have to loop through all sectors/blocks anyway.
         final Map<UsageType,Integer> counts = new HashMap<>();
 
-        // Iterate DiskUsage based on type
-        diskUsageGrid.setHgap(5);
-        diskUsageGrid.setVgap(5);
-        diskUsageGrid.setPadding(new Insets(10));
-        diskUsageGrid.alignmentProperty().setValue(Pos.CENTER);
-        diskUsageGrid.getChildren().clear();
-        final int size = 26;
-        diskUsageGrid.add(new Label(), 0, 0);
+        // Layout the grid
+        final int size = 24;
+        setupGrid(usage.getTracksOnDisk()+2, "TRACKS", usage.getSectorsPerTrack()+2, "SECTORS");
         for (int t = 0; t < usage.getTracksOnDisk(); t++) {
+            final int col = t+2;
+            final int row = 1;
             if (t % 5 == 0 || t == usage.getTracksOnDisk() - 1) {
-                Label label = new Label(String.format("T%02d", t));
+                Label label = new Label(String.format("%d", t));
                 label.setMinSize(size, size);
-                diskUsageGrid.add(label, t + 1, 0);
-                GridPane.setHalignment(label, HPos.CENTER);
+                label.setAlignment(Pos.BOTTOM_CENTER);
+                diskUsageGrid.add(label, col, row);
             } else {
-                diskUsageGrid.add(new Label(), t + 1, 0);
+                diskUsageGrid.add(new Label(), col, row);
             }
         }
         for (int s = 0; s < usage.getSectorsPerTrack(); s++) {
+            final int col = 1;
+            final int row = s+2;
             if (s % 5 == 0 || s == usage.getSectorsPerTrack() - 1) {
-                Label label = new Label(String.format("S%02d", s));
+                Label label = new Label(String.format("%d", s));
                 label.setMinSize(size, size);
-                diskUsageGrid.add(label, 0, s + 1);
-                GridPane.setHalignment(label, HPos.RIGHT);
+                label.setAlignment(Pos.CENTER_RIGHT);
+                diskUsageGrid.add(label, col, row);
             } else {
-                diskUsageGrid.add(new Label(), 0, s + 1);
+                diskUsageGrid.add(new Label(), col, row);
             }
         }
         for (int t = 0; t < usage.getTracksOnDisk(); t++) {
             for (int s = 0; s < usage.getSectorsPerTrack(); s++) {
                 UsageType usageType = usage.getUsage(t, s);
                 counts.compute(usageType, (k, v) -> v == null ? 1 : v + 1);
-                diskUsageGrid.add(makeSwatch(COLORS.get(usageType), size), t + 1, s + 1);
+                diskUsageGrid.add(makeSwatch(COLORS.get(usageType), size), t + 2, s + 2);
             }
         }
         updateLegendBox(counts);
@@ -234,12 +233,7 @@ public class DiskUsageView extends StackPane {
         // Summing this independently since we have to loop through all sectors/blocks anyway.
         final Map<UsageType,Integer> counts = new HashMap<>();
 
-        // Iterate DiskUsage based on type
-        diskUsageGrid.setHgap(5);
-        diskUsageGrid.setVgap(5);
-        diskUsageGrid.setPadding(new Insets(10));
-        diskUsageGrid.alignmentProperty().setValue(Pos.CENTER);
-        diskUsageGrid.getChildren().clear();
+        // Figure out layout
         final int size = 24;
         final int sectorsPerSwatch = switch (usage.getTotal()) {
             // RDOS, 13 sector
@@ -257,21 +251,7 @@ public class DiskUsageView extends StackPane {
         final int swatchesPerTrack = sectorsPerTrack / sectorsPerSwatch;
         final int tracks = 35;  // total assumption based on selection
 
-        Label label = new Label();
-        diskUsageGrid.add(label, 0, 0);
-
-        label = new Label("--- BLOCKS ---");
-        diskUsageGrid.add(label, 1, 0);
-        GridPane.setColumnSpan(label, tracks + 1);
-        GridPane.setHalignment(label, HPos.CENTER);
-
-        label = new Label("--- BLOCKS ---");
-        label.setRotate(270.0);
-        Group group = new Group(label);
-        diskUsageGrid.add(group, 0, 1);
-        GridPane.setRowSpan(group, sectorsPerTrack + 1);
-        GridPane.setValignment(group, VPos.CENTER);
-
+        setupGrid(tracks + 1, "BLOCKS", swatchesPerTrack + 1, "BLOCKS");
         int row = 0;
         int col = 0;
         for (int b=0; b<usage.getTotal(); b++) {
@@ -296,6 +276,28 @@ public class DiskUsageView extends StackPane {
         swatch.fillProperty().set(background);
         swatch.strokeProperty().set(Color.BLACK);
         return swatch;
+    }
+    private void setupGrid(int totalColumns, String columnTitle, int totalRows, String rowTitle) {
+        diskUsageGrid.setHgap(5);
+        diskUsageGrid.setVgap(5);
+        diskUsageGrid.setPadding(new Insets(10));
+        diskUsageGrid.alignmentProperty().setValue(Pos.CENTER);
+        diskUsageGrid.getChildren().clear();
+
+        Label label = new Label();
+        diskUsageGrid.add(label, 0, 0);
+
+        label = new Label(String.format("----- %s -----", columnTitle));
+        diskUsageGrid.add(label, 1, 0);
+        GridPane.setColumnSpan(label, totalColumns);
+        GridPane.setHalignment(label, HPos.CENTER);
+
+        label = new Label(String.format("----- %s -----", rowTitle));
+        label.setRotate(270.0);
+        Group group = new Group(label);
+        diskUsageGrid.add(group, 0, 1);
+        GridPane.setRowSpan(group, totalRows);
+        GridPane.setValignment(group, VPos.CENTER);
     }
     private void updateLegendBox(Map<UsageType,Integer> counts) {
         final int size = 24;
