@@ -59,7 +59,6 @@ public class DiskUsageView extends StackPane {
         UsageType.FILE, Color.GOLDENROD
     );
 
-
     private final ToggleButton usageGridToggle;
     private final ToggleButton usagePieChartToggle;
     private final VBox gridView;
@@ -225,15 +224,14 @@ public class DiskUsageView extends StackPane {
             for (int s = 0; s< usage.getSectorsPerTrack(); s++) {
                 UsageType usageType = usage.getUsage(t,s);
                 counts.compute(usageType, (k, v) -> v == null ? 1 : v + 1);
-                diskUsageGrid.add(makeSwatch(COLORS.get(usageType), size, size), t+1, s+1);
+                diskUsageGrid.add(makeSwatch(COLORS.get(usageType), size), t+1, s+1);
             }
         }
 
-        // Legend - note that we work the colors in the same order as the pie chart for consistency!
         legendBox.getChildren().clear();
         for (UsageType usageType : UsageType.values()) {
             if (usageType == UsageType.FREE || counts.getOrDefault(usageType, 0) > 0) {
-                legendBox.getChildren().addAll(makeSwatch(COLORS.get(usageType), size, size), new Label(usageType.name()));
+                legendBox.getChildren().addAll(makeSwatch(COLORS.get(usageType), size), new Label(usageType.name()));
                 if (usageType == UsageType.FREE) {
                     legendBox.getChildren().add(new Separator(Orientation.VERTICAL));
                 }
@@ -267,6 +265,7 @@ public class DiskUsageView extends StackPane {
             default -> 1;
         };
         final int sectorsPerTrack = usage.getTotal() == 455 ? 13 : 16;
+        final int swatchesPerTrack = sectorsPerTrack / sectorsPerSwatch;
         final int tracks = 35;  // total assumption based on selection
 
         Label label = new Label();
@@ -289,22 +288,22 @@ public class DiskUsageView extends StackPane {
         for (int b=0; b<usage.getTotal(); b++) {
             UsageType usageType = usage.getUsage(b);
             counts.compute(usageType, (k, v) -> v == null ? 1 : v + 1);
-            Rectangle swatch = makeSwatch(COLORS.get(usageType), size, size*sectorsPerSwatch);
-            diskUsageGrid.add(swatch, col+1, row+1);
-            GridPane.setRowSpan(swatch, sectorsPerSwatch);
-            row+= sectorsPerSwatch;
-            if (row >= sectorsPerTrack) {
+            VBox swatches = new VBox();
+            for (int i=0; i<sectorsPerSwatch; i++) {
+                swatches.getChildren().add(makeSwatch(COLORS.get(usageType), size));
+            }
+            diskUsageGrid.add(swatches, col+1, row+1);
+            row++;
+            if (row >= swatchesPerTrack) {
                 row = 0;
                 col++;
             }
         }
 
-        // Legend - note that we work the colors in the same order as the pie chart for consistency!
         legendBox.getChildren().clear();
         for (UsageType usageType : UsageType.values()) {
             if (usageType == UsageType.FREE || counts.getOrDefault(usageType, 0) > 0) {
-                legendBox.getChildren().addAll(makeSwatch(COLORS.get(usageType), size,
-                    size), new Label(usageType.name()));
+                legendBox.getChildren().addAll(makeSwatch(COLORS.get(usageType), size), new Label(usageType.name()));
                 if (usageType == UsageType.FREE) {
                     legendBox.getChildren().add(new Separator(Orientation.VERTICAL));
                 }
@@ -312,8 +311,8 @@ public class DiskUsageView extends StackPane {
         }
         legendBox.setAlignment(Pos.CENTER);
     }
-    private Rectangle makeSwatch(Color background, int width, int height) {
-        Rectangle swatch = new Rectangle(width, height);
+    private Rectangle makeSwatch(Color background, int size) {
+        Rectangle swatch = new Rectangle(size, size);
         swatch.fillProperty().set(background);
         swatch.strokeProperty().set(Color.BLACK);
         return swatch;
