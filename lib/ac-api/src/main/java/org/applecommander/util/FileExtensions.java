@@ -22,6 +22,7 @@ package org.applecommander.util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 /// `FileExtensions` is the one place that holds all possible file extensions.
 /// It can be used in a user-interface context by using the description in
@@ -31,6 +32,7 @@ import java.util.List;
 /// There are no accessors, just the static variables.
 public class FileExtensions {
     public static final List<FileExtension> FILE_FILTERS;
+    public static final List<String> ALL_IMAGE_EXTENSIONS;
     public static final List<String> DISK_IMAGE_EXTENSIONS;
     public static final List<String> ARCHIVE_IMAGE_EXTENSIONS;
 
@@ -95,6 +97,7 @@ public class FileExtensions {
         // Note that these drop the leading '*'.
         DISK_IMAGE_EXTENSIONS = diskExtensions.stream().map(s -> s.substring(1)).toList();
         ARCHIVE_IMAGE_EXTENSIONS = archiveExtensions.stream().map(s -> s.substring(1)).toList();
+        ALL_IMAGE_EXTENSIONS = Stream.concat(DISK_IMAGE_EXTENSIONS.stream(), ARCHIVE_IMAGE_EXTENSIONS.stream()).toList();
     }
 
     public record FileExtension(String description, List<String> extensions) {}
