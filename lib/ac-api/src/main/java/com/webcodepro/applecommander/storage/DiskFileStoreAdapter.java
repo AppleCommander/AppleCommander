@@ -115,6 +115,11 @@ public class DiskFileStoreAdapter implements FileStore {
     }
 
     @Override
+    public String getType() {
+        return disk.getFormat();
+    }
+
+    @Override
     public String getLabel() {
         return disk.getDiskName();
     }
@@ -329,14 +334,6 @@ public class DiskFileStoreAdapter implements FileStore {
             this.adapter = adapter;
             this.parent = parent;
             this.directoryEntry = directoryEntry;
-        }
-        @Override
-        public boolean can(Capability capability) {
-            return switch (capability) {
-                case CREATE_DIRECTORIES -> directoryEntry.canCreateDirectories();
-                case CREATE_FILES -> directoryEntry.canCreateFile();
-                default -> false;
-            };
         }
         @Override
         public Optional<Directory> getParent() {

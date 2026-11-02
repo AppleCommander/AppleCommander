@@ -58,6 +58,13 @@ public class ShrinkitFileStore implements FileStore {
             throw new UncheckedIOException(e);
         }
     }
+
+    /// Get the type of file store. This is a generic name, such as "RDOS 2.1" or "ShrinkIt".
+    @Override
+    public String getType() {
+        return "ShrinkIt";
+    }
+
     @Override
     public String getLabel() {
         return source.getName();

@@ -78,7 +78,7 @@ public class BinaryIIFileEntry implements FileEntry, BinaryIIConstants {
     /// It may be approximate (based off a sector count, for instance).
     @Override
     public long getSize() {
-        return (long) header.getUnsignedByte(GSOS_EOF) << 16 | header.getUnsignedShort(EOF);
+        return (long) header.getUnsignedByte(GSOS_EOF) << 24 | header.getUnsignedShort3(EOF);
     }
 
     public int getAccess() {

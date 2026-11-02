@@ -64,7 +64,9 @@ public enum FileStoreOrganization {
     public String getExtension() {
         return extension;
     }
-
+    public SectorOrder getSectorOrder() {
+        return sectorOrder;
+    }
     public int getSize() {
         return size;
     }
@@ -100,9 +102,10 @@ public enum FileStoreOrganization {
         if (size == 0 || this == DISK_13SECTOR_DO) {
             throw new UnsupportedOperationException();
         }
-        if (sectorOrder == SectorOrder.DOS || sectorOrder == SectorOrder.NIBBLE) {
+        if (sectorOrder != null) {
             TrackSectorDevice trackSectorDevice = createTrackSectorDevice();
-            return new TrackSectorToBlockAdapter(trackSectorDevice, TrackSectorToBlockAdapter.BlockStyle.PRODOS);
+            return new TrackSectorToBlockAdapter(trackSectorDevice.request(SectorOrder.PRODOS),
+                    TrackSectorToBlockAdapter.BlockStyle.PRODOS);
         }
         Source source = createSource(extension);
         return new ProdosOrderedBlockDevice(source, TrackSectorToBlockAdapter.BlockStyle.PRODOS.blockSize);

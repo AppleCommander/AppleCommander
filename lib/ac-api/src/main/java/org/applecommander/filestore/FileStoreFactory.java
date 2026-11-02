@@ -96,12 +96,12 @@ public interface FileStoreFactory {
             private BlockDeviceBuilder(Context ctx) {
                 this.ctx = ctx;
             }
-            public BlockDeviceBuilder check16Sector(Consumer<BlockDevice> check) {
+            public BlockDeviceBuilder check16Sector(SectorOrder sectorOrder, Consumer<BlockDevice> check) {
                 if (ctx.nibbleTrackReaderWriter != null) {
                     Optional<TrackSectorDevice> nibble = TrackSectorNibbleDevice.identify(ctx.nibbleTrackReaderWriter);
                     nibble.ifPresent(trackSectorDevice -> {
                         if (trackSectorDevice.getGeometry().sectorsPerTrack() == 16) {
-                            BlockDevice device = new TrackSectorToBlockAdapter(trackSectorDevice.request(SectorOrder.PRODOS),
+                            BlockDevice device = new TrackSectorToBlockAdapter(trackSectorDevice.request(sectorOrder),
                                     TrackSectorToBlockAdapter.BlockStyle.PRODOS);
                             check.accept(device);
                         }
@@ -110,18 +110,22 @@ public interface FileStoreFactory {
                 else if (ctx.source.isApproxBetween(DiskConstants.APPLE_140KB_DISK, DiskConstants.APPLE_160KB_DISK)) {
                     if (ctx.source.is(Hint.DOS_SECTOR_ORDER) || ctx.source.extensionLike("do")) {
                         TrackSectorDevice trackSectorDevice = new OrderedTrackSectorDevice(ctx.source, SectorOrder.DOS);
-                        BlockDevice device = new TrackSectorToBlockAdapter(trackSectorDevice.request(SectorOrder.PRODOS),
+                        BlockDevice device = new TrackSectorToBlockAdapter(trackSectorDevice.request(sectorOrder),
                                 TrackSectorToBlockAdapter.BlockStyle.PRODOS);
                         check.accept(device);
                     } else if (ctx.source.is(Hint.PRODOS_BLOCK_ORDER) || ctx.source.extensionLike("po")) {
-                        BlockDevice device = new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE);
+                        TrackSectorDevice trackSectorDevice = new OrderedTrackSectorDevice(ctx.source, SectorOrder.PRODOS);
+                        BlockDevice device = new TrackSectorToBlockAdapter(trackSectorDevice.request(sectorOrder),
+                                TrackSectorToBlockAdapter.BlockStyle.PRODOS);
                         check.accept(device);
                     } else {
                         TrackSectorDevice trackSectorDevice = new OrderedTrackSectorDevice(ctx.source, SectorOrder.DOS);
-                        BlockDevice doDevice = new TrackSectorToBlockAdapter(trackSectorDevice.request(SectorOrder.PRODOS),
+                        BlockDevice doDevice = new TrackSectorToBlockAdapter(trackSectorDevice.request(sectorOrder),
                                 TrackSectorToBlockAdapter.BlockStyle.PRODOS);
                         check.accept(doDevice);
-                        BlockDevice poDevice = new ProdosOrderedBlockDevice(ctx.source, BlockDevice.STANDARD_BLOCK_SIZE);
+                        trackSectorDevice = new OrderedTrackSectorDevice(ctx.source, SectorOrder.PRODOS);
+                        BlockDevice poDevice = new TrackSectorToBlockAdapter(trackSectorDevice.request(sectorOrder),
+                                TrackSectorToBlockAdapter.BlockStyle.PRODOS);
                         check.accept(poDevice);
                     }
                 }

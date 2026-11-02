@@ -49,16 +49,23 @@ public class BinaryIIFileStore implements FileStore, BinaryIIConstants {
         int offset = 0;
         while (offset < source.getSize()) {
             DataBuffer header = source.readBytes(offset, BLOCK_SIZE);
-            int eof = header.getUnsignedByte(GSOS_EOF) << 16 | header.getUnsignedShort(EOF);
+            int eof = header.getUnsignedByte(GSOS_EOF) << 24 | header.getUnsignedShort3(EOF);
             if (eof == 0) continue;
             int phantomFlag = header.getUnsignedByte(PHANTOM_FILE_FLAG);
             if (phantomFlag > 0) continue;
-            int dataChunks = (eof + BLOCK_SIZE - 1) / BLOCK_SIZE;
-            DataBuffer data = source.readBytes(offset+BLOCK_SIZE, dataChunks*BLOCK_SIZE);
+            DataBuffer data = source.readBytes(offset+BLOCK_SIZE, eof);
             files.add(new BinaryIIFileEntry(this, header, data.slice(0, eof)));
+            if (header.getUnsignedByte(REMAINING_FILES) == 0) break;
+            int dataChunks = (eof + BLOCK_SIZE - 1) / BLOCK_SIZE;
             offset += (dataChunks + 1) * BLOCK_SIZE;
         }
         return files;
+    }
+
+    /// Get the type of file store. This is a generic name, such as "RDOS 2.1" or "ShrinkIt".
+    @Override
+    public String getType() {
+        return "Binary II";
     }
 
     /// The label is a mechanism to distinguish multiple file stores in a single file.

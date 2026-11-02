@@ -74,6 +74,12 @@ public class ZipFileStore implements FileStore {
         return new ZipInputStream(new ByteArrayInputStream(source.readAllBytes().asBytes()));
     }
 
+    /// Get the type of file store. This is a generic name, such as "RDOS 2.1" or "ShrinkIt".
+    @Override
+    public String getType() {
+        return "Zip";
+    }
+
     @Override
     public String getLabel() {
         return source.getName();

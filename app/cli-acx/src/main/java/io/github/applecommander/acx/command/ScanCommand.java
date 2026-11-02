@@ -22,18 +22,15 @@ package io.github.applecommander.acx.command;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonStreamParser;
-import com.webcodepro.applecommander.storage.*;
-import com.webcodepro.applecommander.storage.os.cpm.CpmFormatDisk;
-import com.webcodepro.applecommander.storage.os.dos33.DosFormatDisk;
-import com.webcodepro.applecommander.storage.os.gutenberg.GutenbergFormatDisk;
-import com.webcodepro.applecommander.storage.os.nakedos.NakedosFormatDisk;
-import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
-import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
-import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import io.github.applecommander.acx.base.ReusableCommandOptions;
 import org.applecommander.device.BlockDevice;
+import org.applecommander.device.Device;
 import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.filestore.*;
+import org.applecommander.filestore.FileStore;
 import org.applecommander.source.Source;
+import org.applecommander.source.Sources;
+import org.applecommander.util.FileExtensions;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -48,7 +45,13 @@ import java.util.logging.Logger;
 
 import static picocli.CommandLine.*;
 
-@Command(name = "scan", description = "Scan directory and report on disks found and understood.")
+@Command(name = "scan", description = { "Scan directory and report on disks found and understood.", "", """
+                This subcommand is intended to assist in identifying either discrepancies between
+                differing versions of AppleCommander and/or to locate likely candidates for investigation
+                if that are not 'understood' (either by the discovery mechanism or by the image
+                implementation itself). Finally, it *might* be useful to discover actual 'bad' images
+                in a collection.
+                """ })
 public class ScanCommand extends ReusableCommandOptions {
     private static final Logger LOG = Logger.getLogger(ScanCommand.class.getName());
 
@@ -112,6 +115,7 @@ public class ScanCommand extends ReusableCommandOptions {
             while (parser.hasNext()) {
                 ImageReport oldImageReport = gson.fromJson(parser.next(), ImageReport.class);
                 oldImageReport.fixup();
+                if (progress) System.out.printf("Scanning: '%s'\n", oldImageReport.imageName);
                 ImageReport newImageReport = visitor.scanFile(Path.of(oldImageReport.imageName));
                 oldData.tallyData(oldImageReport);
                 newData.tallyData(newImageReport);
@@ -236,7 +240,7 @@ public class ScanCommand extends ReusableCommandOptions {
             // Build "glob:**.{do,po,dsk,...}"
             StringBuilder globs = new StringBuilder("glob:**.{");
             boolean first = true;
-            for (String ext : FilenameFilter.getAllExtensions()) {
+            for (String ext : FileExtensions.ALL_IMAGE_EXTENSIONS) {
                 if (!first) globs.append(",");
                 ext = ext.substring(1); // skip the "." - lots of assumptions here!
                 // Unix is case-sensitive, so we need to make the pattern case-insensitive (yuck)
@@ -392,26 +396,29 @@ public class ScanCommand extends ReusableCommandOptions {
             try {
                 imageName = file.toString();
                 Source source = Sources.create(imageName).orElseThrow();
-                DiskFactory.Context ctx = Disks.inspect(source);
-                for (FormattedDisk fdisk : ctx.disks) {
+                FileStoreFactory.Context ctx = FileStores.inspect(source);
+                for (FileStore fileStore : ctx.fileStores) {
                     logicalDisks++;
-                    imageType = fdisk.getFormat();
-                    readAllFiles(fdisk);
+                    imageType = fileStore.getType();
+                    readAllFiles(fileStore.getRootDirectory());
                     // Read all data
                     var list = strict ? errors : warnings;
-                    switch (fdisk) {
-                        case CpmFormatDisk cpm -> readAllCPMBlocks(cpm, list);
-                        case DosFormatDisk dos -> readAllSectors(dos, list);
-                        case GutenbergFormatDisk gutenberg -> readAllSectors(gutenberg, list);
-                        case NakedosFormatDisk nakedos -> readAllSectors(nakedos, list);
-                        case PascalFormatDisk pascal -> readAllBlocks(pascal, list);
-                        case ProdosFormatDisk prodos -> readAllBlocks(prodos, list);
-                        case RdosFormatDisk rdos -> readAllRDOSBlocks(rdos, list);
-                        default -> throw new RuntimeException("Unexpected disk type: " + fdisk.getFormat());
-                    }
+                    // Read a device in its entirety
+                    Optional<Device> opt = fileStore.get(Device.class);
+                    opt.ifPresent(device -> {
+                        if (device instanceof BlockDevice blockDevice) {
+                            readAllBlocks(blockDevice, list);
+                        }
+                        else if (device instanceof TrackSectorDevice trackSectorDevice) {
+                            readAllSectors(trackSectorDevice, list);
+                        }
+                        else {
+                            dataType = "N/A";
+                        }
+                    });
                 }
                 // No errors found -AND- we identified at least one disk
-                success = errors.isEmpty() && !ctx.disks.isEmpty();
+                success = errors.isEmpty() && !ctx.fileStores.isEmpty();
             } catch (Throwable t) {
                 success = false;
                 String msg = t.getMessage();
@@ -427,89 +434,56 @@ public class ScanCommand extends ReusableCommandOptions {
         }
 
         /** Read all files, capturing errors. */
-        private void readAllFiles(DirectoryEntry dir) {
+        private void readAllFiles(Directory dir) {
             directoriesVisited++;
             List<FileEntry> files;
             try {
                 files = dir.getFiles();
             } catch (Throwable t) {
-                errors.add(String.format("Unable to read directory %d/%s", dir.getFormattedDisk().getLogicalDiskNumber(),
-                        dir.getDirname()));
+                errors.add(String.format("Unable to read directory %s/%s", dir.getFileStore().getLabel(),
+                        dir.getName()));
                 return;
             }
-            for (FileEntry fe : files) {
+            for (FileEntry file : files) {
                 if (errors.size() > MAX_ERRORS) return;
-                if (fe.isDeleted()) {
+                if (file.isDeleted()) {
                     deletedFiles++;
-                } else if (fe instanceof DirectoryEntry directoryEntry) {
-                    readAllFiles(directoryEntry);
                 } else {
-                    filesVisited++;
-                    try {
-                        if (fe.getFileData() != null) {
-                            filesRead++;
+                    file.get(Directory.class).ifPresentOrElse(this::readAllFiles, () -> {
+                        filesVisited++;
+                        try {
+                            if (file.getDataFork() != null) {
+                                filesRead++;
+                            }
+                        } catch (Throwable t) {
+                            errors.add(String.format("Unable to read file %s/%s/%s: %s", dir.getFileStore().getLabel(),
+                                    dir.getName(), file.getName(), t.getMessage()));
                         }
-                    } catch (Throwable t) {
-                        errors.add(String.format("Unable to read file %d/%s/%s: %s", dir.getFormattedDisk().getLogicalDiskNumber(),
-                                dir.getDirname(), fe.getFilename(), t.getMessage()));
-                    }
+                    });
                 }
             }
         }
 
-        private void readAllCPMBlocks(CpmFormatDisk cpm, List<String> list) {
-            dataType = "CPM blocks";
-            // Note that the "raw" device can read the entire CP/M disk and that the CP/M filesystem handles the
-            // "logical" block 0 starting on track 3.
-            BlockDevice device = cpm.get(BlockDevice.class).orElseThrow();
-            for (int b = 0; b < device.getGeometry().blocksOnDevice(); b++) {
-                try {
-                    device.readBlock(b);
-                    dataRead++;
-                } catch (Throwable t) {
-                    list.add(String.format("Unable to read CPM block #%d for disk #%d", b, cpm.getLogicalDiskNumber()));
-                }
-            }
-        }
-
-        private void readAllBlocks(FormattedDisk fdisk, List<String> list) {
-            BlockDevice device = BlockDeviceAdapter.from(fdisk);
+        private void readAllBlocks(BlockDevice device, List<String> list) {
             dataType = "blocks";
-            for (int b = 0; b < fdisk.getBitmapLength() && list.size() < MAX_ERRORS; b++) {
+            for (int b = 0; b < device.getGeometry().blocksOnDevice() && list.size() < MAX_ERRORS; b++) {
                 try {
                     device.readBlock(b);
                     dataRead++;
                 } catch (Throwable t) {
-                    list.add(String.format("Unable to read block #%d for disk #%d", b, fdisk.getLogicalDiskNumber()));
+                    list.add(String.format("Unable to read block #%d", b));
                 }
             }
         }
-
-        private void readAllRDOSBlocks(RdosFormatDisk rdos, List<String> list) {
-            dataType = "RDOS blocks";
-            BlockDevice device = rdos.get(BlockDevice.class).orElseThrow();
-            for (int b = 0; b < rdos.getBitmapLength() && list.size() < MAX_ERRORS; b++) {
-                try {
-                    device.readBlock(b);
-                    dataRead++;
-                } catch (Throwable t) {
-                    list.add(String.format("Unable to read RDOS block #%d for disk #%d", b, rdos.getLogicalDiskNumber()));
-                }
-            }
-        }
-
-        private void readAllSectors(FormattedDisk fdisk, List<String> list) {
-            TrackSectorDevice device = TrackSectorDeviceAdapter.from(fdisk);
+        private void readAllSectors(TrackSectorDevice device, List<String> list) {
             dataType = "sectors";
-            int[] dims = fdisk.getBitmapDimensions();
-            for (int track = 0; track < dims[0] && list.size() < MAX_ERRORS; track++) {
-                for (int sector = 0; sector < dims[1] && list.size() < MAX_ERRORS; sector++) {
+            for (int track = 0; track < device.getGeometry().tracksOnDisk() && list.size() < MAX_ERRORS; track++) {
+                for (int sector = 0; sector < device.getGeometry().sectorsPerTrack() && list.size() < MAX_ERRORS; sector++) {
                     try {
                         device.readSector(track, sector);
                         dataRead++;
                     } catch (Throwable t) {
-                        list.add(String.format("Unable to read sector T%d,S%s for disk #%d",
-                                track, sector, fdisk.getLogicalDiskNumber()));
+                        list.add(String.format("Unable to read sector T%d,S%s", track, sector));
                     }
                 }
             }

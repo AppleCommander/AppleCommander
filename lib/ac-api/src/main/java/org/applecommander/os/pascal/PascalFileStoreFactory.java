@@ -21,6 +21,7 @@ package org.applecommander.os.pascal;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
 import org.applecommander.device.BlockDevice;
+import org.applecommander.device.SectorOrder;
 import org.applecommander.filestore.FileStoreFactory;
 import org.applecommander.filestore.FileStoreOrganization;
 import org.applecommander.util.DataBuffer;
@@ -48,7 +49,7 @@ public class PascalFileStoreFactory implements FileStoreFactory, PascalConstants
     @Override
     public void inspect(Context ctx) {
         ctx.blockDevice()
-                .check16Sector(device -> {
+                .check16Sector(SectorOrder.PRODOS, device -> {
                     if (check(device)) {
                         ctx.fileStores.add(new PascalFileStore(device));
                     }

@@ -19,7 +19,6 @@
  */
 package org.applecommander.os.gamedos;
 
-import org.applecommander.capability.Capability;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.exception.DirectoryFullException;
 import org.applecommander.exception.FileExistsException;
@@ -39,11 +38,6 @@ public class GamedosDirectory implements WritableDirectory, GamedosConstants {
     GamedosDirectory(GamedosFileStore fileStore) {
         this.fileStore = fileStore;
         this.device = fileStore.get(TrackSectorDevice.class).orElseThrow();
-    }
-
-    @Override
-    public boolean can(Capability capability) {
-        return CAPABILITIES.contains(capability);
     }
 
     @Override

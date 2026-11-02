@@ -80,6 +80,12 @@ public class GamedosFileStore implements FileStore, GamedosConstants {
         return UsageType.FREE;
     }
 
+    /// Get the type of file store. This is a generic name, such as "RDOS 2.1" or "ShrinkIt".
+    @Override
+    public String getType() {
+        return "GameDOS";
+    }
+
     @Override
     public String getLabel() {
         DataBuffer track0 = device.readRange(0, 0, 14);

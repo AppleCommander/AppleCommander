@@ -19,6 +19,8 @@
  */
 package com.webcodepro.applecommander.storage;
 
+import com.webcodepro.applecommander.storage.os.pascal.PascalFormatDisk;
+import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import org.applecommander.filestore.FileStoreFactory;
 
 /**
@@ -35,6 +37,10 @@ public class DiskFileStoreFactory implements FileStoreFactory {
     @Override
     public void inspect(Context ctx) {
         DiskFactory.Context context = Disks.inspect(ctx.source);
+        // HACK - Let's TOSS OUT the older interfaces as they get replaced.
+        context.disks.removeIf(RdosFormatDisk.class::isInstance);
+        context.disks.removeIf(PascalFormatDisk.class::isInstance);
+        //
         context.disks.forEach(disk -> {
             ctx.fileStores.add(new DiskFileStoreAdapter(disk));
         });

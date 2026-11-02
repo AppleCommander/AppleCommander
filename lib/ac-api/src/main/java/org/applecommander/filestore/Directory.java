@@ -19,8 +19,6 @@
  */
 package org.applecommander.filestore;
 
-import org.applecommander.capability.CapabilityProvider;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,7 +26,7 @@ import java.util.stream.Collectors;
 /// A `Directory` represents a directory in a `FileStore`.  Note that even
 /// file stores that don't naturally support a directory do contain a root directory,
 /// so there will be a directory associated to each `FileStore`.
-public interface Directory extends CapabilityProvider {
+public interface Directory {
 
     /// Get the parent directory. If this is the root directory, it returns empty.
     default Optional<Directory> getParent() {
