@@ -53,9 +53,10 @@ public class BinaryIIFileStore implements FileStore, BinaryIIConstants {
             if (eof == 0) continue;
             int phantomFlag = header.getUnsignedByte(PHANTOM_FILE_FLAG);
             if (phantomFlag > 0) continue;
-            int dataChunks = (eof + BLOCK_SIZE - 1) / BLOCK_SIZE;
-            DataBuffer data = source.readBytes(offset+BLOCK_SIZE, dataChunks*BLOCK_SIZE);
+            DataBuffer data = source.readBytes(offset+BLOCK_SIZE, eof);
             files.add(new BinaryIIFileEntry(this, header, data.slice(0, eof)));
+            if (header.getUnsignedByte(REMAINING_FILES) == 0) break;
+            int dataChunks = (eof + BLOCK_SIZE - 1) / BLOCK_SIZE;
             offset += (dataChunks + 1) * BLOCK_SIZE;
         }
         return files;
