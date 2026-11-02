@@ -37,5 +37,13 @@ public class ShrinkitFileStoreFactory implements FileStoreFactory {
         if (Arrays.equals(ByteConstants.NUFILE_ID, buffer.asBytes())) {
             ctx.fileStores.add(new ShrinkitFileStore(ctx.source));
         }
+        else if (buffer.getUnsignedByte(0) == '<') {
+            // Sometimes it gets wrapped in HTML (how??); want to leave the other legit
+            // embeddings alone (Binary II, for example).
+            buffer = ctx.source.readBytes(0, 0x100);
+            buffer.scan(ByteConstants.NUFILE_ID, 0).ifPresent(_ -> {
+                ctx.fileStores.add(new ShrinkitFileStore(ctx.source));
+            });
+        }
     }
 }
