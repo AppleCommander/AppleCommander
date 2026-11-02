@@ -76,13 +76,13 @@ public class ProdosOrderedBlockDevice implements BlockDevice {
     public void writeBlock(int block, DataBuffer blockData) {
         assert(block < geometry.blocksOnDevice());
         assert(blockData.limit() == geometry.blockSize());
-        source.writeBytes(block*geometry.blockSize(), blockData);
+        source.writeBytes(block*geometry.blockSize(), sizeBuffer(blockData));
     }
 
     /// Write a range of blocks.
     @Override
     public void writeRange(int block, DataBuffer rangeData) {
-        source.writeBytes(block * geometry.blockSize(), rangeData);
+        source.writeBytes(block * geometry.blockSize(), sizeBuffer(rangeData));
     }
 
     @Override

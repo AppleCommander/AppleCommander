@@ -72,6 +72,17 @@ public interface BlockDevice extends Device {
         return (size + getGeometry().blockSize() - 1) / getGeometry().blockSize();
     }
 
+    /// Size the given `DataBuffer` to be a multiple of the block size.
+    default DataBuffer sizeBuffer(DataBuffer dataBuffer) {
+        int totalBlocks = calculateRequiredBlocks(dataBuffer.limit());
+        if (dataBuffer.limit() < totalBlocks * getGeometry().blockSize()) {
+            DataBuffer newDataBuffer = DataBuffer.create(totalBlocks * getGeometry().blockSize());
+            newDataBuffer.put(0, dataBuffer);
+            return newDataBuffer;
+        }
+        return dataBuffer;
+    }
+
     record Geometry(int blockSize, int blocksOnDevice) implements InformationProvider {
         public int deviceSize() {
             return blocksOnDevice * blockSize;

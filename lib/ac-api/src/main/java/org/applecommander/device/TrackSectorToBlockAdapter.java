@@ -82,14 +82,14 @@ public class TrackSectorToBlockAdapter implements BlockDevice {
     public void writeBlock(int block, DataBuffer blockData) {
         assert blockData.limit() == style.blockSize;
         Coordinate.TrackAndSectorCoordinate coordinate = calculateTrackSectorCoordinate(block);
-        device.writeRange(coordinate.track(), coordinate.sector(), blockData);
+        device.writeRange(coordinate.track(), coordinate.sector(), sizeBuffer(blockData));
     }
 
     /// Write a range of blocks.
     @Override
     public void writeRange(int block, DataBuffer rangeData) {
         Coordinate.TrackAndSectorCoordinate coordinate = calculateTrackSectorCoordinate(block);
-        device.writeRange(coordinate.track(), coordinate.sector(), rangeData);
+        device.writeRange(coordinate.track(), coordinate.sector(), sizeBuffer(rangeData));
     }
 
     @Override
