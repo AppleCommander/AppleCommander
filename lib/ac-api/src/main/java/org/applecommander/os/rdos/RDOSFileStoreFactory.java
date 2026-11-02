@@ -138,7 +138,8 @@ public class RDOSFileStoreFactory implements FileStoreFactory, RDOSConstants {
             if (check == 0x80) continue;    // deleted
             // Check this is all valid high-bit ASCII
             for (int j=0; j<NAME_LENGTH; j++) {
-                good = entry.getUnsignedByte(j) >= 0xa0;
+                // Originally was looking for high-bit space, but some games really put in funky characters. (shrug)
+                good = entry.getUnsignedByte(j) > 0;
                 if (!good) return good;
             }
             int fileType = entry.getUnsignedByte(TYPE_OFFSET);
