@@ -126,6 +126,12 @@ public class BinsciiFileStore implements FileStore, BinsciiConstants {
     }
 
 
+    /// Get the type of file store. This is a generic name, such as "RDOS 2.1" or "ShrinkIt".
+    @Override
+    public String getType() {
+        return "BinSCII";
+    }
+
     /// The label is a mechanism to distinguish multiple file stores in a single file.
     /// For instance, UniDOS has two file stores in the file, so it would have two
     /// different labels such as "Disk 1" and "Disk 2".

@@ -115,6 +115,11 @@ public class DiskFileStoreAdapter implements FileStore {
     }
 
     @Override
+    public String getType() {
+        return disk.getFormat();
+    }
+
+    @Override
     public String getLabel() {
         return disk.getDiskName();
     }
