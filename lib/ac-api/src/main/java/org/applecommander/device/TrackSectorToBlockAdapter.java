@@ -67,15 +67,29 @@ public class TrackSectorToBlockAdapter implements BlockDevice {
 
     @Override
     public DataBuffer readBlock(int block) {
-        DataBuffer data = DataBuffer.create(style.blockSize);
-        operate(block, (t,s,o) -> data.put(o, device.readSector(t,s)));
-        return data;
+        Coordinate.TrackAndSectorCoordinate coordinate = calculateTrackSectorCoordinate(block);
+        return device.readRange(coordinate.track(), coordinate.sector(), style.sectorsPerBlock);
+    }
+
+    /// Read a range of blocks.
+    @Override
+    public DataBuffer readRange(int block, int totalBlocks) {
+        Coordinate.TrackAndSectorCoordinate coordinate = calculateTrackSectorCoordinate(block);
+        return device.readRange(coordinate.track(), coordinate.sector(), style.sectorsPerBlock * totalBlocks);
     }
 
     @Override
     public void writeBlock(int block, DataBuffer blockData) {
         assert blockData.limit() == style.blockSize;
-        operate(block, (t,s,o) -> device.writeSector(t, s, blockData.slice(o, TrackSectorDevice.SECTOR_SIZE)));
+        Coordinate.TrackAndSectorCoordinate coordinate = calculateTrackSectorCoordinate(block);
+        device.writeRange(coordinate.track(), coordinate.sector(), blockData);
+    }
+
+    /// Write a range of blocks.
+    @Override
+    public void writeRange(int block, DataBuffer rangeData) {
+        Coordinate.TrackAndSectorCoordinate coordinate = calculateTrackSectorCoordinate(block);
+        device.writeRange(coordinate.track(), coordinate.sector(), rangeData);
     }
 
     @Override
@@ -88,26 +102,16 @@ public class TrackSectorToBlockAdapter implements BlockDevice {
             .get(device);
     }
 
-    private void operate(int block, Operation operation) {
-        assert block < geometry.blocksOnDevice();
-        int offset = 0;
-        int physicalSector = block * style.sectorsPerBlock;
-        int track = physicalSector / device.getGeometry().sectorsPerTrack();
-        int sector = physicalSector % device.getGeometry().sectorsPerTrack();
-        while (offset < style.blockSize) {
-            assert sector < device.getGeometry().sectorsPerTrack();
-            operation.perform(track, sector, offset);
-            sector++;   // note that we assume we never wrap to next track
-            offset += TrackSectorDevice.SECTOR_SIZE;
-        }
-    }
-    private interface Operation {
-        void perform(int track, int sector, int offset);
-    }
-
     @Override
     public void format() {
         device.format();
+    }
+
+    public Coordinate.TrackAndSectorCoordinate calculateTrackSectorCoordinate(int block) {
+        int physicalSector = block * style.sectorsPerBlock;
+        int track = physicalSector / device.getGeometry().sectorsPerTrack();
+        int sector = physicalSector % device.getGeometry().sectorsPerTrack();
+        return Coordinate.trackAndSector(track, sector);
     }
 
     public enum BlockStyle {

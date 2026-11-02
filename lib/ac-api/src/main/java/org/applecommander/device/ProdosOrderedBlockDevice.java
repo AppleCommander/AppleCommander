@@ -62,7 +62,14 @@ public class ProdosOrderedBlockDevice implements BlockDevice {
     @Override
     public DataBuffer readBlock(int block) {
         assert(block < geometry.blocksOnDevice());
-        return source.readBytes(block* geometry.blockSize(), geometry.blockSize());
+        return source.readBytes(block * geometry.blockSize(), geometry.blockSize());
+    }
+
+    /// Read a range of blocks.
+    @Override
+    public DataBuffer readRange(int block, int totalBlocks) {
+        assert block + totalBlocks - 1 < geometry.blocksOnDevice();
+        return source.readBytes(block * geometry.blockSize(), totalBlocks * geometry.blockSize());
     }
 
     @Override
@@ -70,6 +77,12 @@ public class ProdosOrderedBlockDevice implements BlockDevice {
         assert(block < geometry.blocksOnDevice());
         assert(blockData.limit() == geometry.blockSize());
         source.writeBytes(block*geometry.blockSize(), blockData);
+    }
+
+    /// Write a range of blocks.
+    @Override
+    public void writeRange(int block, DataBuffer rangeData) {
+        source.writeBytes(block * geometry.blockSize(), rangeData);
     }
 
     @Override
