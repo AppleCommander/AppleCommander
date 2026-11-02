@@ -49,7 +49,7 @@ public class BinaryIIFileStore implements FileStore, BinaryIIConstants {
         int offset = 0;
         while (offset < source.getSize()) {
             DataBuffer header = source.readBytes(offset, BLOCK_SIZE);
-            int eof = header.getUnsignedByte(GSOS_EOF) << 16 | header.getUnsignedShort(EOF);
+            int eof = header.getUnsignedByte(GSOS_EOF) << 24 | header.getUnsignedShort3(EOF);
             if (eof == 0) continue;
             int phantomFlag = header.getUnsignedByte(PHANTOM_FILE_FLAG);
             if (phantomFlag > 0) continue;
