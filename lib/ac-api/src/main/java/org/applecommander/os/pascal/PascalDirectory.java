@@ -103,9 +103,9 @@ public class PascalDirectory implements WritableDirectory, PascalConstants {
     public int getFilesOnDisk() {
         return readEntry().getUnsignedShort(VOLUME_FILES_ON_DISK);
     }
-    public void updateFilesOnDisk() {
+    public void updateFilesOnDisk(int modifier) {
         modifyEntry(entry -> {
-            entry.putUnsignedShort(VOLUME_FILES_ON_DISK, getFiles().size());
+            entry.putUnsignedShort(VOLUME_FILES_ON_DISK, entry.getUnsignedShort(VOLUME_FILES_ON_DISK) + modifier);
             entry.putPascalDate(VOLUME_RECENT_DATE, new Date());
         });
     }
@@ -122,12 +122,14 @@ public class PascalDirectory implements WritableDirectory, PascalConstants {
     public List<FileEntry> getFiles() {
         List<FileEntry> entries = new ArrayList<>();
         DataBuffer dir = device.readRange(DIRECTORY_FIRST_BLOCK, DIRECTORY_BLOCKS);
-        for (int offset = ENTRY_LENGTH; offset < MAX_DIRECTORY_BYTES; offset += ENTRY_LENGTH) {
+        int filesLeft = dir.getUnsignedShort(VOLUME_FILES_ON_DISK);
+        for (int offset = ENTRY_LENGTH; offset < MAX_DIRECTORY_BYTES && filesLeft > 0; offset += ENTRY_LENGTH) {
             if (dir.getUnsignedByte(offset+ENTRY_NAME) == 0) {
                 // End of directory
                 break;
             }
             entries.add(new PascalFileEntry(this, offset));
+            filesLeft--;
         }
         return entries;
     }
@@ -137,13 +139,13 @@ public class PascalDirectory implements WritableDirectory, PascalConstants {
     @Override
     public PascalFileEntry createFile(String fileName) {
         DataBuffer dir = device.readRange(DIRECTORY_FIRST_BLOCK, DIRECTORY_BLOCKS);
-        for (int offset = ENTRY_LENGTH; offset < MAX_DIRECTORY_BYTES; offset += ENTRY_LENGTH) {
-            if (dir.getUnsignedByte(offset + ENTRY_NAME) == 0) {
-                PascalFileEntry fileEntry = new PascalFileEntry(this, offset);
-                fileEntry.setName(fileName);
-                updateFilesOnDisk();
-                return fileEntry;
-            }
+        int files = dir.getUnsignedShort(VOLUME_FILES_ON_DISK);
+        int offset = (files + 1) * ENTRY_LENGTH;
+        if (offset < MAX_DIRECTORY_BYTES) {
+            PascalFileEntry fileEntry = new PascalFileEntry(this, offset);
+            fileEntry.setName(fileName);
+            updateFilesOnDisk(+1);
+            return fileEntry;
         }
         throw new DirectoryFullException("there are no more directory entries available on this disk");
     }
@@ -178,6 +180,6 @@ public class PascalDirectory implements WritableDirectory, PascalConstants {
         // Wipe out the last directory entry since it is guaranteed to be unused and we want to be certain it is empty.
         dir.put((MAX_DIRECTORY_ENTRIES-1)*ENTRY_LENGTH, DataBuffer.create(ENTRY_LENGTH));
         device.writeRange(DIRECTORY_FIRST_BLOCK, dir);
-        updateFilesOnDisk();
+        updateFilesOnDisk(-1);
     }
 }
