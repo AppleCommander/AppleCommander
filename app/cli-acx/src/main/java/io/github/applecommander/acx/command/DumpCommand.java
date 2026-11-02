@@ -95,9 +95,9 @@ public class DumpCommand extends ReadOnlyDiskContextCommandOptions {
                         }
 
                         @Override
-                        public DataBuffer readSector(int track, int sector) {
+                        public void readSector(int track, int sector, int offset, DataBuffer data) {
                             assert track == 0 && sector == 0;
-                            return blockDevice.readBlock(0).slice(0, SECTOR_SIZE);
+                            data.put(offset, blockDevice.readBlock(0).slice(0, SECTOR_SIZE));
                         }
 
                         @Override

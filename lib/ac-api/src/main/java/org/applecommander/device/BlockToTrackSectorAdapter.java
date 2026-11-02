@@ -70,12 +70,12 @@ public class BlockToTrackSectorAdapter implements TrackSectorDevice {
         return SectorOrder.DOS;
     }
 
+    /// Read a single sector from the disk into the given `DataBuffer` at the given offset.
     @Override
-    public DataBuffer readSector(int track, int sector) {
+    public void readSector(int track, int sector, int offset, DataBuffer data) {
         int block = strategy.computeBlock(track, sector);
         DataBuffer blockData = device.readBlock(block);
-        int offset = strategy.computeOffset(track, sector);
-        return blockData.slice(offset, SECTOR_SIZE);
+        data.put(offset, blockData.slice(strategy.computeOffset(track, sector), SECTOR_SIZE));
     }
 
     @Override

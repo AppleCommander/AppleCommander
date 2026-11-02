@@ -63,14 +63,20 @@ public interface TrackSectorDevice extends Device {
         };
     }
 
-
     /// Read a single sector from the disk.
-    DataBuffer readSector(int track, int sector);
+    default DataBuffer readSector(int track, int sector) {
+        DataBuffer data = DataBuffer.create(SECTOR_SIZE);
+        readSector(track, sector, 0, data);
+        return data;
+    }
+
+    /// Read a single sector from the disk into the given `DataBuffer` at the given offset.
+    void readSector(int track, int sector, int offset, DataBuffer data);
 
     /// Read a range of sectors.
     default DataBuffer readRange(int track, int sector, int totalSectors) {
         DataBuffer rangeData = DataBuffer.create(totalSectors * SECTOR_SIZE);
-        performRange(track, sector, totalSectors, (t,s,o) -> rangeData.put(o, readSector(t,s)));
+        performRange(track, sector, totalSectors, (t,s,o) -> readSector(t,s,o,rangeData));
         return rangeData;
     }
 
@@ -81,14 +87,9 @@ public interface TrackSectorDevice extends Device {
     /// modified to be a multiple of sector size.
     default void writeRange(int track, int sector, DataBuffer data) {
         int totalSectors = calculateRequiredSectors(data.limit());
+        DataBuffer newBuffer = sizeBuffer(data);
         performRange(track, sector, totalSectors, (t,s,o) -> {
-            if (data.limit() < totalSectors * SECTOR_SIZE) {
-                DataBuffer newData = DataBuffer.create(totalSectors * SECTOR_SIZE);
-                newData.put(0, data);
-                writeSector(t, s, newData.slice(o, SECTOR_SIZE));
-            } else {
-                writeSector(t, s, data.slice(o, SECTOR_SIZE));
-            }
+            writeSector(t, s, newBuffer.slice(o, SECTOR_SIZE));
         });
     }
 
@@ -106,6 +107,17 @@ public interface TrackSectorDevice extends Device {
                 track++;
             }
         }
+    }
+
+    /// Size the given `DataBuffer` to be a multiple of the sector size.
+    default DataBuffer sizeBuffer(DataBuffer dataBuffer) {
+        int totalSectors = calculateRequiredSectors(dataBuffer.limit());
+        if (dataBuffer.limit() < totalSectors * SECTOR_SIZE) {
+            DataBuffer newDataBuffer = DataBuffer.create(totalSectors * SECTOR_SIZE);
+            newDataBuffer.put(0, dataBuffer);
+            return newDataBuffer;
+        }
+        return dataBuffer;
     }
 
     /// A handy/common function to calculate the number of sectors needed for the given size.

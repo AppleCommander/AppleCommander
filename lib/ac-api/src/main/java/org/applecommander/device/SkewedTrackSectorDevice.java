@@ -163,10 +163,11 @@ public class SkewedTrackSectorDevice implements TrackSectorDevice {
         return sectorOrder;
     }
 
+    /// Read a single sector from the disk into the given `DataBuffer` at the given offset.
     @Override
-    public DataBuffer readSector(int track, int sector) {
-        assert(sector >= 0 && sector < sectorSkew.length);
-        return device.readSector(track, sectorSkew[sector]);
+    public void readSector(int track, int sector, int offset, DataBuffer data) {
+        assert sector >= 0 && sector < sectorSkew.length;
+        device.readSector(track, sectorSkew[sector], offset, data);
     }
 
     @Override
