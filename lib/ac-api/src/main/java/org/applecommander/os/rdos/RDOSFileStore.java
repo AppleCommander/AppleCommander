@@ -20,6 +20,7 @@
 package org.applecommander.os.rdos;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.change.ChangeRegistry;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
@@ -34,7 +35,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class RDOSFileStore implements FileStore, RDOSConstants {
+public class RDOSFileStore extends ChangeRegistry<FileStore.FileStoreChangeEvent> implements FileStore, RDOSConstants {
     private final BlockDevice device;
     private final RDOSVersionAdapter adapter;
     private final RDOSDirectory rootDirectory;
@@ -46,27 +47,35 @@ public class RDOSFileStore implements FileStore, RDOSConstants {
         this.adapter = adapter;
         this.rootDirectory = new RDOSDirectory(this);
         this.usage = new BlockUsage(device.getGeometry(), this::usage);
+        addChangeListener(this.usage);
     }
 
-    public UsageType usage(int blockNumber) {
-        if (blockNumber == 0) {
-            return UsageType.BOOT;
+    public void usage(BlockUsage.UsagePopulator populator) {
+        populator.setUsage(0, UsageType.BOOT);
+        for (int b=1; b<adapter.lastSystemBlock; b++) {
+            populator.setUsage(b, UsageType.SYSTEM);
         }
-        else if (blockNumber >= adapter.firstDirectoryBlock && blockNumber <= adapter.lastDirectoryBlock) {
-            return UsageType.DIRECTORY;
+        for (int b=adapter.firstDirectoryBlock; b<= adapter.lastDirectoryBlock; b++) {
+            populator.setUsage(b, UsageType.DIRECTORY);
         }
-        else if (blockNumber <= adapter.lastSystemBlock) {
-            return UsageType.SYSTEM;
-        }
-        else {
-            for (FileEntry fileEntry : getRootDirectory().getFiles()) {
-                RDOSFileEntry entry = (RDOSFileEntry) fileEntry;
-                if (blockNumber >= entry.getFirstBlock() && blockNumber <= entry.getFirstBlock() + entry.getBlocks() - 1) {
-                    return UsageType.FILE;
+        for (FileEntry fileEntry : getRootDirectory().getFiles()) {
+            RDOSFileEntry entry = (RDOSFileEntry) fileEntry;
+            for (int b=entry.getFirstBlock(); b<=entry.getFirstBlock() + entry.getBlocks() - 1; b++) {
+                if (b >= device.getGeometry().blocksOnDevice()) {
+                    // Bad data when the blocks get crazy?
+                    break;
                 }
+                else if (b <= adapter.lastSystemBlock) {
+                    // Don't overwrite those system areas (since RDOS is also expressed as a file)
+                    continue;
+                }
+                populator.setUsage(b, UsageType.FILE);
             }
         }
-        return UsageType.FREE;
+    }
+
+    void notifyChangeListeners(ChangeType changeType) {
+        notifyChangeListeners(new FileStoreChangeEvent(this, changeType));
     }
 
     public RDOSVersionAdapter getAdapter() {

@@ -20,6 +20,7 @@
 package org.applecommander.archive.zip;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.change.ChangeRegistry;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.source.Source;
@@ -43,7 +44,7 @@ import java.util.zip.ZipOutputStream;
 import static org.applecommander.ui.DisplayColumn.builder;
 import static org.applecommander.util.Shorthand.copy;
 
-public class ZipFileStore implements FileStore {
+public class ZipFileStore extends ChangeRegistry<FileStore.FileStoreChangeEvent> implements FileStore {
     private static final Set<Capability> CAPABILITIES = Set.of(Capability.CREATE_FILES, Capability.DELETE_FILES);
     private final Source source;
     private final List<FileEntry> entries = new ArrayList<>();
@@ -63,6 +64,10 @@ public class ZipFileStore implements FileStore {
         catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    void notifyChangeListeners(ChangeType changeType) {
+        notifyChangeListeners(new FileStoreChangeEvent(this, changeType));
     }
 
     public ZipInputStream getZipInputStream() throws IOException {

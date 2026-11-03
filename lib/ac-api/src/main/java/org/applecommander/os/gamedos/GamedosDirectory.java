@@ -41,7 +41,7 @@ public class GamedosDirectory implements WritableDirectory, GamedosConstants {
     }
 
     @Override
-    public FileStore getFileStore() {
+    public GamedosFileStore getFileStore() {
         return fileStore;
     }
 
@@ -73,6 +73,7 @@ public class GamedosDirectory implements WritableDirectory, GamedosConstants {
                 GamedosFileEntry fileEntry = new GamedosFileEntry(this, DIRECTORY_SECTOR+i, offset);
                 if (data.getUnsignedByte(offset) == 0) {
                     fileEntry.setName(fileName);
+                    fileStore.notifyChangeListeners(FileStore.ChangeType.FILE_CREATED);
                     return fileEntry;
                 }
                 else if (fileName.equalsIgnoreCase(fileEntry.getName())) {
@@ -112,5 +113,6 @@ public class GamedosDirectory implements WritableDirectory, GamedosConstants {
         GamedosFileEntry file = (GamedosFileEntry) fileEntry;
         // Just need to reset the file type to $00.
         file.modifyEntry(data -> data.putByte(0,0));
+        fileStore.notifyChangeListeners(FileStore.ChangeType.FILE_DELETED);
     }
 }

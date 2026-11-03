@@ -20,6 +20,7 @@
 package org.applecommander.archive.binscii;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.change.ChangeRegistry;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
@@ -37,7 +38,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class BinsciiFileStore implements FileStore, BinsciiConstants {
+public class BinsciiFileStore extends ChangeRegistry<FileStore.FileStoreChangeEvent> implements FileStore, BinsciiConstants {
     private final Source source;
     private final List<FileEntry> files;
 

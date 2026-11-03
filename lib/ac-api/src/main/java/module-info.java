@@ -40,9 +40,12 @@ module org.applecommander.api {
 
     // Revised APIs
     exports org.applecommander.archive.aaf;
+    exports org.applecommander.archive.binaryii;
+    exports org.applecommander.archive.binscii;
     exports org.applecommander.archive.shrinkit;
     exports org.applecommander.archive.zip;
     exports org.applecommander.capability;
+    exports org.applecommander.change;
     exports org.applecommander.device;
     exports org.applecommander.device.nibble;
     exports org.applecommander.exception;

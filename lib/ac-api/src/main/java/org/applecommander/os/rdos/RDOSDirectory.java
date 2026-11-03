@@ -24,6 +24,7 @@ import org.applecommander.exception.DirectoryFullException;
 import org.applecommander.exception.FileExistsException;
 import org.applecommander.exception.UnableToDeleteFileException;
 import org.applecommander.filestore.FileEntry;
+import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.WritableDirectory;
 import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.DataBuffer;
@@ -84,6 +85,7 @@ public class RDOSDirectory implements WritableDirectory, RDOSConstants {
                 RDOSFileEntry fileEntry = new RDOSFileEntry(this, block, offset);
                 if (data.getUnsignedByte(offset) == 0 || data.getUnsignedByte(offset) == 0x80) {
                     fileEntry.setName(fileName);
+                    fileStore.notifyChangeListeners(FileStore.ChangeType.FILE_CREATED);
                     return fileEntry;
                 }
                 else if (fileName.equalsIgnoreCase(fileEntry.getName())) {
@@ -124,5 +126,6 @@ public class RDOSDirectory implements WritableDirectory, RDOSConstants {
             data.putByte(NAME_OFFSET, 0x80);
             data.putByte(TYPE_OFFSET, 0xa0);
         });
+        fileStore.notifyChangeListeners(FileStore.ChangeType.FILE_DELETED);
     }
 }

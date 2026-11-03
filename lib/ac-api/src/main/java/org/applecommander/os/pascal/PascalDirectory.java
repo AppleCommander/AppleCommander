@@ -23,6 +23,7 @@ import org.applecommander.capability.Capability;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.exception.DirectoryFullException;
 import org.applecommander.filestore.FileEntry;
+import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.WritableDirectory;
 import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.DataBuffer;
@@ -62,6 +63,7 @@ public class PascalDirectory implements WritableDirectory, PascalConstants {
         DataBuffer entryData = blockData.slice(0, ENTRY_LENGTH);
         consumer.accept(entryData);
         device.writeBlock(DIRECTORY_FIRST_BLOCK, blockData);
+        fileStore.notifyChangeListeners(FileStore.ChangeType.ATTRIBUTES_UPDATED);
     }
 
     /// Returns the FileStore that this Directory belongs to.
@@ -145,6 +147,7 @@ public class PascalDirectory implements WritableDirectory, PascalConstants {
             PascalFileEntry fileEntry = new PascalFileEntry(this, offset);
             fileEntry.setName(fileName);
             updateFilesOnDisk(+1);
+            fileStore.notifyChangeListeners(FileStore.ChangeType.FILE_CREATED);
             return fileEntry;
         }
         throw new DirectoryFullException("there are no more directory entries available on this disk");
@@ -181,5 +184,6 @@ public class PascalDirectory implements WritableDirectory, PascalConstants {
         dir.put((MAX_DIRECTORY_ENTRIES-1)*ENTRY_LENGTH, DataBuffer.create(ENTRY_LENGTH));
         device.writeRange(DIRECTORY_FIRST_BLOCK, dir);
         updateFilesOnDisk(-1);
+        fileStore.notifyChangeListeners(FileStore.ChangeType.FILE_DELETED);
     }
 }

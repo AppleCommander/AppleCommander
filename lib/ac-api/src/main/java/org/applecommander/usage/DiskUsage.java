@@ -19,11 +19,14 @@
  */
 package org.applecommander.usage;
 
+import org.applecommander.change.ChangeListener;
+import org.applecommander.filestore.FileStore;
 import org.applecommander.util.InformationGroup;
 import org.applecommander.util.InformationProvider;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /// Provides a generic DiskUsage interface. Note that the assumption of free and used applies
 /// only to disks. Each disk image will supply a more specific usage subclass. Additionally,
@@ -33,7 +36,13 @@ import java.util.Map;
 /// construct.
 /// @see BlockUsage
 /// @see SectorUsage
-public abstract class DiskUsage implements InformationProvider {
+public abstract class DiskUsage implements InformationProvider, ChangeListener<FileStore.FileStoreChangeEvent> {
+    static final Set<FileStore.ChangeType> IMPACTFUL_CHANGES = Set.of(
+            FileStore.ChangeType.DATA_UPDATED,
+            FileStore.ChangeType.FILE_CREATED,
+            FileStore.ChangeType.FILE_DELETED
+    );
+
     private final int unitSize;
 
     protected DiskUsage(int unitSize) {

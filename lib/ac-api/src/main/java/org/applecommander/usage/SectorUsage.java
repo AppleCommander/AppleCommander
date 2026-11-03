@@ -20,20 +20,22 @@
 package org.applecommander.usage;
 
 import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.filestore.FileStore;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 /// Provides sector level usage information. Sectors are always the same size in all contexts,
 /// so it is hard-coded.
 public class SectorUsage extends DiskUsage {
-    private final BiFunction<Integer,Integer,UsageType> usageFn;
+    private final Consumer<UsagePopulator> usageFn;
     private final TrackSectorDevice.Geometry geometry;
+    private byte[] usage;
 
     public SectorUsage(TrackSectorDevice.Geometry geometry,
-                       BiFunction<Integer,Integer,UsageType> usageFn) {
+                       Consumer<UsagePopulator> usageFn) {
         super(TrackSectorDevice.SECTOR_SIZE);
         Objects.requireNonNull(geometry);
         Objects.requireNonNull(usageFn);
@@ -51,9 +53,33 @@ public class SectorUsage extends DiskUsage {
         }
         return counts;
     }
-    public UsageType getUsage(int track, int sector) {
-        return usageFn.apply(track, sector);
+
+    public void populateUsage() {
+        usage = new byte[geometry.sectorsPerDisk()];
+        usageFn.accept(this::setUsage);
     }
+
+    public UsageType getUsage(int track, int sector) {
+        if (usage == null) {
+            populateUsage();
+        }
+        return UsageType.values()[usage[geometry.calculateSectorOffset(track,sector)]];
+    }
+
+    public void setUsage(int track, int sector, UsageType usageType) {
+        assert track < geometry.tracksOnDisk();
+        assert sector < geometry.sectorsPerTrack();
+        int pos = geometry.calculateSectorOffset(track, sector);
+        usage[pos] = (byte) usageType.ordinal();
+    }
+
+    @Override
+    public void stateChanged(FileStore.FileStoreChangeEvent event) {
+        if (IMPACTFUL_CHANGES.contains(event.getChangeType())) {
+            usage = null;
+        }
+    }
+
     @Override
     public int getTotal() {
         return geometry.sectorsPerDisk();
@@ -63,5 +89,9 @@ public class SectorUsage extends DiskUsage {
     }
     public int getSectorsPerTrack() {
         return geometry.sectorsPerTrack();
+    }
+
+    public interface UsagePopulator {
+        void setUsage(int track, int sector, UsageType usageType);
     }
 }

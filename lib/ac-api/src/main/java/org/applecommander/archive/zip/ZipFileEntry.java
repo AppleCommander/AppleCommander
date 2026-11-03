@@ -64,6 +64,11 @@ public class ZipFileEntry implements WritableFileEntry {
         this.dataFork = DataBuffer.wrap(0);
     }
 
+    private void notifyOfChange(FileStore.ChangeType changeType) {
+        fileStore.get(Source.class).ifPresent(source -> source.hasChanged(true));
+        fileStore.notifyChangeListeners(changeType);
+    }
+
     @Override
     public Directory getParent() {
         return null;
@@ -87,7 +92,7 @@ public class ZipFileEntry implements WritableFileEntry {
     @Override
     public void setName(String name) {
         this.name = name;
-        fileStore.get(Source.class).ifPresent(source -> source.hasChanged(true));
+        notifyOfChange(FileStore.ChangeType.ATTRIBUTES_UPDATED);
     }
 
     @Override
@@ -106,7 +111,7 @@ public class ZipFileEntry implements WritableFileEntry {
     public void setCreationTime(FileTime creationTime) {
         Objects.requireNonNull(creationTime);
         entry.setCreationTime(creationTime);
-        fileStore.get(Source.class).ifPresent(source -> source.hasChanged(true));
+        notifyOfChange(FileStore.ChangeType.ATTRIBUTES_UPDATED);
     }
 
     public FileTime getLastModifiedTime() {
@@ -116,7 +121,7 @@ public class ZipFileEntry implements WritableFileEntry {
     public void setLastModifiedTime(FileTime lastModifiedTime) {
         Objects.requireNonNull(lastModifiedTime);
         entry.setLastModifiedTime(lastModifiedTime);
-        fileStore.get(Source.class).ifPresent(source -> source.hasChanged(true));
+        notifyOfChange(FileStore.ChangeType.ATTRIBUTES_UPDATED);
     }
 
     public FileTime getLastAccessTime() {
@@ -126,7 +131,7 @@ public class ZipFileEntry implements WritableFileEntry {
     public void setLastAccessTime(FileTime lastAccessTime) {
         Objects.requireNonNull(lastAccessTime);
         entry.setLastAccessTime(lastAccessTime);
-        fileStore.get(Source.class).ifPresent(source -> source.hasChanged(true));
+        notifyOfChange(FileStore.ChangeType.ATTRIBUTES_UPDATED);
     }
 
     public long getCrc() {
@@ -144,7 +149,7 @@ public class ZipFileEntry implements WritableFileEntry {
     public void setComment(String comment) {
         Objects.requireNonNull(comment);
         entry.setComment(comment);
-        fileStore.get(Source.class).ifPresent(source -> source.hasChanged(true));
+        notifyOfChange(FileStore.ChangeType.ATTRIBUTES_UPDATED);
     }
 
     public int getMethod() {
@@ -185,7 +190,7 @@ public class ZipFileEntry implements WritableFileEntry {
     @Override
     public void setDataFork(DataBuffer data) {
         this.dataFork = data;
-        fileStore.get(Source.class).ifPresent(source -> source.hasChanged(true));
+        notifyOfChange(FileStore.ChangeType.DATA_UPDATED);
     }
 
     @Override

@@ -20,14 +20,17 @@
 package org.applecommander.filestore;
 
 import org.applecommander.capability.CapabilityProvider;
+import org.applecommander.change.ChangeSource;
+import org.applecommander.filestore.FileStore.FileStoreChangeEvent;
 import org.applecommander.ui.DisplayColumn;
 import org.applecommander.util.Container;
 import org.applecommander.util.InformationProvider;
 
+import java.util.EventObject;
 import java.util.List;
 
 /// A FileStore is a generic interface for all archive and filesystem objects.
-public interface FileStore extends CapabilityProvider, Container, InformationProvider {
+public interface FileStore extends CapabilityProvider, Container, InformationProvider, ChangeSource<FileStoreChangeEvent> {
 
     /// Get the type of file store. This is a generic name, such as "RDOS 2.1" or "ShrinkIt".
     String getType();
@@ -61,5 +64,27 @@ public interface FileStore extends CapabilityProvider, Container, InformationPro
     /// ```
     default void flush() {
         // Do Nothing
+    }
+
+    /// Indicates the type of change
+    enum ChangeType {
+        FILE_CREATED,
+        FILE_DELETED,
+        DATA_UPDATED,
+        ATTRIBUTES_UPDATED
+    }
+
+    /// The `FileStore` change event which classifies each type of change.
+    class FileStoreChangeEvent extends EventObject {
+        private final ChangeType changeType;
+
+        public FileStoreChangeEvent(FileStore source, ChangeType changeType) {
+            super(source);
+            this.changeType = changeType;
+        }
+
+        public ChangeType getChangeType() {
+            return changeType;
+        }
     }
 }

@@ -20,6 +20,7 @@
 package org.applecommander.os.gamedos;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.change.ChangeRegistry;
 import org.applecommander.device.SectorOrder;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.FileEntry;
@@ -35,7 +36,7 @@ import org.applecommander.util.InformationGroup;
 import java.util.List;
 import java.util.Optional;
 
-public class GamedosFileStore implements FileStore, GamedosConstants {
+public class GamedosFileStore extends ChangeRegistry<FileStore.FileStoreChangeEvent> implements FileStore, GamedosConstants {
     private final TrackSectorDevice device;
     private final GamedosDirectory rootDirectory;
     private final SectorUsage usage;
@@ -44,40 +45,30 @@ public class GamedosFileStore implements FileStore, GamedosConstants {
         this.device = device.request(SectorOrder.DOS);
         this.rootDirectory = new GamedosDirectory(this);
         this.usage = new SectorUsage(device.getGeometry(), this::usage);
+        addChangeListener(this.usage);
     }
 
-    public UsageType usage(int track, int sector) {
-        if (track == 0 && sector == 0) {
-            return UsageType.BOOT;
-        }
-        else if (track == 0 && sector < DIRECTORY_SECTOR) {
-            return UsageType.SYSTEM;
-        }
-        else if (track == 0) {
-            return UsageType.DIRECTORY;
-        }
-        else {
-            for (FileEntry file : getRootDirectory().getFiles()) {
-                GamedosFileEntry entry = (GamedosFileEntry) file;
-                int n = entry.getSectorCount();
-                int t = entry.getFirstTrack();
-                int s = entry.getFirstSector();
-                while (n > 0) {
-                    if (t == track && s == sector) {
-                        return UsageType.FILE;
-                    }
-                    n--;
-                    s++;
-                    if (s >= device.getGeometry().sectorsPerTrack()) {
-                        s = 0;
-                        t++;
-                    }
-                    // Went right past it!
-                    if (track < t) break;
-                }
+    public void usage(SectorUsage.UsagePopulator populator) {
+        for (int s=0; s<device.getGeometry().sectorsPerTrack(); s++) {
+            if (s == 0) {
+                populator.setUsage(0, s, UsageType.BOOT);
+            }
+            else if (s < DIRECTORY_SECTOR) {
+                populator.setUsage(0, s, UsageType.SYSTEM);
+            }
+            else {
+                populator.setUsage(0, s, UsageType.DIRECTORY);
             }
         }
-        return UsageType.FREE;
+        for (FileEntry file : getRootDirectory().getFiles()) {
+            GamedosFileEntry entry = (GamedosFileEntry) file;
+            device.performRange(entry.getFirstTrack(), entry.getFirstSector(), entry.getSectorCount(),
+                    (t,s,_) -> populator.setUsage(t, s, UsageType.FILE));
+        }
+    }
+
+    void notifyChangeListeners(ChangeType changeType) {
+        notifyChangeListeners(new FileStoreChangeEvent(this, changeType));
     }
 
     /// Get the type of file store. This is a generic name, such as "RDOS 2.1" or "ShrinkIt".
