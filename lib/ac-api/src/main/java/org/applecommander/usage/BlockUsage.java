@@ -20,19 +20,21 @@
 package org.applecommander.usage;
 
 import org.applecommander.device.BlockDevice;
+import org.applecommander.filestore.FileStore;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 /// Provides block-level usage information. Note that block size can vary from 256 bytes (RDOS) to
 /// 512 bytes (Pascal, ProDOS) to 1024 bytes (CP/M), so it must be passed in on the constructor.
 public class BlockUsage extends DiskUsage {
     private final BlockDevice.Geometry geometry;
-    private final Function<Integer,UsageType> usageFn;
+    private final Consumer<UsagePopulator> usageFn;
+    private byte[] usage;
 
-    public BlockUsage(BlockDevice.Geometry geometry, Function<Integer,UsageType> usageFn) {
+    public BlockUsage(BlockDevice.Geometry geometry, Consumer<UsagePopulator> usageFn) {
         super(geometry.blockSize());
         Objects.requireNonNull(geometry);
         Objects.requireNonNull(usageFn);
@@ -41,7 +43,7 @@ public class BlockUsage extends DiskUsage {
     }
 
     @Override
-    public Map<UsageType, Integer> getUsageCounts() {
+    public Map<UsageType,Integer> getUsageCounts() {
         Map<UsageType,Integer> counts = new HashMap<>();
         for (int b=0; b<getTotal(); b++) {
             counts.compute(getUsage(b), (u, v) -> v == null ? 1 : v + 1);
@@ -54,7 +56,31 @@ public class BlockUsage extends DiskUsage {
         return geometry.blocksOnDevice();
     }
 
+    public void populateUsage() {
+        usage = new byte[geometry.blocksOnDevice()];
+        usageFn.accept(this::setUsage);
+    }
+
     public UsageType getUsage(int block) {
-        return usageFn.apply(block);
+        if (usage == null) {
+            populateUsage();
+        }
+        return UsageType.values()[usage[block]];
+    }
+
+    private void setUsage(int block, UsageType usageType) {
+        assert block < usage.length;
+        usage[block] = (byte) usageType.ordinal();
+    }
+
+    @Override
+    public void stateChanged(FileStore.FileStoreChangeEvent event) {
+        if (IMPACTFUL_CHANGES.contains(event.getChangeType())) {
+            usage = null;
+        }
+    }
+
+    public interface UsagePopulator {
+        void setUsage(int block, UsageType usageType);
     }
 }

@@ -35,6 +35,7 @@ import com.webcodepro.applecommander.storage.os.prodos.ProdosFormatDisk;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFileEntry;
 import com.webcodepro.applecommander.storage.os.rdos.RdosFormatDisk;
 import org.applecommander.capability.Capability;
+import org.applecommander.change.ChangeRegistry;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.device.Device;
 import org.applecommander.device.TrackSectorDevice;
@@ -53,9 +54,9 @@ import org.applecommander.util.FileMagic;
 import org.applecommander.util.InformationGroup;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /// The `DiskFileStoreAdapter` is a shim that allows `FormattedDisk` to be mapped into the
@@ -63,7 +64,7 @@ import java.util.function.Function;
 /// The intent is that this is a short-term strategy.
 /// @see FileStore
 /// @see FormattedDisk
-public class DiskFileStoreAdapter implements FileStore {
+public class DiskFileStoreAdapter extends ChangeRegistry<FileStore.FileStoreChangeEvent> implements FileStore {
     private final FormattedDisk disk;
     private final DiskUsage usage;
 
@@ -73,40 +74,56 @@ public class DiskFileStoreAdapter implements FileStore {
         final Optional<TrackSectorDevice> trackSectorDevice = disk.get(TrackSectorDevice.class);
         final Optional<BlockDevice> blockDevice = disk.get(BlockDevice.class);
         this.usage = switch (disk) {
-            case DosFormatDisk dos -> {
+            case DosFormatDisk dos -> new SectorUsage(trackSectorDevice.orElseThrow().getGeometry(), populator -> {
                 final byte[] vtoc = dos.readVtoc();
-                yield new SectorUsage(trackSectorDevice.orElseThrow().getGeometry(),
-                        (t,s) -> dos.isSectorUsed(t, s, vtoc) ? UsageType.USED : UsageType.FREE);
-            }
-            case ProdosFormatDisk prodos -> {
+                trackSectorDevice.ifPresent(device -> {
+                    device.performRange(0, 0, device.getGeometry().sectorsPerDisk(),
+                        (t,s,_) -> populator.setUsage(t,s, dos.isSectorUsed(t,s,vtoc) ? UsageType.USED : UsageType.FREE));
+                });
+            });
+            case ProdosFormatDisk prodos -> new BlockUsage(blockDevice.orElseThrow().getGeometry(), populator -> {
                 final byte[] bitmap = prodos.readVolumeBitMap();
-                yield new BlockUsage(blockDevice.orElseThrow().getGeometry(),
-                        b -> prodos.isBlockUsed(bitmap, b) ? UsageType.USED : UsageType.FREE);
-            }
+                for (int b = 0; b < prodos.getBitmapLength(); b++) {
+                    populator.setUsage(b, prodos.isBlockUsed(bitmap, b) ? UsageType.USED : UsageType.FREE);
+                }
+            });
             // Current implementation of GutenbergFormatDisk and NakedosFormatDisk simply marks everything as used.
-            case GutenbergFormatDisk gutenberg -> new SectorUsage(trackSectorDevice.orElseThrow().getGeometry(),
-                    (_,_) -> UsageType.USED);
-            case NakedosFormatDisk nakedos -> new SectorUsage(trackSectorDevice.orElseThrow().getGeometry(),
-                    (_,_) -> UsageType.USED);
+            case GutenbergFormatDisk _ -> new SectorUsage(trackSectorDevice.orElseThrow().getGeometry(), populator -> {
+                trackSectorDevice.ifPresent(device -> {
+                    device.performRange(0, 0, device.getGeometry().sectorsPerDisk(),
+                            (t,s,_) -> populator.setUsage(t, s, UsageType.USED));
+                });
+            });
+            case NakedosFormatDisk _ -> new SectorUsage(trackSectorDevice.orElseThrow().getGeometry(), populator -> {
+                trackSectorDevice.ifPresent(device -> {
+                    device.performRange(0, 0, device.getGeometry().sectorsPerDisk(),
+                            (t,s,_) -> populator.setUsage(t, s, UsageType.USED));
+                });
+            });
             // CP/M, Pascal, and RDOS all synthesize the bitmap. So we do too!
-            case CpmFormatDisk cpm -> new BlockUsage(blockDevice.orElseThrow().getGeometry(), synthesizeBitmap(cpm));
-            case PascalFormatDisk pascal -> new BlockUsage(blockDevice.orElseThrow().getGeometry(), synthesizeBitmap(pascal));
-            case RdosFormatDisk rdos -> new BlockUsage(blockDevice.orElseThrow().getGeometry(), synthesizeBitmap(rdos));
+            case CpmFormatDisk cpm -> new BlockUsage(blockDevice.orElseThrow().getGeometry(), setupBlockUsage(cpm));
+            case PascalFormatDisk pascal -> new BlockUsage(blockDevice.orElseThrow().getGeometry(), setupBlockUsage(pascal));
+            case RdosFormatDisk rdos -> new BlockUsage(blockDevice.orElseThrow().getGeometry(), setupBlockUsage(rdos));
             default -> throw new IllegalArgumentException("Unsupported format disk");
+        };
+        addChangeListener(usage);
+    }
+
+    /// This is a helper method to make configure the `BlockUsage` for the disk. Note that it can be refreshed
+    /// based on a change event occurring in the `FileStore`.
+    private Consumer<BlockUsage.UsagePopulator> setupBlockUsage(FormattedDisk formattedDisk) {
+        return populator -> {
+            int block = 0;
+            FormattedDisk.DiskUsage diskUsage = formattedDisk.getDiskUsage();
+            while (diskUsage.hasNext()) {
+                diskUsage.next();
+                populator.setUsage(block++, diskUsage.isUsed() ? UsageType.USED : UsageType.FREE);
+            }
         };
     }
 
-    /// This is a helper method to make a copy of the legacy `DiskUsage` into a `BitSet` for the shim.
-    private Function<Integer,UsageType> synthesizeBitmap(FormattedDisk formattedDisk) {
-        final BitSet used = new BitSet(formattedDisk.getBitmapLength());
-        int block = 0;
-        FormattedDisk.DiskUsage diskUsage = formattedDisk.getDiskUsage();
-        while (diskUsage.hasNext()) {
-            diskUsage.next();
-            used.set(block++, diskUsage.isUsed());
-        }
-        assert(block == disk.getBitmapLength());
-        return b -> used.get(b) ? UsageType.USED : UsageType.FREE;
+    void notifyChangeListeners(ChangeType changeType) {
+        notifyChangeListeners(new FileStoreChangeEvent(this, changeType));
     }
 
     @Override
@@ -287,6 +304,7 @@ public class DiskFileStoreAdapter implements FileStore {
         public void setDataFork(DataBuffer fileData) {
             try {
                 fileEntry.setFileData(fileData.asBytes());
+                adapter.notifyChangeListeners(ChangeType.DATA_UPDATED);
             } catch (DiskFullException e) {
                 throw new RuntimeException(e);
             }
@@ -306,6 +324,7 @@ public class DiskFileStoreAdapter implements FileStore {
         @Override
         public void setName(String name) {
             fileEntry.setFilename(name);
+            adapter.notifyChangeListeners(ChangeType.ATTRIBUTES_UPDATED);
         }
         @Override
         public long getSize() {
@@ -363,6 +382,7 @@ public class DiskFileStoreAdapter implements FileStore {
         public WritableDirectory createDirectory(String directoryName) {
             try {
                 com.webcodepro.applecommander.storage.DirectoryEntry newDirectory = directoryEntry.createDirectory(directoryName);
+                adapter.notifyChangeListeners(ChangeType.FILE_CREATED);
                 return new DiskDirectoryAdapter(adapter, this, newDirectory);
             } catch (DiskException e) {
                 throw new RuntimeException(e);
@@ -373,6 +393,7 @@ public class DiskFileStoreAdapter implements FileStore {
             try {
                 com.webcodepro.applecommander.storage.FileEntry fileEntry = directoryEntry.createFile();
                 fileEntry.setFilename(fileName);
+                adapter.notifyChangeListeners(ChangeType.FILE_CREATED);
                 return new DiskFileEntryAdapter(adapter, this, fileEntry);
             } catch (DiskException e) {
                 throw new RuntimeException(e);
@@ -392,6 +413,7 @@ public class DiskFileStoreAdapter implements FileStore {
                     if (prodosAttributes.dataFork().isPresent()) {
                         fileEntry.setFileData(prodosAttributes.dataFork().get().asBytes());
                     }
+                    adapter.notifyChangeListeners(ChangeType.FILE_CREATED);
                     return new DiskFileEntryAdapter(adapter, this, fileEntry);
                 } catch (DiskException ex) {
                     throw new RuntimeException(ex);
@@ -406,6 +428,7 @@ public class DiskFileStoreAdapter implements FileStore {
         public void deleteFile(FileEntry fileEntry) {
             if (fileEntry instanceof DiskFileEntryAdapter fileAdapter) {
                 fileAdapter.fileEntry.delete();
+                adapter.notifyChangeListeners(ChangeType.FILE_DELETED);
             } else {
                 throw new RuntimeException("unexpected file entry type: " + fileEntry);
             }

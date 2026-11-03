@@ -54,6 +54,7 @@ public class GamedosFileEntry implements WritableFileEntry, GamedosConstants {
         DataBuffer entryData = sectorData.slice(offset, ENTRY_SIZE);
         consumer.accept(entryData);
         device.writeSector(DIRECTORY_TRACK, sector, sectorData);
+        directory.getFileStore().notifyChangeListeners(FileStore.ChangeType.ATTRIBUTES_UPDATED);
     }
 
     @Override
@@ -145,6 +146,7 @@ public class GamedosFileEntry implements WritableFileEntry, GamedosConstants {
             setFirstTrack(coordinate.track());
             setFirstSector(coordinate.sector());
             setSectorCount(requiredSectors);
+            directory.getFileStore().notifyChangeListeners(FileStore.ChangeType.DATA_UPDATED);
         }
         else {
             throw new DiskFullException("Unable to allocate %d sectors on disk", requiredSectors);

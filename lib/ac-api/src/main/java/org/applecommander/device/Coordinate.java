@@ -22,13 +22,13 @@ package org.applecommander.device;
 /// A simplistic set of Coordinates. Note that block only matches to block while track and sector have
 /// two forms that match against each other.
 public interface Coordinate {
-    static Coordinate block(int block) {
+    static BlockCoordinate block(int block) {
         return new BlockCoordinate(block);
     }
-    static Coordinate trackOnly(int track) {
+    static TrackCoordinate trackOnly(int track) {
         return new TrackCoordinate(track);
     }
-    static Coordinate trackAndSector(int track, int sector) {
+    static TrackAndSectorCoordinate trackAndSector(int track, int sector) {
         return new TrackAndSectorCoordinate(track, sector);
     }
 

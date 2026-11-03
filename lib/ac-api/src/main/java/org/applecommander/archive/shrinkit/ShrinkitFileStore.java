@@ -20,6 +20,7 @@
 package org.applecommander.archive.shrinkit;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.change.ChangeRegistry;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
@@ -40,7 +41,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class ShrinkitFileStore implements FileStore {
+public class ShrinkitFileStore extends ChangeRegistry<FileStore.FileStoreChangeEvent> implements FileStore {
     private final Source source;
     private final NuFileArchive archive;
     private final List<FileEntry> files = new ArrayList<>();

@@ -41,33 +41,13 @@ public interface BlockDevice extends Device {
     DataBuffer readBlock(int block);
 
     /// Read a range of blocks.
-    default DataBuffer readRange(int block, int totalBlocks) {
-        DataBuffer rangeData = DataBuffer.create(totalBlocks * getGeometry().blockSize());
-        int offset = 0;
-        while (totalBlocks-- > 0) {
-            rangeData.put(offset, readBlock(block++));
-            offset += getGeometry().blockSize();
-        }
-        return rangeData;
-    }
+    DataBuffer readRange(int block, int totalBlocks);
 
     /// Write a single block to the disk.
     void writeBlock(int block, DataBuffer blockData);
 
     /// Write a range of blocks.
-    default void writeRange(int block, DataBuffer rangeData) {
-        int totalBlocks = calculateRequiredBlocks(rangeData.limit());
-        if (rangeData.limit() < totalBlocks * getGeometry().blockSize()) {
-            DataBuffer newData = DataBuffer.create(totalBlocks * getGeometry().blockSize());
-            newData.put(0, rangeData);
-            rangeData = newData;
-        }
-        int offset = 0;
-        while (offset < rangeData.limit()) {
-            writeBlock(block++, rangeData.slice(offset, getGeometry().blockSize()));
-            offset += getGeometry().blockSize();
-        }
-    }
+    void writeRange(int block, DataBuffer rangeData);
 
     /// Format a disk. For most disks, this is simply a wipe to all zeros. If this
     /// disk has extended format (such as nibble formats), this is the opportunity
@@ -90,6 +70,17 @@ public interface BlockDevice extends Device {
     /// A handy/common function to calculate the number of blocks needed for the given size.
     default int calculateRequiredBlocks(int size) {
         return (size + getGeometry().blockSize() - 1) / getGeometry().blockSize();
+    }
+
+    /// Size the given `DataBuffer` to be a multiple of the block size.
+    default DataBuffer sizeBuffer(DataBuffer dataBuffer) {
+        int totalBlocks = calculateRequiredBlocks(dataBuffer.limit());
+        if (dataBuffer.limit() < totalBlocks * getGeometry().blockSize()) {
+            DataBuffer newDataBuffer = DataBuffer.create(totalBlocks * getGeometry().blockSize());
+            newDataBuffer.put(0, dataBuffer);
+            return newDataBuffer;
+        }
+        return dataBuffer;
     }
 
     record Geometry(int blockSize, int blocksOnDevice) implements InformationProvider {

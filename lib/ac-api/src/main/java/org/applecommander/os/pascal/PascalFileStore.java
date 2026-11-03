@@ -20,6 +20,7 @@
 package org.applecommander.os.pascal;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.change.ChangeRegistry;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
@@ -34,7 +35,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class PascalFileStore implements FileStore, PascalConstants {
+public class PascalFileStore extends ChangeRegistry<FileStore.FileStoreChangeEvent> implements FileStore, PascalConstants {
     private final BlockDevice device;
     private final PascalDirectory rootDirectory;
     private final BlockUsage usage;
@@ -44,24 +45,27 @@ public class PascalFileStore implements FileStore, PascalConstants {
         this.device = device;
         this.rootDirectory = new PascalDirectory(this);
         this.usage = new BlockUsage(device.getGeometry(), this::usage);
+        addChangeListener(this.usage);
     }
 
-    public UsageType usage(int blockNumber) {
-        if (blockNumber < 2) {
-            return UsageType.BOOT;
-        }
-        else if (blockNumber <= DIRECTORY_LAST_BLOCK) {
-            return UsageType.DIRECTORY;
-        }
-        else {
-            for (FileEntry entry : rootDirectory.getFiles()) {
-                PascalFileEntry file = (PascalFileEntry) entry;
-                if (blockNumber >= file.getFirstBlock() && blockNumber < file.getLastBlock()) {
-                    return UsageType.FILE;
-                }
+    public void usage(BlockUsage.UsagePopulator populator) {
+        populator.setUsage(0, UsageType.BOOT);
+        populator.setUsage(1, UsageType.BOOT);
+        populator.setUsage(2, UsageType.DIRECTORY);
+        populator.setUsage(3, UsageType.DIRECTORY);
+        populator.setUsage(4, UsageType.DIRECTORY);
+        populator.setUsage(5, UsageType.DIRECTORY);
+
+        for (FileEntry entry : rootDirectory.getFiles()) {
+            PascalFileEntry file = (PascalFileEntry) entry;
+            for (int b= file.getFirstBlock(); b<file.getLastBlock(); b++) {
+                populator.setUsage(b, UsageType.FILE);
             }
         }
-        return UsageType.FREE;
+    }
+
+    void notifyChangeListeners(ChangeType changeType) {
+        notifyChangeListeners(new FileStoreChangeEvent(this, changeType));
     }
 
     /// Get the type of file store. This is a generic name, such as "RDOS 2.1" or "ShrinkIt".

@@ -69,6 +69,7 @@ public class PascalFileEntry implements WritableFileEntry, PascalConstants {
         DataBuffer entryData = directory.slice(offset, ENTRY_LENGTH);
         consumer.accept(entryData);
         device.writeRange(DIRECTORY_FIRST_BLOCK, directory);
+        parent.getFileStore().notifyChangeListeners(FileStore.ChangeType.ATTRIBUTES_UPDATED);
     }
 
     /// The `Directory` that holds this file.
@@ -128,6 +129,7 @@ public class PascalFileEntry implements WritableFileEntry, PascalConstants {
             int bytesInLastBlock = data.limit() % geometry.blockSize();
             setBytesUsedInLastBlock(bytesInLastBlock == 0 ? geometry.blockSize() : bytesInLastBlock);
             setLastModified(new Date());
+            parent.getFileStore().notifyChangeListeners(FileStore.ChangeType.DATA_UPDATED);
         }
         else {
             throw new DiskFullException("Unable to allocate %d blocks on disk", requiredBlocks);

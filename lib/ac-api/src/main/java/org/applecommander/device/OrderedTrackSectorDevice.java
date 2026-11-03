@@ -52,7 +52,6 @@ public class OrderedTrackSectorDevice implements TrackSectorDevice {
         }
     }
 
-
     @Override
     public <T> Optional<T> get(Class<T> iface) {
         return Container.get(iface, source);
@@ -74,15 +73,29 @@ public class OrderedTrackSectorDevice implements TrackSectorDevice {
         return sectorOrder ;
     }
 
+    /// Read a single sector from the disk into the given `DataBuffer` at the given offset.
     @Override
-    public DataBuffer readSector(int track, int sector) {
-        return source.readBytes(calculateOffset(track,sector), SECTOR_SIZE);
+    public void readSector(int track, int sector, int offset, DataBuffer data) {
+        data.put(offset, source.readBytes(calculateOffset(track,sector), SECTOR_SIZE));
+    }
+
+    /// Read a range of sectors.
+    @Override
+    public DataBuffer readRange(int track, int sector, int totalSectors) {
+        return source.readBytes(calculateOffset(track,sector), totalSectors*SECTOR_SIZE);
     }
 
     @Override
     public void writeSector(int track, int sector, DataBuffer data) {
         assert(data.limit() == SECTOR_SIZE);
-        source.writeBytes(calculateOffset(track,sector), data);
+        source.writeBytes(calculateOffset(track,sector), sizeBuffer(data));
+    }
+
+    /// Write a range of sectors to the disk. Note that the data buffer is
+    /// modified to be a multiple of sector size.
+    @Override
+    public void writeRange(int track, int sector, DataBuffer data) {
+        source.writeBytes(calculateOffset(track,sector), sizeBuffer(data));
     }
 
     public int calculateOffset(int track, int sector) {

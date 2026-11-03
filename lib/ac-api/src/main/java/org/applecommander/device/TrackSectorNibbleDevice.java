@@ -252,19 +252,21 @@ public class TrackSectorNibbleDevice implements TrackSectorDevice {
         return offset;
     }
 
+    /// Read a single sector from the disk into the given `DataBuffer` at the given offset.
     @Override
-    public DataBuffer readSector(int track, int sector) {
+    public void readSector(int track, int sector, int offset, DataBuffer data) {
         final DataBuffer trackData = trackReaderWriter.readTrackData(track);
         // Locate address field for this track and sector
-        int offset = findSector(trackData, track, sector);
+        int sectorOffset = findSector(trackData, track, sector);
         // Read data field that immediately follows the address field and the checksum byte
-        if (offset != -1) {
+        if (sectorOffset != -1) {
             DiskMarker diskMarker = diskMarkers[track % diskMarkers.length];
             NibbleDiskCodec dataCodec = diskMarker.codec();
             DataBuffer dataField = DataBuffer.create(dataCodec.encodedSize() + 1);
-            offset = locateField(diskMarker.dataProlog(), trackData, dataField, offset);
-            if (offset != -1) {
-                return dataCodec.decode(dataField);
+            sectorOffset = locateField(diskMarker.dataProlog(), trackData, dataField, sectorOffset);
+            if (sectorOffset != -1) {
+                data.put(offset, dataCodec.decode(dataField));
+                return;
             }
         }
         // We found the sector but couldn't read the sector, fail horribly

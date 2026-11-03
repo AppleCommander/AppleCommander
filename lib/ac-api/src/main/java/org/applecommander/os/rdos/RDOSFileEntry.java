@@ -22,6 +22,7 @@ package org.applecommander.os.rdos;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.exception.DiskFullException;
+import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.WritableFileEntry;
 import org.applecommander.os.SequentialAllocator;
 import org.applecommander.transfer.ProdosAttributes;
@@ -57,6 +58,7 @@ public class RDOSFileEntry implements WritableFileEntry, RDOSConstants {
         DataBuffer entryData = blockData.slice(offset, ENTRY_LENGTH);
         consumer.accept(entryData);
         device.writeBlock(block, blockData);
+        parent.getFileStore().notifyChangeListeners(FileStore.ChangeType.ATTRIBUTES_UPDATED);
     }
 
     public int getDirectoryBlock() {
@@ -197,6 +199,7 @@ public class RDOSFileEntry implements WritableFileEntry, RDOSConstants {
             else {
                 setSize(data.limit());
             }
+            parent.getFileStore().notifyChangeListeners(FileStore.ChangeType.DATA_UPDATED);
         }
         else {
             throw new DiskFullException("Unable to allocate %d blocks on disk", requiredBlocks);

@@ -65,6 +65,7 @@ public class ZipDirectory implements WritableDirectory {
         if (prodosAttributes.modified() != null) {
             fileEntry.setLastModifiedTime(FileTime.from(prodosAttributes.modified().toInstant()));
         }
+        fileStore.notifyChangeListeners(FileStore.ChangeType.FILE_CREATED);
         return fileEntry;
     }
 
@@ -74,12 +75,12 @@ public class ZipDirectory implements WritableDirectory {
         entries.add(fileEntry);
         fileStore.get(Source.class).ifPresent(source -> source.hasChanged(true));
         return fileEntry;
-
     }
 
     @Override
     public void deleteFile(FileEntry fileEntry) {
         entries.remove(fileEntry);
         fileStore.get(Source.class).ifPresent(source -> source.hasChanged(true));
+        fileStore.notifyChangeListeners(FileStore.ChangeType.FILE_DELETED);
     }
 }
