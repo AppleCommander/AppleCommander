@@ -24,6 +24,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
+import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -86,33 +87,33 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
                         .radioButton(FileStoreOrganization.values(), FileStoreOrganization::getDescription,
                                 fileStoreOrganizationProperty, FileStoreOrganization.ARCHIVE)
                         .get(),
-                WizardPage.SUMMARY, createSummaryPage()
+                WizardPage.SUMMARY, new GridPane()
         );
     }
 
-    private Pane createSummaryPage() {
-        GridPane summaryPage = new GridPane();
+    public void setupSummaryPage() {
+        GridPane summaryPage = (GridPane) getWizardPage(WizardPage.SUMMARY);
+        summaryPage.getChildren().clear();
         summaryPage.setHgap(10);
         summaryPage.setVgap(10);
         summaryPage.setPadding(new Insets(10));
         Label summaryLabel = new Label("Summary:");
         summaryPage.add(summaryLabel, 0, 0);
         GridPane.setColumnSpan(summaryPage, 2);
-        Label fileStoreSelectionLabel = new Label();
-        fileStoreFactoryProperty.addListener((_, _, newValue) -> {
-            if (newValue != null) {
-                fileStoreSelectionLabel.setText(newValue.getName());
-            }
-        });
+
+        Label fileStoreSelectionLabel = new Label(fileStoreFactoryProperty.get().getName());
         summaryPage.addRow(1, new Label("File Store:"), fileStoreSelectionLabel);
-        Label imageSizeSelectionLabel = new Label();
-        fileStoreOrganizationProperty.addListener((_, _, newValue) -> {
-            if (newValue != null) {
-                imageSizeSelectionLabel.setText(newValue.getDescription());
-            }
-        });
+
+        Label imageSizeSelectionLabel = new Label(fileStoreOrganizationProperty.get().getDescription());
         summaryPage.addRow(2, new Label("Organization:"), imageSizeSelectionLabel);
-        return summaryPage;
+
+        int row = 3;
+        for (ConfigurationOption option : configurationOptions.values()) {
+            Label prompt = new Label(option.getPrompt() + ":");
+            GridPane.setValignment(prompt, VPos.TOP);
+            Label value = new Label(option.getValue());
+            summaryPage.addRow(row++, prompt, value);
+        }
     }
 
     /// Auto select if there is only one option; also enables finish page early.
@@ -155,6 +156,9 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
             else {
                 setupOrganizationPage();
             }
+        }
+        if (nextPage == WizardPage.SUMMARY) {
+            setupSummaryPage();
         }
         return nextPage;
     }
