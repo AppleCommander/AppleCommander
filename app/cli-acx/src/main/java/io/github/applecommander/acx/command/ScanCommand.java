@@ -51,8 +51,12 @@ import static picocli.CommandLine.*;
                 if that are not 'understood' (either by the discovery mechanism or by the image
                 implementation itself). Finally, it *might* be useful to discover actual 'bad' images
                 in a collection.
+                
+                Note: 'scan' will refuse to process any filestore with more than 500 files. An appropriate
+                error will be generated for the log file.
                 """ })
 public class ScanCommand extends ReusableCommandOptions {
+    private static final int MAX_FILES_IN_DIRECTORY = 500;
     private static final Logger LOG = Logger.getLogger(ScanCommand.class.getName());
 
     @Parameters(arity = "*", description = "directories to scan")
@@ -440,8 +444,11 @@ public class ScanCommand extends ReusableCommandOptions {
             try {
                 files = dir.getFiles();
             } catch (Throwable t) {
-                errors.add(String.format("Unable to read directory %s/%s", dir.getFileStore().getLabel(),
-                        dir.getName()));
+                errors.add(String.format("Unable to read directory %s/%s", dir.getFileStore().getLabel(), dir.getName()));
+                return;
+            }
+            if (files.size() > MAX_FILES_IN_DIRECTORY) {
+                errors.add(String.format("Too many files in directory %s/%s", dir.getFileStore().getLabel(), dir.getName()));
                 return;
             }
             for (FileEntry file : files) {
