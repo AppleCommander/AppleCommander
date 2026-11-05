@@ -21,9 +21,13 @@ package org.applecommander.change;
 
 import java.util.EventObject;
 
-/// Marks an object that cna be a source of change. Each type has a specific change
-/// event object.
+/// The public interface for an object that can be a source of change.
+/// Each type has a specific change event object.
 public interface ChangeSource<T extends EventObject> {
+
+    /// Add a change listener.
     void addChangeListener(ChangeListener<T> listener);
+
+    /// Remove a change listener.
     void removeChangeListener(ChangeListener<T> listener);
 }

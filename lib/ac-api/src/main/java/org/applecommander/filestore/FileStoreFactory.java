@@ -56,14 +56,28 @@ import java.util.function.Consumer;
 ///
 /// Note that much of this logic is deferred to the "old" AppleCommander APIs for the time being.
 public interface FileStoreFactory {
+
+    /// The name of this factory. Usually the name and file extensions.
     String getName();
+
+    /// Inspect the given `Source`, storing any results or messages in the context.
     void inspect(Context ctx);
+
+    /// The supported organizations for `FileStore` creation. Note that this isn't particularly useful for archives,
+    /// so there is a generic "archive" organization. For disk images, this will typically orient around the
+    /// physical device including sector ordering, if applicable.
     default List<FileStoreOrganization> getFileStoreOrganizations() {
         return Collections.emptyList();
     }
+
+    /// The configuration options for `FileStore` creation. The key of the map is the id and is intended to be
+    /// utilized in the CLI environment to locate and update a field.
     default Map<String,ConfigurationOption> getConfigurationOptions() {
         return Map.of();
     }
+
+    /// Create a `FileStore` using the given configuration settings.
+    /// @see FileStores#get(Class) can be used to locate a factory.
     default FileStore create(FileStoreOrganization fileStoreOrganization, Map<String,ConfigurationOption> options) {
         throw new UnsupportedOperationException();
     }

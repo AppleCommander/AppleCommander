@@ -25,5 +25,8 @@ import java.util.EventObject;
 /// A `ChangeListener` is an object that responds to changes in state.
 /// Each type supports distinct change events.
 public interface ChangeListener<T extends EventObject> extends EventListener {
+
+    /// When the state of an object has changed, this method is invoked on all listeners.
+    /// Note that the base `EventObject` has a source that needs to be cast to the proper interface.
     void stateChanged(T event);
 }

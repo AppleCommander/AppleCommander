@@ -25,19 +25,16 @@ import java.util.*;
 
 import static org.applecommander.device.nibble.NibbleUtil.decodeOddEven;
 
-/**
- * Scan a nibble disk and try to identify the formatting. Note that this is really only good for
- * protected DOS disks. Also note that the DOS catalog track has likely been moved, so the DOS
- * filesystem needs to also support it.
- * <p/>
- * This appears to be a rather successful algorithm:
- * <ol>
- * <li>Locate address prolog bytes by simply looking for the track number and a sensible sector
- *    using 4&4 encoding.</li>
- * <li>From that prolog (per track), start from end of address prolog and scan for sync bytes.</li>
- * <li>Try reading based on the sector count (16 vs 13).</li>
- * </ol>
- */
+/// Scan a nibble disk and try to identify the formatting. Note that this is really only good for
+/// protected DOS disks. Also note that the DOS catalog track has likely been moved, so the DOS
+/// filesystem needs to also support it.
+///
+/// This appears to be a rather successful algorithm:
+///
+///   1. Locate address prolog bytes by simply looking for the track number and a sensible sector
+///      using 4&4 encoding.
+///   2. From that prolog (per track), start from end of address prolog and scan for sync bytes.
+///   3. Try reading based on the sector count (16 vs 13).
 public class NibbleScanner {
     public static Optional<DiskMarker[]> identify(NibbleTrackReaderWriter trackReaderWriter) {
         final int tracksOnDevice = trackReaderWriter.getTracksOnDevice();
@@ -91,14 +88,12 @@ public class NibbleScanner {
         return successCount > 5 ? Optional.of(diskMarkers) : Optional.empty();
     }
 
-    /**
-     * Look for likely address prologs on disk. Returns raw results in case there is more than one
-     * possibility and to identify likely sectors per track.
-     * <p/>
-     * Generate strategy is to look for byte sequence <code>P1 P2 P3 VX VY TX TY SX SY CX CY E1 E2 E3</code>
-     * where 1,2,3 = prolog/epilog bytes, X,Y = 4+4 encoded data, and V,T,S,C identify volume, track, sector,
-     * and checksum.
-     */
+    /// Look for likely address prologs on disk. Returns raw results in case there is more than one
+    /// possibility and to identify likely sectors per track.
+    ///
+    /// General strategy is to look for byte sequence `P1 P2 P3 VX VY TX TY SX SY CX CY E1 E2 E3`
+    /// where 1,2,3 = prolog/epilog bytes, X,Y = 4+4 encoded data, and V,T,S,C identify volume, track, sector,
+    /// and checksum.
     public static Map<Integer,Set<Integer>> findAddressPrologs(int track, DataBuffer trackData) {
         Map<Integer, Set<Integer>> addressPrologs = new HashMap<>();
         final int headerLength = 14;
@@ -124,10 +119,8 @@ public class NibbleScanner {
         return addressPrologs;
     }
 
-    /**
-     * Scan from an address prolog, look for sync bytes, and then assume next 3 are data prolog.
-     * Note that this makes a bunch of assumptions!
-     */
+    /// Scan from an address prolog, look for sync bytes, and then assume next 3 are data prolog.
+    /// Note that this makes a bunch of assumptions!
     public static int findDataProlog(int addressProlog, DataBuffer trackData, NibbleDiskCodec nibbleDiskCodec) {
         final int trackLength = trackData.limit();
         final int addr1 = (addressProlog >> 16) & 0xff;
