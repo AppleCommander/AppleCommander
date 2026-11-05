@@ -101,7 +101,7 @@ public class PascalFileStore extends ChangeRegistry<FileStore.FileStoreChangeEve
             .left("Name").string(PascalFileEntry::getName, PascalFileEntry::setName)
                 .editInLine()
                 .maxLength(FILE_NAME_LENGTH)
-                .characterRestriction(PascalFileEntry.NAME_MAPPER)
+                .characterRestriction(PascalConstants.FILE_NAME_MAPPER)
                 .done()
             .right("Offset").integer(PascalFileEntry::getOffset, "%d").mode(DisplayMode.DETAIL).done()
             .left("Type").string(PascalFileEntry::getType, PascalFileEntry::setType).mode(DisplayMode.DETAIL)

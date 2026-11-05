@@ -20,6 +20,7 @@
 package org.applecommander.os.pascal;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.ui.CharacterMapper;
 
 import java.util.Set;
 
@@ -81,4 +82,23 @@ public interface PascalConstants {
     /// Pascal DATA file type maps into ProDOS PDA (Pascal Data).
     int PDA = 0x05;
 
+    /// Per the Apple Pascal documentation:
+    ///
+    /// * Lower-case are translated to upper-case.
+    /// * Spaces and non-printing characters are removed from the filename.
+    /// * You should not include dollar sign (`$`), left square bracket (`[`),
+    ///   equals sign (`=`), or question mark (`?`).
+    CharacterMapper FILE_NAME_MAPPER = CharacterMapper.builder()
+            .mapRange(0x21, 0x7e, true, '$', '[', '=', '?')
+            .build();
+
+    /// Per the Apple Pascal documentation: (inferred)
+    ///
+    /// * Lower-case are translated to upper-case.
+    /// * Spaces and non-printing characters are removed from the volume name.
+    /// * You should not include equals sign (`=`), or dollar sign (`$`),
+    ///   question mark (`?`), or comma (`,`).
+    CharacterMapper VOLUME_NAME_MAPPER = CharacterMapper.builder()
+            .mapRange(0x21, 0x7e, true, '=', '$', '?', ',')
+            .build();
 }

@@ -29,19 +29,26 @@ import org.applecommander.usage.BlockUsage;
 import org.applecommander.util.DataBuffer;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class PascalTest implements PascalConstants {
     @Test
     public void testCreateAndWrite() {
+        PascalFileStoreFactory factory = FileStores.get(PascalFileStoreFactory.class);
+        var options = factory.getConfigurationOptions();
+        options.get(PascalFileStoreFactory.VOLUME_NAME_FIELD).setValue("TESTVOL");
+
         // Create a disk
-        PascalFileStore fileStore = FileStores.get(PascalFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_PO);
+        PascalFileStore fileStore = FileStores.get(PascalFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_PO, options);
         assertNotNull(fileStore);
 
         // Get the root directory and verify there are no files
         PascalDirectory directory = fileStore.getRootDirectory();
         assertNotNull(directory);
         assertEquals(0, directory.getFiles().size());
+        assertEquals("TESTVOL", directory.getName());
 
         // Create and verify the first file.
         final byte[] textContents = "THIS IS A THE FILE DATA.".getBytes();
@@ -91,7 +98,7 @@ public class PascalTest implements PascalConstants {
     @Test
     public void fillDirectoryEntries() {
         // Create a disk
-        PascalFileStore fileStore = FileStores.get(PascalFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_PO);
+        PascalFileStore fileStore = FileStores.get(PascalFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_PO, Map.of());
         assertNotNull(fileStore);
 
         // Get the root directory
@@ -121,7 +128,7 @@ public class PascalTest implements PascalConstants {
     @Test
     public void fillDisk() {
         // Create a disk
-        PascalFileStore fileStore = FileStores.get(PascalFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_PO);
+        PascalFileStore fileStore = FileStores.get(PascalFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_PO, Map.of());
         assertNotNull(fileStore);
 
         // Get the root directory

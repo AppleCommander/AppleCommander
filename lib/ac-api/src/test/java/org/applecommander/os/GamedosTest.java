@@ -31,6 +31,7 @@ import org.applecommander.util.DataBuffer;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -72,7 +73,7 @@ public class GamedosTest implements GamedosConstants {
     @Test
     public void testCreateAndWrite() {
         // Create a disk
-        GamedosFileStore fileStore = FileStores.get(GamedosFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_DO);
+        GamedosFileStore fileStore = FileStores.get(GamedosFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_DO, Map.of());
         assertNotNull(fileStore);
 
         // Get the root directory and verify there are no files
@@ -128,7 +129,7 @@ public class GamedosTest implements GamedosConstants {
     @Test
     public void fillDirectoryEntries() {
         // Create a disk
-        GamedosFileStore fileStore = FileStores.get(GamedosFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_DO);
+        GamedosFileStore fileStore = FileStores.get(GamedosFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_DO, Map.of());
         assertNotNull(fileStore);
 
         // Get the root directory
@@ -159,7 +160,7 @@ public class GamedosTest implements GamedosConstants {
     @Test
     public void fillDisk() {
         // Create a disk
-        GamedosFileStore fileStore = FileStores.get(GamedosFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_DO);
+        GamedosFileStore fileStore = FileStores.get(GamedosFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_DO, Map.of());
         assertNotNull(fileStore);
 
         // Get the root directory

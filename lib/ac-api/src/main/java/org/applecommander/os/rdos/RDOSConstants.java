@@ -20,6 +20,7 @@
 package org.applecommander.os.rdos;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.ui.CharacterMapper;
 
 import java.util.Set;
 
@@ -34,4 +35,8 @@ public interface RDOSConstants {
     int FIRST_BLOCK_OFFSET = 0x1e;
 
     Set<Capability> CAPABILITIES = Set.of(Capability.WRITE_FILES, Capability.CREATE_FILES, Capability.DELETE_FILES);
+
+    CharacterMapper FILE_NAME_MAPPER = CharacterMapper.builder()
+            .mapRange(0x20, 0x7f, true)
+            .build();
 }

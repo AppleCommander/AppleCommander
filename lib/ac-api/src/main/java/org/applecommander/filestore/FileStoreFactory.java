@@ -27,10 +27,7 @@ import org.applecommander.image.NibbleImage;
 import org.applecommander.image.WozImage;
 import org.applecommander.source.Source;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 /// The FileStoreFactory inspects a given Source to see if it matches any known file store(s).
@@ -64,7 +61,10 @@ public interface FileStoreFactory {
     default List<FileStoreOrganization> getFileStoreOrganizations() {
         return Collections.emptyList();
     }
-    default FileStore create(FileStoreOrganization fileStoreOrganization) {
+    default Map<String,ConfigurationOption> getConfigurationOptions() {
+        return Map.of();
+    }
+    default FileStore create(FileStoreOrganization fileStoreOrganization, Map<String,ConfigurationOption> options) {
         throw new UnsupportedOperationException();
     }
 

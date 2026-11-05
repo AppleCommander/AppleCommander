@@ -39,6 +39,10 @@ import java.util.Set;
 /// ```
 /// ... yields a `$12AF` output.
 public class CharacterMapper {
+    public static final CharacterMapper ANYTHING = CharacterMapper.builder()
+            .mapRange(0x00, 0xff, false)
+            .build();
+
     private final String fromChars;
     private final String toChars;
 
@@ -71,12 +75,13 @@ public class CharacterMapper {
         private final StringBuilder toChars =  new StringBuilder();
 
         /// Add a range of characters with (optional) exclusions in the range.
-        public Builder mapRange(char first, char last, boolean forceUppercase, char... excludedChars) {
+        public Builder mapRange(int first, int last, boolean forceUppercase, char... excludedChars) {
             Set<Character> exclusions = new HashSet<>();
             for (char excludedChar : excludedChars) exclusions.add(excludedChar);
 
             StringBuilder string = new StringBuilder();
-            for (char ch = first; ch <= last; ch++) {
+            for (int i = first; i <= last; i++) {
+                char ch = (char) i;
                 if (!exclusions.contains(ch)) {
                     string.append(ch);
                 }
