@@ -272,7 +272,7 @@ public class DataBuffer {
         if (pascalDate == 0) {
             return null;
         }
-        int month =  pascalDate & 0x000f - 1;
+        int month =  (pascalDate & 0x000f) - 1;
         int day =   (pascalDate & 0x01f0) >> 4;
         int year =  (pascalDate & 0xfe00) >> 9;
         if (year < 50) year+= 2000;
