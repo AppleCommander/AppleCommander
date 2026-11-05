@@ -99,7 +99,7 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
         summaryPage.setPadding(new Insets(10));
         Label summaryLabel = new Label("Summary:");
         summaryPage.add(summaryLabel, 0, 0);
-        GridPane.setColumnSpan(summaryPage, 2);
+        GridPane.setColumnSpan(summaryLabel, 2);
 
         Label fileStoreSelectionLabel = new Label(fileStoreFactoryProperty.get().getName());
         summaryPage.addRow(1, new Label("File Store:"), fileStoreSelectionLabel);
