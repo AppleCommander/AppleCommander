@@ -21,6 +21,7 @@ package org.applecommander.os.gamedos;
 
 import org.applecommander.device.SectorOrder;
 import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.filestore.ConfigurationOption;
 import org.applecommander.filestore.FileStoreFactory;
 import org.applecommander.filestore.FileStoreOrganization;
 import org.applecommander.util.DataBuffer;
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -61,7 +63,7 @@ public class GamedosFileStoreFactory implements FileStoreFactory,GamedosConstant
     }
 
     @Override
-    public GamedosFileStore create(FileStoreOrganization fileStoreOrganization) {
+    public GamedosFileStore create(FileStoreOrganization fileStoreOrganization, Map<String,ConfigurationOption> options) {
         Objects.requireNonNull(fileStoreOrganization);
         TrackSectorDevice device = fileStoreOrganization.createTrackSectorDevice().request(SectorOrder.DOS);
         try (InputStream inputStream = GamedosFileStoreFactory.class.getResourceAsStream("/files/gamedos-track0.bin")) {

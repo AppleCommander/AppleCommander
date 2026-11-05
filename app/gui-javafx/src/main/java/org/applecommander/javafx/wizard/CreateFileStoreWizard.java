@@ -25,22 +25,26 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import org.applecommander.filestore.FileStore;
-import org.applecommander.filestore.FileStoreFactory;
-import org.applecommander.filestore.FileStoreOrganization;
-import org.applecommander.filestore.FileStores;
+import javafx.scene.layout.VBox;
+import org.applecommander.filestore.*;
 import org.applecommander.javafx.FXControls;
+import org.applecommander.javafx.filter.CharacterRestrictionFilter;
+import org.applecommander.javafx.filter.CompositeFilter;
+import org.applecommander.javafx.filter.FixedLengthFilter;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 
 public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.WizardPage> {
     private final ObjectProperty<FileStoreFactory> fileStoreFactoryProperty = new SimpleObjectProperty<>();
     private final ObjectProperty<FileStoreOrganization> fileStoreOrganizationProperty = new SimpleObjectProperty<>();
+    private Map<String,ConfigurationOption> configurationOptions = Collections.emptyMap();
 
     public CreateFileStoreWizard() {
         super();
@@ -50,7 +54,7 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
     public List<FileStore> getFileStores() {
         FileStoreFactory factory = fileStoreFactoryProperty.get();
         FileStoreOrganization organization = fileStoreOrganizationProperty.get();
-        return List.of(factory.create(organization));
+        return List.of(factory.create(organization, configurationOptions));
     }
 
     public BooleanBinding createNextPageBinding() {
@@ -76,6 +80,7 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
                         .label("Choose an image type to create:")
                         .radioButton(factories, FileStoreFactory::getName, fileStoreFactoryProperty)
                         .get(),
+                WizardPage.OPTIONS, new VBox(),
                 WizardPage.ORGANIZATION, FXControls.vertical()
                         .label("Choose the image organization:")
                         .radioButton(FileStoreOrganization.values(), FileStoreOrganization::getDescription,
@@ -126,32 +131,95 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
     }
 
     public WizardPage nextPage() {
-        return switch (currentPageProperty().get()) {
-            case FILESTORE -> {
-                FileStoreFactory factory = fileStoreFactoryProperty.get();
-                if (factory.getFileStoreOrganizations().size() == 1) {
-                    yield WizardPage.SUMMARY;
-                }
-                // Set up the organization window
-                Pane pane = getWizardPage(WizardPage.ORGANIZATION);
-                for (Node node : pane.getChildren()) {
-                    if (node instanceof RadioButton radio) {
-                        if (radio.getUserData() instanceof FileStoreOrganization organization) {
-                            boolean found = factory.getFileStoreOrganizations().contains(organization);
-                            radio.setVisible(found);
-                            radio.setManaged(found);
-                        }
-                    }
-                }
-                yield WizardPage.ORGANIZATION;
-            }
+        // Simple path
+        WizardPage nextPage = switch (currentPageProperty().get()) {
+            case FILESTORE -> WizardPage.OPTIONS;
+            case OPTIONS -> WizardPage.ORGANIZATION;
             case ORGANIZATION -> WizardPage.SUMMARY;
             case SUMMARY -> null;
         };
+        // Now check reality!
+        FileStoreFactory factory = fileStoreFactoryProperty.get();
+        if (nextPage == WizardPage.OPTIONS) {
+            if (factory.getConfigurationOptions().isEmpty()) {
+                nextPage = WizardPage.ORGANIZATION;
+            }
+            else {
+                setupCustomOptionsPage();
+            }
+        }
+        if (nextPage == WizardPage.ORGANIZATION) {
+            if (factory.getFileStoreOrganizations().size() == 1) {
+                nextPage = WizardPage.SUMMARY;
+            }
+            else {
+                setupOrganizationPage();
+            }
+        }
+        return nextPage;
+    }
+
+    /// Dynamically set up the (custom) options page. Note that we "specially" put a VBox place-holder
+    /// into the Wizard itself. We just reuse that VBox, but repopulate it each traversal.
+    public void setupCustomOptionsPage() {
+        FileStoreFactory factory = fileStoreFactoryProperty.get();
+        VBox vbox = (VBox) getWizardPage(WizardPage.OPTIONS);
+        vbox.getChildren().clear();
+        vbox.setSpacing(10);
+        vbox.setPadding(new Insets(10));
+        // Note that we must be careful and use the same copy since the configuration options contain the values as well.
+        configurationOptions = factory.getConfigurationOptions();
+        for (ConfigurationOption option : configurationOptions.values()) {
+            Label label = new Label();
+            label.setText(option.getPrompt() + ":");
+            TextInputControl field = null;
+            if (option.getMaxLength() > 50) {
+                field = new TextArea(option.getValue());
+            } else {
+                field = new TextField(option.getValue());
+            }
+            List<UnaryOperator<TextFormatter.Change>> filters = new ArrayList<>();
+            if (option.getMaxLength() > 0) {
+                filters.add(new FixedLengthFilter(option.getMaxLength()));
+            }
+            if (option.getCharacterRestrictions() != null) {
+                filters.add(new CharacterRestrictionFilter(option.getCharacterRestrictions()));
+            }
+            field.setTextFormatter(new TextFormatter<>(new CompositeFilter(filters)));
+            final TextInputControl textInputControl = field;
+            field.textProperty().addListener((_, _, newText) -> {
+                if (!option.getValidatorFn().test(newText)) {
+                    textInputControl.setStyle("-fx-border-color: red;");
+                }
+                else {
+                    textInputControl.setStyle("");
+                    option.setValue(newText);
+                }
+            });
+            if (option.getNotes() != null && !option.getNotes().isEmpty()) {
+                field.setTooltip(new Tooltip(option.getNotes()));
+            }
+            vbox.getChildren().addAll(label, field);
+        }
+    }
+
+    /// Configure the organization page to only show those that apply.
+    public void setupOrganizationPage() {
+        FileStoreFactory factory = fileStoreFactoryProperty.get();
+        Pane pane = getWizardPage(WizardPage.ORGANIZATION);
+        for (Node node : pane.getChildren()) {
+            if (node instanceof RadioButton radio) {
+                if (radio.getUserData() instanceof FileStoreOrganization organization) {
+                    boolean found = factory.getFileStoreOrganizations().contains(organization);
+                    radio.setVisible(found);
+                    radio.setManaged(found);
+                }
+            }
+        }
     }
 
     /// All possible pages in the new file store wizard.
     public enum WizardPage {
-        FILESTORE, ORGANIZATION, SUMMARY
+        FILESTORE, OPTIONS, ORGANIZATION, SUMMARY
     }
 }

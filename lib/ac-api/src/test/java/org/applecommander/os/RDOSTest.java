@@ -30,13 +30,15 @@ import org.applecommander.usage.BlockUsage;
 import org.applecommander.util.DataBuffer;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class RDOSTest implements RDOSConstants {
     @Test
     public void testCreateAndWrite() {
         // Create a disk
-        RDOSFileStore fileStore = FileStores.get(RDOSFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_DO);
+        RDOSFileStore fileStore = FileStores.get(RDOSFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_DO, Map.of());
         assertNotNull(fileStore);
 
         // Get the root directory and verify there are no files
@@ -97,7 +99,7 @@ public class RDOSTest implements RDOSConstants {
     @Test
     public void fillDirectoryEntries() {
         // Create a disk
-        RDOSFileStore fileStore = FileStores.get(RDOSFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_DO);
+        RDOSFileStore fileStore = FileStores.get(RDOSFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_DO, Map.of());
         assertNotNull(fileStore);
 
         // Get the root directory
@@ -129,7 +131,7 @@ public class RDOSTest implements RDOSConstants {
     @Test
     public void fillDisk() {
         // Create a disk
-        RDOSFileStore fileStore = FileStores.get(RDOSFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_DO);
+        RDOSFileStore fileStore = FileStores.get(RDOSFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_DO, Map.of());
         assertNotNull(fileStore);
 
         // Get the root directory

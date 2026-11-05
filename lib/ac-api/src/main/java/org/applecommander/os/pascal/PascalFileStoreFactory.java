@@ -22,6 +22,7 @@ package org.applecommander.os.pascal;
 import com.webcodepro.applecommander.storage.DiskConstants;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.device.SectorOrder;
+import org.applecommander.filestore.ConfigurationOption;
 import org.applecommander.filestore.FileStoreFactory;
 import org.applecommander.filestore.FileStoreOrganization;
 import org.applecommander.util.DataBuffer;
@@ -30,9 +31,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
+import static org.applecommander.filestore.ConfigurationOption.getValidatedValue;
+
 public class PascalFileStoreFactory implements FileStoreFactory, PascalConstants {
+    public static final String VOLUME_NAME_FIELD = "volname";
+    public static final String VOLUME_NAME_DEFAULT = "NEWDISK";
     public static final List<FileStoreOrganization> VALID_ORGANIZATIONS = List.of(
             FileStoreOrganization.DISK_16SECTOR_DO,
             FileStoreOrganization.DISK_16SECTOR_PO,
@@ -67,7 +73,19 @@ public class PascalFileStoreFactory implements FileStoreFactory, PascalConstants
     }
 
     @Override
-    public PascalFileStore create(FileStoreOrganization fileStoreOrganization) {
+    public Map<String,ConfigurationOption> getConfigurationOptions() {
+        return ConfigurationOption.builder()
+                .next(VOLUME_NAME_FIELD)
+                .restrictions(VOLUME_NAME_MAPPER)
+                .enforceLength(1, VOLUME_NAME_LENGTH)
+                .prompt("Volume Name")
+                .defaultValue(VOLUME_NAME_DEFAULT)
+                .add()
+                .done();
+    }
+
+    @Override
+    public PascalFileStore create(FileStoreOrganization fileStoreOrganization, Map<String,ConfigurationOption> options) {
         Objects.requireNonNull(fileStoreOrganization);
         BlockDevice blockDevice = fileStoreOrganization.createBlockDevice();
         try (InputStream inputStream = PascalFileStoreFactory.class.getResourceAsStream("/files/pascal-1.3-boot.bin")) {
@@ -75,7 +93,8 @@ public class PascalFileStoreFactory implements FileStoreFactory, PascalConstants
             byte[] bootBlocks = inputStream.readAllBytes();
             blockDevice.writeRange(0, DataBuffer.wrap(bootBlocks));
             PascalFileStore fileStore = new PascalFileStore(blockDevice);
-            fileStore.getRootDirectory().initVolumeHeader("NEW.DISK");
+            String volumeName = getValidatedValue(options, VOLUME_NAME_FIELD, VOLUME_NAME_DEFAULT);
+            fileStore.getRootDirectory().initVolumeHeader(volumeName);
             return fileStore;
         }
         catch (IOException ex) {

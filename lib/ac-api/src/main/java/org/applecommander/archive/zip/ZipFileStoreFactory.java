@@ -19,12 +19,14 @@
  */
 package org.applecommander.archive.zip;
 
+import org.applecommander.filestore.ConfigurationOption;
 import org.applecommander.filestore.FileStoreFactory;
 import org.applecommander.filestore.FileStoreOrganization;
 import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
 
 import java.util.List;
+import java.util.Map;
 
 public class ZipFileStoreFactory implements FileStoreFactory {
     public static final int ZIP_SIGNATURE = 0x504b0304;     // "PK.."
@@ -49,7 +51,7 @@ public class ZipFileStoreFactory implements FileStoreFactory {
     }
 
     @Override
-    public ZipFileStore create(FileStoreOrganization fileStoreOrganization) {
+    public ZipFileStore create(FileStoreOrganization fileStoreOrganization, Map<String, ConfigurationOption> options) {
         Source source = fileStoreOrganization.createSource("zip");
         return new ZipFileStore(source);
     }

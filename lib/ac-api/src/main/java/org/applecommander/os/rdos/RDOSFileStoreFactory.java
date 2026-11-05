@@ -21,6 +21,7 @@ package org.applecommander.os.rdos;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
 import org.applecommander.device.*;
+import org.applecommander.filestore.ConfigurationOption;
 import org.applecommander.filestore.FileStoreFactory;
 import org.applecommander.filestore.FileStoreOrganization;
 import org.applecommander.util.DataBuffer;
@@ -28,10 +29,9 @@ import org.applecommander.util.DataBuffer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+
+import static org.applecommander.filestore.ConfigurationOption.getValidatedValue;
 
 public class RDOSFileStoreFactory implements FileStoreFactory, RDOSConstants {
     /// Simple directory marker to determine sector order
@@ -42,6 +42,18 @@ public class RDOSFileStoreFactory implements FileStoreFactory, RDOSConstants {
             FileStoreOrganization.DISK_16SECTOR_PO,
             FileStoreOrganization.DISK_16SECTOR_NIB
     );
+    public static final String STARTUP_FILE_NAME_FIELD = "startup_file_name";
+    public static final String STARTUP_FILE_NAME = "SYSTEMBOOT";
+    public static final String STARTUP_CONTENT_FIELD = "startup_content";
+    public static final String STARTUP_CONTENT_DEFAULT = """
+                    PR#0
+                    IN#0
+                    TEXT
+                    HOME
+                    &CAT
+                    PRINT
+                    PRINT "WELCOME TO RDOS!"
+                    """;
 
     @Override
     public String getName() {
@@ -68,7 +80,34 @@ public class RDOSFileStoreFactory implements FileStoreFactory, RDOSConstants {
     }
 
     @Override
-    public RDOSFileStore create(FileStoreOrganization fileStoreOrganization) {
+    public Map<String,ConfigurationOption> getConfigurationOptions() {
+        return ConfigurationOption.builder()
+                .next(STARTUP_FILE_NAME_FIELD)
+                .restrictions(FILE_NAME_MAPPER)
+                .enforceLength(1, NAME_LENGTH)
+                .prompt("Startup File Name")
+                .notes("""
+                        RDOS allows customization of the startup file. It doesn't appear that
+                        the type of file can be customized (always a text file) but the name
+                        doesn't have to be 'SYSTEMBOOT'.
+                        """)
+                .defaultValue(STARTUP_FILE_NAME)
+                .add()
+                .next(STARTUP_CONTENT_FIELD)
+                .enforceLength(1, 200)
+                .prompt("Startup Contents")
+                .notes("""
+                        Please enter the contents of the startup file. It appears that
+                        RDOS must have PR#0 and IN#0 at the beginning. Multiple lines
+                        are joined by a colon so the startup is a single line long.
+                        """)
+                .defaultValue(STARTUP_CONTENT_DEFAULT)
+                .add()
+                .done();
+    }
+
+    @Override
+    public RDOSFileStore create(FileStoreOrganization fileStoreOrganization, Map<String,ConfigurationOption> options) {
         Objects.requireNonNull(fileStoreOrganization);
         TrackSectorDevice device = fileStoreOrganization.createTrackSectorDevice();
         BlockDevice blockDevice = new TrackSectorToBlockAdapter(device.request(SectorOrder.PRODOS),
@@ -79,20 +118,25 @@ public class RDOSFileStoreFactory implements FileStoreFactory, RDOSConstants {
             byte[] disk = inputStream.readAllBytes();
             blockDevice.writeRange(0, DataBuffer.wrap(disk));
             RDOSFileStore fileStore = new RDOSFileStore(blockDevice, RDOSVersionAdapter.RDOS33);
-            RDOSFileEntry systemboot = fileStore.getRootDirectory().createFile("SYSTEMBOOT");
-            systemboot.setType("T");
-            systemboot.setAddress(0xb100);
-            // FIXME: Text file has to have high bit set. (Should fit in with the text handling)
-            byte[] systembootContent = """
-                    PR#0:IN#0:TEXT:HOME:&CAT:PRINT:PRINT "WELCOME TO RDOS!"
-                    """.getBytes();
+            String startupName = getValidatedValue(options, STARTUP_FILE_NAME_FIELD, STARTUP_FILE_NAME);
+            RDOSFileEntry startup = fileStore.getRootDirectory().createFile(startupName);
+            startup.setType("T");
+            startup.setAddress(0xb100);
+            // FIXME: Text file has to have high bit set. (Should fit in with the text handling). Must have $8D at end.
+            String content = getValidatedValue(options, STARTUP_CONTENT_FIELD, STARTUP_CONTENT_DEFAULT);
+            content = String.join(":", content.split("[\r\n]")) + "\r";
+            byte[] systembootContent = content.getBytes();
             for (int i = 0; i < systembootContent.length; i++) {
                 if (systembootContent[i] == '\n') {
                     systembootContent[i] = '\r';
                 }
                 systembootContent[i] = (byte)(systembootContent[i] | 0x80);
             }
-            systemboot.setDataFork(DataBuffer.wrap(systembootContent));
+            startup.setDataFork(DataBuffer.wrap(systembootContent));
+            // Need to copy the entry to 0xF60 (track 0, sector F, offset 0x60)
+            DataBuffer block = blockDevice.readBlock(15);
+            block.put(0x60, startup.readEntry());
+            blockDevice.writeBlock(15, block);
             return fileStore;
         }
         catch (IOException ex) {
