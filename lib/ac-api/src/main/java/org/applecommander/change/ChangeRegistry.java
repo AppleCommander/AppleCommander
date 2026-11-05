@@ -28,14 +28,18 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class ChangeRegistry<T extends EventObject> implements ChangeSource<T> {
     private final CopyOnWriteArrayList<ChangeListener<T>> listeners = new CopyOnWriteArrayList<>();
 
+    /// Add a change listener.
     public void addChangeListener(ChangeListener<T> listener) {
         listeners.addIfAbsent(listener);
     }
 
+    /// Remove a change listener.
     public void removeChangeListener(ChangeListener<T> listener) {
         listeners.remove(listener);
     }
 
+    /// This is an internal method used to notify all listeners of an event.
+    /// Frequently paired with a package-private method for related classes to use.
     protected void notifyChangeListeners(T event) {
         for (ChangeListener<T> listener : listeners) {
             listener.stateChanged(event);

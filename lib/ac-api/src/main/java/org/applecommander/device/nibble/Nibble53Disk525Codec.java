@@ -22,6 +22,7 @@ package org.applecommander.device.nibble;
 import org.applecommander.capability.Capability;
 import org.applecommander.util.DataBuffer;
 
+/// 5&3 nibble encoder for 13-sector disks.
 public class Nibble53Disk525Codec implements NibbleDiskCodec {
     private static final int RAW_BUFFER_SIZE = 410;
     private static final int SECTOR_SIZE = 256;
@@ -50,32 +51,38 @@ public class Nibble53Disk525Codec implements NibbleDiskCodec {
         }
     }
 
+    /// Helps identify capabilities of the 5&3 encoder.
     @Override
     public boolean can(Capability capability) {
         // Encoding is not implemented.
         return false;
     }
 
+    /// Number of bytes in the raw (encoded) buffer.
     @Override
     public int encodedSize() {
         return RAW_BUFFER_SIZE;
     }
 
+    /// Number of bytes in the decoded buffer. For Disk II devices, this is 256 bytes.
     @Override
     public int decodedSize() {
         return SECTOR_SIZE;
     }
 
+    /// The read translation table.
     @Override
     public int[] readTranslateTable() {
         return readTranslateTable53;
     }
 
+    /// The write translation table.
     @Override
     public int[] writeTranslateTable() {
         return writeTranslateTable53;
     }
 
+    /// Decode the buffer from the raw disk bytes to actual data.
     @Override
     public DataBuffer decode(DataBuffer rawData) {
         assert(rawData.limit() == RAW_BUFFER_SIZE+1);   // includes checksum
@@ -119,6 +126,7 @@ public class Nibble53Disk525Codec implements NibbleDiskCodec {
         return sectorData;
     }
 
+    /// Encode the data buffer into disk bytes. Not implemented for 5&3 encoding.
     @Override
     public DataBuffer encode(DataBuffer data) {
         throw new RuntimeException("5&3 encoding not implemented");

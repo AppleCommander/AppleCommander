@@ -22,6 +22,7 @@ package org.applecommander.device.nibble;
 import org.applecommander.capability.Capability;
 import org.applecommander.util.DataBuffer;
 
+/// 6&2 nibble encoder for 16-sector disks.
 public class Nibble62Disk525Codec implements NibbleDiskCodec {
     private static final int RAW_BUFFER_SIZE = 342;
     private static final int SECTOR_SIZE = 256;
@@ -54,31 +55,37 @@ public class Nibble62Disk525Codec implements NibbleDiskCodec {
         }
     }
 
+    /// Helps identify capabilities of the 6&2 encoder.
     @Override
     public boolean can(Capability capability) {
         return capability == Capability.ENCODE;
     }
 
+    /// Number of bytes in the raw (encoded) buffer.
     @Override
     public int encodedSize() {
         return RAW_BUFFER_SIZE;
     }
 
+    /// Number of bytes in the decoded buffer. For Disk II devices, this is 256 bytes.
     @Override
     public int decodedSize() {
         return SECTOR_SIZE;
     }
 
+    /// The read translation table.
     @Override
     public int[] readTranslateTable() {
         return readTranslateTable62;
     }
 
+    /// The write translation table.
     @Override
     public int[] writeTranslateTable() {
         return writeTranslateTable62;
     }
 
+    /// Decode the buffer from the raw disk bytes to actual data.
     @Override
     public DataBuffer decode(DataBuffer rawData) {
         assert(rawData.limit() == RAW_BUFFER_SIZE+1);   // includes checksum
@@ -113,6 +120,7 @@ public class Nibble62Disk525Codec implements NibbleDiskCodec {
         return sectorData;
     }
 
+    /// Encode the data buffer into disk bytes.
     @Override
     public DataBuffer encode(DataBuffer data) {
         assert(data.limit() == SECTOR_SIZE);

@@ -22,11 +22,24 @@ package org.applecommander.device.nibble;
 import org.applecommander.capability.CapabilityProvider;
 import org.applecommander.util.DataBuffer;
 
+/// Interface for the disk nibbilization routines.
 public interface NibbleDiskCodec extends CapabilityProvider {
+
+    /// Number of bytes in the raw (encoded) buffer.
     int encodedSize();
+
+    /// Number of bytes in the decoded buffer. For Disk II devices, this is 256 bytes.
     int decodedSize();
+
+    /// Decode the buffer from the raw disk bytes to actual data.
     DataBuffer decode(DataBuffer rawData);
+
+    /// Encode the data buffer into disk bytes.
     DataBuffer encode(DataBuffer data);
+
+    /// The read translation table.
     int[] readTranslateTable();
+
+    /// The write translation table.
     int[] writeTranslateTable();
 }

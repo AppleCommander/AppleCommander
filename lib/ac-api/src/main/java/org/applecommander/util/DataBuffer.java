@@ -256,7 +256,9 @@ public class DataBuffer {
             value = value.substring(0, maxLength);
         }
         putByte(index, value.length());
-        putBytes(index+1, new int[maxLength]);  // wipe out old value
+        for (int i = 0; i < maxLength; i++) {
+            putByte(index + 1 + i, 0);
+        }
         putFixedLengthString(index+1, value.length(), value, setHighBit);
     }
     /// Extract a Pascal date. If the date is not set (all zeroes)
@@ -272,7 +274,7 @@ public class DataBuffer {
         if (pascalDate == 0) {
             return null;
         }
-        int month =  pascalDate & 0x000f - 1;
+        int month =  (pascalDate & 0x000f) - 1;
         int day =   (pascalDate & 0x01f0) >> 4;
         int year =  (pascalDate & 0xfe00) >> 9;
         if (year < 50) year+= 2000;

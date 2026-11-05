@@ -21,6 +21,8 @@ package org.applecommander.archive.shrinkit;
 
 import org.applecommander.filestore.FileStoreFactory;
 import org.applecommander.shrinkit.ByteConstants;
+import org.applecommander.source.DataBufferSource;
+import org.applecommander.source.Source;
 import org.applecommander.util.DataBuffer;
 
 import java.util.Arrays;
@@ -41,8 +43,12 @@ public class ShrinkitFileStoreFactory implements FileStoreFactory {
             // Sometimes it gets wrapped in HTML (how??); want to leave the other legit
             // embeddings alone (Binary II, for example).
             buffer = ctx.source.readBytes(0, 0x100);
-            buffer.scan(ByteConstants.NUFILE_ID, 0).ifPresent(_ -> {
-                ctx.fileStores.add(new ShrinkitFileStore(ctx.source));
+            buffer.scan(ByteConstants.NUFILE_ID, 0).ifPresent(offset -> {
+                // Skip the HTML prefix and create a Source starting at the NuFile ID
+                int remaining = ctx.source.getSize() - offset;
+                DataBuffer archiveBytes = ctx.source.readBytes(offset, remaining);
+                Source archiveSource = DataBufferSource.create(archiveBytes.asBytes(), ctx.source.getName()).get();
+                ctx.fileStores.add(new ShrinkitFileStore(archiveSource));
             });
         }
     }
