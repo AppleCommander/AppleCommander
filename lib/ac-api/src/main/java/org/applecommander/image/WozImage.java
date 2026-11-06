@@ -127,7 +127,7 @@ public class WozImage implements NibbleTrackReaderWriter {
 
     @Override
     public void writeTrackData(int track, DataBuffer data) {
-
+        throw new UnsupportedOperationException("WOZ images are read-only");
     }
 
     public DataBuffer readTrackDataWOZ2(int track) {
