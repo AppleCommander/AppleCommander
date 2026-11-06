@@ -48,7 +48,7 @@ public class BinsciiEncoderDecoder {
 			for (int j=3; j>=0; j--) {
 				char ch = encodedText.charAt(i+j);
 				int pos = alphabet.indexOf(ch);
-				if (j > 63) {
+				if (pos == -1) {
 					throw new IOException(String.format("Invalid character found for current alphabet -- '%c'", ch));
 				}
 				value <<= 6;
