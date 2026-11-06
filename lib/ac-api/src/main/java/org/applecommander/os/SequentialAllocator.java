@@ -45,6 +45,7 @@ public class SequentialAllocator {
         assert first <= last;
         assert first < totalSize && last <= totalSize;
         used.add(new Range(first, last));
+        used.sort(Comparator.comparingInt(Range::first));
     }
     public void addUsedByLength(int first, int length) {
         addUsed(first, first+length-1);
@@ -54,7 +55,6 @@ public class SequentialAllocator {
     /// Returns either the first placement that the request will fit
     /// or a `-1` if there is no fit.
     public int find(int requestSize) {
-        used.sort(Comparator.comparingInt(Range::first));
         int start = 0;
         for (Range range : used) {
             if (range.first() - start >= requestSize) {
