@@ -302,7 +302,7 @@ public class WozImage implements NibbleTrackReaderWriter {
             assert(data.limit() == 1 || data.limit() == 4);
             tmap = new int[4];
             for (int i=0; i<tmap.length; i++) {
-                tmap[i] = (i < data.limit()) ? tmap[i] = data.readUnsignedByte() : 255;
+                tmap[i] = (i < data.limit()) ? data.readUnsignedByte() : 255;
             }
         }
 
