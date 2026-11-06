@@ -214,7 +214,7 @@ public class WozImage implements NibbleTrackReaderWriter {
         private final int version;
         private final int diskType;
         private final int writeProtected;
-        private final int synchrinized;
+        private final int crossTrackSync;
         private final int cleaned;
         private final String creator;
         private int diskSides;
@@ -230,7 +230,7 @@ public class WozImage implements NibbleTrackReaderWriter {
             this.version = data.readUnsignedByte();
             this.diskType = data.readUnsignedByte();
             this.writeProtected = data.readUnsignedByte();
-            this.synchrinized = data.readUnsignedByte();
+            this.crossTrackSync = data.readUnsignedByte();
             this.cleaned = data.readUnsignedByte();
             this.creator = data.readFixedLengthString(32);
             if (this.version >= 2) {
@@ -256,8 +256,8 @@ public class WozImage implements NibbleTrackReaderWriter {
         public int getWriteProtected() {
             return writeProtected;
         }
-        public int getSynchrinized() {
-            return synchrinized;
+        public int getCrossTrackSync() {
+            return crossTrackSync;
         }
         public int getCleaned() {
             return cleaned;
