@@ -35,6 +35,7 @@ reports/
 /*.sdk
 /*.shk
 /*.SHK
+/*.woz
 /*.zip
 
 # Ignoring and backups
