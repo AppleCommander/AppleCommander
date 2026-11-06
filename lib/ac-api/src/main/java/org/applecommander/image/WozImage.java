@@ -127,7 +127,7 @@ public class WozImage implements NibbleTrackReaderWriter {
 
     @Override
     public void writeTrackData(int track, DataBuffer data) {
-
+        throw new UnsupportedOperationException("WOZ images are read-only");
     }
 
     public DataBuffer readTrackDataWOZ2(int track) {
@@ -214,7 +214,7 @@ public class WozImage implements NibbleTrackReaderWriter {
         private final int version;
         private final int diskType;
         private final int writeProtected;
-        private final int synchrinized;
+        private final int crossTrackSync;
         private final int cleaned;
         private final String creator;
         private int diskSides;
@@ -230,7 +230,7 @@ public class WozImage implements NibbleTrackReaderWriter {
             this.version = data.readUnsignedByte();
             this.diskType = data.readUnsignedByte();
             this.writeProtected = data.readUnsignedByte();
-            this.synchrinized = data.readUnsignedByte();
+            this.crossTrackSync = data.readUnsignedByte();
             this.cleaned = data.readUnsignedByte();
             this.creator = data.readFixedLengthString(32);
             if (this.version >= 2) {
@@ -256,8 +256,8 @@ public class WozImage implements NibbleTrackReaderWriter {
         public int getWriteProtected() {
             return writeProtected;
         }
-        public int getSynchrinized() {
-            return synchrinized;
+        public int getCrossTrackSync() {
+            return crossTrackSync;
         }
         public int getCleaned() {
             return cleaned;
@@ -302,7 +302,7 @@ public class WozImage implements NibbleTrackReaderWriter {
             assert(data.limit() == 1 || data.limit() == 4);
             tmap = new int[4];
             for (int i=0; i<tmap.length; i++) {
-                tmap[i] = (i < data.limit()) ? tmap[i] = data.readUnsignedByte() : 255;
+                tmap[i] = (i < data.limit()) ? data.readUnsignedByte() : 255;
             }
         }
 

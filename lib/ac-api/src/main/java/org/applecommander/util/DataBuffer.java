@@ -202,7 +202,7 @@ public class DataBuffer {
     public int getUnsignedByte(int index) {
         return Byte.toUnsignedInt(this.buffer.get(index));
     }
-    public int getSignedShort(int index) { return this.buffer.getShort(); }
+    public int getSignedShort(int index) { return this.buffer.getShort(index); }
     public int getUnsignedShort(int index) {
         return Short.toUnsignedInt(this.buffer.getShort(index));
     }
