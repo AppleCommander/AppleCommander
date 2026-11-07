@@ -60,6 +60,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -95,6 +96,7 @@ public class FileStoreWindow {
     private final BooleanProperty supportsDiskUsage = new SimpleBooleanProperty();
     private final IntegerProperty changeCount = new SimpleIntegerProperty();
     private final BooleanProperty canSave = new SimpleBooleanProperty();
+    private final List<FileContentWindow> childWindows = new ArrayList<>();
 
     public FileStoreSelectionModel fileStoreSelection() {
         return fileStoreSelection;
@@ -133,6 +135,9 @@ public class FileStoreWindow {
                 new Image(imageUrl("AppleCommanderIcon-48x48.png")),
                 new Image(imageUrl("AppleCommanderIcon-64x64.png"))
         );
+        stage.setOnCloseRequest(event -> {
+            controller.closeAllChildWindows();
+        });
 
         // Bind keyboard shortcuts in controller
         try {
@@ -253,6 +258,14 @@ public class FileStoreWindow {
         viewMode.set(ViewMode.LANDING);
     }
 
+    public void addChildWindow(FileContentWindow contentWindow) {
+        Objects.requireNonNull(contentWindow);
+        childWindows.add(contentWindow);
+    }
+    public void closeAllChildWindows() {
+        childWindows.forEach(FileContentWindow::close);
+    }
+
     public Stage getPrimaryStage() {
         return primaryStage;
     }
@@ -342,6 +355,9 @@ public class FileStoreWindow {
                 return;
             }
         }
+
+        // Clean up anything being looked at
+        closeAllChildWindows();
 
         try {
             fileStoreSelection.changeFileStores(fileStores);

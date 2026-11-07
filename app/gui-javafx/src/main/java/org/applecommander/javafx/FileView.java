@@ -470,7 +470,11 @@ public class FileView extends BorderPane {
                 var inspected = FileStores.inspect(source);
                 FileStoreWindow.openNewWindow(inspected.fileStores);
             }
-            case UNKNOWN -> { /* Do Nothing */ }
+            default -> {
+                FileContentWindow contentWindow = new FileContentWindow(selectedRow);
+                this.fileStoreWindow.addChildWindow(contentWindow);
+                contentWindow.show();
+            }
         }
     }
 
