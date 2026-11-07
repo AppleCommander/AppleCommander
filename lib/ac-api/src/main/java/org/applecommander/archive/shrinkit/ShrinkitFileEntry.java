@@ -170,6 +170,8 @@ public class ShrinkitFileEntry implements FileEntry {
             .map(DataBuffer::wrap);
     }
 
+    /// Return the type of content, if known. It should never return null; use UNKNOWN if not known.
+    /// @see ContentType
     @Override
     public ContentType getContentType() {
         Optional<ThreadRecord> record = headerBlock.getDataForkThreadRecord();

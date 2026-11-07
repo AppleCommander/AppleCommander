@@ -22,6 +22,7 @@ package org.applecommander.os.gamedos;
 import org.applecommander.device.Coordinate.TrackAndSectorCoordinate;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.exception.DiskFullException;
+import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.WritableFileEntry;
@@ -168,6 +169,15 @@ public class GamedosFileEntry implements WritableFileEntry, GamedosConstants {
             case "I" -> builder.INT();
         }
         return builder.get();
+    }
+
+    /// Return the type of content, if known. It should never return null; use UNKNOWN if not known.
+    /// @see ContentType
+    public ContentType getContentType() {
+        return switch (getFiletype()) {
+            case "T" -> ContentType.HIGH_ASCII;     // admittedly, this is a guess
+            default -> ContentType.UNKNOWN;
+        };
     }
 
     @Override

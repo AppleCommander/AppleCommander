@@ -188,6 +188,8 @@ public class BinaryIIFileEntry implements FileEntry, BinaryIIConstants {
                 .get();
     }
 
+    /// Return the type of content, if known. It should never return null; use UNKNOWN if not known.
+    /// @see ContentType
     @Override
     public ContentType getContentType() {
         ContentType contentType = FileMagic.getProdosContentType(getFileType(), getAuxType());

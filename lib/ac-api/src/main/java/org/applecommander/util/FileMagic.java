@@ -31,6 +31,7 @@ import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 /// Provide some shared file identification across FileStores.
 public class FileMagic {
@@ -56,6 +57,8 @@ public class FileMagic {
             throw new RuntimeException(ex);
         }
     }
+    /// Common text file extensions. Used for file name matching and (presumably) by the CP/M and Zip file stores.
+    public static final Set<String> TEXT_FILE_EXTENSIONS = Set.of(".txt", ".c", ".h", ".cc", ".pas", ".src");
 
     /// Given a prodos `file_type` and `aux_type`, identify the 3-letter abbreviation to use.
     public static String getProdosFileTypeText(int fileType, int auxType) {
@@ -70,10 +73,13 @@ public class FileMagic {
     /// Given a filename, try to identify the content type.
     public static ContentType identifyContentType(String fileName) {
         ContentType contentType = ContentType.UNKNOWN;
-        if (FileExtensions.ARCHIVE_IMAGE_EXTENSIONS.stream().anyMatch(e -> fileName.toLowerCase().endsWith(e))) {
+        final String lcFileName = fileName.toLowerCase();
+        if (FileExtensions.ARCHIVE_IMAGE_EXTENSIONS.stream().anyMatch(lcFileName::endsWith)) {
             contentType = ContentType.ARCHIVE_IMAGE;
-        } else if (FileExtensions.DISK_IMAGE_EXTENSIONS.stream().anyMatch(e -> fileName.toLowerCase().endsWith(e))) {
+        } else if (FileExtensions.DISK_IMAGE_EXTENSIONS.stream().anyMatch(lcFileName::endsWith)) {
             contentType = ContentType.DISK_IMAGE;
+        } else if (TEXT_FILE_EXTENSIONS.stream().anyMatch(lcFileName::endsWith)) {
+            contentType = ContentType.LOW_ASCII;
         }
 
         return contentType;

@@ -73,6 +73,15 @@ public class DataBuffer {
         }
         return dbuf;
     }
+    public static DataBuffer concat(DataBuffer... buffers) {
+        int size = 0;
+        for (DataBuffer buffer : buffers) size+= buffer.limit();
+        DataBuffer data = create(size);
+        for (DataBuffer buffer : buffers) {
+            data.write(buffer);
+        }
+        return data;
+    }
 
     private DataBuffer() {
         // prevent construction
@@ -100,7 +109,14 @@ public class DataBuffer {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof DataBuffer that) {
-            return this.buffer.equals(that.buffer);
+            if (this.limit() == that.limit()) {
+                for (int i=0; i<this.limit(); i++) {
+                    if (this.getUnsignedByte(i) != that.getUnsignedByte(i)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
         }
         return false;
     }
@@ -401,6 +417,9 @@ public class DataBuffer {
         this.buffer.get(s);
         this.position(startingPosition+maxLength);
         return new String(s);
+    }
+    public void write(DataBuffer value) {
+        this.buffer.put(value.buffer);
     }
     public void writeByte(int value) {
         this.buffer.put((byte)value);
