@@ -75,6 +75,7 @@ module org.applecommander.api {
              org.applecommander.os.gamedos.GamedosFileStoreFactory,
              org.applecommander.os.pascal.PascalFileStoreFactory,
              org.applecommander.os.rdos.RDOSFileStoreFactory,
+             org.applecommander.os.usdos.USDOSFileStoreFactory,
              // Legacy shim
              com.webcodepro.applecommander.storage.DiskFileStoreFactory;
 
