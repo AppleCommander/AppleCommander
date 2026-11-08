@@ -53,6 +53,7 @@ public class FileContentWindow {
     private ToggleButton viewAsText;
     private ToggleButton viewAsHex;
     private final ObjectProperty<ContentType> contentTypeProperty = new SimpleObjectProperty<>();
+    private final ObjectProperty<Subtype> contentSubtypeProperty = new SimpleObjectProperty<>();
     private final ObjectProperty<ViewType> viewTypeProperty = new SimpleObjectProperty<>();
     private double fontSize;
 
@@ -106,6 +107,7 @@ public class FileContentWindow {
 
     private void initView() {
         this.contentTypeProperty.addListener((_, _, newValue) -> {
+            contentSubtypeProperty.setValue(newValue.subtype);
             viewTypeProperty.setValue(SUBTYPE_VIEW_MAP.getOrDefault(newValue.subtype, ViewType.HEX));
         });
         this.textView.visibleProperty().bind(viewTypeProperty.isEqualTo(ViewType.TEXT).or(viewTypeProperty.isEqualTo(ViewType.HEX)));
@@ -137,7 +139,7 @@ public class FileContentWindow {
         viewAsText = FxUtils.createToggleButton("view-text.png", "Text", toggleGroup, _ -> {
             this.viewTypeProperty.setValue(ViewType.TEXT);
         });
-        viewAsText.disableProperty().bind(viewTypeProperty.isNotEqualTo(ViewType.TEXT));
+        viewAsText.disableProperty().bind(contentSubtypeProperty.isNotEqualTo(Subtype.TEXT));
         viewAsHex = FxUtils.createToggleButton("view-hex.png", "Hex", toggleGroup, _ -> {
             this.viewTypeProperty.setValue(ViewType.HEX);
         });
