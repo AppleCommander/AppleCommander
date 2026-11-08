@@ -158,6 +158,7 @@ public class DiskFileStoreAdapter extends ChangeRegistry<FileStore.FileStoreChan
             case DELETE_FILES -> disk.canDeleteFile();
             case CREATE_DIRECTORIES -> disk.canCreateDirectories();
             case SUPPORTS_DIRECTORIES -> disk.canHaveDirectories();
+            case SUPPORTS_DELETED_FILES -> disk.supportsDeletedFiles();
             case WRITE_FILES -> disk.canWriteFileData();
             default -> false;
         };

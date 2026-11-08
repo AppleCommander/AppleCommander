@@ -143,7 +143,7 @@ public class FileView extends BorderPane {
                 directoryPath.add(newValue.getRootDirectory());
                 listingMode.setValue(DisplayMode.NATIVE);
                 supportsDirectories.setValue(newValue.can(Capability.SUPPORTS_DIRECTORIES));
-                supportsFileDeletion.setValue(newValue.can(Capability.DELETE_FILES));
+                supportsFileDeletion.setValue(newValue.can(Capability.SUPPORTS_DELETED_FILES));
                 showingDetailProperty.set(false);
             }
         });
