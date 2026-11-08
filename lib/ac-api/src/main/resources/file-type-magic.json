@@ -21,12 +21,14 @@
     "code": "$03",
     "abbreviation": "PTX",
     "description": "Pascal text",
+    "contentType": "PASCAL_TEXT",
     "auxTypes": []
   },
   {
     "code": "$04",
     "abbreviation": "TXT",
     "description": "ASCII text [Random-access record-length]",
+    "contentType": "HIGH_ASCII",
     "auxTypes": [
       {
         "code": "$1080",
@@ -1035,11 +1037,6 @@
   },
   {
     "code": "$5D",
-    "description": "Generic game document",
-    "auxTypes": []
-  },
-  {
-    "code": "$5D",
     "abbreviation": "ENT",
     "description": "Game/Entertainment document [Application Specific]",
     "auxTypes": [
@@ -1311,6 +1308,7 @@
   {
     "code": "$B0",
     "abbreviation": "SRC",
+    "contentType": "LOW_ASCII",
     "description": "Apple IIgs source code [APW Language type]",
     "auxTypes": [
       {
@@ -2013,7 +2011,8 @@
       },
       {
         "code": "$8000",
-        "description": "Binary II File [Application Specific]"
+        "description": "Binary II File [Application Specific]",
+        "contentType": "ARCHIVE_IMAGE"
       },
       {
         "code": "$8001",

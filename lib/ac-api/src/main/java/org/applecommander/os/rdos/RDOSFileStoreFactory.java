@@ -20,8 +20,11 @@
 package org.applecommander.os.rdos;
 
 import com.webcodepro.applecommander.storage.DiskConstants;
+import org.applecommander.converter.ConverterRepository;
+import org.applecommander.converter.TextConverter;
 import org.applecommander.device.*;
 import org.applecommander.filestore.ConfigurationOption;
+import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.FileStoreFactory;
 import org.applecommander.filestore.FileStoreOrganization;
 import org.applecommander.util.DataBuffer;
@@ -118,21 +121,15 @@ public class RDOSFileStoreFactory implements FileStoreFactory, RDOSConstants {
             byte[] disk = inputStream.readAllBytes();
             blockDevice.writeRange(0, DataBuffer.wrap(disk));
             RDOSFileStore fileStore = new RDOSFileStore(blockDevice, RDOSVersionAdapter.RDOS33);
+            // Create the "SYSTEMBOOT" file (or whatever name was chosen).
             String startupName = getValidatedValue(options, STARTUP_FILE_NAME_FIELD, STARTUP_FILE_NAME);
             RDOSFileEntry startup = fileStore.getRootDirectory().createFile(startupName);
             startup.setType("T");
             startup.setAddress(0xb100);
-            // FIXME: Text file has to have high bit set. (Should fit in with the text handling). Must have $8D at end.
             String content = getValidatedValue(options, STARTUP_CONTENT_FIELD, STARTUP_CONTENT_DEFAULT);
             content = String.join(":", content.split("[\r\n]")) + "\r";
-            byte[] systembootContent = content.getBytes();
-            for (int i = 0; i < systembootContent.length; i++) {
-                if (systembootContent[i] == '\n') {
-                    systembootContent[i] = '\r';
-                }
-                systembootContent[i] = (byte)(systembootContent[i] | 0x80);
-            }
-            startup.setDataFork(DataBuffer.wrap(systembootContent));
+            TextConverter textConverter = ConverterRepository.getTextConverter(ContentType.HIGH_ASCII).orElseThrow();
+            textConverter.write(startup, content);
             // Need to copy the entry to 0xF60 (track 0, sector F, offset 0x60)
             DataBuffer block = blockDevice.readBlock(15);
             block.put(0x60, startup.readEntry());

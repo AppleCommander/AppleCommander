@@ -205,6 +205,8 @@ public class ZipFileEntry implements WritableFileEntry {
                 .get();
     }
 
+    /// Return the type of content, if known. It should never return null; use UNKNOWN if not known.
+    /// @see ContentType
     @Override
     public ContentType getContentType() {
         return FileMagic.identifyContentType(getName());

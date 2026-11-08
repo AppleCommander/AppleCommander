@@ -22,6 +22,7 @@ package org.applecommander.os.rdos;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.exception.DiskFullException;
+import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.WritableFileEntry;
 import org.applecommander.os.SequentialAllocator;
@@ -173,6 +174,15 @@ public class RDOSFileEntry implements WritableFileEntry, RDOSConstants {
     @Override
     public <T> Optional<T> get(Class<T> iface) {
         return Container.get(iface, device);
+    }
+
+    /// Return the type of content, if known. It should never return null; use UNKNOWN if not known.
+    /// @see ContentType
+    public ContentType getContentType() {
+        return switch (getType()) {
+            case "T" -> ContentType.HIGH_ASCII;
+            default -> ContentType.UNKNOWN;
+        };
     }
 
     /// Store the file's data.

@@ -21,6 +21,7 @@ package org.applecommander.os.pascal;
 
 import org.applecommander.device.BlockDevice;
 import org.applecommander.exception.DiskFullException;
+import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.WritableFileEntry;
@@ -229,6 +230,15 @@ public class PascalFileEntry implements WritableFileEntry, PascalConstants {
             default -> builder.BIN(0x0000);
         }
         return builder.get();
+    }
+
+    /// Return the type of content, if known. It should never return null; use UNKNOWN if not known.
+    /// @see ContentType
+    public ContentType getContentType() {
+        return switch (getType()) {
+            case "TEXT" -> ContentType.PASCAL_TEXT;
+            default -> ContentType.UNKNOWN;
+        };
     }
 
     @Override

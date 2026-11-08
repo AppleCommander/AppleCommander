@@ -19,6 +19,7 @@
  */
 package org.applecommander.archive.aaf;
 
+import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.Directory;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
@@ -104,6 +105,12 @@ public class AppleArchiveFormatFileEntry implements FileEntry {
                 .unlocked()
                 .dataFork(text.getBytes())
                 .get();
+    }
+
+    /// Return the type of content, if known. It should never return null; use UNKNOWN if not known.
+    /// @see ContentType
+    public ContentType getContentType() {
+        return ContentType.LOW_ASCII;
     }
 
     @Override

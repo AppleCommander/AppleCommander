@@ -46,6 +46,7 @@ module org.applecommander.api {
     exports org.applecommander.archive.zip;
     exports org.applecommander.capability;
     exports org.applecommander.change;
+    exports org.applecommander.converter;
     exports org.applecommander.device;
     exports org.applecommander.device.nibble;
     exports org.applecommander.exception;
