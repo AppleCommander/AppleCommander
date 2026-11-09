@@ -131,7 +131,17 @@ public class USDOSFileEntry implements FileEntry, USDOSConstants {
     /// so this allows each file store to manage the interpretation itself.
     @Override
     public ProdosAttributes getProdosAttributes() {
-        return null;
+        ProdosAttributes.Builder builder = ProdosAttributes.builder()
+            .unlocked()
+            .auxType(getAddress())
+            .creation(getDate())
+            .name(String.format("%s.%s", getName(), getExtension()));
+        switch (getExtension()) {
+            case "BAS" -> builder.BAS();
+            case "TXT", "BAT" -> builder.TXT();
+            default -> builder.BIN(getAddress());
+        }
+        return builder.get();
     }
 
     /// Return the type of content, if known. It should never return null; use UNKNOWN if not known.

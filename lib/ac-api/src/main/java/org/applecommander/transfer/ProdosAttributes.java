@@ -23,6 +23,8 @@ import org.applecommander.util.DataBuffer;
 import org.applecommander.util.FileMagic;
 
 import java.nio.file.attribute.FileTime;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
 
@@ -106,6 +108,12 @@ public record ProdosAttributes(String name, int access, int fileType, int auxTyp
         public Builder creation(FileTime creation) {
             if (creation != null) {
                 this.creation = new Date(creation.toMillis());
+            }
+            return this;
+        }
+        public Builder creation(LocalDate creation) {
+            if (creation != null) {
+                this.creation = Date.from(creation.atStartOfDay(ZoneId.systemDefault()).toInstant());
             }
             return this;
         }
