@@ -12,6 +12,9 @@ public interface USDOSConstants {
     int DIRECTORY_TRACK = 0;
     int DIRECTORY_FIRST_SECTOR = 14;
     int DIRECTORY_TOTAL_SECTORS = 13;
+    int BITMAP_TRACK = 0;
+    int BITMAP_SECTOR = 15;
+    int BITMAP_OFFSET = 0x0e;
 
     int ENTRY_LENGTH = 20;
     int ENTRY_NAME = 0;

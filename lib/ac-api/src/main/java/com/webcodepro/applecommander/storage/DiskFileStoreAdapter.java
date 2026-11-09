@@ -45,9 +45,9 @@ import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.ui.DisplayColumn;
 import org.applecommander.ui.DisplayMode;
 import org.applecommander.usage.BlockUsage;
+import org.applecommander.usage.ComputedSectorUsage;
 import org.applecommander.usage.DiskUsage;
 import org.applecommander.usage.DiskUsage.UsageType;
-import org.applecommander.usage.SectorUsage;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.FileMagic;
@@ -74,7 +74,7 @@ public class DiskFileStoreAdapter extends ChangeRegistry<FileStore.FileStoreChan
         final Optional<TrackSectorDevice> trackSectorDevice = disk.get(TrackSectorDevice.class);
         final Optional<BlockDevice> blockDevice = disk.get(BlockDevice.class);
         this.usage = switch (disk) {
-            case DosFormatDisk dos -> new SectorUsage(trackSectorDevice.orElseThrow().getGeometry(), populator -> {
+            case DosFormatDisk dos -> new ComputedSectorUsage(trackSectorDevice.orElseThrow().getGeometry(), populator -> {
                 final byte[] vtoc = dos.readVtoc();
                 trackSectorDevice.ifPresent(device -> {
                     device.performRange(0, 0, device.getGeometry().sectorsPerDisk(),
@@ -88,13 +88,13 @@ public class DiskFileStoreAdapter extends ChangeRegistry<FileStore.FileStoreChan
                 }
             });
             // Current implementation of GutenbergFormatDisk and NakedosFormatDisk simply marks everything as used.
-            case GutenbergFormatDisk _ -> new SectorUsage(trackSectorDevice.orElseThrow().getGeometry(), populator -> {
+            case GutenbergFormatDisk _ -> new ComputedSectorUsage(trackSectorDevice.orElseThrow().getGeometry(), populator -> {
                 trackSectorDevice.ifPresent(device -> {
                     device.performRange(0, 0, device.getGeometry().sectorsPerDisk(),
                             (t,s,_) -> populator.setUsage(t, s, UsageType.USED));
                 });
             });
-            case NakedosFormatDisk _ -> new SectorUsage(trackSectorDevice.orElseThrow().getGeometry(), populator -> {
+            case NakedosFormatDisk _ -> new ComputedSectorUsage(trackSectorDevice.orElseThrow().getGeometry(), populator -> {
                 trackSectorDevice.ifPresent(device -> {
                     device.performRange(0, 0, device.getGeometry().sectorsPerDisk(),
                             (t,s,_) -> populator.setUsage(t, s, UsageType.USED));

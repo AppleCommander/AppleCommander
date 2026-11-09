@@ -6,6 +6,8 @@ import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.ui.DisplayColumn;
 import org.applecommander.ui.DisplayMode;
+import org.applecommander.usage.BitmapSectorUsage;
+import org.applecommander.usage.DiskUsage.UsageType;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.InformationGroup;
@@ -16,10 +18,31 @@ import java.util.Optional;
 public class USDOSFileStore extends ChangeRegistry<FileStore.FileStoreChangeEvent> implements FileStore, USDOSConstants {
     private final TrackSectorDevice device;
     private final USDOSDirectory rootDirectory;
+    private final BitmapSectorUsage usage;
 
     USDOSFileStore(TrackSectorDevice device) {
         this.device = device;
         this.rootDirectory = new USDOSDirectory(this, 0, "<ROOT>");
+        this.usage = new BitmapSectorUsage(device.getGeometry(), this::getUsage);
+    }
+
+    public UsageType getUsage(int track, int sector) {
+        if (track == 0) {
+            if (sector < 2) {
+                return UsageType.BOOT;
+            }
+            else if (sector <= DIRECTORY_FIRST_SECTOR) {
+                return UsageType.DIRECTORY;
+            }
+            else {
+                return UsageType.BITMAP;
+            }
+        }
+        DataBuffer bitmap = device.readSector(BITMAP_TRACK, BITMAP_SECTOR);
+        int offset = BITMAP_OFFSET + (track * 2) + (sector < 8 ? 1 : 0);
+        int bit = 7 - (sector & 0x7);
+        boolean used = bitmap.isBitSet(offset, bit);
+        return used ? UsageType.FILE : UsageType.FREE;
     }
 
     /// Read the entirety of the directory.
@@ -85,13 +108,14 @@ public class USDOSFileStore extends ChangeRegistry<FileStore.FileStoreChangeEven
 
     @Override
     public <T> Optional<T> get(Class<T> iface) {
-        return Container.get(iface, device);
+        return Container.get(iface, device, usage);
     }
 
     @Override
     public List<InformationGroup> information() {
         return InformationGroup.builder("US-DOS")
             .item("Total Files").value(rootDirectory.getTotalFileCount())
+            .merge(usage)
             .get(device);
     }
 }
