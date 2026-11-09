@@ -1,14 +1,19 @@
 package org.applecommander.os.usdos;
 
 import org.applecommander.device.SectorOrder;
+import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.ConfigurationOption;
 import org.applecommander.filestore.FileStoreFactory;
 import org.applecommander.filestore.FileStoreOrganization;
 import org.applecommander.util.DataBuffer;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class USDOSFileStoreFactory implements FileStoreFactory, USDOSConstants {
 
@@ -76,10 +81,19 @@ public class USDOSFileStoreFactory implements FileStoreFactory, USDOSConstants {
         return Collections.emptyMap();
     }
 
-    /// Create a `FileStore` using the given configuration settings.
+    /// Create a `USDOSFileStore` using the given configuration settings.
     @Override
     public USDOSFileStore create(FileStoreOrganization fileStoreOrganization, Map<String, ConfigurationOption> options) {
-        // FIXME TODO
-        throw new UnsupportedOperationException("TODO!");
+        Objects.requireNonNull(fileStoreOrganization);
+        TrackSectorDevice device = fileStoreOrganization.createTrackSectorDevice().request(SectorOrder.DOS);
+        try (InputStream inputStream = USDOSFileStoreFactory.class.getResourceAsStream("/files/usdos-1.11-boot.bin")) {
+            Objects.requireNonNull(inputStream);
+            byte[] boot = inputStream.readAllBytes();
+            device.writeRange(0, 0, DataBuffer.wrap(boot));
+            return new USDOSFileStore(device);
+        }
+        catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
     }
 }
