@@ -334,6 +334,11 @@ public class DataBuffer {
     public void putUnsignedShort(int offset, int value) {
         this.buffer.putShort(offset, (short)(value & 0xffff));
     }
+    public void putUnsignedShortBE(int offset, int value) {
+        this.buffer.order(ByteOrder.BIG_ENDIAN);
+        this.buffer.putShort(offset, (short)(value & 0xffff));
+        this.buffer.order(ByteOrder.LITTLE_ENDIAN);
+    }
     public void putShort(int offset, short value) {
         this.buffer.putShort(offset, value);
     }
