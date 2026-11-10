@@ -87,8 +87,7 @@ public class USDOSFileEntry implements WritableFileEntry, USDOSConstants {
     }
     public void setExtensionAsDirectory(int directoryNumber) {
         modifyEntry(entry -> {
-            entry.putByte(ENTRY_EXT, ENTRY_DIR_VALUE);
-            entry.putByte(ENTRY_EXT+1, directoryNumber);
+            entry.putBytes(ENTRY_EXT, ENTRY_DIR_VALUE, directoryNumber, 0);
         });
     }
 
