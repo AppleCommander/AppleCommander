@@ -58,6 +58,7 @@ module org.applecommander.api {
     exports org.applecommander.os.gamedos;
     exports org.applecommander.os.pascal;
     exports org.applecommander.os.rdos;
+    exports org.applecommander.os.usdos;
     exports org.applecommander.source;
     exports org.applecommander.transfer;
     exports org.applecommander.ui;

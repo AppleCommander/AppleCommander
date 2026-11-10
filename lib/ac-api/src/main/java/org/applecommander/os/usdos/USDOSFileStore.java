@@ -45,6 +45,10 @@ public class USDOSFileStore extends ChangeRegistry<FileStore.FileStoreChangeEven
         return used ? UsageType.FILE : UsageType.FREE;
     }
 
+    void notifyChangeListeners(ChangeType changeType) {
+        notifyChangeListeners(new FileStoreChangeEvent(this, changeType));
+    }
+
     /// Read the entirety of the directory.
     public DataBuffer readDirectory() {
         DataBuffer directory = DataBuffer.create(DIRECTORY_TOTAL_SECTORS * TrackSectorDevice.SECTOR_SIZE);
@@ -58,6 +62,19 @@ public class USDOSFileStore extends ChangeRegistry<FileStore.FileStoreChangeEven
             offset += TrackSectorDevice.SECTOR_SIZE;
         }
         return directory;
+    }
+
+    /// Write the entirety of the directory.
+    public void writeDirectory(DataBuffer directory) {
+        int count = DIRECTORY_TOTAL_SECTORS;
+        int sector = DIRECTORY_FIRST_SECTOR;
+        int offset = 0;
+        while (count > 0) {
+            device.writeSector(DIRECTORY_TRACK, sector, directory.slice(offset, TrackSectorDevice.SECTOR_SIZE));
+            count--;
+            sector--;
+            offset += TrackSectorDevice.SECTOR_SIZE;
+        }
     }
 
     /// Get the type of file store. This is a generic name, such as "RDOS 2.1" or "ShrinkIt".
@@ -105,12 +122,13 @@ public class USDOSFileStore extends ChangeRegistry<FileStore.FileStoreChangeEven
         return CAPABILITIES.contains(capability);
     }
 
-
+    /// Retrieve non-standard components.
     @Override
     public <T> Optional<T> get(Class<T> iface) {
         return Container.get(iface, device, usage);
     }
 
+    /// Get information about this component.
     @Override
     public List<InformationGroup> information() {
         return InformationGroup.builder("US-DOS")

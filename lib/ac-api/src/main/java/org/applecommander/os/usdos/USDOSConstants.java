@@ -1,6 +1,7 @@
 package org.applecommander.os.usdos;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.ui.CharacterMapper;
 
 import java.util.HexFormat;
 import java.util.Set;
@@ -32,5 +33,25 @@ public interface USDOSConstants {
     int INDEX_TRACKS = 0;
     int INDEX_SECTORS = 0xaa;
 
-    Set<Capability> CAPABILITIES = Set.of(Capability.SUPPORTS_DIRECTORIES, Capability.SUPPORTS_DELETED_FILES);
+    Set<Capability> CAPABILITIES = Set.of(Capability.SUPPORTS_DIRECTORIES, Capability.SUPPORTS_DELETED_FILES,
+            Capability.WRITE_FILES, Capability.CREATE_FILES, Capability.DELETE_FILES, Capability.CREATE_DIRECTORIES);
+
+    /// US-DOS is very flexible in what names are allowed. This is more stringent than what US-DOS
+    /// will allow (such as a file named `.` or `a....` which has an extension of `...`). However,
+    /// you can have `A-B.TXT` but not `A-B`. This limits the name to alphanumeric characters.
+    CharacterMapper FILE_NAME_MAPPER = CharacterMapper.builder()
+            .mapRange('a', 'z', true)
+            .mapRange('A', 'Z', false)
+            .mapRange('0', '9', false)
+            .map('.', '.')
+            .build();
+
+    /// US-DOS is very flexible in what names are allowed. This is more stringent than what US-DOS
+    /// will allow (such as a file named `.` or `a....` which has an extension of `...`). However,
+    /// you can have `A-B.TXT` but not `A-B`. This limits the name to alphanumeric characters.
+    CharacterMapper DIRECTORY_NAME_MAPPER = CharacterMapper.builder()
+            .mapRange('a', 'z', true)
+            .mapRange('A', 'Z', false)
+            .mapRange('0', '9', false)
+            .build();
 }

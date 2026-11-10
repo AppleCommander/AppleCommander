@@ -1,31 +1,38 @@
 package org.applecommander.os.usdos;
 
+import org.applecommander.capability.Capability;
 import org.applecommander.device.TrackSectorDevice;
-import org.applecommander.filestore.Directory;
-import org.applecommander.filestore.FileEntry;
+import org.applecommander.exception.DirectoryFullException;
+import org.applecommander.filestore.*;
+import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.DataBuffer;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.*;
 
-public class USDOSDirectory implements Directory, USDOSConstants {
+public class USDOSDirectory implements WritableDirectory, USDOSConstants {
+    private final USDOSDirectory parent;
     private final USDOSFileStore fileStore;
     private final TrackSectorDevice device;
     private final int directoryNumber;
     private final String directoryName;
 
     USDOSDirectory(USDOSFileStore fileStore, int directoryNumber, String directoryName) {
+        this(fileStore, directoryNumber, directoryName, null);
+    }
+    USDOSDirectory(USDOSFileStore fileStore, int directoryNumber, String directoryName, USDOSDirectory parent) {
         this.fileStore = fileStore;
         this.device = fileStore.get(TrackSectorDevice.class).orElseThrow();
         this.directoryNumber = directoryNumber;
         this.directoryName = directoryName;
+        this.parent = parent;
     }
 
     /// Get the parent directory. If this is the root directory, it returns empty.
     @Override
     public Optional<Directory> getParent() {
-        return Directory.super.getParent();
+        return Optional.ofNullable(parent);
     }
 
     /// Returns the FileStore that this Directory belongs to.
@@ -76,5 +83,99 @@ public class USDOSDirectory implements Directory, USDOSConstants {
             }
         }
         return fileCount;
+    }
+
+    /// Create a file. By definition, any file created is a `WritableFileEntry`.
+    /// @see Capability#CREATE_FILES
+    @Override
+    public USDOSFileEntry createFile(String fileName) {
+        final int totalEntries = (DIRECTORY_TOTAL_SECTORS*TrackSectorDevice.SECTOR_SIZE) / ENTRY_LENGTH;
+        for (int i=0; i<totalEntries; i++) {
+            USDOSFileEntry fileEntry = new USDOSFileEntry(this, i*ENTRY_LENGTH);
+            if (fileEntry.isDeleted()) {
+                int dot = fileName.lastIndexOf('.');
+                String extension = "BIN";
+                if (dot > -1) {
+                    extension = fileName.substring(dot+1);
+                    fileName = fileName.substring(0, dot);
+                }
+                fileEntry.setName(fileName);
+                fileEntry.setExtension(extension);
+                fileEntry.setDirectoryNumber(this.directoryNumber);
+                fileEntry.setDate(LocalDate.now());
+                fileStore.notifyChangeListeners(FileStore.ChangeType.FILE_CREATED);
+                return fileEntry;
+            }
+        }
+        throw new DirectoryFullException("there are no more directory entries available on this disk");
+    }
+
+    /// Create a file given the supplied ProDOS attributes. This is expected to handle
+    /// setting all appropriate `FileEntry` attributes that align. File type should be
+    /// converted, dates applied, etc.
+    /// @see Capability#CREATE_FILES
+    @Override
+    public WritableFileEntry createFrom(ProdosAttributes prodosAttributes) {
+        USDOSFileEntry fileEntry = createFile(prodosAttributes.name());
+        fileEntry.setAddress(prodosAttributes.auxType());
+        fileEntry.setDate(prodosAttributes.creation().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+        // This is a second attempt at setting the extension. BIN is the default.
+        String currentExtension = fileEntry.getExtension();
+        if ("BIN".equals(currentExtension) || currentExtension.isBlank()) {
+            String extension = switch (prodosAttributes.fileType()) {
+                case ProdosAttributes.BAS -> "BAS";
+                case ProdosAttributes.TXT -> "TXT";
+                default -> currentExtension;
+            };
+            fileEntry.setExtension(extension);
+        }
+        prodosAttributes.dataFork().ifPresent(fileEntry::setDataFork);
+        prodosAttributes.resourceFork().ifPresent(fileEntry::setResourceFork);
+        return fileEntry;
+    }
+
+    /// Get the options that are applied to directory names.
+    /// @see Capability#CREATE_DIRECTORIES
+    @Override
+    public ConfigurationOption getDirectoryConfigurationOption() {
+        return ConfigurationOption.builder().next("directory_name")
+                .enforceLength(1, ENTRY_NAME_LENGTH)
+                .restrictions(DIRECTORY_NAME_MAPPER)
+                .add()
+                .done().get("directory_name");
+    }
+
+    /// Create a directory. By definition, any directory create is a `WritableDirectory`.
+    /// @see Capability#CREATE_DIRECTORIES
+    @Override
+    public WritableDirectory createDirectory(String directoryName) {
+        final int totalEntries = (DIRECTORY_TOTAL_SECTORS*TrackSectorDevice.SECTOR_SIZE) / ENTRY_LENGTH;
+        // Identify all existing directory numbers.
+        Set<Integer> currentDirectoryNumbers = new HashSet<>();
+        currentDirectoryNumbers.add(0);     // Need to be certain the ROOT directory is represented!
+        for (int i=0; i<totalEntries; i++) {
+            USDOSFileEntry fileEntry = new USDOSFileEntry(this, i*ENTRY_LENGTH);
+            DataBuffer data = fileEntry.readEntry();
+            if (data.getUnsignedByte(ENTRY_EXT) == ENTRY_DIR_VALUE) {
+                currentDirectoryNumbers.add(data.getUnsignedByte(ENTRY_EXT+1));
+            }
+        }
+        // Now we need to create the directory entry and set it up.
+        int nextDirectoryNumber = 0;
+        while (currentDirectoryNumbers.contains(nextDirectoryNumber)) {
+            nextDirectoryNumber++;
+        }
+        USDOSFileEntry subdirectory = createFile(directoryName);
+        subdirectory.setExtensionAsDirectory(nextDirectoryNumber);
+        return new USDOSDirectory(fileStore, nextDirectoryNumber, directoryName, this);
+    }
+
+    /// Delete a file.
+    /// @see Capability#DELETE_FILES
+    @Override
+    public void deleteFile(FileEntry fileEntry) {
+        USDOSFileEntry file = (USDOSFileEntry) fileEntry;
+        file.modifyEntry(entry -> entry.putByte(ENTRY_NAME, 0));
+        fileStore.notifyChangeListeners(FileStore.ChangeType.FILE_DELETED);
     }
 }

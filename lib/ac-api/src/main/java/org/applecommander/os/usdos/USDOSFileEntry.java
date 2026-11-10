@@ -4,15 +4,17 @@ import org.applecommander.device.Coordinate;
 import org.applecommander.device.Coordinate.TrackAndSectorCoordinate;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.ContentType;
-import org.applecommander.filestore.FileEntry;
+import org.applecommander.filestore.FileStore;
+import org.applecommander.filestore.WritableFileEntry;
 import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.function.Consumer;
 
-public class USDOSFileEntry implements FileEntry, USDOSConstants {
+public class USDOSFileEntry implements WritableFileEntry, USDOSConstants {
     private final USDOSDirectory parent;
     private final TrackSectorDevice device;
     private final int entryOffset;
@@ -26,7 +28,7 @@ public class USDOSFileEntry implements FileEntry, USDOSConstants {
         DataBuffer entry = readEntry();
         if (entry.getUnsignedByte(ENTRY_EXT) == ENTRY_DIR_VALUE) {
             int directoryNumber = entry.getUnsignedByte(ENTRY_EXT+1);
-            this.directory = new USDOSDirectory(parent.getFileStore(), directoryNumber, getName());
+            this.directory = new USDOSDirectory(parent.getFileStore(), directoryNumber, getName(), parent);
         }
         else {
             this.directory = null;
@@ -35,6 +37,13 @@ public class USDOSFileEntry implements FileEntry, USDOSConstants {
 
     public DataBuffer readEntry() {
         return getFileStore().readDirectory().slice(entryOffset, ENTRY_LENGTH);
+    }
+    public void modifyEntry(Consumer<DataBuffer> consumer) {
+        DataBuffer directory = getFileStore().readDirectory();
+        DataBuffer entryData = directory.slice(entryOffset, ENTRY_LENGTH);
+        consumer.accept(entryData);
+        getFileStore().writeDirectory(directory);
+        getFileStore().notifyChangeListeners(FileStore.ChangeType.ATTRIBUTES_UPDATED);
     }
 
     /// The `Directory` that holds this file.
@@ -62,6 +71,9 @@ public class USDOSFileEntry implements FileEntry, USDOSConstants {
     public String getName() {
         return readEntry().getFixedLengthString(ENTRY_NAME, ENTRY_NAME_LENGTH);
     }
+    public void setName(String name) {
+        modifyEntry(entry -> entry.putFixedLengthString(ENTRY_NAME, ENTRY_NAME_LENGTH, name, false));
+    }
 
     public String getExtension() {
         DataBuffer entry = readEntry();
@@ -70,6 +82,15 @@ public class USDOSFileEntry implements FileEntry, USDOSConstants {
         }
         return entry.getFixedLengthString(ENTRY_EXT, ENTRY_EXT_LENGTH);
     }
+    public void setExtension(String extension) {
+        modifyEntry(entry -> entry.putFixedLengthString(ENTRY_EXT, ENTRY_EXT_LENGTH, extension, false));
+    }
+    public void setExtensionAsDirectory(int directoryNumber) {
+        modifyEntry(entry -> {
+            entry.putByte(ENTRY_EXT, ENTRY_DIR_VALUE);
+            entry.putByte(ENTRY_EXT+1, directoryNumber);
+        });
+    }
 
     /// Returns the size, in bytes, of this item.
     /// It may be approximate (based off a sector count, for instance).
@@ -77,10 +98,9 @@ public class USDOSFileEntry implements FileEntry, USDOSConstants {
     public long getSize() {
         return readEntry().getUnsignedShort(ENTRY_SIZE);
     }
-
-    int ENTRY_ADDRESS = 16;
-    int ENTRY_MAP_TRACK = 18;
-    int ENTRY_MAP_SECTOR = 19;
+    public void setSize(int size) {
+        modifyEntry(entry -> entry.putUnsignedShort(ENTRY_SIZE, size));
+    }
 
     /// Convert custom date format.
     /// Bytes are (essentially) big-endian format `dddddmmm myyyyyyy`.
@@ -94,14 +114,37 @@ public class USDOSFileEntry implements FileEntry, USDOSConstants {
         int dayOfMonth = (value >> 11) & 0x1f;
         return LocalDate.of(year, month+1, dayOfMonth+1);
     }
+    public void setDate(LocalDate date) {
+        int dayOfMonth = date.getDayOfMonth() - 1;
+        int month = date.getMonthValue() - 1;
+        int year = date.getYear() - 1977;
+        int dateValue = (dayOfMonth << 11) | (month << 7) | year;
+        modifyEntry(entry -> entry.putUnsignedShortBE(ENTRY_DATE, dateValue));
+    }
 
     public int getAddress() {
         return readEntry().getUnsignedShort(ENTRY_ADDRESS);
+    }
+    public void setAddress(int address) {
+        modifyEntry(entry -> entry.putUnsignedShort(ENTRY_ADDRESS, address));
     }
 
     public TrackAndSectorCoordinate getTrackSectorIndex() {
         DataBuffer entry = readEntry();
         return Coordinate.trackAndSector(entry.getUnsignedByte(ENTRY_MAP_TRACK), entry.getUnsignedByte(ENTRY_MAP_SECTOR));
+    }
+    public void setTrackSectorIndex(int track, int sector) {
+        modifyEntry(entry -> {
+            entry.putByte(ENTRY_MAP_TRACK, track);
+            entry.putByte(ENTRY_MAP_SECTOR, sector);
+        });
+    }
+
+    public int getDirectoryNumber() {
+        return readEntry().getUnsignedByte(ENTRY_DIR_NUM);
+    }
+    public void setDirectoryNumber(int directoryNumber) {
+        modifyEntry(entry -> entry.putByte(ENTRY_DIR_NUM, directoryNumber));
     }
 
     /// Return the file's data.
@@ -124,6 +167,14 @@ public class USDOSFileEntry implements FileEntry, USDOSConstants {
             offset += TrackSectorDevice.SECTOR_SIZE;
         }
         return data.slice(0, size);
+    }
+
+    /// Store the file's data.
+    /// This does not include any metadata that may be embedded with the file.
+    @Override
+    public void setDataFork(DataBuffer data) {
+        getFileStore().notifyChangeListeners(FileStore.ChangeType.DATA_UPDATED);
+        throw new UnsupportedOperationException("TODO");
     }
 
     /// Interpret the `FileEntry` as if it were on a ProDOS volume.
