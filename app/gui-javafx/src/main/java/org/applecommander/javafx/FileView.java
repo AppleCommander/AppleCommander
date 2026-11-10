@@ -48,7 +48,9 @@ import org.applecommander.bastools.api.Visitors;
 import org.applecommander.bastools.api.model.Program;
 import org.applecommander.bastools.api.model.Token;
 import org.applecommander.capability.Capability;
+import org.applecommander.change.ChangeListener;
 import org.applecommander.filestore.*;
+import org.applecommander.filestore.FileStore.FileStoreChangeEvent;
 import org.applecommander.javafx.filter.CharacterRestrictionFilter;
 import org.applecommander.javafx.filter.CompositeFilter;
 import org.applecommander.javafx.filter.FixedLengthFilter;
@@ -75,7 +77,7 @@ import java.util.function.UnaryOperator;
 
 import static org.applecommander.javafx.FxUtils.*;
 
-public class FileView extends BorderPane {
+public class FileView extends BorderPane implements ChangeListener<FileStoreChangeEvent> {
     // See https://en.wikipedia.org/wiki/AppleSingle_and_AppleDouble_formats
     public static final DataFormat APPLESINGLE_MIME = new DataFormat("application/applefile");
 
@@ -116,11 +118,42 @@ public class FileView extends BorderPane {
         deletedFilesToggleButton = createOnOffButton("deleted-files-hidden.png", "deleted-files-visible.png", "Deleted", _ -> toggleDeletedFiles());
         toolBar.getItems().add(deletedFilesToggleButton);
 
+        BorderPane directoryControls = new BorderPane();
         breadcrumbBar = new HBox();
         breadcrumbBar.setSpacing(6);
         breadcrumbBar.setPadding(new Insets(6));
         breadcrumbBar.setAlignment(Pos.CENTER_LEFT);
-        setTop(breadcrumbBar);
+        directoryControls.setCenter(breadcrumbBar);
+        Button createDirectoryButton = FxUtils.createSmallButton("folder-add.png", _ -> {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Create New Directory");
+            dialog.setHeaderText("Please enter the new directory name.");
+            dialog.setGraphic(null);
+            TextField field = dialog.getEditor();
+            if (selectedDirectory.getValue() instanceof WritableDirectory directory) {
+                ConfigurationOption configurationOption = directory.getDirectoryConfigurationOption();
+                List<UnaryOperator<TextFormatter.Change>> filters = new ArrayList<>();
+                if (configurationOption.getMaxLength() > 0) {
+                    filters.add(new FixedLengthFilter(configurationOption.getMaxLength()));
+                }
+                if (configurationOption.getCharacterRestrictions() != null) {
+                    filters.add(new CharacterRestrictionFilter(configurationOption.getCharacterRestrictions()));
+                }
+                field.setTextFormatter(new TextFormatter<>(new CompositeFilter(filters)));
+            }
+            // Disable OK button if length is zero:
+            dialog.getDialogPane().lookupButton(ButtonType.OK).disableProperty().bind(field.textProperty().length().isEqualTo(0));
+            dialog.showAndWait().ifPresent(name -> {
+                if (selectedDirectory.getValue() instanceof WritableDirectory directory) {
+                    directory.createDirectory(name);
+                }
+            });
+        });
+        HBox createDirectoryBar = new HBox(createDirectoryButton);
+        createDirectoryBar.setPadding(new Insets(6));
+        createDirectoryBar.setAlignment(Pos.CENTER_RIGHT);
+        directoryControls.setRight(createDirectoryBar);
+        setTop(directoryControls);
 
         createNewFileTable();
 
@@ -137,7 +170,10 @@ public class FileView extends BorderPane {
 
         visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
 
-        fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((_, _, newValue) -> {
+        fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((_, oldValue, newValue) -> {
+            if (oldValue != null) {
+                oldValue.removeChangeListener(this);
+            }
             if (newValue != null) {
                 directoryPath.clear();
                 directoryPath.add(newValue.getRootDirectory());
@@ -145,6 +181,7 @@ public class FileView extends BorderPane {
                 supportsDirectories.setValue(newValue.can(Capability.SUPPORTS_DIRECTORIES));
                 supportsFileDeletion.setValue(newValue.can(Capability.SUPPORTS_DELETED_FILES));
                 showingDetailProperty.set(false);
+                newValue.addChangeListener(this);
             }
         });
 
@@ -677,6 +714,21 @@ public class FileView extends BorderPane {
     private void toggleDeletedFiles() {
         if (!fileStoreWindow.fileStoreSelection().isEmpty() &&
                 fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES).get()) {
+            populateDiskRows();
+        }
+    }
+
+    /// When the state of an object has changed, this method is invoked on all listeners.
+    /// Note that the base `EventObject` has a source that needs to be cast to the proper interface.
+    @Override
+    public void stateChanged(FileStoreChangeEvent event) {
+        boolean refresh = switch (event.getChangeType()) {
+            case FILE_CREATED -> true;
+            case FILE_DELETED -> true;
+            case DATA_UPDATED -> false;
+            case ATTRIBUTES_UPDATED -> true;
+        };
+        if (refresh) {
             populateDiskRows();
         }
     }

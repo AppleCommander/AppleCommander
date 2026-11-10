@@ -53,6 +53,18 @@ public class FxUtils {
         return button;
     }
 
+    public static Button createSmallButton(String url, EventHandler<ActionEvent> eventHandler) {
+        ImageView imageView = new ImageView(imageUrl(url));
+        imageView.setFitHeight(16);
+        imageView.setFitWidth(16);
+        imageView.setPreserveRatio(true);
+        Button button = new Button();
+        button.setGraphic(imageView);
+        button.setOnAction(eventHandler);
+        button.setFocusTraversable(false);
+        return button;
+    }
+
     public static ToggleButton createToggleButton(String url, String text, ToggleGroup toggleGroup,
                                            EventHandler<ActionEvent> eventHandler) {
         ImageView imageView = new ImageView(imageUrl(url));

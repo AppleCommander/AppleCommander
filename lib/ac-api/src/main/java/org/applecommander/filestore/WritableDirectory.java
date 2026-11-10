@@ -41,6 +41,12 @@ public interface WritableDirectory extends Directory {
         throw new UnsupportedOperationException("unable to create files from ProDOS attributes");
     }
 
+    /// Get the options that are applied to directory names.
+    /// @see Capability#CREATE_DIRECTORIES
+    default ConfigurationOption getDirectoryConfigurationOption() {
+        throw new UnsupportedOperationException("directory creation not supported");
+    }
+
     /// Create a directory. By definition, any directory create is a `WritableDirectory`.
     /// @see Capability#CREATE_DIRECTORIES
     default WritableDirectory createDirectory(String directoryName) {
