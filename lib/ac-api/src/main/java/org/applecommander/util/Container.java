@@ -33,6 +33,7 @@ import java.util.Optional;
  * Not to mention that it doesn't apply to Shrinkit or Zip archives at all.
  */
 public interface Container {
+    /// Retrieve non-standard components.
     <T> Optional<T> get(Class<T> iface);
 
     /**

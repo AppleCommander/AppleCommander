@@ -25,5 +25,6 @@ import java.util.List;
  * An information provider supplies groups of information.
  */
 public interface InformationProvider {
+    /// Get information about this component.
     List<InformationGroup> information();
 }
