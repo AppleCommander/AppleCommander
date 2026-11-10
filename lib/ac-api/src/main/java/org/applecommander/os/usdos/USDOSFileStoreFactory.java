@@ -90,6 +90,9 @@ public class USDOSFileStoreFactory implements FileStoreFactory, USDOSConstants {
             Objects.requireNonNull(inputStream);
             byte[] boot = inputStream.readAllBytes();
             device.writeRange(0, 0, DataBuffer.wrap(boot));
+            DataBuffer bitmap = device.readSector(BITMAP_TRACK, BITMAP_SECTOR);
+            bitmap.putBytes(BITMAP_OFFSET, 0xff, 0xff);
+            device.writeSector(BITMAP_TRACK, BITMAP_SECTOR, bitmap);
             return new USDOSFileStore(device);
         }
         catch (IOException ex) {
