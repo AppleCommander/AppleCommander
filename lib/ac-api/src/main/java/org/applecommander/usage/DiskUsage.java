@@ -19,7 +19,6 @@
  */
 package org.applecommander.usage;
 
-import org.applecommander.change.ChangeListener;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.util.InformationGroup;
 import org.applecommander.util.InformationProvider;
@@ -34,9 +33,9 @@ import java.util.Set;
 /// is the addition of the two and the byte related numbers are just multiplied by the unit size.
 /// Finally, `used` and `free` are supplied as functions to allow the disk usage to be a long-term
 /// construct.
-/// @see BlockUsage
+/// @see ComputedBlockUsage
 /// @see SectorUsage
-public abstract class DiskUsage implements InformationProvider, ChangeListener<FileStore.FileStoreChangeEvent> {
+public abstract class DiskUsage implements InformationProvider {
     static final Set<FileStore.ChangeType> IMPACTFUL_CHANGES = Set.of(
             FileStore.ChangeType.DATA_UPDATED,
             FileStore.ChangeType.FILE_CREATED,
@@ -49,28 +48,36 @@ public abstract class DiskUsage implements InformationProvider, ChangeListener<F
         this.unitSize = unitSize;
     }
 
+    /// Compute a breakdown of the usage types.
     public abstract Map<UsageType,Integer> getUsageCounts();
+    /// The total number of "units" (either sectors or blocks) supported.
     public abstract int getTotal();
+    /// The number of used "units" (sectors or blocks).
     public int getUsed() {
         return getTotal() - getFree();
     }
+    /// The number of free "units" (sectors or blocks).
     public int getFree() {
         return getUsageCounts().getOrDefault(UsageType.FREE, 0);
     }
+    /// The total number of bytes on this device.
     public int getTotalBytes() {
         return getTotal() * unitSize;
     }
+    /// The total number of bytes used.
     public int getBytesUsed() {
         return getUsed() * unitSize;
     }
+    /// The total number of bytes free.
     public int getBytesFree() {
         return getFree() * unitSize;
     }
 
+    /// Get information about this component.
     @Override
     public List<InformationGroup> information() {
         String unitType = "Sectors";
-        if (this instanceof BlockUsage) {
+        if (this instanceof ComputedBlockUsage) {
             unitType = "Blocks";
         }
         return InformationGroup.builder("Usage")
@@ -81,11 +88,5 @@ public abstract class DiskUsage implements InformationProvider, ChangeListener<F
             .item("Used (%s)", unitType).value(getUsed())
             .item("Total (%s)", unitType).value(getTotal())
             .get();
-    }
-
-    /// Identifies usage type on this disk. Note that some devices may have generic used
-    /// instead of a specific type.
-    public enum UsageType {
-        FREE, USED, BOOT, BITMAP, SYSTEM, DIRECTORY, FILE
     }
 }

@@ -29,12 +29,12 @@ import java.util.function.Consumer;
 
 /// Provides block-level usage information. Note that block size can vary from 256 bytes (RDOS) to
 /// 512 bytes (Pascal, ProDOS) to 1024 bytes (CP/M), so it must be passed in on the constructor.
-public class BlockUsage extends DiskUsage {
+public class ComputedBlockUsage extends DiskUsage implements ComputedDiskUsage {
     private final BlockDevice.Geometry geometry;
     private final Consumer<UsagePopulator> usageFn;
     private byte[] usage;
 
-    public BlockUsage(BlockDevice.Geometry geometry, Consumer<UsagePopulator> usageFn) {
+    public ComputedBlockUsage(BlockDevice.Geometry geometry, Consumer<UsagePopulator> usageFn) {
         super(geometry.blockSize());
         Objects.requireNonNull(geometry);
         Objects.requireNonNull(usageFn);
@@ -42,6 +42,7 @@ public class BlockUsage extends DiskUsage {
         this.usageFn = usageFn;
     }
 
+    /// Compute a breakdown of the usage types.
     @Override
     public Map<UsageType,Integer> getUsageCounts() {
         Map<UsageType,Integer> counts = new HashMap<>();
@@ -51,16 +52,19 @@ public class BlockUsage extends DiskUsage {
         return counts;
     }
 
+    /// The total number of "units" (either sectors or blocks) supported.
     @Override
     public int getTotal() {
         return geometry.blocksOnDevice();
     }
 
+    /// Populate the usage details.
     public void populateUsage() {
         usage = new byte[geometry.blocksOnDevice()];
         usageFn.accept(this::setUsage);
     }
 
+    /// Get the usage type for the block.
     public UsageType getUsage(int block) {
         if (usage == null) {
             populateUsage();
@@ -68,11 +72,14 @@ public class BlockUsage extends DiskUsage {
         return UsageType.values()[usage[block]];
     }
 
+    /// Set the usage type for a block. Used for population.
     private void setUsage(int block, UsageType usageType) {
         assert block < usage.length;
         usage[block] = (byte) usageType.ordinal();
     }
 
+    /// Clear out the usage details if a change occurs that could impact the usage details.
+    /// (File created, file deleted, or data was written to a file.)
     @Override
     public void stateChanged(FileStore.FileStoreChangeEvent event) {
         if (IMPACTFUL_CHANGES.contains(event.getChangeType())) {
@@ -80,6 +87,8 @@ public class BlockUsage extends DiskUsage {
         }
     }
 
+    /// The `UsagePopulator` is a functional interface to make the callback functions easier.
+    @FunctionalInterface
     public interface UsagePopulator {
         void setUsage(int block, UsageType usageType);
     }

@@ -26,8 +26,8 @@ import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.ui.DisplayColumn;
 import org.applecommander.ui.DisplayMode;
-import org.applecommander.usage.BlockUsage;
-import org.applecommander.usage.DiskUsage.UsageType;
+import org.applecommander.usage.ComputedBlockUsage;
+import org.applecommander.usage.UsageType;
 import org.applecommander.util.Container;
 import org.applecommander.util.InformationGroup;
 
@@ -39,18 +39,18 @@ public class RDOSFileStore extends ChangeRegistry<FileStore.FileStoreChangeEvent
     private final BlockDevice device;
     private final RDOSVersionAdapter adapter;
     private final RDOSDirectory rootDirectory;
-    private final BlockUsage usage;
+    private final ComputedBlockUsage usage;
 
     RDOSFileStore(BlockDevice device, RDOSVersionAdapter adapter) {
         Objects.requireNonNull(device);
         this.device = device;
         this.adapter = adapter;
         this.rootDirectory = new RDOSDirectory(this);
-        this.usage = new BlockUsage(device.getGeometry(), this::usage);
+        this.usage = new ComputedBlockUsage(device.getGeometry(), this::usage);
         addChangeListener(this.usage);
     }
 
-    public void usage(BlockUsage.UsagePopulator populator) {
+    public void usage(ComputedBlockUsage.UsagePopulator populator) {
         populator.setUsage(0, UsageType.BOOT);
         for (int b=1; b<adapter.lastSystemBlock; b++) {
             populator.setUsage(b, UsageType.SYSTEM);

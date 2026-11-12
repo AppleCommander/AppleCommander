@@ -26,7 +26,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 /// Provides sector level usage information where the usage details must be computed.
-public class ComputedSectorUsage extends SectorUsage {
+public class ComputedSectorUsage extends SectorUsage implements ComputedDiskUsage {
     private final Consumer<UsagePopulator> usageFn;
     private byte[] usage;
 
@@ -37,11 +37,13 @@ public class ComputedSectorUsage extends SectorUsage {
         this.usageFn = usageFn;
     }
 
+    /// Populate the usage details.
     public void populateUsage() {
         usage = new byte[getGeometry().sectorsPerDisk()];
         usageFn.accept(this::setUsage);
     }
 
+    /// Get the usage type for the sector.
     @Override
     public UsageType getUsage(int track, int sector) {
         if (usage == null) {
@@ -50,6 +52,7 @@ public class ComputedSectorUsage extends SectorUsage {
         return UsageType.values()[usage[getGeometry().calculateSectorOffset(track,sector)]];
     }
 
+    /// Set the usage type for a sector. Used for population.
     public void setUsage(int track, int sector, UsageType usageType) {
         assert track < getGeometry().tracksOnDisk();
         assert sector < getGeometry().sectorsPerTrack();
@@ -57,6 +60,8 @@ public class ComputedSectorUsage extends SectorUsage {
         usage[pos] = (byte) usageType.ordinal();
     }
 
+    /// Clear out the usage details if a change occurs that could impact the usage details.
+    /// (File created, file deleted, or data was written to a file.)
     @Override
     public void stateChanged(FileStore.FileStoreChangeEvent event) {
         if (IMPACTFUL_CHANGES.contains(event.getChangeType())) {
@@ -64,6 +69,8 @@ public class ComputedSectorUsage extends SectorUsage {
         }
     }
 
+    /// The `UsagePopulator` is a functional interface to make the callback functions easier.
+    @FunctionalInterface
     public interface UsagePopulator {
         void setUsage(int track, int sector, UsageType usageType);
     }

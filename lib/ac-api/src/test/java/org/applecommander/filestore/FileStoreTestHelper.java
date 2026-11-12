@@ -23,10 +23,10 @@ import org.applecommander.capability.Capability;
 import org.applecommander.source.Source;
 import org.applecommander.ui.DisplayColumn;
 import org.applecommander.ui.DisplayMode;
-import org.applecommander.usage.BlockUsage;
+import org.applecommander.usage.ComputedBlockUsage;
 import org.applecommander.usage.DiskUsage;
-import org.applecommander.usage.DiskUsage.UsageType;
 import org.applecommander.usage.SectorUsage;
+import org.applecommander.usage.UsageType;
 
 import java.util.List;
 import java.util.Map;
@@ -97,7 +97,7 @@ public abstract class FileStoreTestHelper {
                 UsageType.FILE, "F"
         );
         switch (usage) {
-            case BlockUsage blockUsage -> {
+            case ComputedBlockUsage blockUsage -> {
                 System.out.printf("--- BLOCK USAGE 0 TO %d ---\n", blockUsage.getTotal()-1);
                 for (int block=0; block<blockUsage.getTotal(); block++) {
                     if (block > 0 && block % 80 == 0) System.out.println();

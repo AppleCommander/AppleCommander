@@ -38,10 +38,10 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import org.applecommander.filestore.FileStore;
-import org.applecommander.usage.BlockUsage;
+import org.applecommander.usage.ComputedBlockUsage;
 import org.applecommander.usage.DiskUsage;
-import org.applecommander.usage.DiskUsage.UsageType;
 import org.applecommander.usage.SectorUsage;
+import org.applecommander.usage.UsageType;
 
 import java.util.*;
 
@@ -136,7 +136,7 @@ public class DiskUsageView extends StackPane {
             updateSectorUsageGrid(sectorUsage);
             viewMode.set(Mode.GRID_VIEW);
         }
-        else if (usage instanceof BlockUsage blockUsage) {
+        else if (usage instanceof ComputedBlockUsage blockUsage) {
             boolean showPieChartOnly = switch (blockUsage.getTotal()) {
                 // CP/M, ProDOS/Pascal, RDOS 13 sector, RDOS 16 sector
                 case 140,280,455,560 -> false;
@@ -227,7 +227,7 @@ public class DiskUsageView extends StackPane {
         updateLegendBox(counts);
     }
 
-    private void updateBlockUsageGrid(BlockUsage usage) {
+    private void updateBlockUsageGrid(ComputedBlockUsage usage) {
         Objects.requireNonNull(usage);
 
         // Summing this independently since we have to loop through all sectors/blocks anyway.

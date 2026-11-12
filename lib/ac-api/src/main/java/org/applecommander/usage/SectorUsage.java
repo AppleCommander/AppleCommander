@@ -36,10 +36,12 @@ public abstract class SectorUsage extends DiskUsage {
         this.geometry = geometry;
     }
 
+    /// Get the underlying geometry for this usage component.
     public TrackSectorDevice.Geometry getGeometry() {
         return geometry;
     }
 
+    /// Compute a breakdown of the usage types.
     @Override
     public Map<UsageType, Integer> getUsageCounts() {
         Map<UsageType,Integer> counts = new HashMap<>();
@@ -51,15 +53,19 @@ public abstract class SectorUsage extends DiskUsage {
         return counts;
     }
 
+    /// Identify what `UsageType` this track/sector is classified as.
     public abstract UsageType getUsage(int track, int sector);
 
+    /// The total number of "units" (either sectors or blocks) supported.
     @Override
     public int getTotal() {
         return geometry.sectorsPerDisk();
     }
+    /// The total number of tracks on disk.
     public int getTracksOnDisk() {
         return geometry.tracksOnDisk();
     }
+    /// The sectors per track.
     public int getSectorsPerTrack() {
         return geometry.sectorsPerTrack();
     }

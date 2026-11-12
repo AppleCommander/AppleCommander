@@ -19,30 +19,10 @@
  */
 package org.applecommander.usage;
 
-import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.change.ChangeListener;
 import org.applecommander.filestore.FileStore;
 
-/// Provides sector level usage information for allocation schemes that are backed
-/// by a bitmap.
-public class BitmapSectorUsage extends SectorUsage {
-    private final BitmapReader bitmapReaderFn;
-
-    public BitmapSectorUsage(TrackSectorDevice.Geometry geometry, BitmapReader bitmapReaderFn) {
-        super(geometry);
-        this.bitmapReaderFn = bitmapReaderFn;
-    }
-
-    @Override
-    public UsageType getUsage(int track, int sector) {
-        return bitmapReaderFn.getUsage(track, sector);
-    }
-
-    @Override
-    public void stateChanged(FileStore.FileStoreChangeEvent event) {
-        // Nothing to do
-    }
-
-    public interface BitmapReader {
-        UsageType getUsage(int track, int sector);
-    }
+/// This is a marker interface to assist in the shim from the legacy API into the updated API.
+/// It is used to mark any "computed" usage components as change listeners.
+public interface ComputedDiskUsage extends ChangeListener<FileStore.FileStoreChangeEvent> {
 }
