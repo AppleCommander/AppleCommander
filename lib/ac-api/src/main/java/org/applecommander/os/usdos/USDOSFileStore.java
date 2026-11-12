@@ -150,9 +150,15 @@ public class USDOSFileStore extends ChangeRegistry<FileStore.FileStoreChangeEven
         return DisplayColumn.builder(USDOSFileEntry.class)
             .left("Base").string(USDOSFileEntry::getBaseName).done()
             .center("Ext").string(USDOSFileEntry::getExtension).done()
+            .left("Name").string(USDOSFileEntry::getName, USDOSFileEntry::setName).editInLine()
+                .mode(DisplayMode.DETAIL).maxLength(MAX_NAME_LENGTH)
+                .characterRestriction(FILE_NAME_MAPPER)
+                .done()
             .right("Size").integer(USDOSFileEntry::getSize, "%,d").done()
             .center("Date").dateDDMONYYYY(USDOSFileEntry::getDate).done()
-            .right("Address").integer(USDOSFileEntry::getAddress, "$%04X").mode(DisplayMode.DETAIL).done()
+            .right("Address").integer(USDOSFileEntry::getAddress, "$%04X", USDOSFileEntry::setAddress)
+                .mode(DisplayMode.DETAIL).restrictToHexValues()
+                .done()
             .center("Index").object(USDOSFileEntry::getTrackSectorIndex).mode(DisplayMode.DETAIL).done()
             .toList();
     }
