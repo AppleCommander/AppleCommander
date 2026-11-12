@@ -9,6 +9,7 @@ module org.applecommander.api {
     requires org.applecommander.disassembler;
     requires org.applecommander.bastools;
     requires com.google.common;
+    requires org.applecommander.applesingle;
 
     // Legacy APIs
     exports com.webcodepro.applecommander.storage;

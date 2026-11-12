@@ -390,7 +390,7 @@ public class FileView extends BorderPane implements ChangeListener<FileStoreChan
                 // Give preference to internal dragging.
                 ByteBuffer data = (ByteBuffer) db.getContent(APPLESINGLE_MIME);
                 AppleSingle appleSingle = AppleSingle.read(data.array());
-                ProdosAttributes prodosAttributes = createProdosAttributes(appleSingle);
+                ProdosAttributes prodosAttributes = ProdosAttributes.from(appleSingle);
                 createFile(prodosAttributes);
                 success = true;
             } else if (db.hasFiles()) {
@@ -405,7 +405,7 @@ public class FileView extends BorderPane implements ChangeListener<FileStoreChan
                     }
                     else if (AppleSingle.test(file) && Settings.isImportDecodeAppleSingle()) {
                         AppleSingle appleSingle = AppleSingle.read(file);
-                        ProdosAttributes prodosAttributes = createProdosAttributes(appleSingle);
+                        ProdosAttributes prodosAttributes = ProdosAttributes.from(appleSingle);
                         createFile(prodosAttributes);
                     }
                     else {
@@ -512,31 +512,6 @@ public class FileView extends BorderPane implements ChangeListener<FileStoreChan
                 contentWindow.show();
             }
         }
-    }
-
-    public ProdosAttributes createProdosAttributes(AppleSingle appleSingle) {
-        ProdosAttributes.Builder builder = ProdosAttributes.builder().name("NEWFILE").BIN(0x0000);
-        if (appleSingle.getRealName() != null) {
-            builder.name(appleSingle.getRealName());
-        }
-        if (appleSingle.getFileDatesInfo() != null) {
-            FileDatesInfo fileDatesInfo = appleSingle.getFileDatesInfo();
-            builder.creation(Date.from(fileDatesInfo.getCreationInstant()));
-            builder.modification(Date.from(fileDatesInfo.getModificationInstant()));
-        }
-        if (appleSingle.getProdosFileInfo() != null) {
-            ProdosFileInfo prodosFileInfo = appleSingle.getProdosFileInfo();
-            builder.auxType(prodosFileInfo.getAuxType());
-            builder.fileType(prodosFileInfo.getFileType());
-            builder.locked((prodosFileInfo.getAccess() & 0xe3) == 0xe3);
-        }
-        if (appleSingle.getDataFork() != null) {
-            builder.dataFork(appleSingle.getDataFork());
-        }
-        if (appleSingle.getResourceFork() != null) {
-            builder.resourceFork(appleSingle.getResourceFork());
-        }
-        return builder.get();
     }
 
     public void createFile(ProdosAttributes prodosAttributes) {
