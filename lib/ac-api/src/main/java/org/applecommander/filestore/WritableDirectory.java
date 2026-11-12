@@ -20,6 +20,7 @@
 package org.applecommander.filestore;
 
 import org.applecommander.capability.Capability;
+import org.applecommander.filestore.ConfigurationOption.StringConfigurationOption;
 import org.applecommander.transfer.ProdosAttributes;
 
 /// A WritableDirectory is a Directory that allows general directory modification.
@@ -43,7 +44,7 @@ public interface WritableDirectory extends Directory {
 
     /// Get the options that are applied to directory names.
     /// @see Capability#CREATE_DIRECTORIES
-    default ConfigurationOption getDirectoryConfigurationOption() {
+    default StringConfigurationOption getDirectoryConfigurationOption() {
         throw new UnsupportedOperationException("directory creation not supported");
     }
 

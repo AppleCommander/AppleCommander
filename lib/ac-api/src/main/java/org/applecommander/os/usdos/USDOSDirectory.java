@@ -22,6 +22,7 @@ package org.applecommander.os.usdos;
 import org.applecommander.capability.Capability;
 import org.applecommander.exception.DirectoryFullException;
 import org.applecommander.filestore.*;
+import org.applecommander.filestore.ConfigurationOption.StringConfigurationOption;
 import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.usage.SectorAllocator;
 import org.applecommander.util.DataBuffer;
@@ -155,12 +156,11 @@ public class USDOSDirectory implements WritableDirectory, USDOSConstants {
     /// Get the options that are applied to directory names.
     /// @see Capability#CREATE_DIRECTORIES
     @Override
-    public ConfigurationOption getDirectoryConfigurationOption() {
-        return ConfigurationOption.builder().next("directory_name")
+    public StringConfigurationOption getDirectoryConfigurationOption() {
+        return ConfigurationOption.builder().stringValue("directory_name")
                 .enforceLength(1, ENTRY_NAME_LENGTH)
                 .restrictions(DIRECTORY_NAME_MAPPER)
-                .add()
-                .done().get("directory_name");
+                .single();
     }
 
     /// Create a directory. By definition, any directory create is a `WritableDirectory`.

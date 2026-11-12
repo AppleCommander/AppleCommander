@@ -75,7 +75,7 @@ public class PascalFileStoreFactory implements FileStoreFactory, PascalConstants
     @Override
     public Map<String,ConfigurationOption> getConfigurationOptions() {
         return ConfigurationOption.builder()
-                .next(VOLUME_NAME_FIELD)
+                .stringValue(VOLUME_NAME_FIELD)
                 .restrictions(VOLUME_NAME_MAPPER)
                 .enforceLength(1, VOLUME_NAME_LENGTH)
                 .prompt("Volume Name")

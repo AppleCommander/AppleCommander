@@ -85,7 +85,7 @@ public class RDOSFileStoreFactory implements FileStoreFactory, RDOSConstants {
     @Override
     public Map<String,ConfigurationOption> getConfigurationOptions() {
         return ConfigurationOption.builder()
-                .next(STARTUP_FILE_NAME_FIELD)
+                .stringValue(STARTUP_FILE_NAME_FIELD)
                 .restrictions(FILE_NAME_MAPPER)
                 .enforceLength(1, NAME_LENGTH)
                 .prompt("Startup File Name")
@@ -96,7 +96,7 @@ public class RDOSFileStoreFactory implements FileStoreFactory, RDOSConstants {
                         """)
                 .defaultValue(STARTUP_FILE_NAME)
                 .add()
-                .next(STARTUP_CONTENT_FIELD)
+                .stringValue(STARTUP_CONTENT_FIELD)
                 .enforceLength(1, 200)
                 .prompt("Startup Contents")
                 .notes("""

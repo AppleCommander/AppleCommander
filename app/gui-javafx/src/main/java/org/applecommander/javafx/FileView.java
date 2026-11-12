@@ -39,8 +39,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import org.applecommander.applesingle.AppleSingle;
-import org.applecommander.applesingle.FileDatesInfo;
-import org.applecommander.applesingle.ProdosFileInfo;
 import org.applecommander.bastools.api.Configuration;
 import org.applecommander.bastools.api.ModernTokenReader;
 import org.applecommander.bastools.api.Parser;
@@ -49,6 +47,7 @@ import org.applecommander.bastools.api.model.Program;
 import org.applecommander.bastools.api.model.Token;
 import org.applecommander.capability.Capability;
 import org.applecommander.change.ChangeListener;
+import org.applecommander.filestore.ConfigurationOption.StringConfigurationOption;
 import org.applecommander.filestore.*;
 import org.applecommander.filestore.FileStore.FileStoreChangeEvent;
 import org.applecommander.javafx.filter.CharacterRestrictionFilter;
@@ -131,7 +130,7 @@ public class FileView extends BorderPane implements ChangeListener<FileStoreChan
             dialog.setGraphic(null);
             TextField field = dialog.getEditor();
             if (selectedDirectory.getValue() instanceof WritableDirectory directory) {
-                ConfigurationOption configurationOption = directory.getDirectoryConfigurationOption();
+                StringConfigurationOption configurationOption = directory.getDirectoryConfigurationOption();
                 List<UnaryOperator<TextFormatter.Change>> filters = new ArrayList<>();
                 if (configurationOption.getMaxLength() > 0) {
                     filters.add(new FixedLengthFilter(configurationOption.getMaxLength()));

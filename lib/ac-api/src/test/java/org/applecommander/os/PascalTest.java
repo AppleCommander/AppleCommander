@@ -22,6 +22,7 @@ package org.applecommander.os;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.exception.DirectoryFullException;
 import org.applecommander.exception.DiskFullException;
+import org.applecommander.filestore.ConfigurationOption.StringConfigurationOption;
 import org.applecommander.filestore.FileStoreOrganization;
 import org.applecommander.filestore.FileStores;
 import org.applecommander.os.pascal.*;
@@ -38,7 +39,9 @@ public class PascalTest implements PascalConstants {
     public void testCreateAndWrite() {
         PascalFileStoreFactory factory = FileStores.get(PascalFileStoreFactory.class);
         var options = factory.getConfigurationOptions();
-        options.get(PascalFileStoreFactory.VOLUME_NAME_FIELD).setValue("TESTVOL");
+        if (options.get(PascalFileStoreFactory.VOLUME_NAME_FIELD) instanceof StringConfigurationOption stringOption) {
+            stringOption.setValue("TESTVOL");
+        }
 
         // Create a disk
         PascalFileStore fileStore = FileStores.get(PascalFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_PO, options);
