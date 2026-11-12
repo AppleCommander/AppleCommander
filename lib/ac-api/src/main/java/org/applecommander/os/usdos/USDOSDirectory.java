@@ -76,7 +76,7 @@ public class USDOSDirectory implements WritableDirectory, USDOSConstants {
         while (count > 0) {
             int offset = directory.position();
             DataBuffer entryData = directory.readBuffer(ENTRY_LENGTH);
-            if (entryData.getUnsignedByte(ENTRY_NAME+1) == 0) {
+            if (entryData.getUnsignedByte(ENTRY_BASE_NAME +1) == 0) {
                 break;  // end of directory
             }
             if (entryData.getUnsignedByte(ENTRY_DIR_NUM) == directoryNumber) {
@@ -95,10 +95,10 @@ public class USDOSDirectory implements WritableDirectory, USDOSConstants {
         directory.position(0);
         while (directory.hasRemaining()) {
             DataBuffer entryData = directory.readBuffer(ENTRY_LENGTH);
-            if (entryData.getUnsignedByte(ENTRY_NAME+1) == 0) {
+            if (entryData.getUnsignedByte(ENTRY_BASE_NAME +1) == 0) {
                 break;  // end of directory
             }
-            if (entryData.getUnsignedByte(ENTRY_NAME) != 0) {
+            if (entryData.getUnsignedByte(ENTRY_BASE_NAME) != 0) {
                 fileCount++;
             }
         }
@@ -112,14 +112,7 @@ public class USDOSDirectory implements WritableDirectory, USDOSConstants {
         for (int i=0; i<DIRECTORY_MAX_ENTRIES; i++) {
             USDOSFileEntry fileEntry = new USDOSFileEntry(this, i*ENTRY_LENGTH);
             if (fileEntry.isDeleted()) {
-                int dot = fileName.lastIndexOf('.');
-                String extension = "BIN";
-                if (dot > -1) {
-                    extension = fileName.substring(dot+1);
-                    fileName = fileName.substring(0, dot);
-                }
                 fileEntry.setName(fileName);
-                fileEntry.setExtension(extension);
                 fileEntry.setDirectoryNumber(this.directoryNumber);
                 fileEntry.setDate(LocalDate.now());
                 fileStore.notifyChangeListeners(FileStore.ChangeType.FILE_CREATED);
@@ -138,9 +131,9 @@ public class USDOSDirectory implements WritableDirectory, USDOSConstants {
         USDOSFileEntry fileEntry = createFile(prodosAttributes.name());
         fileEntry.setAddress(prodosAttributes.auxType());
         fileEntry.setDate(prodosAttributes.creation().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-        // This is a second attempt at setting the extension. BIN is the default.
+        // This is a second attempt at setting the extension.
         String currentExtension = fileEntry.getExtension();
-        if ("BIN".equals(currentExtension) || currentExtension.isBlank()) {
+        if ("".equals(currentExtension)) {
             String extension = switch (prodosAttributes.fileType()) {
                 case ProdosAttributes.BAS -> "BAS";
                 case ProdosAttributes.TXT -> "TXT";
@@ -158,7 +151,7 @@ public class USDOSDirectory implements WritableDirectory, USDOSConstants {
     @Override
     public StringConfigurationOption getDirectoryConfigurationOption() {
         return ConfigurationOption.builder().stringValue("directory_name")
-                .enforceLength(1, ENTRY_NAME_LENGTH)
+                .enforceLength(1, ENTRY_BASE_NAME_LENGTH)
                 .restrictions(DIRECTORY_NAME_MAPPER)
                 .single();
     }
@@ -192,7 +185,7 @@ public class USDOSDirectory implements WritableDirectory, USDOSConstants {
     @Override
     public void deleteFile(FileEntry fileEntry) {
         USDOSFileEntry file = (USDOSFileEntry) fileEntry;
-        file.modifyEntry(entry -> entry.putByte(ENTRY_NAME, 0));
+        file.modifyEntry(entry -> entry.putByte(ENTRY_BASE_NAME, 0));
         // Free both the file sectors and the sector index sector
         SectorAllocator allocator = fileStore.get(SectorAllocator.class).orElseThrow();
         file.readSectorIndex().forEach(allocator::markFree);

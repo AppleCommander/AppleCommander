@@ -79,7 +79,7 @@ public class USDOSFileEntry implements WritableFileEntry, USDOSConstants {
     /// Indicates if this `FileEntry` is deleted.
     @Override
     public boolean isDeleted() {
-        return readEntry().getUnsignedByte(ENTRY_NAME) == 0;
+        return readEntry().getUnsignedByte(ENTRY_BASE_NAME) == 0;
     }
 
     /// Returns the `FileStore` that this `Entry` originates from.
@@ -93,11 +93,35 @@ public class USDOSFileEntry implements WritableFileEntry, USDOSConstants {
     /// Note that depending on context, this may be a computed field.
     @Override
     public String getName() {
-        return readEntry().getFixedLengthString(ENTRY_NAME, ENTRY_NAME_LENGTH).trim();
+        DataBuffer entry = readEntry();
+        if (entry.getUnsignedByte(ENTRY_EXT) == ENTRY_DIR_VALUE) {
+            // Directories do not have a file extension
+            return entry.getFixedLengthString(ENTRY_BASE_NAME, ENTRY_BASE_NAME_LENGTH).trim();
+        }
+        return String.format("%s.%s",
+                entry.getFixedLengthString(ENTRY_BASE_NAME, ENTRY_BASE_NAME_LENGTH).trim(),
+                entry.getFixedLengthString(ENTRY_EXT, ENTRY_EXT_LENGTH).trim());
     }
     /// Change the file name.
-    public void setName(String name) {
-        modifyEntry(entry -> entry.putFixedLengthString(ENTRY_NAME, ENTRY_NAME_LENGTH, name, false));
+    public void setName(final String name) {
+        modifyEntry(entry -> {
+            String baseName = name;
+            int dot = baseName.lastIndexOf('.');
+            String extension = "";
+            if (dot > -1) {
+                extension = baseName.substring(dot+1);
+                baseName = baseName.substring(0, dot);
+            }
+            entry.putFixedLengthString(ENTRY_BASE_NAME, ENTRY_BASE_NAME_LENGTH, baseName, false);
+            if (entry.getUnsignedByte(ENTRY_EXT) != ENTRY_DIR_VALUE) {
+                entry.putFixedLengthString(ENTRY_EXT, ENTRY_EXT_LENGTH, extension, false);
+            }
+        });
+    }
+
+    /// Returns the base name of this entry: either a directory name or a file name.
+    public String getBaseName() {
+        return readEntry().getFixedLengthString(ENTRY_BASE_NAME, ENTRY_BASE_NAME_LENGTH).trim();
     }
 
     /// Returns the file extension. In the case of a directory, `<DIR>` is returned instead.
@@ -251,7 +275,7 @@ public class USDOSFileEntry implements WritableFileEntry, USDOSConstants {
             .unlocked()
             .auxType(getAddress())
             .creation(getDate())
-            .name(String.format("%s.%s", getName(), getExtension()));
+            .name(getName());
         switch (getExtension()) {
             case "BAS" -> builder.BAS();
             case "TXT", "BAT", "HLP" -> builder.TXT();

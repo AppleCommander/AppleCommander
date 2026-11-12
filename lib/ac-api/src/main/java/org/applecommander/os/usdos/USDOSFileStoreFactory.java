@@ -66,11 +66,11 @@ public class USDOSFileStoreFactory implements FileStoreFactory, USDOSConstants {
             while (directory.hasRemaining()) {
                 DataBuffer entryData = directory.readBuffer(ENTRY_LENGTH);
                 // Offset +0 can be $00 if the file is deleted. Checking the 2nd byte instead.
-                if (entryData.getUnsignedByte(ENTRY_NAME+1) == 0) {
+                if (entryData.getUnsignedByte(ENTRY_BASE_NAME +1) == 0) {
                     break;  // end of directory
                 }
-                for (int i=0; i<ENTRY_NAME_LENGTH; i++) {
-                    int ch = entryData.getUnsignedByte(ENTRY_NAME+i);
+                for (int i = 0; i< ENTRY_BASE_NAME_LENGTH; i++) {
+                    int ch = entryData.getUnsignedByte(ENTRY_BASE_NAME +i);
                     if (i ==0 && ch == 0) {
                         continue;   // Might be a deleted file
                     }

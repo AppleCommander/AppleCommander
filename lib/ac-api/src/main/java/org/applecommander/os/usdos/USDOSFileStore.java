@@ -148,7 +148,7 @@ public class USDOSFileStore extends ChangeRegistry<FileStore.FileStoreChangeEven
     @Override
     public List<DisplayColumn> getDisplayColumns() {
         return DisplayColumn.builder(USDOSFileEntry.class)
-            .left("Name").string(USDOSFileEntry::getName).done()
+            .left("Base").string(USDOSFileEntry::getBaseName).done()
             .center("Ext").string(USDOSFileEntry::getExtension).done()
             .right("Size").integer(USDOSFileEntry::getSize, "%,d").done()
             .center("Date").dateDDMONYYYY(USDOSFileEntry::getDate).done()

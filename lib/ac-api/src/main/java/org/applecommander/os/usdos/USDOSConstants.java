@@ -31,8 +31,9 @@ public interface USDOSConstants {
     byte[] BOOT_PROMPT = HexFormat.of().parseHex("c9ced3c5d2d4a0c4c9d3cba0d7c9d4c8a0dcc3cfcdcdc1cec4aec3cfcd8d");
 
     int ENTRY_LENGTH = 20;
-    int ENTRY_NAME = 0;
-    int ENTRY_NAME_LENGTH = 8;
+    int MAX_NAME_LENGTH = 12;   // 8.3 notation
+    int ENTRY_BASE_NAME = 0;
+    int ENTRY_BASE_NAME_LENGTH = 8;
     int ENTRY_EXT = 8;
     int ENTRY_EXT_LENGTH = 3;
     int ENTRY_DIR_VALUE = 0xdc;
