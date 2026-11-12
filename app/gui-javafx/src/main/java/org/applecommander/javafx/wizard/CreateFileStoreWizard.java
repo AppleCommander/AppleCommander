@@ -176,6 +176,7 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
         vbox.getChildren().clear();
         vbox.setSpacing(10);
         vbox.setPadding(new Insets(10));
+        vbox.getChildren().add(new Label(String.format("Configuration options for %s:", factory.getName())));
         // Note that we must be careful and use the same copy since the configuration options contain the values as well.
         configurationOptions = factory.getConfigurationOptions();
         for (ConfigurationOption option : configurationOptions.values()) {
