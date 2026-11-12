@@ -20,6 +20,8 @@
 package org.applecommander.os.usdos;
 
 import org.applecommander.applesingle.AppleSingle;
+import org.applecommander.converter.ConverterRepository;
+import org.applecommander.converter.TextConverter;
 import org.applecommander.device.SectorOrder;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.ConfigurationOption;
@@ -39,6 +41,7 @@ import static org.applecommander.filestore.ConfigurationOption.getFlagValue;
 
 public class USDOSFileStoreFactory implements FileStoreFactory, USDOSConstants {
     public static final String COMMAND_COM_FLAG = "include_command_com";
+    public static final String HELP_BAT_FLAG = "include_help_bat";
 
     /// The name of this factory. Usually the name and file extensions.
     @Override
@@ -103,6 +106,7 @@ public class USDOSFileStoreFactory implements FileStoreFactory, USDOSConstants {
     public Map<String,ConfigurationOption> getConfigurationOptions() {
         return ConfigurationOption.builder()
                 .flagValue(COMMAND_COM_FLAG).prompt("Include 'COMMAND.COM'?").defaultValue(true).add()
+                .flagValue(HELP_BAT_FLAG).prompt("Include 'HELP.BAT'? (Engish translation)").defaultValue(false).add()
                 .done();
     }
 
@@ -114,9 +118,11 @@ public class USDOSFileStoreFactory implements FileStoreFactory, USDOSConstants {
         try (
             InputStream inputStream = USDOSFileStoreFactory.class.getResourceAsStream("/files/usdos-1.11-boot.bin");
             InputStream commandCom = USDOSFileStoreFactory.class.getResourceAsStream("/files/COMMAND.COM.as");
+            InputStream helpBat = USDOSFileStoreFactory.class.getResourceAsStream("/files/HELP.BAT");
         ) {
             Objects.requireNonNull(inputStream);
             Objects.requireNonNull(commandCom);
+            Objects.requireNonNull(helpBat);
             byte[] boot = inputStream.readAllBytes();
             device.writeRange(0, 0, DataBuffer.wrap(boot));
             DataBuffer bitmap = device.readSector(BITMAP_TRACK, BITMAP_SECTOR);
@@ -126,11 +132,16 @@ public class USDOSFileStoreFactory implements FileStoreFactory, USDOSConstants {
             }
             device.writeSector(BITMAP_TRACK, BITMAP_SECTOR, bitmap);
             USDOSFileStore fileStore = new USDOSFileStore(device);
+            USDOSDirectory rootDirectory = fileStore.getRootDirectory();
             if (getFlagValue(options, COMMAND_COM_FLAG)) {
                 AppleSingle appleSingle = AppleSingle.read(commandCom);
                 ProdosAttributes prodosAttributes = ProdosAttributes.from(appleSingle);
-                USDOSDirectory rootDirectory = fileStore.getRootDirectory();
                 rootDirectory.createFrom(prodosAttributes);
+            }
+            if (getFlagValue(options, HELP_BAT_FLAG)) {
+                USDOSFileEntry file = rootDirectory.createFile("HELP.BAT");
+                TextConverter converter = ConverterRepository.getTextConverter(file.getContentType()).orElseThrow();
+                converter.write(file, new String(helpBat.readAllBytes()));
             }
             return fileStore;
         }
