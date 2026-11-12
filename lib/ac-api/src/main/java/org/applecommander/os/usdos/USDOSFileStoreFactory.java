@@ -136,7 +136,7 @@ public class USDOSFileStoreFactory implements FileStoreFactory, USDOSConstants {
                 bitmap.putBytes(BITMAP_OFFSET + track*2, 0xff, 0xff);
             }
             String label = getValidatedValue(options, DISK_LABEL, "");
-            bitmap.putFixedLengthString(LABEL_OFFSET, Math.min(label.length(), LABEL_MAX_LENGTH), label, false);
+            bitmap.putZeroTerminatedString(LABEL_OFFSET, LABEL_MAX_LENGTH, label);
             device.writeSector(BITMAP_TRACK, BITMAP_SECTOR, bitmap);
             USDOSFileStore fileStore = new USDOSFileStore(device);
             USDOSDirectory rootDirectory = fileStore.getRootDirectory();

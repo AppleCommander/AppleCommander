@@ -21,6 +21,7 @@ package org.applecommander.util;
 
 import com.google.common.base.Strings;
 
+import java.io.StringWriter;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
@@ -276,6 +277,27 @@ public class DataBuffer {
             putByte(index + 1 + i, 0);
         }
         putFixedLengthString(index+1, value.length(), value, setHighBit);
+    }
+    /// Read a zero terminated string with a maximum length.
+    public String getZeroTerminatedString(int offset, int maxLength) {
+        StringWriter sw = new StringWriter();
+        for (int i=0; i<maxLength; i++) {
+            int ch = getUnsignedByte(offset+i);
+            if (ch == 0) break;
+            sw.write(ch);
+        }
+        return sw.toString();
+    }
+    /// Set a zero terminated string and blank out all data up to the `maxLength`.
+    public void putZeroTerminatedString(int offset, int maxLength, String value) {
+        for (int i=0; i<maxLength; i++) {
+            if (i < value.length()) {
+                putByte(offset+i, value.charAt(i));
+            }
+            else {
+                putByte(offset+i, 0);
+            }
+        }
     }
     /// Extract a Pascal date. If the date is not set (all zeroes)
     /// this returns a `null`.

@@ -129,7 +129,11 @@ public class USDOSFileStore extends ChangeRegistry<FileStore.FileStoreChangeEven
     /// different labels such as "Disk 1" and "Disk 2".
     @Override
     public String getLabel() {
-        return "US-DOS";
+        String label = bitmap.getZeroTerminatedString(LABEL_OFFSET, LABEL_MAX_LENGTH);
+        if (label.isEmpty()) {
+            return "<NO LABEL>";
+        }
+        return label;
     }
 
     /// All FileStores support a "root" directory that references all files.
@@ -179,6 +183,7 @@ public class USDOSFileStore extends ChangeRegistry<FileStore.FileStoreChangeEven
     @Override
     public List<InformationGroup> information() {
         return InformationGroup.builder("US-DOS")
+            .item("Label").value(getLabel())
             .item("Total Files").value(rootDirectory.getTotalFileCount())
             .merge(usage)
             .get(device);
