@@ -31,7 +31,10 @@ import org.applecommander.usage.UsageType;
 import org.applecommander.util.DataBuffer;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -122,7 +125,7 @@ public class USDOSTest implements USDOSConstants {
         createFile(rootDirectory, filename, "ROOT DIRECTORY".getBytes());
 
         // Create a bunch of directories and files in those directories
-        for (String dirName : Set.of("DIR-A", "DIR-B", "DIR-C")) {
+        for (String dirName : List.of("DIR-A", "DIR-B", "DIR-C")) {
             USDOSDirectory subdir = rootDirectory.createDirectory(dirName);
             createFile(subdir, filename, dirName.getBytes());
         }
