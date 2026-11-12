@@ -44,10 +44,10 @@ import org.applecommander.filestore.FileEntry;
 import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.ui.DisplayColumn;
 import org.applecommander.ui.DisplayMode;
-import org.applecommander.usage.BlockUsage;
-import org.applecommander.usage.DiskUsage;
-import org.applecommander.usage.DiskUsage.UsageType;
-import org.applecommander.usage.SectorUsage;
+import org.applecommander.usage.ComputedBlockUsage;
+import org.applecommander.usage.ComputedDiskUsage;
+import org.applecommander.usage.ComputedSectorUsage;
+import org.applecommander.usage.UsageType;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.FileMagic;
@@ -66,7 +66,7 @@ import java.util.function.Function;
 /// @see FormattedDisk
 public class DiskFileStoreAdapter extends ChangeRegistry<FileStore.FileStoreChangeEvent> implements FileStore {
     private final FormattedDisk disk;
-    private final DiskUsage usage;
+    private final ComputedDiskUsage usage;
 
     public DiskFileStoreAdapter(FormattedDisk disk) {
         this.disk = disk;
@@ -74,36 +74,36 @@ public class DiskFileStoreAdapter extends ChangeRegistry<FileStore.FileStoreChan
         final Optional<TrackSectorDevice> trackSectorDevice = disk.get(TrackSectorDevice.class);
         final Optional<BlockDevice> blockDevice = disk.get(BlockDevice.class);
         this.usage = switch (disk) {
-            case DosFormatDisk dos -> new SectorUsage(trackSectorDevice.orElseThrow().getGeometry(), populator -> {
+            case DosFormatDisk dos -> new ComputedSectorUsage(trackSectorDevice.orElseThrow().getGeometry(), populator -> {
                 final byte[] vtoc = dos.readVtoc();
                 trackSectorDevice.ifPresent(device -> {
                     device.performRange(0, 0, device.getGeometry().sectorsPerDisk(),
                         (t,s,_) -> populator.setUsage(t,s, dos.isSectorUsed(t,s,vtoc) ? UsageType.USED : UsageType.FREE));
                 });
             });
-            case ProdosFormatDisk prodos -> new BlockUsage(blockDevice.orElseThrow().getGeometry(), populator -> {
+            case ProdosFormatDisk prodos -> new ComputedBlockUsage(blockDevice.orElseThrow().getGeometry(), populator -> {
                 final byte[] bitmap = prodos.readVolumeBitMap();
                 for (int b = 0; b < prodos.getBitmapLength(); b++) {
                     populator.setUsage(b, prodos.isBlockUsed(bitmap, b) ? UsageType.USED : UsageType.FREE);
                 }
             });
             // Current implementation of GutenbergFormatDisk and NakedosFormatDisk simply marks everything as used.
-            case GutenbergFormatDisk _ -> new SectorUsage(trackSectorDevice.orElseThrow().getGeometry(), populator -> {
+            case GutenbergFormatDisk _ -> new ComputedSectorUsage(trackSectorDevice.orElseThrow().getGeometry(), populator -> {
                 trackSectorDevice.ifPresent(device -> {
                     device.performRange(0, 0, device.getGeometry().sectorsPerDisk(),
                             (t,s,_) -> populator.setUsage(t, s, UsageType.USED));
                 });
             });
-            case NakedosFormatDisk _ -> new SectorUsage(trackSectorDevice.orElseThrow().getGeometry(), populator -> {
+            case NakedosFormatDisk _ -> new ComputedSectorUsage(trackSectorDevice.orElseThrow().getGeometry(), populator -> {
                 trackSectorDevice.ifPresent(device -> {
                     device.performRange(0, 0, device.getGeometry().sectorsPerDisk(),
                             (t,s,_) -> populator.setUsage(t, s, UsageType.USED));
                 });
             });
             // CP/M, Pascal, and RDOS all synthesize the bitmap. So we do too!
-            case CpmFormatDisk cpm -> new BlockUsage(blockDevice.orElseThrow().getGeometry(), setupBlockUsage(cpm));
-            case PascalFormatDisk pascal -> new BlockUsage(blockDevice.orElseThrow().getGeometry(), setupBlockUsage(pascal));
-            case RdosFormatDisk rdos -> new BlockUsage(blockDevice.orElseThrow().getGeometry(), setupBlockUsage(rdos));
+            case CpmFormatDisk cpm -> new ComputedBlockUsage(blockDevice.orElseThrow().getGeometry(), setupBlockUsage(cpm));
+            case PascalFormatDisk pascal -> new ComputedBlockUsage(blockDevice.orElseThrow().getGeometry(), setupBlockUsage(pascal));
+            case RdosFormatDisk rdos -> new ComputedBlockUsage(blockDevice.orElseThrow().getGeometry(), setupBlockUsage(rdos));
             default -> throw new IllegalArgumentException("Unsupported format disk");
         };
         addChangeListener(usage);
@@ -111,7 +111,7 @@ public class DiskFileStoreAdapter extends ChangeRegistry<FileStore.FileStoreChan
 
     /// This is a helper method to make configure the `BlockUsage` for the disk. Note that it can be refreshed
     /// based on a change event occurring in the `FileStore`.
-    private Consumer<BlockUsage.UsagePopulator> setupBlockUsage(FormattedDisk formattedDisk) {
+    private Consumer<ComputedBlockUsage.UsagePopulator> setupBlockUsage(FormattedDisk formattedDisk) {
         return populator -> {
             int block = 0;
             FormattedDisk.DiskUsage diskUsage = formattedDisk.getDiskUsage();
@@ -158,6 +158,7 @@ public class DiskFileStoreAdapter extends ChangeRegistry<FileStore.FileStoreChan
             case DELETE_FILES -> disk.canDeleteFile();
             case CREATE_DIRECTORIES -> disk.canCreateDirectories();
             case SUPPORTS_DIRECTORIES -> disk.canHaveDirectories();
+            case SUPPORTS_DELETED_FILES -> disk.supportsDeletedFiles();
             case WRITE_FILES -> disk.canWriteFileData();
             default -> false;
         };

@@ -27,8 +27,8 @@ import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.ui.DisplayColumn;
 import org.applecommander.ui.DisplayMode;
-import org.applecommander.usage.DiskUsage.UsageType;
-import org.applecommander.usage.SectorUsage;
+import org.applecommander.usage.ComputedSectorUsage;
+import org.applecommander.usage.UsageType;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.InformationGroup;
@@ -39,16 +39,16 @@ import java.util.Optional;
 public class GamedosFileStore extends ChangeRegistry<FileStore.FileStoreChangeEvent> implements FileStore, GamedosConstants {
     private final TrackSectorDevice device;
     private final GamedosDirectory rootDirectory;
-    private final SectorUsage usage;
+    private final ComputedSectorUsage usage;
 
     GamedosFileStore(TrackSectorDevice device) {
         this.device = device.request(SectorOrder.DOS);
         this.rootDirectory = new GamedosDirectory(this);
-        this.usage = new SectorUsage(device.getGeometry(), this::usage);
+        this.usage = new ComputedSectorUsage(device.getGeometry(), this::usage);
         addChangeListener(this.usage);
     }
 
-    public void usage(SectorUsage.UsagePopulator populator) {
+    public void usage(ComputedSectorUsage.UsagePopulator populator) {
         for (int s=0; s<device.getGeometry().sectorsPerTrack(); s++) {
             if (s == 0) {
                 populator.setUsage(0, s, UsageType.BOOT);

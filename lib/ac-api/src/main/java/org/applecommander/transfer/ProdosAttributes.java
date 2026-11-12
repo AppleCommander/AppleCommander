@@ -19,10 +19,15 @@
  */
 package org.applecommander.transfer;
 
+import org.applecommander.applesingle.AppleSingle;
+import org.applecommander.applesingle.FileDatesInfo;
+import org.applecommander.applesingle.ProdosFileInfo;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.FileMagic;
 
 import java.nio.file.attribute.FileTime;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
 
@@ -42,6 +47,31 @@ public record ProdosAttributes(String name, int access, int fileType, int auxTyp
             return summary.get().abbreviation();
         }
         return String.format("$%02X", fileType);
+    }
+
+    public static ProdosAttributes from(AppleSingle appleSingle) {
+        ProdosAttributes.Builder builder = ProdosAttributes.builder().name("NEWFILE").BIN(0x0000);
+        if (appleSingle.getRealName() != null) {
+            builder.name(appleSingle.getRealName());
+        }
+        if (appleSingle.getFileDatesInfo() != null) {
+            FileDatesInfo fileDatesInfo = appleSingle.getFileDatesInfo();
+            builder.creation(Date.from(fileDatesInfo.getCreationInstant()));
+            builder.modification(Date.from(fileDatesInfo.getModificationInstant()));
+        }
+        if (appleSingle.getProdosFileInfo() != null) {
+            ProdosFileInfo prodosFileInfo = appleSingle.getProdosFileInfo();
+            builder.auxType(prodosFileInfo.getAuxType());
+            builder.fileType(prodosFileInfo.getFileType());
+            builder.locked((prodosFileInfo.getAccess() & 0xe3) == 0xe3);
+        }
+        if (appleSingle.getDataFork() != null) {
+            builder.dataFork(appleSingle.getDataFork());
+        }
+        if (appleSingle.getResourceFork() != null) {
+            builder.resourceFork(appleSingle.getResourceFork());
+        }
+        return builder.get();
     }
 
     public static Builder builder() {
@@ -106,6 +136,12 @@ public record ProdosAttributes(String name, int access, int fileType, int auxTyp
         public Builder creation(FileTime creation) {
             if (creation != null) {
                 this.creation = new Date(creation.toMillis());
+            }
+            return this;
+        }
+        public Builder creation(LocalDate creation) {
+            if (creation != null) {
+                this.creation = Date.from(creation.atStartOfDay(ZoneId.systemDefault()).toInstant());
             }
             return this;
         }

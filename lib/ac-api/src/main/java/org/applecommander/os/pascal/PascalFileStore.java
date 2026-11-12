@@ -26,8 +26,8 @@ import org.applecommander.filestore.FileEntry;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.ui.DisplayColumn;
 import org.applecommander.ui.DisplayMode;
-import org.applecommander.usage.BlockUsage;
-import org.applecommander.usage.DiskUsage.UsageType;
+import org.applecommander.usage.ComputedBlockUsage;
+import org.applecommander.usage.UsageType;
 import org.applecommander.util.Container;
 import org.applecommander.util.InformationGroup;
 
@@ -38,17 +38,17 @@ import java.util.Optional;
 public class PascalFileStore extends ChangeRegistry<FileStore.FileStoreChangeEvent> implements FileStore, PascalConstants {
     private final BlockDevice device;
     private final PascalDirectory rootDirectory;
-    private final BlockUsage usage;
+    private final ComputedBlockUsage usage;
 
     PascalFileStore(BlockDevice device) {
         Objects.requireNonNull(device);
         this.device = device;
         this.rootDirectory = new PascalDirectory(this);
-        this.usage = new BlockUsage(device.getGeometry(), this::usage);
+        this.usage = new ComputedBlockUsage(device.getGeometry(), this::usage);
         addChangeListener(this.usage);
     }
 
-    public void usage(BlockUsage.UsagePopulator populator) {
+    public void usage(ComputedBlockUsage.UsagePopulator populator) {
         populator.setUsage(0, UsageType.BOOT);
         populator.setUsage(1, UsageType.BOOT);
         populator.setUsage(2, UsageType.DIRECTORY);

@@ -111,7 +111,12 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
         for (ConfigurationOption option : configurationOptions.values()) {
             Label prompt = new Label(option.getPrompt() + ":");
             GridPane.setValignment(prompt, VPos.TOP);
-            Label value = new Label(option.getValue());
+            String text = switch (option) {
+                case ConfigurationOption.StringConfigurationOption stringOption -> stringOption.getValue();
+                case ConfigurationOption.FlagConfigurationOption flagOption -> flagOption.getValue() ? "Yes" : "No";
+                default -> "Unknown";
+            };
+            Label value = new Label(text);
             summaryPage.addRow(row++, prompt, value);
         }
     }
@@ -171,39 +176,56 @@ public class CreateFileStoreWizard extends WizardDialog<CreateFileStoreWizard.Wi
         vbox.getChildren().clear();
         vbox.setSpacing(10);
         vbox.setPadding(new Insets(10));
+        vbox.getChildren().add(new Label(String.format("Configuration options for %s:", factory.getName())));
         // Note that we must be careful and use the same copy since the configuration options contain the values as well.
         configurationOptions = factory.getConfigurationOptions();
         for (ConfigurationOption option : configurationOptions.values()) {
-            Label label = new Label();
-            label.setText(option.getPrompt() + ":");
-            TextInputControl field = null;
-            if (option.getMaxLength() > 50) {
-                field = new TextArea(option.getValue());
-            } else {
-                field = new TextField(option.getValue());
-            }
-            List<UnaryOperator<TextFormatter.Change>> filters = new ArrayList<>();
-            if (option.getMaxLength() > 0) {
-                filters.add(new FixedLengthFilter(option.getMaxLength()));
-            }
-            if (option.getCharacterRestrictions() != null) {
-                filters.add(new CharacterRestrictionFilter(option.getCharacterRestrictions()));
-            }
-            field.setTextFormatter(new TextFormatter<>(new CompositeFilter(filters)));
-            final TextInputControl textInputControl = field;
-            field.textProperty().addListener((_, _, newText) -> {
-                if (!option.getValidatorFn().test(newText)) {
-                    textInputControl.setStyle("-fx-border-color: red;");
+            switch (option) {
+                case ConfigurationOption.StringConfigurationOption stringOption -> {
+                    Label label = new Label();
+                    label.setText(option.getPrompt() + ":");
+                    TextInputControl field = null;
+                    if (stringOption.getMaxLength() > 50) {
+                        field = new TextArea(stringOption.getValue());
+                    } else {
+                        field = new TextField(stringOption.getValue());
+                    }
+                    List<UnaryOperator<TextFormatter.Change>> filters = new ArrayList<>();
+                    if (stringOption.getMaxLength() > 0) {
+                        filters.add(new FixedLengthFilter(stringOption.getMaxLength()));
+                    }
+                    if (stringOption.getCharacterRestrictions() != null) {
+                        filters.add(new CharacterRestrictionFilter(stringOption.getCharacterRestrictions()));
+                    }
+                    field.setTextFormatter(new TextFormatter<>(new CompositeFilter(filters)));
+                    final TextInputControl textInputControl = field;
+                    field.textProperty().addListener((_, _, newText) -> {
+                        if (!stringOption.getValidatorFn().test(newText)) {
+                            textInputControl.setStyle("-fx-border-color: red;");
+                        }
+                        else {
+                            textInputControl.setStyle("");
+                            stringOption.setValue(newText);
+                        }
+                    });
+                    if (option.getNotes() != null && !option.getNotes().isEmpty()) {
+                        field.setTooltip(new Tooltip(option.getNotes()));
+                    }
+                    vbox.getChildren().addAll(label, field);
                 }
-                else {
-                    textInputControl.setStyle("");
-                    option.setValue(newText);
+                case ConfigurationOption.FlagConfigurationOption flagOption -> {
+                    CheckBox field = new CheckBox(flagOption.getPrompt());
+                    field.setSelected(flagOption.getValue());
+                    field.selectedProperty().addListener((_, _, newValue) -> {
+                        flagOption.setValue(newValue);
+                    });
+                    if (option.getNotes() != null && !option.getNotes().isEmpty()) {
+                        field.setTooltip(new Tooltip(option.getNotes()));
+                    }
+                    vbox.getChildren().add(field);
                 }
-            });
-            if (option.getNotes() != null && !option.getNotes().isEmpty()) {
-                field.setTooltip(new Tooltip(option.getNotes()));
+                default -> { /* Ignore for now */ }
             }
-            vbox.getChildren().addAll(label, field);
         }
     }
 

@@ -40,7 +40,7 @@ import java.util.Set;
 /// ... yields a `$12AF` output.
 public class CharacterMapper {
     public static final CharacterMapper ANYTHING = CharacterMapper.builder()
-            .mapRange(0x00, 0xff, false)
+            .mapRange(' ', 0xff, false)
             .build();
 
     private final String fromChars;

@@ -20,7 +20,6 @@
 package io.github.applecommander.acx;
 
 import com.webcodepro.applecommander.ui.AppleCommander;
-
 import org.applecommander.applesingle.AppleSingle;
 import org.applecommander.bastools.api.BasTools;
 import org.applecommander.disassembler.api.Disassembler;

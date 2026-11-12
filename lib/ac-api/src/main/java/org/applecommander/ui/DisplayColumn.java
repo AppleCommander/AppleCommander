@@ -22,6 +22,7 @@ package org.applecommander.ui;
 import org.applecommander.filestore.FileEntry;
 
 import java.nio.file.attribute.FileTime;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -193,6 +194,7 @@ public class DisplayColumn {
     public static class ColumnBuilder<T extends FileEntry> {
         public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
         public static final DateTimeFormatter DDMONYY_FORMATTER = DateTimeFormatter.ofPattern("dd-LLL-yy");
+        public static final DateTimeFormatter DDMONYYYY_FORMATTER = DateTimeFormatter.ofPattern("dd-LLL-yyyy");
         public static final Pattern VALID_HEX_NUMBER = Pattern.compile("^(?i)0x[0-9a-f]+|[$][0-9a-f]+|[0-9a-f]+H?$");
 
         private final Builder<T> builder;
@@ -261,6 +263,13 @@ public class DisplayColumn {
             this.formatFn = this::formatDateDDMONYY;
             return this;
         }
+        public ColumnBuilder<T> dateDDMONYYYY(Function<T,LocalDate> getValueFn) {
+            Objects.requireNonNull(getValueFn);
+            this.columnDataType = ColumnDataType.STRING;
+            this.getValueFn = getValueFn;
+            this.formatFn = this::formatDateDDMONYYYY;
+            return this;
+        }
         public ColumnBuilder<T> dateAndTime(Function<T,Date> getValueFn) {
             Objects.requireNonNull(getValueFn);
             this.columnDataType = ColumnDataType.STRING;
@@ -273,6 +282,13 @@ public class DisplayColumn {
             this.columnDataType = ColumnDataType.STRING;
             this.getValueFn = getValueFn;
             this.formatFn = this::formatDateAndTime;
+            return this;
+        }
+        public ColumnBuilder<T> object(Function<T,Object> getValueFn) {
+            Objects.requireNonNull(getValueFn);
+            this.columnDataType = ColumnDataType.STRING;
+            this.getValueFn = getValueFn;
+            this.formatFn = Object::toString;
             return this;
         }
         public ColumnBuilder<T> percent(Function<T, Number> numeratorFn, Function<T, Number> denominatorFn, String fmt) {
@@ -359,8 +375,26 @@ public class DisplayColumn {
                 case FileTime fileTime -> {
                     LocalDateTime localDateTime = fileTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
                     yield localDateTime.format(DDMONYY_FORMATTER);
-
                 }
+                default -> "(Unknown)";
+            };
+        }
+
+        /// This is a helper function to format date and time objects.
+        private String formatDateDDMONYYYY(Object value) {
+            if (value == null) {
+                return "- No Date -";
+            }
+            return switch (value) {
+                case Date date -> {
+                    LocalDateTime localDateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                    yield localDateTime.format(DDMONYYYY_FORMATTER);
+                }
+                case FileTime fileTime -> {
+                    LocalDateTime localDateTime = fileTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                    yield localDateTime.format(DDMONYYYY_FORMATTER);
+                }
+                case LocalDate localDate -> localDate.format(DDMONYYYY_FORMATTER);
                 default -> "(Unknown)";
             };
         }
@@ -378,7 +412,6 @@ public class DisplayColumn {
                 case FileTime fileTime -> {
                     LocalDateTime localDateTime = fileTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
                     yield localDateTime.format(DATE_TIME_FORMATTER);
-
                 }
                 default -> "(Unknown Date)";
             };

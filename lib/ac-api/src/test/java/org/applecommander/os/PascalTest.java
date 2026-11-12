@@ -22,10 +22,11 @@ package org.applecommander.os;
 import org.applecommander.device.BlockDevice;
 import org.applecommander.exception.DirectoryFullException;
 import org.applecommander.exception.DiskFullException;
+import org.applecommander.filestore.ConfigurationOption.StringConfigurationOption;
 import org.applecommander.filestore.FileStoreOrganization;
 import org.applecommander.filestore.FileStores;
 import org.applecommander.os.pascal.*;
-import org.applecommander.usage.BlockUsage;
+import org.applecommander.usage.ComputedBlockUsage;
 import org.applecommander.util.DataBuffer;
 import org.junit.jupiter.api.Test;
 
@@ -38,7 +39,9 @@ public class PascalTest implements PascalConstants {
     public void testCreateAndWrite() {
         PascalFileStoreFactory factory = FileStores.get(PascalFileStoreFactory.class);
         var options = factory.getConfigurationOptions();
-        options.get(PascalFileStoreFactory.VOLUME_NAME_FIELD).setValue("TESTVOL");
+        if (options.get(PascalFileStoreFactory.VOLUME_NAME_FIELD) instanceof StringConfigurationOption stringOption) {
+            stringOption.setValue("TESTVOL");
+        }
 
         // Create a disk
         PascalFileStore fileStore = FileStores.get(PascalFileStoreFactory.class).create(FileStoreOrganization.DISK_16SECTOR_PO, options);
@@ -137,7 +140,7 @@ public class PascalTest implements PascalConstants {
 
         // Get some useful stuff
         BlockDevice device = fileStore.get(BlockDevice.class).orElseThrow();
-        BlockUsage usage = fileStore.get(BlockUsage.class).orElseThrow();
+        ComputedBlockUsage usage = fileStore.get(ComputedBlockUsage.class).orElseThrow();
 
         // Generate a bunch of large files until we fill the disk
         final byte[] bigfile = new byte[16000];

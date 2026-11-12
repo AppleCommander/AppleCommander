@@ -39,8 +39,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import org.applecommander.applesingle.AppleSingle;
-import org.applecommander.applesingle.FileDatesInfo;
-import org.applecommander.applesingle.ProdosFileInfo;
 import org.applecommander.bastools.api.Configuration;
 import org.applecommander.bastools.api.ModernTokenReader;
 import org.applecommander.bastools.api.Parser;
@@ -48,7 +46,10 @@ import org.applecommander.bastools.api.Visitors;
 import org.applecommander.bastools.api.model.Program;
 import org.applecommander.bastools.api.model.Token;
 import org.applecommander.capability.Capability;
+import org.applecommander.change.ChangeListener;
+import org.applecommander.filestore.ConfigurationOption.StringConfigurationOption;
 import org.applecommander.filestore.*;
+import org.applecommander.filestore.FileStore.FileStoreChangeEvent;
 import org.applecommander.javafx.filter.CharacterRestrictionFilter;
 import org.applecommander.javafx.filter.CompositeFilter;
 import org.applecommander.javafx.filter.FixedLengthFilter;
@@ -75,7 +76,7 @@ import java.util.function.UnaryOperator;
 
 import static org.applecommander.javafx.FxUtils.*;
 
-public class FileView extends BorderPane {
+public class FileView extends BorderPane implements ChangeListener<FileStoreChangeEvent> {
     // See https://en.wikipedia.org/wiki/AppleSingle_and_AppleDouble_formats
     public static final DataFormat APPLESINGLE_MIME = new DataFormat("application/applefile");
 
@@ -116,11 +117,42 @@ public class FileView extends BorderPane {
         deletedFilesToggleButton = createOnOffButton("deleted-files-hidden.png", "deleted-files-visible.png", "Deleted", _ -> toggleDeletedFiles());
         toolBar.getItems().add(deletedFilesToggleButton);
 
+        BorderPane directoryControls = new BorderPane();
         breadcrumbBar = new HBox();
         breadcrumbBar.setSpacing(6);
         breadcrumbBar.setPadding(new Insets(6));
         breadcrumbBar.setAlignment(Pos.CENTER_LEFT);
-        setTop(breadcrumbBar);
+        directoryControls.setCenter(breadcrumbBar);
+        Button createDirectoryButton = FxUtils.createSmallButton("folder-add.png", _ -> {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Create New Directory");
+            dialog.setHeaderText("Please enter the new directory name.");
+            dialog.setGraphic(null);
+            TextField field = dialog.getEditor();
+            if (selectedDirectory.getValue() instanceof WritableDirectory directory) {
+                StringConfigurationOption configurationOption = directory.getDirectoryConfigurationOption();
+                List<UnaryOperator<TextFormatter.Change>> filters = new ArrayList<>();
+                if (configurationOption.getMaxLength() > 0) {
+                    filters.add(new FixedLengthFilter(configurationOption.getMaxLength()));
+                }
+                if (configurationOption.getCharacterRestrictions() != null) {
+                    filters.add(new CharacterRestrictionFilter(configurationOption.getCharacterRestrictions()));
+                }
+                field.setTextFormatter(new TextFormatter<>(new CompositeFilter(filters)));
+            }
+            // Disable OK button if length is zero:
+            dialog.getDialogPane().lookupButton(ButtonType.OK).disableProperty().bind(field.textProperty().length().isEqualTo(0));
+            dialog.showAndWait().ifPresent(name -> {
+                if (selectedDirectory.getValue() instanceof WritableDirectory directory) {
+                    directory.createDirectory(name);
+                }
+            });
+        });
+        HBox createDirectoryBar = new HBox(createDirectoryButton);
+        createDirectoryBar.setPadding(new Insets(6));
+        createDirectoryBar.setAlignment(Pos.CENTER_RIGHT);
+        directoryControls.setRight(createDirectoryBar);
+        setTop(directoryControls);
 
         createNewFileTable();
 
@@ -137,14 +169,18 @@ public class FileView extends BorderPane {
 
         visibleProperty().bind(fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES));
 
-        fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((_, _, newValue) -> {
+        fileStoreWindow.fileStoreSelection().selectedItemProperty().addListener((_, oldValue, newValue) -> {
+            if (oldValue != null) {
+                oldValue.removeChangeListener(this);
+            }
             if (newValue != null) {
                 directoryPath.clear();
                 directoryPath.add(newValue.getRootDirectory());
                 listingMode.setValue(DisplayMode.NATIVE);
                 supportsDirectories.setValue(newValue.can(Capability.SUPPORTS_DIRECTORIES));
-                supportsFileDeletion.setValue(newValue.can(Capability.DELETE_FILES));
+                supportsFileDeletion.setValue(newValue.can(Capability.SUPPORTS_DELETED_FILES));
                 showingDetailProperty.set(false);
+                newValue.addChangeListener(this);
             }
         });
 
@@ -354,7 +390,7 @@ public class FileView extends BorderPane {
                 // Give preference to internal dragging.
                 ByteBuffer data = (ByteBuffer) db.getContent(APPLESINGLE_MIME);
                 AppleSingle appleSingle = AppleSingle.read(data.array());
-                ProdosAttributes prodosAttributes = createProdosAttributes(appleSingle);
+                ProdosAttributes prodosAttributes = ProdosAttributes.from(appleSingle);
                 createFile(prodosAttributes);
                 success = true;
             } else if (db.hasFiles()) {
@@ -369,7 +405,7 @@ public class FileView extends BorderPane {
                     }
                     else if (AppleSingle.test(file) && Settings.isImportDecodeAppleSingle()) {
                         AppleSingle appleSingle = AppleSingle.read(file);
-                        ProdosAttributes prodosAttributes = createProdosAttributes(appleSingle);
+                        ProdosAttributes prodosAttributes = ProdosAttributes.from(appleSingle);
                         createFile(prodosAttributes);
                     }
                     else {
@@ -476,31 +512,6 @@ public class FileView extends BorderPane {
                 contentWindow.show();
             }
         }
-    }
-
-    public ProdosAttributes createProdosAttributes(AppleSingle appleSingle) {
-        ProdosAttributes.Builder builder = ProdosAttributes.builder().name("NEWFILE").BIN(0x0000);
-        if (appleSingle.getRealName() != null) {
-            builder.name(appleSingle.getRealName());
-        }
-        if (appleSingle.getFileDatesInfo() != null) {
-            FileDatesInfo fileDatesInfo = appleSingle.getFileDatesInfo();
-            builder.creation(Date.from(fileDatesInfo.getCreationInstant()));
-            builder.modification(Date.from(fileDatesInfo.getModificationInstant()));
-        }
-        if (appleSingle.getProdosFileInfo() != null) {
-            ProdosFileInfo prodosFileInfo = appleSingle.getProdosFileInfo();
-            builder.auxType(prodosFileInfo.getAuxType());
-            builder.fileType(prodosFileInfo.getFileType());
-            builder.locked((prodosFileInfo.getAccess() & 0xe3) == 0xe3);
-        }
-        if (appleSingle.getDataFork() != null) {
-            builder.dataFork(appleSingle.getDataFork());
-        }
-        if (appleSingle.getResourceFork() != null) {
-            builder.resourceFork(appleSingle.getResourceFork());
-        }
-        return builder.get();
     }
 
     public void createFile(ProdosAttributes prodosAttributes) {
@@ -677,6 +688,21 @@ public class FileView extends BorderPane {
     private void toggleDeletedFiles() {
         if (!fileStoreWindow.fileStoreSelection().isEmpty() &&
                 fileStoreWindow.viewModeProperty().isEqualTo(ViewMode.FILES).get()) {
+            populateDiskRows();
+        }
+    }
+
+    /// When the state of an object has changed, this method is invoked on all listeners.
+    /// Note that the base `EventObject` has a source that needs to be cast to the proper interface.
+    @Override
+    public void stateChanged(FileStoreChangeEvent event) {
+        boolean refresh = switch (event.getChangeType()) {
+            case FILE_CREATED -> true;
+            case FILE_DELETED -> true;
+            case DATA_UPDATED -> false;
+            case ATTRIBUTES_UPDATED -> true;
+        };
+        if (refresh) {
             populateDiskRows();
         }
     }

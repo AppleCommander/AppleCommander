@@ -26,7 +26,7 @@ import org.applecommander.exception.DiskFullException;
 import org.applecommander.filestore.FileStoreOrganization;
 import org.applecommander.filestore.FileStores;
 import org.applecommander.os.rdos.*;
-import org.applecommander.usage.BlockUsage;
+import org.applecommander.usage.ComputedBlockUsage;
 import org.applecommander.util.DataBuffer;
 import org.junit.jupiter.api.Test;
 
@@ -140,7 +140,7 @@ public class RDOSTest implements RDOSConstants {
 
         // Get some useful stuff
         BlockDevice device = fileStore.get(BlockDevice.class).orElseThrow();
-        BlockUsage usage = fileStore.get(BlockUsage.class).orElseThrow();
+        ComputedBlockUsage usage = fileStore.get(ComputedBlockUsage.class).orElseThrow();
 
         // Generate a bunch of large files until we fill the disk
         final byte[] bigfile = new byte[16000];

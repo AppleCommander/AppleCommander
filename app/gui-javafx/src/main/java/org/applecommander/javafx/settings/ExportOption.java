@@ -87,7 +87,7 @@ public enum ExportOption {
     public static AppleSingle createAppleSingle(FileEntry fileEntry) {
         ProdosAttributes attributes = fileEntry.getProdosAttributes();
         AppleSingle.Builder builder = AppleSingle.builder()
-                .realName(fileEntry.getName())
+                .realName(attributes.name())
                 .access(attributes.access())
                 .auxType(attributes.auxType())
                 .fileType(attributes.fileType())

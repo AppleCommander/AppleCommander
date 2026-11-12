@@ -19,6 +19,7 @@
  */
 package org.applecommander.javafx;
 
+import atlantafx.base.controls.SelectableTextFlow;
 import com.webcodepro.applecommander.util.AppleUtil;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -26,11 +27,12 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import org.applecommander.converter.ConverterRepository;
 import org.applecommander.filestore.ContentType;
@@ -47,7 +49,7 @@ public class FileContentWindow {
     private final ToolBar toolBar;
     private final Label statusBar;
     private final StackPane content;
-    private final TextFlow textView;
+    private final SelectableTextFlow textView;
 
     private Stage stage;
     private ToggleButton viewAsText;
@@ -62,7 +64,7 @@ public class FileContentWindow {
     public FileContentWindow(FileEntry fileEntry) {
         this.toolBar = new ToolBar();
 
-        this.textView = new TextFlow();
+        this.textView = new SelectableTextFlow();
         this.textView.setPadding(new Insets(10));
 
         this.content = new StackPane(textView);
@@ -169,8 +171,14 @@ public class FileContentWindow {
                 }
             });
         });
+        Button copy = FxUtils.createButton("copy.png", "Copy", _ -> {
+            Clipboard clipboard = Clipboard.getSystemClipboard();
+            ClipboardContent content = new ClipboardContent();
+            content.putString(textView.getContentAsString());
+            clipboard.setContent(content);
+        });
 
-        this.toolBar.getItems().addAll(viewAsText, viewAsHex, new Separator(), decreaseSize, increaseSize);
+        this.toolBar.getItems().addAll(viewAsText, viewAsHex, new Separator(), decreaseSize, increaseSize, copy);
     }
 
     private void showPlainText(String value) {

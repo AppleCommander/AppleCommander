@@ -52,6 +52,11 @@ public enum Capability {
     /// Indicates if a `FileStore` supports (sub-)directories.
     SUPPORTS_DIRECTORIES,
 
+    /// Indicates if a `FileStore` supports deleted files.
+    /// Note that being able to delete a file is DELETE_FILES.
+    /// This indicates that the file entry itself can have a deleted state.
+    SUPPORTS_DELETED_FILES,
+
     /// Indicates if a `FileStore` can create (sub-)directories.
     CREATE_DIRECTORIES,
 

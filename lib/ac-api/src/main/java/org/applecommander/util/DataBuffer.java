@@ -21,6 +21,7 @@ package org.applecommander.util;
 
 import com.google.common.base.Strings;
 
+import java.io.StringWriter;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
@@ -277,6 +278,27 @@ public class DataBuffer {
         }
         putFixedLengthString(index+1, value.length(), value, setHighBit);
     }
+    /// Read a zero terminated string with a maximum length.
+    public String getZeroTerminatedString(int offset, int maxLength) {
+        StringWriter sw = new StringWriter();
+        for (int i=0; i<maxLength; i++) {
+            int ch = getUnsignedByte(offset+i);
+            if (ch == 0) break;
+            sw.write(ch);
+        }
+        return sw.toString();
+    }
+    /// Set a zero terminated string and blank out all data up to the `maxLength`.
+    public void putZeroTerminatedString(int offset, int maxLength, String value) {
+        for (int i=0; i<maxLength; i++) {
+            if (i < value.length()) {
+                putByte(offset+i, value.charAt(i));
+            }
+            else {
+                putByte(offset+i, 0);
+            }
+        }
+    }
     /// Extract a Pascal date. If the date is not set (all zeroes)
     /// this returns a `null`.
     ///
@@ -334,14 +356,50 @@ public class DataBuffer {
     public void putUnsignedShort(int offset, int value) {
         this.buffer.putShort(offset, (short)(value & 0xffff));
     }
+    public void putUnsignedShortBE(int offset, int value) {
+        this.buffer.order(ByteOrder.BIG_ENDIAN);
+        this.buffer.putShort(offset, (short)(value & 0xffff));
+        this.buffer.order(ByteOrder.LITTLE_ENDIAN);
+    }
     public void putShort(int offset, short value) {
         this.buffer.putShort(offset, value);
+    }
+    /// Extract a nibble from the byte.
+    public int getNibble(int offset, boolean highNibble) {
+        if (highNibble) {
+            return (getUnsignedByte(offset) >> 4) & 0x0f;
+        }
+        return getUnsignedByte(offset) & 0x0f;
+    }
+    /// Set a nibble for the byte.
+    public void putNibble(int offset, boolean highNibble, int nibbleValue) {
+        int value = getUnsignedByte(offset);
+        if (highNibble) {
+            value &= 0x0f;
+            value |= (nibbleValue << 4);
+        }
+        else {
+            value &= 0xf0;
+            value |= nibbleValue;
+        }
+        putByte(offset, value);
     }
     /**
      * Determine if a specific bit is set.
      */
     public boolean isBitSet(int index, int bit) {
         return (getUnsignedByte(index) & BIT_MASKS[bit]) != 0;
+    }
+    /// Set a specific bit in a byte.
+    public void putBit(int index, int bit, boolean bitValue) {
+        int byteValue = getUnsignedByte(index);
+        if (bitValue) {
+            byteValue |= BIT_MASKS[bit];
+        }
+        else {
+            byteValue &= (BIT_MASKS[bit] ^ 0xff);
+        }
+        putByte(index, byteValue);
     }
     /// Decode a ProDOS formatted date. This can return null if the date is all `$0000 0000`.
     public Date getProdosDate(int offset) {

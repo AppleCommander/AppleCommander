@@ -34,7 +34,8 @@ public interface RDOSConstants {
     int LENGTH_OFFSET = 0x1c;
     int FIRST_BLOCK_OFFSET = 0x1e;
 
-    Set<Capability> CAPABILITIES = Set.of(Capability.WRITE_FILES, Capability.CREATE_FILES, Capability.DELETE_FILES);
+    Set<Capability> CAPABILITIES = Set.of(Capability.WRITE_FILES, Capability.CREATE_FILES, Capability.DELETE_FILES,
+            Capability.SUPPORTS_DELETED_FILES);
 
     CharacterMapper FILE_NAME_MAPPER = CharacterMapper.builder()
             .mapRange(0x20, 0x7f, true)
