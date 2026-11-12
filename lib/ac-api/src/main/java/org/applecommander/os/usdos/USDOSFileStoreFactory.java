@@ -28,6 +28,7 @@ import org.applecommander.filestore.ConfigurationOption;
 import org.applecommander.filestore.FileStoreFactory;
 import org.applecommander.filestore.FileStoreOrganization;
 import org.applecommander.transfer.ProdosAttributes;
+import org.applecommander.ui.CharacterMapper;
 import org.applecommander.util.DataBuffer;
 
 import java.io.IOException;
@@ -38,10 +39,12 @@ import java.util.Map;
 import java.util.Objects;
 
 import static org.applecommander.filestore.ConfigurationOption.getFlagValue;
+import static org.applecommander.filestore.ConfigurationOption.getValidatedValue;
 
 public class USDOSFileStoreFactory implements FileStoreFactory, USDOSConstants {
     public static final String COMMAND_COM_FLAG = "include_command_com";
     public static final String HELP_BAT_FLAG = "include_help_bat";
+    public static final String DISK_LABEL = "disk_label";
 
     /// The name of this factory. Usually the name and file extensions.
     @Override
@@ -105,8 +108,10 @@ public class USDOSFileStoreFactory implements FileStoreFactory, USDOSConstants {
     @Override
     public Map<String,ConfigurationOption> getConfigurationOptions() {
         return ConfigurationOption.builder()
+                .stringValue(DISK_LABEL).prompt("Enter label for disk (blank for none)")
+                    .enforceLength(1, LABEL_MAX_LENGTH).restrictions(CharacterMapper.ANYTHING).add()
                 .flagValue(COMMAND_COM_FLAG).prompt("Include 'COMMAND.COM'?").defaultValue(true).add()
-                .flagValue(HELP_BAT_FLAG).prompt("Include 'HELP.BAT'? (Engish translation)").defaultValue(false).add()
+                .flagValue(HELP_BAT_FLAG).prompt("Include 'HELP.BAT'? (English translation)").defaultValue(false).add()
                 .done();
     }
 
@@ -130,6 +135,8 @@ public class USDOSFileStoreFactory implements FileStoreFactory, USDOSConstants {
             for (int track : List.of(0, 35, 36, 37, 38, 39)) {
                 bitmap.putBytes(BITMAP_OFFSET + track*2, 0xff, 0xff);
             }
+            String label = getValidatedValue(options, DISK_LABEL, "");
+            bitmap.putFixedLengthString(LABEL_OFFSET, Math.min(label.length(), LABEL_MAX_LENGTH), label, false);
             device.writeSector(BITMAP_TRACK, BITMAP_SECTOR, bitmap);
             USDOSFileStore fileStore = new USDOSFileStore(device);
             USDOSDirectory rootDirectory = fileStore.getRootDirectory();

@@ -50,6 +50,8 @@ public interface USDOSConstants {
     int DIRECTORY_MAX_ENTRIES = (DIRECTORY_TOTAL_SECTORS * TrackSectorDevice.SECTOR_SIZE) / ENTRY_LENGTH;
     int BITMAP_TRACK = 0;
     int BITMAP_SECTOR = 15;
+    int LABEL_OFFSET = 0;
+    int LABEL_MAX_LENGTH = 11;
     int BITMAP_OFFSET = 0x0e;
 
     int INDEX_TRACKS = 0;
