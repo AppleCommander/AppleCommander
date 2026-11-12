@@ -254,7 +254,7 @@ public class USDOSFileEntry implements WritableFileEntry, USDOSConstants {
             .name(String.format("%s.%s", getName(), getExtension()));
         switch (getExtension()) {
             case "BAS" -> builder.BAS();
-            case "TXT", "BAT" -> builder.TXT();
+            case "TXT", "BAT", "HLP" -> builder.TXT();
             default -> builder.BIN(getAddress());
         }
         return builder.get();
@@ -266,7 +266,7 @@ public class USDOSFileEntry implements WritableFileEntry, USDOSConstants {
     @Override
     public ContentType getContentType() {
         return switch (getExtension()) {
-            case "TXT", "BAT" -> ContentType.LOW_ASCII;
+            case "TXT", "BAT", "HLP" -> ContentType.LOW_ASCII;
             default -> ContentType.UNKNOWN;
         };
     }
