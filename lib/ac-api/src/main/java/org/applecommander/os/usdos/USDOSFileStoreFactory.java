@@ -19,22 +19,26 @@
  */
 package org.applecommander.os.usdos;
 
+import org.applecommander.applesingle.AppleSingle;
 import org.applecommander.device.SectorOrder;
 import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.ConfigurationOption;
 import org.applecommander.filestore.FileStoreFactory;
 import org.applecommander.filestore.FileStoreOrganization;
+import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.DataBuffer;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static org.applecommander.filestore.ConfigurationOption.getFlagValue;
+
 public class USDOSFileStoreFactory implements FileStoreFactory, USDOSConstants {
+    public static final String COMMAND_COM_FLAG = "include_command_com";
 
     /// The name of this factory. Usually the name and file extensions.
     @Override
@@ -97,7 +101,9 @@ public class USDOSFileStoreFactory implements FileStoreFactory, USDOSConstants {
     /// utilized in the CLI environment to locate and update a field.
     @Override
     public Map<String,ConfigurationOption> getConfigurationOptions() {
-        return Collections.emptyMap();
+        return ConfigurationOption.builder()
+                .flagValue(COMMAND_COM_FLAG).prompt("Include 'COMMAND.COM'?").defaultValue(true).add()
+                .done();
     }
 
     /// Create a `USDOSFileStore` using the given configuration settings.
@@ -105,8 +111,12 @@ public class USDOSFileStoreFactory implements FileStoreFactory, USDOSConstants {
     public USDOSFileStore create(FileStoreOrganization fileStoreOrganization, Map<String, ConfigurationOption> options) {
         Objects.requireNonNull(fileStoreOrganization);
         TrackSectorDevice device = fileStoreOrganization.createTrackSectorDevice().request(SectorOrder.DOS);
-        try (InputStream inputStream = USDOSFileStoreFactory.class.getResourceAsStream("/files/usdos-1.11-boot.bin")) {
+        try (
+            InputStream inputStream = USDOSFileStoreFactory.class.getResourceAsStream("/files/usdos-1.11-boot.bin");
+            InputStream commandCom = USDOSFileStoreFactory.class.getResourceAsStream("/files/COMMAND.COM.as");
+        ) {
             Objects.requireNonNull(inputStream);
+            Objects.requireNonNull(commandCom);
             byte[] boot = inputStream.readAllBytes();
             device.writeRange(0, 0, DataBuffer.wrap(boot));
             DataBuffer bitmap = device.readSector(BITMAP_TRACK, BITMAP_SECTOR);
@@ -115,7 +125,14 @@ public class USDOSFileStoreFactory implements FileStoreFactory, USDOSConstants {
                 bitmap.putBytes(BITMAP_OFFSET + track*2, 0xff, 0xff);
             }
             device.writeSector(BITMAP_TRACK, BITMAP_SECTOR, bitmap);
-            return new USDOSFileStore(device);
+            USDOSFileStore fileStore = new USDOSFileStore(device);
+            if (getFlagValue(options, COMMAND_COM_FLAG)) {
+                AppleSingle appleSingle = AppleSingle.read(commandCom);
+                ProdosAttributes prodosAttributes = ProdosAttributes.from(appleSingle);
+                USDOSDirectory rootDirectory = fileStore.getRootDirectory();
+                rootDirectory.createFrom(prodosAttributes);
+            }
+            return fileStore;
         }
         catch (IOException ex) {
             throw new UncheckedIOException(ex);
