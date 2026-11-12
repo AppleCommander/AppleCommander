@@ -101,9 +101,9 @@ public class USDOSTest implements USDOSConstants {
         return fileEntry;
     }
 
-    public void verifyFile(USDOSFileEntry fileEntry, String expectedFileName, String expectedFileExtension,
+    public void verifyFile(USDOSFileEntry fileEntry, String expectedBaseName, String expectedFileExtension,
                            int expectedIndexTrack, int expectedIndexSector, byte[] expectedDataFork) {
-        assertEquals(expectedFileName, fileEntry.getName());
+        assertEquals(expectedBaseName, fileEntry.getBaseName());
         assertEquals(expectedFileExtension, fileEntry.getExtension());
         assertEquals(expectedIndexTrack, fileEntry.getTrackSectorIndex().track());
         assertEquals(expectedIndexSector, fileEntry.getTrackSectorIndex().sector());
@@ -131,7 +131,12 @@ public class USDOSTest implements USDOSConstants {
         }
 
         // Now build list
-        final List<String> expected = List.of("README", "DIR-A/", "DIR-A/README", "DIR-B/", "DIR-B/README", "DIR-C/", "DIR-C/README");
+        final List<String> expected = List.of(
+            "README.TXT",
+            "DIR-A/", "DIR-A/README.TXT",
+            "DIR-B/", "DIR-B/README.TXT",
+            "DIR-C/", "DIR-C/README.TXT"
+        );
         List<String> actual = new ArrayList<>();
         List<USDOSDirectory> directories = new ArrayList<>();
         directories.add(rootDirectory);
