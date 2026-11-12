@@ -342,11 +342,42 @@ public class DataBuffer {
     public void putShort(int offset, short value) {
         this.buffer.putShort(offset, value);
     }
+    /// Extract a nibble from the byte.
+    public int getNibble(int offset, boolean highNibble) {
+        if (highNibble) {
+            return (getUnsignedByte(offset) >> 4) & 0x0f;
+        }
+        return getUnsignedByte(offset) & 0x0f;
+    }
+    /// Set a nibble for the byte.
+    public void putNibble(int offset, boolean highNibble, int nibbleValue) {
+        int value = getUnsignedByte(offset);
+        if (highNibble) {
+            value &= 0x0f;
+            value |= (nibbleValue << 4);
+        }
+        else {
+            value &= 0xf0;
+            value |= nibbleValue;
+        }
+        putByte(offset, value);
+    }
     /**
      * Determine if a specific bit is set.
      */
     public boolean isBitSet(int index, int bit) {
         return (getUnsignedByte(index) & BIT_MASKS[bit]) != 0;
+    }
+    /// Set a specific bit in a byte.
+    public void putBit(int index, int bit, boolean bitValue) {
+        int byteValue = getUnsignedByte(index);
+        if (bitValue) {
+            byteValue |= BIT_MASKS[bit];
+        }
+        else {
+            byteValue &= (BIT_MASKS[bit] ^ 0xff);
+        }
+        putByte(index, byteValue);
     }
     /// Decode a ProDOS formatted date. This can return null if the date is all `$0000 0000`.
     public Date getProdosDate(int offset) {

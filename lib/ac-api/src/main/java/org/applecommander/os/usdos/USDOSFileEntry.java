@@ -22,14 +22,19 @@ package org.applecommander.os.usdos;
 import org.applecommander.device.Coordinate;
 import org.applecommander.device.Coordinate.TrackAndSectorCoordinate;
 import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.exception.UnableToWriteException;
 import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.WritableFileEntry;
 import org.applecommander.transfer.ProdosAttributes;
+import org.applecommander.usage.SectorAllocator;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -88,23 +93,26 @@ public class USDOSFileEntry implements WritableFileEntry, USDOSConstants {
     /// Note that depending on context, this may be a computed field.
     @Override
     public String getName() {
-        return readEntry().getFixedLengthString(ENTRY_NAME, ENTRY_NAME_LENGTH);
+        return readEntry().getFixedLengthString(ENTRY_NAME, ENTRY_NAME_LENGTH).trim();
     }
+    /// Change the file name.
     public void setName(String name) {
         modifyEntry(entry -> entry.putFixedLengthString(ENTRY_NAME, ENTRY_NAME_LENGTH, name, false));
     }
 
+    /// Returns the file extension. In the case of a directory, `<DIR>` is returned instead.
     public String getExtension() {
         DataBuffer entry = readEntry();
         if (entry.getUnsignedByte(ENTRY_EXT) == ENTRY_DIR_VALUE) {
             return "<DIR>";
         }
-        return entry.getFixedLengthString(ENTRY_EXT, ENTRY_EXT_LENGTH);
+        return entry.getFixedLengthString(ENTRY_EXT, ENTRY_EXT_LENGTH).trim();
     }
+    /// Change the file extension.
     public void setExtension(String extension) {
         modifyEntry(entry -> entry.putFixedLengthString(ENTRY_EXT, ENTRY_EXT_LENGTH, extension, false));
     }
-    public void setExtensionAsDirectory(int directoryNumber) {
+    void setExtensionAsDirectory(int directoryNumber) {
         modifyEntry(entry -> {
             entry.putBytes(ENTRY_EXT, ENTRY_DIR_VALUE, directoryNumber, 0);
         });
@@ -116,7 +124,7 @@ public class USDOSFileEntry implements WritableFileEntry, USDOSConstants {
     public long getSize() {
         return readEntry().getUnsignedShort(ENTRY_SIZE);
     }
-    public void setSize(int size) {
+    void setSize(int size) {
         modifyEntry(entry -> entry.putUnsignedShort(ENTRY_SIZE, size));
     }
 
@@ -132,6 +140,7 @@ public class USDOSFileEntry implements WritableFileEntry, USDOSConstants {
         int dayOfMonth = (value >> 11) & 0x1f;
         return LocalDate.of(year, month+1, dayOfMonth+1);
     }
+    /// Set the date for the file.
     public void setDate(LocalDate date) {
         int dayOfMonth = date.getDayOfMonth() - 1;
         int month = date.getMonthValue() - 1;
@@ -140,28 +149,32 @@ public class USDOSFileEntry implements WritableFileEntry, USDOSConstants {
         modifyEntry(entry -> entry.putUnsignedShortBE(ENTRY_DATE, dateValue));
     }
 
+    /// Get address for this file.
     public int getAddress() {
         return readEntry().getUnsignedShort(ENTRY_ADDRESS);
     }
+    /// Set address for this file.
     public void setAddress(int address) {
         modifyEntry(entry -> entry.putUnsignedShort(ENTRY_ADDRESS, address));
     }
 
+    /// Get the allocation coordinate.
     public TrackAndSectorCoordinate getTrackSectorIndex() {
         DataBuffer entry = readEntry();
         return Coordinate.trackAndSector(entry.getUnsignedByte(ENTRY_MAP_TRACK), entry.getUnsignedByte(ENTRY_MAP_SECTOR));
     }
-    public void setTrackSectorIndex(int track, int sector) {
+    void setTrackSectorIndex(int track, int sector) {
         modifyEntry(entry -> {
             entry.putByte(ENTRY_MAP_TRACK, track);
             entry.putByte(ENTRY_MAP_SECTOR, sector);
         });
     }
 
+    /// Get the directory number this file belongs to.
     public int getDirectoryNumber() {
         return readEntry().getUnsignedByte(ENTRY_DIR_NUM);
     }
-    public void setDirectoryNumber(int directoryNumber) {
+    void setDirectoryNumber(int directoryNumber) {
         modifyEntry(entry -> entry.putByte(ENTRY_DIR_NUM, directoryNumber));
     }
 
@@ -169,30 +182,64 @@ public class USDOSFileEntry implements WritableFileEntry, USDOSConstants {
     /// This does not include any metadata that may be embedded with the file.
     @Override
     public DataBuffer getDataFork() {
-        TrackAndSectorCoordinate coordinate = getTrackSectorIndex();
+        DataBuffer data = device.readList(readSectorIndex());
         int size = (int)getSize();
-        int totalSectors = device.calculateRequiredSectors(size);
+        return data.slice(0, size);
+    }
+
+    /// Build a list of all T/S coordinates for the files data. Does not include the index sector itself.
+    public List<TrackAndSectorCoordinate> readSectorIndex() {
+        TrackAndSectorCoordinate coordinate = getTrackSectorIndex();
+        if (coordinate.track() == 0) {
+            return Collections.emptyList();
+        }
+        List<TrackAndSectorCoordinate> list = new ArrayList<>();
         DataBuffer index = device.readSector(coordinate.track(), coordinate.sector());
-        DataBuffer data = DataBuffer.create(totalSectors * TrackSectorDevice.SECTOR_SIZE);
-        int offset = 0;
-        for (int i=0; i<totalSectors; i++) {
+        for (int i=0; i<INDEX_SECTORS; i++) {
             int track = index.getUnsignedByte(INDEX_TRACKS+i);
             if (track == 0xff) break;
-            int sectorOffset = i >> 1;
-            int sectorByte = index.getUnsignedByte(INDEX_SECTORS+sectorOffset);
-            int sector = ((i % 2 == 0) ? sectorByte : (sectorByte >> 4)) & 0xf;
-            device.readSector(track, sector, offset, data);
-            offset += TrackSectorDevice.SECTOR_SIZE;
+            int sectorOffset = INDEX_SECTORS + (i >> 1);
+            int sector = index.getNibble(sectorOffset, i % 2 == 1);
+            list.add(Coordinate.trackAndSector(track, sector));
         }
-        return data.slice(0, size);
+        return list;
+    }
+
+    void writeSectorIndex(TrackAndSectorCoordinate index, List<TrackAndSectorCoordinate> list) {
+        assert list.size() <= MAX_INDEX_SECTORS;
+        DataBuffer data = DataBuffer.create(TrackSectorDevice.SECTOR_SIZE);
+        for (int i=0; i<list.size(); i++) {
+            TrackAndSectorCoordinate coordinate = list.get(i);
+            data.putByte(i, coordinate.track());
+            int sectorOffset = INDEX_SECTORS + (i >> 1);
+            data.putNibble(sectorOffset, i % 2 == 1, coordinate.sector());
+        }
+        if (list.size() < MAX_INDEX_SECTORS) {
+            data.putByte(list.size(), 0xff);
+        }
+        device.writeSector(index.track(), index.sector(), data);
     }
 
     /// Store the file's data.
     /// This does not include any metadata that may be embedded with the file.
     @Override
     public void setDataFork(DataBuffer data) {
+        List<TrackAndSectorCoordinate> currentSectors = readSectorIndex();
+        final int requiredSectors = device.calculateRequiredSectors(data.limit()) + 1;
+        if (requiredSectors > MAX_INDEX_SECTORS) {
+            throw new UnableToWriteException(
+                    "file is too large; US-DOS appears to have a max file size of %d sectors but this file is %d sectors",
+                    MAX_INDEX_SECTORS, requiredSectors);
+        }
+        SectorAllocator allocator = getFileStore().get(SectorAllocator.class).orElseThrow();
+        List<TrackAndSectorCoordinate> sectors = allocator.allocateSectors(requiredSectors, currentSectors);
+        TrackAndSectorCoordinate index = sectors.removeFirst();
+        writeSectorIndex(index, sectors);
+        device.writeList(sectors, data);
+        setTrackSectorIndex(index.track(), index.sector());
+        setSize(data.limit());
+        getFileStore().writeBitmap();
         getFileStore().notifyChangeListeners(FileStore.ChangeType.DATA_UPDATED);
-        throw new UnsupportedOperationException("TODO");
     }
 
     /// Interpret the `FileEntry` as if it were on a ProDOS volume.
@@ -224,6 +271,7 @@ public class USDOSFileEntry implements WritableFileEntry, USDOSConstants {
         };
     }
 
+    /// Retrieve non-standard components.
     @Override
     public <T> Optional<T> get(Class<T> iface) {
         return Container.get(iface, directory);

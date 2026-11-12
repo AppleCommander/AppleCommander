@@ -110,7 +110,10 @@ public class USDOSFileStoreFactory implements FileStoreFactory, USDOSConstants {
             byte[] boot = inputStream.readAllBytes();
             device.writeRange(0, 0, DataBuffer.wrap(boot));
             DataBuffer bitmap = device.readSector(BITMAP_TRACK, BITMAP_SECTOR);
-            bitmap.putBytes(BITMAP_OFFSET, 0xff, 0xff);
+            // There isn't any other geometry, so US-DOS assumes 40 tracks. This is a 35 track disk.
+            for (int track : List.of(0, 35, 36, 37, 38, 39)) {
+                bitmap.putBytes(BITMAP_OFFSET + track*2, 0xff, 0xff);
+            }
             device.writeSector(BITMAP_TRACK, BITMAP_SECTOR, bitmap);
             return new USDOSFileStore(device);
         }

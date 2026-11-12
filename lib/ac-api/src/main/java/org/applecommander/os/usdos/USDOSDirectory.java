@@ -23,6 +23,7 @@ import org.applecommander.capability.Capability;
 import org.applecommander.exception.DirectoryFullException;
 import org.applecommander.filestore.*;
 import org.applecommander.transfer.ProdosAttributes;
+import org.applecommander.usage.SectorAllocator;
 import org.applecommander.util.DataBuffer;
 
 import java.time.LocalDate;
@@ -70,7 +71,8 @@ public class USDOSDirectory implements WritableDirectory, USDOSConstants {
         // Locate all files matching our directory number.
         DataBuffer directory = fileStore.readDirectory();
         directory.position(0);
-        while (directory.hasRemaining()) {
+        int count = DIRECTORY_MAX_ENTRIES;
+        while (count > 0) {
             int offset = directory.position();
             DataBuffer entryData = directory.readBuffer(ENTRY_LENGTH);
             if (entryData.getUnsignedByte(ENTRY_NAME+1) == 0) {
@@ -79,6 +81,7 @@ public class USDOSDirectory implements WritableDirectory, USDOSConstants {
             if (entryData.getUnsignedByte(ENTRY_DIR_NUM) == directoryNumber) {
                 files.add(new USDOSFileEntry(this, offset));
             }
+            count--;
         }
         return files;
     }
@@ -163,7 +166,7 @@ public class USDOSDirectory implements WritableDirectory, USDOSConstants {
     /// Create a directory. By definition, any directory create is a `WritableDirectory`.
     /// @see Capability#CREATE_DIRECTORIES
     @Override
-    public WritableDirectory createDirectory(String directoryName) {
+    public USDOSDirectory createDirectory(String directoryName) {
         // Identify all existing directory numbers.
         Set<Integer> currentDirectoryNumbers = new HashSet<>();
         currentDirectoryNumbers.add(0);     // Need to be certain the ROOT directory is represented!
@@ -190,6 +193,12 @@ public class USDOSDirectory implements WritableDirectory, USDOSConstants {
     public void deleteFile(FileEntry fileEntry) {
         USDOSFileEntry file = (USDOSFileEntry) fileEntry;
         file.modifyEntry(entry -> entry.putByte(ENTRY_NAME, 0));
+        // Free both the file sectors and the sector index sector
+        SectorAllocator allocator = fileStore.get(SectorAllocator.class).orElseThrow();
+        file.readSectorIndex().forEach(allocator::markFree);
+        allocator.markFree(file.getTrackSectorIndex());
+        fileStore.writeBitmap();
+        // Tell everyone about it.
         fileStore.notifyChangeListeners(FileStore.ChangeType.FILE_DELETED);
     }
 }

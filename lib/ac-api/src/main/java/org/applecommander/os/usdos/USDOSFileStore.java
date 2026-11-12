@@ -25,8 +25,9 @@ import org.applecommander.device.TrackSectorDevice;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.ui.DisplayColumn;
 import org.applecommander.ui.DisplayMode;
-import org.applecommander.usage.BitmapSectorUsage;
-import org.applecommander.usage.DiskUsage.UsageType;
+import org.applecommander.usage.SectorAllocator;
+import org.applecommander.usage.SectorBitmapUsage;
+import org.applecommander.usage.UsageType;
 import org.applecommander.util.Container;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.InformationGroup;
@@ -37,14 +38,27 @@ import java.util.Optional;
 public class USDOSFileStore extends ChangeRegistry<FileStore.FileStoreChangeEvent> implements FileStore, USDOSConstants {
     private final TrackSectorDevice device;
     private final USDOSDirectory rootDirectory;
-    private final BitmapSectorUsage usage;
+    private final SectorBitmapUsage usage;
+    private final SectorAllocator allocator;
+    private DataBuffer bitmap;
 
     USDOSFileStore(TrackSectorDevice device) {
         this.device = device;
         this.rootDirectory = new USDOSDirectory(this, 0, "<ROOT>");
-        this.usage = new BitmapSectorUsage(device.getGeometry(), this::getUsage);
+        this.usage = new SectorBitmapUsage(device.getGeometry(), this::getUsage);
+        this.allocator = new SectorAllocator(this::getUsage, this::setUsed, device.getGeometry());
+        readBitmap();
     }
 
+    /// Read in a fresh copy of the sector bitmap.
+    public void readBitmap() {
+        bitmap = device.readSector(BITMAP_TRACK, BITMAP_SECTOR);
+    }
+    /// Write out the current copy of the sector bitmap.
+    public void writeBitmap() {
+        device.writeSector(BITMAP_TRACK, BITMAP_SECTOR, bitmap);
+    }
+    /// Get the usage type for the given sector.
     public UsageType getUsage(int track, int sector) {
         if (track == 0) {
             if (sector < 2) {
@@ -57,14 +71,22 @@ public class USDOSFileStore extends ChangeRegistry<FileStore.FileStoreChangeEven
                 return UsageType.BITMAP;
             }
         }
-        DataBuffer bitmap = device.readSector(BITMAP_TRACK, BITMAP_SECTOR);
         int offset = BITMAP_OFFSET + (track * 2) + (sector < 8 ? 1 : 0);
         int bit = 7 - (sector & 0x7);
         boolean used = bitmap.isBitSet(offset, bit);
         return used ? UsageType.FILE : UsageType.FREE;
     }
+    /// Set the used status for a sector in the sector usage bitmap.
+    public void setUsed(int track, int sector, boolean used) {
+        int offset = BITMAP_OFFSET + (track * 2) + (sector < 8 ? 1 : 0);
+        int bit = 7 - (sector & 0x7);
+        bitmap.putBit(offset, bit, used);
+    }
 
     void notifyChangeListeners(ChangeType changeType) {
+        switch (changeType) {
+            case DATA_UPDATED, FILE_CREATED, FILE_DELETED -> readBitmap();
+        }
         notifyChangeListeners(new FileStoreChangeEvent(this, changeType));
     }
 
@@ -144,7 +166,7 @@ public class USDOSFileStore extends ChangeRegistry<FileStore.FileStoreChangeEven
     /// Retrieve non-standard components.
     @Override
     public <T> Optional<T> get(Class<T> iface) {
-        return Container.get(iface, device, usage);
+        return Container.get(iface, device, usage, allocator);
     }
 
     /// Get information about this component.

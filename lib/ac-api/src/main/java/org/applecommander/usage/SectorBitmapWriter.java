@@ -1,0 +1,34 @@
+/*
+ * AppleCommander - An Apple ][ image utility.
+ * Copyright (C) 2026 by Robert Greene and others
+ * robgreene at users.sourceforge.net
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+package org.applecommander.usage;
+
+import org.applecommander.device.Coordinate.TrackAndSectorCoordinate;
+
+/// A functional interface defining a sector bitmap writer. The intent is to leave
+/// bitmap-type operations in the `FileStore` and pass the function into the
+/// allocator component.
+public interface SectorBitmapWriter {
+    /// Mark this track and sector as used (if `true`) or free (if `false`).
+    void setUsed(int track, int sector, boolean used);
+    /// Mark this track and sector as used (if `true`) or free (if `false`).
+    default void setUsed(TrackAndSectorCoordinate coordinate, boolean used) {
+        setUsed(coordinate.track(), coordinate.sector(), used);
+    }
+}
