@@ -20,6 +20,7 @@
 package org.applecommander.device;
 
 import org.applecommander.device.Coordinate.TrackAndSectorCoordinate;
+import org.applecommander.exception.UnableToWriteException;
 import org.applecommander.hint.Hint;
 import org.applecommander.util.DataBuffer;
 import org.applecommander.util.InformationGroup;
@@ -80,6 +81,17 @@ public interface TrackSectorDevice extends Device {
         return rangeData;
     }
 
+    /// Read data from the given list of sectors.
+    default DataBuffer readList(List<TrackAndSectorCoordinate> sectorList) {
+        DataBuffer listData = DataBuffer.create(sectorList.size() * SECTOR_SIZE);
+        int offset = 0;
+        for (TrackAndSectorCoordinate coordinate : sectorList) {
+            readSector(coordinate.track(), coordinate.sector(), offset, listData);
+            offset += SECTOR_SIZE;
+        }
+        return listData;
+    }
+
     /// Write a single sector to the disk.
     void writeSector(int track, int sector, DataBuffer data);
 
@@ -91,6 +103,22 @@ public interface TrackSectorDevice extends Device {
         performRange(track, sector, totalSectors, (t,s,o) -> {
             writeSector(t, s, newBuffer.slice(o, SECTOR_SIZE));
         });
+    }
+
+    /// Write data to the given list of sectors. A size check is performed and an error is raised
+    /// if the sector list does not match the data size.
+    default void writeList(List<TrackAndSectorCoordinate> sectorList, DataBuffer data) {
+        int expectedSectors = calculateRequiredSectors(data.limit());
+        if (sectorList.size() != expectedSectors) {
+            throw new UnableToWriteException("sector list size (%d) does not match data size(%d)",
+                    sectorList.size(), expectedSectors);
+        }
+        int offset = 0;
+        DataBuffer newBuffer = sizeBuffer(data);
+        for (TrackAndSectorCoordinate coordinate : sectorList) {
+            writeSector(coordinate.track(), coordinate.sector(), newBuffer.slice(offset, SECTOR_SIZE));
+            offset += SECTOR_SIZE;
+        }
     }
 
     /// A utility method that performs an operation across a range of sectors. Mostly reusable code for the
