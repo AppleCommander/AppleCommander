@@ -246,7 +246,34 @@ public class DataBuffer {
         // Hopefully this is a bridge method and can be removed over time
         this.buffer.get(position, data);
     }
+    /// Convert an Applesoft real to a Java double.
+    ///
+    /// (Applesoft)
+    ///
+    /// `EEEEEEEE SFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF`
+    ///
+    /// (double)
+    ///
+    /// `SEEEEEEE EEEEFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF`
+    ///
+    /// The mapping will result in setting the following double bits:
+    ///
+    /// `S000EEEE EEEEFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFF00000 00000000 00000000`
+    /// @see "Applesoft: Internals"
+    /// @see <a href="https://en.wikipedia.org/wiki/Double-precision_floating-point_format">Double-precision</a>
+    public double getApplesoftReal(int index) {
+        // Need to convert from the bias of 128 to the bias of 1023
+        long exponent = 1022 + (getUnsignedByte(index) - 128);
+        // Sign flips place
+        long signBit = (getUnsignedByte(index+1) & 0x80) >> 7;
+        // Mantissa is only 39 bits
+        long mantissa = getIntBE(index+1) & 0x7fffffff;
+        return Double.longBitsToDouble((signBit << 63) | (exponent << 52) | (mantissa << 21));
+    }
     public String getFixedLengthString(int index, int length) {
+        if (length == 0) {
+            return "";
+        }
         byte[] s = new byte[length];
         this.buffer.get(index, s);
         for (int i=0; i<length; i++) {
