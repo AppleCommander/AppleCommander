@@ -103,6 +103,7 @@ public class FileContentWindow {
         Scene scene = new Scene(window, 800, 500);
         stage = new Stage();
         stage.setScene(scene);
+        stage.setTitle(String.format("%s - %s", fileEntry.getFileStore().getLabel(), fileEntry.getName()));
         stage.toFront();
         stage.requestFocus();
         this.initView();
