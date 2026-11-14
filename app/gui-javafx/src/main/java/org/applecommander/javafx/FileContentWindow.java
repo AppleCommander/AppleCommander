@@ -35,6 +35,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import org.applecommander.converter.ApplesoftConverter;
 import org.applecommander.converter.ApplesoftVariables;
 import org.applecommander.converter.ConverterRepository;
 import org.applecommander.filestore.ContentType;
@@ -43,13 +44,16 @@ import org.applecommander.filestore.FileEntry;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class FileContentWindow {
     private static final Map<Subtype,ViewType> SUBTYPE_VIEW_MAP = Map.of(
         Subtype.TEXT, ViewType.TEXT,
-        Subtype.BASIC_VARIABLES, ViewType.TEXT
+        Subtype.BASIC_VARIABLES, ViewType.TEXT,
+        Subtype.BASIC, ViewType.BASIC
     );
     private final BorderPane window;
     private final ToolBar toolBar;
@@ -59,6 +63,7 @@ public class FileContentWindow {
 
     private Stage stage;
     private ToggleButton viewAsText;
+    private ToggleButton viewAsBasic;
     private ToggleButton viewAsHex;
     private final ObjectProperty<ContentType> contentTypeProperty = new SimpleObjectProperty<>();
     private final ObjectProperty<Subtype> contentSubtypeProperty = new SimpleObjectProperty<>();
@@ -119,14 +124,17 @@ public class FileContentWindow {
             contentSubtypeProperty.setValue(newValue.subtype);
             viewTypeProperty.setValue(SUBTYPE_VIEW_MAP.getOrDefault(newValue.subtype, ViewType.HEX));
         });
-        this.textView.visibleProperty().bind(viewTypeProperty.isEqualTo(ViewType.TEXT).or(viewTypeProperty.isEqualTo(ViewType.HEX)));
+        this.textView.visibleProperty().bind(viewTypeProperty.isEqualTo(ViewType.TEXT)
+                .or(viewTypeProperty.isEqualTo(ViewType.HEX))
+                .or(viewTypeProperty.isEqualTo(ViewType.BASIC)));
         this.textView.managedProperty().bind(textView.visibleProperty());
 
         this.viewTypeProperty.addListener((_, _, newValue) -> {
             viewAsText.setSelected(newValue == ViewType.TEXT);
+            viewAsBasic.setSelected(newValue == ViewType.BASIC);
             viewAsHex.setSelected(newValue == ViewType.HEX);
             switch (newValue) {
-                case TEXT -> handleTextView();
+                case TEXT, BASIC -> handleTextView();
                 case HEX -> {
                     // HEX VIEW FIXME
                     showPlainText(AppleUtil.getHexDump(fileEntry.getDataFork().asBytes()));
@@ -146,6 +154,9 @@ public class FileContentWindow {
             case BASIC_VARIABLES -> {
                 ConverterRepository.getVariables(fileEntry).ifPresent(this::showVariables);
             }
+            case BASIC -> {
+                ConverterRepository.getBASIC(fileEntry).ifPresent(this::showBASIC);
+            }
             default -> {
                 // HEX VIEW FIXME
                 showPlainText(AppleUtil.getHexDump(fileEntry.getDataFork().asBytes()));
@@ -162,6 +173,10 @@ public class FileContentWindow {
                 contentSubtypeProperty.isNotNull().get() &&
                     SUBTYPE_VIEW_MAP.get(contentSubtypeProperty.getValue()) != ViewType.TEXT,
                 contentSubtypeProperty));
+        viewAsBasic = FxUtils.createToggleButton("basic-icon.png", "BASIC", toggleGroup, _ -> {
+            this.viewTypeProperty.setValue(ViewType.BASIC);
+        });
+        viewAsBasic.disableProperty().bind(contentSubtypeProperty.isNotEqualTo(Subtype.BASIC));
         viewAsHex = FxUtils.createToggleButton("view-hex.png", "Hex", toggleGroup, _ -> {
             this.viewTypeProperty.setValue(ViewType.HEX);
         });
@@ -173,8 +188,8 @@ public class FileContentWindow {
                 fontSize = 7;
             }
             updateStatusBar();
+            Font font = Font.font("monospaced", fontSize);
             textView.getChildren().forEach(node -> {
-                Font font = Font.font("monospaced", fontSize);
                 if (node instanceof Text text) {
                     text.setFont(font);
                 }
@@ -184,8 +199,8 @@ public class FileContentWindow {
             // FIXME feels a bit hacky
             fontSize += 1;
             updateStatusBar();
+            Font font = Font.font("monospaced", fontSize);
             textView.getChildren().forEach(node -> {
-                Font font = Font.font("monospaced", fontSize);
                 if (node instanceof Text text) {
                     text.setFont(font);
                 }
@@ -198,7 +213,9 @@ public class FileContentWindow {
             clipboard.setContent(content);
         });
 
-        this.toolBar.getItems().addAll(viewAsText, viewAsHex, new Separator(), decreaseSize, increaseSize, copy);
+        this.toolBar.getItems().addAll(viewAsText, viewAsBasic, viewAsHex,
+                new Separator(),
+                decreaseSize, increaseSize, copy);
     }
 
     private void showPlainText(String value) {
@@ -240,6 +257,54 @@ public class FileContentWindow {
         textView.getChildren().add(new Text(sw.toString()));
     }
 
+    private void showBASIC(ApplesoftConverter converter) {
+        List<Text> components = new ArrayList<>();
+        converter.generate(new ApplesoftConverter.EventHandler() {
+            @Override
+            public void startOfLine(String lineNumber) {
+                components.add(new Text(lineNumber));
+            }
+            @Override
+            public void rawBytes(byte[] data) {
+                components.add(new Text("*** HEX - TODO ***"));
+            }
+            @Override
+            public void token(String text) {
+                components.add(new Text(text));
+            }
+            @Override
+            public void comment(String comment) {
+                components.add(new Text(comment));
+            }
+            @Override
+            public void endOfLine() {
+                components.add(new Text("\n"));
+            }
+            @Override
+            public void string(String string) {
+                components.add(new Text(string));
+            }
+            @Override
+            public void targetLine(String lineNumber) {
+                components.add(new Text(lineNumber));
+            }
+            @Override
+            public void identifier(String identifier) {
+                components.add(new Text(identifier));
+            }
+            @Override
+            public void number(String number) {
+                components.add(new Text(number));
+            }
+            @Override
+            public void syntax(String syntax) {
+                components.add(new Text(syntax));
+            }
+        });
+        textView.getChildren().clear();
+        textView.getChildren().addAll(components);
+    }
+
     private void updateStatusBar() {
         if (viewTypeProperty.getValue() == null) {
             statusBar.setText("...");
@@ -252,6 +317,7 @@ public class FileContentWindow {
 
     private enum ViewType {
         TEXT,
-        HEX
+        HEX,
+        BASIC
     }
 }

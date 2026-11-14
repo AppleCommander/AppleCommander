@@ -181,6 +181,7 @@ public class RDOSFileEntry implements WritableFileEntry, RDOSConstants {
     public ContentType getContentType() {
         return switch (getType()) {
             case "T" -> ContentType.HIGH_ASCII;
+            case "A" -> ContentType.APPLESOFT;
             default -> ContentType.UNKNOWN;
         };
     }

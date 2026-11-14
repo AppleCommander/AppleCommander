@@ -43,4 +43,12 @@ public class ConverterRepository {
             default -> Optional.empty();
         };
     }
+
+    /// Get the BASIC file converter.
+    public static Optional<ApplesoftConverter> getBASIC(FileEntry fileEntry) {
+        return switch(fileEntry.getContentType()) {
+            case APPLESOFT -> Optional.of(new ApplesoftConverter(fileEntry));
+            default -> Optional.empty();
+        };
+    }
 }

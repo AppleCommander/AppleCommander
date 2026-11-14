@@ -291,6 +291,7 @@ public class USDOSFileEntry implements WritableFileEntry, USDOSConstants {
     public ContentType getContentType() {
         return switch (getExtension()) {
             case "TXT", "BAT", "HLP" -> ContentType.LOW_ASCII;
+            case "BAS" -> ContentType.APPLESOFT;
             default -> ContentType.UNKNOWN;
         };
     }

@@ -217,11 +217,14 @@
   },
   {
     "code": "$21",
+    "abbreviation": "IPS",
     "description": "Instant Pascal source",
+    "contentType": "LOW_ASCII",
     "auxTypes": []
   },
   {
     "code": "$22",
+    "abbreviation": "UPV",
     "description": "UCSD Pascal Volume",
     "auxTypes": []
   },
@@ -2176,6 +2179,7 @@
     "code": "$FC",
     "abbreviation": "BAS",
     "description": "AppleSoft BASIC program",
+    "contentType": "APPLESOFT",
     "auxTypes": []
   },
   {
