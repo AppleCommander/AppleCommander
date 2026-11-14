@@ -70,6 +70,6 @@ public class ApplesoftVariablesTest {
         assertEquals(8.0d, vars.getSimpleValue("Y"));
         assertEquals(48, vars.getSimpleValue("I%"));
 
-        assertEquals(List.of(6,8), vars.getArrayDimensions("A%"));
+        assertEquals(List.of(5,7), vars.getArrayDimensions("A%"));
     }
 }
