@@ -32,6 +32,8 @@
 /// * Blocks out 40 tracks, even when the disk is a typical 35 track device.
 /// * Each track is two bytes, high byte is sectors 8..15 and low byte is sectors 0..7.
 ///   Values `FF 03` map to sectors 0-5 free and 6-15 used.
+/// * Location `$00` contains the disk label. Maximum length is 11 characters and is
+///   a zero terminated string.
 ///
 /// ## File track/sector map
 ///

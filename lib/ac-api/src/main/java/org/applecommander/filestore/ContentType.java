@@ -42,7 +42,9 @@ public enum ContentType {
     /// Low (normal) ASCII. Aka, modern text files.
     LOW_ASCII(Subtype.TEXT),
     /// Pascal TEXT file.
-    PASCAL_TEXT(Subtype.TEXT);
+    PASCAL_TEXT(Subtype.TEXT),
+    /// Applesoft VAR file.
+    APPLESOFT_VARIABLES(Subtype.BASIC_VARIABLES);
 
     public final Subtype subtype;
 
@@ -60,6 +62,8 @@ public enum ContentType {
         /// images (lots of SHK or ZIP files).
         FILE_STORE,
         /// Represents a text format, irrespective of the actual formatting of the text file.
-        TEXT
+        TEXT,
+        /// Represents stored BASIC variables.
+        BASIC_VARIABLES;
     }
 }

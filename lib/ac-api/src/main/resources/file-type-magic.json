@@ -2182,6 +2182,7 @@
     "code": "$FD",
     "abbreviation": "VAR",
     "description": "AppleSoft BASIC variables",
+    "contentType": "APPLESOFT_VARIABLES",
     "auxTypes": []
   },
   {

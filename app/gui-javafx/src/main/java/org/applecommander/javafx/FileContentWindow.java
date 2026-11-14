@@ -21,6 +21,7 @@ package org.applecommander.javafx;
 
 import atlantafx.base.controls.SelectableTextFlow;
 import com.webcodepro.applecommander.util.AppleUtil;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Insets;
@@ -34,16 +35,21 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import org.applecommander.converter.ApplesoftVariables;
 import org.applecommander.converter.ConverterRepository;
 import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.ContentType.Subtype;
 import org.applecommander.filestore.FileEntry;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class FileContentWindow {
     private static final Map<Subtype,ViewType> SUBTYPE_VIEW_MAP = Map.of(
-        Subtype.TEXT, ViewType.TEXT
+        Subtype.TEXT, ViewType.TEXT,
+        Subtype.BASIC_VARIABLES, ViewType.TEXT
     );
     private final BorderPane window;
     private final ToolBar toolBar;
@@ -119,14 +125,7 @@ public class FileContentWindow {
             viewAsText.setSelected(newValue == ViewType.TEXT);
             viewAsHex.setSelected(newValue == ViewType.HEX);
             switch (newValue) {
-                case TEXT -> {
-                    ConverterRepository.getTextConverter(fileEntry.getContentType()).ifPresentOrElse(textConverter -> {
-                        showPlainText(textConverter.read(fileEntry));
-                    }, () -> {
-                        // HEX VIEW FIXME
-                        showPlainText(AppleUtil.getHexDump(fileEntry.getDataFork().asBytes()));
-                    });
-                }
+                case TEXT -> handleTextView();
                 case HEX -> {
                     // HEX VIEW FIXME
                     showPlainText(AppleUtil.getHexDump(fileEntry.getDataFork().asBytes()));
@@ -136,12 +135,32 @@ public class FileContentWindow {
         });
     }
 
+    private void handleTextView() {
+        switch (contentSubtypeProperty.getValue()) {
+            case TEXT -> {
+                ConverterRepository.getTextConverter(fileEntry.getContentType()).ifPresent(textConverter -> {
+                    showPlainText(textConverter.read(fileEntry));
+                });
+            }
+            case BASIC_VARIABLES -> {
+                ConverterRepository.getVariables(fileEntry).ifPresent(this::showVariables);
+            }
+            default -> {
+                // HEX VIEW FIXME
+                showPlainText(AppleUtil.getHexDump(fileEntry.getDataFork().asBytes()));
+            }
+        }
+    }
+
     private void initToolbar() {
         ToggleGroup toggleGroup = new ToggleGroup();
         viewAsText = FxUtils.createToggleButton("view-text.png", "Text", toggleGroup, _ -> {
             this.viewTypeProperty.setValue(ViewType.TEXT);
         });
-        viewAsText.disableProperty().bind(contentSubtypeProperty.isNotEqualTo(Subtype.TEXT));
+        viewAsText.disableProperty().bind(Bindings.createBooleanBinding(() ->
+                contentSubtypeProperty.isNotNull().get() &&
+                    SUBTYPE_VIEW_MAP.get(contentSubtypeProperty.getValue()) != ViewType.TEXT,
+                contentSubtypeProperty));
         viewAsHex = FxUtils.createToggleButton("view-hex.png", "Hex", toggleGroup, _ -> {
             this.viewTypeProperty.setValue(ViewType.HEX);
         });
@@ -186,6 +205,38 @@ public class FileContentWindow {
         text.setFont(Font.font("monospaced", fontSize));
         textView.getChildren().clear();
         textView.getChildren().add(text);
+    }
+
+    private void showVariables(ApplesoftVariables variables) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+
+        pw.printf("Simple variables:\n");
+        var names = variables.getSimpleNames();
+        names.forEach(varName -> {
+            if (varName.endsWith("$")) {
+                pw.printf("%s = \"%s\"\n", varName, variables.getSimpleValue(varName));
+            }
+            else {
+                pw.printf("%s = %s\n", varName, variables.getSimpleValue(varName));
+            }
+        });
+        if (names.isEmpty()) {
+            pw.printf("-- None --\n");
+        }
+
+        pw.printf("\nArray variables:\n");
+        names = variables.getArrayNames();
+        names.forEach(varName -> {
+            pw.printf("DIM %s(%s)\n", varName, variables.getArrayDimensions(varName).stream()
+                    .map(Object::toString).collect(Collectors.joining(",")));
+        });
+        if (names.isEmpty()) {
+            pw.printf("-- None --\n");
+        }
+
+        textView.getChildren().clear();
+        textView.getChildren().add(new Text(sw.toString()));
     }
 
     private void updateStatusBar() {

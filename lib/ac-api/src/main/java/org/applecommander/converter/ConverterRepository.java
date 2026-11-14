@@ -20,6 +20,7 @@
 package org.applecommander.converter;
 
 import org.applecommander.filestore.ContentType;
+import org.applecommander.filestore.FileEntry;
 
 import java.util.Optional;
 
@@ -31,6 +32,14 @@ public class ConverterRepository {
             case HIGH_ASCII -> Optional.of(new ASCIIConverter(true));
             case LOW_ASCII -> Optional.of(new ASCIIConverter(false));
             case PASCAL_TEXT -> Optional.of(new PascalTextConverter());
+            default -> Optional.empty();
+        };
+    }
+
+    /// Get the variable file converter.
+    public static Optional<ApplesoftVariables> getVariables(FileEntry fileEntry) {
+        return switch (fileEntry.getContentType()) {
+            case APPLESOFT_VARIABLES -> Optional.of(new ApplesoftVariables(fileEntry));
             default -> Optional.empty();
         };
     }
