@@ -46,7 +46,9 @@ public enum ContentType {
     /// Applesoft VAR file.
     APPLESOFT_VARIABLES(Subtype.BASIC_VARIABLES),
     /// Applesoft BASIC tokenized program.
-    APPLESOFT(Subtype.BASIC);
+    APPLESOFT(Subtype.BASIC),
+    /// Apple /// Business BASIC tokenized program.
+    BUSINESS_BASIC(Subtype.BASIC);
 
     public final Subtype subtype;
 

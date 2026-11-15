@@ -93,6 +93,7 @@
     "code": "$09",
     "abbreviation": "BA3",
     "description": "Apple /// BASIC program",
+    "contentType": "BUSINESS_BASIC",
     "auxTypes": []
   },
   {

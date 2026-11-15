@@ -48,6 +48,7 @@ public class ConverterRepository {
     public static Optional<BASICConverter> getBASIC(FileEntry fileEntry) {
         return switch(fileEntry.getContentType()) {
             case APPLESOFT -> Optional.of(new ApplesoftConverter(fileEntry));
+            case BUSINESS_BASIC -> Optional.of(new BusinessBASICConverter(fileEntry));
             default -> Optional.empty();
         };
     }
