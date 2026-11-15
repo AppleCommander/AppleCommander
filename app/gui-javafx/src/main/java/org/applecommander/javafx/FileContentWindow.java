@@ -35,8 +35,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import org.applecommander.converter.ApplesoftConverter;
 import org.applecommander.converter.ApplesoftVariables;
+import org.applecommander.converter.BASICConverter;
 import org.applecommander.converter.ConverterRepository;
 import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.ContentType.Subtype;
@@ -257,9 +257,9 @@ public class FileContentWindow {
         textView.getChildren().add(new Text(sw.toString()));
     }
 
-    private void showBASIC(ApplesoftConverter converter) {
+    private void showBASIC(BASICConverter converter) {
         List<Text> components = new ArrayList<>();
-        converter.generate(new ApplesoftConverter.EventHandler() {
+        converter.generate(new BASICConverter.EventHandler() {
             @Override
             public void startOfLine(String lineNumber) {
                 components.add(new Text(lineNumber));
@@ -301,6 +301,10 @@ public class FileContentWindow {
                 components.add(new Text(syntax));
             }
         });
+
+        Font font = Font.font("monospaced", fontSize);
+        components.forEach(t -> t.setFont(font));
+
         textView.getChildren().clear();
         textView.getChildren().addAll(components);
     }

@@ -44,7 +44,7 @@ public class ApplesoftConverterTest {
                 30  PRINT  CHR$ (4);"STORE STRINGVARS"
                 """;
         ApplesoftConverter converter = new ApplesoftConverter(DataBuffer.wrap(program), 0x801);
-        ApplesoftConverter.EventHandler handler = new BasicText();
+        BASICConverter.EventHandler handler = new BasicText();
         converter.generate(handler);
         assertEquals(expectedText, handler.toString());
     }
@@ -75,12 +75,12 @@ public class ApplesoftConverterTest {
                 100  PRINT  CHR$ (4);"STORE ARRAYVARS"
                 """;
         ApplesoftConverter converter = new ApplesoftConverter(DataBuffer.wrap(program), 0x801);
-        ApplesoftConverter.EventHandler handler = new BasicText();
+        BASICConverter.EventHandler handler = new BasicText();
         converter.generate(handler);
         assertEquals(expectedText, handler.toString());
     }
 
-    public static class BasicText implements ApplesoftConverter.EventHandler {
+    public static class BasicText implements BASICConverter.EventHandler {
         private final StringBuilder program = new StringBuilder();
 
         @Override

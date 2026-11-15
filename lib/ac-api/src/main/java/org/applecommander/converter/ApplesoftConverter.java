@@ -23,15 +23,11 @@ import org.applecommander.filestore.FileEntry;
 import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.DataBuffer;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.Predicate;
-
 /// Detokenize the given Applesoft file. Generates a series of events
 /// that can be used to generate a variety of outputs. The intent is
 /// to allow a GUI to (for instance) allow line numbers to be clicked
 /// on for navigation and to allow a CLI tool to dump the file as text.
-public class ApplesoftConverter {
+public class ApplesoftConverter implements BASICConverter {
     private static final Token[] TOKENS;
     static {
         Token[] tokens = new Token[256];
@@ -54,7 +50,7 @@ public class ApplesoftConverter {
         this.program = program;
     }
 
-    public void generate(EventHandler handler) {
+    public void generate(BASICConverter.EventHandler handler) {
         program.position(0);
         int nextAddress = 0;
         State state = State.START;
@@ -117,49 +113,9 @@ public class ApplesoftConverter {
         }
     }
 
-    /// Test if this character is an ASCII character between A and Z. Java's tests are for Unicode.
-    public boolean isCharacter(int ch) {
-        return ch >= 'A' && ch <= 'Z';
-    }
-
-    /// Test if this character is a digit. Just in case the digits have extra codes for Unicode.
-    public boolean isDigit(int ch) {
-        return ch >= '0' && ch <= '9';
-    }
-
-    private String scanUntil(DataBuffer program, String start, int... endChars) {
-        Set<Integer> endValues = new HashSet<>();
-        for (int endChar : endChars) endValues.add(endChar);
-        StringBuilder sb = new StringBuilder(start);
-        int value = program.readUnsignedByte();
-        while (!endValues.contains(value)) {
-            sb.append((char)value);
-            value = program.readUnsignedByte();
-        }
-        if (value != 0) {
-            sb.append((char)value);
-        }
-        return sb.toString();
-    }
-    private String scanWhile(DataBuffer program, int firstChar, Predicate<Integer> includeFn) {
-        StringBuilder sb = new StringBuilder();
-        if (firstChar != -1) {
-            sb.append((char)firstChar);
-        }
-        int value = program.readUnsignedByte();
-        while (includeFn.test(value)) {
-            sb.append((char)value);
-            value = program.readUnsignedByte();
-        }
-        // Rewind to the character we don't want
-        program.position(program.position()-1);
-        return sb.toString();
-    }
-
     private enum State {
         START,
-        CODE,
-        TARGET
+        CODE
     }
 
     public enum Token {
@@ -292,18 +248,5 @@ public class ApplesoftConverter {
             }
             return text;
         }
-    }
-
-    public interface EventHandler {
-        void startOfLine(String lineNumber);
-        void rawBytes(byte[] data);
-        void token(String text);
-        void comment(String comment);
-        void endOfLine();
-        void string(String string);
-        void targetLine(String lineNumber);
-        void identifier(String identifier);
-        void number(String number);
-        void syntax(String syntax);
     }
 }
