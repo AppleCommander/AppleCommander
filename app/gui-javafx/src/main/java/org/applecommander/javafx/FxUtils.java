@@ -23,6 +23,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -156,4 +157,14 @@ public class FxUtils {
 
         return alert.showAndWait().map(ButtonType.YES::equals).orElse(false);
     }
+
+    // Source - https://stackoverflow.com/a/23518314
+    public static void centerNodeInScrollPane(ScrollPane scrollPane, Node node) {
+        double h = scrollPane.getContent().getBoundsInLocal().getHeight();
+        double y = (node.getBoundsInParent().getMaxY() +
+                node.getBoundsInParent().getMinY()) / 2.0;
+        double v = scrollPane.getViewportBounds().getHeight();
+        scrollPane.setVvalue(scrollPane.getVmax() * ((y - 0.5 * v) / (h - v)));
+    }
+
 }

@@ -31,7 +31,7 @@ public interface BASICConverter {
 
     /// Test if this character is an ASCII character between A and Z. Java's tests are for Unicode.
     default boolean isCharacter(int ch) {
-        return ch >= 'A' && ch <= 'Z';
+        return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
     }
 
     /// Test if this character is a digit. Just in case the digits have extra codes for Unicode.

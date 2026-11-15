@@ -26,6 +26,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.Clipboard;
@@ -45,6 +46,7 @@ import org.applecommander.filestore.FileEntry;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -59,6 +61,7 @@ public class FileContentWindow {
     private final ToolBar toolBar;
     private final Label statusBar;
     private final StackPane content;
+    private final ScrollPane textScrollPane;
     private final SelectableTextFlow textView;
 
     private Stage stage;
@@ -87,13 +90,13 @@ public class FileContentWindow {
         this.fileEntry = fileEntry;
         this.fontSize = Font.getDefault().getSize();
 
-        ScrollPane scrollPane = new ScrollPane(content);
-        scrollPane.setFitToHeight(true);
-        scrollPane.setFitToWidth(true);
+        textScrollPane = new ScrollPane(content);
+        textScrollPane.setFitToHeight(true);
+        textScrollPane.setFitToWidth(true);
 
         this.window = new BorderPane();
         this.window.setTop(toolBar);
-        this.window.setCenter(scrollPane);
+        this.window.setCenter(textScrollPane);
         this.window.setBottom(statusBar);
 
         initView();
@@ -258,55 +261,11 @@ public class FileContentWindow {
     }
 
     private void showBASIC(BASICConverter converter) {
-        List<Text> components = new ArrayList<>();
-        converter.generate(new BASICConverter.EventHandler() {
-            @Override
-            public void startOfLine(String lineNumber) {
-                components.add(new Text(lineNumber));
-            }
-            @Override
-            public void rawBytes(byte[] data) {
-                components.add(new Text("*** HEX - TODO ***"));
-            }
-            @Override
-            public void token(String text) {
-                components.add(new Text(text));
-            }
-            @Override
-            public void comment(String comment) {
-                components.add(new Text(comment));
-            }
-            @Override
-            public void endOfLine() {
-                components.add(new Text("\n"));
-            }
-            @Override
-            public void string(String string) {
-                components.add(new Text(string));
-            }
-            @Override
-            public void targetLine(String lineNumber) {
-                components.add(new Text(lineNumber));
-            }
-            @Override
-            public void identifier(String identifier) {
-                components.add(new Text(identifier));
-            }
-            @Override
-            public void number(String number) {
-                components.add(new Text(number));
-            }
-            @Override
-            public void syntax(String syntax) {
-                components.add(new Text(syntax));
-            }
-        });
-
-        Font font = Font.font("monospaced", fontSize);
-        components.forEach(t -> t.setFont(font));
+        BASICEventHandler handler = new BASICEventHandler(fontSize, textScrollPane);
+        converter.generate(handler);
 
         textView.getChildren().clear();
-        textView.getChildren().addAll(components);
+        textView.getChildren().addAll(handler.getComponents());
     }
 
     private void updateStatusBar() {
@@ -315,7 +274,7 @@ public class FileContentWindow {
             return;
         }
         switch (viewTypeProperty.getValue()) {
-            case TEXT, HEX -> statusBar.setText(String.format("Font size: %1.0f pt", fontSize));
+            case TEXT, HEX, BASIC -> statusBar.setText(String.format("Font size: %1.0f pt", fontSize));
         }
     }
 
@@ -323,5 +282,89 @@ public class FileContentWindow {
         TEXT,
         HEX,
         BASIC
+    }
+
+    public static class BASICEventHandler implements BASICConverter.EventHandler {
+        private final Font font;
+        private final List<Node> components = new ArrayList<>();
+        private final ScrollPane scrollPane;
+        private final Map<String,Node> lineNumbers = new HashMap<>();
+
+        public BASICEventHandler(double fontSize, ScrollPane scrollPane) {
+            this.font = Font.font("monospaced", fontSize);
+            this.scrollPane = scrollPane;
+        }
+
+        public List<Node> getComponents() {
+            return components;
+        }
+        private void addText(String value) {
+            if (components.isEmpty() || !(components.getLast() instanceof Text text)) {
+                addNewText(value);
+            }
+            else {
+                text.setText(text.getText() + value);
+            }
+        }
+        private Node addNewText(String value) {
+            Text text = new Text(value);
+            text.setFont(font);
+            components.add(text);
+            return text;
+        }
+        private void addLink(String value) {
+            Hyperlink link = new Hyperlink();
+            link.setFont(font);
+            link.setText(value);
+            link.setOnAction(_ -> {
+                Node node = lineNumbers.get(value.trim());
+                if (node != null) {
+                    FxUtils.centerNodeInScrollPane(scrollPane, node);
+                }
+            });
+            components.add(link);
+        }
+
+        @Override
+        public void startOfLine(String lineNumber) {
+            Node node = addNewText(lineNumber);
+            lineNumbers.put(lineNumber.trim(), node);
+        }
+        @Override
+        public void rawBytes(byte[] data) {
+            addText("*** HEX - TODO ***");
+        }
+        @Override
+        public void token(String text) {
+            addText(text);
+        }
+        @Override
+        public void comment(String comment) {
+            addText(comment);
+        }
+        @Override
+        public void endOfLine() {
+            addText("\n");
+        }
+        @Override
+        public void string(String string) {
+            addText(string);
+        }
+        @Override
+        public void targetLine(String lineNumber) {
+            addLink(lineNumber);
+        }
+        @Override
+        public void identifier(String identifier) {
+            addText(identifier);
+        }
+        @Override
+        public void number(String number) {
+            addText(number);
+        }
+        @Override
+        public void syntax(String syntax) {
+            addText(syntax);
+        }
     }
 }

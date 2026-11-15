@@ -55,6 +55,7 @@ public class ApplesoftConverter implements BASICConverter {
         int nextAddress = 0;
         State state = State.START;
         boolean done = false;
+        boolean inGotoGosub = false;
         while (program.hasRemaining() && !done) {
             switch (state) {
                 case START -> {
@@ -66,6 +67,7 @@ public class ApplesoftConverter implements BASICConverter {
                         int lineNumber = program.readUnsignedShort();
                         handler.startOfLine(lineNumber + " ");
                         state = State.CODE;
+                        inGotoGosub = false;
                     }
                 }
                 case CODE -> {
@@ -89,7 +91,7 @@ public class ApplesoftConverter implements BASICConverter {
                     }
                     else if (token == Token.GOTO || token == Token.GOSUB) {
                         handler.token(" " + token.text() + " ");
-                        handler.targetLine(scanWhile(program, -1, Character::isDigit));
+                        inGotoGosub = true;
                     }
                     else if (token != null) {
                         handler.token(" " + token.text() + " ");
@@ -103,10 +105,16 @@ public class ApplesoftConverter implements BASICConverter {
                                 ch -> isCharacter(ch) || isDigit(ch) || ch == '$' || ch == '%'));
                     }
                     else if (isDigit(value) || value == '.') {
-                        handler.number(scanWhile(program, value, ch -> isDigit(ch) || ch == '.' || ch == '-'));
+                        if (inGotoGosub && isDigit(value)) {
+                            handler.targetLine(scanWhile(program, value, Character::isDigit));
+                        }
+                        else {
+                            handler.number(scanWhile(program, value, ch -> isDigit(ch) || ch == '.' || ch == '-'));
+                        }
                     }
                     else {
                         handler.syntax(Character.toString(value));
+                        if (value != ',') inGotoGosub = false;
                     }
                 }
             }

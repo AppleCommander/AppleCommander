@@ -134,6 +134,7 @@ public class BusinessBASICConverter implements BASICConverter {
         boolean done = false;
         int indent = 0;
         boolean needsSpace = false;
+        boolean inGotoGosub = false;
         while (program.hasRemaining() && !done) {
             switch (state) {
                 case START -> {
@@ -146,6 +147,7 @@ public class BusinessBASICConverter implements BASICConverter {
                         handler.startOfLine(lineNumber + Strings.repeat(" ", indent+2));
                         state = State.CODE;
                         needsSpace = false;
+                        inGotoGosub = false;
                     }
                 }
                 case CODE -> {
@@ -167,7 +169,8 @@ public class BusinessBASICConverter implements BASICConverter {
                         token = TOKENS[value & 0x7f];
                     }
 
-                    if (needsSpace && value != ':' && value != '=' && value != ',' && value != ';' && value != '(' && value != ')') {
+                    final String skipSpace = ":=,;()+-*/^";
+                    if (needsSpace && skipSpace.indexOf(value) == -1) {
                         handler.syntax(" ");
                     }
                     needsSpace = false;
@@ -179,9 +182,9 @@ public class BusinessBASICConverter implements BASICConverter {
                         needsSpace = true;
                     }
                     else if (value == GOTO || value == GOSUB) {
-                        handler.token(token + " ");
-                        handler.targetLine(scanWhile(program, -1, Character::isDigit));
+                        handler.token(token);
                         needsSpace = true;
+                        inGotoGosub = true;
                     }
                     else if (token != null) {
                         handler.token(token);
@@ -193,14 +196,21 @@ public class BusinessBASICConverter implements BASICConverter {
                     else if (isCharacter(value)) {
                         handler.identifier(scanWhile(program, value,
                                 ch -> isCharacter(ch) || isDigit(ch) || ch == '$' || ch == '%'));
+                        needsSpace = true;
                     }
                     else if (isDigit(value) || value == '.') {
-                        handler.number(scanWhile(program, value, ch -> isDigit(ch) || ch == '.' || ch == '-'));
+                        if (inGotoGosub && isDigit(value)) {
+                            handler.targetLine(scanWhile(program, value, Character::isDigit));
+                        }
+                        else {
+                            handler.number(scanWhile(program, value, ch -> isDigit(ch) || ch == '.' || ch == '-'));
+                        }
                         needsSpace = true;
                     }
                     else {
                         handler.syntax(Character.toString(value));
                         needsSpace = value == ')';
+                        if (value != ',') inGotoGosub = false;
                     }
                 }
             }
