@@ -44,7 +44,11 @@ public enum ContentType {
     /// Pascal TEXT file.
     PASCAL_TEXT(Subtype.TEXT),
     /// Applesoft VAR file.
-    APPLESOFT_VARIABLES(Subtype.BASIC_VARIABLES);
+    APPLESOFT_VARIABLES(Subtype.BASIC_VARIABLES),
+    /// Applesoft BASIC tokenized program.
+    APPLESOFT(Subtype.BASIC),
+    /// Apple /// Business BASIC tokenized program.
+    BUSINESS_BASIC(Subtype.BASIC);
 
     public final Subtype subtype;
 
@@ -64,6 +68,8 @@ public enum ContentType {
         /// Represents a text format, irrespective of the actual formatting of the text file.
         TEXT,
         /// Represents stored BASIC variables.
-        BASIC_VARIABLES;
+        BASIC_VARIABLES,
+        /// Represents a generalized BASIC program.
+        BASIC;
     }
 }

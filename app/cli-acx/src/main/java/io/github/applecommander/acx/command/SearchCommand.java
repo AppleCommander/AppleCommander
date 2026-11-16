@@ -75,6 +75,11 @@ public class SearchCommand extends ReusableCommandOptions {
             addCriteria(Integer::compare, filesize, integerConverter::convert, FileEntry::getSize);
         }
     }
+    @Option(names = "--format", description = "File system format.", paramLabel = "FORMAT")
+    private void applyFormatFilter(String format) {
+        Objects.requireNonNull(format);
+        addCriteria(String.CASE_INSENSITIVE_ORDER, format, s -> s, e -> e.getFormattedDisk().getFormat());
+    }
     @Option(names = "--type", description = "File type.", paramLabel = "TYPE")
     private void applyTypeFilter(String filetype) {
         Objects.requireNonNull(filetype);
