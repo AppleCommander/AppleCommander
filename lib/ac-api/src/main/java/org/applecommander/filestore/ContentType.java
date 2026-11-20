@@ -48,7 +48,15 @@ public enum ContentType {
     /// Applesoft BASIC tokenized program.
     APPLESOFT(Subtype.BASIC),
     /// Apple /// Business BASIC tokenized program.
-    BUSINESS_BASIC(Subtype.BASIC);
+    BUSINESS_BASIC(Subtype.BASIC),
+    /// 6502/65C02 application.
+    BINARY_65C02(Subtype.DISASSEMBLY),
+    /// Apple Pascal p-code application.
+    BINARY_APPLE_PASCAL(Subtype.DISASSEMBLY),
+    /// Z80 application.
+    BINARY_Z80(Subtype.DISASSEMBLY),
+    /// Binary file. Unknown subtype.
+    BINARY(Subtype.NONE);
 
     public final Subtype subtype;
 
@@ -70,6 +78,9 @@ public enum ContentType {
         /// Represents stored BASIC variables.
         BASIC_VARIABLES,
         /// Represents a generalized BASIC program.
-        BASIC;
+        BASIC,
+        /// Represents a binary application that is expected to be able to be disassembled. Note that content type
+        /// should be used to determine specific CPU.
+        DISASSEMBLY;
     }
 }

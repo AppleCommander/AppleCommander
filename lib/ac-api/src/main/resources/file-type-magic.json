@@ -15,6 +15,7 @@
     "code": "$02",
     "abbreviation": "PCD",
     "description": "Pascal code",
+    "contentType": "BINARY_APPLE_PASCAL",
     "auxTypes": []
   },
   {
@@ -46,6 +47,7 @@
     "code": "$06",
     "abbreviation": "BIN",
     "description": "Binary [Load address in bank 0]",
+    "contentType": "BINARY",
     "auxTypes": []
   },
   {
@@ -121,6 +123,7 @@
     "code": "$0C",
     "abbreviation": "SOS",
     "description": "Apple /// SOS System",
+    "contentType": "BINARY_65C02",
     "auxTypes": []
   },
   {
@@ -2200,6 +2203,7 @@
     "code": "$FF",
     "abbreviation": "SYS",
     "description": "ProDOS 8 application",
+    "contentType": "BINARY_65C02",
     "auxTypes": []
   }
 ]
