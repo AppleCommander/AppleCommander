@@ -42,6 +42,7 @@ import javafx.stage.Stage;
 import org.applecommander.applesingle.AppleSingle;
 import org.applecommander.bastools.api.BasTools;
 import org.applecommander.capability.Capability;
+import org.applecommander.disassembler.api.Disassembler;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.FileStores;
 import org.applecommander.javafx.settings.Settings;
@@ -469,7 +470,8 @@ public class FileStoreWindow {
                 .table(2,
                         "AppleSingle:", AppleSingle.VERSION,
                         "ShrinkIt:", NuFileArchive.VERSION,
-                        "BASIC Tools:", BasTools.VERSION)
+                        "BASIC Tools:", BasTools.VERSION,
+                        "Disassembler:", Disassembler.class.getPackage().getImplementationVersion())
                 .get());
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK);
         dialog.showAndWait();

@@ -8,6 +8,7 @@ module org.applecommander.javafx {
     requires org.applecommander.applesingle;
     requires org.applecommander.bastools;
     requires org.applecommander.shrinkit;
+    requires org.applecommander.disassembler;
 
     opens org.applecommander.javafx to javafx.graphics;
     opens org.applecommander.javafx.settings to javafx.graphics;

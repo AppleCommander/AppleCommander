@@ -33,6 +33,7 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
@@ -68,6 +69,7 @@ public class FileContentWindow {
     private Stage stage;
     private ToggleButton viewAsText;
     private ToggleButton viewAsBasic;
+    private ToggleButton viewAsAssembly;
     private ToggleButton viewAsHex;
     private final ObjectProperty<ContentType> contentTypeProperty = new SimpleObjectProperty<>();
     private final ObjectProperty<Subtype> contentSubtypeProperty = new SimpleObjectProperty<>();
@@ -179,10 +181,30 @@ public class FileContentWindow {
                 contentSubtypeProperty.isNotNull().get() &&
                     SUBTYPE_VIEW_MAP.get(contentSubtypeProperty.getValue()) != ViewType.TEXT,
                 contentSubtypeProperty));
-        viewAsBasic = FxUtils.createToggleButton("basic-icon.png", "BASIC", toggleGroup, _ -> {
+        viewAsBasic = FxUtils.createToggleButton("view-basic.png", "BASIC", toggleGroup, _ -> {
             this.viewTypeProperty.setValue(ViewType.BASIC);
         });
         viewAsBasic.disableProperty().bind(contentSubtypeProperty.isNotEqualTo(Subtype.BASIC));
+        viewAsAssembly = FxUtils.createToggleButton("view-disassembly.png", "-", toggleGroup, _ -> {
+            // TODO
+        });
+        contentTypeProperty.addListener(_ -> {
+            final String assemblyText = switch (contentTypeProperty.getValue()) {
+                case BINARY_APPLE_PASCAL -> "p-code";
+                case BINARY_Z80 -> "Z80";
+                default -> "65C02";
+            };
+            if (viewAsAssembly.getGraphic() instanceof VBox vbox) {
+                for (Node node : vbox.getChildren()) {
+                    if (node instanceof Label label) {
+                        label.setText(assemblyText);
+                        break;
+                    }
+                }
+            }
+        });
+        viewAsAssembly.disableProperty().bind(contentSubtypeProperty.isNotEqualTo(Subtype.DISASSEMBLY)
+                .and(contentTypeProperty.isNotEqualTo(ContentType.BINARY)));
         viewAsHex = FxUtils.createToggleButton("view-hex.png", "Hex", toggleGroup, _ -> {
             this.viewTypeProperty.setValue(ViewType.HEX);
         });
@@ -224,7 +246,7 @@ public class FileContentWindow {
         basicFormatButton.visibleProperty().bind(contentSubtypeProperty.isEqualTo(Subtype.BASIC));
         basicFormatButton.managedProperty().bind(basicFormatButton.visibleProperty());
 
-        this.toolBar.getItems().addAll(viewAsText, viewAsBasic, viewAsHex,
+        this.toolBar.getItems().addAll(viewAsText, viewAsBasic, viewAsAssembly, viewAsHex,
                 new Separator(),
                 decreaseSize, increaseSize, copy,
                 new Separator(),
@@ -285,14 +307,15 @@ public class FileContentWindow {
             return;
         }
         switch (viewTypeProperty.getValue()) {
-            case TEXT, HEX, BASIC -> statusBar.setText(String.format("Font size: %1.0f pt", fontSize));
+            case TEXT, HEX, BASIC, DISASSEMBLY -> statusBar.setText(String.format("Font size: %1.0f pt", fontSize));
         }
     }
 
     private enum ViewType {
         TEXT,
         HEX,
-        BASIC
+        BASIC,
+        DISASSEMBLY
     }
 
     public static class BASICEventHandler implements BASICConverter.EventHandler {
