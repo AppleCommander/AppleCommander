@@ -17,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.applecommander.javafx;
+package org.applecommander.javafx.filestore.view;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -38,6 +38,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import org.applecommander.filestore.FileStore;
+import org.applecommander.javafx.filestore.FileStoreWindow;
+import org.applecommander.javafx.filestore.ViewMode;
 import org.applecommander.usage.ComputedBlockUsage;
 import org.applecommander.usage.DiskUsage;
 import org.applecommander.usage.SectorUsage;

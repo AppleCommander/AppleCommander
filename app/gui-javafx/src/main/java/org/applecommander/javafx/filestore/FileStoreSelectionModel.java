@@ -17,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.applecommander.javafx;
+package org.applecommander.javafx.filestore;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
@@ -47,11 +47,11 @@ public class FileStoreSelectionModel extends SingleSelectionModel<FileStore> {
     public void clearFileStores() {
         this.clearSelection();
         this.fileStores.clear();
-        this.sizeProperty.set(fileStores.size());
+        this.sizeProperty.set(0);
     }
 
     @Override
-    protected FileStore getModelItem(int index) {
+    public FileStore getModelItem(int index) {
         if (index >= 0 && index < fileStores.size()) {
             return fileStores.get(index);
         }
@@ -59,7 +59,7 @@ public class FileStoreSelectionModel extends SingleSelectionModel<FileStore> {
     }
 
     @Override
-    protected int getItemCount() {
+    public int getItemCount() {
         return fileStores.size();
     }
 

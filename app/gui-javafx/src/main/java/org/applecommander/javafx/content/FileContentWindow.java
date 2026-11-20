@@ -17,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.applecommander.javafx;
+package org.applecommander.javafx.content;
 
 import atlantafx.base.controls.SelectableTextFlow;
 import com.webcodepro.applecommander.util.AppleUtil;
@@ -44,6 +44,7 @@ import org.applecommander.converter.ConverterRepository;
 import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.ContentType.Subtype;
 import org.applecommander.filestore.FileEntry;
+import org.applecommander.javafx.FxUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

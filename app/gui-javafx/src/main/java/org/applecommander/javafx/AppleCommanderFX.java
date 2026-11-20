@@ -23,6 +23,7 @@ import com.webcodepro.applecommander.ui.AppleCommander;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
+import org.applecommander.javafx.filestore.FileStoreWindow;
 import org.applecommander.javafx.settings.Settings;
 import org.applecommander.javafx.settings.ThemeSelection;
 
