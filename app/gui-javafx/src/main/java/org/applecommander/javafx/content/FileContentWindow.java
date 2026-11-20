@@ -19,108 +19,91 @@
  */
 package org.applecommander.javafx.content;
 
-import atlantafx.base.controls.SelectableTextFlow;
-import com.webcodepro.applecommander.util.AppleUtil;
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import org.applecommander.converter.ApplesoftVariables;
-import org.applecommander.converter.BASICConverter;
-import org.applecommander.converter.ConverterRepository;
-import org.applecommander.filestore.ContentType;
-import org.applecommander.filestore.ContentType.Subtype;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.javafx.FxUtils;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import org.applecommander.javafx.content.view.BASICView;
+import org.applecommander.javafx.content.view.HexView;
+import org.applecommander.javafx.content.view.TextView;
+import org.applecommander.javafx.content.view.VariablesView;
 
 public class FileContentWindow {
-    private static final Map<Subtype,ViewType> SUBTYPE_VIEW_MAP = Map.of(
-        Subtype.TEXT, ViewType.TEXT,
-        Subtype.BASIC_VARIABLES, ViewType.TEXT,
-        Subtype.BASIC, ViewType.BASIC
-    );
     private final BorderPane window;
     private final ToolBar toolBar;
     private final Label statusBar;
-    private final StackPane content;
-    private final ScrollPane textScrollPane;
-    private final SelectableTextFlow textView;
+    private final ScrollPane scrollPane;
+    private final ToggleGroup toggleGroup;
+    private final HBox viewSelectionButtons;
+    private final HBox viewCustomizationButtons;
 
     private Stage stage;
-    private ToggleButton viewAsText;
-    private ToggleButton viewAsBasic;
-    private ToggleButton viewAsAssembly;
-    private ToggleButton viewAsHex;
-    private final ObjectProperty<ContentType> contentTypeProperty = new SimpleObjectProperty<>();
-    private final ObjectProperty<Subtype> contentSubtypeProperty = new SimpleObjectProperty<>();
-    private final ObjectProperty<ViewType> viewTypeProperty = new SimpleObjectProperty<>();
-
-    private ToggleButton basicFormatButton;
-    private double fontSize;
+    private final DoubleProperty fontSizeProperty = new SimpleDoubleProperty();
 
     private final FileEntry fileEntry;
 
     public FileContentWindow(FileEntry fileEntry) {
         this.toolBar = new ToolBar();
 
-        this.textView = new SelectableTextFlow();
-        this.textView.setPadding(new Insets(10));
-
-        this.content = new StackPane(textView);
-
         this.statusBar = new Label();
         this.statusBar.setPadding(new Insets(6));
         this.statusBar.setAlignment(Pos.CENTER_LEFT);
 
         this.fileEntry = fileEntry;
-        this.fontSize = Font.getDefault().getSize() + 1.0;
+        this.fontSizeProperty.set(Font.getDefault().getSize() + 1.0);
 
-        textScrollPane = new ScrollPane(content);
-        textScrollPane.setFitToHeight(true);
-        textScrollPane.setFitToWidth(true);
+        this.scrollPane = new ScrollPane();
+        this.scrollPane.setFitToHeight(true);
+        this.scrollPane.setFitToWidth(true);
+        this.scrollPane.setPadding(new Insets(10));
 
         this.window = new BorderPane();
         this.window.setTop(toolBar);
-        this.window.setCenter(textScrollPane);
+        this.window.setCenter(scrollPane);
         this.window.setBottom(statusBar);
 
-        initView();
+        this.viewSelectionButtons = new HBox();
+        this.viewSelectionButtons.setSpacing(0);
+        this.viewCustomizationButtons = new HBox();
+        this.viewCustomizationButtons.setSpacing(6);
+
         initToolbar();
+        this.toggleGroup = new ToggleGroup();
+        switch (fileEntry.getContentType().subtype) {
+            case BASIC -> addView(new BASICView(this));
+            case BASIC_VARIABLES -> addView(new VariablesView(this));
+            case TEXT -> addView(new TextView(this));
+        }
+        addView(new HexView(this));
         updateStatusBar();
     }
 
-    public void show() {
-        ContentType contentType = fileEntry.getContentType();
-        this.contentTypeProperty.setValue(contentType);
+    public FileEntry getFileEntry() {
+        return fileEntry;
+    }
+    public DoubleProperty fontSizeProperty() {
+        return fontSizeProperty;
+    }
+    public ScrollPane getScrollPane() {
+        return scrollPane;
+    }
 
+    public void show() {
         Scene scene = new Scene(window, 800, 500);
         stage = new Stage();
         stage.setScene(scene);
         stage.setTitle(String.format("%s - %s", fileEntry.getFileStore().getLabel(), fileEntry.getName()));
         stage.toFront();
         stage.requestFocus();
-        this.initView();
         stage.show();
     }
 
@@ -128,304 +111,56 @@ public class FileContentWindow {
         stage.close();
     }
 
-    private void initView() {
-        this.contentTypeProperty.addListener((_, _, newValue) -> {
-            contentSubtypeProperty.setValue(newValue.subtype);
-            viewTypeProperty.setValue(SUBTYPE_VIEW_MAP.getOrDefault(newValue.subtype, ViewType.HEX));
+    public void addView(FileContentView view) {
+        FileContentView.ButtonConfig config = view.getButtonConfig();
+        ToggleButton toggleButton = FxUtils.createToggleButton(config.imageName(), config.text(), toggleGroup, _ -> {
+            this.scrollPane.setContent(view.getViewNode());
         });
-        this.textView.visibleProperty().bind(viewTypeProperty.isEqualTo(ViewType.TEXT)
-                .or(viewTypeProperty.isEqualTo(ViewType.HEX))
-                .or(viewTypeProperty.isEqualTo(ViewType.BASIC)));
-        this.textView.managedProperty().bind(textView.visibleProperty());
-
-        this.viewTypeProperty.addListener((_, _, newValue) -> {
-            viewAsText.setSelected(newValue == ViewType.TEXT);
-            viewAsBasic.setSelected(newValue == ViewType.BASIC);
-            viewAsHex.setSelected(newValue == ViewType.HEX);
-            switch (newValue) {
-                case TEXT, BASIC -> handleTextView();
-                case HEX -> {
-                    // HEX VIEW FIXME
-                    showPlainText(AppleUtil.getHexDump(fileEntry.getDataFork().asBytes()));
-                }
-            }
-            updateStatusBar();
+        this.viewSelectionButtons.getChildren().add(toggleButton);
+        view.getAdditionalToolbarButtons().ifPresent(node -> {
+            this.viewCustomizationButtons.getChildren().add(node);
         });
+        if (this.scrollPane.getContent() == null) {
+            this.scrollPane.setContent(view.getViewNode());
+        }
     }
 
-    private void handleTextView() {
-        switch (contentSubtypeProperty.getValue()) {
-            case TEXT -> {
-                ConverterRepository.getTextConverter(fileEntry.getContentType()).ifPresent(textConverter -> {
-                    showPlainText(textConverter.read(fileEntry));
-                });
-            }
-            case BASIC_VARIABLES -> {
-                ConverterRepository.getVariables(fileEntry).ifPresent(this::showVariables);
-            }
-            case BASIC -> {
-                ConverterRepository.getBASIC(fileEntry).ifPresent(this::showBASIC);
-            }
-            default -> {
-                // HEX VIEW FIXME
-                showPlainText(AppleUtil.getHexDump(fileEntry.getDataFork().asBytes()));
-            }
+    private void increaseFontSize(ActionEvent event) {
+        double fontSize = fontSizeProperty.getValue();
+        fontSize -= 1;
+        if (fontSize < 7) {
+            fontSize = 7;
         }
+        fontSizeProperty.setValue(fontSize);
+        updateStatusBar();
+    }
+
+    private void decreaseFontSize(ActionEvent event) {
+        double fontSize = fontSizeProperty.getValue();
+        fontSize += 1;
+        fontSizeProperty.setValue(fontSize);
+        updateStatusBar();
     }
 
     private void initToolbar() {
-        ToggleGroup toggleGroup = new ToggleGroup();
-        viewAsText = FxUtils.createToggleButton("view-text.png", "Text", toggleGroup, _ -> {
-            this.viewTypeProperty.setValue(ViewType.TEXT);
-        });
-        viewAsText.disableProperty().bind(Bindings.createBooleanBinding(() ->
-                contentSubtypeProperty.isNotNull().get() &&
-                    SUBTYPE_VIEW_MAP.get(contentSubtypeProperty.getValue()) != ViewType.TEXT,
-                contentSubtypeProperty));
-        viewAsBasic = FxUtils.createToggleButton("view-basic.png", "BASIC", toggleGroup, _ -> {
-            this.viewTypeProperty.setValue(ViewType.BASIC);
-        });
-        viewAsBasic.disableProperty().bind(contentSubtypeProperty.isNotEqualTo(Subtype.BASIC));
-        viewAsAssembly = FxUtils.createToggleButton("view-disassembly.png", "-", toggleGroup, _ -> {
-            // TODO
-        });
-        contentTypeProperty.addListener(_ -> {
-            final String assemblyText = switch (contentTypeProperty.getValue()) {
-                case BINARY_APPLE_PASCAL -> "p-code";
-                case BINARY_Z80 -> "Z80";
-                default -> "65C02";
-            };
-            if (viewAsAssembly.getGraphic() instanceof VBox vbox) {
-                for (Node node : vbox.getChildren()) {
-                    if (node instanceof Label label) {
-                        label.setText(assemblyText);
-                        break;
-                    }
-                }
-            }
-        });
-        viewAsAssembly.disableProperty().bind(contentSubtypeProperty.isNotEqualTo(Subtype.DISASSEMBLY)
-                .and(contentTypeProperty.isNotEqualTo(ContentType.BINARY)));
-        viewAsHex = FxUtils.createToggleButton("view-hex.png", "Hex", toggleGroup, _ -> {
-            this.viewTypeProperty.setValue(ViewType.HEX);
-        });
-
-        Button decreaseSize = FxUtils.createButton("minus.png", "Decrease", _ -> {
-            // FIXME feels a bit hacky
-            fontSize -= 1;
-            if (fontSize < 7) {
-                fontSize = 7;
-            }
-            updateStatusBar();
-            Font font = Font.font("monospaced", fontSize);
-            textView.getChildren().forEach(node -> {
-                if (node instanceof Text text) {
-                    text.setFont(font);
-                }
-            });
-        });
-        Button increaseSize = FxUtils.createButton("plus.png", "Increase", _ -> {
-            // FIXME feels a bit hacky
-            fontSize += 1;
-            updateStatusBar();
-            Font font = Font.font("monospaced", fontSize);
-            textView.getChildren().forEach(node -> {
-                if (node instanceof Text text) {
-                    text.setFont(font);
-                }
-            });
-        });
+        Button decreaseSize = FxUtils.createButton("minus.png", "Decrease", this::increaseFontSize);
+        Button increaseSize = FxUtils.createButton("plus.png", "Increase", this::decreaseFontSize);
 
         Button copy = FxUtils.createButton("copy.png", "Copy", _ -> {
-            Clipboard clipboard = Clipboard.getSystemClipboard();
-            ClipboardContent content = new ClipboardContent();
-            content.putString(textView.getContentAsString());
-            clipboard.setContent(content);
+            if (this.scrollPane.getContent() instanceof FileContentView view) {
+                view.copy();
+            }
         });
-        basicFormatButton = FxUtils.createOnOffButton("basic-list-normal.png", "basic-list-pretty.png",
-                "Listing", e -> handleTextView());
-        basicFormatButton.visibleProperty().bind(contentSubtypeProperty.isEqualTo(Subtype.BASIC));
-        basicFormatButton.managedProperty().bind(basicFormatButton.visibleProperty());
 
-        this.toolBar.getItems().addAll(viewAsText, viewAsBasic, viewAsAssembly, viewAsHex,
+        this.toolBar.getItems().addAll(this.viewSelectionButtons,
                 new Separator(),
                 decreaseSize, increaseSize, copy,
                 new Separator(),
-                basicFormatButton);
-    }
-
-    private void showPlainText(String value) {
-        Text text = new Text(value);
-        text.setFont(Font.font("monospaced", fontSize));
-        textView.getChildren().clear();
-        textView.getChildren().add(text);
-    }
-
-    private void showVariables(ApplesoftVariables variables) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-
-        pw.printf("Simple variables:\n");
-        var names = variables.getSimpleNames();
-        names.forEach(varName -> {
-            if (varName.endsWith("$")) {
-                pw.printf("%s = \"%s\"\n", varName, variables.getSimpleValue(varName));
-            }
-            else {
-                pw.printf("%s = %s\n", varName, variables.getSimpleValue(varName));
-            }
-        });
-        if (names.isEmpty()) {
-            pw.printf("-- None --\n");
-        }
-
-        pw.printf("\nArray variables:\n");
-        names = variables.getArrayNames();
-        names.forEach(varName -> {
-            pw.printf("DIM %s(%s)\n", varName, variables.getArrayDimensions(varName).stream()
-                    .map(Object::toString).collect(Collectors.joining(",")));
-        });
-        if (names.isEmpty()) {
-            pw.printf("-- None --\n");
-        }
-
-        textView.getChildren().clear();
-        textView.getChildren().add(new Text(sw.toString()));
-    }
-
-    private void showBASIC(BASICConverter converter) {
-        boolean prettyPrint = basicFormatButton.isSelected();
-        BASICEventHandler handler = new BASICEventHandler(fontSize, textScrollPane, prettyPrint);
-        converter.generate(handler);
-
-        textView.getChildren().clear();
-        textView.getChildren().addAll(handler.getComponents());
+                this.viewCustomizationButtons);
     }
 
     private void updateStatusBar() {
-        if (viewTypeProperty.getValue() == null) {
-            statusBar.setText("...");
-            return;
-        }
-        switch (viewTypeProperty.getValue()) {
-            case TEXT, HEX, BASIC, DISASSEMBLY -> statusBar.setText(String.format("Font size: %1.0f pt", fontSize));
-        }
-    }
-
-    private enum ViewType {
-        TEXT,
-        HEX,
-        BASIC,
-        DISASSEMBLY
-    }
-
-    public static class BASICEventHandler implements BASICConverter.EventHandler {
-        private final Font normalFont;
-        private final Font boldFont;
-        private final List<Node> components = new ArrayList<>();
-        private final ScrollPane scrollPane;
-        private final Map<String,Node> lineNumbers = new HashMap<>();
-        private final boolean prettyPrint;
-        private boolean startOfLine;
-
-        public BASICEventHandler(double fontSize, ScrollPane scrollPane, boolean prettyPrint) {
-            this.normalFont = Font.font("monospaced", fontSize);
-            this.boldFont = Font.font("monospaced", FontWeight.BOLD, fontSize);
-            this.scrollPane = scrollPane;
-            this.prettyPrint = prettyPrint;
-        }
-
-        public List<Node> getComponents() {
-            return components;
-        }
-        private void addText(String value, Font font) {
-            if (startOfLine) {
-                value = value.stripLeading();
-                startOfLine = false;
-            }
-            if (components.isEmpty() || !(components.getLast() instanceof Text text)) {
-                addNewText(value, font);
-            }
-            else if (text.getFont() == font) {
-                text.setText(text.getText() + value);
-            }
-            else {
-                addNewText(value, font);
-            }
-        }
-        private Node addNewText(String value, Font font) {
-            if (startOfLine) {
-                value = value.stripLeading();
-                startOfLine = false;
-            }
-            Text text = new Text(value);
-            text.setFont(font);
-            components.add(text);
-            return text;
-        }
-        private void addLink(String value) {
-            Hyperlink link = new Hyperlink();
-            link.setFont(normalFont);
-            link.setText(value);
-            link.setOnAction(_ -> {
-                Node node = lineNumbers.get(value.trim());
-                if (node != null) {
-                    FxUtils.centerNodeInScrollPane(scrollPane, node);
-                }
-            });
-            components.add(link);
-        }
-
-        @Override
-        public void startOfLine(String lineNumber) {
-            if (prettyPrint) {
-                lineNumber = lineNumber.trim() + "\t  ";
-            }
-            Node node = addNewText(lineNumber, normalFont);
-            lineNumbers.put(lineNumber.trim(), node);
-            startOfLine = true;
-        }
-        @Override
-        public void rawBytes(byte[] data) {
-            addText("*** HEX - TODO ***", normalFont);
-        }
-        @Override
-        public void token(String text) {
-            addText(text, boldFont);
-        }
-        @Override
-        public void comment(String comment) {
-            addText(comment, normalFont);
-        }
-        @Override
-        public void endOfLine() {
-            addText("\n", normalFont);
-        }
-        @Override
-        public void string(String string) {
-            addText(string, normalFont);
-        }
-        @Override
-        public void targetLine(String lineNumber) {
-            addLink(lineNumber);
-        }
-        @Override
-        public void identifier(String identifier) {
-            addText(identifier, normalFont);
-        }
-        @Override
-        public void number(String number) {
-            addText(number, normalFont);
-        }
-        @Override
-        public void syntax(String syntax) {
-            if (prettyPrint && ":".equals(syntax)) {
-                addText("\n\t: ", normalFont);
-                startOfLine = true;
-            }
-            else {
-                addText(syntax, normalFont);
-            }
-        }
+        // More TBD
+        statusBar.setText(String.format("Font size: %1.0f pt", fontSizeProperty.getValue()));
     }
 }
