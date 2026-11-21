@@ -70,6 +70,7 @@ public class BASICView extends TextFlow implements FileContentView {
         double fontSize = parent.fontSizeProperty().getValue();
         this.normalFont = Font.font("monospaced", fontSize);
         this.boldFont = Font.font("monospaced", FontWeight.BOLD, fontSize);
+        refresh();
     }
 
     private void setFonts(Font normalFont, Font boldFont) {
