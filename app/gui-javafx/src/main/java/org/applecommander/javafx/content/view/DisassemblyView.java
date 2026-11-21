@@ -19,10 +19,18 @@
  */
 package org.applecommander.javafx.content.view;
 
+import javafx.geometry.Point2D;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Path;
+import javafx.scene.shape.PathElement;
 import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import org.applecommander.disassembler.api.Disassembler;
 import org.applecommander.disassembler.api.Instruction;
 import org.applecommander.disassembler.api.InstructionSet;
@@ -32,13 +40,17 @@ import org.applecommander.disassembler.api.z80.InstructionSetZ80;
 import org.applecommander.javafx.content.FileContentView;
 import org.applecommander.javafx.content.FileContentWindow;
 import org.applecommander.transfer.ProdosAttributes;
+import org.applecommander.util.DataBuffer;
+import org.applecommander.util.Range;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class DisassemblyView extends GridPane implements FileContentView {
+public class DisassemblyView extends StackPane implements FileContentView {
     private final FileContentWindow parent;
     private final InstructionSet instructionSet;
+    private final TextFlow textFlow;
+    private final Path highlight;
+    private final List<Range> ranges = new ArrayList<>();
     private Font font;
 
     public DisassemblyView(FileContentWindow parent) {
@@ -52,12 +64,43 @@ public class DisassemblyView extends GridPane implements FileContentView {
         this.parent.fontSizeProperty().addListener((_, _, newValue) -> {
             setFont(newValue.doubleValue());
         });
+        this.textFlow = new TextFlow();
+        this.textFlow.relocate(0, 0);
+        this.highlight = new Path();
+        this.highlight.relocate(0, 0);
+        this.highlight.setManaged(false);
+        this.highlight.setFill(Color.rgb(80, 150, 255, 0.35));
+        this.highlight.setStroke(null);
+        this.highlight.setMouseTransparent(true);
+        this.textFlow.setOnMouseMoved(event -> {
+            Point2D point = textFlow.sceneToLocal(event.getSceneX(), event.getSceneY());
+            int index = textFlow.getHitInfo(point).getCharIndex();
+
+            Optional<Range> found = ranges.stream().filter(r -> r.in(index)).findFirst();
+            found.ifPresentOrElse(range -> {
+                // end is exclusive so we need to add one
+                PathElement[] geometry = textFlow.getRangeShape(range.first(), range.last()+1, true);
+                highlight.getElements().setAll(geometry);
+                textFlow.setCursor(Cursor.HAND);
+            }, () -> {
+                textFlow.setCursor(Cursor.DEFAULT);
+                highlight.getElements().clear();
+            });
+        });
+        getChildren().setAll(textFlow, highlight);
         // TODO: Pascal
         refresh();
     }
 
     private void setFont(double size) {
         this.font = Font.font("monospaced", size);
+        if (this.textFlow != null) {
+            for (Node node : this.textFlow.getChildren()) {
+                if (node instanceof Text text) {
+                    text.setFont(font);
+                }
+            }
+        }
     }
 
     @Override
@@ -82,43 +125,123 @@ public class DisassemblyView extends GridPane implements FileContentView {
 
     @Override
     public void copy() {
-        // TODO
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        ClipboardContent content = new ClipboardContent();
+
+        StringBuilder sb = new StringBuilder();
+        for (var node : getChildren()) {
+            if (node instanceof Text text) {
+                sb.append(text.getText());
+            }
+        }
+        content.putString(sb.toString());
+
+        clipboard.setContent(content);
     }
 
     public void refresh() {
         ProdosAttributes attributes = parent.getFileEntry().getProdosAttributes();
+        final int startAddress = attributes.auxType();
+        final DataBuffer dataFork = parent.getFileEntry().getDataFork();
+        final int endAddress = startAddress + dataFork.limit();
         Map<Integer,String> labels = new HashMap<>();
-        List<Instruction> instructions = Disassembler.with(parent.getFileEntry().getDataFork().asBytes())
-                .startingAddress(attributes.auxType())
+        List<Instruction> instructions = Disassembler.with(dataFork.asBytes())
+                .startingAddress(startAddress)
                 .use(instructionSet)
                 .decode(labels);
-        getChildren().clear();
-        setHgap(5);
-        // address, bytes, label, code, comments
-        for (int i=0; i<instructions.size(); i++) {
-            Instruction inst = instructions.get(i);
-            Label address = new Label(String.format("%04X-", inst.address()));
-            address.setFont(font);
-            Label bytes = new Label(HexFormat.ofDelimiter(" ").formatHex(inst.code()));
-            bytes.setFont(font);
-            Label label = new Label(labels.getOrDefault(inst.address(), ""));
-            label.setFont(font);
-            Label code = new Label(String.format("%s %s", inst.mnemonic(), inst.operands().stream().map(operand -> {
-                    if (operand.target().isPresent()) {
-                        return operand.format(labels.getOrDefault(operand.target().get().address(), operand.format()));
-                    } else {
-                        return operand.format();
-                    }
-                })
-                .collect(Collectors.joining(","))));
-            code.setFont(font);
-            String description = "";
-            if (inst.description().isPresent()) {
-                description = "; " + inst.description().get();
+        TextBuilder builder = new TextBuilder();
+        List<Range> links = new ArrayList<>();
+        int bytesPerLine = instructionSet.defaults().bytesPerInstruction();
+        for (Instruction inst : instructions) {
+            builder.addText("%04X- ", inst.address());
+            byte[] code = inst.code();
+            for (int i=0; i<bytesPerLine; i++) {
+                if (i >= code.length) {
+                    builder.addText("   ");
+                }
+                else {
+                    builder.addLink("%02X", Byte.toUnsignedInt(code[i]));
+                    builder.addText(" ");
+                }
             }
-            Label comment = new Label(description);
-            comment.setFont(font);
-            addRow(i, address, bytes, label, code, comment);
+            builder.addText(" %-10.10s ", labels.getOrDefault(inst.address(), ""));
+            builder.addText("%-5s ", inst.mnemonic());
+            // We may need to pad out 30 spaces, so track where we started.
+            int startChar = builder.length();
+            boolean firstOperand = true;
+            for (Instruction.Operand operand : inst.operands()) {
+                if (!firstOperand) builder.addText(",");
+                firstOperand = false;
+                int addr = operand.target().map(Instruction.Target::address).orElse(-1);
+                String text = operand.format();
+                if (operand.target().isPresent() && labels.containsKey(addr)) {
+                    text = operand.format(labels.get(addr));
+                }
+                if (addr >= startAddress && addr < endAddress) {
+                    links.add(builder.addLink(text));
+                }
+                else {
+                    builder.addText(text);
+                }
+            }
+            // Add comment - note we pad out 30 characters to align all comments.
+            inst.description().ifPresent(description -> {
+                while (builder.length() - startChar < 30) {
+                    builder.addText(" ");
+                }
+                builder.addText("; %s", description);
+            });
+            builder.addText("\n");
+        }
+        Text text = new Text(builder.getText());
+        text.setFont(font);
+        textFlow.getChildren().setAll(text);
+        ranges.clear();
+        ranges.addAll(builder.getByteRanges());
+        // Update the link highlights
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(this.textFlow);
+        Color linkColor = Color.web("#B8860B", 0.35);
+        links.forEach(link -> {
+            PathElement[] geometry = textFlow.getRangeShape(link.first(), link.last()+1, true);
+            Path path = new Path();
+            path.relocate(0, 0);
+            path.setManaged(false);
+            path.setFill(linkColor);
+            path.setStroke(null);
+            path.setMouseTransparent(true);
+            path.getElements().setAll(geometry);
+            nodes.add(path);
+        });
+        nodes.add(this.highlight);
+        getChildren().setAll(nodes);
+    }
+
+    public static class TextBuilder {
+        private final StringBuilder sb = new StringBuilder();
+        private final List<Range> byteRanges = new ArrayList<>();
+
+        public String getText() {
+            return sb.toString();
+        }
+        public List<Range> getByteRanges() {
+            return byteRanges;
+        }
+
+        public int length() {
+            return sb.length();
+        }
+        public void addText(String fmt, Object... args) {
+            sb.append(String.format(fmt, args));
+        }
+        public Range addLink(String fmt, Object... args) {
+            int firstChar = sb.length();
+            addText(fmt, args);
+            int lastChar = sb.length();
+            // Range assumes it is _inclusive_.
+            Range range = new Range(firstChar, lastChar-1);
+            byteRanges.add(range);
+            return range;
         }
     }
 }

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 /// Represents a range of numbers with helper methods to put them together.
+/// Note that this `Range` is inclusive.
 public record Range(int first, int last) {
     public Range(int first, int last) {
         if (first < last) {
@@ -38,6 +39,10 @@ public record Range(int first, int last) {
 
     public int size() {
         return last - first + 1;
+    }
+
+    public boolean in(int n) {
+        return n >= first && n <= last;
     }
 
     public IntStream stream() {
