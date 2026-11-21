@@ -130,7 +130,7 @@ public class USDOSFileStore extends ChangeRegistry<FileStore.FileStoreChangeEven
     @Override
     public String getLabel() {
         String label = bitmap.getZeroTerminatedString(LABEL_OFFSET, LABEL_MAX_LENGTH);
-        if (label.isEmpty()) {
+        if (label.isBlank()) {
             return "<NO LABEL>";
         }
         return label;
