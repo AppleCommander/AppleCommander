@@ -30,12 +30,10 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.javafx.FxUtils;
-import org.applecommander.javafx.content.view.BASICView;
-import org.applecommander.javafx.content.view.HexView;
-import org.applecommander.javafx.content.view.TextView;
-import org.applecommander.javafx.content.view.VariablesView;
+import org.applecommander.javafx.content.view.*;
 
 public class FileContentWindow {
     private final BorderPane window;
@@ -62,8 +60,6 @@ public class FileContentWindow {
         this.fontSizeProperty.set(Font.getDefault().getSize() + 1.0);
 
         this.scrollPane = new ScrollPane();
-        this.scrollPane.setFitToHeight(true);
-        this.scrollPane.setFitToWidth(true);
         this.scrollPane.setPadding(new Insets(10));
 
         this.window = new BorderPane();
@@ -82,8 +78,15 @@ public class FileContentWindow {
             case BASIC -> addView(new BASICView(this));
             case BASIC_VARIABLES -> addView(new VariablesView(this));
             case TEXT -> addView(new TextView(this));
+            case DISASSEMBLY -> addView(new DisassemblyView(this));
         }
         addView(new HexView(this));
+        // We don't have a "known" executable (a general BIN is what this is), add disassembly as a secondary option
+        if (fileEntry.getContentType() == ContentType.BINARY) {
+            addView(new DisassemblyView(this));
+        }
+        // Make certain the first one is visible
+        this.toggleGroup.selectToggle(this.toggleGroup.getToggles().getFirst());
         updateStatusBar();
     }
 
