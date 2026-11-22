@@ -130,6 +130,12 @@ public class USDOSFileStore extends ChangeRegistry<FileStore.FileStoreChangeEven
     @Override
     public String getLabel() {
         String label = bitmap.getZeroTerminatedString(LABEL_OFFSET, LABEL_MAX_LENGTH);
+        // It appears some disks get control characters; strip them out.
+        StringBuilder fixed = new StringBuilder();
+        label.chars().forEach(ch -> {
+            if (ch >= ' ') fixed.append((char)ch);
+        });
+        label = fixed.toString();
         if (label.isBlank()) {
             return "<NO LABEL>";
         }
