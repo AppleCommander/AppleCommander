@@ -52,7 +52,7 @@ public enum ContentType {
     /// 6502/65C02 application.
     BINARY_65C02(Subtype.DISASSEMBLY),
     /// Apple Pascal p-code application.
-    BINARY_APPLE_PASCAL(Subtype.DISASSEMBLY),
+    PASCAL_CODEFILE(Subtype.SEGMENTED_APPLICATION),
     /// Z80 application.
     BINARY_Z80(Subtype.DISASSEMBLY),
     /// Binary file. Unknown subtype.
@@ -81,6 +81,8 @@ public enum ContentType {
         BASIC,
         /// Represents a binary application that is expected to be able to be disassembled. Note that content type
         /// should be used to determine specific CPU.
-        DISASSEMBLY;
+        DISASSEMBLY,
+        /// Represents an application that has various application segments.
+        SEGMENTED_APPLICATION;
     }
 }
