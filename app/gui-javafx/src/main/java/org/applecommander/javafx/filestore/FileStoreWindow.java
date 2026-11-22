@@ -475,9 +475,9 @@ public class FileStoreWindow {
                         .get())
                 .table(2,
                         "AppleSingle:", AppleSingle.VERSION,
-                        "ShrinkIt:", NuFileArchive.VERSION,
                         "BASIC Tools:", BasTools.VERSION,
-                        "Disassembler:", Disassembler.class.getPackage().getImplementationVersion())
+                        "Disassembler:", Disassembler.class.getPackage().getImplementationVersion(),
+                        "ShrinkIt:", NuFileArchive.VERSION)
                 .get());
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK);
         dialog.showAndWait();
