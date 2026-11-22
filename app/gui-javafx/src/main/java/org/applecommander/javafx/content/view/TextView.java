@@ -23,6 +23,7 @@ import org.applecommander.converter.ConverterRepository;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.javafx.content.FileContentWindow;
 
+/// Provides a simple viewer for text file types. It uses the given `TextConverter`.
 public class TextView extends BaseTextView {
     public TextView(FileContentWindow parent) {
         super(parent);
@@ -32,6 +33,8 @@ public class TextView extends BaseTextView {
         });
     }
 
+    /// Get the toggle button configuration. The `FileContentWindow` will set up the toolbar
+    /// with this button. When the button is clicked, the view will be displayed.
     @Override
     public ButtonConfig getButtonConfig() {
         return new ButtonConfig("Text", "view-text.png");

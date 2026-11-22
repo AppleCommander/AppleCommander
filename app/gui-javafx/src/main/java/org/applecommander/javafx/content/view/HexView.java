@@ -23,6 +23,7 @@ import com.webcodepro.applecommander.util.AppleUtil;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.javafx.content.FileContentWindow;
 
+/// Provides a simplistic hex viewer of the file contents.
 public class HexView extends BaseTextView {
     public HexView(FileContentWindow parent) {
         super(parent);
@@ -32,6 +33,8 @@ public class HexView extends BaseTextView {
         setText(AppleUtil.getHexDump(fileEntry.getDataFork().asBytes()));
     }
 
+    /// Get the toggle button configuration. The `FileContentWindow` will set up the toolbar
+    /// with this button. When the button is clicked, the view will be displayed.
     @Override
     public ButtonConfig getButtonConfig() {
         return new ButtonConfig("Hex", "view-hex.png");

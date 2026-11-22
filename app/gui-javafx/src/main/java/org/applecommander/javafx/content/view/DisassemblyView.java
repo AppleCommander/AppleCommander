@@ -34,6 +34,8 @@ import org.applecommander.util.DataBuffer;
 
 import java.util.*;
 
+/// Provides a generic disassembly view that includes links to addresses contained in the file
+/// as well as an optional code/data explorer mode.
 public class DisassemblyView extends NavigableTextView {
     private final InstructionSet instructionSet;
     private final String buttonText;
@@ -55,16 +57,23 @@ public class DisassemblyView extends NavigableTextView {
         refresh();
     }
 
+    /// Get the toggle button configuration. The `FileContentWindow` will set up the toolbar
+    /// with this button. When the button is clicked, the view will be displayed.
     @Override
     public ButtonConfig getButtonConfig() {
         return new ButtonConfig(buttonText, "view-disassembly.png");
     }
 
+    /// Provide any additional toolbar items. Note that a single button can be returned
+    /// with as a `Button` but multiple buttons should be in an `HBox` or similar
+    /// container.
     @Override
     public Optional<Node> getAdditionalToolbarButtons() {
         return Optional.of(codeButton);
     }
 
+    /// Invoked when a byte is clicked on with the address of that byte. That address
+    /// is used to toggle on or off the code entry point.
     @Override
     public void handleCustomLink(int value) {
         if (entryPoints.contains(value)) {
@@ -77,6 +86,8 @@ public class DisassemblyView extends NavigableTextView {
         refresh();
     }
 
+    /// Build the disassembly output. The disassembly must be re-processed each time
+    /// due to likely changes in the entry point listing.
     public void build(TextBuilder builder) {
         if (codeButton == null) {
             // We get called early as everything is constructed; ignore the call.
@@ -141,7 +152,7 @@ public class DisassemblyView extends NavigableTextView {
                     builder.addText(text);
                 }
             }
-            // Add comment - note we pad out 30 characters to align all comments.
+            // Add comment - note we pad 30 characters to align all comments.
             inst.description().ifPresent(description -> {
                 while (builder.length() - startChar < 30) {
                     builder.addText(" ");

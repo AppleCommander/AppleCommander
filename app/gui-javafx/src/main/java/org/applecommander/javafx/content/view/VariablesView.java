@@ -28,6 +28,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.stream.Collectors;
 
+/// Provides a simple breakdown of the contents of a ProDOS `VAR` file.
 public class VariablesView extends BaseTextView {
     public VariablesView(FileContentWindow parent) {
         super(parent);
@@ -36,6 +37,8 @@ public class VariablesView extends BaseTextView {
         ConverterRepository.getVariables(fileEntry).ifPresent(this::showVariables);
     }
 
+    /// Get the toggle button configuration. The `FileContentWindow` will set up the toolbar
+    /// with this button. When the button is clicked, the view will be displayed.
     @Override
     public ButtonConfig getButtonConfig() {
         return new ButtonConfig("Variables", "view-basic.png");

@@ -40,11 +40,16 @@ public class BASICView extends NavigableTextView {
         refresh();
     }
 
+    /// Get the toggle button configuration. The `FileContentWindow` will set up the toolbar
+    /// with this button. When the button is clicked, the view will be displayed.
     @Override
     public ButtonConfig getButtonConfig() {
         return new ButtonConfig("BASIC", "view-basic.png");
     }
 
+    /// Provide any additional toolbar items. Note that a single button can be returned
+    /// with as a `Button` but multiple buttons should be in an `HBox` or similar
+    /// container.
     @Override
     public Optional<Node> getAdditionalToolbarButtons() {
         return Optional.of(basicFormatButton);

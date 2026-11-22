@@ -39,7 +39,6 @@ public class FileContentWindow {
     private final BorderPane window;
     private final ToolBar toolBar;
     private final Label statusBar;
-    private final ScrollPane scrollPane;
     private final ToggleGroup toggleGroup;
     private final HBox viewSelectionButtons;
     private final HBox viewCustomizationButtons;
@@ -59,12 +58,8 @@ public class FileContentWindow {
         this.fileEntry = fileEntry;
         this.fontSizeProperty.set(Font.getDefault().getSize() + 1.0);
 
-        this.scrollPane = new ScrollPane();
-        this.scrollPane.setPadding(new Insets(10));
-
         this.window = new BorderPane();
         this.window.setTop(toolBar);
-        this.window.setCenter(scrollPane);
         this.window.setBottom(statusBar);
 
         this.viewSelectionButtons = new HBox();
@@ -96,9 +91,6 @@ public class FileContentWindow {
     public DoubleProperty fontSizeProperty() {
         return fontSizeProperty;
     }
-    public ScrollPane getScrollPane() {
-        return scrollPane;
-    }
 
     public void show() {
         Scene scene = new Scene(window, 800, 500);
@@ -117,14 +109,14 @@ public class FileContentWindow {
     public void addView(FileContentView view) {
         FileContentView.ButtonConfig config = view.getButtonConfig();
         ToggleButton toggleButton = FxUtils.createToggleButton(config.imageName(), config.text(), toggleGroup, _ -> {
-            this.scrollPane.setContent(view.getViewNode());
+            this.window.setCenter(view.getViewNode());
         });
         this.viewSelectionButtons.getChildren().add(toggleButton);
         view.getAdditionalToolbarButtons().ifPresent(node -> {
             this.viewCustomizationButtons.getChildren().add(node);
         });
-        if (this.scrollPane.getContent() == null) {
-            this.scrollPane.setContent(view.getViewNode());
+        if (this.window.getCenter() == null) {
+            this.window.setCenter(view.getViewNode());
         }
     }
 
@@ -150,7 +142,7 @@ public class FileContentWindow {
         Button increaseSize = FxUtils.createButton("plus.png", "Increase", this::decreaseFontSize);
 
         Button copy = FxUtils.createButton("copy.png", "Copy", _ -> {
-            if (this.scrollPane.getContent() instanceof FileContentView view) {
+            if (this.window.getCenter() instanceof FileContentView view) {
                 view.copy();
             }
         });

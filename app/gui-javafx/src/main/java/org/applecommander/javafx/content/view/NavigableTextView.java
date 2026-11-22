@@ -23,6 +23,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.StackPane;
@@ -39,8 +40,15 @@ import org.applecommander.util.Range;
 
 import java.util.*;
 
-public abstract class NavigableTextView extends StackPane implements FileContentView {
+/// Provides a foundation for textual contents that have navigation components. Things such
+/// as `GOTO 1000` can navigate to line 1000 or `JSR $1000` can jump to that memory location.
+/// Note that in the current implementation, a `refresh()` is invoked during construction,
+/// meaning all implementing classes must guard against early calls (mostly `null` items
+/// that haven't been set up yet).
+public abstract class NavigableTextView implements FileContentView {
     protected final FileContentWindow parent;
+    private final ScrollPane scrollPane;
+    private final StackPane stackPane;
     private final TextFlow textFlow;
     private final Path highlight;
     private final Color linkColor;
@@ -53,6 +61,8 @@ public abstract class NavigableTextView extends StackPane implements FileContent
 
     public NavigableTextView(FileContentWindow parent) {
         this.parent = parent;
+        this.stackPane = new StackPane();
+        this.scrollPane = new ScrollPane(this.stackPane);
         setFont(parent.fontSizeProperty().getValue());
         this.parent.fontSizeProperty().addListener((_, _, newValue) -> {
             setFont(newValue.doubleValue());
@@ -102,7 +112,7 @@ public abstract class NavigableTextView extends StackPane implements FileContent
                 if (navigableTargets.containsKey(target)) {
                     Range range = navigableTargets.get(target);
                     Path path = new Path(textFlow.getRangeShape(range.first(), range.last()+1, true));
-                    FxUtils.centerNodeInScrollPane(parent.getScrollPane(), path);
+                    FxUtils.centerNodeInScrollPane(this.scrollPane, path);
                 }
             });
             Optional<Range> custom = customLinks.keySet().stream().filter(r -> r.in(index)).findFirst();
@@ -112,10 +122,13 @@ public abstract class NavigableTextView extends StackPane implements FileContent
         refresh();
     }
 
+    /// Provide a hook for custom links. These are links that are _not_ navigational. For instance,
+    /// the disassembly listing marks each data byte to be a custom link when in the code/data mode.
     public void handleCustomLink(int value) {
         // do nothing in default implementation
     }
 
+    /// Set the font size and adjust all the highlighted regions.
     public void setFont(double size) {
         this.font = Font.font("monospaced", size);
         if (this.textFlow != null) {
@@ -128,11 +141,13 @@ public abstract class NavigableTextView extends StackPane implements FileContent
         }
     }
 
+    /// Return the primary graphical `Node` representing the contents.
     @Override
     public Node getViewNode() {
-        return this;
+        return scrollPane;
     }
 
+    /// Perform a copy of the contents to the clipboard.
     @Override
     public void copy() {
         Clipboard clipboard = Clipboard.getSystemClipboard();
@@ -149,8 +164,11 @@ public abstract class NavigableTextView extends StackPane implements FileContent
         clipboard.setContent(content);
     }
 
+    /// The `build(TextBuilder)` is called during the refresh cycle. This allows the implementor
+    /// to process the document and tie in links, navigation targets, and text.
     public abstract void build(TextBuilder builder);
 
+    /// Refresh the contents.
     public final void refresh() {
         TextBuilder builder = new TextBuilder();
         build(builder);
@@ -196,9 +214,11 @@ public abstract class NavigableTextView extends StackPane implements FileContent
             nodes.add(path);
         });
         nodes.add(this.highlight);
-        getChildren().setAll(nodes);
+        this.stackPane.getChildren().setAll(nodes);
     }
 
+    /// The `TextBuilder` is a helper class that builds all the details required
+    /// for the navigable components.
     public static class TextBuilder {
         private final StringBuilder sb = new StringBuilder();
         private final List<Range> clickableRanges = new ArrayList<>();

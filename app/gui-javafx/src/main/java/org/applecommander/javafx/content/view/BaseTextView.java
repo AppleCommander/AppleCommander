@@ -21,33 +21,51 @@ package org.applecommander.javafx.content.view;
 
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.text.Font;
 import org.applecommander.javafx.content.FileContentView;
 import org.applecommander.javafx.content.FileContentWindow;
 
-public abstract class BaseTextView extends Label implements FileContentView {
+/// Provides a simple text viewer.  To show text in the view, use the `setText(String)` method.
+public abstract class BaseTextView implements FileContentView {
     protected final FileContentWindow parent;
+    private final ScrollPane scrollPane;
+    private final Label label;
 
     public BaseTextView(FileContentWindow parent) {
         this.parent = parent;
+        this.label = new Label();
+        this.scrollPane = new ScrollPane(label);
         this.parent.fontSizeProperty().addListener((_, _, newValue) -> {
-            setFont(Font.font("monospaced", newValue.doubleValue()));
+            label.setFont(Font.font("monospaced", newValue.doubleValue()));
         });
-        setFont(Font.font("monospaced", parent.fontSizeProperty().getValue()));
+        label.setFont(Font.font("monospaced", parent.fontSizeProperty().getValue()));
     }
 
+    /// Return the primary graphical `Node` representing the contents.
     @Override
     public Node getViewNode() {
-        return this;
+        return scrollPane;
     }
 
+    /// Perform a copy of the contents to the clipboard.
     @Override
     public void copy() {
         Clipboard clipboard = Clipboard.getSystemClipboard();
         ClipboardContent content = new ClipboardContent();
         content.putString(getText());
         clipboard.setContent(content);
+    }
+
+    /// Set the text to be displayed.
+    public void setText(String text) {
+        this.label.setText(text);
+    }
+
+    /// Get the text being displayed.
+    public String getText() {
+        return this.label.getText();
     }
 }
