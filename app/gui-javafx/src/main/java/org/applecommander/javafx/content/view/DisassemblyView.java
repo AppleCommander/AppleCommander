@@ -25,8 +25,8 @@ import org.applecommander.disassembler.api.Disassembler;
 import org.applecommander.disassembler.api.Instruction;
 import org.applecommander.disassembler.api.InstructionSet;
 import org.applecommander.disassembler.api.mos6502.InstructionSet6502;
-import org.applecommander.disassembler.api.pcode.InstructionSetPCode;
 import org.applecommander.disassembler.api.z80.InstructionSetZ80;
+import org.applecommander.filestore.ContentType;
 import org.applecommander.javafx.FxUtils;
 import org.applecommander.javafx.content.FileContentWindow;
 import org.applecommander.transfer.ProdosAttributes;
@@ -36,15 +36,19 @@ import java.util.*;
 
 public class DisassemblyView extends NavigableTextView {
     private final InstructionSet instructionSet;
+    private final String buttonText;
     private final ToggleButton codeButton;
     private final List<Integer> entryPoints = new ArrayList<>();
 
     public DisassemblyView(FileContentWindow parent) {
-        this.instructionSet = switch (parent.getFileEntry().getContentType()) {
-            case BINARY_APPLE_PASCAL -> InstructionSetPCode.forApplePascal();
-            case BINARY_Z80 -> InstructionSetZ80.forZ80();
-            default -> InstructionSet6502.for65C02();
-        };
+        if (parent.getFileEntry().getContentType() == ContentType.BINARY_Z80) {
+            this.instructionSet = InstructionSetZ80.forZ80();
+            this.buttonText = "Z80";
+        }
+        else {
+            this.instructionSet = InstructionSet6502.for65C02();
+            this.buttonText = "65C02";
+        }
         super(parent);
         this.codeButton = FxUtils.createOnOffButton("code.png", "code.png",
                 "Code", e -> refresh());
@@ -53,11 +57,6 @@ public class DisassemblyView extends NavigableTextView {
 
     @Override
     public ButtonConfig getButtonConfig() {
-        String buttonText = switch (parent.getFileEntry().getContentType()) {
-            case BINARY_APPLE_PASCAL -> "p-code";
-            case BINARY_Z80 -> "Z80";
-            default -> "65C02";
-        };
         return new ButtonConfig(buttonText, "view-disassembly.png");
     }
 
