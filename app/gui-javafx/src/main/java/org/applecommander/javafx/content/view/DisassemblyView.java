@@ -32,14 +32,12 @@ import org.applecommander.javafx.content.FileContentWindow;
 import org.applecommander.transfer.ProdosAttributes;
 import org.applecommander.util.DataBuffer;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class DisassemblyView extends NavigableTextView {
     private final InstructionSet instructionSet;
     private final ToggleButton codeButton;
+    private final List<Integer> entryPoints = new ArrayList<>();
 
     public DisassemblyView(FileContentWindow parent) {
         this.instructionSet = switch (parent.getFileEntry().getContentType()) {
@@ -68,18 +66,38 @@ public class DisassemblyView extends NavigableTextView {
         return Optional.of(codeButton);
     }
 
+    @Override
+    public void handleCustomLink(int value) {
+        if (entryPoints.contains(value)) {
+            // The integer remove method removes by index value instead of the object value.
+            entryPoints.remove((Object)value);
+        }
+        else {
+            entryPoints.add(value);
+        }
+        refresh();
+    }
+
     public void build(TextBuilder builder) {
+        if (codeButton == null) {
+            // We get called early as everything is constructed; ignore the call.
+            return;
+        }
         ProdosAttributes attributes = parent.getFileEntry().getProdosAttributes();
         final int startAddress = attributes.auxType();
         final DataBuffer dataFork = parent.getFileEntry().getDataFork();
         final int endAddress = startAddress + dataFork.limit();
         Map<Integer,String> labels = new HashMap<>();
-        List<Instruction> instructions = Disassembler.with(dataFork.asBytes())
+        Disassembler.Builder disassembler = Disassembler.with(dataFork.asBytes())
                 .startingAddress(startAddress)
-                .use(instructionSet)
-                .decode(labels);
+                .use(instructionSet);
+        final boolean detectionMode = codeButton.isSelected();
+        if (detectionMode) {
+            if (entryPoints.isEmpty()) entryPoints.add(startAddress);
+            entryPoints.forEach(disassembler::entryPoint);
+        }
+        List<Instruction> instructions = disassembler.decode(labels);
         int bytesPerLine = instructionSet.defaults().bytesPerInstruction();
-        boolean entryPoints = this.codeButton != null && this.codeButton.isSelected();
         for (Instruction inst : instructions) {
             builder.addNavigableTarget(inst.address(), "%04X", inst.address());
             builder.addText("- ");
@@ -88,8 +106,8 @@ public class DisassemblyView extends NavigableTextView {
                 if (i >= code.length) {
                     builder.addText("   ");
                 }
-                else if (entryPoints) {
-                    builder.addLink("%02X", false, Byte.toUnsignedInt(code[i]));
+                else if (detectionMode) {
+                    builder.addCustomLink(inst.address()+i, "%02X", Byte.toUnsignedInt(code[i]));
                     builder.addText(" ");
                 }
                 else {
@@ -97,6 +115,14 @@ public class DisassemblyView extends NavigableTextView {
                 }
             }
             builder.addText(" %-10.10s ", labels.getOrDefault(inst.address(), ""));
+            if (detectionMode) {
+                if (entryPoints.contains(inst.address())) {
+                    builder.addCustomLink(inst.address(), "--> ");
+                }
+                else {
+                    builder.addText("    ");
+                }
+            }
             builder.addText("%-5s ", inst.mnemonic());
             // We may need to pad out 30 spaces, so track where we started.
             int startChar = builder.length();

@@ -48,6 +48,7 @@ public abstract class NavigableTextView extends StackPane implements FileContent
     private final List<Range> highlightedRanges = new ArrayList<>();
     private final Map<Range,Integer> navigableLinks = new HashMap<>();
     private final Map<Integer,Range> navigableTargets = new HashMap<>();
+    private final Map<Range,Integer> customLinks = new HashMap<>();
     private Font font;
 
     public NavigableTextView(FileContentWindow parent) {
@@ -104,9 +105,15 @@ public abstract class NavigableTextView extends StackPane implements FileContent
                     FxUtils.centerNodeInScrollPane(parent.getScrollPane(), path);
                 }
             });
+            Optional<Range> custom = customLinks.keySet().stream().filter(r -> r.in(index)).findFirst();
+            custom.ifPresent(range -> handleCustomLink(customLinks.get(range)));
         });
         this.linkColor = Color.CYAN.deriveColor(1.0, 1.0, 1.0, 0.35);
         refresh();
+    }
+
+    public void handleCustomLink(int value) {
+        // do nothing in default implementation
     }
 
     public void setFont(double size) {
@@ -130,17 +137,12 @@ public abstract class NavigableTextView extends StackPane implements FileContent
     }
 
     @Override
-    public Optional<Node> getAdditionalToolbarButtons() {
-        return FileContentView.super.getAdditionalToolbarButtons();
-    }
-
-    @Override
     public void copy() {
         Clipboard clipboard = Clipboard.getSystemClipboard();
         ClipboardContent content = new ClipboardContent();
 
         StringBuilder sb = new StringBuilder();
-        for (var node : getChildren()) {
+        for (var node : textFlow.getChildren()) {
             if (node instanceof Text text) {
                 sb.append(text.getText());
             }
@@ -166,6 +168,8 @@ public abstract class NavigableTextView extends StackPane implements FileContent
         navigableLinks.putAll(builder.getNavigableLinks());
         navigableTargets.clear();
         navigableTargets.putAll(builder.getNavigableTargets());
+        customLinks.clear();
+        customLinks.putAll(builder.getCustomLinks());
         recalculateHighlightedRanges();
     }
 
@@ -197,6 +201,7 @@ public abstract class NavigableTextView extends StackPane implements FileContent
         private final List<Range> highlightedRanges = new ArrayList<>();
         private final Map<Range,Integer> navigableLinks = new HashMap<>();
         private final Map<Integer,Range> navigableTargets = new HashMap<>();
+        private final Map<Range,Integer> customLinks = new HashMap<>();
 
         public String getText() {
             return sb.toString();
@@ -213,13 +218,21 @@ public abstract class NavigableTextView extends StackPane implements FileContent
         public Map<Integer,Range> getNavigableTargets() {
             return navigableTargets;
         }
+        public Map<Range, Integer> getCustomLinks() {
+            return customLinks;
+        }
 
         public int length() {
             return sb.length();
         }
         /// Add text into the resulting document.
         public void addText(String fmt, Object... args) {
-            sb.append(String.format(fmt, args));
+            if (args.length == 0) {
+                sb.append(fmt);
+            }
+            else {
+                sb.append(String.format(fmt, args));
+            }
         }
         private Range addTextAsRange(String fmt, Object... args) {
             int firstChar = sb.length();
@@ -244,17 +257,11 @@ public abstract class NavigableTextView extends StackPane implements FileContent
             clickableRanges.add(range);
             highlightedRanges.add(range);
         }
-        /// Add a link - TODO. Left over, needs to allow custom linking.
-        public void addLink(String fmt, boolean highlighted, Object... args) {
-            int firstChar = sb.length();
-            addText(fmt, args);
-            int lastChar = sb.length();
-            // Range assumes it is _inclusive_.
-            Range range = new Range(firstChar, lastChar-1);
+        /// Add a custom link.
+        public void addCustomLink(int target, String fmt, Object... args) {
+            Range range = addTextAsRange(fmt, args);
             clickableRanges.add(range);
-            if (highlighted) {
-                highlightedRanges.add(range);
-            }
+            customLinks.put(range, target);
         }
     }
 }
