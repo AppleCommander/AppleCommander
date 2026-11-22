@@ -109,15 +109,22 @@ public class FileContentWindow {
     public void addView(FileContentView view) {
         FileContentView.ButtonConfig config = view.getButtonConfig();
         ToggleButton toggleButton = FxUtils.createToggleButton(config.imageName(), config.text(), toggleGroup, _ -> {
-            this.window.setCenter(view.getViewNode());
+            showView(view);
         });
         this.viewSelectionButtons.getChildren().add(toggleButton);
-        view.getAdditionalToolbarButtons().ifPresent(node -> {
-            this.viewCustomizationButtons.getChildren().add(node);
-        });
         if (this.window.getCenter() == null) {
-            this.window.setCenter(view.getViewNode());
+            showView(view);
         }
+    }
+
+    /// Toggle a view into the display. Note that this also handles swapping buttons.
+    public void showView(FileContentView view) {
+        this.window.setCenter(view.getViewNode());
+        view.getAdditionalToolbarButtons().ifPresentOrElse(node -> {
+            this.viewCustomizationButtons.getChildren().setAll(node);
+        }, () -> {
+            this.viewCustomizationButtons.getChildren().clear();
+        });
     }
 
     private void increaseFontSize(ActionEvent event) {
