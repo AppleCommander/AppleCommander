@@ -79,16 +79,21 @@ public class DisassemblyView extends NavigableTextView {
                 .use(instructionSet)
                 .decode(labels);
         int bytesPerLine = instructionSet.defaults().bytesPerInstruction();
+        boolean entryPoints = this.codeButton != null && this.codeButton.isSelected();
         for (Instruction inst : instructions) {
-            builder.addText("%04X- ", inst.address());
+            builder.addNavigableTarget(inst.address(), "%04X", inst.address());
+            builder.addText("- ");
             byte[] code = inst.code();
             for (int i=0; i<bytesPerLine; i++) {
                 if (i >= code.length) {
                     builder.addText("   ");
                 }
-                else {
+                else if (entryPoints) {
                     builder.addLink("%02X", false, Byte.toUnsignedInt(code[i]));
                     builder.addText(" ");
+                }
+                else {
+                    builder.addText("%02X ", Byte.toUnsignedInt(code[i]));
                 }
             }
             builder.addText(" %-10.10s ", labels.getOrDefault(inst.address(), ""));
@@ -105,7 +110,7 @@ public class DisassemblyView extends NavigableTextView {
                     text = operand.format(labels.get(addr));
                 }
                 if (addr >= startAddress && addr < endAddress) {
-                    builder.addLink(text, true);
+                    builder.addNavigableLink(addr, text);
                 }
                 else {
                     builder.addText(text);

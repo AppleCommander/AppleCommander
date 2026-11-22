@@ -32,13 +32,12 @@ import javafx.scene.shape.PathElement;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import org.applecommander.javafx.FxUtils;
 import org.applecommander.javafx.content.FileContentView;
 import org.applecommander.javafx.content.FileContentWindow;
 import org.applecommander.util.Range;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public abstract class NavigableTextView extends StackPane implements FileContentView {
     protected final FileContentWindow parent;
@@ -47,6 +46,8 @@ public abstract class NavigableTextView extends StackPane implements FileContent
     private final Color linkColor;
     private final List<Range> clickableRanges = new ArrayList<>();
     private final List<Range> highlightedRanges = new ArrayList<>();
+    private final Map<Range,Integer> navigableLinks = new HashMap<>();
+    private final Map<Integer,Range> navigableTargets = new HashMap<>();
     private Font font;
 
     public NavigableTextView(FileContentWindow parent) {
@@ -76,6 +77,32 @@ public abstract class NavigableTextView extends StackPane implements FileContent
             }, () -> {
                 textFlow.setCursor(Cursor.DEFAULT);
                 highlight.getElements().clear();
+            });
+        });
+        this.textFlow.setOnMouseExited(_ -> {
+            textFlow.setCursor(Cursor.DEFAULT);
+            highlight.getElements().clear();
+        });
+        this.textFlow.setOnMouseClicked(event -> {
+            Point2D point = textFlow.sceneToLocal(event.getSceneX(), event.getSceneY());
+            int index = textFlow.getHitInfo(point).getCharIndex();
+            Optional<Range> found = navigableLinks.keySet().stream().filter(r -> r.in(index)).findFirst();
+            found.ifPresent(key -> {
+                final int number = navigableLinks.get(key);
+                Optional<Integer> actualTarget = navigableTargets.keySet().stream().reduce((a,b) -> {
+                    int diffA = Math.abs(number - a);
+                    int diffB = Math.abs(number - b);
+                    return diffA <= diffB ? a : b;
+                });
+                int target = number;
+                if (actualTarget.isPresent()) {
+                    target = actualTarget.get();
+                }
+                if (navigableTargets.containsKey(target)) {
+                    Range range = navigableTargets.get(target);
+                    Path path = new Path(textFlow.getRangeShape(range.first(), range.last()+1, true));
+                    FxUtils.centerNodeInScrollPane(parent.getScrollPane(), path);
+                }
             });
         });
         this.linkColor = Color.CYAN.deriveColor(1.0, 1.0, 1.0, 0.35);
@@ -135,6 +162,10 @@ public abstract class NavigableTextView extends StackPane implements FileContent
         clickableRanges.addAll(builder.getClickableRanges());
         highlightedRanges.clear();
         highlightedRanges.addAll(builder.getHighlightedRanges());
+        navigableLinks.clear();
+        navigableLinks.putAll(builder.getNavigableLinks());
+        navigableTargets.clear();
+        navigableTargets.putAll(builder.getNavigableTargets());
         recalculateHighlightedRanges();
     }
 
@@ -164,6 +195,8 @@ public abstract class NavigableTextView extends StackPane implements FileContent
         private final StringBuilder sb = new StringBuilder();
         private final List<Range> clickableRanges = new ArrayList<>();
         private final List<Range> highlightedRanges = new ArrayList<>();
+        private final Map<Range,Integer> navigableLinks = new HashMap<>();
+        private final Map<Integer,Range> navigableTargets = new HashMap<>();
 
         public String getText() {
             return sb.toString();
@@ -174,13 +207,44 @@ public abstract class NavigableTextView extends StackPane implements FileContent
         public List<Range> getHighlightedRanges() {
             return highlightedRanges;
         }
+        public Map<Range,Integer> getNavigableLinks() {
+            return navigableLinks;
+        }
+        public Map<Integer,Range> getNavigableTargets() {
+            return navigableTargets;
+        }
 
         public int length() {
             return sb.length();
         }
+        /// Add text into the resulting document.
         public void addText(String fmt, Object... args) {
             sb.append(String.format(fmt, args));
         }
+        private Range addTextAsRange(String fmt, Object... args) {
+            int firstChar = sb.length();
+            addText(fmt, args);
+            int lastChar = sb.length();
+            // Range assumes it is _inclusive_.
+            return new Range(firstChar, lastChar-1);
+        }
+        /// Add a target for navigation. This maps the target (memory address, line number, etc.)
+        /// to a text range (likely the address or line number) that is used to locate placement
+        /// within the scrollable document.
+        public void addNavigableTarget(int target, String fmt, Object... args) {
+            Range range = addTextAsRange(fmt, args);
+            navigableTargets.put(target, range);
+        }
+        /// Add a navigable link to a navigable target. Generally, it is _assumed_ that both ends
+        /// of the link will be present, but there are no guarantees. For instance, a BASIC program
+        /// could have a GOTO to a non-existent number.
+        public void addNavigableLink(int target, String fmt, Object... args) {
+            Range range = addTextAsRange(fmt, args);
+            navigableLinks.put(range, target);
+            clickableRanges.add(range);
+            highlightedRanges.add(range);
+        }
+        /// Add a link - TODO. Left over, needs to allow custom linking.
         public void addLink(String fmt, boolean highlighted, Object... args) {
             int firstChar = sb.length();
             addText(fmt, args);
