@@ -109,8 +109,10 @@ public class BASICView extends TextFlow implements FileContentView {
 
         StringBuilder sb = new StringBuilder();
         for (var node : getChildren()) {
-            if (node instanceof Text text) {
-                sb.append(text.getText());
+            switch (node) {
+                case Text text -> sb.append(text.getText());
+                case Hyperlink hyperlink -> sb.append(hyperlink.getText());
+                default -> {}
             }
         }
         content.putString(sb.toString());
