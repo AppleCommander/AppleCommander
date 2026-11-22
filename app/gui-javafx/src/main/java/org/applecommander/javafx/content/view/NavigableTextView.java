@@ -124,9 +124,6 @@ public abstract class NavigableTextView extends StackPane implements FileContent
                     text.setFont(font);
                 }
             }
-            Parent root = this.textFlow.getScene().getRoot();
-            root.applyCss();
-            root.layout();
             recalculateHighlightedRanges();
         }
     }
@@ -178,6 +175,13 @@ public abstract class NavigableTextView extends StackPane implements FileContent
         if (this.highlightedRanges.isEmpty()) {
             return;
         }
+        // Force any updates to be applied before calculating the highlights.
+        if (this.textFlow.getScene() != null) {
+            Parent root = this.textFlow.getScene().getRoot();
+            root.applyCss();
+            root.layout();
+        }
+
         List<Node> nodes = new ArrayList<>();
         nodes.add(this.textFlow);
         this.highlightedRanges.forEach(link -> {

@@ -20,67 +20,24 @@
 package org.applecommander.javafx.content.view;
 
 import javafx.scene.Node;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 import org.applecommander.converter.BASICConverter;
 import org.applecommander.converter.ConverterRepository;
 import org.applecommander.javafx.FxUtils;
-import org.applecommander.javafx.content.FileContentView;
 import org.applecommander.javafx.content.FileContentWindow;
 
-import java.util.*;
+import java.util.Optional;
 
-public class BASICView extends TextFlow implements FileContentView {
-    private final FileContentWindow parent;
+public class BASICView extends NavigableTextView {
     private final ToggleButton basicFormatButton;
     private final BASICConverter converter;
-    private Font normalFont;
-    private Font boldFont;
 
     public BASICView(FileContentWindow parent) {
-        this.parent = parent;
-        this.parent.fontSizeProperty().addListener((_, _, newValue) -> {
-            double fontSize = newValue.doubleValue();
-            Font newNormalFont = Font.font("monospaced", fontSize);
-            Font newBoldFont = Font.font("monospaced", FontWeight.BOLD, fontSize);
-            for (Node node : getChildren()) {
-                if (node instanceof Text text) {
-                    // We can't tell the font based on attributes, so checking objects and handling them carefully.
-                    if (text.getFont() == this.boldFont) {
-                        text.setFont(newBoldFont);
-                    }
-                    else {
-                        text.setFont(newNormalFont);
-                    }
-                }
-            }
-            setFonts(normalFont, boldFont);
-        });
+        super(parent);
         this.basicFormatButton = FxUtils.createOnOffButton("basic-list-normal.png", "basic-list-pretty.png",
                 "Listing", e -> refresh());
         this.converter = ConverterRepository.getBASIC(parent.getFileEntry()).orElseThrow();
-
-        double fontSize = parent.fontSizeProperty().getValue();
-        this.normalFont = Font.font("monospaced", fontSize);
-        this.boldFont = Font.font("monospaced", FontWeight.BOLD, fontSize);
         refresh();
-    }
-
-    private void setFonts(Font normalFont, Font boldFont) {
-        this.normalFont = normalFont;
-        this.boldFont = boldFont;
-    }
-
-    @Override
-    public Node getViewNode() {
-        return this;
     }
 
     @Override
@@ -93,139 +50,92 @@ public class BASICView extends TextFlow implements FileContentView {
         return Optional.of(basicFormatButton);
     }
 
-    public void refresh() {
-        boolean prettyPrint = basicFormatButton.isSelected();
-        ScrollPane scrollPane = parent.getScrollPane();
-        BASICEventHandler handler = new BASICEventHandler(normalFont, boldFont, scrollPane, prettyPrint);
-        converter.generate(handler);
-        getChildren().clear();
-        getChildren().addAll(handler.getComponents());
-    }
-
     @Override
-    public void copy() {
-        Clipboard clipboard = Clipboard.getSystemClipboard();
-        ClipboardContent content = new ClipboardContent();
-
-        StringBuilder sb = new StringBuilder();
-        for (var node : getChildren()) {
-            switch (node) {
-                case Text text -> sb.append(text.getText());
-                case Hyperlink hyperlink -> sb.append(hyperlink.getText());
-                default -> {}
-            }
+    public void build(TextBuilder builder) {
+        if (basicFormatButton == null) {
+            // We can get called during construction, skip those calls.
+            return;
         }
-        content.putString(sb.toString());
-
-        clipboard.setContent(content);
+        boolean prettyPrint = basicFormatButton.isSelected();
+        BASICEventHandler handler = new BASICEventHandler(builder, prettyPrint);
+        converter.generate(handler);
     }
 
     public static class BASICEventHandler implements BASICConverter.EventHandler {
-        private final List<Node> components = new ArrayList<>();
-        private final Font normalFont;
-        private final Font boldFont;
-        private final ScrollPane scrollPane;
-        private final Map<String,Node> lineNumbers = new HashMap<>();
         private final boolean prettyPrint;
+        private final TextBuilder builder;
         private boolean startOfLine;
 
-        public BASICEventHandler(Font normalFont, Font boldFont, ScrollPane scrollPane, boolean prettyPrint) {
-            this.normalFont = normalFont;
-            this.boldFont = boldFont;
-            this.scrollPane = scrollPane;
+        public BASICEventHandler(TextBuilder builder, boolean prettyPrint) {
+            this.builder = builder;
             this.prettyPrint = prettyPrint;
         }
 
-        public List<Node> getComponents() {
-            return components;
-        }
-        private void addText(String value, Font font) {
-            if (startOfLine) {
-                value = value.stripLeading();
-                startOfLine = false;
-            }
-            if (components.isEmpty() || !(components.getLast() instanceof Text text)) {
-                addNewText(value, font);
-            }
-            else if (text.getFont() == font) {
-                text.setText(text.getText() + value);
-            }
-            else {
-                addNewText(value, font);
-            }
-        }
-        private Node addNewText(String value, Font font) {
-            if (startOfLine) {
-                value = value.stripLeading();
-                startOfLine = false;
-            }
-            Text text = new Text(value);
-            text.setFont(font);
-            components.add(text);
-            return text;
-        }
-        private void addLink(String value) {
-            Hyperlink link = new Hyperlink();
-            link.setFont(normalFont);
-            link.setText(value);
-            link.setOnAction(_ -> {
-                Node node = lineNumbers.get(value.trim());
-                if (node != null) {
-                    FxUtils.centerNodeInScrollPane(scrollPane, node);
-                }
+        /// Convert the number to an integer. Trying to do this in a safe manner.
+        public int toInteger(String text) {
+            StringBuilder sb = new StringBuilder();
+            text.chars().forEach(ch -> {
+                if (Character.isDigit(ch)) sb.append((char)ch);
             });
-            components.add(link);
+            if (sb.isEmpty()) {
+                return 0;
+            }
+            return Integer.parseInt(sb.toString());
         }
 
         @Override
-        public void startOfLine(String lineNumber) {
+        public void startOfLine(String text) {
+            int lineNumber = toInteger(text);
             if (prettyPrint) {
-                lineNumber = lineNumber.trim() + "\t  ";
+                text = text.trim() + "\t  ";
             }
-            Node node = addNewText(lineNumber, normalFont);
-            lineNumbers.put(lineNumber.trim(), node);
+            builder.addNavigableTarget(lineNumber, text);
             startOfLine = true;
         }
         @Override
         public void rawBytes(byte[] data) {
-            addText("*** HEX - TODO ***", normalFont);
+            builder.addText("*** HEX - TODO ***");
         }
         @Override
         public void token(String text) {
-            addText(text, boldFont);
+            builder.addText(text);
         }
         @Override
         public void comment(String comment) {
-            addText(comment, normalFont);
+            builder.addText(comment);
         }
         @Override
         public void endOfLine() {
-            addText("\n", normalFont);
+            builder.addText("\n");
         }
         @Override
         public void string(String string) {
-            addText(string, normalFont);
+            builder.addText(string);
         }
         @Override
-        public void targetLine(String lineNumber) {
-            addLink(lineNumber);
+        public void targetLine(String text) {
+            int lineNumber = toInteger(text);
+            builder.addNavigableLink(lineNumber, text);
         }
         @Override
         public void identifier(String identifier) {
-            addText(identifier, normalFont);
+            if (prettyPrint && startOfLine) {
+                builder.addText(" ");
+            }
+            builder.addText(identifier);
         }
         @Override
         public void number(String number) {
-            addText(number, normalFont);
+            builder.addText(number);
         }
         @Override
         public void syntax(String syntax) {
             if (prettyPrint && ":".equals(syntax)) {
-                addText("\n\t: ", normalFont);
+                builder.addText("\n\t: ");
                 startOfLine = true;
             }
             else {
-                addText(syntax, normalFont);
+                builder.addText(syntax);
             }
         }
     }
