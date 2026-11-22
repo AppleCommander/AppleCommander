@@ -21,6 +21,7 @@ package org.applecommander.javafx.content.view;
 
 import javafx.scene.Node;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.layout.HBox;
 import org.applecommander.disassembler.api.Disassembler;
 import org.applecommander.disassembler.api.Instruction;
 import org.applecommander.disassembler.api.InstructionSet;
@@ -39,7 +40,9 @@ import java.util.*;
 public class DisassemblyView extends NavigableTextView {
     private final InstructionSet instructionSet;
     private final String buttonText;
+    private final HBox toolBar;
     private final ToggleButton codeButton;
+    private final ToggleButton mliButton;
     private final List<Integer> entryPoints = new ArrayList<>();
 
     public DisassemblyView(FileContentWindow parent) {
@@ -54,6 +57,10 @@ public class DisassemblyView extends NavigableTextView {
         super(parent);
         this.codeButton = FxUtils.createOnOffButton("code.png", "code.png",
                 "Code", e -> refresh());
+        this.mliButton = FxUtils.createOnOffButton("prodos-mli-off.png", "prodos-mli-on.png",
+                "MLI", e -> refresh());
+        this.toolBar = new HBox(this.codeButton, this.mliButton);
+        this.toolBar.setSpacing(6);
         refresh();
     }
 
@@ -69,7 +76,7 @@ public class DisassemblyView extends NavigableTextView {
     /// container.
     @Override
     public Optional<Node> getAdditionalToolbarButtons() {
-        return Optional.of(codeButton);
+        return Optional.of(this.toolBar);
     }
 
     /// Invoked when a byte is clicked on with the address of that byte. That address
@@ -105,6 +112,10 @@ public class DisassemblyView extends NavigableTextView {
         if (detectionMode) {
             if (entryPoints.isEmpty()) entryPoints.add(startAddress);
             entryPoints.forEach(disassembler::entryPoint);
+        }
+        final boolean mliMode = mliButton.isSelected();
+        if (mliMode) {
+            disassembler.customMapping(Disassembler.class.getResourceAsStream("/prodos-mli.toml"));
         }
         List<Instruction> instructions = disassembler.decode(labels);
         int bytesPerLine = instructionSet.defaults().bytesPerInstruction();
