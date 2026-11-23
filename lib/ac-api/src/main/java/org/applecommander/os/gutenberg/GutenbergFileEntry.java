@@ -63,9 +63,8 @@ public class GutenbergFileEntry implements FileEntry, GutenbergConstants {
     /// Indicates if this `FileEntry` is deleted.
     @Override
     public boolean isDeleted() {
-        DataBuffer entry = readEntry();
-        return entry.getUnsignedByte(ENTRY_FIRST_SECTOR) == DELETED_FLAG
-                || entry.getUnsignedByte(ENTRY_FIRST_TRACK) == DELETED_FLAG;
+        // Not supported. The entire entry gets wiped out on delete.
+        return false;
     }
 
     /// Returns the `FileStore` that this `Entry` originates from.

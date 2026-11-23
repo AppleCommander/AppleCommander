@@ -74,11 +74,12 @@ public class GutenbergFileStoreFactory implements FileStoreFactory, GutenbergCon
                 // Unused file entry
                 continue;
             }
-            int firstTrack = data.getUnsignedByte(i+ ENTRY_FIRST_TRACK);    // sometimes if == 0x40, file is deleted
-            int firstSector = data.getUnsignedByte(i+ ENTRY_FIRST_SECTOR);  // if == 0x40, file is deleted
+            // If track or sector is 0x40, it really means 0.
+            int firstTrack = data.getUnsignedByte(i+ ENTRY_FIRST_TRACK);
+            int firstSector = data.getUnsignedByte(i+ ENTRY_FIRST_SECTOR);
             good = isHighAscii(data, i+ENTRY_NAME_OFFSET, ENTRY_NAME_LENGTH)
-                    && (firstTrack < tracksOnDisk || firstTrack == DELETED_FLAG)
-                    && (firstSector < sectorsPerTrack || firstSector == DELETED_FLAG)
+                    && (firstTrack < tracksOnDisk || firstTrack == 0x40)
+                    && (firstSector < sectorsPerTrack || firstSector == 0x40)
                     && isHighAscii(data, i+ENTRY_TYPE, 1);
             if (!good) return false;
         }

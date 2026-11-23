@@ -19,10 +19,6 @@
  */
 package org.applecommander.os.gutenberg;
 
-import org.applecommander.capability.Capability;
-
-import java.util.Set;
-
 public interface GutenbergConstants {
     int FIRST_CATALOG_TRACK = 17;
     int FIRST_CATALOG_SECTOR = 7;
@@ -45,8 +41,4 @@ public interface GutenbergConstants {
     int ENTRY_FIRST_TRACK = 12;
     int ENTRY_FIRST_SECTOR = 13;
     int ENTRY_TYPE = 14;
-
-    int DELETED_FLAG = 0x40;
-
-    Set<Capability> CAPABILITIES = Set.of(Capability.SUPPORTS_DELETED_FILES);
 }

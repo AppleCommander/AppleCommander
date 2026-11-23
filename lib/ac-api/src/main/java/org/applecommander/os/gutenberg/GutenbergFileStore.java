@@ -114,7 +114,7 @@ public class GutenbergFileStore extends ChangeRegistry<FileStore.FileStoreChange
     /// Helps identify capabilities of the existing component.
     @Override
     public boolean can(Capability capability) {
-        return CAPABILITIES.contains(capability);
+        return false;
     }
 
     /// Retrieve non-standard components.
