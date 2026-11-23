@@ -20,7 +20,7 @@
 package org.applecommander.javafx.content.view;
 
 import javafx.scene.Node;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import org.applecommander.disassembler.api.Disassembler;
 import org.applecommander.disassembler.api.Instruction;
@@ -45,6 +45,9 @@ public class DisassemblyView extends NavigableTextView {
     private final ToggleButton mliButton;
     private final List<Integer> entryPoints = new ArrayList<>();
 
+    private final DataBuffer dataFork;
+    private int startAddress;
+
     public DisassemblyView(FileContentWindow parent) {
         if (parent.getFileEntry().getContentType() == ContentType.BINARY_Z80) {
             this.instructionSet = InstructionSetZ80.forZ80();
@@ -59,8 +62,15 @@ public class DisassemblyView extends NavigableTextView {
                 "Code", e -> refresh());
         this.mliButton = FxUtils.createOnOffButton("prodos-mli-off.png", "prodos-mli-on.png",
                 "MLI", e -> refresh());
-        this.toolBar = new HBox(this.codeButton, this.mliButton);
+        Button addressButton = FxUtils.createButton("start-address.png", "Address",
+                e -> setStartAddress());
+        this.toolBar = new HBox(this.codeButton, this.mliButton, addressButton);
         this.toolBar.setSpacing(6);
+        // Setup data for disassembly once.
+        ProdosAttributes attributes = parent.getFileEntry().getProdosAttributes();
+        this.startAddress = attributes.auxType();
+        this.dataFork = parent.getFileEntry().getDataFork();
+
         refresh();
     }
 
@@ -93,6 +103,34 @@ public class DisassemblyView extends NavigableTextView {
         refresh();
     }
 
+    /// Allow the user to reconfigure the starting memory address for the disassembly.
+    public void setStartAddress() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Set Start Address");
+        dialog.setHeaderText("Please enter the new starting address.");
+        dialog.setResult(String.format("0x%04x", startAddress));
+        dialog.setGraphic(null);
+        TextField field = dialog.getEditor();
+        // Disable OK button if length is zero:
+        dialog.getDialogPane().lookupButton(ButtonType.OK).disableProperty().bind(field.textProperty().length().isEqualTo(0));
+        dialog.showAndWait().ifPresent(value -> {
+            if (value.startsWith("0x")) {
+                this.startAddress = Integer.parseInt(value.substring(2), 16);
+            }
+            else if (value.startsWith("$")) {
+                this.startAddress = Integer.parseInt(value.substring(1), 16);
+            }
+            else {
+                this.startAddress = Integer.parseInt(value);
+            }
+            if (!this.entryPoints.isEmpty()) {
+                this.entryPoints.clear();
+                this.entryPoints.add(this.startAddress);
+            }
+            refresh();
+        });
+    }
+
     /// Build the disassembly output. The disassembly must be re-processed each time
     /// due to likely changes in the entry point listing.
     public void build(TextBuilder builder) {
@@ -100,9 +138,6 @@ public class DisassemblyView extends NavigableTextView {
             // We get called early as everything is constructed; ignore the call.
             return;
         }
-        ProdosAttributes attributes = parent.getFileEntry().getProdosAttributes();
-        final int startAddress = attributes.auxType();
-        final DataBuffer dataFork = parent.getFileEntry().getDataFork();
         final int endAddress = startAddress + dataFork.limit();
         Map<Integer,String> labels = new HashMap<>();
         Disassembler.Builder disassembler = Disassembler.with(dataFork.asBytes())
