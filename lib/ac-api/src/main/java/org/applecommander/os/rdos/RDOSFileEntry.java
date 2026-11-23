@@ -182,6 +182,7 @@ public class RDOSFileEntry implements WritableFileEntry, RDOSConstants {
         return switch (getType()) {
             case "T" -> ContentType.HIGH_ASCII;
             case "A" -> ContentType.APPLESOFT;
+            case "B" -> ContentType.BINARY;
             default -> ContentType.UNKNOWN;
         };
     }

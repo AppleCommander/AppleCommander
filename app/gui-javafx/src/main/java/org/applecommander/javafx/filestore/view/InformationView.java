@@ -17,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.applecommander.javafx;
+package org.applecommander.javafx.filestore.view;
 
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -28,6 +28,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.paint.Color;
 import org.applecommander.filestore.FileStore;
+import org.applecommander.javafx.filestore.FileStoreWindow;
+import org.applecommander.javafx.filestore.ViewMode;
 
 public class InformationView extends ScrollPane {
     private final TilePane tilePane;

@@ -147,8 +147,8 @@ public class CodeFileLister {
             pw.printf(" %-10.10s ", labels.getOrDefault(instruction.address(), ""));
             pw.printf("%-5s ", instruction.mnemonic());
             pw.printf("%-30s ", instruction.operands().stream().map(operand -> {
-                        if (operand.address().isPresent() && labels.containsKey(operand.address().get())) {
-                            return operand.format(labels.get(operand.address().get()));
+                        if (operand.target().isPresent() && labels.containsKey(operand.target().get().address())) {
+                            return operand.format(labels.get(operand.target().get().address()));
                         } else {
                             return operand.format();
                         }

@@ -17,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.applecommander.javafx;
+package org.applecommander.javafx.filestore;
 
 import com.webcodepro.applecommander.ui.AppleCommander;
 import javafx.beans.property.*;
@@ -42,8 +42,15 @@ import javafx.stage.Stage;
 import org.applecommander.applesingle.AppleSingle;
 import org.applecommander.bastools.api.BasTools;
 import org.applecommander.capability.Capability;
+import org.applecommander.disassembler.api.Disassembler;
 import org.applecommander.filestore.FileStore;
 import org.applecommander.filestore.FileStores;
+import org.applecommander.javafx.AppleCommanderFX;
+import org.applecommander.javafx.FXControls;
+import org.applecommander.javafx.content.FileContentWindow;
+import org.applecommander.javafx.filestore.view.DiskUsageView;
+import org.applecommander.javafx.filestore.view.FileView;
+import org.applecommander.javafx.filestore.view.InformationView;
 import org.applecommander.javafx.settings.Settings;
 import org.applecommander.javafx.settings.SettingsDialog;
 import org.applecommander.javafx.wizard.CreateFileStoreWizard;
@@ -468,8 +475,9 @@ public class FileStoreWindow {
                         .get())
                 .table(2,
                         "AppleSingle:", AppleSingle.VERSION,
-                        "ShrinkIt:", NuFileArchive.VERSION,
-                        "BASIC Tools:", BasTools.VERSION)
+                        "BASIC Tools:", BasTools.VERSION,
+                        "Disassembler:", Disassembler.class.getPackage().getImplementationVersion(),
+                        "ShrinkIt:", NuFileArchive.VERSION)
                 .get());
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK);
         dialog.showAndWait();

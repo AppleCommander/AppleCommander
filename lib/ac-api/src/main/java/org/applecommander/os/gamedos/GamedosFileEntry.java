@@ -177,6 +177,7 @@ public class GamedosFileEntry implements WritableFileEntry, GamedosConstants {
         return switch (getFiletype()) {
             case "T" -> ContentType.HIGH_ASCII;     // admittedly, this is a guess
             case "A" -> ContentType.APPLESOFT;
+            case "B" -> ContentType.BINARY_65C02;
             default -> ContentType.UNKNOWN;
         };
     }

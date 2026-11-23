@@ -237,6 +237,7 @@ public class PascalFileEntry implements WritableFileEntry, PascalConstants {
     public ContentType getContentType() {
         return switch (getType()) {
             case "TEXT" -> ContentType.PASCAL_TEXT;
+            case "CODE" -> ContentType.PASCAL_CODEFILE;
             default -> ContentType.UNKNOWN;
         };
     }

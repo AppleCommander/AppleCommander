@@ -17,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.applecommander.javafx;
+package org.applecommander.javafx.filestore.view;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -50,6 +50,10 @@ import org.applecommander.change.ChangeListener;
 import org.applecommander.filestore.ConfigurationOption.StringConfigurationOption;
 import org.applecommander.filestore.*;
 import org.applecommander.filestore.FileStore.FileStoreChangeEvent;
+import org.applecommander.javafx.FxUtils;
+import org.applecommander.javafx.content.FileContentWindow;
+import org.applecommander.javafx.filestore.FileStoreWindow;
+import org.applecommander.javafx.filestore.ViewMode;
 import org.applecommander.javafx.filter.CharacterRestrictionFilter;
 import org.applecommander.javafx.filter.CompositeFilter;
 import org.applecommander.javafx.filter.FixedLengthFilter;
