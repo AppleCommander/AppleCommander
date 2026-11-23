@@ -4,6 +4,7 @@ org.applecommander.archive.binscii.BinsciiFileStoreFactory
 org.applecommander.archive.shrinkit.ShrinkitFileStoreFactory
 org.applecommander.archive.zip.ZipFileStoreFactory
 org.applecommander.os.gamedos.GamedosFileStoreFactory
+org.applecommander.os.gutenberg.GutenbergFileStoreFactory
 org.applecommander.os.pascal.PascalFileStoreFactory
 org.applecommander.os.rdos.RDOSFileStoreFactory
 org.applecommander.os.usdos.USDOSFileStoreFactory

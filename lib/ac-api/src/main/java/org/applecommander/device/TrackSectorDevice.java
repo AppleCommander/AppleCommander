@@ -186,6 +186,9 @@ public interface TrackSectorDevice extends Device {
         public TrackAndSectorCoordinate sectorOffsetToCoordinate(int sectorOffset) {
             return new TrackAndSectorCoordinate(sectorOffset / sectorsPerTrack, sectorOffset % sectorsPerTrack);
         }
+        public boolean isValid(int track, int sector) {
+            return track >= 0 && track < tracksOnDisk && sector > 0 && sector < sectorsPerTrack;
+        }
 
         @Override
         public List<InformationGroup> information() {

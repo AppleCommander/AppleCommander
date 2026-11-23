@@ -57,6 +57,7 @@ module org.applecommander.api {
     exports org.applecommander.os;
     exports org.applecommander.os.dos;
     exports org.applecommander.os.gamedos;
+    exports org.applecommander.os.gutenberg;
     exports org.applecommander.os.pascal;
     exports org.applecommander.os.rdos;
     exports org.applecommander.os.usdos;
@@ -75,6 +76,7 @@ module org.applecommander.api {
              org.applecommander.archive.shrinkit.ShrinkitFileStoreFactory,
              org.applecommander.archive.zip.ZipFileStoreFactory,
              org.applecommander.os.gamedos.GamedosFileStoreFactory,
+             org.applecommander.os.gutenberg.GutenbergFileStoreFactory,
              org.applecommander.os.pascal.PascalFileStoreFactory,
              org.applecommander.os.rdos.RDOSFileStoreFactory,
              org.applecommander.os.usdos.USDOSFileStoreFactory,
