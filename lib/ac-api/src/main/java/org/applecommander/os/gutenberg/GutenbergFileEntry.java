@@ -30,6 +30,7 @@ import org.applecommander.util.DataBuffer;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class GutenbergFileEntry implements FileEntry, GutenbergConstants {
@@ -91,18 +92,20 @@ public class GutenbergFileEntry implements FileEntry, GutenbergConstants {
 
     /// The first track containing file data.
     public int getFirstTrack() {
-        return readEntry().getUnsignedByte(ENTRY_FIRST_TRACK);
+        int track = readEntry().getUnsignedByte(ENTRY_FIRST_TRACK);
+        return (track == 0x40) ? 0 : track;
     }
     /// The first sector containing file data.
     public int getFirstSector() {
-        return readEntry().getUnsignedByte(ENTRY_FIRST_SECTOR) & 0x7f;
+        int sector = readEntry().getUnsignedByte(ENTRY_FIRST_SECTOR) & 0x7f;
+        return (sector == 0x40) ? 0 : sector;
     }
     /// To number of sectors in this file. (Note that Gutenberg stores track/sector links in the first
     /// 6 bytes of every sector.)
     public int getSectors() {
         // This is a little bit of a cheat. We can't tally with the inline function, but we can add to a list.
         List<Integer> count = new ArrayList<>();
-        helper.follow(directoryTrack, directorySector, (_, _, _) -> count.add(1));
+        helper.follow(getFirstTrack(), getFirstSector(), (_, _, _) -> count.add(1));
         return count.size();
     }
     /// The Gutenberg file type.
@@ -140,13 +143,25 @@ public class GutenbergFileEntry implements FileEntry, GutenbergConstants {
     /// so this allows each file store to manage the interpretation itself.
     @Override
     public ProdosAttributes getProdosAttributes() {
-        return null;
+        ProdosAttributes.Builder builder = ProdosAttributes.builder().unlocked();
+        if (Objects.requireNonNull(getContentType()) == ContentType.HIGH_ASCII) {
+            builder.TXT();
+        } else {
+            // TODO what is the address? _Where_ is the address? $900 is a guess.
+            builder.BIN(0x900);
+        }
+        return builder.size(getSize()).get();
     }
 
     /// Return the type of content, if known. It should never return null; use UNKNOWN if not known.
     @Override
     public ContentType getContentType() {
-        return FileEntry.super.getContentType();
+        return switch (getType()) {
+            case "P" -> ContentType.BINARY_65C02;
+            case "M" -> ContentType.BINARY;
+            case "L", " " -> ContentType.HIGH_ASCII;
+            default -> ContentType.UNKNOWN;
+        };
     }
 
     /// Retrieve non-standard components.

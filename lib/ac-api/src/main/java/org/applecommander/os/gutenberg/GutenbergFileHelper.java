@@ -36,7 +36,19 @@ public class GutenbergFileHelper implements GutenbergConstants {
 
     public void follow(int track, int sector, SectorHandler handler) {
         Set<TrackAndSectorCoordinate> visited = new HashSet<>();
-        while (track < 0x80) {
+        boolean atEnd = false;
+        while (!atEnd) {
+            atEnd = track >= 0x80 || sector >= 0x80;
+            track &= 0x7f;
+            sector &= 0x7f;
+            if (track == 0x40) track = 0;
+            if (sector == 0x40) sector = 0;
+
+            // Break on invalid coordinates
+            if (!device.getGeometry().isValid(track, sector)) {
+                break;
+            }
+
             // Prevent circular references
             TrackAndSectorCoordinate coordinate = Coordinate.trackAndSector(track, sector);
             if (visited.contains(coordinate)) {
