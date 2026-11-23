@@ -171,6 +171,17 @@ public class DisassemblyView extends NavigableTextView {
                 builder.addText("; %s", description);
             });
             builder.addText("\n");
+            // Catch any extra data we didn't cover.
+            if (code.length > bytesPerLine) {
+                for (int i=bytesPerLine; i<code.length; i++) {
+                    if (i % bytesPerLine == 0) {
+                        if (i > bytesPerLine) builder.addText("\n");
+                        builder.addText("%04X- ", inst.address()+i);
+                    }
+                    builder.addText("%02X ", code[i]);
+                }
+                builder.addText("\n");
+            }
         }
     }
 }
