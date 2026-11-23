@@ -66,6 +66,10 @@ public class GutenbergDiskFactory implements DiskFactory {
             if (!good) return false;
             // Check that the file entries are as expected
             for (int i=0x10; i<data.limit(); i+= 0x10) {
+                if (data.getUnsignedByte(i) == 0xa0) {
+                    // Unused file entry
+                    continue;
+                }
                 int firstTrack = data.getUnsignedByte(i+0xc);
                 int firstSector = data.getUnsignedByte(i+0xd);  // if == 0x40, file is deleted
                 good = isHighAscii(data, i, 12)
