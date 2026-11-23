@@ -22,6 +22,7 @@ package org.applecommander.os.usdos;
 import org.applecommander.device.Coordinate;
 import org.applecommander.device.Coordinate.TrackAndSectorCoordinate;
 import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.exception.DeletedFileException;
 import org.applecommander.exception.UnableToWriteException;
 import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.FileStore;
@@ -206,6 +207,9 @@ public class USDOSFileEntry implements WritableFileEntry, USDOSConstants {
     /// This does not include any metadata that may be embedded with the file.
     @Override
     public DataBuffer getDataFork() {
+        if (isDeleted()) {
+            throw new DeletedFileException("The file '%s' is deleted.", getName());
+        }
         DataBuffer data = device.readList(readSectorIndex());
         int size = (int)getSize();
         return data.slice(0, size);

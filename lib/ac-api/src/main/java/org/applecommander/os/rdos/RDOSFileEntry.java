@@ -21,6 +21,7 @@ package org.applecommander.os.rdos;
 
 import org.applecommander.device.BlockDevice;
 import org.applecommander.device.TrackSectorDevice;
+import org.applecommander.exception.DeletedFileException;
 import org.applecommander.exception.DiskFullException;
 import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.FileStore;
@@ -150,6 +151,9 @@ public class RDOSFileEntry implements WritableFileEntry, RDOSConstants {
     /// This does not include any metadata that may be embedded with the file.
     @Override
     public DataBuffer getDataFork() {
+        if (isDeleted()) {
+            throw new DeletedFileException("The file '%s' is deleted.", getName());
+        }
         return device.readRange(getFirstBlock(), getBlocks()).slice(0, (int)getSize());
     }
 
