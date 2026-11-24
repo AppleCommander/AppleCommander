@@ -20,14 +20,17 @@
 package org.applecommander.javafx.content.view;
 
 import javafx.scene.Node;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import org.applecommander.javafx.content.FileContentView;
 import org.applecommander.javafx.content.FileContentWindow;
+import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.InlineCssTextArea;
 
 public abstract class FormattedTextView implements FileContentView {
     protected final FileContentWindow parent;
+    protected final VirtualizedScrollPane<InlineCssTextArea> scrollPane;
     protected final InlineCssTextArea textArea;
 
     public FormattedTextView(FileContentWindow parent) {
@@ -36,6 +39,8 @@ public abstract class FormattedTextView implements FileContentView {
         this.textArea.autosize();
         this.textArea.setEditable(false);
         this.textArea.setWrapText(true);
+        this.scrollPane = new VirtualizedScrollPane<>(textArea);
+        this.scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
         parent.fontSizeProperty().addListener((_, _, _) -> {
             refresh();
@@ -48,7 +53,7 @@ public abstract class FormattedTextView implements FileContentView {
     /// Return the primary graphical `Node` representing the contents.
     @Override
     public Node getViewNode() {
-        return textArea;
+        return scrollPane;
     }
 
     /// Perform a copy of the contents to the clipboard.
