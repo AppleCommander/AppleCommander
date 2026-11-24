@@ -35,6 +35,7 @@ public enum ThemeSelection {
     private final String description;
     private final String lightModeUrl;
     private final String darkModeUrl;
+    private final String modifierUrl;
 
     /// This constructor is for JavaFX supplied themes. They are (apparently?) always a light mode theme.
     ThemeSelection(String description, String lightModeUrl) {
@@ -43,6 +44,7 @@ public enum ThemeSelection {
         this.description = description;
         this.lightModeUrl = lightModeUrl;
         this.darkModeUrl = null;
+        this.modifierUrl = null;
     }
     /// This constructor is for AtlantaFX supplied themes. They mostly have light and dark mode themes.
     ThemeSelection(String description, Theme... themes) {
@@ -62,10 +64,15 @@ public enum ThemeSelection {
         }
         this.lightModeUrl = lightModeUrl;
         this.darkModeUrl = darkModeUrl;
+        this.modifierUrl = "/css/atlantafx-themes.css";
     }
 
     public String getDescription() {
         return description;
+    }
+
+    public String getModifierUrl() {
+        return modifierUrl;
     }
 
     /// Apply the appropriate theme. Note that we don't always have the theme to match the system color scheme,

@@ -56,7 +56,8 @@ public enum ContentType {
     /// Z80 application.
     BINARY_Z80(Subtype.DISASSEMBLY),
     /// Binary file. Unknown subtype.
-    BINARY(Subtype.NONE);
+    BINARY(Subtype.NONE),
+    APPLEWORKS_WORD_PROCESSOR(Subtype.WORD_PROCESSOR);
 
     public final Subtype subtype;
 
@@ -83,6 +84,7 @@ public enum ContentType {
         /// should be used to determine specific CPU.
         DISASSEMBLY,
         /// Represents an application that has various application segments.
-        SEGMENTED_APPLICATION;
+        SEGMENTED_APPLICATION,
+        WORD_PROCESSOR;
     }
 }

@@ -205,6 +205,7 @@
     "code": "$1A",
     "abbreviation": "AWP",
     "description": "AppleWorks Word Processor [Upper-/lowercase in name]",
+    "contentType": "APPLEWORKS_WORD_PROCESSOR",
     "auxTypes": []
   },
   {

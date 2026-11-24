@@ -1,0 +1,7 @@
+.styled-text-area {
+    -fx-background-color: -color-bg-default;
+}
+
+.styled-text-area .text {
+    -fx-fill: -color-fg-default;
+}
