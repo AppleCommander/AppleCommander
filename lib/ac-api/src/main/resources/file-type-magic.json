@@ -442,6 +442,7 @@
     "code": "$50",
     "abbreviation": "GWP",
     "description": "Apple IIgs Word Processor",
+    "contentType": "LOW_ASCII",
     "auxTypes": [
       {
         "code": "$5445",
