@@ -81,7 +81,10 @@ public class FileContentWindow {
             case DISASSEMBLY -> addView(new DisassemblyView(this));
             case WORD_PROCESSOR -> addView(new WordProcessorView(this));
         }
-        addView(new HexView(this));
+        addView(new HexView(this, true));
+        if (fileEntry.getResourceFork().isPresent()) {
+            addView(new HexView(this, false));
+        }
         // We don't have a "known" executable (a general BIN is what this is), add disassembly as a secondary option
         if (fileEntry.getContentType() == ContentType.BINARY) {
             addView(new DisassemblyView(this));
