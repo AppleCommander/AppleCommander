@@ -19,14 +19,17 @@
  */
 package org.applecommander.javafx.content.view;
 
-import com.google.common.base.Strings;
 import javafx.scene.text.TextAlignment;
+import org.applecommander.converter.ConverterRepository;
+import org.applecommander.converter.WordProcessorConverter;
 import org.applecommander.javafx.content.FileContentWindow;
-import org.applecommander.util.DataBuffer;
 
-// A hacked up AWP viewer. Should be made generic (per the name!).
+/// Provides a common view to word processing documents.
 public class WordProcessorView extends FormattedTextView {
+    private final WordProcessorConverter converter;
+
     public WordProcessorView(FileContentWindow parent) {
+        this.converter = ConverterRepository.getWordProcessor(parent.getFileEntry()).orElseThrow();
         super(parent);
         refresh();
     }
@@ -34,64 +37,53 @@ public class WordProcessorView extends FormattedTextView {
     /// Refresh the contents of the text area.
     @Override
     public void refresh() {
-        DataBuffer data = parent.getFileEntry().getDataFork();
         textArea.replaceText("");
         StyleTracker styleTracker = new StyleTracker(parent.fontSizeProperty().getValue());
         textArea.setTextInsertionStyle(styleTracker.getStyle());
-        final int sfMinVers = data.getUnsignedByte(183);
-        data.position(300);
-        boolean first = true;
-        while (data.hasRemaining()) {
-            int byte0 = data.readUnsignedByte();
-            int byte1 = data.readUnsignedByte();
-            if (first && sfMinVers > 0) {
-                first = false;
-                continue;
-            }
-            first = false;
-            if (byte0 == 0xff && byte1 == 0xff) {
-                break;
-            }
-            switch (byte1) {
-                case 0x00 -> {
-                    DataBuffer record = data.readBuffer(byte0);
-                    // These are adjusted since we already read bytes 0 and 1.
-                    if (record.getUnsignedByte(0) != 0xff) {
-                        int len = record.getUnsignedByte(1);
-                        boolean addCR = len >= 0x80;
-                        len &= 0x7f;
-                        StringBuilder sb = new StringBuilder();
-                        for (int i=0; i<len; i++) {
-                            int ch = record.getUnsignedByte(i+2);
-                            if (ch >= 0x20) {
-                                sb.append((char)ch);
-                            }
-                            else {
-                                switch (ch) {
-                                    case 0x01 -> styleTracker.setBold(true);
-                                    case 0x02 -> styleTracker.setBold(false);
-                                    case 0x07 -> styleTracker.setUnderline(true);
-                                    case 0x08 -> styleTracker.setUnderline(false);
-                                }
-                            }
-                        }
-                        if (addCR) sb.append("\n");
-                        textArea.appendText(sb.toString());
-                    }
+        converter.convert(new WordProcessorConverter.EventHandler() {
+            // Used to skip sections of text, such as page headers and footers.
+            private boolean ignore = false;
+            @Override
+            public void text(String text) {
+                if (ignore) return;
+                if (styleTracker.hasChanged()) {
+                    textArea.setTextInsertionStyle(styleTracker.getStyle());
                 }
-                case 0xd0 -> textArea.appendText("\n");
-                case 0xde -> textArea.appendText(Strings.repeat(" ", byte0));
-                case 0xdf -> styleTracker.setAlignment(TextAlignment.JUSTIFY);
-                case 0xe0 -> styleTracker.setAlignment(TextAlignment.LEFT);
-                case 0xe1 -> styleTracker.setAlignment(TextAlignment.CENTER);
-                default -> {}
+                textArea.appendText(text);
             }
-            if (styleTracker.hasChanged()) {
-                textArea.setTextInsertionStyle(styleTracker.getStyle());
+            @Override
+            public void control(WordProcessorConverter.Control control, int... args) {
+                if (ignore) {
+                    ignore = switch (control) {
+                        case END_PAGE_HEADER, END_PAGE_FOOTER -> false;
+                        default -> true;
+                    };
+                    return;
+                }
+                switch (control) {
+                    case BEGIN_BOLD -> styleTracker.setBold(true);
+                    case END_BOLD -> styleTracker.setBold(false);
+                    case BEGIN_UNDERLINE -> styleTracker.setUnderline(true);
+                    case END_UNDERLINE -> styleTracker.setUnderline(false);
+                    case BEGIN_SUPERSCRIPT -> styleTracker.setSuperscript(true);
+                    case END_SUPERSCRIPT -> styleTracker.setSuperscript(false);
+                    case BEGIN_SUBSCRIPT -> styleTracker.setSubscript(true);
+                    case END_SUBSCRIPT -> styleTracker.setSubscript(false);
+                    case ALIGN_LEFT -> styleTracker.setAlignment(TextAlignment.LEFT);
+                    case ALIGN_CENTER -> styleTracker.setAlignment(TextAlignment.CENTER);
+                    case ALIGN_RIGHT -> styleTracker.setAlignment(TextAlignment.RIGHT);
+                    case ALIGN_JUSTIFY -> styleTracker.setAlignment(TextAlignment.JUSTIFY);
+                    case BEGIN_PAGE_HEADER, BEGIN_PAGE_FOOTER -> ignore = true;
+                    default -> {}
+                }
             }
-        }
+        });
     }
 
+    /// The RichTextFX component takes styling by CSS, and the styles replace the existing
+    /// style. This component tracks current state and builds the appropriate CSS style
+    /// when requested. It also tracks if there have been changes to reduce the number
+    /// of styles being applied.
     public static class StyleTracker {
         private boolean changed = false;
         private double fontSize;
