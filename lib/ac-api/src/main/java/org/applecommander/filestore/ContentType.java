@@ -58,6 +58,8 @@ public enum ContentType {
     /// Binary file. Unknown subtype.
     BINARY(Subtype.NONE),
     APPLEWORKS_WORD_PROCESSOR(Subtype.WORD_PROCESSOR);
+    /// AppleWorks word processor document ($1A AWP).
+    APPLEWORKS_WORD_PROCESSOR(Subtype.WORD_PROCESSOR),
 
     public final Subtype subtype;
 

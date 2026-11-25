@@ -5,10 +5,10 @@ import org.applecommander.filestore.FileEntry;
 import org.applecommander.util.DataBuffer;
 
 /// Converts an AppleWorks Word Processor (AWP) document to a word processor event stream.
-public class AppleworksWordProcessorConverter implements WordProcessorConverter {
+public class AppleWorksWordProcessorConverter implements WordProcessorConverter {
     private final DataBuffer data;
 
-    public AppleworksWordProcessorConverter(FileEntry fileEntry) {
+    public AppleWorksWordProcessorConverter(FileEntry fileEntry) {
         this.data = fileEntry.getDataFork();
     }
 
