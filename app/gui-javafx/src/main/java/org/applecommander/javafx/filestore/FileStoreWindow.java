@@ -105,6 +105,8 @@ public class FileStoreWindow {
     private final BooleanProperty canSave = new SimpleBooleanProperty();
     private final List<FileContentWindow> childWindows = new ArrayList<>();
 
+    private String priorExtensionSelection;
+
     public FileStoreSelectionModel fileStoreSelection() {
         return fileStoreSelection;
     }
@@ -300,13 +302,18 @@ public class FileStoreWindow {
         fileChooser.setTitle("Open Apple II disk image");
         Settings.getLastOpenedDirectory().ifPresent(fileChooser::setInitialDirectory);
         for (FileExtension extension : FileExtensions.FILE_FILTERS) {
-            fileChooser.getExtensionFilters().add(new ExtensionFilter(extension.description(), extension.extensions()));
+            ExtensionFilter filter = new ExtensionFilter(extension.description(), extension.extensions());
+            fileChooser.getExtensionFilters().add(filter);
+            if (Objects.equals(extension.description(), this.priorExtensionSelection)) {
+                fileChooser.setSelectedExtensionFilter(filter);
+            }
         }
 
         File selectedFile = fileChooser.showOpenDialog(primaryStage);
         if (selectedFile == null) {
             return;
         }
+        this.priorExtensionSelection = fileChooser.getSelectedExtensionFilter().getDescription();
         Settings.setLastOpenedDirectory(selectedFile.getParentFile());
         Optional<Source> source = Sources.create(selectedFile);
         var inspected = FileStores.inspect(source.orElseThrow());
