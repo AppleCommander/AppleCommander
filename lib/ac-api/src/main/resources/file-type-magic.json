@@ -443,11 +443,11 @@
     "code": "$50",
     "abbreviation": "GWP",
     "description": "Apple IIgs Word Processor",
-    "contentType": "LOW_ASCII",
     "auxTypes": [
       {
         "code": "$5445",
-        "description": "Teach document [Application Specific]"
+        "description": "Teach document [Application Specific]",
+        "contentType": "LOW_ASCII"
       },
       {
         "code": "$8001",
@@ -1283,6 +1283,7 @@
     "code": "$6F",
     "abbreviation": "HDV",
     "description": "PC Transporter volume",
+    "contentType": "DISK_IMAGE",
     "auxTypes": []
   },
   {
