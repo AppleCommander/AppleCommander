@@ -39,7 +39,7 @@ public class WordProcessorView extends FormattedTextView {
     public void refresh() {
         textArea.replaceText("");
         StyleTracker styleTracker = new StyleTracker(parent.fontSizeProperty().getValue());
-        textArea.setTextInsertionStyle(styleTracker.getStyle());
+        textArea.setParagraphStyle(textArea.getCurrentParagraph(), styleTracker.getStyle());
         converter.convert(new WordProcessorConverter.EventHandler() {
             // Used to skip sections of text, such as page headers and footers.
             private boolean ignore = false;
@@ -47,7 +47,7 @@ public class WordProcessorView extends FormattedTextView {
             public void text(String text) {
                 if (ignore) return;
                 if (styleTracker.hasChanged()) {
-                    textArea.setTextInsertionStyle(styleTracker.getStyle());
+                    textArea.setParagraphStyle(textArea.getCurrentParagraph(), styleTracker.getStyle());
                 }
                 textArea.appendText(text);
             }
@@ -155,6 +155,7 @@ public class WordProcessorView extends FormattedTextView {
             if (alignment != TextAlignment.LEFT) {
                 sb.append("-fx-text-alignment: ");
                 sb.append(alignment.name().toLowerCase());
+                sb.append("; ");
             }
             this.changed = false;
             return sb.toString();
