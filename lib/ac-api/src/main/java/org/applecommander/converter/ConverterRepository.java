@@ -58,7 +58,7 @@ public class ConverterRepository {
     /// Get the word processor file converter.
     public static Optional<WordProcessorConverter> getWordProcessor(FileEntry fileEntry) {
         return switch(fileEntry.getContentType()) {
-            case APPLEWORKS_WORD_PROCESSOR -> Optional.of(new AppleworksWordProcessorConverter(fileEntry));
+            case APPLEWORKS_WORD_PROCESSOR -> Optional.of(new AppleWorksWordProcessorConverter(fileEntry));
             default -> Optional.empty();
         };
     }
