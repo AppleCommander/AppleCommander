@@ -205,6 +205,7 @@
     "code": "$1A",
     "abbreviation": "AWP",
     "description": "AppleWorks Word Processor [Upper-/lowercase in name]",
+    "contentType": "APPLEWORKS_WORD_PROCESSOR",
     "auxTypes": []
   },
   {
@@ -445,7 +446,8 @@
     "auxTypes": [
       {
         "code": "$5445",
-        "description": "Teach document [Application Specific]"
+        "description": "Teach document [Application Specific]",
+        "contentType": "LOW_ASCII"
       },
       {
         "code": "$8001",
@@ -1281,6 +1283,7 @@
     "code": "$6F",
     "abbreviation": "HDV",
     "description": "PC Transporter volume",
+    "contentType": "DISK_IMAGE",
     "auxTypes": []
   },
   {

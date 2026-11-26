@@ -27,6 +27,8 @@ import java.util.Optional;
 /// The `ConverterRepository` is used to translate `ContentType` to specific types of converters.
 public class ConverterRepository {
     /// Identify the appropriate type of `TextConverter` for the given `ContentType`.
+    /// Note that the `TextConverter` is unique in that it is two-way and is used for reading
+    /// _and_ writing text files.
     public static Optional<TextConverter> getTextConverter(ContentType contentType) {
         return switch (contentType) {
             case HIGH_ASCII -> Optional.of(new ASCIIConverter(true));
@@ -49,6 +51,14 @@ public class ConverterRepository {
         return switch(fileEntry.getContentType()) {
             case APPLESOFT -> Optional.of(new ApplesoftConverter(fileEntry));
             case BUSINESS_BASIC -> Optional.of(new BusinessBASICConverter(fileEntry));
+            default -> Optional.empty();
+        };
+    }
+
+    /// Get the word processor file converter.
+    public static Optional<WordProcessorConverter> getWordProcessor(FileEntry fileEntry) {
+        return switch(fileEntry.getContentType()) {
+            case APPLEWORKS_WORD_PROCESSOR -> Optional.of(new AppleWorksWordProcessorConverter(fileEntry));
             default -> Optional.empty();
         };
     }

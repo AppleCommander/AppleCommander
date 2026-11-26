@@ -34,6 +34,10 @@ import org.applecommander.filestore.ContentType;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.javafx.FxUtils;
 import org.applecommander.javafx.content.view.*;
+import org.applecommander.javafx.settings.Settings;
+
+import java.net.URL;
+import java.util.Objects;
 
 public class FileContentWindow {
     private final BorderPane window;
@@ -47,6 +51,7 @@ public class FileContentWindow {
     private final DoubleProperty fontSizeProperty = new SimpleDoubleProperty();
 
     private final FileEntry fileEntry;
+    private FileContentView currentView;
 
     public FileContentWindow(FileEntry fileEntry) {
         this.toolBar = new ToolBar();
@@ -74,8 +79,12 @@ public class FileContentWindow {
             case BASIC_VARIABLES -> addView(new VariablesView(this));
             case TEXT -> addView(new TextView(this));
             case DISASSEMBLY -> addView(new DisassemblyView(this));
+            case WORD_PROCESSOR -> addView(new WordProcessorView(this));
         }
-        addView(new HexView(this));
+        addView(new HexView(this, true));
+        if (fileEntry.getResourceFork().isPresent()) {
+            addView(new HexView(this, false));
+        }
         // We don't have a "known" executable (a general BIN is what this is), add disassembly as a secondary option
         if (fileEntry.getContentType() == ContentType.BINARY) {
             addView(new DisassemblyView(this));
@@ -94,6 +103,18 @@ public class FileContentWindow {
 
     public void show() {
         Scene scene = new Scene(window, 800, 500);
+        // Not a great solution, but we need to apply themes to the RichTextFX component since it ignores the existing
+        // theme. The 'ThemeSelection' object contains the modifier theme to hook them together. The CSS cannot be
+        // applied in the application, since that is a _single_ CSS file, and the Scene itself doesn't show anywhere
+        // in the created objects (it's null). Thus, this shim/hack/bad code is here. :shrug:
+        Settings.getThemeSelection().ifPresent(theme -> {
+            if (theme.getModifierUrl() != null) {
+                URL resource = getClass().getResource(theme.getModifierUrl());
+                Objects.requireNonNull(resource);
+                scene.getStylesheets().addAll(resource.toExternalForm());
+            }
+        });
+
         stage = new Stage();
         stage.setScene(scene);
         stage.setTitle(String.format("%s - %s", fileEntry.getFileStore().getLabel(), fileEntry.getName()));
@@ -120,6 +141,7 @@ public class FileContentWindow {
     /// Toggle a view into the display. Note that this also handles swapping buttons.
     public void showView(FileContentView view) {
         this.window.setCenter(view.getViewNode());
+        this.currentView = view;
         view.getAdditionalToolbarButtons().ifPresentOrElse(node -> {
             this.viewCustomizationButtons.getChildren().setAll(node);
         }, () -> {
@@ -149,8 +171,8 @@ public class FileContentWindow {
         Button increaseSize = FxUtils.createButton("plus.png", "Increase", this::decreaseFontSize);
 
         Button copy = FxUtils.createButton("copy.png", "Copy", _ -> {
-            if (this.window.getCenter() instanceof FileContentView view) {
-                view.copy();
+            if (this.currentView != null) {
+                this.currentView.copy();
             }
         });
 
