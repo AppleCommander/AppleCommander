@@ -2,6 +2,8 @@
 
 $ErrorActionPreference = "Stop"
 
+& (Join-Path $PSScriptRoot "repackage-non-module-jars.ps1")
+
 # Read file as raw text and preserve lines starting with !
 $fileContent = Get-Content -Path ".\gradle.properties" -Raw
 # Replace leading # with a placeholder before parsing

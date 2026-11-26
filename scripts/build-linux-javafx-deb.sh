@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -e
+
+./scripts/repackage-non-module-jars.sh
+
 source gradle.properties
 SUBPROJECT="app/gui-javafx"
 VERSION="${version//-SNAPSHOT/}"
