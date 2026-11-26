@@ -60,7 +60,52 @@ public class AppleWorksWordProcessorConverter implements WordProcessorConverter 
                         for (int i = 0; i < len; i++) {
                             int ch = record.getUnsignedByte(i + 2);
                             if (ch >= 0x20) {
-                                sb.append((char) ch);
+                                // Trying to translate a few of the MouseText characters following
+                                // https://www.kreativekorp.com/charset/encoding/x-apple2gs/
+                                switch (ch) {
+                                    case 0xc0 -> {
+                                        sb.append(Character.toChars(0x1FBE9));
+                                        sb.append(Character.toChars(0x1FBEB));
+                                    }
+                                    case 0xc1 -> {
+                                        sb.append(Character.toChars(0x1FBE1));
+                                        sb.append(Character.toChars(0x1FBE3));
+                                    }
+                                    case 0xc2 -> sb.append(Character.toChars(0x1fbb0));
+                                    case 0xc3 -> {
+                                        sb.append(Character.toChars(0x231B));
+                                        sb.append(Character.toChars(0xFE0E));
+                                    }
+                                    case 0xc4 -> sb.append(Character.toChars(0x2713));
+                                    case 0xc5 -> sb.append(Character.toChars(0x1FBB1));
+                                    case 0xc6 -> sb.append(Character.toChars(0x1FBB4));
+                                    case 0xc7 -> sb.append(Character.toChars(0x1FB81));
+                                    case 0xc8 -> sb.append(Character.toChars(0x2190));
+                                    case 0xc9 -> sb.append(Character.toChars(0x2026));
+                                    case 0xca -> sb.append(Character.toChars(0x2193));
+                                    case 0xcb -> sb.append(Character.toChars(0x2191));
+                                    case 0xcc -> sb.append(Character.toChars(0x2594));
+                                    case 0xcd -> sb.append(Character.toChars(0x21B2));
+                                    case 0xce -> sb.append(Character.toChars(0x2589));
+                                    case 0xcf -> sb.append(Character.toChars(0x1FBB5));
+                                    case 0xd0 -> sb.append(Character.toChars(0x1FBB6));
+                                    case 0xd1 -> sb.append(Character.toChars(0x1FBB7));
+                                    case 0xd2 -> sb.append(Character.toChars(0x1FBB8));
+                                    case 0xd3 -> sb.append(Character.toChars(0x2500));
+                                    case 0xd4 -> sb.append(Character.toChars(0x1FB7C));
+                                    case 0xd5 -> sb.append(Character.toChars(0x2192));
+                                    case 0xd6 -> sb.append(Character.toChars(0x1FB95));
+                                    case 0xd7 -> sb.append(Character.toChars(0x1FB96));
+                                    case 0xd8 -> sb.append(Character.toChars(0x1FBB9));
+                                    case 0xd9 -> sb.append(Character.toChars(0x1FBBA));
+                                    case 0xda -> sb.append(Character.toChars(0x2595));
+                                    case 0xdb -> sb.append(Character.toChars(0x25C6));
+                                    case 0xdc -> sb.append(Character.toChars(0x1FB80));
+                                    case 0xdd -> sb.append(Character.toChars(0x1FBBB));
+                                    case 0xde -> sb.append(Character.toChars(0x1FBBC));
+                                    case 0xdf -> sb.append(Character.toChars(0x258F));
+                                    default -> sb.append((char) ch);
+                                }
                             } else {
                                 if (!sb.isEmpty()) {
                                     handler.text(sb.toString());
