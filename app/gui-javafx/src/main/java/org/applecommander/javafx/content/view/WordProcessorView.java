@@ -178,10 +178,17 @@ public class WordProcessorView extends FormattedTextView {
                 case END_BOLD -> styleTracker.setBold(false);
                 case BEGIN_UNDERLINE -> styleTracker.setUnderline(true);
                 case END_UNDERLINE -> styleTracker.setUnderline(false);
+                case BEGIN_ITALIC -> styleTracker.setItalic(true);
+                case END_ITALIC -> styleTracker.setItalic(false);
                 case BEGIN_SUPERSCRIPT -> styleTracker.setSuperscript(true);
                 case END_SUPERSCRIPT -> styleTracker.setSuperscript(false);
                 case BEGIN_SUBSCRIPT -> styleTracker.setSubscript(true);
                 case END_SUBSCRIPT -> styleTracker.setSubscript(false);
+                case FONT_SIZE -> {
+                    if (args.length > 0) {
+                        styleTracker.setFontSize(args[0]);
+                    }
+                }
                 case ALIGN_LEFT -> styleTracker.setAlignment(TextAlignment.LEFT);
                 case ALIGN_CENTER -> styleTracker.setAlignment(TextAlignment.CENTER);
                 case ALIGN_RIGHT -> styleTracker.setAlignment(TextAlignment.RIGHT);
