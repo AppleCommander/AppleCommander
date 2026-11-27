@@ -458,6 +458,9 @@ public class DataBuffer {
     public void position(int n) {
         this.buffer.position(n);
     }
+    public int peekUnsignedByte() {
+        return Byte.toUnsignedInt(this.buffer.get(position()));
+    }
     public int readUnsignedByte() {
         return Byte.toUnsignedInt(this.buffer.get());
     }

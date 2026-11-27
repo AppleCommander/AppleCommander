@@ -459,7 +459,8 @@
       },
       {
         "code": "$8010",
-        "description": "AppleWorks GS Word processor [Application Specific]"
+        "description": "AppleWorks GS Word processor [Application Specific]",
+        "contentType": "APPLEWORKS_GS_WORD_PROCESSOR"
       },
       {
         "code": "$8011",
