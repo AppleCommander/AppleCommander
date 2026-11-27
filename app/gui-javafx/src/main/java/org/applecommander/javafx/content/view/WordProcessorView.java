@@ -19,6 +19,12 @@
  */
 package org.applecommander.javafx.content.view;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.Node;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.HBox;
 import javafx.scene.text.TextAlignment;
 import org.applecommander.converter.ConverterRepository;
 import org.applecommander.converter.WordProcessorConverter;
@@ -26,17 +32,41 @@ import org.applecommander.filestore.FileEntry;
 import org.applecommander.javafx.FxUtils;
 import org.applecommander.javafx.content.FileContentWindow;
 
+import java.util.Optional;
+
 /// Provides a common view to word processing documents.
 public class WordProcessorView extends FormattedTextView {
     private final String fileTypeText;
     private final WordProcessorConverter converter;
+    private final HBox toolBar = new HBox();
+    private final ToggleButton headerButton;
+    private final ToggleButton footerButton;
+    private final ObjectProperty<DocumentSection> sectionProperty = new SimpleObjectProperty<>();
 
     public WordProcessorView(FileContentWindow parent) {
         FileEntry fileEntry = parent.getFileEntry();
         fileTypeText = fileEntry.getProdosAttributes().fileTypeText();
         this.converter = ConverterRepository.getWordProcessor(fileEntry).orElseThrow();
         super(parent);
-        refresh();
+        // Setup section toggles; must be after superclass constructor
+        ToggleGroup section = new ToggleGroup();
+        ToggleButton bodyButton = FxUtils.createToggleButton("page-layout-body.png", "Body", section, e -> {
+            sectionProperty.setValue(DocumentSection.BODY);
+        });
+        bodyButton.setSelected(true);
+        headerButton = FxUtils.createToggleButton("page-layout-header.png", "Header", section, e -> {
+            sectionProperty.setValue(DocumentSection.HEADER);
+        });
+        footerButton = FxUtils.createToggleButton("page-layout-footer.png", "Footer", section, e -> {
+            sectionProperty.setValue(DocumentSection.FOOTER);
+        });
+        this.toolBar.setSpacing(0);
+        this.toolBar.getChildren().addAll(bodyButton, headerButton, footerButton);
+
+        sectionProperty.addListener((_, _, _) -> {
+            refresh();
+        });
+        sectionProperty.setValue(DocumentSection.BODY);
     }
 
     /// Refresh the contents of the text area.
@@ -45,11 +75,14 @@ public class WordProcessorView extends FormattedTextView {
         textArea.replaceText("");
         StyleTracker styleTracker = new StyleTracker(parent.fontSizeProperty().getValue());
         textArea.setParagraphStyle(textArea.getCurrentParagraph(), styleTracker.getStyle());
+        WordProcessorEventHandler wpEventHandler = new WordProcessorEventHandler(styleTracker, sectionProperty.getValue());
         try {
-            converter.convert(new WordProcessorEventHandler(styleTracker));
+            converter.convert(wpEventHandler);
         } catch (Throwable t) {
             FxUtils.showErrorDialog("Error converting document", t);
         }
+        this.headerButton.setDisable(wpEventHandler.isHeaderEmpty());
+        this.footerButton.setDisable(wpEventHandler.isFooterEmpty());
     }
 
     /// Get the toggle button configuration. The `FileContentWindow` will set up the toolbar
@@ -57,6 +90,17 @@ public class WordProcessorView extends FormattedTextView {
     @Override
     public ButtonConfig getButtonConfig() {
         return new ButtonConfig(fileTypeText, "document.png");
+    }
+
+    /// Provide any additional toolbar items. Note that a single button can be returned
+    /// with as a `Button` but multiple buttons should be in an `HBox` or similar
+    /// container.
+    public Optional<Node> getAdditionalToolbarButtons() {
+        return Optional.of(toolBar);
+    }
+
+    private enum DocumentSection {
+        BODY, HEADER, FOOTER;
     }
 
     /// The RichTextFX component takes styling by CSS, and the styles replace the existing
@@ -143,18 +187,32 @@ public class WordProcessorView extends FormattedTextView {
 
     private class WordProcessorEventHandler implements WordProcessorConverter.EventHandler {
         private final StyleTracker styleTracker;
-        // Used to skip sections of text, such as page headers and footers.
-        private boolean ignore;
+        private final DocumentSection desiredSection;
+        private DocumentSection currentSection;
+        private boolean headerEmpty = true;
+        private boolean footerEmpty = true;
 
-        public WordProcessorEventHandler(StyleTracker styleTracker) {
+        public WordProcessorEventHandler(StyleTracker styleTracker, DocumentSection desiredSection) {
             this.styleTracker = styleTracker;
-            ignore = false;
+            this.desiredSection = desiredSection;
+            this.currentSection = DocumentSection.BODY;
+        }
+
+        public boolean isHeaderEmpty() {
+            return headerEmpty;
+        }
+        public boolean isFooterEmpty() {
+            return footerEmpty;
         }
 
         /// Add a text string into the resulting document.
         @Override
         public void text(String text) {
-            if (ignore) return;
+            if (!text.isBlank()) {
+                if (currentSection == DocumentSection.HEADER) headerEmpty = false;
+                if (currentSection == DocumentSection.FOOTER) footerEmpty = false;
+            }
+            if (desiredSection != currentSection) return;
             if (styleTracker.hasChanged()) {
                 textArea.setParagraphStyle(textArea.getCurrentParagraph(), styleTracker.getStyle());
             }
@@ -166,10 +224,10 @@ public class WordProcessorView extends FormattedTextView {
         /// situations.
         @Override
         public void control(WordProcessorConverter.Control control, int... args) {
-            if (ignore) {
-                ignore = switch (control) {
-                    case END_PAGE_HEADER, END_PAGE_FOOTER -> false;
-                    default -> true;
+            if (desiredSection != currentSection) {
+                this.currentSection = switch (control) {
+                    case END_PAGE_FOOTER, END_PAGE_HEADER -> DocumentSection.BODY;
+                    default -> currentSection;
                 };
                 return;
             }
@@ -193,7 +251,8 @@ public class WordProcessorView extends FormattedTextView {
                 case ALIGN_CENTER -> styleTracker.setAlignment(TextAlignment.CENTER);
                 case ALIGN_RIGHT -> styleTracker.setAlignment(TextAlignment.RIGHT);
                 case ALIGN_JUSTIFY -> styleTracker.setAlignment(TextAlignment.JUSTIFY);
-                case BEGIN_PAGE_HEADER, BEGIN_PAGE_FOOTER -> ignore = true;
+                case BEGIN_PAGE_HEADER -> currentSection = DocumentSection.HEADER;
+                case BEGIN_PAGE_FOOTER -> currentSection = DocumentSection.FOOTER;
                 default -> {}
             }
         }
