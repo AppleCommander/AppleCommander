@@ -22,6 +22,7 @@ package org.applecommander.javafx.content.view;
 import javafx.scene.text.TextAlignment;
 import org.applecommander.converter.ConverterRepository;
 import org.applecommander.converter.WordProcessorConverter;
+import org.applecommander.javafx.FxUtils;
 import org.applecommander.javafx.content.FileContentWindow;
 
 /// Provides a common view to word processing documents.
@@ -40,44 +41,18 @@ public class WordProcessorView extends FormattedTextView {
         textArea.replaceText("");
         StyleTracker styleTracker = new StyleTracker(parent.fontSizeProperty().getValue());
         textArea.setParagraphStyle(textArea.getCurrentParagraph(), styleTracker.getStyle());
-        converter.convert(new WordProcessorConverter.EventHandler() {
-            // Used to skip sections of text, such as page headers and footers.
-            private boolean ignore = false;
-            @Override
-            public void text(String text) {
-                if (ignore) return;
-                if (styleTracker.hasChanged()) {
-                    textArea.setParagraphStyle(textArea.getCurrentParagraph(), styleTracker.getStyle());
-                }
-                textArea.appendText(text);
-            }
-            @Override
-            public void control(WordProcessorConverter.Control control, int... args) {
-                if (ignore) {
-                    ignore = switch (control) {
-                        case END_PAGE_HEADER, END_PAGE_FOOTER -> false;
-                        default -> true;
-                    };
-                    return;
-                }
-                switch (control) {
-                    case BEGIN_BOLD -> styleTracker.setBold(true);
-                    case END_BOLD -> styleTracker.setBold(false);
-                    case BEGIN_UNDERLINE -> styleTracker.setUnderline(true);
-                    case END_UNDERLINE -> styleTracker.setUnderline(false);
-                    case BEGIN_SUPERSCRIPT -> styleTracker.setSuperscript(true);
-                    case END_SUPERSCRIPT -> styleTracker.setSuperscript(false);
-                    case BEGIN_SUBSCRIPT -> styleTracker.setSubscript(true);
-                    case END_SUBSCRIPT -> styleTracker.setSubscript(false);
-                    case ALIGN_LEFT -> styleTracker.setAlignment(TextAlignment.LEFT);
-                    case ALIGN_CENTER -> styleTracker.setAlignment(TextAlignment.CENTER);
-                    case ALIGN_RIGHT -> styleTracker.setAlignment(TextAlignment.RIGHT);
-                    case ALIGN_JUSTIFY -> styleTracker.setAlignment(TextAlignment.JUSTIFY);
-                    case BEGIN_PAGE_HEADER, BEGIN_PAGE_FOOTER -> ignore = true;
-                    default -> {}
-                }
-            }
-        });
+        try {
+            converter.convert(new WordProcessorEventHandler(styleTracker));
+        } catch (Throwable t) {
+            FxUtils.showErrorDialog("Error converting document", t);
+        }
+    }
+
+    /// Get the toggle button configuration. The `FileContentWindow` will set up the toolbar
+    /// with this button. When the button is clicked, the view will be displayed.
+    @Override
+    public ButtonConfig getButtonConfig() {
+        return new ButtonConfig("AWP", "document.png");
     }
 
     /// The RichTextFX component takes styling by CSS, and the styles replace the existing
@@ -162,11 +137,54 @@ public class WordProcessorView extends FormattedTextView {
         }
     }
 
-    /// Get the toggle button configuration. The `FileContentWindow` will set up the toolbar
-    /// with this button. When the button is clicked, the view will be displayed.
-    @Override
-    public ButtonConfig getButtonConfig() {
-        return new ButtonConfig("AWP", "document.png");
-    }
+    private class WordProcessorEventHandler implements WordProcessorConverter.EventHandler {
+        private final StyleTracker styleTracker;
+        // Used to skip sections of text, such as page headers and footers.
+        private boolean ignore;
 
+        public WordProcessorEventHandler(StyleTracker styleTracker) {
+            this.styleTracker = styleTracker;
+            ignore = false;
+        }
+
+        /// Add a text string into the resulting document.
+        @Override
+        public void text(String text) {
+            if (ignore) return;
+            if (styleTracker.hasChanged()) {
+                textArea.setParagraphStyle(textArea.getCurrentParagraph(), styleTracker.getStyle());
+            }
+            textArea.appendText(text);
+        }
+
+        /// Handler a control element. Note that some elements _can_ have parameters, but
+        /// they can vary across formats, so supply sensible defaults and code for the no-args
+        /// situations.
+        @Override
+        public void control(WordProcessorConverter.Control control, int... args) {
+            if (ignore) {
+                ignore = switch (control) {
+                    case END_PAGE_HEADER, END_PAGE_FOOTER -> false;
+                    default -> true;
+                };
+                return;
+            }
+            switch (control) {
+                case BEGIN_BOLD -> styleTracker.setBold(true);
+                case END_BOLD -> styleTracker.setBold(false);
+                case BEGIN_UNDERLINE -> styleTracker.setUnderline(true);
+                case END_UNDERLINE -> styleTracker.setUnderline(false);
+                case BEGIN_SUPERSCRIPT -> styleTracker.setSuperscript(true);
+                case END_SUPERSCRIPT -> styleTracker.setSuperscript(false);
+                case BEGIN_SUBSCRIPT -> styleTracker.setSubscript(true);
+                case END_SUBSCRIPT -> styleTracker.setSubscript(false);
+                case ALIGN_LEFT -> styleTracker.setAlignment(TextAlignment.LEFT);
+                case ALIGN_CENTER -> styleTracker.setAlignment(TextAlignment.CENTER);
+                case ALIGN_RIGHT -> styleTracker.setAlignment(TextAlignment.RIGHT);
+                case ALIGN_JUSTIFY -> styleTracker.setAlignment(TextAlignment.JUSTIFY);
+                case BEGIN_PAGE_HEADER, BEGIN_PAGE_FOOTER -> ignore = true;
+                default -> {}
+            }
+        }
+    }
 }
