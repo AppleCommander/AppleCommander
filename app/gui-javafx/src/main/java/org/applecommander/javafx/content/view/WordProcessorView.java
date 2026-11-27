@@ -22,15 +22,19 @@ package org.applecommander.javafx.content.view;
 import javafx.scene.text.TextAlignment;
 import org.applecommander.converter.ConverterRepository;
 import org.applecommander.converter.WordProcessorConverter;
+import org.applecommander.filestore.FileEntry;
 import org.applecommander.javafx.FxUtils;
 import org.applecommander.javafx.content.FileContentWindow;
 
 /// Provides a common view to word processing documents.
 public class WordProcessorView extends FormattedTextView {
+    private final String fileTypeText;
     private final WordProcessorConverter converter;
 
     public WordProcessorView(FileContentWindow parent) {
-        this.converter = ConverterRepository.getWordProcessor(parent.getFileEntry()).orElseThrow();
+        FileEntry fileEntry = parent.getFileEntry();
+        fileTypeText = fileEntry.getProdosAttributes().fileTypeText();
+        this.converter = ConverterRepository.getWordProcessor(fileEntry).orElseThrow();
         super(parent);
         refresh();
     }
@@ -52,7 +56,7 @@ public class WordProcessorView extends FormattedTextView {
     /// with this button. When the button is clicked, the view will be displayed.
     @Override
     public ButtonConfig getButtonConfig() {
-        return new ButtonConfig("AWP", "document.png");
+        return new ButtonConfig(fileTypeText, "document.png");
     }
 
     /// The RichTextFX component takes styling by CSS, and the styles replace the existing
