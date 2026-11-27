@@ -91,8 +91,10 @@ public class AppleWorksGSWordProcessorConverter implements WordProcessorConverte
         while (textBlock.hasRemaining()) {
             System.out.printf("Reading Text Block @ $%04X\n", textBlock.position());
             DataBuffer header = textBlock.readBuffer(7);
-            int firstFont = header.readUnsignedShort();
-            if (firstFont != 0) System.out.printf("First font = $%04X (%d)\n", firstFont, firstFont);
+            FontChange firstFont = new FontChange(header.readUnsignedShort());
+            System.out.printf("First font = $%04X (%d) %s\n", firstFont.fontFamilyID, firstFont.fontFamilyID,
+                    firstFont.getFontFamily());
+            handler.font(firstFont.getFontFamily());
             StyleByte firstStyle = new StyleByte(header.readUnsignedByte());
             firstStyle.getStyles().forEach(handler::control);
             int firstSize = header.readUnsignedByte();
@@ -110,7 +112,12 @@ public class AppleWorksGSWordProcessorConverter implements WordProcessorConverte
                     }
                     switch (ch) {
                         // Font change (ignored)
-                        case 0x01 -> textBlock.readUnsignedShort();
+                        case 0x01 -> {
+                            FontChange fontChange = new FontChange(textBlock.readUnsignedShort());
+                            System.out.printf("Font Change = $%04X (%d) %s\n", fontChange.fontFamilyID, fontChange.fontFamilyID,
+                                    fontChange.getFontFamily());
+                            handler.font(fontChange.getFontFamily());
+                        }
                         // Style change
                         case 0x02 -> {
                             StyleByte style = new StyleByte(textBlock.readUnsignedByte());
@@ -160,6 +167,16 @@ public class AppleWorksGSWordProcessorConverter implements WordProcessorConverte
                 case 0x02 -> Control.SPACING_DOUBLE;
                 default -> Control.SPACING_SINGLE;
             };
+        }
+    }
+    public record FontChange(int fontFamilyID) {
+        public FontFamily getFontFamily() {
+            for (FontFamily fontFamily : FontFamily.values()) {
+                if (fontFamily.id == fontFamilyID) {
+                    return fontFamily;
+                }
+            }
+            return FontFamily.DEFAULT_MONOSPACE;
         }
     }
     public record StyleByte(int styleByte) {

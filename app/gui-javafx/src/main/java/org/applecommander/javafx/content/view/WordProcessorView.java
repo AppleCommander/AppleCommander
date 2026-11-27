@@ -28,6 +28,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.text.TextAlignment;
 import org.applecommander.converter.ConverterRepository;
 import org.applecommander.converter.WordProcessorConverter;
+import org.applecommander.converter.WordProcessorConverter.DocumentSection;
+import org.applecommander.converter.WordProcessorConverter.EventHandler;
+import org.applecommander.converter.WordProcessorConverter.FontFamily;
 import org.applecommander.filestore.FileEntry;
 import org.applecommander.javafx.FxUtils;
 import org.applecommander.javafx.content.FileContentWindow;
@@ -99,10 +102,6 @@ public class WordProcessorView extends FormattedTextView {
         return Optional.of(toolBar);
     }
 
-    private enum DocumentSection {
-        BODY, HEADER, FOOTER;
-    }
-
     /// The RichTextFX component takes styling by CSS, and the styles replace the existing
     /// style. This component tracks current state and builds the appropriate CSS style
     /// when requested. It also tracks if there have been changes to reduce the number
@@ -110,6 +109,7 @@ public class WordProcessorView extends FormattedTextView {
     public static class StyleTracker {
         private boolean changed = false;
         private double fontSize;
+        private String fontFace = "monospace";
         private boolean bold = false;
         private boolean underline = false;
         private boolean italic = false;
@@ -135,6 +135,9 @@ public class WordProcessorView extends FormattedTextView {
         public void setFontSize(double fontSize) {
             this.fontSize = fontSize;
             this.changed = true;
+        }
+        public void setFontFace(String fontFace) {
+            this.fontFace = fontFace;
         }
         public void setItalic(boolean italic) {
             this.italic = italic;
@@ -163,7 +166,7 @@ public class WordProcessorView extends FormattedTextView {
             if (bold) {
                 sb.append("bold ");
             }
-            sb.append(String.format("%f monospace; ", fontSize));
+            sb.append(String.format("%f %s; ", fontSize, fontFace));
             if (superscript) {
                 sb.append("-fx-translate-y: ");
                 sb.append(fontSize * -0.3);
@@ -185,7 +188,7 @@ public class WordProcessorView extends FormattedTextView {
         }
     }
 
-    private class WordProcessorEventHandler implements WordProcessorConverter.EventHandler {
+    private class WordProcessorEventHandler implements EventHandler {
         private final StyleTracker styleTracker;
         private final DocumentSection desiredSection;
         private DocumentSection currentSection;
@@ -225,10 +228,6 @@ public class WordProcessorView extends FormattedTextView {
         @Override
         public void control(WordProcessorConverter.Control control, int... args) {
             if (desiredSection != currentSection) {
-                this.currentSection = switch (control) {
-                    case END_PAGE_FOOTER, END_PAGE_HEADER -> DocumentSection.BODY;
-                    default -> currentSection;
-                };
                 return;
             }
             switch (control) {
@@ -251,10 +250,24 @@ public class WordProcessorView extends FormattedTextView {
                 case ALIGN_CENTER -> styleTracker.setAlignment(TextAlignment.CENTER);
                 case ALIGN_RIGHT -> styleTracker.setAlignment(TextAlignment.RIGHT);
                 case ALIGN_JUSTIFY -> styleTracker.setAlignment(TextAlignment.JUSTIFY);
-                case BEGIN_PAGE_HEADER -> currentSection = DocumentSection.HEADER;
-                case BEGIN_PAGE_FOOTER -> currentSection = DocumentSection.FOOTER;
                 default -> {}
             }
+        }
+
+        /// Identifies which section of the document is being processed.
+        @Override
+        public void section(WordProcessorConverter.DocumentSection documentSection) {
+            this.currentSection = documentSection;
+        }
+
+        /// Indicate what type of font to use. It is likely that the font does not exist
+        /// on the system, so leaving that to implementation to "figure it out."
+        @Override
+        public void font(WordProcessorConverter.FontFamily fontFamily) {
+            styleTracker.setFontFace(switch (fontFamily) {
+                case FontFamily.MONACO, FontFamily.DEFAULT_MONOSPACE -> "monospace";
+                default -> "system";
+            });
         }
     }
 }

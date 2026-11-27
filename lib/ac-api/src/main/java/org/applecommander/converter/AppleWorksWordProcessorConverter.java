@@ -134,8 +134,7 @@ public class AppleWorksWordProcessorConverter implements WordProcessorConverter 
                     }
                 }
                 case 0xd0 -> handler.text("\n");
-                case 0xd5 -> handler.control(Control.END_PAGE_HEADER);
-                case 0xd6 -> handler.control(Control.END_PAGE_FOOTER);
+                case 0xd5,0xd6 -> handler.section(DocumentSection.BODY);
                 case 0xd7 -> handler.control(Control.ALIGN_RIGHT);
                 case 0xde -> handler.text(Strings.repeat(" ", byte0));
                 case 0xdf -> handler.control(Control.ALIGN_JUSTIFY);
@@ -145,8 +144,8 @@ public class AppleWorksWordProcessorConverter implements WordProcessorConverter 
                 case 0xe7 -> handler.control(Control.SPACING_DOUBLE);
                 case 0xe8 -> handler.control(Control.SPACING_TRIPLE);
                 case 0xe9 -> handler.control(Control.PAGE_BREAK);
-                case 0xec -> handler.control(Control.BEGIN_PAGE_HEADER);
-                case 0xed -> handler.control(Control.BEGIN_PAGE_FOOTER);
+                case 0xec -> handler.section(DocumentSection.HEADER);
+                case 0xed -> handler.section(DocumentSection.FOOTER);
                 case 0xef -> handler.control(Control.SET_PAGE_NUMBER, byte0);
                 case 0xfe -> handler.control(Control.SET_PAGE_NUMBER, byte0 + 256);
                 default -> {}
